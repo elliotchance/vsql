@@ -3,14 +3,14 @@
 # 6, Scalar expressions
 6                        container    - -
 # 6.1, <data type>
-6.1                      implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/1                 partial      vsql/std_2_6_1_data_type.v tests/create-table.sql DEC isn't accepted (#263); NCHAR, CLOB and NCLOB (F421, T041), VARBINARY and BLOB (T021, T041)
+6.1                      implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/1                 partial      vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql DEC isn't accepted (#263); NCHAR, CLOB and NCLOB (F421, T041), VARBINARY and BLOB (T021, T041)
 6.1/SR/2                 n/a          - - national character (F421)
-6.1/SR/3                 impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the only collation is the character set collation of UTF8 (no F690)
+6.1/SR/3                 impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only collation is the character set collation of UTF8 (no F690)
 6.1/SR/3.a               n/a          - - collations (F690)
-6.1/SR/3.b               impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the only collation is the character set collation of UTF8 (no F690)
-6.1/SR/4                 implemented  vsql/std_2_6_1_data_type.v tests/create-table.sql
-6.1/SR/5                 implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
+6.1/SR/3.b               impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only collation is the character set collation of UTF8 (no F690)
+6.1/SR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql
+6.1/SR/5                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/6                 n/a          - - char length units (T061)
 6.1/SR/7                 n/a          - - char length units (T061)
 6.1/SR/8                 n/a          - - LOBs (T041)
@@ -24,54 +24,54 @@
 6.1/SR/9.b.v             n/a          - - LOBs (T041)
 6.1/SR/10                n/a          - - LOBs (T041)
 6.1/SR/11                n/a          - - LOBs (T041)
-6.1/SR/12                implemented  vsql/std_2_6_1_data_type.v tests/character.sql
-6.1/SR/13                implemented  vsql/std_2_6_1_data_type.v tests/substring.sql
+6.1/SR/12                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
+6.1/SR/13                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_32_substring.sql
 6.1/SR/14                container    - -
-6.1/SR/14.a              implemented  vsql/std_2_6_1_data_type.v tests/character-varying.sql
-6.1/SR/14.a.i            implemented  vsql/std_2_6_1_data_type.v tests/character.sql
-6.1/SR/14.a.ii           implemented  vsql/std_2_6_1_data_type.v tests/character-varying.sql
+6.1/SR/14.a              implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql
+6.1/SR/14.a.i            implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
+6.1/SR/14.a.ii           implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql
 6.1/SR/14.a.iii          n/a          - - LOBs (T041)
 6.1/SR/14.b              container    - -
 6.1/SR/14.b.i            n/a          - - char length units (T061)
 6.1/SR/14.b.ii           n/a          - - char length units (T061)
 6.1/SR/14.b.iii          n/a          - - char length units (T061)
-6.1/SR/15                impl-defined vsql/std_2_6_1_data_type.v tests/type-limits.sql the maximum length is 10485760 (there are no LOBs, T041)
-6.1/SR/16                impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the character set is always UTF8
+6.1/SR/15                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum length is 10485760 (there are no LOBs, T041)
+6.1/SR/16                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the character set is always UTF8
 6.1/SR/17                n/a          - - binary strings (T021, T041)
 6.1/SR/18                n/a          - - binary strings (T021, T041)
 6.1/SR/19                n/a          - - binary strings (T021, T041)
 6.1/SR/19.a              n/a          - - binary strings (T021, T041)
 6.1/SR/19.b              n/a          - - binary strings (T021, T041)
 6.1/SR/19.c              n/a          - - binary strings (T021, T041)
-6.1/SR/20                impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql NUMERIC and DECIMAL are 1000, FLOAT is 53
-6.1/SR/21                implemented  vsql/std_2_6_1_data_type.v tests/create-table.sql there's no DECFLOAT (T076)
-6.1/SR/22                implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/23                implemented  vsql/std_2_6_1_data_type.v tests/cast.sql
-6.1/SR/24                impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the normal form of INT is INTEGER, and the others are their own normal form
-6.1/SR/24.a              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
+6.1/SR/20                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql NUMERIC and DECIMAL are 1000, FLOAT is 53
+6.1/SR/21                implemented  vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql there's no DECFLOAT (T076)
+6.1/SR/22                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/23                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_13_cast.sql
+6.1/SR/24                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the normal form of INT is INTEGER, and the others are their own normal form
+6.1/SR/24.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/24.b              missing      - - DEC isn't accepted (#263)
-6.1/SR/24.c              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/24.d              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/24.e              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/25                impl-defined vsql/std_2_6_1_data_type.v tests/type-limits.sql the maximum precision is 1000, and the maximum scale is the precision
-6.1/SR/25.a              impl-defined vsql/std_2_6_1_data_type.v tests/type-limits.sql 1000
-6.1/SR/25.b              impl-defined vsql/std_2_6_1_data_type.v tests/type-limits.sql the scale can't be greater than the precision
-6.1/SR/26                implemented  vsql/std_2_6_1_data_type.v tests/numeric.sql
-6.1/SR/27                implemented  vsql/std_2_6_1_data_type.v tests/decimal.sql the precision is the specified precision
-6.1/SR/28                impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql binary precisions of 16, 32 and 64
-6.1/SR/29                implemented  vsql/std_2_6_1_data_type.v tests/type-limits.sql FLOAT is always DOUBLE PRECISION, so the maximum is 53
-6.1/SR/30                impl-defined vsql/std_2_6_1_data_type.v tests/real.sql IEEE 754 single precision (24 bits)
-6.1/SR/31                impl-defined vsql/std_2_6_1_data_type.v tests/double-precision.sql IEEE 754 double precision (53 bits)
-6.1/SR/32                impl-defined vsql/std_2_6_1_data_type.v tests/double-precision.sql the IEEE 754 exponents
+6.1/SR/24.c              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/24.d              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/24.e              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/25                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum precision is 1000, and the maximum scale is the precision
+6.1/SR/25.a              impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql 1000
+6.1/SR/25.b              impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the scale can't be greater than the precision
+6.1/SR/26                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_numeric.sql
+6.1/SR/27                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_decimal.sql the precision is the specified precision
+6.1/SR/28                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql binary precisions of 16, 32 and 64
+6.1/SR/29                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql FLOAT is always DOUBLE PRECISION, so the maximum is 53
+6.1/SR/30                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_real.sql IEEE 754 single precision (24 bits)
+6.1/SR/31                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_double_precision.sql IEEE 754 double precision (53 bits)
+6.1/SR/32                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_double_precision.sql the IEEE 754 exponents
 6.1/SR/33                n/a          - - DECFLOAT (T076)
 6.1/SR/34                n/a          - - DECFLOAT (T076)
-6.1/SR/35                impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the normal form of FLOAT is DOUBLE PRECISION, and the others are their own normal form
-6.1/SR/35.a              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/35.b              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/36                implemented  vsql/std_2_6_1_data_type.v tests/datetime-precision.sql
-6.1/SR/37                implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/SR/38                impl-defined vsql/std_2_6_1_data_type.v tests/datetime-precision.sql 6
-6.1/SR/39                implemented  vsql/std_2_6_1_data_type.v tests/cast.sql
+6.1/SR/35                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the normal form of FLOAT is DOUBLE PRECISION, and the others are their own normal form
+6.1/SR/35.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/35.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/36                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_datetime_precision.sql
+6.1/SR/37                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/SR/38                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_datetime_precision.sql 6
+6.1/SR/39                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_13_cast.sql
 6.1/SR/40                n/a          - - intervals (F052)
 6.1/SR/41                n/a          - - intervals (F052)
 6.1/SR/42                n/a          - - reference types (S041)
@@ -82,21 +82,21 @@
 6.1/SR/45                n/a          - - arrays (S091)
 6.1/SR/46                n/a          - - multisets (S271)
 6.1/SR/47                n/a          - - row types (T051)
-6.1/SR/48                implemented  vsql/std_2_6_1_data_type.v tests/boolean.sql
+6.1/SR/48                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_boolean.sql
 6.1/SR/49                n/a          - - collection and row types (S091, S271, T051)
 6.1/AR/1                 n/a          - - user-defined types (S023)
 6.1/AR/1.a               n/a          - - user-defined types (S023)
 6.1/AR/1.b               n/a          - - user-defined types (S023)
-6.1/GR/1                 impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the only character set is UTF8, which contains every character
-6.1/GR/2                 implemented  vsql/std_2_6_1_data_type.v tests/unicode-escapes.sql
+6.1/GR/1                 impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only character set is UTF8, which contains every character
+6.1/GR/2                 implemented  vsql/std_2_6_1_data_type.v tests/std_2_5_2_unicode_escapes.sql
 6.1/GR/3                 n/a          - - char length units (T061)
-6.1/GR/4                 implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/4.a               implemented  vsql/std_2_6_1_data_type.v tests/date.sql
-6.1/GR/4.b               implemented  vsql/std_2_6_1_data_type.v tests/time.sql
-6.1/GR/4.c               implemented  vsql/std_2_6_1_data_type.v tests/timestamp.sql
-6.1/GR/4.d               implemented  vsql/std_2_6_1_data_type.v tests/timestamp.sql
-6.1/GR/5                 implemented  vsql/std_2_6_1_data_type.v tests/datetime-precision.sql
-6.1/GR/6                 partial      vsql/time.v tests/timestamp.sql a leap second (60 or 61) rolls over into the next minute
+6.1/GR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/4.a               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_date.sql
+6.1/GR/4.b               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_time.sql
+6.1/GR/4.c               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql
+6.1/GR/4.d               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql
+6.1/GR/5                 implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_datetime_precision.sql
+6.1/GR/6                 partial      vsql/time.v tests/std_2_6_1_timestamp.sql a leap second (60 or 61) rolls over into the next minute
 6.1/GR/7                 n/a          - - intervals (F052)
 6.1/GR/8                 n/a          - - intervals (F052)
 6.1/GR/8.a               n/a          - - intervals (F052)
@@ -104,32 +104,32 @@
 6.1/GR/8.c               n/a          - - intervals (F052)
 6.1/GR/8.d               n/a          - - intervals (F052)
 6.1/GR/8.e               n/a          - - intervals (F052)
-6.1/GR/9                 implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/9.a               implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql there are no LOBs (T041)
-6.1/GR/9.b               implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/9.c               implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
+6.1/GR/9                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/9.a               implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql there are no LOBs (T041)
+6.1/GR/9.b               implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/9.c               implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/9.d               n/a          - - collations (F690)
 6.1/GR/10                n/a          - - binary strings (T021, T041)
 6.1/GR/10.a              n/a          - - binary strings (T021, T041)
 6.1/GR/10.b              n/a          - - binary strings (T021, T041)
-6.1/GR/11                implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.a              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.b              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.c              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.d              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.e              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.f              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/11.g              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/12                implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/12.a              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/12.b              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/12.c              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/12.d              partial      vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql FLOAT is stored as DOUBLE PRECISION, so the specified name isn't kept
-6.1/GR/12.e              partial      vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql FLOAT is stored as DOUBLE PRECISION, so the explicit precision isn't kept
-6.1/GR/13                implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/14                implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/14.a              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
-6.1/GR/14.b              implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
+6.1/GR/11                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.c              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.d              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.e              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.f              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/11.g              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/12                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/12.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/12.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/12.c              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/12.d              partial      vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql FLOAT is stored as DOUBLE PRECISION, so the specified name isn't kept
+6.1/GR/12.e              partial      vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql FLOAT is stored as DOUBLE PRECISION, so the explicit precision isn't kept
+6.1/GR/13                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/14                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/14.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
+6.1/GR/14.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/15                n/a          - - DECFLOAT (T076)
 6.1/GR/15.a              n/a          - - DECFLOAT (T076)
 6.1/GR/15.b              n/a          - - DECFLOAT (T076)
@@ -144,12 +144,12 @@
 6.1/GR/20                n/a          - - reference types (S041)
 6.1/GR/21                n/a          - - reference types (S041)
 6.1/CR/1                 n/a          - - user-defined types (S023)
-6.1/CR/2                 implemented  vsql/std_2_6_1_data_type.v tests/flagging.sql
-6.1/CR/3                 implemented  vsql/std_2_6_1_data_type.v tests/flagging.sql
-6.1/CR/4                 implemented  vsql/std_2_6_1_data_type.v tests/flagging.sql
+6.1/CR/2                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
+6.1/CR/3                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
+6.1/CR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
 6.1/CR/5                 n/a          - - intervals (F052)
 6.1/CR/6                 n/a          - - national character (F421)
-6.1/CR/7                 implemented  vsql/std_2_6_1_data_type.v tests/flagging.sql
+6.1/CR/7                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
 6.1/CR/8                 n/a          - - reference types (S041)
 6.1/CR/9                 n/a          - - row types (T051)
 6.1/CR/10                n/a          - - arrays (S091)
@@ -163,7 +163,7 @@
 6.1/CR/18                n/a          - - arrays (S096)
 6.1/CR/19                n/a          - - LOBs (T041)
 6.1/CR/20                n/a          - - char length units aren't allowed in a data type (T061)
-6.1/CR/21                implemented  vsql/std_2_6_1_data_type.v tests/flagging.sql
+6.1/CR/21                implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
 6.1/CR/22                n/a          - - binary strings (T021)
 6.1/CR/23                n/a          - - DECFLOAT (T076)
 # 6.2, <field definition>
@@ -182,18 +182,18 @@
 6.2/GR/4                 n/a          - - row types (T051)
 6.2/CR/1                 n/a          - - row types (T051)
 # 6.3, <value expression primary>
-6.3                      implemented  vsql/std_2_6_3_value_expression_primary.v tests/arithmetic.sql
-6.3/SR/1                 implemented  vsql/std_2_6_3_value_expression_primary.v tests/arithmetic.sql
+6.3                      implemented  vsql/std_2_6_3_value_expression_primary.v tests/std_2_6_29_arithmetic.sql
+6.3/SR/1                 implemented  vsql/std_2_6_3_value_expression_primary.v tests/std_2_6_29_arithmetic.sql
 6.3/SR/2                 n/a          - - methods (S023)
 6.3/SR/3                 n/a          - - collection types (S091, S271)
-6.3/GR/1                 implemented  vsql/std_2_6_3_value_expression_primary.v tests/arithmetic.sql
+6.3/GR/1                 implemented  vsql/std_2_6_3_value_expression_primary.v tests/std_2_6_29_arithmetic.sql
 6.3/GR/2                 n/a          - - collection types (S091, S271)
 # 6.4, <value specification> and <target specification>
 6.4                      partial      vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod there's no USER (#732)
 6.4/SR/1                 implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
 6.4/SR/2                 untested     vsql/std_2_6_4_value_specification_and_target_specification.v - a host parameter name is a syntax error outside of an SQL-client module
 6.4/SR/3                 missing      - - USER (#732)
-6.4/SR/4                 impl-defined vsql/std_2_6_4_value_specification_and_target_specification.v tests/column-defaults.sql CURRENT_CATALOG and CURRENT_SCHEMA are CHARACTER VARYING; CURRENT_USER, CURRENT_ROLE, SESSION_USER, SYSTEM_USER and CURRENT_PATH aren't supported (F321, T332, S071)
+6.4/SR/4                 impl-defined vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_11_5_column_defaults.sql CURRENT_CATALOG and CURRENT_SCHEMA are CHARACTER VARYING; CURRENT_USER, CURRENT_ROLE, SESSION_USER, SYSTEM_USER and CURRENT_PATH aren't supported (F321, T332, S071)
 6.4/SR/5                 n/a          - - collations (F693)
 6.4/SR/6                 n/a          - - domains (F251)
 6.4/SR/7                 n/a          - - triggers (T211)
@@ -203,13 +203,13 @@
 6.4/SR/8.c               n/a          - - array element assignment (S097)
 6.4/SR/9                 implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/embed/example.sqc an indicator variable is an indicator parameter of the implied module
 6.4/SR/10                untested     vsql/std_2_6_4_value_specification_and_target_specification.v - an embedded variable name is a syntax error outside of an embedded SQL program
-6.4/SR/11                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/dynamic-parameters.sql
+6.4/SR/11                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_4_dynamic_parameters.sql
 6.4/SR/12                n/a          - - transform functions (S241)
-6.4/GR/1                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/arithmetic.sql
+6.4/GR/1                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_29_arithmetic.sql
 6.4/GR/2                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod
 6.4/GR/3                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod a host parameter or a host variable; output SQL parameters (T321), transition variables (T211) and arrays (S097) aren't supported
 6.4/GR/4                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod
-6.4/GR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/arithmetic.sql
+6.4/GR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_29_arithmetic.sql
 6.4/GR/6                 missing      - - USER (#732)
 6.4/GR/6.a               missing      - - USER (#732)
 6.4/GR/6.b               missing      - - USER (#732)
@@ -218,14 +218,14 @@
 6.4/GR/8.a               n/a          - - roles (T332)
 6.4/GR/8.b               n/a          - - roles (T332)
 6.4/GR/9                 n/a          - - user authorization (F321)
-6.4/GR/10                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/catalogs.sql
-6.4/GR/11                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/set-schema.sql
+6.4/GR/10                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_5_4_catalogs.sql
+6.4/GR/11                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_19_6_set_schema.sql
 6.4/GR/12                n/a          - - SQL paths (S071)
 6.4/GR/13                n/a          - - collations (F693)
 6.4/GR/14                untestable   vsql/std_2_6_4_value_specification_and_target_specification.v - a <simple value specification> can only be a <literal>, which is never null
 6.4/GR/15                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod
 6.4/GR/16                impl-defined vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod a zero-length string isn't an exception condition
-6.4/GR/17                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/dynamic-parameters.sql
+6.4/GR/17                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_4_dynamic_parameters.sql
 6.4/GR/18                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/embed/example.sqc
 6.4/GR/19                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/embed/example.sqc
 6.4/GR/20                n/a          - - transform functions (S241)
@@ -234,95 +234,95 @@
 6.4/CR/2                 n/a          - - domains (F251)
 6.4/CR/3                 n/a          - - user authorization (F321)
 6.4/CR/4                 n/a          - - roles (T332)
-6.4/CR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/flagging.sql
-6.4/CR/6                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/flagging.sql
+6.4/CR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_8_5_flagging.sql
+6.4/CR/6                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_8_5_flagging.sql
 6.4/CR/7                 missing      - - SQL-client modules aren't flagged (#879)
-6.4/CR/8                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/flagging.sql
+6.4/CR/8                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_8_5_flagging.sql
 6.4/CR/9                 n/a          - - array element assignment (S097)
 6.4/CR/10                n/a          - - transform functions (S241)
 6.4/CR/11                n/a          - - transform functions (S241)
 6.4/CR/12                n/a          - - collations (F693)
 # 6.5, <contextually typed value specification>
-6.5                      implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
+6.5                      implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 6.5/SR/1                 n/a          - - collection types (S091, S271)
 6.5/SR/1.a               n/a          - - collection types (S091, S271)
 6.5/SR/1.b               n/a          - - collection types (S091, S271)
-6.5/SR/2                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/cast-null.sql
-6.5/SR/3                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
+6.5/SR/2                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_6_13_cast_null.sql
+6.5/SR/3                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 6.5/GR/1                 n/a          - - collection types (S091, S271)
-6.5/GR/2                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/cast-null.sql
-6.5/GR/3                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
+6.5/GR/2                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_6_13_cast_null.sql
+6.5/GR/3                 implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 6.5/CR/1                 n/a          - - arrays (S091)
 6.5/CR/2                 n/a          - - multisets (S271)
 # 6.6, <identifier chain>
-6.6                      implemented  vsql/std_2_6_6_identifier_chain.v tests/column-qualifier.sql
+6.6                      implemented  vsql/std_2_6_6_identifier_chain.v tests/std_2_6_6_column_qualifier.sql
 6.6/SR/1                 definition   - -
 6.6/SR/2                 definition   - -
 6.6/SR/3                 definition   - -
 6.6/SR/4                 definition   - -
-6.6/SR/5                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/qualified-column-reference.sql more than 4 identifiers would be fields of a row type (T051)
+6.6/SR/5                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_qualified_column_reference.sql more than 4 identifiers would be fields of a row type (T051)
 6.6/SR/6                 n/a          - - row types (T051) and structured types (S023)
 6.6/SR/7                 n/a          - - row types (T051) and structured types (S023)
-6.6/SR/8                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
-6.6/SR/8.a               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
-6.6/SR/8.a.i             implemented  vsql/std_2_5_4_names_and_identifiers.v tests/order-alias.sql
-6.6/SR/8.a.ii            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/ambiguous-column.sql
-6.6/SR/8.a.ii.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
-6.6/SR/8.a.ii.1.A        implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
+6.6/SR/8                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
+6.6/SR/8.a               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
+6.6/SR/8.a.i             implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_17_order_alias.sql
+6.6/SR/8.a.ii            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_ambiguous_column.sql
+6.6/SR/8.a.ii.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
+6.6/SR/8.a.ii.1.A        implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
 6.6/SR/8.a.ii.1.B        n/a          - - periods (T180, T181)
 6.6/SR/8.a.ii.2          n/a          - - SQL parameters (T321)
 6.6/SR/8.a.ii.3          n/a          - - row pattern recognition (R010)
-6.6/SR/8.b               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
+6.6/SR/8.b               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
 6.6/SR/8.b.i             n/a          - - SQL parameters (T321)
 6.6/SR/8.b.ii            n/a          - - SQL parameters (T321)
 6.6/SR/8.b.iii           n/a          - - SQL parameters (T321)
-6.6/SR/8.b.iv            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/correlation-name.sql
-6.6/SR/8.b.iv.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/correlation-name.sql
+6.6/SR/8.b.iv            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_6_correlation_name.sql
+6.6/SR/8.b.iv.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_6_correlation_name.sql
 6.6/SR/8.b.iv.2          n/a          - - periods (T180, T181)
 6.6/SR/8.b.v             n/a          - - row types (T051) and structured types (S023)
-6.6/SR/8.b.vi            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
-6.6/SR/8.b.vi.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
+6.6/SR/8.b.vi            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql
+6.6/SR/8.b.vi.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql
 6.6/SR/8.b.vi.2          n/a          - - periods (T180, T181)
-6.6/SR/8.c               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/ambiguous-column.sql
+6.6/SR/8.c               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_ambiguous_column.sql
 6.6/SR/9                 definition   - -
 6.6/SR/10                n/a          - - field references (T051) and methods (S023)
-6.6/SR/11                implemented  vsql/std_2_6_6_identifier_chain.v tests/column-qualifier.sql
-6.6/SR/12                implemented  vsql/std_2_6_6_identifier_chain.v tests/column-qualifier.sql there are no triggers (T211)
+6.6/SR/11                implemented  vsql/std_2_6_6_identifier_chain.v tests/std_2_6_6_column_qualifier.sql
+6.6/SR/12                implemented  vsql/std_2_6_6_identifier_chain.v tests/std_2_6_6_column_qualifier.sql there are no triggers (T211)
 6.6/SR/13                n/a          - - row pattern recognition (R010)
 6.6/SR/14                n/a          - - periods (T180, T181)
 6.6/SR/15                n/a          - - SQL parameters (T321)
-6.6/SR/16                implemented  vsql/std_2_6_6_identifier_chain.v tests/column-qualifier.sql
+6.6/SR/16                implemented  vsql/std_2_6_6_identifier_chain.v tests/std_2_6_6_column_qualifier.sql
 6.6/SR/17                n/a          - - collation derivation (F690)
 6.6/SR/17.a              n/a          - - collation derivation (F690)
 6.6/SR/17.b              n/a          - - collation derivation (F690)
 6.6/GR/1                 definition   - -
-6.6/GR/2                 implemented  vsql/std_2_6_6_identifier_chain.v tests/column-qualifier.sql
+6.6/GR/2                 implemented  vsql/std_2_6_6_identifier_chain.v tests/std_2_6_6_column_qualifier.sql
 6.6/GR/3                 n/a          - - periods (T180, T181)
 6.6/GR/4                 n/a          - - SQL parameters (T321)
 6.6/CR/1                 n/a          - - qualified SQL parameter references (T325)
 # 6.7, <column reference>
-6.7                      implemented  vsql/std_2_6_7_column_reference.y tests/column-qualifier.sql
-6.7/SR/1                 implemented  vsql/std_2_6_7_column_reference.y tests/column-qualifier.sql
-6.7/SR/2                 implemented  vsql/std_2_6_7_column_reference.y tests/column-qualifier.sql
+6.7                      implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
+6.7/SR/1                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
+6.7/SR/2                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
 6.7/SR/3                 n/a          - - local table references (F821)
-6.7/SR/4                 implemented  vsql/std_2_6_7_column_reference.y tests/correlated-subquery.sql
-6.7/SR/5                 implemented  vsql/std_2_6_7_column_reference.y tests/column-qualifier.sql
-6.7/SR/5.a               implemented  vsql/std_2_6_7_column_reference.y tests/column-qualifier.sql
+6.7/SR/4                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_19_correlated_subquery.sql
+6.7/SR/5                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
+6.7/SR/5.a               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
 6.7/SR/5.b               n/a          - - domains (F251)
 6.7/SR/6                 definition   - -
-6.7/SR/7                 implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
-6.7/SR/7.a               implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
+6.7/SR/7                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
+6.7/SR/7.a               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
 6.7/SR/7.a.i             n/a          - - row pattern recognition (R010)
-6.7/SR/7.a.ii            implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
-6.7/SR/7.b               implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
+6.7/SR/7.a.ii            implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
+6.7/SR/7.b               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
 6.7/SR/7.b.i             n/a          - - row pattern recognition (R010)
 6.7/SR/7.b.i.1           n/a          - - row pattern recognition (R010)
 6.7/SR/7.b.i.2           n/a          - - row pattern recognition (R010)
 6.7/SR/7.b.i.3           n/a          - - row pattern recognition (R010)
 6.7/SR/7.b.i.4           n/a          - - row pattern recognition (R010)
-6.7/SR/7.b.ii            implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
-6.7/SR/7.b.iii           implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
-6.7/SR/7.b.iv            implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
+6.7/SR/7.b.ii            implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
+6.7/SR/7.b.iii           implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
+6.7/SR/7.b.iv            implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
 6.7/SR/8                 n/a          - - functional dependencies (T301); a group-invariant column reference must be a grouping column (Conformance Rules, 2)
 6.7/SR/9                 n/a          - - row pattern recognition (R010)
 6.7/AR/1                 definition   - -
@@ -334,32 +334,32 @@
 6.7/AR/3                 n/a          - - data change delta tables (T495)
 6.7/AR/3.a               n/a          - - data change delta tables (T495)
 6.7/AR/3.b               n/a          - - data change delta tables (T495)
-6.7/GR/1                 implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
-6.7/GR/1.a               implemented  vsql/std_2_6_7_column_reference.y tests/column-qualifier.sql
+6.7/GR/1                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
+6.7/GR/1.a               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
 6.7/GR/1.b               n/a          - - row pattern recognition (R010)
-6.7/GR/1.c               implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
+6.7/GR/1.c               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
 6.7/GR/1.d               n/a          - - row pattern recognition (R010)
-6.7/GR/1.e               implemented  vsql/std_2_6_7_column_reference.y tests/group-by.sql
+6.7/GR/1.e               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
 6.7/CR/1                 n/a          - - local table references (F821)
-6.7/CR/2                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/group-by.sql
+6.7/CR/2                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_13_group_by.sql
 6.7/CR/3                 n/a          - - row pattern recognition (R010)
 # 6.8, <SQL parameter reference>
 6.8                      n/a          - - SQL-invoked routines (T321)
 6.8/SR/1                 n/a          - - SQL-invoked routines (T321)
 6.8/SR/2                 n/a          - - SQL-invoked routines (T321)
 # 6.9, <set function specification>
-6.9                      implemented  vsql/std_2_6_9_set_function_specification.y tests/set-functions.sql
-6.9/SR/1                 implemented  vsql/std_2_10_4_routine_invocation.v,vsql/std_2_7_19_subquery.v tests/having.sql,tests/aggregate-placement.sql
+6.9                      implemented  vsql/std_2_6_9_set_function_specification.y tests/std_2_10_9_set_functions.sql
+6.9/SR/1                 implemented  vsql/std_2_10_4_routine_invocation.v,vsql/std_2_7_19_subquery.v tests/std_2_7_14_having.sql,tests/std_2_6_9_aggregate_placement.sql
 6.9/SR/2                 n/a          - - binary set functions (T621)
 6.9/SR/3                 definition   - -
 6.9/SR/4                 definition   - -
-6.9/SR/5                 implemented  vsql/std_2_10_9_aggregate_function.v tests/aggregate-filter.sql
-6.9/SR/6                 implemented  vsql/compiler.v tests/correlated-subquery.sql
-6.9/SR/6.a               partial      vsql/compiler.v tests/set-functions.sql an aggregate function in a VALUES subquery without a column reference is rejected (#914)
-6.9/SR/6.b               implemented  vsql/compiler.v tests/correlated-subquery.sql
-6.9/SR/7                 implemented  vsql/planner.v tests/correlated-subquery.sql,tests/aggregate-placement.sql
-6.9/SR/8                 implemented  vsql/compiler.v tests/correlated-subquery.sql
-6.9/SR/9                 implemented  vsql/std_2_6_9_set_function_specification.y tests/set-functions.sql
+6.9/SR/5                 implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_aggregate_filter.sql
+6.9/SR/6                 implemented  vsql/compiler.v tests/std_2_7_19_correlated_subquery.sql
+6.9/SR/6.a               partial      vsql/compiler.v tests/std_2_10_9_set_functions.sql an aggregate function in a VALUES subquery without a column reference is rejected (#914)
+6.9/SR/6.b               implemented  vsql/compiler.v tests/std_2_7_19_correlated_subquery.sql
+6.9/SR/7                 implemented  vsql/planner.v tests/std_2_7_19_correlated_subquery.sql,tests/std_2_6_9_aggregate_placement.sql
+6.9/SR/8                 implemented  vsql/compiler.v tests/std_2_7_19_correlated_subquery.sql
+6.9/SR/9                 implemented  vsql/std_2_6_9_set_function_specification.y tests/std_2_10_9_set_functions.sql
 6.9/SR/10                n/a          - - GROUPING (T431)
 6.9/SR/10.a              n/a          - - GROUPING (T431)
 6.9/SR/10.b              n/a          - - GROUPING (T431)
@@ -371,7 +371,7 @@
 6.9/SR/11.b              n/a          - - row pattern recognition (R010); RUNNING and FINAL aren't parsed
 6.9/SR/12                n/a          - - row pattern recognition (R010)
 6.9/SR/13                n/a          - - row pattern recognition (R010)
-6.9/GR/1                 implemented  vsql/std_2_6_9_set_function_specification.y tests/set-functions.sql
+6.9/GR/1                 implemented  vsql/std_2_6_9_set_function_specification.y tests/std_2_10_9_set_functions.sql
 6.9/CR/1                 n/a          - - GROUPING (T431)
 6.9/CR/2                 n/a          - - GROUPING (T433)
 6.9/CR/3                 n/a          - - functional dependencies (T301); the column must be a grouping column (Syntax Rules, 8)
@@ -542,14 +542,14 @@
 6.11/GR/4.e.ii           n/a          - - nested window functions (T619)
 6.11/CR/1                n/a          - - nested window functions (T619)
 # 6.12, <case expression>
-6.12                     implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
-6.12/SR/1                implemented  vsql/std_2_6_12_case_expression.v tests/nullif.sql,tests/coalesce.sql
+6.12                     implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/SR/1                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_nullif.sql,tests/std_2_6_12_coalesce.sql
 6.12/SR/1.a              n/a          - - SQL-invoked routines (T321, #733); a custom function registered from V isn't rejected
 6.12/SR/1.b              n/a          - - data change delta tables (T495)
-6.12/SR/1.c              implemented  vsql/std_2_6_12_case_expression.v tests/nullif.sql
-6.12/SR/1.d              implemented  vsql/std_2_6_12_case_expression.v tests/coalesce.sql
-6.12/SR/1.e              implemented  vsql/std_2_6_12_case_expression.v tests/coalesce.sql
-6.12/SR/2                implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
+6.12/SR/1.c              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_nullif.sql
+6.12/SR/1.d              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_coalesce.sql
+6.12/SR/1.e              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_coalesce.sql
+6.12/SR/2                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/2.a              n/a          - - SQL-invoked routines (T321, #733); a custom function registered from V isn't rejected
 6.12/SR/2.b              n/a          - - data change delta tables (T495)
 6.12/SR/2.c              n/a          - - OVERLAPS (F053)
@@ -559,30 +559,30 @@
 6.12/SR/2.f.i            n/a          - - extended CASE (F262)
 6.12/SR/2.f.ii           definition   - -
 6.12/SR/2.g              definition   - -
-6.12/SR/2.h              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
-6.12/SR/2.i              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
-6.12/SR/2.j              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
+6.12/SR/2.h              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/SR/2.i              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/SR/2.j              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/2.k              n/a          - - the predicates can only be comparisons, which are Core (F262)
-6.12/SR/3                implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
-6.12/SR/4                implemented  vsql/std_2_6_12_case_expression.y tests/case-expression.sql
-6.12/SR/5                implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql,tests/coalesce.sql
+6.12/SR/3                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/SR/4                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression.sql
+6.12/SR/5                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql,tests/std_2_6_12_coalesce.sql
 6.12/GR/1                container    - -
-6.12/GR/1.a              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
-6.12/GR/1.b              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
+6.12/GR/1.a              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/GR/1.b              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/GR/2                container    - -
-6.12/GR/2.a              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
-6.12/GR/2.b              implemented  vsql/std_2_6_12_case_expression.v tests/case-expression.sql
+6.12/GR/2.a              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/GR/2.b              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/CR/1                n/a          - - extended CASE (F262)
 6.12/CR/2                n/a          - - extended CASE (F262)
 6.12/CR/3                n/a          - - comma-separated predicates in simple CASE (F263)
 6.12/CR/4                n/a          - - extended CASE (F262); a <when operand> can't be a <similar predicate part 2>
 # 6.13, <cast specification>
-6.13                     implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13                     implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/SR/1                container    - -
 6.13/SR/1.a              n/a          - - domains (F251)
-6.13/SR/1.b              implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql there's no COLLATE (F690)
-6.13/SR/2                implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/SR/3                implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/SR/1.b              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql there's no COLLATE (F690)
+6.13/SR/2                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/SR/3                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/SR/4                n/a          - - cast templates (T839)
 6.13/SR/4.a              n/a          - - cast templates (T839)
 6.13/SR/4.a.i            n/a          - - cast templates (T839)
@@ -592,11 +592,11 @@
 6.13/SR/4.b.ii           n/a          - - cast templates (T839)
 6.13/SR/5                definition   - -
 6.13/SR/6                n/a          - - collection types (S091, S271)
-6.13/SR/7                implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
+6.13/SR/7                implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
 6.13/SR/8                n/a          - - intervals (F052)
 6.13/SR/9                n/a          - - intervals (F052)
-6.13/SR/10               impl-defined vsql/std_2_6_13_cast_specification.v tests/cast.sql there are no character sets other than UTF8
-6.13/SR/11               impl-defined vsql/std_2_6_13_cast_specification.v tests/cast.sql the only collation is the character set collation of UTF8 (no F690)
+6.13/SR/10               impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql there are no character sets other than UTF8
+6.13/SR/11               impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql the only collation is the character set collation of UTF8 (no F690)
 6.13/SR/12               n/a          - - user-defined types (S023)
 6.13/SR/12.a             n/a          - - user-defined types (S023)
 6.13/SR/12.b             n/a          - - user-defined types (S023)
@@ -626,9 +626,9 @@
 6.13/AR/2.b              n/a          - - user-defined types (S023) and reference types (S041)
 6.13/GR/1                definition   - -
 6.13/GR/2                container    - -
-6.13/GR/2.a              implemented  vsql/std_2_6_13_cast_specification.v tests/cast-null.sql
+6.13/GR/2.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_null.sql
 6.13/GR/2.b              n/a          - - collection types (S091, S271)
-6.13/GR/2.c              implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/2.c              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/3                n/a          - - user-defined types (S023)
 6.13/GR/3.a              n/a          - - user-defined types (S023)
 6.13/GR/3.b              container    - -
@@ -659,23 +659,23 @@
 6.13/GR/6.b.ii           n/a          - - multisets (S271)
 6.13/GR/6.c              n/a          - - multisets (S271)
 6.13/GR/7                n/a          - - row types (T051)
-6.13/GR/8                implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/8.a              implemented  vsql/std_2_6_13_cast_specification.v tests/decimal.sql
-6.13/GR/8.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/decimal.sql the value is truncated
-6.13/GR/8.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/8.b              implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
-6.13/GR/8.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
-6.13/GR/8.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql,tests/numeric-decimal-cast.sql
+6.13/GR/8                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/8.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_decimal.sql
+6.13/GR/8.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_decimal.sql the value is truncated
+6.13/GR/8.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/8.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
+6.13/GR/8.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
+6.13/GR/8.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql,tests/std_2_6_13_numeric_decimal_cast.sql
 6.13/GR/8.c              n/a          - - intervals (F052)
 6.13/GR/8.c.i            n/a          - - intervals (F052)
 6.13/GR/8.c.ii           n/a          - - intervals (F052)
-6.13/GR/9                implemented  vsql/std_2_6_13_cast_specification.v tests/double-precision.sql
-6.13/GR/9.a              implemented  vsql/std_2_6_13_cast_specification.v tests/double-precision.sql
-6.13/GR/9.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/double-precision.sql the value is rounded to the nearest IEEE 754 value
-6.13/GR/9.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/approximate-errors.sql
-6.13/GR/9.b              implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
-6.13/GR/9.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
-6.13/GR/9.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
+6.13/GR/9                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql
+6.13/GR/9.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql
+6.13/GR/9.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql the value is rounded to the nearest IEEE 754 value
+6.13/GR/9.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_30_approximate_errors.sql
+6.13/GR/9.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
+6.13/GR/9.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
+6.13/GR/9.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/10               n/a          - - DECFLOAT (T076)
 6.13/GR/10.a             n/a          - - DECFLOAT (T076)
 6.13/GR/10.a.i           n/a          - - DECFLOAT (T076)
@@ -683,91 +683,91 @@
 6.13/GR/10.b             n/a          - - DECFLOAT (T076)
 6.13/GR/10.b.i           n/a          - - DECFLOAT (T076)
 6.13/GR/10.b.ii          n/a          - - DECFLOAT (T076)
-6.13/GR/11               implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.a             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.a.i           implemented  vsql/value.v tests/cast.sql
+6.13/GR/11               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.a.i           implemented  vsql/value.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a.ii          container    - -
 6.13/GR/11.a.ii.1        untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/11.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/11.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a.iii         container    - -
 6.13/GR/11.a.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/11.a.iii.2       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.a.iii.3       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.a.iii.4       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.b             implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/11.b.i           implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/11.b.i.1         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/11.b.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.a.iii.2       implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.a.iii.3       implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.a.iii.4       implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.b             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/11.b.i           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/11.b.i.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/11.b.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.b.ii          container    - -
-6.13/GR/11.b.ii.1        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/11.b.ii.2        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.ii.1        implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/11.b.ii.2        implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.b.iii         container    - -
 6.13/GR/11.b.iii.1       untestable   vsql/std_2_9_2_store_assignment.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/11.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/11.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/11.b.iii.4       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/11.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/11.b.iii.4       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.c             n/a          - - DECFLOAT (T076)
 6.13/GR/11.c.i           n/a          - - DECFLOAT (T076)
 6.13/GR/11.c.ii          n/a          - - DECFLOAT (T076)
 6.13/GR/11.c.iii         n/a          - - DECFLOAT (T076)
 6.13/GR/11.c.iv          n/a          - - DECFLOAT (T076)
-6.13/GR/11.d             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.d.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.e             implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
+6.13/GR/11.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.d.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/11.e.i           container    - -
 6.13/GR/11.e.i.1         n/a          - - cast templates (T839)
-6.13/GR/11.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql there are no intervals (F052)
+6.13/GR/11.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql there are no intervals (F052)
 6.13/GR/11.e.ii          container    - -
 6.13/GR/11.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/11.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.e.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.e.ii.4        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.f             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.f.i           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.f.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.f.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12               implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.a             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/11.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.e.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.e.ii.4        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.f             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.f.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.f.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/11.f.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.a.ii          container    - -
 6.13/GR/12.a.ii.1        untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/12.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/12.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.a.iii         container    - -
 6.13/GR/12.a.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/12.a.iii.2       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.a.iii.3       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.b             implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/12.b.i           implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/12.b.i.1         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/12.b.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.a.iii.2       implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.a.iii.3       implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.b             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/12.b.i           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/12.b.i.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/12.b.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/12.b.ii          container    - -
-6.13/GR/12.b.ii.1        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/12.b.ii.2        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/12.b.iii         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.ii.1        implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/12.b.ii.2        implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/12.b.iii         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/12.b.iii.1       untestable   vsql/std_2_9_2_store_assignment.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/12.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
-6.13/GR/12.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
+6.13/GR/12.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/12.c             n/a          - - DECFLOAT (T076)
 6.13/GR/12.c.i           n/a          - - DECFLOAT (T076)
 6.13/GR/12.c.ii          n/a          - - DECFLOAT (T076)
 6.13/GR/12.c.iii         n/a          - - DECFLOAT (T076)
-6.13/GR/12.d             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.e             implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
+6.13/GR/12.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/12.e.i           container    - -
 6.13/GR/12.e.i.1         n/a          - - cast templates (T839)
-6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v,vsql/time.v tests/cast.sql,tests/datetime-precision.sql there are no intervals (F052)
+6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v,vsql/time.v tests/std_2_6_13_cast.sql,tests/std_2_6_1_datetime_precision.sql there are no intervals (F052)
 6.13/GR/12.e.ii          container    - -
 6.13/GR/12.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/12.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.e.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.f             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.f.i           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.f.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.f.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/12.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.e.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.f             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.f.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.f.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.f.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/13               n/a          - - binary strings (T021)
 6.13/GR/13.a             n/a          - - binary strings (T021)
 6.13/GR/13.a.i           n/a          - - binary strings (T021)
@@ -776,62 +776,62 @@
 6.13/GR/13.b             n/a          - - binary strings (T021)
 6.13/GR/13.b.i           n/a          - - binary strings (T021)
 6.13/GR/13.b.ii          n/a          - - binary strings (T021)
-6.13/GR/14               implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/14.a             implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
+6.13/GR/14               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/14.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
 6.13/GR/14.a.i           n/a          - - cast templates (T839)
-6.13/GR/14.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/14.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/14.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/14.b             implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/14.c             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/14.d             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
+6.13/GR/14.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/14.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/14.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/14.b             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/14.c             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/14.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/15               definition   - -
-6.13/GR/16               implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.a             implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
+6.13/GR/16               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/16.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/16.a.i           n/a          - - cast templates (T839)
-6.13/GR/16.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.b             impl-defined vsql/std_2_6_13_cast_specification.v,vsql/time.v tests/time.sql,tests/datetime-precision.sql the fractional seconds are truncated
-6.13/GR/16.c             implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.d             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/16.e             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/17               implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/17.a             implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
+6.13/GR/16.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/16.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/16.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/16.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/16.b             impl-defined vsql/std_2_6_13_cast_specification.v,vsql/time.v tests/std_2_6_1_time.sql,tests/std_2_6_1_datetime_precision.sql the fractional seconds are truncated
+6.13/GR/16.c             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/16.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/16.e             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/17               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/17.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/17.a.i           n/a          - - cast templates (T839)
-6.13/GR/17.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/17.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/17.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/17.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/17.b             impl-defined vsql/std_2_6_13_cast_specification.v tests/time.sql the fractional seconds are truncated
-6.13/GR/17.c             implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/17.d             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/17.e             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/18               implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/18.a             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
+6.13/GR/17.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/17.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/17.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/17.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/17.b             impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql the fractional seconds are truncated
+6.13/GR/17.c             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
+6.13/GR/17.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/17.e             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/18               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/18.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/18.a.i           n/a          - - cast templates (T839)
-6.13/GR/18.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/18.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/18.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/18.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/18.b             implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/18.c             implemented  vsql/std_2_9_2_store_assignment.v tests/time.sql
-6.13/GR/18.d             implemented  vsql/std_2_9_2_store_assignment.v tests/time.sql
-6.13/GR/18.e             impl-defined vsql/std_2_6_13_cast_specification.v tests/timestamp.sql the fractional seconds are truncated
-6.13/GR/18.f             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19               implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19.a             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
+6.13/GR/18.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/18.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/18.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/18.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/18.b             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/18.c             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_time.sql
+6.13/GR/18.d             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_time.sql
+6.13/GR/18.e             impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql the fractional seconds are truncated
+6.13/GR/18.f             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/19.a.i           n/a          - - cast templates (T839)
-6.13/GR/19.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19.b             implemented  vsql/std_2_6_13_cast_specification.v tests/date.sql
-6.13/GR/19.c             implemented  vsql/std_2_9_2_store_assignment.v tests/time.sql
-6.13/GR/19.d             implemented  vsql/std_2_9_2_store_assignment.v tests/time.sql
-6.13/GR/19.e             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
-6.13/GR/19.f             impl-defined vsql/std_2_6_13_cast_specification.v tests/timestamp.sql the fractional seconds are truncated
+6.13/GR/19.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19.b             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
+6.13/GR/19.c             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_time.sql
+6.13/GR/19.d             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_time.sql
+6.13/GR/19.e             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
+6.13/GR/19.f             impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql the fractional seconds are truncated
 6.13/GR/20               n/a          - - intervals (F052)
 6.13/GR/20.a             n/a          - - intervals (F052)
 6.13/GR/20.a.i           n/a          - - intervals (F052)
@@ -845,40 +845,40 @@
 6.13/GR/20.d.i           n/a          - - intervals (F052)
 6.13/GR/20.d.ii          n/a          - - intervals (F052)
 6.13/GR/20.d.iii         n/a          - - intervals (F052)
-6.13/GR/21               implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/21.a             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/21.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/21.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/21.b             implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/21               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/21.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/21.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/21.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/21.b             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/22               n/a          - - domains (F251)
-6.13/GR/23               implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+6.13/GR/23               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/CR/1                n/a          - - LOBs (T042)
 6.13/CR/2                n/a          - - national character (F421)
 6.13/CR/3                n/a          - - LOBs (T042)
 6.13/CR/4                n/a          - - reference types (S041, S043)
 6.13/CR/5                n/a          - - cast templates (T839)
 # 6.14, <next value expression>
-6.14                     implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/SR/1                partial      vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql a derived table and a UNION aren't rejected (#767)
-6.14/SR/1.a              partial      vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql a derived table and a UNION aren't rejected (#767)
-6.14/SR/1.a.i            implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
+6.14                     implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/SR/1                partial      vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql a derived table and a UNION aren't rejected (#767)
+6.14/SR/1.a              partial      vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql a derived table and a UNION aren't rejected (#767)
+6.14/SR/1.a.i            implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/SR/1.a.ii           n/a          - - CREATE TABLE AS (T172)
 6.14/SR/1.a.iii          n/a          - - INSERT ... SELECT isn't supported (14.11)
 6.14/SR/1.a.iv           untested     vsql/std_2_6_14_next_value_expression.v -
 6.14/SR/1.b              n/a          - - dynamic SQL (B031); a dynamic single row select isn't supported
-6.14/SR/1.c              implemented  vsql/std_2_7_3_table_value_constructor.v tests/next-value-for.sql
+6.14/SR/1.c              implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_6_14_next_value_for.sql
 6.14/SR/1.d              n/a          - - MERGE (F312)
-6.14/SR/1.e              implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/SR/2                implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/SR/3                partial      vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql a sequence is always a BIGINT (#399)
+6.14/SR/1.e              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/SR/2                implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/SR/3                partial      vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql a sequence is always a BIGINT (#399)
 6.14/AR/1                container    - -
 6.14/AR/1.a              n/a          - - privileges (E081, #732)
 6.14/AR/1.b              n/a          - - privileges (E081, #732)
-6.14/GR/1                implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/GR/1.a              implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/GR/1.b              implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/GR/1.c              implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/CR/1                implemented  vsql/std_2_6_14_next_value_expression.y tests/flagging.sql
+6.14/GR/1                implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/GR/1.a              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/GR/1.b              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/GR/1.c              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/CR/1                implemented  vsql/std_2_6_14_next_value_expression.y tests/std_1_8_5_flagging.sql
 # 6.15, <field reference>
 6.15                     n/a          - - row types (T051)
 6.15/SR/1                n/a          - - row types (T051)
@@ -1076,31 +1076,31 @@
 6.27/CR/3                n/a          - - SQL/JSON query functions (T821)
 6.27/CR/4                n/a          - - SQL/JSON query functions (T821)
 # 6.28, <value expression>
-6.28                     implemented  vsql/std_2_6_28_value_expression.v tests/values.sql
-6.28/SR/1                implemented  vsql/std_2_6_28_value_expression.v tests/information-schema-columns.sql
-6.28/SR/2                implemented  vsql/std_2_6_28_value_expression.v tests/information-schema-columns.sql
+6.28                     implemented  vsql/std_2_6_28_value_expression.v tests/std_2_7_3_values.sql
+6.28/SR/1                implemented  vsql/std_2_6_28_value_expression.v tests/std_11_5_21_columns.sql
+6.28/SR/2                implemented  vsql/std_2_6_28_value_expression.v tests/std_11_5_21_columns.sql
 6.28/SR/3                n/a          - - user-defined types (S023)
 6.28/SR/4                n/a          - - reference types (S041)
 6.28/SR/5                n/a          - - arrays (S091) and multisets (S271)
 6.28/SR/6                definition   - -
-6.28/SR/7                implemented  vsql/compiler.v tests/check-constraint.sql,tests/generated-column.sql
-6.28/SR/7.a              implemented  vsql/compiler.v tests/check-constraint.sql
-6.28/SR/7.b              implemented  vsql/compiler.v tests/check-constraint.sql
-6.28/SR/7.c              implemented  vsql/compiler.v tests/check-constraint.sql
-6.28/SR/7.c.i            implemented  vsql/compiler.v tests/check-constraint.sql
+6.28/SR/7                implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql,tests/std_2_11_4_generated_column.sql
+6.28/SR/7.a              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.28/SR/7.b              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.28/SR/7.c              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.28/SR/7.c.i            implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.28/SR/7.c.ii           n/a          - - arrays (S091) and multisets (S271)
 6.28/SR/7.d              n/a          - - arrays (S091)
 6.28/SR/7.e              n/a          - - AT TIME ZONE isn't supported (F411)
 6.28/SR/7.f              n/a          - - intervals (F052)
-6.28/SR/7.g              implemented  vsql/compiler.v tests/check-constraint.sql
-6.28/SR/7.h              implemented  vsql/compiler.v tests/check-constraint.sql
+6.28/SR/7.g              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.28/SR/7.h              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.28/SR/7.i              n/a          - - multisets (S271)
 6.28/SR/7.j              n/a          - - multisets (S271)
 6.28/SR/7.k              n/a          - - multisets (S271)
-6.28/SR/7.l              implemented  vsql/compiler.v tests/check-constraint.sql
-6.28/SR/7.m              implemented  vsql/compiler.v tests/check-constraint.sql
+6.28/SR/7.l              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.28/SR/7.m              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.28/SR/7.n              n/a          - - polymorphic table functions (B200)
-6.28/SR/7.o              implemented  vsql/compiler.v tests/check-constraint.sql
+6.28/SR/7.o              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.28/SR/7.p              n/a          - - multisets (S271)
 6.28/SR/7.q              n/a          - - ARRAY_AGG (S098)
 6.28/SR/7.r              n/a          - - LISTAGG (T625)
@@ -1110,41 +1110,41 @@
 6.28/SR/7.v              n/a          - - row pattern recognition (R010)
 6.28/SR/7.w              n/a          - - row pattern recognition (R010)
 6.28/SR/7.x              n/a          - - row pattern recognition (R010)
-6.28/SR/7.y              implemented  vsql/compiler.v tests/check-constraint.sql
+6.28/SR/7.y              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.28/SR/7.z              n/a          - - JSON (T811)
-6.28/GR/1                implemented  vsql/std_2_6_28_value_expression.v tests/values.sql
-6.28/GR/2                implemented  vsql/std_2_6_28_value_expression.v tests/values.sql
-6.28/GR/3                implemented  vsql/std_2_6_28_value_expression.v tests/select-where.sql
+6.28/GR/1                implemented  vsql/std_2_6_28_value_expression.v tests/std_2_7_3_values.sql
+6.28/GR/2                implemented  vsql/std_2_6_28_value_expression.v tests/std_2_7_3_values.sql
+6.28/GR/3                implemented  vsql/std_2_6_28_value_expression.v tests/std_2_7_12_select_where.sql
 6.28/GR/4                n/a          - - arrays (S091) and multisets (S271)
 6.28/GR/5                n/a          - - reference types (S041)
-6.28/CR/1                implemented  vsql/std_2_6_28_value_expression.y tests/flagging.sql
+6.28/CR/1                implemented  vsql/std_2_6_28_value_expression.y tests/std_1_8_5_flagging.sql
 6.28/CR/2                n/a          - - reference types (S041)
 # 6.29, <numeric value expression>
-6.29                     implemented  vsql/std_2_6_29_numeric_value_expression.v tests/arithmetic.sql
+6.29                     implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql
 6.29/SR/1                container    - -
 6.29/SR/1.a              n/a          - - DECFLOAT (T076)
-6.29/SR/1.b              partial      vsql/std_2_6_29_numeric_value_expression.v tests/arithmetic.sql both operands must be approximate (#229)
-6.29/SR/1.c              implemented  vsql/type.v tests/arithmetic.sql
+6.29/SR/1.b              partial      vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql both operands must be approximate (#229)
+6.29/SR/1.c              implemented  vsql/type.v tests/std_2_6_29_arithmetic.sql
 6.29/SR/1.c.i            definition   - -
-6.29/SR/1.c.ii           implemented  vsql/type.v tests/arithmetic.sql
-6.29/SR/1.c.iii          implemented  vsql/type.v tests/arithmetic.sql
-6.29/SR/1.c.iv           impl-defined vsql/std_2_6_29_numeric_value_expression.v tests/arithmetic.sql a division has the type of a multiplication (so the scale is S1 + S2), and two integers have the larger integer type
-6.29/SR/2                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/arithmetic.sql
+6.29/SR/1.c.ii           implemented  vsql/type.v tests/std_2_6_29_arithmetic.sql
+6.29/SR/1.c.iii          implemented  vsql/type.v tests/std_2_6_29_arithmetic.sql
+6.29/SR/1.c.iv           impl-defined vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql a division has the type of a multiplication (so the scale is S1 + S2), and two integers have the larger integer type
+6.29/SR/2                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql
 6.29/SR/3                untested     vsql/std_2_6_29_numeric_value_expression.v -
 6.29/SR/4                untested     vsql/lexer.v - "--" always starts a comment
 6.29/GR/1                untested     vsql/std_2_6_29_numeric_value_expression.v -
-6.29/GR/2                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/arithmetic.sql
-6.29/GR/3                implemented  vsql/operators.v tests/arithmetic.sql
-6.29/GR/4                implemented  vsql/operators.v tests/arithmetic.sql,tests/math.sql
-6.29/GR/5                implemented  vsql/operators.v tests/arithmetic.sql,tests/integer.sql
-6.29/GR/5.a              implemented  vsql/operators.v tests/arithmetic.sql,tests/integer.sql
-6.29/GR/5.b              impl-defined vsql/operators.v tests/numeric.sql a division is truncated
-6.29/GR/6                implemented  vsql/value.v tests/approximate-errors.sql
+6.29/GR/2                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql
+6.29/GR/3                implemented  vsql/operators.v tests/std_2_6_29_arithmetic.sql
+6.29/GR/4                implemented  vsql/operators.v tests/std_2_6_29_arithmetic.sql,tests/std_2_6_30_math.sql
+6.29/GR/5                implemented  vsql/operators.v tests/std_2_6_29_arithmetic.sql,tests/std_2_6_1_integer.sql
+6.29/GR/5.a              implemented  vsql/operators.v tests/std_2_6_29_arithmetic.sql,tests/std_2_6_1_integer.sql
+6.29/GR/5.b              impl-defined vsql/operators.v tests/std_2_6_1_numeric.sql a division is truncated
+6.29/GR/6                implemented  vsql/value.v tests/std_2_6_30_approximate_errors.sql
 6.29/GR/7                n/a          - - DECFLOAT (T076)
 # 6.30, <numeric value function>
-6.30                     implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/SR/1                impl-defined vsql/std_2_6_30_numeric_value_function.v tests/position.sql INTEGER
-6.30/SR/2                implemented  vsql/std_2_6_30_numeric_value_function.v tests/position.sql
+6.30                     implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/SR/1                impl-defined vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_position.sql INTEGER
+6.30/SR/2                implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_position.sql
 6.30/SR/3                n/a          - - OCCURRENCES_REGEX (F842)
 6.30/SR/3.a              n/a          - - OCCURRENCES_REGEX (F842)
 6.30/SR/3.b              n/a          - - OCCURRENCES_REGEX (F842)
@@ -1166,40 +1166,40 @@
 6.30/SR/4.h              n/a          - - POSITION_REGEX (F843)
 6.30/SR/5                container    - -
 6.30/SR/5.a              untestable   - - a character string is always UTF8
-6.30/SR/5.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/length.sql USING isn't supported (T061), it's always CHARACTERS
+6.30/SR/5.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_length.sql USING isn't supported (T061), it's always CHARACTERS
 6.30/SR/6                n/a          - - EXTRACT (F052)
 6.30/SR/6.a              n/a          - - EXTRACT (F052)
 6.30/SR/6.b              n/a          - - EXTRACT (F052)
 6.30/SR/7                n/a          - - EXTRACT (F052)
 6.30/SR/7.a              n/a          - - EXTRACT (F052)
 6.30/SR/7.b              n/a          - - EXTRACT (F052)
-6.30/SR/8                impl-defined vsql/std_2_6_30_numeric_value_function.v tests/length.sql INTEGER
+6.30/SR/8                impl-defined vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_length.sql INTEGER
 6.30/SR/9                n/a          - - arrays (S091) and multisets (S271)
 6.30/SR/10               n/a          - - ARRAY_MAX_CARDINALITY (S403)
-6.30/SR/11               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/SR/12               implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql a scale and approximate numbers are also allowed (V403-01, only flagged for a literal)
+6.30/SR/11               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/SR/12               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql a scale and approximate numbers are also allowed (V403-01, only flagged for a literal)
 6.30/SR/12.a             n/a          - - DECFLOAT (T076)
-6.30/SR/12.b             implemented  vsql/funcs.v tests/numeric-function-types.sql
-6.30/SR/13               implemented  vsql/funcs.v tests/math.sql
+6.30/SR/12.b             implemented  vsql/funcs.v tests/std_2_6_30_numeric_function_types.sql
+6.30/SR/13               implemented  vsql/funcs.v tests/std_2_6_30_math.sql
 6.30/SR/13.a             n/a          - - DECFLOAT (T076)
-6.30/SR/13.b             impl-defined vsql/funcs.v tests/math.sql DOUBLE PRECISION
+6.30/SR/13.b             impl-defined vsql/funcs.v tests/std_2_6_30_math.sql DOUBLE PRECISION
 6.30/SR/14               n/a          - - LOG (T623)
 6.30/SR/14.a             n/a          - - LOG (T623)
 6.30/SR/14.b             n/a          - - LOG (T623)
-6.30/SR/15               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/SR/16               implemented  vsql/funcs.v tests/math.sql
+6.30/SR/15               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/SR/16               implemented  vsql/funcs.v tests/std_2_6_30_math.sql
 6.30/SR/16.a             n/a          - - DECFLOAT (T076)
-6.30/SR/16.b             impl-defined vsql/funcs.v tests/math.sql DOUBLE PRECISION
-6.30/SR/17               implemented  vsql/funcs.v tests/math.sql
+6.30/SR/16.b             impl-defined vsql/funcs.v tests/std_2_6_30_math.sql DOUBLE PRECISION
+6.30/SR/17               implemented  vsql/funcs.v tests/std_2_6_30_math.sql
 6.30/SR/17.a             n/a          - - DECFLOAT (T076)
-6.30/SR/17.b             impl-defined vsql/funcs.v tests/math.sql DOUBLE PRECISION
-6.30/SR/18               implemented  vsql/funcs.v tests/math.sql
+6.30/SR/17.b             impl-defined vsql/funcs.v tests/std_2_6_30_math.sql DOUBLE PRECISION
+6.30/SR/18               implemented  vsql/funcs.v tests/std_2_6_30_math.sql
 6.30/SR/18.a             n/a          - - DECFLOAT (T076)
-6.30/SR/18.b             impl-defined vsql/funcs.v tests/math.sql DOUBLE PRECISION
-6.30/SR/19               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/SR/20               implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql
-6.30/SR/20.a             implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql
-6.30/SR/20.b             implemented  vsql/funcs.v tests/math.sql
+6.30/SR/18.b             impl-defined vsql/funcs.v tests/std_2_6_30_math.sql DOUBLE PRECISION
+6.30/SR/19               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/SR/20               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql
+6.30/SR/20.a             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql
+6.30/SR/20.b             implemented  vsql/funcs.v tests/std_2_6_30_math.sql
 6.30/SR/20.c             n/a          - - DECFLOAT (T076)
 6.30/SR/21               n/a          - - WIDTH_BUCKET (T612)
 6.30/SR/22               n/a          - - row pattern recognition (R010)
@@ -1208,10 +1208,10 @@
 6.30/GR/1                container    - -
 6.30/GR/1.a              n/a          - - ARRAY_MAX_CARDINALITY (S403)
 6.30/GR/1.b              untested     vsql/funcs.v -
-6.30/GR/2                implemented  vsql/std_2_6_30_numeric_value_function.v tests/position.sql
-6.30/GR/2.a              implemented  vsql/std_2_6_30_numeric_value_function.v tests/position.sql
-6.30/GR/2.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/position.sql USING isn't supported (T061), it's always CHARACTERS
-6.30/GR/2.c              implemented  vsql/std_2_6_30_numeric_value_function.v tests/position.sql
+6.30/GR/2                implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_position.sql
+6.30/GR/2.a              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_position.sql
+6.30/GR/2.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_position.sql USING isn't supported (T061), it's always CHARACTERS
+6.30/GR/2.c              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_position.sql
 6.30/GR/3                n/a          - - binary strings (T021)
 6.30/GR/3.a              n/a          - - binary strings (T021)
 6.30/GR/3.b              n/a          - - binary strings (T021)
@@ -1221,71 +1221,71 @@
 6.30/GR/4.b              n/a          - - EXTRACT (F052)
 6.30/GR/4.b.i            n/a          - - EXTRACT (F052)
 6.30/GR/4.b.ii           n/a          - - EXTRACT (F052)
-6.30/GR/5                implemented  vsql/std_2_6_30_numeric_value_function.v tests/length.sql
+6.30/GR/5                implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_length.sql
 6.30/GR/5.a              untestable   - - a character string is always UTF8
 6.30/GR/5.a.i            untestable   - - a character string is always UTF8
 6.30/GR/5.a.ii           untestable   - - a character string is always UTF8
-6.30/GR/5.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/length.sql
-6.30/GR/6                implemented  vsql/std_2_6_30_numeric_value_function.v tests/length.sql
+6.30/GR/5.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_length.sql
+6.30/GR/6                implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_length.sql
 6.30/GR/7                n/a          - - arrays (S091) and multisets (S271)
-6.30/GR/8                implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
+6.30/GR/8                implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
 6.30/GR/8.a              untested     vsql/funcs.v -
-6.30/GR/8.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/8.c              implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/9                implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql
+6.30/GR/8.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/8.c              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/9                implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql
 6.30/GR/9.a              untested     vsql/funcs.v -
-6.30/GR/9.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql
-6.30/GR/9.c              implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql
-6.30/GR/9.c.i            implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql
-6.30/GR/9.c.ii           implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql
-6.30/GR/9.c.iii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql
-6.30/GR/10               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
+6.30/GR/9.b              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql
+6.30/GR/9.c              implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql
+6.30/GR/9.c.i            implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql
+6.30/GR/9.c.ii           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql
+6.30/GR/9.c.iii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_mod_zero.sql,tests/std_2_6_30_math.sql
+6.30/GR/10               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
 6.30/GR/10.a             untested     vsql/funcs.v -
-6.30/GR/10.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.i.1         implemented  vsql/std_2_6_30_numeric_value_function.v tests/approximate-errors.sql
-6.30/GR/10.b.i.2         implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.ii.1        implemented  vsql/std_2_6_30_numeric_value_function.v tests/approximate-errors.sql
-6.30/GR/10.b.ii.2        implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.iii         implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.iv          implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.v           implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.vi          implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.vii         implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.viii        implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/10.b.ix          implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/GR/11               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
+6.30/GR/10.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.i.1         implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_approximate_errors.sql
+6.30/GR/10.b.i.2         implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.ii.1        implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_approximate_errors.sql
+6.30/GR/10.b.ii.2        implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.iii         implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.iv          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.v           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.vi          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.vii         implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.viii        implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/10.b.ix          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql
+6.30/GR/11               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
 6.30/GR/11.a             untested     vsql/funcs.v -
-6.30/GR/11.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
+6.30/GR/11.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
 6.30/GR/11.c             n/a          - - LOG (T623); the base of LOG10 is always 10
-6.30/GR/11.d             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/12               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
+6.30/GR/11.d             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/12               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
 6.30/GR/12.a             untested     vsql/funcs.v -
-6.30/GR/12.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/12.c             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/13               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
+6.30/GR/12.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/12.c             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/13               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
 6.30/GR/13.a             untested     vsql/funcs.v -
-6.30/GR/13.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
+6.30/GR/13.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
 6.30/GR/14.a             untested     vsql/funcs.v -
-6.30/GR/14.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14.c             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14.d             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14.e             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14.f             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14.g             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/14.h             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/15               implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
+6.30/GR/14.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14.c             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14.d             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14.e             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14.f             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14.g             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/14.h             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_math.sql,tests/std_2_6_30_approximate_errors.sql
+6.30/GR/15               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
 6.30/GR/15.a             untested     vsql/funcs.v -
-6.30/GR/15.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
-6.30/GR/15.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
-6.30/GR/15.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
-6.30/GR/16               implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
+6.30/GR/15.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
+6.30/GR/15.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
+6.30/GR/15.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
+6.30/GR/16               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
 6.30/GR/16.a             untested     vsql/funcs.v -
-6.30/GR/16.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
-6.30/GR/16.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
-6.30/GR/16.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/floor-ceil-exact.sql,tests/math.sql
+6.30/GR/16.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
+6.30/GR/16.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
+6.30/GR/16.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
 6.30/GR/17               n/a          - - WIDTH_BUCKET (T612)
 6.30/GR/17.a             n/a          - - WIDTH_BUCKET (T612)
 6.30/GR/17.b             n/a          - - WIDTH_BUCKET (T612)
@@ -1327,17 +1327,17 @@
 6.30/CR/4                n/a          - - EXTRACT (F052)
 6.30/CR/5                n/a          - - national character (F421)
 6.30/CR/6                n/a          - - binary strings (T021)
-6.30/CR/7                implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/8                implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/9                implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
+6.30/CR/7                implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/8                implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/9                implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
 6.30/CR/10               n/a          - - LOG (T623)
-6.30/CR/11               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/12               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/13               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/14               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/15               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/16               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/17               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
+6.30/CR/11               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/12               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/13               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/14               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/15               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/16               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.30/CR/17               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
 6.30/CR/18               n/a          - - WIDTH_BUCKET (T612)
 6.30/CR/19               n/a          - - OCCURRENCES_REGEX (F842)
 6.30/CR/20               n/a          - - regular expressions (F846)
@@ -1346,18 +1346,18 @@
 6.30/CR/23               n/a          - - regular expressions (F847)
 6.30/CR/24               n/a          - - ARRAY_MAX_CARDINALITY (S403)
 # 6.31, <string value expression>
-6.31                     implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/1                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/2                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/3                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/3.a              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/3.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31                     implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/1                implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/2                implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/3                implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/3.a              implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/3.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
 6.31/SR/3.b.i            n/a          - - LOBs (T041)
-6.31/SR/3.b.ii           implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/3.b.iii          implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/SR/4                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/SR/3.b.ii           implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/3.b.iii          implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/SR/4                implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
 6.31/SR/4.a              n/a          - - COLLATE (F690)
-6.31/SR/4.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/SR/4.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
 6.31/SR/5                n/a          - - binary strings (T021)
 6.31/SR/6                container    - -
 6.31/SR/6.a              n/a          - - binary strings (T021)
@@ -1365,26 +1365,26 @@
 6.31/SR/6.a.ii           n/a          - - binary strings (T021)
 6.31/SR/6.a.iii          n/a          - - binary strings (T021)
 6.31/SR/6.b              n/a          - - binary strings (T021)
-6.31/GR/1                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.a              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.i            implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/GR/1                implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2                implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.a              implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.b.i            implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
 6.31/GR/2.b.ii           container    - -
-6.31/GR/2.b.ii.1         implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/GR/2.b.ii.1         implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
 6.31/GR/2.b.ii.2         missing      - - the result isn't normalized (#902)
 6.31/GR/2.b.ii.2.A       missing      - - the result isn't normalized (#902)
-6.31/GR/2.b.ii.2.B       impl-defined vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql S1 followed by S2
+6.31/GR/2.b.ii.2.B       impl-defined vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql S1 followed by S2
 6.31/GR/2.b.ii.3         container    - -
 6.31/GR/2.b.ii.3.A       n/a          - - LOBs (T041)
 6.31/GR/2.b.ii.3.A.I     n/a          - - LOBs (T041)
 6.31/GR/2.b.ii.3.A.II    n/a          - - LOBs (T041)
 6.31/GR/2.b.ii.3.A.III   n/a          - - LOBs (T041)
-6.31/GR/2.b.ii.3.B       implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.ii.3.B.I     implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.ii.3.B.II    implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.ii.3.B.III   implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.ii.3.C       implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/GR/2.b.ii.3.B       implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.b.ii.3.B.I     implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.b.ii.3.B.II    implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.b.ii.3.B.III   implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
+6.31/GR/2.b.ii.3.C       implemented  vsql/std_2_6_31_string_value_expression.v tests/std_2_6_31_concatenation.sql
 6.31/GR/3                n/a          - - binary strings (T021)
 6.31/GR/3.a              n/a          - - binary strings (T021)
 6.31/GR/3.b              n/a          - - binary strings (T021)
@@ -1397,21 +1397,21 @@
 6.31/GR/3.b.ii.2         n/a          - - binary strings (T021)
 6.31/GR/3.b.ii.3         n/a          - - binary strings (T021)
 6.31/GR/3.b.iii          n/a          - - binary strings (T021)
-6.31/GR/4                impl-defined vsql/std_2_6_31_string_value_expression.v tests/character.sql a zero-length string isn't an error
+6.31/GR/4                impl-defined vsql/std_2_6_31_string_value_expression.v tests/std_2_6_1_character.sql a zero-length string isn't an error
 6.31/CR/1                n/a          - - national character (F421)
 6.31/CR/2                n/a          - - binary strings (T021)
 # 6.32, <string value function>
-6.32                     implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/SR/1                implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/SR/2                implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/SR/3                implemented  vsql/std_2_6_32_string_value_function.v tests/substring-position.sql
-6.32/SR/4                implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/SR/4.a              implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/SR/4.a.i            implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
+6.32                     implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/SR/1                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/SR/2                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/SR/3                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring_position.sql
+6.32/SR/4                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/SR/4.a              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/SR/4.a.i            implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
 6.32/SR/4.a.ii           n/a          - - LOBs (T041)
-6.32/SR/4.b              impl-defined vsql/std_2_6_32_string_value_function.v tests/substring.sql the character set is always UTF8, and its collation is the only one
+6.32/SR/4.b              impl-defined vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql the character set is always UTF8, and its collation is the only one
 6.32/SR/5                untestable   - - a character string is always UTF8
-6.32/SR/6                implemented  vsql/std_2_6_32_string_value_function.y tests/substring.sql
+6.32/SR/6                implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_substring.sql
 6.32/SR/7                n/a          - - SUBSTRING SIMILAR (T581)
 6.32/SR/7.a              n/a          - - SUBSTRING SIMILAR (T581)
 6.32/SR/7.b              container    - -
@@ -1431,7 +1431,7 @@
 6.32/SR/8.f.i.1          n/a          - - SUBSTRING_REGEX (F844)
 6.32/SR/8.f.i.2          n/a          - - SUBSTRING_REGEX (F844)
 6.32/SR/8.f.ii           n/a          - - SUBSTRING_REGEX (F844)
-6.32/SR/9                implemented  vsql/std_2_10_4_routine_invocation.v tests/fold.sql
+6.32/SR/9                implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_6_32_fold.sql
 6.32/SR/10               n/a          - - transcoding (F695)
 6.32/SR/10.a             n/a          - - transcoding (F695)
 6.32/SR/10.b             n/a          - - transcoding (F695)
@@ -1462,18 +1462,18 @@
 6.32/SR/12.f.i.2.A       n/a          - - TRANSLATE_REGEX (F845)
 6.32/SR/12.f.i.2.B       n/a          - - TRANSLATE_REGEX (F845)
 6.32/SR/12.f.ii          n/a          - - TRANSLATE_REGEX (F845)
-6.32/SR/13               implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
+6.32/SR/13               implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
 6.32/SR/13.a             container    - -
-6.32/SR/13.a.i           implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
-6.32/SR/13.a.i.1         implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql TRIM(FROM x) is also allowed (V404-01)
-6.32/SR/13.a.i.2         implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
-6.32/SR/13.a.i.3         implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
-6.32/SR/13.a.ii          implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
+6.32/SR/13.a.i           implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_trim.sql
+6.32/SR/13.a.i.1         implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_trim.sql TRIM(FROM x) is also allowed (V404-01)
+6.32/SR/13.a.i.2         implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_trim.sql
+6.32/SR/13.a.i.3         implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_trim.sql
+6.32/SR/13.a.ii          implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_trim.sql
 6.32/SR/13.b             container    - -
-6.32/SR/13.b.i           implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
+6.32/SR/13.b.i           implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
 6.32/SR/13.b.ii          n/a          - - LOBs (T041)
-6.32/SR/13.c             implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/SR/13.d             impl-defined vsql/std_2_6_32_string_value_function.v tests/trim.sql the character set is always UTF8, and its collation is the only one
+6.32/SR/13.c             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/SR/13.d             impl-defined vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql the character set is always UTF8, and its collation is the only one
 6.32/SR/14               n/a          - - OVERLAY (T312)
 6.32/SR/14.a             n/a          - - OVERLAY (T312)
 6.32/SR/14.b             n/a          - - OVERLAY (T312)
@@ -1519,19 +1519,19 @@
 6.32/AR/1                container    - -
 6.32/AR/1.a              n/a          - - transliteration (F695)
 6.32/AR/1.b              n/a          - - transliteration (F695)
-6.32/GR/1                implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/2                implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3                implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.a              implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.b              implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.c              implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.d              implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.e              implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
+6.32/GR/1                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/2                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.a              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.b              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.c              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.d              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.e              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
 6.32/GR/3.f              container    - -
-6.32/GR/3.f.i            implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.f.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.f.ii.1         implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
-6.32/GR/3.f.ii.2         implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
+6.32/GR/3.f.i            implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.f.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.f.ii.1         implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
+6.32/GR/3.f.ii.2         implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
 6.32/GR/4                n/a          - - SUBSTRING_REGEX (F844)
 6.32/GR/4.a              n/a          - - SUBSTRING_REGEX (F844)
 6.32/GR/4.b              container    - -
@@ -1564,20 +1564,20 @@
 6.32/GR/6.h.i            n/a          - - SUBSTRING SIMILAR (T581)
 6.32/GR/6.h.ii           n/a          - - SUBSTRING SIMILAR (T581)
 6.32/GR/6.h.iii          n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/7                implemented  vsql/std_2_6_32_string_value_function.v tests/fold.sql
+6.32/GR/7                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_fold.sql
 6.32/GR/7.a              definition   - -
-6.32/GR/7.b              implemented  vsql/std_2_6_32_string_value_function.v tests/cast-null.sql
+6.32/GR/7.b              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_13_cast_null.sql
 6.32/GR/7.c              definition   - -
 6.32/GR/7.d              container    - -
-6.32/GR/7.d.i            implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/fold.sql,tests/fold-case-mappings.sql
-6.32/GR/7.d.ii           implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/fold.sql,tests/fold-case-mappings.sql
+6.32/GR/7.d.i            implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/std_2_6_32_fold.sql,tests/std_2_6_32_fold_case_mappings.sql
+6.32/GR/7.d.ii           implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/std_2_6_32_fold.sql,tests/std_2_6_32_fold_case_mappings.sql
 6.32/GR/7.e              missing      - - the result isn't normalized (#902)
 6.32/GR/7.e.i            missing      - - the result isn't normalized (#902)
-6.32/GR/7.e.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/fold.sql
+6.32/GR/7.e.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_fold.sql
 6.32/GR/7.f              definition   - -
 6.32/GR/7.g              container    - -
-6.32/GR/7.g.i            implemented  vsql/std_2_10_4_routine_invocation.v tests/fold.sql,tests/fold-case-mappings.sql
-6.32/GR/7.g.ii           implemented  vsql/std_2_10_4_routine_invocation.v tests/fold-case-mappings.sql
+6.32/GR/7.g.i            implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_6_32_fold.sql,tests/std_2_6_32_fold_case_mappings.sql
+6.32/GR/7.g.ii           implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_6_32_fold_case_mappings.sql
 6.32/GR/8                n/a          - - transliteration (F695)
 6.32/GR/8.a              n/a          - - transliteration (F695)
 6.32/GR/8.b              n/a          - - transliteration (F695)
@@ -1600,15 +1600,15 @@
 6.32/GR/10               n/a          - - transcoding (F695)
 6.32/GR/10.a             n/a          - - transcoding (F695)
 6.32/GR/10.b             n/a          - - transcoding (F695)
-6.32/GR/11               implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/GR/11.a             implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/GR/11.b             implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/GR/11.c             implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/GR/11.d             implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
+6.32/GR/11               implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/GR/11.a             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/GR/11.b             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/GR/11.c             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/GR/11.d             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
 6.32/GR/11.e             container    - -
-6.32/GR/11.e.i           implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/GR/11.e.ii          implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
-6.32/GR/11.e.iii         implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
+6.32/GR/11.e.i           implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/GR/11.e.ii          implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
+6.32/GR/11.e.iii         implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
 6.32/GR/12               n/a          - - specific type method (S261)
 6.32/GR/12.a             n/a          - - specific type method (S261)
 6.32/GR/12.b             container    - -
@@ -1638,7 +1638,7 @@
 6.32/GR/15.e.i           n/a          - - binary strings (T021)
 6.32/GR/15.e.ii          n/a          - - binary strings (T021)
 6.32/GR/15.e.iii         n/a          - - binary strings (T021)
-6.32/GR/16               impl-defined vsql/std_2_6_32_string_value_function.v tests/substring.sql a zero-length string isn't an error
+6.32/GR/16               impl-defined vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql a zero-length string isn't an error
 6.32/GR/17               n/a          - - row pattern recognition (R010)
 6.32/GR/17.a             container    - -
 6.32/GR/17.a.i           n/a          - - row pattern recognition (R010)
@@ -1797,23 +1797,23 @@
 6.34/CR/3                n/a          - - SQL/JSON query functions (T821)
 6.34/CR/4                n/a          - - SQL/JSON query functions (T821)
 # 6.35, <datetime value expression>
-6.35                     implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql
+6.35                     implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql
 6.35/SR/1                n/a          - - only matters for datetime arithmetic (F052) or AT LOCAL and AT TIME ZONE (F411)
-6.35/SR/2                implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql
+6.35/SR/2                implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql
 6.35/SR/3                n/a          - - AT LOCAL and AT TIME ZONE (F411)
 6.35/SR/4                container    - -
 6.35/SR/4.a              n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.35/SR/4.b              implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql
+6.35/SR/4.b              implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql
 6.35/SR/5                n/a          - - datetime arithmetic (F052)
 6.35/SR/5.a              n/a          - - datetime arithmetic (F052)
 6.35/SR/5.b              n/a          - - datetime arithmetic (F052)
 6.35/SR/6                n/a          - - AT LOCAL and AT TIME ZONE (F411)
 6.35/GR/1                n/a          - - datetime arithmetic (F052)
 6.35/GR/2                n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.35/GR/3                implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql
+6.35/GR/3                implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql
 6.35/GR/4                n/a          - - datetime arithmetic (F052)
-6.35/GR/5                implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql
-6.35/GR/5.a              implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql
+6.35/GR/5                implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql
+6.35/GR/5.a              implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql
 6.35/GR/5.b              container    - -
 6.35/GR/5.b.i            container    - -
 6.35/GR/5.b.i.1          n/a          - - AT LOCAL and AT TIME ZONE (F411)
@@ -1830,21 +1830,21 @@
 6.35/CR/1                n/a          - - datetime arithmetic (F052)
 6.35/CR/2                n/a          - - AT LOCAL and AT TIME ZONE (F411)
 # 6.36, <datetime value function>
-6.36                     implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/SR/1                implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
+6.36                     implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
+6.36/SR/1                implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
 6.36/SR/2                container    - -
-6.36/SR/2.a              implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/SR/2.b              implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
+6.36/SR/2.a              implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
+6.36/SR/2.b              implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
 6.36/SR/3                container    - -
-6.36/SR/3.a              implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/SR/3.b              implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/GR/1                implemented  vsql/time.v tests/date-time-value-function.sql read once when each statement starts
-6.36/GR/2                implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/GR/3                implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/CR/1                implemented  vsql/std_2_6_36_datetime_value_function.y tests/flagging.sql
-6.36/CR/2                implemented  vsql/std_2_6_36_datetime_value_function.y tests/flagging.sql
-6.36/CR/3                implemented  vsql/std_2_6_36_datetime_value_function.y tests/flagging.sql
-6.36/CR/4                implemented  vsql/std_2_6_36_datetime_value_function.y tests/flagging.sql
+6.36/SR/3.a              implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
+6.36/SR/3.b              implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
+6.36/GR/1                implemented  vsql/time.v tests/std_2_6_36_date_time_value_function.sql read once when each statement starts
+6.36/GR/2                implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
+6.36/GR/3                implemented  vsql/std_2_6_36_datetime_value_function.v tests/std_2_6_36_date_time_value_function.sql
+6.36/CR/1                implemented  vsql/std_2_6_36_datetime_value_function.y tests/std_1_8_5_flagging.sql
+6.36/CR/2                implemented  vsql/std_2_6_36_datetime_value_function.y tests/std_1_8_5_flagging.sql
+6.36/CR/3                implemented  vsql/std_2_6_36_datetime_value_function.y tests/std_1_8_5_flagging.sql
+6.36/CR/4                implemented  vsql/std_2_6_36_datetime_value_function.y tests/std_1_8_5_flagging.sql
 # 6.37, <interval value expression>
 6.37                     n/a          - - intervals (F052)
 6.37/SR/1                n/a          - - intervals (F052)
@@ -1898,11 +1898,11 @@
 6.38/GR/1.c              n/a          - - intervals (F052)
 6.38/CR/1                n/a          - - intervals (F052)
 # 6.39, <boolean value expression>
-6.39                     implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
-6.39/SR/1                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
-6.39/SR/2                implemented  vsql/std_2_6_39_boolean_value_expression.y tests/boolean.sql
+6.39                     implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_39_logical.sql
+6.39/SR/1                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_39_logical.sql
+6.39/SR/2                implemented  vsql/std_2_6_39_boolean_value_expression.y tests/std_2_6_1_boolean.sql
 6.39/SR/3                definition   - -
-6.39/SR/3.a              implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.39/SR/3.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.39/SR/3.b              n/a          - - domains (F251)
 6.39/SR/3.c              definition   - -
 6.39/SR/4                definition   - -
@@ -1920,26 +1920,26 @@
 6.39/SR/4.b.v.2          n/a          - - enhanced nullability determination (T101)
 6.39/SR/4.b.vi           n/a          - - enhanced nullability determination (T101)
 6.39/SR/4.c              impl-defined - - there are no other rules
-6.39/SR/5                implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.a              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.b              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.c              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.c.i            implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.c.ii           implemented  vsql/compiler.v tests/check-constraint.sql
+6.39/SR/5                implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.a              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.b              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.c              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.c.i            implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.c.ii           implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.39/SR/5.c.iii          n/a          - - a CHECK can't contain a subquery (F671)
-6.39/SR/5.c.iv           implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.d              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.e              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.e.i            implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.e.ii           implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.e.ii.1         implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.e.ii.2         implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.f              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/GR/1                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
-6.39/GR/2                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
-6.39/GR/3                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql,tests/boolean.sql
-6.39/CR/1                implemented  vsql/std_2_6_28_value_expression.y tests/flagging.sql
-6.39/CR/2                implemented  vsql/std_2_6_39_boolean_value_expression.y tests/flagging.sql
+6.39/SR/5.c.iv           implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.d              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.e              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.e.i            implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.e.ii           implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.e.ii.1         implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.e.ii.2         implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/SR/5.f              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+6.39/GR/1                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_39_logical.sql
+6.39/GR/2                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_39_logical.sql
+6.39/GR/3                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_39_logical.sql,tests/std_2_6_1_boolean.sql
+6.39/CR/1                implemented  vsql/std_2_6_28_value_expression.y tests/std_1_8_5_flagging.sql
+6.39/CR/2                implemented  vsql/std_2_6_39_boolean_value_expression.y tests/std_1_8_5_flagging.sql
 # 6.40, <array value expression>
 6.40                     n/a          - - arrays (S091)
 6.40/SR/1                n/a          - - arrays (S091)

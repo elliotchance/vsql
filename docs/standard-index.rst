@@ -70,7 +70,7 @@ Each row is one line with the columns separated by spaces:
 
 .. code-block:: text
 
-  8.8/GR/2.a               implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql NULL is NULL
+  8.8/GR/2.a               implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null.sql NULL is NULL
 
 1. **ID**: the Subclause, then (for a rule) the section (``SR`` for Syntax
    Rules, ``AR`` for Access Rules, ``GR`` for General Rules, ``CR`` for
@@ -192,7 +192,7 @@ row and every rule within it:
 .. code-block:: sh
 
   scripts/standard-index.py set 2 8.8/GR/2.a implemented \
-    vsql/std_2_8_8_null_predicate.v tests/null.sql
+    vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null.sql
   scripts/standard-index.py set 2 '8.2/GR/1.b.ii*' n/a - - 'arrays (S091)'
 
 Reports

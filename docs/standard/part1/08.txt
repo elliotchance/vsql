@@ -25,9 +25,9 @@
 # 8.4.7, OLAP
 8.4.7                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
 # 8.4.8, Extensions and options
-8.4.8                    implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql the extensions are flagged with V features
+8.4.8                    implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql the extensions are flagged with V features
 # 8.5, SQL flagger
-8.5                      implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql Core SQL Flagging and SQL Feature Flagging, Syntax Only (F812)
+8.5                      implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql Core SQL Flagging and SQL Feature Flagging, Syntax Only (F812)
 # 8.6, Claims of conformance
 8.6                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
 # 8.6.1, Requirements for SQL applications

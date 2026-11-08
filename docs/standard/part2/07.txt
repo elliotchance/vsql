@@ -3,100 +3,100 @@
 # 7, Query expressions
 7                        container    - -
 # 7.1, <row value constructor>
-7.1                      implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/SR/1                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/SR/2                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/SR/3                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
+7.1                      implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/SR/1                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/SR/2                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/SR/3                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
 7.1/SR/3.a               n/a          - - row subqueries (F641)
-7.1/SR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql,tests/values-without-row.sql
-7.1/SR/4                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/SR/5                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
-7.1/SR/5.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
-7.1/SR/5.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
-7.1/SR/6                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/GR/1                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
-7.1/GR/2                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/check-constraint.sql
-7.1/GR/3                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/GR/3.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/GR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql,tests/values-without-row.sql
-7.1/GR/3.c               implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
-7.1/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/flagging.sql
+7.1/SR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql,tests/std_2_7_1_values_without_row.sql
+7.1/SR/4                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/SR/5                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_14_11_insert.sql
+7.1/SR/5.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_14_11_insert.sql
+7.1/SR/5.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_14_11_insert.sql
+7.1/SR/6                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/GR/1                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_14_11_insert.sql
+7.1/GR/2                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_11_9_check_constraint.sql
+7.1/GR/3                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/GR/3.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
+7.1/GR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql,tests/std_2_7_1_values_without_row.sql
+7.1/GR/3.c               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_14_11_insert.sql
+7.1/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_8_5_flagging.sql
 7.1/CR/2                 n/a          - - row types (T051); ROW can't be used in the VALUES of an INSERT
 7.1/CR/3                 n/a          - - row and table constructors (F641); an explicit row value constructor can only be in a VALUES
 7.1/CR/4                 n/a          - - row subqueries (F641)
 7.1/CR/5                 untested     vsql/std_1_8_5_sql_flagger.v - only flagged when it contains a boolean operator
 7.1/CR/6                 n/a          - - row and table constructors (F641); a contextually typed row value constructor can only be in a VALUES
 # 7.2, <row value expression>
-7.2                      implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
+7.2                      implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
 7.2/SR/1                 n/a          - - row types (T051)
-7.2/SR/2                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
-7.2/SR/3                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
-7.2/SR/4                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
+7.2/SR/2                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
+7.2/SR/3                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
+7.2/SR/4                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
 7.2/GR/1                 n/a          - - row types (T051)
-7.2/GR/2                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
-7.2/GR/3                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
-7.2/GR/4                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
-7.2/GR/5                 implemented  vsql/std_2_7_2_row_value_expression.y tests/values.sql
+7.2/GR/2                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
+7.2/GR/3                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
+7.2/GR/4                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
+7.2/GR/5                 implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
 7.2/CR/1                 n/a          - - row types (T051)
 # 7.3, <table value constructor>
-7.3                      implemented  vsql/std_2_7_3_table_value_constructor.v tests/values.sql
-7.3/SR/1                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/values.sql
-7.3/SR/2                 implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+7.3                      implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
+7.3/SR/1                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
+7.3/SR/2                 implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 7.3/SR/3                 definition   - -
-7.3/SR/4                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/values.sql
+7.3/SR/4                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
 7.3/GR/1                 n/a          - - row types (T051); a row can't be NULL
-7.3/GR/2                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/values.sql
-7.3/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/flagging.sql
-7.3/CR/2                 implemented  vsql/std_2_7_3_table_value_constructor.y tests/flagging.sql
+7.3/GR/2                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
+7.3/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_8_5_flagging.sql
+7.3/CR/2                 implemented  vsql/std_2_7_3_table_value_constructor.y tests/std_1_8_5_flagging.sql
 # 7.4, <table expression>
-7.4                      implemented  vsql/std_2_7_4_table_expression.v tests/select-where.sql
-7.4/SR/1                 implemented  vsql/std_2_7_4_table_expression.v tests/select-where.sql
+7.4                      implemented  vsql/std_2_7_4_table_expression.v tests/std_2_7_12_select_where.sql
+7.4/SR/1                 implemented  vsql/std_2_7_4_table_expression.v tests/std_2_7_12_select_where.sql
 7.4/SR/2                 definition   - -
-7.4/GR/1                 implemented  vsql/std_2_7_4_table_expression.v tests/select-where.sql
+7.4/GR/1                 implemented  vsql/std_2_7_4_table_expression.v tests/std_2_7_12_select_where.sql
 # 7.5, <from clause>
-7.5                      implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
+7.5                      implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
 7.5/SR/1                 definition   - -
-7.5/SR/2                 implemented  vsql/planner.v tests/from-comma.sql
+7.5/SR/2                 implemented  vsql/planner.v tests/std_2_7_5_from_comma.sql
 7.5/SR/3                 n/a          - - data change delta tables (T495)
 7.5/SR/4                 container    - -
-7.5/SR/4.a               implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
-7.5/SR/4.a.i             implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
-7.5/SR/4.a.ii            implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
+7.5/SR/4.a               implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
+7.5/SR/4.a.i             implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
+7.5/SR/4.a.ii            implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
 7.5/SR/4.b               container    - -
-7.5/SR/4.b.i             implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
-7.5/SR/4.b.ii            implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
-7.5/SR/4.b.ii.1          implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
-7.5/SR/4.b.ii.2          implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
-7.5/SR/4.b.ii.3          implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
+7.5/SR/4.b.i             implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
+7.5/SR/4.b.ii            implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
+7.5/SR/4.b.ii.1          implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
+7.5/SR/4.b.ii.2          implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
+7.5/SR/4.b.ii.3          implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
 7.5/SR/4.b.ii.3.A        n/a          - - domains (F251)
-7.5/SR/4.b.ii.3.B        implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
-7.5/SR/5                 implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.a               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.a.i             implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.a.ii            implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.a.iii           implemented  vsql/planner.v tests/correlation-name.sql
+7.5/SR/4.b.ii.3.B        implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
+7.5/SR/5                 implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.a               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.a.i             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.a.ii            implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.a.iii           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.5/SR/5.a.iv            n/a          - - periods (T180)
-7.5/SR/5.a.v             implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.b               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.i             implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.i.1           implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.i.2           implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.ii            implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.ii.1          implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.ii.2          implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.d               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.e               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.f               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.g               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/GR/1                 implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
-7.5/GR/1.a               implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
-7.5/GR/1.b               implemented  vsql/std_2_7_6_table_reference.v tests/from-comma.sql
-7.5/GR/1.b.i             implemented  vsql/std_2_7_6_table_reference.v tests/from-comma.sql
-7.5/GR/1.b.ii            implemented  vsql/std_2_7_6_table_reference.v tests/from-comma.sql
-7.5/GR/2                 implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
+7.5/SR/5.a.v             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.b               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c.i             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c.i.1           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c.i.2           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c.ii            implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c.ii.1          implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.c.ii.2          implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.d               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.e               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.f               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/5.g               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/GR/1                 implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
+7.5/GR/1.a               implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
+7.5/GR/1.b               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_from_comma.sql
+7.5/GR/1.b.i             implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_from_comma.sql
+7.5/GR/1.b.ii            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_from_comma.sql
+7.5/GR/2                 implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
 # 7.6, <table reference>
-7.6                      implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6                      implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/1                 n/a          - - system-versioned tables (T180)
 7.6/SR/2                 n/a          - - sampling (T613)
 7.6/SR/3                 definition   - -
@@ -163,11 +163,11 @@
 7.6/SR/7.n.i             n/a          - - UNNEST (S301)
 7.6/SR/7.n.ii            n/a          - - UNNEST (S301)
 7.6/SR/7.o               n/a          - - UNNEST (S301)
-7.6/SR/8                 implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/SR/8                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/8.a               container    - -
 7.6/SR/8.a.i             n/a          - - WITH (T121)
 7.6/SR/8.a.ii            n/a          - - triggers (T211)
-7.6/SR/8.a.iii           implemented  vsql/std_2_7_6_table_reference.v tests/select-from.sql
+7.6/SR/8.a.iii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_select_from.sql
 7.6/SR/8.b               n/a          - - ONLY (S111)
 7.6/SR/8.c               n/a          - - system-versioned tables (T180)
 7.6/SR/8.d               n/a          - - system-versioned tables (T180)
@@ -188,7 +188,7 @@
 7.6/SR/10.b.ii.2         n/a          - - data change delta tables (T495)
 7.6/SR/10.b.ii.3         n/a          - - data change delta tables (T495)
 7.6/SR/10.c              n/a          - - data change delta tables (T495)
-7.6/SR/11                implemented  vsql/planner.v tests/correlation-name.sql
+7.6/SR/11                implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/11.a              n/a          - - polymorphic table functions (B200)
 7.6/SR/11.a.i            n/a          - - polymorphic table functions (B200)
 7.6/SR/11.a.i.1          n/a          - - polymorphic table functions (B200)
@@ -204,7 +204,7 @@
 7.6/SR/11.a.iv.2.A.I     n/a          - - polymorphic table functions (B200)
 7.6/SR/11.a.iv.2.A.II    n/a          - - polymorphic table functions (B200)
 7.6/SR/11.a.iv.2.B       n/a          - - polymorphic table functions (B200)
-7.6/SR/11.b              implemented  vsql/planner.v tests/correlation-name.sql
+7.6/SR/11.b              implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/11.b.i            n/a          - - row pattern recognition (R010)
 7.6/SR/11.b.i.1          n/a          - - row pattern recognition (R010)
 7.6/SR/11.b.i.2          n/a          - - row pattern recognition (R010)
@@ -226,44 +226,44 @@
 7.6/SR/11.b.i.6.B        n/a          - - row pattern recognition (R010)
 7.6/SR/11.b.i.7          n/a          - - row pattern recognition (R010)
 7.6/SR/11.b.ii           container    - -
-7.6/SR/11.b.ii.1         implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.1.A       implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.1.B       implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.2         implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.3         implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.3.A       implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.3.B       implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.b.ii.4         implemented  vsql/planner.v tests/correlation-name.sql
-7.6/SR/11.c              implemented  vsql/planner.v tests/nested-join.sql
-7.6/SR/12                implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/SR/11.b.ii.1         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.1.A       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.1.B       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.2         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.3         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.3.A       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.3.B       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.b.ii.4         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/11.c              implemented  vsql/planner.v tests/std_2_7_10_nested_join.sql
+7.6/SR/12                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/13                container    - -
-7.6/SR/13.a              implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/SR/13.b              implemented  vsql/std_2_7_6_table_reference.v tests/nested-join.sql
+7.6/SR/13.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/13.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
 7.6/SR/14                container    - -
 7.6/SR/14.a              n/a          - - polymorphic table functions (B200)
 7.6/SR/14.a.i            n/a          - - polymorphic table functions (B200)
 7.6/SR/14.a.ii           n/a          - - polymorphic table functions (B200)
-7.6/SR/14.b              implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/SR/14.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/14.b.i            container    - -
 7.6/SR/14.b.i.1          n/a          - - row pattern recognition (R010)
-7.6/SR/14.b.i.2          implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/SR/14.b.i.3          implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/SR/14.b.ii           implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/SR/14.b.iii          implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/SR/14.b.i.2          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/14.b.i.3          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/14.b.ii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/14.b.iii          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/14.b.iv           container    - -
 7.6/SR/14.b.iv.1         n/a          - - periods (T180)
 7.6/SR/14.b.iv.2         definition   - -
-7.6/SR/14.c              implemented  vsql/std_2_7_6_table_reference.v tests/nested-join.sql
-7.6/SR/15                implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/SR/14.c              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
+7.6/SR/15                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/16                container    - -
-7.6/SR/16.a              implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/SR/16.b              implemented  vsql/std_2_7_6_table_reference.v tests/nested-join.sql
+7.6/SR/16.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/16.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
 7.6/SR/17                definition   - -
 7.6/SR/18                container    - -
-7.6/SR/18.a              implemented  vsql/std_2_7_6_table_reference.v tests/inner-join.sql
+7.6/SR/18.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
 7.6/SR/18.b              definition   - -
-7.6/SR/19                implemented  vsql/std_2_7_6_table_reference.v tests/inner-join.sql
-7.6/SR/19.a              implemented  vsql/std_2_7_6_table_reference.v tests/inner-join.sql
+7.6/SR/19                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
+7.6/SR/19.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
 7.6/SR/19.b              n/a          - - MERGE (F312)
 7.6/SR/20                container    - -
 7.6/SR/20.a              n/a          - - table functions (T326), collection derived tables (S301), JSON (T811), data change delta tables (T495) and row pattern recognition (R010)
@@ -272,8 +272,8 @@
 7.6/SR/20.b.ii           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
 7.6/SR/20.b.iii          n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
 7.6/SR/20.b.iv           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/21                implemented  vsql/std_2_7_6_table_reference.v tests/update.sql
-7.6/SR/21.a              implemented  vsql/std_2_7_6_table_reference.v tests/update.sql
+7.6/SR/21                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
+7.6/SR/21.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
 7.6/SR/21.b              n/a          - - views (F031-02, #731)
 7.6/SR/21.c              n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
 7.6/SR/22                n/a          - - views (F031-02, #731)
@@ -302,12 +302,12 @@
 7.6/GR/1.c               n/a          - - row pattern recognition (R010)
 7.6/GR/1.d               n/a          - - row pattern recognition (R010)
 7.6/GR/1.e               n/a          - - row pattern recognition (R010)
-7.6/GR/2                 implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/GR/2                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/2.a               n/a          - - WITH (T121)
 7.6/GR/2.b               n/a          - - triggers (T211)
-7.6/GR/2.c               implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/GR/2.c               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/2.c.i             n/a          - - ONLY (S111)
-7.6/GR/2.c.ii            implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/GR/2.c.ii            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/2.c.ii.1          n/a          - - system-versioned tables (T180)
 7.6/GR/2.c.ii.1.A        n/a          - - system-versioned tables (T180)
 7.6/GR/2.c.ii.1.B        n/a          - - system-versioned tables (T180)
@@ -318,8 +318,8 @@
 7.6/GR/2.c.ii.1.D.I      n/a          - - system-versioned tables (T180)
 7.6/GR/2.c.ii.1.D.II     n/a          - - system-versioned tables (T180)
 7.6/GR/2.c.ii.1.D.III    n/a          - - system-versioned tables (T180)
-7.6/GR/2.c.ii.2          implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/GR/3                 implemented  vsql/std_2_7_6_table_reference.v tests/subquery.sql
+7.6/GR/2.c.ii.2          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/GR/3                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_subquery.sql
 7.6/GR/4                 n/a          - - polymorphic table functions (B200)
 7.6/GR/4.a               n/a          - - polymorphic table functions (B200)
 7.6/GR/4.b               n/a          - - polymorphic table functions (B200)
@@ -340,8 +340,8 @@
 7.6/GR/5.c               n/a          - - data change delta tables (T495)
 7.6/GR/5.c.i             n/a          - - data change delta tables (T495)
 7.6/GR/5.c.ii            n/a          - - data change delta tables (T495)
-7.6/GR/6                 implemented  vsql/std_2_7_6_table_reference.v tests/nested-join.sql
-7.6/GR/7                 implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/GR/6                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
+7.6/GR/7                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/7.a               n/a          - - sampling (T613)
 7.6/GR/7.a.i             n/a          - - sampling (T613)
 7.6/GR/7.a.ii            n/a          - - sampling (T613)
@@ -350,14 +350,14 @@
 7.6/GR/7.a.iv.1          n/a          - - sampling (T613)
 7.6/GR/7.a.iv.2          n/a          - - sampling (T613)
 7.6/GR/7.a.v             n/a          - - sampling (T613)
-7.6/GR/7.b               implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
-7.6/GR/8                 implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+7.6/GR/7.b               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/GR/8                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/CR/1                 n/a          - - row pattern recognition (R010)
 7.6/CR/2                 n/a          - - arrays (S091) and multisets (S271)
 7.6/CR/3                 n/a          - - LATERAL (T491)
 7.6/CR/4                 n/a          - - WITH (T121)
 7.6/CR/5                 n/a          - - ONLY (S111)
-7.6/CR/6                 implemented  vsql/std_2_7_6_table_reference.y tests/flagging.sql
+7.6/CR/6                 implemented  vsql/std_2_7_6_table_reference.y tests/std_1_8_5_flagging.sql
 7.6/CR/7                 n/a          - - table functions (T326)
 7.6/CR/8                 n/a          - - sampling (T613)
 7.6/CR/9                 n/a          - - triggers (T211)
@@ -500,76 +500,76 @@
 7.9/SR/23.b              n/a          - - row pattern recognition (R010)
 7.9/CR/1                 n/a          - - row pattern recognition (R010)
 # 7.10, <joined table>
-7.10                     partial      vsql/std_2_7_10_joined_table.v tests/inner-join.sql no CROSS, NATURAL or FULL (F401)
+7.10                     partial      vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql no CROSS, NATURAL or FULL (F401)
 7.10/SR/1                definition   - -
 7.10/SR/2                n/a          - - data change delta tables (T495)
 7.10/SR/3                definition   - -
 7.10/SR/4                n/a          - - LATERAL (T491)
-7.10/SR/5                implemented  vsql/std_2_7_6_table_reference.y tests/inner-join.sql
-7.10/SR/6                implemented  vsql/planner.v tests/aggregate-placement.sql
+7.10/SR/5                implemented  vsql/std_2_7_6_table_reference.y tests/std_2_7_10_inner_join.sql
+7.10/SR/6                implemented  vsql/planner.v tests/std_2_6_9_aggregate_placement.sql
 7.10/SR/7                n/a          - - window functions (T611)
-7.10/SR/8                implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
+7.10/SR/8                implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
 7.10/SR/9                n/a          - - partitioned join tables (F403)
 7.10/SR/9.a              n/a          - - partitioned join tables (F403)
 7.10/SR/9.b              n/a          - - partitioned join tables (F403)
 7.10/SR/9.c              n/a          - - partitioned join tables (F403)
 7.10/SR/9.d              n/a          - - partitioned join tables (F403)
-7.10/SR/10               implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
 7.10/SR/10.a             container    - -
 7.10/SR/10.a.i           n/a          - - join correlation names (F404)
-7.10/SR/10.a.ii          implemented  vsql/planner.v tests/join-using.sql
+7.10/SR/10.a.ii          implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
 7.10/SR/10.b             n/a          - - NATURAL (F401)
-7.10/SR/10.c             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.c             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
 7.10/SR/10.d             n/a          - - partitioned join tables (F403)
-7.10/SR/10.e             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.f             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.f.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.f.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.f.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.f.iv          implemented  vsql/planner.v tests/join-using.sql
-7.10/SR/10.g             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.g.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.g.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.g.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.h             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.h.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.h.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.h.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.i             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.i.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.i.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.i.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.i.iv          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.i.v           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/10.j             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/SR/11               implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
+7.10/SR/10.e             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.f             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.f.i           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.f.ii          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.f.iii         implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.f.iv          implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.g             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.g.i           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.g.ii          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.g.iii         implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.h             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.h.i           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.h.ii          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.h.iii         implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.i             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.i.i           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.i.ii          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.i.iii         implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.i.iv          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.i.v           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/10.j             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/SR/11               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
 7.10/SR/11.a             container    - -
-7.10/SR/11.a.i           implemented  vsql/planner.v tests/join-using.sql
-7.10/SR/11.a.i.1         implemented  vsql/planner.v tests/join-using.sql
-7.10/SR/11.a.i.2         implemented  vsql/planner.v tests/join-using.sql
-7.10/SR/11.a.i.3         implemented  vsql/planner.v tests/join-using.sql
-7.10/SR/11.a.i.4         implemented  vsql/planner.v tests/join-using.sql
-7.10/SR/11.a.ii          implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
-7.10/SR/11.a.ii.1        implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
-7.10/SR/11.a.ii.2        implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
-7.10/SR/11.a.ii.3        implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
+7.10/SR/11.a.i           implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
+7.10/SR/11.a.i.1         implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
+7.10/SR/11.a.i.2         implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
+7.10/SR/11.a.i.3         implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
+7.10/SR/11.a.i.4         implemented  vsql/planner.v tests/std_2_7_10_join_using.sql
+7.10/SR/11.a.ii          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
+7.10/SR/11.a.ii.1        implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
+7.10/SR/11.a.ii.2        implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
+7.10/SR/11.a.ii.3        implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
 7.10/SR/11.b             definition   - -
-7.10/SR/11.c             implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
+7.10/SR/11.c             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
 7.10/SR/11.d             definition   - -
-7.10/SR/11.e             implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
+7.10/SR/11.e             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
 7.10/SR/12               definition   - -
 7.10/SR/12.a             definition   - -
 7.10/SR/12.b             definition   - -
 7.10/SR/12.c             definition   - -
 7.10/SR/12.d             n/a          - - partitioned join tables (F403)
-7.10/SR/13               implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
-7.10/SR/14               implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
-7.10/SR/14.a             implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
+7.10/SR/13               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
+7.10/SR/14               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
+7.10/SR/14.a             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
 7.10/SR/14.b             n/a          - - NATURAL (F401)
 7.10/SR/14.c             n/a          - - partitioned join tables (F403)
-7.10/SR/14.d             implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
-7.10/SR/15               implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
-7.10/SR/15.a             implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
+7.10/SR/14.d             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
+7.10/SR/15               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
+7.10/SR/15.a             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
 7.10/SR/15.b             n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.i           n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.i.1         n/a          - - enhanced nullability determination (T101)
@@ -581,7 +581,7 @@
 7.10/SR/15.b.iii.1       n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.iii.2       n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.iv          n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.c             impl-defined vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING is the same as 15.b.iii
+7.10/SR/15.c             impl-defined vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING is the same as 15.b.iii
 7.10/AR/1                n/a          - - privileges (E081, #732)
 7.10/AR/1.a              n/a          - - privileges (E081, #732)
 7.10/AR/1.a.i            n/a          - - privileges (E081, #732)
@@ -593,60 +593,60 @@
 7.10/AR/1.b.iii          n/a          - - privileges (E081, #732)
 7.10/GR/1                container    - -
 7.10/GR/1.a              n/a          - - CROSS JOIN (F401)
-7.10/GR/1.b              implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
-7.10/GR/1.c              implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/1.c.i            implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/1.c.ii           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/2                implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
-7.10/GR/3                implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
-7.10/GR/3.a              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
-7.10/GR/3.b              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
-7.10/GR/3.c              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
-7.10/GR/3.d              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
-7.10/GR/4                implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.a              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
+7.10/GR/1.b              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
+7.10/GR/1.c              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/1.c.i            implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/1.c.ii           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/2                implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
+7.10/GR/3                implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
+7.10/GR/3.a              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
+7.10/GR/3.b              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
+7.10/GR/3.c              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
+7.10/GR/3.d              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
+7.10/GR/4                implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.a              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
 7.10/GR/4.b              container    - -
 7.10/GR/4.b.i            n/a          - - partitioned join tables (F403)
 7.10/GR/4.b.i.1          n/a          - - partitioned join tables (F403)
 7.10/GR/4.b.i.2          n/a          - - partitioned join tables (F403)
-7.10/GR/4.b.ii           implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
+7.10/GR/4.b.ii           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
 7.10/GR/4.c              container    - -
 7.10/GR/4.c.i            n/a          - - partitioned join tables (F403)
 7.10/GR/4.c.i.1          n/a          - - partitioned join tables (F403)
 7.10/GR/4.c.i.2          n/a          - - partitioned join tables (F403)
-7.10/GR/4.c.ii           implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.d              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.e              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.f              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.g              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.h              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
+7.10/GR/4.c.ii           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.d              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.e              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.f              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.g              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.h              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
 7.10/GR/4.h.i            n/a          - - partitioned join tables (F403)
-7.10/GR/4.h.ii           implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.i              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
+7.10/GR/4.h.ii           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.i              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
 7.10/GR/4.i.i            n/a          - - partitioned join tables (F403)
-7.10/GR/4.i.ii           implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.j              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.k              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
-7.10/GR/4.l              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
+7.10/GR/4.i.ii           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.j              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.k              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
+7.10/GR/4.l              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
 7.10/GR/5                container    - -
-7.10/GR/5.a              implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
-7.10/GR/5.b              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
-7.10/GR/5.c              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
+7.10/GR/5.a              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
+7.10/GR/5.b              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
+7.10/GR/5.c              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
 7.10/GR/5.d              n/a          - - FULL (F401)
-7.10/GR/6                implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a              implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.i            implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.ii           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.iii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.iv           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.v            implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.v.1          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.v.2          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.v.3          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.v.4          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.v.5          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.a.vi           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
-7.10/GR/6.b              implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
+7.10/GR/6                implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.i            implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.ii           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.iii          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.iv           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.v            implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.v.1          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.v.2          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.v.3          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.v.4          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.v.5          implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.a.vi           implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
+7.10/GR/6.b              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
 7.10/CR/1                n/a          - - CROSS JOIN (F401)
 7.10/CR/2                n/a          - - NATURAL (F401)
 7.10/CR/3                n/a          - - FULL (F401)
@@ -789,23 +789,23 @@
 7.11/CR/7                n/a          - - JSON_TABLE (T824)
 7.11/CR/8                n/a          - - JSON_TABLE (T824)
 # 7.12, <where clause>
-7.12                     implemented  vsql/std_2_7_12_where_clause.y tests/select-where.sql
-7.12/SR/1                implemented  vsql/planner.v tests/correlated-subquery.sql
+7.12                     implemented  vsql/std_2_7_12_where_clause.y tests/std_2_7_12_select_where.sql
+7.12/SR/1                implemented  vsql/planner.v tests/std_2_7_19_correlated_subquery.sql
 7.12/SR/2                n/a          - - window functions (T611)
-7.12/GR/1                implemented  vsql/std_2_7_12_where_clause.y tests/select-where.sql
-7.12/GR/2                implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql
+7.12/GR/1                implemented  vsql/std_2_7_12_where_clause.y tests/std_2_7_12_select_where.sql
+7.12/GR/2                implemented  vsql/std_2_8_21_search_condition.v tests/std_2_7_12_select_where.sql
 7.12/CR/1                missing      - - a column of a derived table that contains a set function isn't flagged (#880)
 # 7.13, <group by clause>
-7.13                     implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql only grouping column references (T431)
-7.13/SR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/ambiguous-column.sql
-7.13/SR/2                implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
-7.13/SR/3                implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
+7.13                     implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql only grouping column references (T431)
+7.13/SR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_6_6_ambiguous_column.sql
+7.13/SR/2                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
+7.13/SR/3                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
 7.13/SR/3.a              n/a          - - COLLATE (F690)
-7.13/SR/3.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
+7.13/SR/3.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
 7.13/SR/4                definition   - -
 7.13/SR/5                definition   - -
 7.13/SR/6                n/a          - - GROUP BY DISTINCT (T434)
-7.13/SR/7                implemented  vsql/std_2_7_13_group_by_clause.v tests/select-list-asterisk.sql
+7.13/SR/7                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_16_select_list_asterisk.sql
 7.13/SR/8                definition   - -
 7.13/SR/9                definition   - -
 7.13/SR/10               n/a          - - extended grouping (T431)
@@ -815,7 +815,7 @@
 7.13/SR/10.b.ii          container    - -
 7.13/SR/10.b.ii.1        n/a          - - extended grouping (T431)
 7.13/SR/10.b.ii.2        n/a          - - extended grouping (T431)
-7.13/SR/11               implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
+7.13/SR/11               implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
 7.13/SR/12               n/a          - - extended grouping (T431)
 7.13/SR/12.a             n/a          - - extended grouping (T431)
 7.13/SR/12.b             n/a          - - extended grouping (T431)
@@ -880,13 +880,13 @@
 7.13/SR/17.m.iii.2.B     n/a          - - extended grouping (T431)
 7.13/SR/17.n             n/a          - - extended grouping (T431)
 7.13/SR/17.o             n/a          - - extended grouping (T431)
-7.13/GR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/join-where-group-by.sql
+7.13/GR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_join_where_group_by.sql
 7.13/GR/2                container    - -
-7.13/GR/2.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/set-functions.sql
-7.13/GR/2.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by-null.sql
-7.13/GR/3                implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
-7.13/GR/3.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
-7.13/GR/3.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
+7.13/GR/2.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_10_9_set_functions.sql
+7.13/GR/2.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by_null.sql
+7.13/GR/3                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
+7.13/GR/3.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
+7.13/GR/3.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
 7.13/CR/1                n/a          - - extended grouping (T431)
 7.13/CR/2                n/a          - - extended grouping (T431)
 7.13/CR/3                n/a          - - extended grouping (T431)
@@ -896,24 +896,24 @@
 7.13/CR/7                n/a          - - GROUPING SETS (T432)
 7.13/CR/8                n/a          - - GROUP BY DISTINCT (T434)
 # 7.14, <having clause>
-7.14                     implemented  vsql/std_2_7_14_having_clause.y tests/having.sql
-7.14/SR/1                implemented  vsql/planner.v tests/having.sql
+7.14                     implemented  vsql/std_2_7_14_having_clause.y tests/std_2_7_14_having.sql
+7.14/SR/1                implemented  vsql/planner.v tests/std_2_7_14_having.sql
 7.14/SR/2                definition   - -
-7.14/SR/3                implemented  vsql/planner.v tests/having.sql
-7.14/SR/3.a              implemented  vsql/planner.v tests/having.sql only a grouping column, there are no functional dependencies (T301)
-7.14/SR/3.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/correlated-subquery.sql
-7.14/SR/4                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/having.sql
-7.14/SR/4.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/having.sql only a grouping column, there are no functional dependencies (T301)
-7.14/SR/4.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/having.sql
+7.14/SR/3                implemented  vsql/planner.v tests/std_2_7_14_having.sql
+7.14/SR/3.a              implemented  vsql/planner.v tests/std_2_7_14_having.sql only a grouping column, there are no functional dependencies (T301)
+7.14/SR/3.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_19_correlated_subquery.sql
+7.14/SR/4                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_14_having.sql
+7.14/SR/4.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_14_having.sql only a grouping column, there are no functional dependencies (T301)
+7.14/SR/4.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_14_having.sql
 7.14/SR/5                n/a          - - window functions (T611)
-7.14/SR/6                implemented  vsql/planner.v tests/having.sql
-7.14/GR/1                implemented  vsql/planner.v tests/having.sql
-7.14/CR/1                implemented  vsql/planner.v tests/having.sql always enforced, there are no functional dependencies (T301)
-7.14/CR/1.a              implemented  vsql/planner.v tests/having.sql always enforced, there are no functional dependencies (T301)
-7.14/CR/1.b              implemented  vsql/planner.v tests/having.sql always enforced, there are no functional dependencies (T301)
-7.14/CR/2                implemented  vsql/planner.v tests/having.sql always enforced, there are no functional dependencies (T301)
-7.14/CR/2.a              implemented  vsql/planner.v tests/having.sql always enforced, there are no functional dependencies (T301)
-7.14/CR/2.b              implemented  vsql/planner.v tests/having.sql always enforced, there are no functional dependencies (T301)
+7.14/SR/6                implemented  vsql/planner.v tests/std_2_7_14_having.sql
+7.14/GR/1                implemented  vsql/planner.v tests/std_2_7_14_having.sql
+7.14/CR/1                implemented  vsql/planner.v tests/std_2_7_14_having.sql always enforced, there are no functional dependencies (T301)
+7.14/CR/1.a              implemented  vsql/planner.v tests/std_2_7_14_having.sql always enforced, there are no functional dependencies (T301)
+7.14/CR/1.b              implemented  vsql/planner.v tests/std_2_7_14_having.sql always enforced, there are no functional dependencies (T301)
+7.14/CR/2                implemented  vsql/planner.v tests/std_2_7_14_having.sql always enforced, there are no functional dependencies (T301)
+7.14/CR/2.a              implemented  vsql/planner.v tests/std_2_7_14_having.sql always enforced, there are no functional dependencies (T301)
+7.14/CR/2.b              implemented  vsql/planner.v tests/std_2_7_14_having.sql always enforced, there are no functional dependencies (T301)
 # 7.15, <window clause>
 7.15                     n/a          - - window functions (T611)
 7.15/SR/1                n/a          - - window functions (T611)
@@ -1106,34 +1106,34 @@
 7.15/CR/6                n/a          - - window functions (T611)
 7.15/CR/7                n/a          - - window functions (T611)
 # 7.16, <query specification>
-7.16                     implemented  vsql/std_2_7_16_query_specification.v tests/select-where.sql
+7.16                     implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_12_select_where.sql
 7.16/SR/1                definition   - -
 7.16/SR/1.a              definition   - -
 7.16/SR/1.b              definition   - -
 7.16/SR/2                definition   - -
 7.16/SR/3                definition   - -
 7.16/SR/4                container    - -
-7.16/SR/4.a              implemented  vsql/std_2_7_16_query_specification.y tests/exists-predicate.sql
-7.16/SR/4.b              implemented  vsql/std_2_7_16_query_specification.y tests/select-list-asterisk.sql
-7.16/SR/5                implemented  vsql/planner.v tests/select-where.sql
-7.16/SR/6                implemented  vsql/std_2_7_16_query_specification.v tests/select-distinct.sql
+7.16/SR/4.a              implemented  vsql/std_2_7_16_query_specification.y tests/std_2_8_10_exists_predicate.sql
+7.16/SR/4.b              implemented  vsql/std_2_7_16_query_specification.y tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/5                implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/SR/6                implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
 7.16/SR/7                n/a          - - row types (T051); there is no <all fields reference>
-7.16/SR/8                implemented  vsql/std_2_7_16_query_specification.y tests/select-list-asterisk.sql
+7.16/SR/8                implemented  vsql/std_2_7_16_query_specification.y tests/std_2_7_16_select_list_asterisk.sql
 7.16/SR/8.a              definition   - -
 7.16/SR/8.b              definition   - -
 7.16/SR/8.c              definition   - -
 7.16/SR/8.d              definition   - -
 7.16/SR/8.e              definition   - -
-7.16/SR/8.f              implemented  vsql/planner.v tests/select-list-asterisk.sql
+7.16/SR/8.f              implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
 7.16/SR/8.f.i            n/a          - - SQL parameters (T321)
 7.16/SR/8.f.ii           n/a          - - SQL parameters (T321)
 7.16/SR/8.f.iii          n/a          - - SQL parameters (T321)
 7.16/SR/8.f.iv           n/a          - - row types (T051)
 7.16/SR/8.f.v            n/a          - - row types (T051)
-7.16/SR/8.f.vi           implemented  vsql/planner.v tests/select-list-asterisk.sql
-7.16/SR/8.f.vii          implemented  vsql/planner.v tests/select-list-asterisk.sql
+7.16/SR/8.f.vi           implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/8.f.vii          implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
 7.16/SR/8.g              container    - -
-7.16/SR/8.g.i            implemented  vsql/planner.v tests/select-list-asterisk.sql
+7.16/SR/8.g.i            implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
 7.16/SR/8.g.ii           n/a          - - row types (T051)
 7.16/SR/8.g.ii.1         n/a          - - row types (T051)
 7.16/SR/8.g.ii.2         n/a          - - row types (T051)
@@ -1187,17 +1187,17 @@
 7.16/SR/15.e             definition   - -
 7.16/SR/15.f             definition   - -
 7.16/SR/15.g             definition   - -
-7.16/SR/16               implemented  vsql/planner.v tests/set-functions.sql
-7.16/SR/17               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/group-by.sql
-7.16/SR/18               implemented  vsql/planner.v tests/information-schema-columns.sql
+7.16/SR/16               implemented  vsql/planner.v tests/std_2_10_9_set_functions.sql
+7.16/SR/17               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_13_group_by.sql
+7.16/SR/18               implemented  vsql/planner.v tests/std_11_5_21_columns.sql
 7.16/SR/19               container    - -
-7.16/SR/19.a             implemented  vsql/planner.v tests/select-where.sql
-7.16/SR/19.b             implemented  vsql/planner.v tests/select-where.sql
+7.16/SR/19.a             implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/SR/19.b             implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
 7.16/SR/19.c             n/a          - - SQL parameters (T321)
-7.16/SR/19.d             impl-defined vsql/planner.v tests/values.sql COL1, COL2, etc, by the position of the column
-7.16/SR/20               implemented  vsql/planner.v tests/result-column-nullability.sql
-7.16/SR/21               implemented  vsql/planner.v tests/result-column-nullability.sql
-7.16/SR/21.a             implemented  vsql/planner.v tests/result-column-nullability.sql
+7.16/SR/19.d             impl-defined vsql/planner.v tests/std_2_7_3_values.sql COL1, COL2, etc, by the position of the column
+7.16/SR/20               implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
+7.16/SR/21               implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
+7.16/SR/21.a             implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
 7.16/SR/21.b             n/a          - - enhanced nullability determination (T101)
 7.16/SR/21.b.i           n/a          - - enhanced nullability determination (T101)
 7.16/SR/21.b.ii          n/a          - - enhanced nullability determination (T101)
@@ -1225,46 +1225,46 @@
 7.16/SR/23.a             n/a          - - updatable joins (T111)
 7.16/SR/23.b             n/a          - - updatable joins (T111)
 7.16/SR/23.c             n/a          - - updatable joins (T111)
-7.16/SR/24               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/24.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/24.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/24.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+7.16/SR/24               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/24.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/24.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/24.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/24.d             n/a          - - system-versioned tables (T180)
 7.16/SR/24.e             n/a          - - data change delta tables (T495)
-7.16/SR/25               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/25.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+7.16/SR/25               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/25.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/25.b             n/a          - - updatable joins (T111)
-7.16/SR/26               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/28               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql only simply updatable, there are no updatable joins (T111)
+7.16/SR/26               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/27               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/27.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/27.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/27.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/27.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/28               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable joins (T111)
 7.16/SR/29               definition   - -
 7.16/SR/29.a             definition   - -
 7.16/SR/29.b             n/a          - - updatable joins (T111)
 7.16/SR/30               n/a          - - INSERT through a cursor or view (F031-02, #731)
-7.16/SR/31               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/31.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+7.16/SR/31               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/31.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/31.b             n/a          - - updatable joins (T111)
-7.16/SR/32               implemented  vsql/planner.v tests/select-where.sql
+7.16/SR/32               implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
 7.16/GR/1                container    - -
-7.16/GR/1.a              implemented  vsql/planner.v tests/select-where.sql
-7.16/GR/1.b              implemented  vsql/std_2_7_16_query_specification.v tests/group-by.sql
-7.16/GR/1.b.i            implemented  vsql/std_2_7_16_query_specification.v tests/set-functions.sql
-7.16/GR/1.b.ii           implemented  vsql/std_2_7_16_query_specification.v tests/group-by.sql
+7.16/GR/1.a              implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/GR/1.b              implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_13_group_by.sql
+7.16/GR/1.b.i            implemented  vsql/std_2_7_16_query_specification.v tests/std_2_10_9_set_functions.sql
+7.16/GR/1.b.ii           implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_13_group_by.sql
 7.16/GR/2                container    - -
-7.16/GR/2.a              implemented  vsql/std_2_7_16_query_specification.v tests/select-where.sql
-7.16/GR/2.b              implemented  vsql/std_2_7_16_query_specification.v tests/select-distinct.sql
-7.16/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+7.16/GR/2.a              implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_12_select_where.sql
+7.16/GR/2.b              implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
+7.16/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.16/CR/2                n/a          - - row types (T051)
-7.16/CR/3                implemented  vsql/compiler.v tests/group-by.sql always enforced, there are no functional dependencies (T301)
+7.16/CR/3                implemented  vsql/compiler.v tests/std_2_7_13_group_by.sql always enforced, there are no functional dependencies (T301)
 7.16/CR/4                n/a          - - SQL parameters (T325)
 7.16/CR/5                n/a          - - row types (T053)
-7.16/CR/6                implemented  vsql/planner.v tests/values.sql
+7.16/CR/6                implemented  vsql/planner.v tests/std_2_7_3_values.sql
 # 7.17, <query expression>
-7.17                     partial      vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql no WITH (T121), CORRESPONDING (F301), explicit tables (F661) or FETCH NEXT (#331)
+7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH (T121), CORRESPONDING (F301), explicit tables (F661) or FETCH NEXT (#331)
 7.17/SR/1                definition   - -
 7.17/SR/2                n/a          - - data change delta tables (T495)
 7.17/SR/3                n/a          - - WITH (T121)
@@ -1329,11 +1329,11 @@
 7.17/SR/3.k              n/a          - - WITH (T121)
 7.17/SR/4                n/a          - - explicit tables (F661)
 7.17/SR/5                definition   - -
-7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/union-except.sql,tests/intersect.sql
-7.17/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.17/SR/7.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.17/SR/7.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/intersect.sql
-7.17/SR/7.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
+7.17/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.17/SR/7.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.17/SR/7.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_7_17_intersect.sql
+7.17/SR/7.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.17/SR/8                n/a          - - updatable unions (T111)
 7.17/SR/8.a              n/a          - - updatable unions (T111)
 7.17/SR/8.b              n/a          - - updatable unions (T111)
@@ -1342,25 +1342,25 @@
 7.17/SR/8.c.ii           n/a          - - updatable unions (T111)
 7.17/SR/8.d              n/a          - - updatable unions (T111)
 7.17/SR/8.e              n/a          - - updatable unions (T111)
-7.17/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql only simply updatable, there are no updatable unions (T111)
+7.17/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable unions (T111)
 7.17/SR/10               n/a          - - WITH (T121)
 7.17/SR/11               n/a          - - INSERT through a cursor or view (F031-02, #731)
 7.17/SR/11.a             n/a          - - INSERT through a cursor or view (F031-02, #731)
 7.17/SR/11.b             n/a          - - INSERT through a cursor or view (F031-02, #731)
 7.17/SR/11.c             n/a          - - INSERT through a cursor or view (F031-02, #731)
 7.17/SR/12               n/a          - - WITH (T121)
-7.17/SR/13               implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/13.a             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
+7.17/SR/13               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/13.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.b             n/a          - - explicit tables (F661)
-7.17/SR/13.c             implemented  vsql/std_2_7_17_query_expression.v tests/values.sql
-7.17/SR/14               implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/14.a             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/14.b             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/15               implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
+7.17/SR/13.c             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_3_values.sql
+7.17/SR/14               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/14.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/14.b             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/15               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/15.a             definition   - -
 7.17/SR/15.b             definition   - -
-7.17/SR/15.c             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/16               implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
+7.17/SR/15.c             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/16               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/16.a             n/a          - - CORRESPONDING (F301)
 7.17/SR/16.a.i           n/a          - - CORRESPONDING (F301)
 7.17/SR/16.a.ii          n/a          - - CORRESPONDING (F301)
@@ -1368,19 +1368,19 @@
 7.17/SR/16.a.iii.1       n/a          - - CORRESPONDING (F301)
 7.17/SR/16.a.iii.2       n/a          - - CORRESPONDING (F301)
 7.17/SR/16.a.iv          n/a          - - CORRESPONDING (F301)
-7.17/SR/16.b             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/17               implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/18               implemented  vsql/std_2_7_17_query_expression.v tests/intersect.sql
-7.17/SR/18.a             implemented  vsql/std_2_7_17_query_expression.v tests/intersect.sql always the name of the left column
-7.17/SR/18.b             implemented  vsql/std_2_7_17_query_expression.v tests/intersect.sql
+7.17/SR/16.b             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/17               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/18               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_intersect.sql
+7.17/SR/18.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_intersect.sql always the name of the left column
+7.17/SR/18.b             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_intersect.sql
 7.17/SR/18.c             n/a          - - enhanced nullability determination (T101)
 7.17/SR/19               container    - -
-7.17/SR/19.a             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/19.b             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/19.b.i           implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/19.b.ii          implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/19.b.ii.1        implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/19.b.ii.1.A      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
+7.17/SR/19.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/19.b             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/19.b.i           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/19.b.ii          implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/19.b.ii.1        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/SR/19.b.ii.1.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/19.b.ii.1.B      n/a          - - enhanced nullability determination (T101)
 7.17/SR/19.b.ii.1.C      n/a          - - enhanced nullability determination (T101)
 7.17/SR/19.b.ii.2        n/a          - - recursive queries (T131)
@@ -1423,36 +1423,36 @@
 7.17/SR/26.d.i           n/a          - - updatable unions (T111)
 7.17/SR/26.d.ii          definition   - -
 7.17/SR/27               n/a          - - SQL-invoked routines (T321)
-7.17/SR/28               implemented  vsql/planner.v tests/order.sql
+7.17/SR/28               implemented  vsql/planner.v tests/std_2_7_17_order.sql
 7.17/SR/28.a             definition   - -
-7.17/SR/28.b             implemented  vsql/planner.v tests/order.sql a sort key without a column reference, or with a subquery or an aggregate function, is also allowed (V202-01, V202-02, V202-03)
+7.17/SR/28.b             implemented  vsql/planner.v tests/std_2_7_17_order.sql a sort key without a column reference, or with a subquery or an aggregate function, is also allowed (V202-01, V202-02, V202-03)
 7.17/SR/28.c             definition   - -
 7.17/SR/28.d             container    - -
-7.17/SR/28.d.i           implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.1         implemented  vsql/planner.v tests/union-except.sql
-7.17/SR/28.d.i.2         implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.3         implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.4         implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.5         implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.6         implemented  vsql/planner.v tests/order.sql
+7.17/SR/28.d.i           implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.1         implemented  vsql/planner.v tests/std_2_7_17_union_except.sql
+7.17/SR/28.d.i.2         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.3         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.4         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.5         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.6         implemented  vsql/planner.v tests/std_2_7_17_order.sql
 7.17/SR/28.d.i.6.A       container    - -
-7.17/SR/28.d.i.6.A.I     implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.6.A.II    implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.6.B       implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.7         implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.8         implemented  vsql/planner.v tests/order.sql
+7.17/SR/28.d.i.6.A.I     implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.6.A.II    implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.6.B       implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.7         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.8         implemented  vsql/planner.v tests/std_2_7_17_order.sql
 7.17/SR/28.d.i.9         container    - -
-7.17/SR/28.d.i.9.A       implemented  vsql/planner.v tests/order.sql
+7.17/SR/28.d.i.9.A       implemented  vsql/planner.v tests/std_2_7_17_order.sql
 7.17/SR/28.d.i.9.B       container    - -
-7.17/SR/28.d.i.9.B.I     implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.9.B.II    implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.9.B.III   implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.10        implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.i.11        implemented  vsql/planner.v tests/order.sql
-7.17/SR/28.d.ii          implemented  vsql/planner.v tests/union-except.sql
+7.17/SR/28.d.i.9.B.I     implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.9.B.II    implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.9.B.III   implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.10        implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.i.11        implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/28.d.ii          implemented  vsql/planner.v tests/std_2_7_17_union_except.sql
 7.17/SR/28.e             definition   - -
-7.17/SR/29               implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
-7.17/SR/30               implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/SR/29               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/SR/30               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/SR/31               n/a          - - FETCH FIRST PERCENT (F866)
 7.17/SR/32               n/a          - - FETCH FIRST WITH TIES (F867)
 7.17/GR/1                n/a          - - WITH (T121)
@@ -1475,31 +1475,31 @@
 7.17/GR/2.c.ii.4.B       n/a          - - recursive queries (T131)
 7.17/GR/2.c.ii.5         n/a          - - recursive queries (T131)
 7.17/GR/3                container    - -
-7.17/GR/3.a              implemented  vsql/std_2_7_17_query_expression.v tests/select-where.sql
+7.17/GR/3.a              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_12_select_where.sql
 7.17/GR/3.b              container    - -
-7.17/GR/3.b.i            implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.ii           implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.ii.1         implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.ii.2         implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.ii.3         implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.ii.4         implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.ii.5         implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii          implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.1        implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2        implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.A.I    implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.A.II   implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.B.I    implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.B.II   implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.C      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
-7.17/GR/3.b.iii.2.C.I    implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
-7.17/GR/3.b.iii.2.C.II   implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
-7.17/GR/3.b.iii.3        implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.3.C      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
+7.17/GR/3.b.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.ii.1         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.ii.2         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.ii.3         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.ii.4         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.ii.5         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii          implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.1        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.A.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.A.II   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.B.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.B.II   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.2.C      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
+7.17/GR/3.b.iii.2.C.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
+7.17/GR/3.b.iii.2.C.II   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
+7.17/GR/3.b.iii.3        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
+7.17/GR/3.b.iii.3.C      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
 7.17/GR/4                container    - -
 7.17/GR/4.a              n/a          - - updatable unions (T111)
 7.17/GR/4.b              n/a          - - updatable unions (T111)
@@ -1511,48 +1511,48 @@
 7.17/GR/4.b.ii           n/a          - - updatable unions (T111)
 7.17/GR/4.b.ii.1         n/a          - - updatable unions (T111)
 7.17/GR/4.b.ii.2         n/a          - - updatable unions (T111)
-7.17/GR/5                implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
+7.17/GR/5                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 7.17/GR/5.a              untestable   - - the order of the rows is implementation-dependent
-7.17/GR/5.b              implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
-7.17/GR/6                implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/GR/5.b              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
+7.17/GR/6                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/6.a              container    - -
-7.17/GR/6.a.i            implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
-7.17/GR/6.a.ii           implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
-7.17/GR/6.b              implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/GR/6.a.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/GR/6.a.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/GR/6.b              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/6.c              container    - -
-7.17/GR/6.c.i            implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
-7.17/GR/6.c.ii           implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
-7.17/GR/7                implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/GR/6.c.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/GR/6.c.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/GR/7                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/7.a              definition   - -
 7.17/GR/7.b              container    - -
-7.17/GR/7.b.i            implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/GR/7.b.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/7.b.ii           n/a          - - FETCH FIRST PERCENT (F866)
-7.17/GR/7.b.iii          implemented  vsql/std_2_7_17_query_expression.y tests/offset-fetch.sql
-7.17/GR/7.c              implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
-7.17/GR/7.d              implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/GR/7.b.iii          implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_offset_fetch.sql
+7.17/GR/7.c              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/GR/7.d              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/7.d.i            n/a          - - FETCH FIRST WITH TIES (F867)
-7.17/GR/7.d.ii           implemented  vsql/std_2_7_17_query_expression.v tests/offset-fetch.sql
+7.17/GR/7.d.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/CR/1                n/a          - - WITH (T121)
 7.17/CR/2                n/a          - - WITH (T122)
 7.17/CR/3                n/a          - - recursive queries (T131)
 7.17/CR/4                n/a          - - recursive queries (T132)
-7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql
+7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
 7.17/CR/6                n/a          - - explicit tables (F661)
-7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/intersect.sql
+7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
 7.17/CR/8                n/a          - - CORRESPONDING (F301)
-7.17/CR/9                implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql,tests/intersect.sql
-7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql
-7.17/CR/11               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/12               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/13               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/14               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/15               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/16               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/17               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/18               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/19               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/20               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-7.17/CR/21               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+7.17/CR/9                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql,tests/std_2_7_17_intersect.sql
+7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
+7.17/CR/11               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/12               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/13               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/14               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/15               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/16               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/17               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/18               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/19               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/20               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/21               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.17/CR/22               n/a          - - FETCH FIRST PERCENT (F866)
 7.17/CR/23               n/a          - - FETCH FIRST WITH TIES (F867)
 # 7.18, <search or cycle clause>
@@ -1583,20 +1583,20 @@
 7.18/SR/2.b.iii.3.C      n/a          - - recursive queries (T131)
 7.18/SR/2.c              n/a          - - recursive queries (T131)
 # 7.19, <subquery>
-7.19                     implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
+7.19                     implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
 7.19/SR/1                n/a          - - data change delta tables (T495)
-7.19/SR/2                implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
+7.19/SR/2                implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
 7.19/SR/3                n/a          - - row subqueries (F641)
 7.19/SR/4                definition   - -
-7.19/SR/5                implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
+7.19/SR/5                implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
 7.19/SR/6                n/a          - - row subqueries (F641)
-7.19/SR/7                implemented  vsql/std_2_7_19_subquery.v tests/in-subquery.sql
+7.19/SR/7                implemented  vsql/std_2_7_19_subquery.v tests/std_2_8_4_in_subquery.sql
 7.19/GR/1                untestable   - - a subquery is only evaluated by a statement, which has already started a transaction
 7.19/GR/2                n/a          - - row subqueries (F641)
 7.19/GR/2.a              n/a          - - row subqueries (F641)
 7.19/GR/2.b              n/a          - - row subqueries (F641)
 7.19/GR/2.c              n/a          - - row subqueries (F641)
-7.19/GR/3                implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
-7.19/GR/3.a              implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
-7.19/GR/3.b              implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
-7.19/GR/3.c              implemented  vsql/std_2_7_19_subquery.v tests/scalar-subquery.sql
+7.19/GR/3                implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
+7.19/GR/3.a              implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
+7.19/GR/3.b              implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
+7.19/GR/3.c              implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql

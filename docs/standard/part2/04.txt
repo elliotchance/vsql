@@ -3,43 +3,43 @@
 # 4, Concepts
 4                        container    - -
 # 4.1, Data types
-4.1                      implemented  vsql/std_2_6_1_data_type.v tests/type-limits.sql
+4.1                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql
 # 4.1.1, General introduction to data types
-4.1.1                    implemented  vsql/std_2_6_1_data_type.v tests/type-limits.sql
+4.1.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql
 # 4.1.2, Naming of predefined types
-4.1.2                    implemented  vsql/std_2_6_1_data_type.v tests/type-limits.sql
+4.1.2                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql
 # 4.1.3, Host language data types
 4.1.3                    implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test.mod only C (B112)
 # 4.1.4, Data type terminology
 4.1.4                    definition   - -
 # 4.1.5, Properties of distinct
-4.1.5                    implemented  vsql/std_2_7_16_query_specification.v tests/select-distinct.sql
+4.1.5                    implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
 # 4.2, Character strings
-4.2                      implemented  vsql/std_2_6_1_data_type.v tests/character.sql no CHARACTER LARGE OBJECT (T041)
+4.2                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql no CHARACTER LARGE OBJECT (T041)
 # 4.2.1, Introduction to character strings
-4.2.1                    implemented  vsql/std_2_6_1_data_type.v tests/character-varying.sql no CHARACTER LARGE OBJECT (T041)
+4.2.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql no CHARACTER LARGE OBJECT (T041)
 # 4.2.2, Comparison of character strings
-4.2.2                    implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
+4.2.2                    implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql
 # 4.2.3, Operations involving character strings
-4.2.3                    implemented  vsql/std_2_6_32_string_value_function.v tests/substring.sql
+4.2.3                    implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql
 # 4.2.3.1, Regular expression syntaxes
-4.2.3.1                  implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql no XQuery regular expressions (F841)
+4.2.3.1                  implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql no XQuery regular expressions (F841)
 # 4.2.3.2, Operators that operate on character strings and return character strings
-4.2.3.2                  implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql no OVERLAY (T312), NORMALIZE (T061) or transliterations (F695)
+4.2.3.2                  implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql no OVERLAY (T312), NORMALIZE (T061) or transliterations (F695)
 # 4.2.3.3, Other operators involving character strings
-4.2.3.3                  implemented  vsql/std_2_6_32_string_value_function.v tests/length.sql
+4.2.3.3                  implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_30_length.sql
 # 4.2.3.4, Operations involving large object character strings
 4.2.3.4                  n/a          - - large objects (T041)
 # 4.2.4, Character repertoires
-4.2.4                    partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only UTF8
+4.2.4                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
 # 4.2.5, Character encoding forms
-4.2.5                    partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only UTF8
+4.2.5                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
 # 4.2.6, Collations
-4.2.6                    partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only the default collation
+4.2.6                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only the default collation
 # 4.2.7, Character sets
-4.2.7                    partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only UTF8
+4.2.7                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
 # 4.2.8, Universal character sets
-4.2.8                    partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only UTF8
+4.2.8                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
 # 4.3, Binary strings
 4.3                      n/a          - - binary strings (T021)
 # 4.3.1, Introduction to binary strings
@@ -53,35 +53,35 @@
 # 4.3.3.2, Other operators involving binary strings
 4.3.3.2                  n/a          - - binary strings (T021)
 # 4.4, Numbers
-4.4                      implemented  vsql/std_2_6_1_data_type.v tests/numeric.sql
+4.4                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_numeric.sql
 # 4.4.1, Introduction to numbers
-4.4.1                    implemented  vsql/std_2_6_1_data_type.v tests/numeric.sql
+4.4.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_numeric.sql
 # 4.4.2, Characteristics of numbers
-4.4.2                    implemented  vsql/std_2_6_1_data_type.v tests/numeric.sql
+4.4.2                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_numeric.sql
 # 4.4.3, Operations involving numbers
-4.4.3                    implemented  vsql/std_2_6_29_numeric_value_expression.v tests/arithmetic.sql
+4.4.3                    implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql
 # 4.5, Boolean types
-4.5                      implemented  vsql/std_2_6_39_boolean_value_expression.v tests/boolean.sql
+4.5                      implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.5.1, Introduction to Boolean types
-4.5.1                    implemented  vsql/std_2_6_39_boolean_value_expression.v tests/boolean.sql
+4.5.1                    implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.5.2, Comparison and assignment of booleans
-4.5.2                    implemented  vsql/std_2_6_39_boolean_value_expression.v tests/boolean.sql
+4.5.2                    implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.5.3, Operations involving booleans
-4.5.3                    implemented  vsql/std_2_6_39_boolean_value_expression.v tests/boolean.sql
+4.5.3                    implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.5.3.1, Operations on booleans that return booleans
-4.5.3.1                  implemented  vsql/std_2_6_39_boolean_value_expression.v tests/boolean.sql
+4.5.3.1                  implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.5.3.2, Other operators involving booleans
-4.5.3.2                  implemented  vsql/std_2_6_39_boolean_value_expression.v tests/boolean.sql
+4.5.3.2                  implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.6, Datetimes and intervals
-4.6                      implemented  vsql/std_2_6_1_data_type.v tests/timestamp.sql no intervals (F052)
+4.6                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql no intervals (F052)
 # 4.6.1, Introduction to datetimes and intervals
-4.6.1                    implemented  vsql/std_2_6_1_data_type.v tests/date.sql no intervals (F052)
+4.6.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_date.sql no intervals (F052)
 # 4.6.2, Datetimes
-4.6.2                    implemented  vsql/std_2_6_1_data_type.v tests/time.sql
+4.6.2                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_time.sql
 # 4.6.3, Intervals
 4.6.3                    n/a          - - intervals (F052)
 # 4.6.4, Operations involving datetimes and intervals
-4.6.4                    implemented  vsql/std_2_6_35_datetime_value_expression.v tests/date-time-value-function.sql no datetime arithmetic, which needs intervals (F052)
+4.6.4                    implemented  vsql/std_2_6_35_datetime_value_expression.v tests/std_2_6_36_date_time_value_function.sql no datetime arithmetic, which needs intervals (F052)
 # 4.7, User-defined types
 4.7                      n/a          - - user-defined types (S023)
 # 4.7.1, Introduction to user-defined types
@@ -141,11 +141,11 @@
 # 4.10.6.3, Operators that operate on multiset values and return numbers
 4.10.6.3                 n/a          - - arrays and multisets (S091, S271)
 # 4.11, Data conversions
-4.11                     implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
+4.11                     implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 # 4.12, Domains
 4.12                     n/a          - - domains (F251)
 # 4.13, Columns, fields, and attributes
-4.13                     implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql no fields (T051) or attributes (S023)
+4.13                     implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql no fields (T051) or attributes (S023)
 # 4.14, Periods
 4.14                     n/a          - - periods (T180, T181)
 # 4.14.1, Introduction to periods
@@ -153,53 +153,53 @@
 # 4.14.2, Operations involving periods
 4.14.2                   n/a          - - periods (T180, T181)
 # 4.15, Tables
-4.15                     implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+4.15                     implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 # 4.15.1, Introduction to tables
-4.15.1                   implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+4.15.1                   implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 # 4.15.2, Base tables
-4.15.2                   implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+4.15.2                   implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 # 4.15.2.1, Regular persistent base tables
-4.15.2.1                 implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+4.15.2.1                 implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 # 4.15.2.2, System-versioned tables
 4.15.2.2                 n/a          - - system-versioned tables (T180)
 # 4.15.2.3, Temporary tables
 4.15.2.3                 n/a          - - temporary tables (F531)
 # 4.15.3, Derived tables
-4.15.3                   implemented  vsql/std_2_7_17_query_expression.v tests/subquery.sql
+4.15.3                   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_6_subquery.sql
 # 4.15.4, Transient tables
 4.15.4                   n/a          - - WITH (T121) and triggers (T211)
 # 4.15.5, Unique identification of tables
-4.15.5                   implemented  vsql/std_2_4_26_sql_schemas.v tests/catalog-qualified-names.sql
+4.15.5                   implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_5_4_catalog_qualified_names.sql
 # 4.15.6, Table updatability
-4.15.6                   implemented  vsql/std_2_14_11_insert_statement.v tests/update.sql only base tables can be changed, since there are no views (F031-02)
+4.15.6                   implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_14_update.sql only base tables can be changed, since there are no views (F031-02)
 # 4.15.7, Table descriptors
-4.15.7                   implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+4.15.7                   implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 # 4.15.8, Syntactic analysis of derived tables and cursors
 4.15.8                   definition   - -
 # 4.15.9, Referenceable tables, subtables, and supertables
 4.15.9                   n/a          - - subtables (S081)
 # 4.15.10, Operations involving tables
-4.15.10                  implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql no MERGE (F312) or TRUNCATE TABLE (F200)
+4.15.10                  implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql no MERGE (F312) or TRUNCATE TABLE (F200)
 # 4.15.11, Range variables
-4.15.11                  implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql
+4.15.11                  implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 # 4.15.12, Identity columns
-4.15.12                  implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
+4.15.12                  implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
 # 4.15.13, Base columns and generated columns
-4.15.13                  implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+4.15.13                  implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
 # 4.15.14, Grouped tables
-4.15.14                  implemented  vsql/std_2_7_13_group_by_clause.v tests/group-by.sql
+4.15.14                  implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
 # 4.15.15, Windowed tables
 4.15.15                  n/a          - - window functions (T611)
 # 4.16, Data analysis operations (involving tables)
-4.16                     implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
+4.16                     implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 # 4.16.1, Introduction to data analysis operations
-4.16.1                   implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
+4.16.1                   implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 # 4.16.2, Group functions
 4.16.2                   n/a          - - GROUPING (T433)
 # 4.16.3, Window functions
 4.16.3                   n/a          - - window functions (T611)
 # 4.16.4, Aggregate functions
-4.16.4                   implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
+4.16.4                   implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 # 4.16.5, Row pattern measures
 4.16.5                   n/a          - - row pattern recognition (R010)
 # 4.17, Row pattern matching
@@ -235,23 +235,23 @@
 # 4.21.4, Row pattern match number function
 4.21.4                   n/a          - - row pattern recognition (R010)
 # 4.22, Determinism
-4.22                     implemented  vsql/funcs.v tests/check-constraint.sql
+4.22                     implemented  vsql/funcs.v tests/std_2_11_9_check_constraint.sql
 # 4.23, Integrity constraints
-4.23                     implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+4.23                     implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 # 4.23.1, Overview of integrity constraints
-4.23.1                   implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+4.23.1                   implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 # 4.23.2, Checking of constraints
-4.23.2                   implemented  vsql/std_2_11_9_check_constraint_definition.v tests/deferrable-constraints.sql
+4.23.2                   implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_10_8_deferrable_constraints.sql
 # 4.23.3, Table constraints
-4.23.3                   implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+4.23.3                   implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 # 4.23.3.1, Introduction to table constraints
-4.23.3.1                 implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+4.23.3.1                 implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 # 4.23.3.2, Unique constraints
-4.23.3.2                 implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/unique-constraint.sql
+4.23.3.2                 implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 # 4.23.3.3, Referential constraints
-4.23.3.3                 implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+4.23.3.3                 implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 # 4.23.3.4, Table check constraints
-4.23.3.4                 implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+4.23.3.4                 implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 # 4.23.4, Domain constraints
 4.23.4                   n/a          - - domains (F251)
 # 4.23.5, Assertions
@@ -293,13 +293,13 @@
 # 4.25, Candidate keys
 4.25                     n/a          - - functional dependencies (T301)
 # 4.26, SQL-schemas
-4.26                     implemented  vsql/std_2_4_26_sql_schemas.v tests/create-schema.sql
+4.26                     implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_11_1_create_schema.sql
 # 4.27, Sequence generators
-4.27                     implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+4.27                     implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
 # 4.27.1, General description of sequence generators
-4.27.1                   implemented  vsql/std_2_4_27_sequence_generators.v tests/next-value-for.sql
+4.27.1                   implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_6_14_next_value_for.sql
 # 4.27.2, Operations involving sequence generators
-4.27.2                   implemented  vsql/std_2_4_27_sequence_generators.v tests/next-value-for.sql
+4.27.2                   implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_6_14_next_value_for.sql
 # 4.28, SQL-client modules
 4.28                     implemented  vsql/std_2_13_1_sql_client_module_definition.v libvsql/module/test.mod
 # 4.29, Embedded syntax
@@ -315,21 +315,21 @@
 # 4.30.4, Dynamic SQL statements and descriptor areas
 4.30.4                   implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test.mod
 # 4.31, Direct invocation of SQL
-4.31                     implemented  vsql/std_2_22_1_direct_sql_statement.v tests/select-from.sql
+4.31                     implemented  vsql/std_2_22_1_direct_sql_statement.v tests/std_2_7_5_select_from.sql
 # 4.32, Externally-invoked procedures
 4.32                     implemented  vsql/std_2_13_3_externally_invoked_procedure.v libvsql/module/test.mod
 # 4.33, SQL-invoked routines
-4.33                     partial      vsql/funcs.v tests/routine-invocation.sql only built-in functions and ones registered from V, there are no SQL-invoked routines (T321, #733)
+4.33                     partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql only built-in functions and ones registered from V, there are no SQL-invoked routines (T321, #733)
 # 4.33.1, Overview of SQL-invoked routines
-4.33.1                   partial      vsql/funcs.v tests/routine-invocation.sql only built-in functions and ones registered from V (T321, #733)
+4.33.1                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql only built-in functions and ones registered from V (T321, #733)
 # 4.33.2, Characteristics of SQL-invoked routines
-4.33.2                   partial      vsql/funcs.v tests/routine-invocation.sql only DETERMINISTIC and CALLED ON NULL INPUT, which can't be declared (T321, #733)
+4.33.2                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql only DETERMINISTIC and CALLED ON NULL INPUT, which can't be declared (T321, #733)
 # 4.33.3, Execution of conventional SQL-invoked routines
-4.33.3                   partial      vsql/funcs.v tests/routine-invocation.sql a function registered from V is called directly, there's no routine execution context (T321, #733)
+4.33.3                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql a function registered from V is called directly, there's no routine execution context (T321, #733)
 # 4.33.4, Invocation of polymorphic table functions
 4.33.4                   n/a          - - polymorphic table functions (B200)
 # 4.33.5, Routine descriptors
-4.33.5                   partial      vsql/funcs.v tests/routine-invocation.sql a function has a name, argument types and a return type (T321, #733)
+4.33.5                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql a function has a name, argument types and a return type (T321, #733)
 # 4.33.6, Result sets returned by SQL-invoked procedures
 4.33.6                   n/a          - - returned result sets (T471)
 # 4.34, SQL-paths
@@ -351,13 +351,13 @@
 # 4.37, Host languages
 4.37                     implemented  vsql/std_2_21_1_embedded_sql_host_program.v libvsql/module/test.mod only C (B012, B112)
 # 4.38, Cursors
-4.38                     implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+4.38                     implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 # 4.38.1, General description of cursors
-4.38.1                   implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+4.38.1                   implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 # 4.38.2, Operations on and using cursors
-4.38.2                   implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+4.38.2                   implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 # 4.39, SQL-statements
-4.39                     implemented  vsql/std_2_22_1_direct_sql_statement.v tests/transaction.sql
+4.39                     implemented  vsql/std_2_22_1_direct_sql_statement.v tests/std_2_17_1_transaction.sql
 # 4.39.1, Classes of SQL-statements
 4.39.1                   definition   - -
 # 4.39.2, SQL-statements classified by function
@@ -385,15 +385,15 @@
 # 4.39.3, SQL-statements and SQL-data access indication
 4.39.3                   n/a          - - SQL-invoked routines (T321)
 # 4.39.4, SQL-statements and transaction states
-4.39.4                   implemented  vsql/std_2_22_1_direct_sql_statement.v tests/transaction.sql
+4.39.4                   implemented  vsql/std_2_22_1_direct_sql_statement.v tests/std_2_17_1_transaction.sql
 # 4.39.5, SQL-statement atomicity and statement execution contexts
-4.39.5                   implemented  vsql/storage.v tests/statement-atomicity.sql
+4.39.5                   implemented  vsql/storage.v tests/std_2_4_39_5_statement_atomicity.sql
 # 4.39.6, Embeddable SQL-statements
 4.39.6                   implemented  vsql/std_2_21_1_embedded_sql_host_program.v libvsql/embed/example.sqc
 # 4.39.7, Preparable and immediately executable SQL-statements
 4.39.7                   implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test.mod
 # 4.39.8, Directly executable SQL-statements
-4.39.8                   implemented  vsql/std_2_22_1_direct_sql_statement.v tests/select-from.sql
+4.39.8                   implemented  vsql/std_2_22_1_direct_sql_statement.v tests/std_2_7_5_select_from.sql
 # 4.40, Basic security model
 4.40                     n/a          - - authorization identifiers and privileges (E081)
 # 4.40.1, Authorization identifiers
@@ -411,19 +411,19 @@
 # 4.40.4, Security model definitions
 4.40.4                   n/a          - - authorization identifiers and privileges (E081)
 # 4.41, SQL-transactions
-4.41                     implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
+4.41                     implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
 # 4.41.1, General description of SQL-transactions
-4.41.1                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
+4.41.1                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
 # 4.41.2, Savepoints
 4.41.2                   n/a          - - savepoints (T271)
 # 4.41.3, Properties of SQL-transactions
-4.41.3                   partial      vsql/std_2_17_1_start_transaction_statement.v tests/set-transaction.sql only the diagnostics area limit; access modes and isolation levels are #554 and #664
+4.41.3                   partial      vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_2_set_transaction.sql only the diagnostics area limit; access modes and isolation levels are #554 and #664
 # 4.41.4, Isolation levels of SQL-transactions
-4.41.4                   deviates     vsql/std_2_17_1_start_transaction_statement.v tests/isolation-read-committed.sql always READ COMMITTED instead of SERIALIZABLE (#664)
+4.41.4                   deviates     vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_3_isolation_read_committed.sql always READ COMMITTED instead of SERIALIZABLE (#664)
 # 4.41.5, Implicit rollbacks
-4.41.5                   implemented  vsql/connection.v tests/isolation-read-committed.sql
+4.41.5                   implemented  vsql/connection.v tests/std_2_17_3_isolation_read_committed.sql
 # 4.41.6, Effects of SQL-statements in an SQL-transaction
-4.41.6                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
+4.41.6                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
 # 4.41.7, Encompassing transactions
 4.41.7                   n/a          - - there's no external transaction manager or encompassing transaction
 # 4.41.7.1, Encompassing transaction belonging to an external agent
@@ -431,15 +431,15 @@
 # 4.41.7.2, Encompassing transaction belonging to the SQL-agent
 4.41.7.2                 n/a          - - there's no external transaction manager or encompassing transaction
 # 4.42, SQL-connections
-4.42                     implemented  vsql/std_2_18_1_connect_statement.v tests/connections.sql
+4.42                     implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.43, SQL-sessions
-4.43                     implemented  vsql/std_2_18_1_connect_statement.v tests/connections.sql
+4.43                     implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.43.1, General description of SQL-sessions
-4.43.1                   implemented  vsql/std_2_18_1_connect_statement.v tests/connections.sql
+4.43.1                   implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.43.2, SQL-session identification
-4.43.2                   implemented  vsql/std_2_18_1_connect_statement.v tests/connections.sql
+4.43.2                   implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.43.3, SQL-session properties
-4.43.3                   partial      vsql/std_2_18_1_connect_statement.v tests/set-schema.sql no SET TIME ZONE (F411), SQL-session user (E081), roles (T331) or SQL-path (S071)
+4.43.3                   partial      vsql/std_2_18_1_connect_statement.v tests/std_2_19_6_set_schema.sql no SET TIME ZONE (F411), SQL-session user (E081), roles (T331) or SQL-path (S071)
 # 4.43.4, SQL-session context management
 4.43.4                   n/a          - - SQL-invoked routines (T321)
 # 4.43.5, Execution contexts

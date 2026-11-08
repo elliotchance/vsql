@@ -986,7 +986,7 @@ fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions
 	}
 
 	// A file that failed while it was being created doesn't have the PUBLIC
-	// schema for pg_database yet, see tests/faults.sql.
+	// schema for pg_database yet, see tests/impl_storage_faults.sql.
 	register_pg_virtual_tables(mut db) or {
 		if err !is SQLState3F000 {
 			db.close()
@@ -1357,7 +1357,8 @@ fn test_server_host() ! {
 
 // A query without a statement has an empty response from the server, even if
 // the option could change it into a statement. It's an error for the library,
-// see tests/bracketed-comments.sql. A query that can't be tokenized isn't empty.
+// see tests/std_2_5_2_bracketed_comments.sql. A query that can't be tokenized
+// isn't empty.
 fn test_server_empty_query() ! {
 	mut server := start_sql_test_server_with(ServerOptions{
 		select_without_from: true
@@ -2812,7 +2813,7 @@ fn test_positioned_cursor() {
 
 // An SQL argument of a routine invocation that's a dynamic parameter needs
 // B033, as well as B031 for the dynamic parameter itself (see F812, "Basic
-// flagging", in tests/flagging.sql).
+// flagging", in tests/std_1_8_5_flagging.sql).
 // NOW() is always CURRENT_TIMESTAMP. A function with that name is called by
 // quoting it.
 fn test_registered_now_function() ! {

@@ -77,10 +77,10 @@
 9.1/GR/7.v               n/a          - - multisets (S271)
 9.1/GR/7.w               n/a          - - user-defined types (S023)
 # 9.2, Store assignment
-9.2                      implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/character.sql,tests/datetime-store-assignment.sql
+9.2                      implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_character.sql,tests/std_2_9_2_datetime_store_assignment.sql
 9.2/SR/1                 definition   - -
 9.2/SR/2                 definition   - -
-9.2/SR/3                 implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/datetime-store-assignment.sql
+9.2/SR/3                 implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_9_2_datetime_store_assignment.sql
 9.2/SR/4                 n/a          - - reference types (S041)
 9.2/SR/5                 n/a          - - there are no row type sites
 9.2/SR/5.a               n/a          - - there are no row type sites
@@ -93,25 +93,25 @@
 9.2/GR/1                 definition   - -
 9.2/GR/2                 n/a          - - user-defined cast functions (S211)
 9.2/GR/3                 container    - -
-9.2/GR/3.a               implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
-9.2/GR/3.a.i             implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
+9.2/GR/3.a               implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_8_8_null.sql
+9.2/GR/3.a.i             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_8_8_null.sql
 9.2/GR/3.a.ii            implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
 9.2/GR/3.a.ii.1          implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
 9.2/GR/3.a.ii.2          implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
 9.2/GR/3.a.iii           implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
 9.2/GR/3.a.iii.1         implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
 9.2/GR/3.a.iii.2         implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
-9.2/GR/3.a.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
-9.2/GR/3.b               implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql
-9.2/GR/3.b.i             implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
-9.2/GR/3.b.ii            implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
-9.2/GR/3.b.ii.1          implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
-9.2/GR/3.b.ii.2          implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
-9.2/GR/3.b.iii           implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
-9.2/GR/3.b.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
-9.2/GR/3.b.v             implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
-9.2/GR/3.b.v.1           implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
-9.2/GR/3.b.v.2           implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
+9.2/GR/3.a.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_8_8_null.sql
+9.2/GR/3.b               implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql
+9.2/GR/3.b.i             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
+9.2/GR/3.b.ii            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
+9.2/GR/3.b.ii.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
+9.2/GR/3.b.ii.2          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
+9.2/GR/3.b.iii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
+9.2/GR/3.b.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
+9.2/GR/3.b.v             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
+9.2/GR/3.b.v.1           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
+9.2/GR/3.b.v.2           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
 9.2/GR/3.b.vi            n/a          - - there are no CLOBs (T041)
 9.2/GR/3.b.vii           n/a          - - there are no CLOBs (T041)
 9.2/GR/3.b.vii.1         n/a          - - there are no CLOBs (T041)
@@ -129,21 +129,21 @@
 9.2/GR/3.b.xiv           n/a          - - there are no BLOBs (T041)
 9.2/GR/3.b.xiv.1         n/a          - - there are no BLOBs (T041)
 9.2/GR/3.b.xiv.2         n/a          - - there are no BLOBs (T041)
-9.2/GR/3.b.xv            implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/integer.sql
-9.2/GR/3.b.xv.1          implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/integer.sql
-9.2/GR/3.b.xv.2          impl-defined vsql/std_2_9_2_store_assignment.v tests/insert.sql an exact numeric is truncated
-9.2/GR/3.b.xv.3          implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/integer.sql
-9.2/GR/3.b.xvi           implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
-9.2/GR/3.b.xvi.1         implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
-9.2/GR/3.b.xvi.2         implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
-9.2/GR/3.b.xvi.2.A       implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
-9.2/GR/3.b.xvi.2.B       impl-defined vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql the fractional seconds are truncated
+9.2/GR/3.b.xv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql
+9.2/GR/3.b.xv.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql
+9.2/GR/3.b.xv.2          impl-defined vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql an exact numeric is truncated
+9.2/GR/3.b.xv.3          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql
+9.2/GR/3.b.xvi           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+9.2/GR/3.b.xvi.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+9.2/GR/3.b.xvi.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+9.2/GR/3.b.xvi.2.A       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+9.2/GR/3.b.xvi.2.B       impl-defined vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql the fractional seconds are truncated
 9.2/GR/3.b.xvi.2.C       n/a          - - every datetime is within the range of every datetime type
 9.2/GR/3.b.xvii          n/a          - - intervals (F052)
 9.2/GR/3.b.xvii.1        n/a          - - intervals (F052)
 9.2/GR/3.b.xvii.2        n/a          - - intervals (F052)
 9.2/GR/3.b.xvii.3        n/a          - - intervals (F052)
-9.2/GR/3.b.xviii         implemented  vsql/std_2_9_2_store_assignment.v tests/boolean.sql
+9.2/GR/3.b.xviii         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_boolean.sql
 9.2/GR/3.b.xix           n/a          - - there are no row type sites
 9.2/GR/3.b.xix.1         n/a          - - there are no row type sites
 9.2/GR/3.b.xix.2         n/a          - - there are no row type sites
@@ -267,12 +267,12 @@
 9.4/GR/5.k               n/a          - - binary strings (T021)
 9.4/GR/5.l               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 # 9.5, Result of data type combinations
-9.5                      implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5                      implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/1                 definition   - -
 9.5/SR/2                 n/a          - - a dynamic parameter has the type of its value, so no type is undefined
 9.5/SR/3                 container    - -
-9.5/SR/3.a               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
-9.5/SR/3.a.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql there are no character sets other than UTF8
+9.5/SR/3.a               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
+9.5/SR/3.a.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql there are no character sets other than UTF8
 9.5/SR/3.a.ii            n/a          - - there are no collations other than the default (F690)
 9.5/SR/3.a.ii.1          n/a          - - there are no collations other than the default (F690)
 9.5/SR/3.a.ii.2          n/a          - - there are no collations other than the default (F690)
@@ -281,21 +281,21 @@
 9.5/SR/3.a.ii.3          n/a          - - there are no collations other than the default (F690)
 9.5/SR/3.a.iii           container    - -
 9.5/SR/3.a.iii.1         n/a          - - there are no CLOBs (T041)
-9.5/SR/3.a.iii.2         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
-9.5/SR/3.a.iii.3         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.a.iii.2         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
+9.5/SR/3.a.iii.3         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/3.b               n/a          - - binary strings (T021)
 9.5/SR/3.b.i             n/a          - - binary strings (T021)
 9.5/SR/3.b.ii            n/a          - - binary strings (T021)
 9.5/SR/3.b.iii           n/a          - - binary strings (T021)
-9.5/SR/3.c               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
-9.5/SR/3.c.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
-9.5/SR/3.c.ii            implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.c               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
+9.5/SR/3.c.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
+9.5/SR/3.c.ii            implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/3.c.ii.1          n/a          - - decimal floating-point (T076)
-9.5/SR/3.c.ii.2          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql REAL if they are all REAL, otherwise DOUBLE PRECISION
-9.5/SR/3.c.ii.3          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql enough for the largest integer part and scale, up to the maximum precision; integers are the largest integer type
-9.5/SR/3.d               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.c.ii.2          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql REAL if they are all REAL, otherwise DOUBLE PRECISION
+9.5/SR/3.c.ii.3          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql enough for the largest integer part and scale, up to the maximum precision; integers are the largest integer type
+9.5/SR/3.d               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/3.e               n/a          - - intervals (F052)
-9.5/SR/3.f               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/case-expression.sql
+9.5/SR/3.f               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_6_12_case_expression.sql
 9.5/SR/3.g               n/a          - - row types (T051)
 9.5/SR/3.g.i             n/a          - - row types (T051)
 9.5/SR/3.g.ii            n/a          - - row types (T051)
@@ -434,7 +434,7 @@
 9.10/GR/2.e.iii          n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
 9.10/GR/2.f              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
 # 9.11, Equality operations
-9.11                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+9.11                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 9.11/SR/1                definition   - -
 9.11/SR/1.a              definition   - -
 9.11/SR/1.b              definition   - -
@@ -460,13 +460,13 @@
 9.11/SR/2.l              definition   - -
 9.11/SR/2.m              definition   - -
 9.11/SR/3                n/a          - - user-defined types (S023)
-9.11/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.11/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.11/SR/5                n/a          - - multisets (S271)
 9.11/CR/1                n/a          - - structured types (S024)
 9.11/CR/2                n/a          - - there are no LOBs (T042)
 9.11/CR/3                n/a          - - multisets (S275)
 # 9.12, Grouping operations
-9.12                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/select-distinct.sql
+9.12                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_7_16_select_distinct.sql
 9.12/SR/1                definition   - -
 9.12/SR/1.a              definition   - -
 9.12/SR/1.b              definition   - -
@@ -494,7 +494,7 @@
 9.12/SR/2.k              definition   - -
 9.12/SR/2.l              definition   - -
 9.12/SR/3                n/a          - - there are no LOBs, arrays, multisets or user-defined types
-9.12/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/select-distinct.sql only the default collation
+9.12/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_7_16_select_distinct.sql only the default collation
 9.12/CR/1                n/a          - - structured types (S024)
 # 9.13, Multiset element grouping operations
 9.13                     n/a          - - multisets (S271)
@@ -521,7 +521,7 @@
 9.13/SR/4                n/a          - - multisets (S271)
 9.13/CR/1                n/a          - - multisets (S271)
 # 9.14, Ordering operations
-9.14                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+9.14                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 9.14/SR/1                definition   - -
 9.14/SR/1.a              definition   - -
 9.14/SR/1.b              definition   - -
@@ -540,19 +540,19 @@
 9.14/SR/2.g              definition   - -
 9.14/SR/2.h              definition   - -
 9.14/SR/3                n/a          - - there are no LOBs, arrays, multisets, reference types or user-defined types
-9.14/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.14/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.14/CR/1                n/a          - - structured types (S024)
 # 9.15, Collation determination
-9.15                     impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation, which is PAD SPACE
+9.15                     impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation, which is PAD SPACE
 9.15/SR/1                definition   - -
-9.15/SR/2                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql every character string has the default collation
-9.15/SR/3                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql the character set is always UTF8
+9.15/SR/2                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql every character string has the default collation
+9.15/SR/3                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql the character set is always UTF8
 9.15/SR/4                container    - -
-9.15/SR/4.a              impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.15/SR/4.a              impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.15/SR/4.b              n/a          - - there is no COLLATE (F690)
 9.15/SR/4.c              n/a          - - SQL-session collations (F693)
 9.15/SR/4.d              n/a          - - SQL-client module collations (F693)
-9.15/SR/4.e              impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.15/SR/4.e              impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 # 9.16, Execution of array-returning functions
 9.16                     n/a          - - external routines (S201)
 9.16/GR/1                n/a          - - external routines (S201)
@@ -978,91 +978,91 @@
 9.28/SR/2                n/a          - - transforms (S241)
 9.28/SR/3                n/a          - - transforms (S241)
 # 9.29, Generation of the next value of a sequence generator
-9.29                     implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29                     implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
 9.29/GR/1                definition   - -
 9.29/GR/2                definition   - -
-9.29/GR/3                implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/3.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/3.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/3.b.i            implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/3.b.ii           implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/3                implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
+9.29/GR/3.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
+9.29/GR/3.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
+9.29/GR/3.b.i            implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
+9.29/GR/3.b.ii           implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
 9.29/GR/4                container    - -
-9.29/GR/4.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/4.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/4.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
+9.29/GR/4.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
+9.29/GR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_9_29_sequence_limits.sql
 # 9.30, Creation of a sequence generator
-9.30                     implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30                     implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 9.30/SR/1                definition   - -
-9.30/SR/2                implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/create-sequence.sql
-9.30/SR/3                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/4                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/SR/6                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/2                implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/std_2_11_72_create_sequence.sql
+9.30/SR/3                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/4                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/6                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 9.30/SR/7                container    - -
-9.30/SR/7.a              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
-9.30/SR/7.a.i            impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
-9.30/SR/7.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/7.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
-9.30/SR/8                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/8.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/8.a.i            impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column)
-9.30/SR/8.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/8.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column)
+9.30/SR/7.a              impl-defined vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql,tests/std_2_9_29_sequence_limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
+9.30/SR/7.a.i            impl-defined vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql,tests/std_2_9_29_sequence_limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
+9.30/SR/7.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/7.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql,tests/std_2_9_29_sequence_limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
+9.30/SR/8                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/8.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/8.a.i            impl-defined vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql,tests/std_2_9_29_sequence_limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column)
+9.30/SR/8.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/8.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql,tests/std_2_9_29_sequence_limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column)
 9.30/SR/9                container    - -
-9.30/SR/9.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/9.b              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/9.b.i            implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/9.b.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/10               implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/SR/12               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/SR/13               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/9.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/9.b              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/9.b.i            implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/9.b.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/10               implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/12               implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/SR/13               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 9.30/GR/1                definition   - -
-9.30/GR/2                implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2                implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
 9.30/GR/2.a              n/a          - - there are no internal sequence generators, other than for identity columns, which are named after the column
-9.30/GR/2.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql always BIGINT (#399)
-9.30/GR/2.c              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/GR/2.d              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/GR/2.e              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/GR/2.f              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/GR/2.g              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
-9.30/GR/2.h              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql always BIGINT (#399)
+9.30/GR/2.c              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/GR/2.d              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/GR/2.e              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/GR/2.f              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/GR/2.g              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+9.30/GR/2.h              implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
 # 9.31, Altering a sequence generator
-9.31                     implemented      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31                     implemented      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 9.31/SR/1                definition   - -
-9.31/SR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/alter-sequence.sql
-9.31/SR/3                impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql always BIGINT (#399)
-9.31/SR/4                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/alter-sequence.sql
+9.31/SR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_2_11_73_alter_sequence.sql
+9.31/SR/3                impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql always BIGINT (#399)
+9.31/SR/4                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_73_alter_sequence.sql
 9.31/SR/5                container    - -
-9.31/SR/5.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/5.a.i            implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/5.a.ii           implemented  vsql/std_2_4_27_sequence_generators.v tests/alter-sequence.sql
-9.31/SR/5.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/5.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/5.a.i            implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/5.a.ii           implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/5.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 9.31/SR/6                container    - -
-9.31/SR/6.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/6.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one, for the new INCREMENT BY
-9.31/SR/6.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/6.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-increment.sql
+9.31/SR/6.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/6.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_9_29_sequence_limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one, for the new INCREMENT BY
+9.31/SR/6.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/6.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence_increment.sql
 9.31/SR/7                container    - -
-9.31/SR/7.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/7.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/sequence-limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column), for the new INCREMENT BY
-9.31/SR/7.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/7.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-increment.sql
-9.31/SR/8                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/7.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/7.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_9_29_sequence_limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column), for the new INCREMENT BY
+9.31/SR/7.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/7.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence_increment.sql
+9.31/SR/8                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 9.31/SR/9                container    - -
-9.31/SR/9.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
-9.31/SR/9.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
-9.31/SR/9.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
-9.31/SR/10               implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/alter-sequence.sql
-9.31/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/alter-sequence.sql
-9.31/SR/12               partial      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-range.sql the next value is only checked against a new MINVALUE or MAXVALUE, so CYCLE or NO MAXVALUE can revive a sequence that has gone past its limit
+9.31/SR/9.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence_restart.sql
+9.31/SR/9.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence_restart.sql
+9.31/SR/9.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence_restart.sql
+9.31/SR/10               implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_73_alter_sequence.sql
+9.31/SR/12               partial      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence_range.sql the next value is only checked against a new MINVALUE or MAXVALUE, so CYCLE or NO MAXVALUE can revive a sequence that has gone past its limit
 9.31/GR/1                definition   - -
-9.31/GR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/GR/2.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/GR/2.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/GR/2.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/GR/2.d              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/GR/2.e              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/GR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/GR/2.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/GR/2.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/GR/2.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/GR/2.d              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+9.31/GR/2.e              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 # 9.32, Generation of the hierarchical <query expression> of a view
 9.32                     n/a          - - views (F031-02)
 9.32/GR/1                n/a          - - views (F031-02)

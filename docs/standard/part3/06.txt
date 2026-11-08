@@ -602,9 +602,9 @@
 6.17/GR/12               implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/12.a             n/a          - - there's no atomic execution context from CLI
 6.17/GR/12.b             n/a          - - there are no temporary tables
-6.17/GR/12.c             implemented  libvsql/std_3_6_17_end_tran.v tests/deferrable-constraints.sql by executing COMMIT
+6.17/GR/12.c             implemented  libvsql/std_3_6_17_end_tran.v tests/std_2_10_8_deferrable_constraints.sql by executing COMMIT
 6.17/GR/12.d             container    - -
-6.17/GR/12.d.i           implemented  libvsql/std_3_6_17_end_tran.v tests/deferrable-constraints.sql by executing COMMIT
+6.17/GR/12.d.i           implemented  libvsql/std_3_6_17_end_tran.v tests/std_2_10_8_deferrable_constraints.sql by executing COMMIT
 6.17/GR/12.d.ii          n/a          - - there are no triggers
 6.17/GR/12.d.iii         impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c the subclass is 40V01
 6.17/GR/12.d.iv          implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
@@ -1978,7 +1978,7 @@
 6.49/GR/17.b.i.6         implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/17.b.i.6.A       implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/17.b.i.6.B       n/a          - - there are no users (#732)
-6.49/GR/17.b.i.6.C       implemented  vsql/time.v tests/date-time-value-function.sql the rows are evaluated by one OPEN statement
+6.49/GR/17.b.i.6.C       implemented  vsql/time.v tests/std_2_6_36_date_time_value_function.sql the rows are evaluated by one OPEN statement
 6.49/GR/17.b.i.6.D       n/a          - - there's no CURRENT_PATH
 6.49/GR/17.b.i.7         definition   - -
 6.49/GR/17.b.i.8         definition   - -

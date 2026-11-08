@@ -656,7 +656,7 @@ fn (mut y Vyacc) setup() ! {
 			}
 			y.levprd[y.nprod] |= actflag
 			y.fcode.write_string('\n\t${y.nprod} {')
-			y.fcode.write_string('\n\t\t${y.prefix}_action_${y.nprod}(mut ${y.prefix}lex, mut ${y.prefix}rcvr, ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1].clone(), mut ${y.prefix}_val)!')
+			y.fcode.write_string('\n\t\t${y.prefix}_action_${y.nprod}(mut ${y.prefix}lex, mut ${y.prefix}rcvr, ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1], mut ${y.prefix}_val)!')
 			y.fcode.write_string('\n\t}')
 			arms := y.fcode
 			y.fcode = y.factions

@@ -11,12 +11,20 @@ Syntax
 
 .. code-block:: text
 
-  DECLARE <cursor_name> CURSOR [ WITH HOLD | WITHOUT HOLD ]
+  DECLARE <cursor_name> [ SCROLL | NO SCROLL ] CURSOR [ WITH HOLD | WITHOUT HOLD ]
     FOR <query> [ FOR READ ONLY | FOR UPDATE [ OF <column_name> , ... ] ]
 
   OPEN <cursor_name>
 
-  FETCH [ [ NEXT ] FROM ] <cursor_name>
+  FETCH [ [ <orientation> ] FROM ] <cursor_name>
+
+  <orientation> ::=
+      NEXT
+    | PRIOR
+    | FIRST
+    | LAST
+    | ABSOLUTE <number>
+    | RELATIVE <number>
 
   CLOSE <cursor_name>
 
@@ -58,6 +66,35 @@ transaction is its own transaction. So a cursor is usually used inside of
 ``START TRANSACTION``. A ``WITH HOLD`` cursor stays open after a ``COMMIT``, but
 not after a ``ROLLBACK``.
 
+Scrollable Cursors
+------------------
+
+A ``SCROLL`` cursor can also be fetched in other directions. A cursor that
+isn't ``SCROLL`` (including ``NO SCROLL``) can only ``FETCH NEXT``, any other
+direction is an error (``42601``).
+
+- ``NEXT`` is the row after the cursor (the default).
+- ``PRIOR`` is the row before the cursor.
+- ``FIRST`` and ``LAST`` are the first and last rows.
+- ``ABSOLUTE n`` is the ``n``-th row, starting at 1. A negative ``n`` counts
+  from the end, so ``ABSOLUTE -1`` is the last row.
+- ``RELATIVE n`` moves ``n`` rows forward, or backward if ``n`` is negative.
+  ``RELATIVE 0`` fetches the current row again.
+
+``n`` must be an integer literal (an exact numeric with scale 0, otherwise it's
+a ``42601`` error).
+
+When there's no such row the ``FETCH`` returns no rows (``02000``), and the
+cursor is after the last row if it was moving forward (``NEXT``, ``LAST``, or
+past the end with ``ABSOLUTE`` or ``RELATIVE``), or otherwise before the first
+row. So, for example, a ``PRIOR`` after the cursor has gone past the end
+fetches the last row. ``RELATIVE 0`` doesn't move the cursor.
+
+A ``SCROLL`` cursor is read only unless it's ``FOR UPDATE``. The rows of the
+cursor don't change while it's open, so a row that was deleted through the
+cursor can be fetched again (but not changed), and a row that was updated
+through the cursor is fetched with its old values.
+
 Positioned DELETE and UPDATE
 ----------------------------
 
@@ -68,8 +105,8 @@ row, and the cursor stays on it.
 
 The cursor must be updatable. A cursor is updatable if it selects from one table
 (without a join, ``GROUP BY``, aggregate function, ``DISTINCT``, ``OFFSET`` or
-``FETCH FIRST``), unless it's ``FOR READ ONLY``. A cursor with an ``ORDER BY``
-is only updatable with ``FOR UPDATE``. ``FOR UPDATE OF`` limits the columns that
+``FETCH FIRST``), unless it's ``FOR READ ONLY``. A cursor with an ``ORDER BY``,
+or a ``SCROLL`` cursor, is only updatable with ``FOR UPDATE``. ``FOR UPDATE OF`` limits the columns that
 a positioned ``UPDATE`` can change. A positioned ``UPDATE`` also can't change a
 column that's used by a sort key of the ``ORDER BY`` (``42601``).
 
@@ -144,3 +181,35 @@ Examples
   -- msg: CLOSE
   -- msg: COMMIT
   -- NAME: Coffee PRICE: 5.00
+
+A ``SCROLL`` cursor:
+
+.. code-block:: sql
+
+  CREATE TABLE t (x INT);
+  INSERT INTO t (x) VALUES (1), (2), (3), (4);
+
+  START TRANSACTION;
+  DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+  OPEN c;
+  FETCH LAST FROM c;
+  FETCH PRIOR FROM c;
+  FETCH ABSOLUTE 1 FROM c;
+  FETCH RELATIVE 2 FROM c;
+  FETCH ABSOLUTE -2 FROM c;
+  FETCH ABSOLUTE 5 FROM c;
+  FETCH PRIOR FROM c;
+  COMMIT;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 4
+  -- msg: START TRANSACTION
+  -- msg: DECLARE CURSOR
+  -- msg: OPEN
+  -- X: 4
+  -- X: 3
+  -- X: 1
+  -- X: 3
+  -- X: 3
+  -- warning 02000: no data
+  -- X: 4
+  -- msg: COMMIT

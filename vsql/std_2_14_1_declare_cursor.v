@@ -16,8 +16,31 @@ import time
 struct DeclareCursor {
 	name         string
 	hold         bool
+	scroll       bool
 	query        QueryExpression
 	updatability ?UpdatabilityClause
+}
+
+// CursorProperties are the <cursor properties> of a DECLARE CURSOR. A cursor is
+// NO SCROLL and WITHOUT HOLD unless it says otherwise. scrollability is true
+// if SCROLL or NO SCROLL is specified.
+//
+// ISO/IEC 9075-2:2016(E), 14.2, <cursor properties>, Syntax Rules, 2 and 3
+// ISO/IEC 9075-2:2016(E), 14.2, <cursor properties>, General Rules, 1.b and 1.c
+struct CursorProperties {
+	scroll        bool
+	scrollability bool
+	hold          bool
+}
+
+fn new_declare_cursor(name string, properties CursorProperties, query QueryExpression, updatability ?UpdatabilityClause) DeclareCursor {
+	return DeclareCursor{
+		name:         name
+		hold:         properties.hold
+		scroll:       properties.scroll
+		query:        query
+		updatability: updatability
+	}
 }
 
 // UpdatabilityClause is "FOR READ ONLY" (for_update is false), or "FOR UPDATE"
@@ -36,9 +59,12 @@ struct UpdatabilityClause {
 // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 4
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 4
 struct Cursor {
-	name  string
-	hold  bool
-	query QueryExpression
+	name string
+	hold bool
+	// scroll is true for a SCROLL cursor, which can be fetched in any direction
+	// (see FetchOrientation), rather than only NEXT.
+	scroll bool
+	query  QueryExpression
 	// params are the values of the dynamic parameters of the DECLARE CURSOR,
 	// which are used each time the cursor is opened. writes is true if the
 	// query contains a NEXT VALUE FOR (see PreparedStmt.writes).
@@ -56,7 +82,7 @@ mut:
 	// are found when it's opened) and position is the current row, which is -1
 	// before the first row, and rows.len after the last row. on_row is false
 	// when the cursor isn't positioned on a row, including after the current
-	// row is deleted (then it's before the next row).
+	// row is deleted (then it's before the next row, see Cursor.move).
 	is_open  bool
 	columns  Columns
 	rows     []Row
@@ -106,7 +132,8 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	simply_updatable := stmt.simply_updatable(plan, params, mut conn)!
 
 	// A cursor is updatable if it's FOR UPDATE, or if it has no <updatability
-	// clause> and no ORDER BY, and the query is simply updatable. The columns of
+	// clause>, isn't SCROLL, has no ORDER BY, and the query is simply updatable.
+	// A SCROLL cursor that's FOR UPDATE is updatable (F831-01). The columns of
 	// FOR UPDATE OF must be in the table.
 	//
 	// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 4 to 9
@@ -126,7 +153,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 			}
 			table = table_name
 		}
-	} else if simply_updatable && stmt.query.order.len == 0 {
+	} else if simply_updatable && !stmt.scroll && stmt.query.order.len == 0 {
 		table = stmt.table_name(mut conn)!
 	}
 
@@ -138,6 +165,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	conn.cursors[stmt.name] = &Cursor{
 		name:           stmt.name
 		hold:           stmt.hold
+		scroll:         stmt.scroll
 		query:          stmt.query
 		params:         params
 		writes:         writes

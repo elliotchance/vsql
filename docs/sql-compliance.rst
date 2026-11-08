@@ -860,25 +860,25 @@ Optional Features
    * - ❌ **F421**
      - **National character**
 
-   * - ⭕ **F431**
+   * - ✅ **F431**
      - **Read-only scrollable cursors**
 
    * - ✅ F431-01
      - FETCH with explicit NEXT
 
-   * - ❌ F431-02
+   * - ✅ F431-02
      - FETCH FIRST
 
-   * - ❌ F431-03
+   * - ✅ F431-03
      - FETCH LAST
 
-   * - ❌ F431-04
+   * - ✅ F431-04
      - FETCH PRIOR
 
-   * - ❌ F431-05
+   * - ✅ F431-05
      - FETCH ABSOLUTE
 
-   * - ❌ F431-06
+   * - ✅ F431-06
      - FETCH RELATIVE
 
    * - ❌ **F441**
@@ -995,10 +995,10 @@ Optional Features
    * - ❌ **F821**
      - **Local table references**
 
-   * - ⭕ **F831**
+   * - ✅ **F831**
      - **Full cursor update**
 
-   * - ❌ F831-01
+   * - ✅ F831-01
      - Updateable scrollable cursors
 
    * - ✅ F831-02

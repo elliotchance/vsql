@@ -400,6 +400,12 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 // count>. Syntax Rules 29 and 30 require both to be an exact numeric with scale
 // 0.
 fn row_count(clause string, value Value) !i64 {
+	return exact_integer('${clause} row count', value)
+}
+
+// exact_integer returns the value, which must be an exact numeric with scale 0
+// (what is the name of the value for the error).
+fn exact_integer(what string, value Value) !i64 {
 	is_valid := match value.typ.typ {
 		.is_smallint, .is_integer, .is_bigint {
 			true
@@ -413,7 +419,7 @@ fn row_count(clause string, value Value) !i64 {
 	}
 
 	if !is_valid {
-		return sqlstate_42601('${clause} row count must be an exact numeric with scale 0, got ${value.typ}')
+		return sqlstate_42601('${what} must be an exact numeric with scale 0, got ${value.typ}')
 	}
 
 	return value.as_int()

@@ -50,6 +50,7 @@ type YYSym = AddColumnDefinition
 	| CurrentDate
 	| CurrentTime
 	| CurrentTimestamp
+	| CursorProperties
 	| DatetimePrimary
 	| DatetimeValueFunction
 	| DefaultOption
@@ -60,6 +61,7 @@ type YYSym = AddColumnDefinition
 	| DropTableConstraintDefinition
 	| ExistsPredicate
 	| ExplicitRowValueConstructor
+	| FetchOrientation
 	| GeneralValueSpecification
 	| GenerationClause
 	| Identifier

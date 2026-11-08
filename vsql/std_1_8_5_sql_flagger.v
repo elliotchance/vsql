@@ -288,14 +288,16 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 	}
 }
 
-// flag_updatability_clause flags a FOR UPDATE of a query with an ORDER BY. A
-// positioned UPDATE of such a cursor needs the same feature, so it's flagged
-// here instead.
+// flag_updatability_clause flags a FOR UPDATE of a query with an ORDER BY, or
+// of a cursor with a <cursor scrollability> (even NO SCROLL). A positioned
+// UPDATE of such a cursor needs the same feature, so it's flagged here instead.
 //
+// ISO/IEC 9075-2:2016(E), 14.1, <declare cursor>, Conformance Rules, 1
 // ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Conformance Rules, 1
 // ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Conformance Rules, 1
-fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, updatability UpdatabilityClause) {
-	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F831')
+fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, properties CursorProperties, updatability UpdatabilityClause) {
+	flag_if(mut yylex, updatability.for_update && (e.order.len > 0 || properties.scrollability),
+		'F831')
 }
 
 // SortKeyPart is what a <sort key> must, or can't, contain.

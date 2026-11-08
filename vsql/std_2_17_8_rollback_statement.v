@@ -63,6 +63,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	catalog.storage.isolation_end()!
 
 	// We can erase these now.
+	catalog.storage.save_transaction_pages()
 	catalog.storage.transaction_pages = map[int]bool{}
 	catalog.storage.end_constraint_modes()
 

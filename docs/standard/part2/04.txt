@@ -25,7 +25,7 @@
 # 4.2.3.1, Regular expression syntaxes
 4.2.3.1                  implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql no XQuery regular expressions (F841)
 # 4.2.3.2, Operators that operate on character strings and return character strings
-4.2.3.2                  implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql no OVERLAY (T312), NORMALIZE (T061) or transliterations (F695)
+4.2.3.2                  implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql no NORMALIZE (T061) or transliterations (F695)
 # 4.2.3.3, Other operators involving character strings
 4.2.3.3                  implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_30_length.sql
 # 4.2.3.4, Operations involving large object character strings

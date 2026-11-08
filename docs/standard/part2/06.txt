@@ -1474,10 +1474,10 @@
 6.32/SR/13.b.ii          n/a          - - LOBs (T041)
 6.32/SR/13.c             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql
 6.32/SR/13.d             impl-defined vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_trim.sql the character set is always UTF8, and its collation is the only one
-6.32/SR/14               n/a          - - OVERLAY (T312)
-6.32/SR/14.a             n/a          - - OVERLAY (T312)
-6.32/SR/14.b             n/a          - - OVERLAY (T312)
-6.32/SR/14.c             n/a          - - OVERLAY (T312)
+6.32/SR/14               implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_overlay.sql
+6.32/SR/14.a             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_overlay.sql
+6.32/SR/14.b             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_overlay.sql
+6.32/SR/14.c             implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_overlay.sql
 6.32/SR/15               n/a          - - NORMALIZE (T061)
 6.32/SR/15.a             n/a          - - NORMALIZE (T061)
 6.32/SR/15.b             container    - -
@@ -1660,8 +1660,8 @@
 6.32/GR/17.e.iv          n/a          - - row pattern recognition (R010)
 6.32/CR/1                n/a          - - row pattern recognition (R010)
 6.32/CR/2                n/a          - - SUBSTRING SIMILAR (T581)
-6.32/CR/3                n/a          - - OVERLAY (T312)
-6.32/CR/4                n/a          - - OVERLAY (T312)
+6.32/CR/3                implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_overlay.sql
+6.32/CR/4                n/a          - - binary strings (T021)
 6.32/CR/5                n/a          - - binary strings (T022)
 6.32/CR/6                n/a          - - transliteration (F695)
 6.32/CR/7                n/a          - - transcoding (F695)

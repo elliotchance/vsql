@@ -377,6 +377,23 @@ are restored to the same next value. The indexes of a table (see
 The index of a ``UNIQUE`` constraint isn't in the output, because the constraint
 creates it.
 
+A table comes after the tables that its foreign keys reference (otherwise the
+tables are in the order of their names), so its foreign keys are part of its
+``CREATE TABLE`` and its rows come after the rows that they reference. A foreign
+key is added with ``ALTER TABLE ... ADD CONSTRAINT`` at the end instead when
+that's not possible:
+
+- The tables reference each other (a cycle). The first of them by name is
+  created first, and its foreign keys to the others are added at the end.
+- The table references itself, because its rows might reference a row that comes
+  after them. With ``-schema-only`` there are no rows, so it's part of the
+  ``CREATE TABLE``.
+- It references a table in a schema that comes after it, or a table that isn't
+  in the output.
+- It uses an index of the table that isn't made by its ``CREATE TABLE``, or it
+  has its own index as well as the index of a ``UNIQUE`` constraint, so that the
+  table ends up with the same indexes.
+
 Options must be before the file. These can be used with each ``-format``:
 
 .. list-table::
@@ -461,9 +478,9 @@ The options are:
   included in the output. By default it is not included because it is provided
   implicitly with a vsql database.
 - ``-data-only``: With ``sql``, write only the rows, and the positions of sequences
-  and identity columns (not the indexes). The rows are in the order of the table names, so a load
-  with foreign keys in place can fail if a table references a table that comes
-  after it. SQLite doesn't have this problem. It can't be used with
+  and identity columns (not the indexes). The tables are in the same order as
+  without it, so a table comes after the tables that it references, other than
+  in the cases above. It can't be used with
   ``-schema-only``.
 - ``-exclude``: Leave out the objects that match this pattern, even if they were
   included. It can be used more than once. An index is in the output with its

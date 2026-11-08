@@ -24,6 +24,10 @@ numeric_value_function:
     flag(mut yylex, 'T622')
     $$.v = $1.v as RoutineInvocation
   }
+| general_logarithm_function {
+    flag(mut yylex, 'T623')
+    $$.v = $1.v as RoutineInvocation
+  }
 | common_logarithm {
     flag(mut yylex, 'T624')
     $$.v = $1.v as RoutineInvocation
@@ -135,6 +139,21 @@ trigonometric_function_name:
 | ASIN { $$.v = $1.v as string }
 | ACOS { $$.v = $1.v as string }
 | ATAN { $$.v = $1.v as string }
+
+general_logarithm_function:
+  LOG left_paren general_logarithm_base comma general_logarithm_argument
+  right_paren {
+    $$.v = RoutineInvocation{function_name: 'LOG', args: [
+      ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
+      ValueExpression(CommonValueExpression($5.v as NumericValueExpression))
+    ]}
+  }
+
+general_logarithm_base:
+  numeric_value_expression { $$.v = $1.v as NumericValueExpression }
+
+general_logarithm_argument:
+  numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 common_logarithm:
   LOG10 left_paren numeric_value_expression right_paren {

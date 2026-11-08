@@ -34,7 +34,7 @@ def serve_chinook(ui):
 
 
 def open_demo(ui):
-    ui.catalog_menu('db').get_by_role('button', name='Load demo data…').click()
+    ui.catalog_menu('db').get_by_role('button', name='Load demo data').click()
     expect(ui.active_tab).to_contain_text('Demo data')
 
 

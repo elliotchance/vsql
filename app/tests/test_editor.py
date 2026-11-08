@@ -10,12 +10,12 @@ from pages import AppPage, titles
 
 def test_choose_table(ui):
     # Choosing a table opens a new tab that runs SELECT * on it.
-    ui.sidebar_table('my <t>').click()
+    ui.select_table('my <t>')
     expect(ui.page).to_have_url(ui.app.url)
     expect(ui.active_tab).to_have_text(re.compile(r'^SELECT \* FROM PUBLIC\."my <t>"'))
     expect(ui.editor).to_have_value('SELECT * FROM PUBLIC."my <t>"')
     expect(ui.status).to_have_text(re.compile(r'^2 rows \(\d+ ms\)$'))
-    expect(ui.headers).to_have_text(['XINTEGER', 'SCHARACTER VARYING(10)'])
+    expect(ui.headers).to_have_text(['🟦XINTEGER', '🟩SCHARACTER VARYING(10)'])
     expect(ui.rows.nth(0).locator('td')).to_have_text(['1', 'a&b'])
     expect(ui.rows.nth(1).locator('td.null')).to_have_text(['NULL', 'NULL'])
 
@@ -51,7 +51,7 @@ def test_run(ui, db_file):
     ui.run('INSERT INTO foo.bar (y) VALUES (TRUE); SELECT y, 1 + 2 AS z FROM foo.bar')
     expect(ui.active_tab).to_have_text(re.compile(r'^INSERT INTO foo\.bar \(y\) VALUES\.\.\.'))
     expect(ui.status).to_have_text(re.compile(r'^1 row \('))
-    expect(ui.headers).to_have_text(['YBOOLEAN', 'ZSMALLINT'])
+    expect(ui.headers).to_have_text(['🟪YBOOLEAN', '🟦ZSMALLINT'])
     expect(ui.cells).to_have_text(['TRUE', '3'])
 
     # The title is the SQL on one line, before it's cut short.

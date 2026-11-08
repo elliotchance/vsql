@@ -425,7 +425,7 @@ def test_catalogs(page, db_file, edit_file, start_app):
     assert count(edit_file, "SELECT COUNT(*) FROM pk WHERE name = 'b';") == 1
 
     # A table chosen from the sidebar doesn't have its catalog in the query.
-    ui.sidebar_table('PK', catalog='edit').click()
+    ui.select_table('PK', catalog='edit')
     expect(ui.editor).to_have_value('SELECT * FROM PUBLIC.PK')
     expect(ui.editable).to_have_attribute('data-catalog', 'edit')
     ui.edit_button.click()

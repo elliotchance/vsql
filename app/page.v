@@ -78,7 +78,7 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		if entries.len > 0 {
 			sb.write_string('<button type="button" class="show-history" title="Query History">Query History</button>')
 		}
-		sb.write_string('<button type="submit" name="export_query_tab" value="1" class="run export-query-tab" title="Export the result of this query">Export&hellip;</button>')
+		sb.write_string('<button type="submit" name="export_query_tab" value="1" class="run export-query-tab" title="Export the result of this query">Export</button>')
 		sb.write_string('<button type="submit" name="explain" value="1" class="run explain" title="Run with EXPLAIN">Explain</button>')
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
 		// Choosing a query from the history puts it in the editor, it's not run
@@ -213,8 +213,9 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 // table (other than in INFORMATION_SCHEMA, which can't be changed, and VSQL_APP,
 // which the app needs) has a menu to import, export or drop it, and a schema to add a table to it
 // (see create_table.v) or an index to it (see app_index.js). They run in the
-// file of the catalog, so it's not in the SQL. The indexes of a table are under
-// it (see write_indexes).
+// file of the catalog, so it's not in the SQL. The columns, indexes and
+// constraints of a table are under it (see write_fields), and the sequences of
+// a schema are after its tables.
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -222,42 +223,39 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 	for catalog_name in a.catalog_names {
 		set_catalog(mut conn, catalog_name)!
 		mut catalog := conn.catalog()
-		mut schemas := map[string][]vsql.Identifier{}
+		mut schemas := map[string][]vsql.Table{}
+		mut sequences := map[string][]vsql.Sequence{}
 		// The indexes of each table, by its schema and name.
 		mut indexes := map[string][]vsql.Index{}
 		// The names of the columns of each table (by its schema and name), and
 		// how they're used in SQL, for Create index (see app_index.js).
 		mut columns := map[string][][]string{}
 		for schema in catalog.schemas()! {
-			schemas[schema.name] = []
 			for index in catalog.indexes(schema.name)! {
 				indexes['${schema.name}.${index.table_name.entity_name}'] << index
 			}
-			for table in catalog.schema_tables(schema.name)! {
+			schemas[schema.name] = catalog.schema_tables(schema.name)!
+			sequences[schema.name] = catalog.sequences(schema.name)!
+			for table in schemas[schema.name] {
 				columns['${schema.name}.${table.name.entity_name}'] = table.column_names().map([
 					it,
 					vsql.Identifier{
 						sub_entity_name: it
 					}.str(),
 				])
-				// The tab of the table runs in this catalog, so it's left out of
-				// the query.
-				schemas[schema.name] << vsql.Identifier{
-					...table.name
-					catalog_name: ''
-				}
 			}
 		}
+		constraints := table_constraints(mut conn)!
 		mut schema_names := schemas.keys()
 		schema_names.sort()
 
 		sb.write_string('<div class="folder-row catalog-row"><details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 		sb.write_string('<button type="button" class="create-schema" data-catalog="${html_escape(catalog_name)}">Create schema</button>')
-		sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="[]">Import&hellip;</button>')
-		sb.write_string('<button type="submit" form="app" name="demo:${html_escape(catalog_name)}" value="1">Load demo data&hellip;</button>')
+		sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="[]">Import</button>')
+		sb.write_string('<button type="submit" form="app" name="demo:${html_escape(catalog_name)}" value="1">Load demo data</button>')
 		sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 			'file',
-		]))}">Export&hellip;</button>')
+		]))}">Export</button>')
 		sb.write_string('<button type="submit" form="app" name="history" value="${html_escape(catalog_name)}" class="history-nav" aria-label="Query History of ${html_escape(catalog_name)}">Query History</button></div></details>')
 		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${a.file_dot(catalog_name)}${html_escape(catalog_name)}</summary>')
 		catalog_tabs := all_tabs.filter(it.catalog == catalog_name)
@@ -266,14 +264,18 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		for t in catalog_tabs {
 			active := if t.ref() == tab.ref() { ' class="active"' } else { '' }
 			sb.write_string('<li${active}><button type="submit" form="app" name="goto" value="${html_escape(t.ref())}">${a.file_dot(catalog_name)}${html_escape(t.title)}${a.import_mark(t)}</button>')
-			// The menu of a tab (see app_sidebar.js).
+			// The x closes the tab, and so does Close on its menu (see
+			// app_sidebar.js).
+			sb.write_string('<button type="submit" form="app" name="close" value="${html_escape(t.ref())}" class="close-tab" title="Close" aria-label="Close ${html_escape(t.title)}">&times;</button>')
 			sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 			sb.write_string('<button type="submit" form="app" name="close" value="${html_escape(t.ref())}">Close</button></div></details></li>')
 		}
 		sb.write_string('</ul></details>')
 		for schema_name in schema_names {
 			mut tables := schemas[schema_name].clone()
-			tables.sort(a.entity_name < b.entity_name)
+			tables.sort(a.name.entity_name < b.name.entity_name)
+			mut schema_sequences := sequences[schema_name].clone()
+			schema_sequences.sort(a.name.entity_name < b.name.entity_name)
 			// The menu of a schema (see app_sidebar.js) is next to it, so it's shown
 			// when the schema is collapsed.
 			schema_sql := vsql.Identifier{
@@ -282,30 +284,44 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 			sb.write_string('<div class="folder-row schema-row">')
 			is_system := schema_name in ['INFORMATION_SCHEMA', 'VSQL_APP']
 			if !is_system {
-				// A schema with tables is dropped with them.
-				drop_behavior := if tables.len == 0 { 'RESTRICT' } else { 'CASCADE' }
+				// A schema with tables or sequences is dropped with them.
+				drop_behavior := if tables.len + schema_sequences.len == 0 {
+					'RESTRICT'
+				} else {
+					'CASCADE'
+				}
 				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 				sb.write_string('<button type="submit" form="app" name="add_table:${html_escape(catalog_name)}" value="${html_escape(schema_sql)}">Add table</button>')
 				sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 					schema_name,
-				]))}">Import&hellip;</button>')
+				]))}">Import</button>')
 				sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 					'schema',
 					schema_name,
-				]))}">Export&hellip;</button>')
-				sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="SCHEMA ${html_escape(schema_sql)} ${drop_behavior}" class="danger">Drop schema</button></div></details>')
+				]))}">Export</button>')
+				sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="DROP SCHEMA ${html_escape(schema_sql)} ${drop_behavior}" class="danger">Drop schema</button></div></details>')
 			}
 			// They are seldom looked at, so they start collapsed (see app_sidebar.js).
 			folder_state := if is_system { ' data-default-closed' } else { ' open' }
-			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}"${folder_state}><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len}</span></summary><ul>')
+			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}"${folder_state}><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len + schema_sequences.len}</span></summary><ul>')
 			if tables.len == 0 {
 				sb.write_string('<li class="empty">There are no tables.</li>')
 			}
-			for table in tables {
-				sb.write_string('<li><button type="submit" form="app" name="query:${html_escape(catalog_name)}" value="${html_escape(table.str())}" title="SELECT * FROM ${html_escape(table.str())}"><span class="icon" aria-hidden="true">&#128196;</span>${html_escape(table.entity_name)}</button>')
-				// The menu of a table (see app_sidebar.js).
+			for t in tables {
+				// The tab of the table runs in this catalog, so it's left out of
+				// the query.
+				table := vsql.Identifier{
+					...t.name
+					catalog_name: ''
+				}
+				sb.write_string('<li class="table">')
+				a.write_fields(mut sb, catalog_name, t, indexes['${schema_name}.${table.entity_name}'],
+					constraints['${schema_name}.${table.entity_name}'], is_system)
+				// The menu of a table (see app_sidebar.js). Select queries it in a
+				// new tab.
+				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
+				sb.write_string('<button type="submit" form="app" name="query:${html_escape(catalog_name)}" value="${html_escape(table.str())}" title="SELECT * FROM ${html_escape(table.str())}">Select</button>')
 				if !is_system {
-					sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
 					sb.write_string('<button type="submit" form="app" name="alter:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 						schema_name,
 						table.entity_name,
@@ -314,17 +330,18 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 					sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 						schema_name,
 						table.entity_name,
-					]))}">Import&hellip;</button>')
+					]))}">Import</button>')
 					sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 						'table',
 						schema_name,
 						table.entity_name,
-					]))}">Export&hellip;</button>')
-					sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
+					]))}">Export</button>')
+					sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="DROP TABLE ${html_escape(table.str())}" class="danger">Drop table</button>')
 				}
-				a.write_indexes(mut sb, catalog_name, indexes['${schema_name}.${table.entity_name}'],
-					is_system)
-				sb.write_string('</li>')
+				sb.write_string('</div></details></li>')
+			}
+			for sequence in schema_sequences {
+				sb.write_string('<li class="sequence"><span class="entity-name" title="${html_escape(sequence.str())}"><span class="icon" aria-hidden="true">&#127903;&#65039;</span><span class="name">${html_escape(sequence.name.entity_name)}</span></span></li>')
 			}
 			sb.write_string('</ul></details></div>')
 		}
@@ -337,8 +354,192 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 	sb.write_string('</nav><div class="resizer" title="Drag to resize"></div><script>${app_sidebar_js.to_string()}</script>')
 }
 
-// write_indexes lists the indexes of a table under it, with their columns. Each
-// one has a menu to drop it (see app_sidebar.js), unless it's in a system schema.
+// write_fields lists the columns of a table under it, then its indexes and
+// constraints. The table is a folder that starts collapsed (see app_sidebar.js),
+// so clicking it opens and closes them. Each column has an emoji
+// for its type (see type_emoji), and a key if it's in the PRIMARY KEY. The name of
+// a NOT NULL column is underlined.
+fn (a &App) write_fields(mut sb strings.Builder, catalog_name string, table vsql.Table, indexes []vsql.Index, constraints []TableConstraint, is_system bool) {
+	folder := 'table:${catalog_name}.${table.name.schema_name}.${table.name.entity_name}'
+	sb.write_string('<details class="fields" data-folder="${html_escape(folder)}" data-default-closed><summary><span class="icon" aria-hidden="true">&#128196;</span>${html_escape(table.name.entity_name)}</summary><ul class="table-columns">')
+	for column in table.columns {
+		name := column.name.sub_entity_name
+		// A NOT NULL column's name is also underlined.
+		mut typ := column.typ.str()
+		mut classes := 'column'
+		if column.not_null {
+			typ += ' NOT NULL'
+			classes += ' not-null'
+		}
+		key := if name in table.primary_key {
+			' <span class="key" title="PRIMARY KEY">&#128273;</span>'
+		} else {
+			''
+		}
+		sb.write_string('<li class="${classes}"><span class="field-name" title="${html_escape(name)} ${html_escape(typ)}"><span class="icon" aria-hidden="true">${type_emoji(column.typ)}</span><span class="name">${html_escape(name)}</span> <span class="type">${html_escape(typ)}</span>${key}</span></li>')
+	}
+	sb.write_string('</ul>')
+	// The indexes of UNIQUE and FOREIGN KEY constraints have the same names as
+	// them, and are only listed as constraints.
+	constraint_names := constraints.map(it.name)
+	a.write_indexes(mut sb, catalog_name, indexes.filter(it.name.entity_name !in constraint_names),
+		is_system)
+	write_constraints(mut sb, catalog_name, table, constraints, is_system)
+	sb.write_string('</details>')
+}
+
+// A TableConstraint is a constraint of a table, from INFORMATION_SCHEMA.
+struct TableConstraint {
+	name string
+	// kind is the CONSTRAINT_TYPE, such as PRIMARY KEY.
+	kind    string
+	columns []string
+	// check is the condition of a CHECK.
+	check string
+	// references is the table that a FOREIGN KEY references.
+	references string
+	// referenced is true for a PRIMARY KEY or UNIQUE that a FOREIGN KEY
+	// references, so it can only be dropped with CASCADE.
+	referenced bool
+}
+
+// table_constraints are the constraints of every table in the current catalog,
+// by its schema and name, in the order of INFORMATION_SCHEMA.TABLE_CONSTRAINTS.
+fn table_constraints(mut conn vsql.Connection) !map[string][]TableConstraint {
+	mut columns := map[string][]string{}
+	for row in conn.query('SELECT constraint_schema, constraint_name, column_name FROM information_schema.key_column_usage ORDER BY constraint_schema, constraint_name, ordinal_position')! {
+		columns['${row.get_string('CONSTRAINT_SCHEMA')!}.${row.get_string('CONSTRAINT_NAME')!}'] << row.get_string('COLUMN_NAME')!
+	}
+	mut checks := map[string]string{}
+	for row in conn.query('SELECT constraint_schema, constraint_name, check_clause FROM information_schema.check_constraints')! {
+		checks['${row.get_string('CONSTRAINT_SCHEMA')!}.${row.get_string('CONSTRAINT_NAME')!}'] = row.get_string('CHECK_CLAUSE')!
+	}
+	// The table of a FOREIGN KEY is the table of the constraint it references.
+	mut references := map[string]string{}
+	mut referenced := map[string]bool{}
+	for row in conn.query('SELECT r.constraint_schema, r.constraint_name, r.unique_constraint_schema, r.unique_constraint_name, t.table_schema, t.table_name FROM information_schema.referential_constraints r JOIN information_schema.table_constraints t ON t.constraint_schema = r.unique_constraint_schema AND t.constraint_name = r.unique_constraint_name')! {
+		referenced['${row.get_string('UNIQUE_CONSTRAINT_SCHEMA')!}.${row.get_string('UNIQUE_CONSTRAINT_NAME')!}'] = true
+		references['${row.get_string('CONSTRAINT_SCHEMA')!}.${row.get_string('CONSTRAINT_NAME')!}'] = vsql.Identifier{
+			schema_name: row.get_string('TABLE_SCHEMA')!
+			entity_name: row.get_string('TABLE_NAME')!
+		}.str()
+	}
+
+	mut constraints := map[string][]TableConstraint{}
+	for row in conn.query('SELECT table_schema, table_name, constraint_schema, constraint_name, constraint_type FROM information_schema.table_constraints')! {
+		key := '${row.get_string('CONSTRAINT_SCHEMA')!}.${row.get_string('CONSTRAINT_NAME')!}'
+		constraints['${row.get_string('TABLE_SCHEMA')!}.${row.get_string('TABLE_NAME')!}'] << TableConstraint{
+			name:       row.get_string('CONSTRAINT_NAME')!
+			kind:       row.get_string('CONSTRAINT_TYPE')!
+			columns:    columns[key]
+			check:      checks[key]
+			references: references[key]
+			referenced: referenced[key]
+		}
+	}
+
+	return constraints
+}
+
+// write_constraints lists the constraints of a table, after its indexes (see
+// write_fields). A NOT NULL constraint is a CHECK, but it's left out, since it's
+// on its column instead. Each one has a menu to drop it (see app_sidebar.js),
+// unless it's in a system schema. One that a FOREIGN KEY references is dropped
+// with CASCADE, which drops the FOREIGN KEY too.
+fn write_constraints(mut sb strings.Builder, catalog_name string, table vsql.Table, constraints []TableConstraint, is_system bool) {
+	shown := constraints.filter(!is_not_null_constraint(table, it))
+	if shown.len == 0 {
+		return
+	}
+
+	// A constraint whose columns are all NOT NULL can't have a NULL, so its name
+	// is underlined like theirs. A CHECK doesn't have columns.
+	mut not_null_columns := []string{}
+	for column in table.columns {
+		if column.not_null {
+			not_null_columns << column.name.sub_entity_name
+		}
+	}
+	sb.write_string('<ul class="constraints">')
+	for c in shown {
+		classes := if c.columns.len > 0 && c.columns.all(it in not_null_columns) {
+			'constraint not-null'
+		} else {
+			'constraint'
+		}
+		icon, detail := match c.kind {
+			'PRIMARY KEY' { // key
+				'&#128273;', '(${html_escape(c.columns.join(', '))})'
+			}
+			'UNIQUE' { // snowflake
+				'&#10052;&#65039;', '(${html_escape(c.columns.join(', '))})'
+			}
+			'FOREIGN KEY' {
+				// link
+				'&#128279;', '(${html_escape(c.columns.join(', '))}) &rarr; ${html_escape(c.references)}'
+			}
+			else { // check mark
+				'&#9989;', '(${html_escape(c.check)})'
+			}
+		}
+		sb.write_string('<li class="${classes}"><span class="field-name" title="${html_escape(c.kind)} ${html_escape(c.name)}"><span class="icon" aria-hidden="true">${icon}</span><span class="name">${html_escape(c.name)}</span> <span class="type">${detail}</span></span>')
+		if !is_system {
+			// The table is altered in the file of the catalog, so it's left out.
+			table_sql := vsql.Identifier{
+				schema_name: table.name.schema_name
+				entity_name: table.name.entity_name
+			}.str()
+			name_sql := vsql.Identifier{
+				entity_name: c.name
+			}.str()
+			behavior := if c.referenced { ' CASCADE' } else { '' }
+			sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
+			sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="ALTER TABLE ${html_escape(table_sql)} DROP CONSTRAINT ${html_escape(name_sql)}${behavior}" class="danger">Drop constraint</button></div></details>')
+		}
+		sb.write_string('</li>')
+	}
+	sb.write_string('</ul>')
+}
+
+// is_not_null_constraint is true for the CHECK of a NOT NULL on a column of
+// table, which is the column and IS NOT NULL.
+fn is_not_null_constraint(table vsql.Table, c TableConstraint) bool {
+	if c.kind != 'CHECK' || !c.check.ends_with(' IS NOT NULL') {
+		return false
+	}
+	column := c.check.all_before_last(' IS NOT NULL')
+	return table.columns.any(column == it.name.sub_entity_name
+		|| column == '"${it.name.sub_entity_name.replace('"', '""')}"')
+}
+
+// type_emoji is the emoji of a column of type t in the sidebar, which is a
+// colored square that's the same for every type in a group. The colors of the
+// groups that aren't supported yet are kept for them: brown for binary, yellow
+// for intervals, red for collections (ROW, ARRAY and MULTISET), black for
+// user-defined types and white for JSON and XML.
+fn type_emoji(t vsql.Type) string {
+	return match t.typ {
+		.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric, .is_real,
+		.is_double_precision {
+			'&#128998;' // blue
+		}
+		.is_character, .is_varchar {
+			'&#129001;' // green
+		}
+		.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
+		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone {
+			'&#128999;' // orange
+		}
+		.is_boolean {
+			'&#129002;' // purple
+		}
+	}
+}
+
+// write_indexes lists the indexes of a table, with their columns, after its
+// columns (see write_fields). A UNIQUE index has a snowflake instead of a card
+// index. Each one has a menu to drop it (see app_sidebar.js), unless it's in a
+// system schema.
 fn (a &App) write_indexes(mut sb strings.Builder, catalog_name string, indexes []vsql.Index, is_system bool) {
 	if indexes.len == 0 {
 		return
@@ -352,10 +553,11 @@ fn (a &App) write_indexes(mut sb strings.Builder, catalog_name string, indexes [
 			entity_name: index.name.entity_name
 		}.str()
 		columns := index.columns.map(if it.desc { '${it.name} DESC' } else { it.name }).join(', ')
-		sb.write_string('<li class="index"><span class="index-name" title="${html_escape(index.str())}"><span class="icon" aria-hidden="true">&#128199;</span><span class="name">${html_escape(index.name.entity_name)}</span> <span class="columns">(${html_escape(columns)})</span></span>')
+		icon := if index.unique { '&#10052;&#65039;' } else { '&#128199;' }
+		sb.write_string('<li class="index"><span class="index-name" title="${html_escape(index.str())}"><span class="icon" aria-hidden="true">${icon}</span><span class="name">${html_escape(index.name.entity_name)}</span> <span class="columns">(${html_escape(columns)})</span></span>')
 		if !is_system {
 			sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
-			sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="INDEX ${html_escape(name)}" class="danger">Drop index</button></div></details>')
+			sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="DROP INDEX ${html_escape(name)}" class="danger">Drop index</button></div></details>')
 		}
 		sb.write_string('</li>')
 	}

@@ -25,7 +25,7 @@ def test_new_tab(ui):
     # Adding a tab saves the SQL of the current tab first (but not its title,
     # that is only set when it's run) and makes the new tab active. A new tab
     # shows the tables.
-    ui.sidebar_table('my <t>').click()
+    ui.select_table('my <t>')
     ui.editor.fill('SELECT * FROM "PUBLIC"."my <t>"')
     ui.new_tab()
     expect(ui.tab_bar).to_have_count(2)
@@ -41,7 +41,7 @@ def test_switch_tabs(ui, db_file):
     # Switching tabs saves the SQL, but doesn't run either tab. The last result
     # of the tab is shown. The sidebar lists the tabs (with the active one) to
     # go to them, like the tab bar.
-    ui.sidebar_table('my <t>').click()
+    ui.select_table('my <t>')
     ui.new_tab()
     ui.run('INSERT INTO foo.bar (y) VALUES (TRUE)')
     ui.editor.fill('SELECT * FROM foo.bar')
@@ -61,7 +61,7 @@ def test_close_tabs(ui, db_file):
     # Closing the active tab activates the first tab, and closing the last tab
     # leaves no tab.
     ui.new_tab()
-    ui.sidebar_table('my <t>').click()
+    ui.select_table('my <t>')
     ui.new_tab()
     ui.tab('SELECT * FROM PUBLIC."my <t>"').click()
     ui.close_tab(ui.active_tab)
@@ -91,6 +91,17 @@ def test_close_from_sidebar(ui, db_file):
     menu.get_by_role('button', name='Close').click()
     expect(ui.tab_bar).to_have_count(1)
     expect(ui.active_tab).to_have_text(re.compile('^VALUES 2'))
+    assert count(db_file, 'SELECT COUNT(*) FROM vsql_app.tabs;') == 1
+
+    # So does the x next to its menu.
+    ui.new_tab()
+    ui.run('VALUES 3')
+    expect(ui.tab_bar).to_have_count(2)
+    close = ui.sidebar_tab_close('VALUES 2')
+    expect(close).to_have_attribute('aria-label', 'Close VALUES 2')
+    close.click()
+    expect(ui.tab_bar).to_have_count(1)
+    expect(ui.active_tab).to_have_text(re.compile('^VALUES 3'))
     assert count(db_file, 'SELECT COUNT(*) FROM vsql_app.tabs;') == 1
 
 

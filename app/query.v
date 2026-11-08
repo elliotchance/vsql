@@ -194,7 +194,19 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 		// the outer side of a join, which can be NULL, so it's left out for a join.
 		// It's not known for a column that's named in the SELECT (see #897).
 		for i, column in result.columns {
-			mut th_attrs := if is_number_type(column.typ) { ' class="number"' } else { '' }
+			is_not_null := column.not_null && !query_text.to_upper().contains('JOIN')
+			// The name of a NOT NULL column is underlined, like in the sidebar.
+			mut classes := []string{}
+			if is_number_type(column.typ) {
+				classes << 'number'
+			}
+			if is_not_null {
+				classes << 'not-null'
+			}
+			mut th_attrs := if classes.len > 0 { ' class="${classes.join(' ')}"' } else { '' }
+			// A column without a name (such as COL1) can't be sorted, see
+			// app_result.js.
+			th_attrs += if column.unnamed { ' data-unnamed' } else { ' title="Click to sort"' }
 			if table := edit {
 				if !table.columns[i].generated {
 					th_attrs += ' data-column="${html_escape(column.name.sub_entity_name)}"'
@@ -206,12 +218,8 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 					}
 				}
 			}
-			not_null := if column.not_null && !query_text.to_upper().contains('JOIN') {
-				' NOT NULL'
-			} else {
-				''
-			}
-			output.write_string('<th${th_attrs} title="Click to sort"><span class="name">${html_escape(column.name.sub_entity_name)}</span><span class="type">${html_escape(column.typ.str())}${not_null}</span></th>')
+			not_null := if is_not_null { ' NOT NULL' } else { '' }
+			output.write_string('<th${th_attrs}><span class="title"><span class="icon" aria-hidden="true">${type_emoji(column.typ)}</span><span class="name">${html_escape(column.name.sub_entity_name)}</span></span><span class="type">${html_escape(column.typ.str())}${not_null}</span></th>')
 		}
 		output.write_string('</tr></thead><tbody>')
 		count = 0

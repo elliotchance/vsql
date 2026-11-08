@@ -46,6 +46,17 @@ def test_nullability(ui, db_file):
     expect(ui.headers.filter(has_text='B').locator('.type')).to_have_text('INTEGER')
     expect(ui.headers.filter(has_text='C').locator('.type')).to_have_text('INTEGER NOT NULL')
 
+    # The name of a column is in a fixed width font, after the colored square
+    # of the group of its type.
+    # The result is editable (it has a PRIMARY KEY), so the first column is
+    # the buttons of the rows.
+    expect(ui.headers.nth(1).locator('.name')).to_have_css('font-family', re.compile('monospace'))
+    expect(ui.headers.nth(1)).to_have_text('🟦AINTEGER NOT NULL')
+
+    # The name of a NOT NULL column is underlined, like in the sidebar.
+    for name, line in [('A', 'underline'), ('B', 'none'), ('C', 'underline')]:
+        expect(ui.headers.filter(has_text=name).locator('.name')).to_have_css('text-decoration-line', line)
+
 
 def test_nullability_of_outer_join(ui, db_file):
     # The rows of the other table can be NULL, even with NOT NULL on the column.
@@ -53,25 +64,58 @@ def test_nullability_of_outer_join(ui, db_file):
     ui.run('SELECT * FROM p LEFT JOIN q ON a = b')
     expect(ui.cells.nth(1)).to_have_text('NULL')
     expect(ui.headers.filter(has_text='B').locator('.type')).to_have_text('INTEGER')
+    expect(ui.headers.filter(has_text='B').locator('.name')).to_have_css('text-decoration-line', 'none')
 
 
 def test_sort(ui, db_file):
     cli(db_file, "CREATE TABLE s (n INT, t VARCHAR(10)); INSERT INTO s (n, t) VALUES (10, 'b'), (9, 'c'), (NULL, 'a'), (100, NULL);")
-    ui.run('SELECT * FROM s')
+    ui.run('SELECT * FROM s;')
     expect(column(ui, 1)).to_have_text(['10', '9', 'NULL', '100'])
 
-    # Numbers aren't sorted as text, and NULL is last both ways.
+    # Clicking a column adds ORDER BY to the end of the query and runs it again,
+    # then DESC, then takes it away. NULL is less than every other value.
     ui.headers.nth(0).click()
-    expect(column(ui, 1)).to_have_text(['9', '10', '100', 'NULL'])
+    expect(ui.editor).to_have_value('SELECT * FROM s ORDER BY "N"')
+    expect(column(ui, 1)).to_have_text(['NULL', '9', '10', '100'])
     expect(ui.headers.nth(0)).to_have_attribute('aria-sort', 'ascending')
     ui.headers.nth(0).click()
+    expect(ui.editor).to_have_value('SELECT * FROM s ORDER BY "N" DESC')
     expect(column(ui, 1)).to_have_text(['100', '10', '9', 'NULL'])
+    expect(ui.headers.nth(0)).to_have_attribute('aria-sort', 'descending')
     ui.headers.nth(0).click()
+    expect(ui.editor).to_have_value('SELECT * FROM s')
     expect(column(ui, 1)).to_have_text(['10', '9', 'NULL', '100'])
     expect(ui.headers.nth(0)).not_to_have_attribute('aria-sort', re.compile('.'))
 
+    # Another column replaces the ORDER BY.
+    ui.headers.nth(0).click()
     ui.headers.nth(1).click()
-    expect(column(ui, 2)).to_have_text(['a', 'b', 'c', 'NULL'])
+    expect(ui.editor).to_have_value('SELECT * FROM s ORDER BY "T"')
+    expect(column(ui, 2)).to_have_text(['NULL', 'a', 'b', 'c'])
+    expect(ui.headers.nth(0)).not_to_have_attribute('aria-sort', re.compile('.'))
+
+
+def test_sort_query_with_its_own_order(ui, db_file):
+    # A query that has its own ORDER BY or FETCH is sorted as a subquery, which
+    # is taken away again. A strange name is delimited.
+    cli(db_file, 'CREATE TABLE s ("my n" INT); INSERT INTO s ("my n") VALUES (3), (1), (2);')
+    query = 'SELECT * FROM s ORDER BY "my n" FETCH FIRST 2 ROWS ONLY'
+    ui.run(query)
+    expect(column(ui, 1)).to_have_text(['1', '2'])
+    ui.headers.nth(0).click()
+    expect(ui.editor).to_have_value(f'SELECT * FROM (\n{query}\n) AS sorted ORDER BY "my n"')
+    ui.headers.nth(0).click()
+    expect(column(ui, 1)).to_have_text(['2', '1'])
+    ui.headers.nth(0).click()
+    expect(ui.editor).to_have_value(query)
+
+
+def test_cannot_sort_unnamed_column(ui):
+    # ORDER BY can't refer to a column without a name.
+    ui.run('VALUES 1')
+    ui.headers.nth(0).click()
+    expect(ui.editor).to_have_value('VALUES 1')
+    expect(ui.headers.nth(0)).not_to_have_attribute('title', re.compile('.'))
 
 
 def test_more_rows_than_shown(ui, db_file):
@@ -181,3 +225,4 @@ def test_cannot_sort_while_editing(ui, db_file):
     ui.page.locator('button.edit').click()
     ui.headers.filter(has_text='ID').click()
     expect(ui.headers.filter(has_text='ID')).to_have_attribute('aria-sort', 'ascending')
+    expect(ui.editor).to_have_value(re.compile(r'ORDER BY "ID"$'))

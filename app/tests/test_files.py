@@ -15,7 +15,7 @@ def test_each_file(page, db_file, make_file, start_app):
     assert count(other, 'SELECT COUNT(*) FROM vsql_app.tabs;') == 0
 
     # A table opened from a file is a tab of that file, and runs in it.
-    ui.sidebar_table('PEOPLE', 'other').click()
+    ui.select_table('PEOPLE', 'other')
     expect(ui.catalog_tabs('other')).to_have_count(1)
     expect(ui.catalog_tabs('db')).to_have_count(0)
     ui.run('SELECT * FROM people')

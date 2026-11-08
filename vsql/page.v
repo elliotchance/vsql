@@ -312,7 +312,20 @@ fn (mut p Page) expire(key []u8, tid u64, xid u64) !bool {
 fn (p Page) objects_in_place(mut objects []PageObject) {
 	objects.clear()
 	end := int(p.used) - page_header_size
+
+	// The objects are counted first so that objects only has to grow once,
+	// rather than doubling for each new iterator.
+	mut count := 0
 	mut offset := 0
+	for offset < end {
+		count++
+		offset += int(binary.big_endian_u32_at(p.data, offset))
+	}
+	if objects.cap < count {
+		objects = []PageObject{cap: count}
+	}
+
+	offset = 0
 	for offset < end {
 		total_len := int(binary.big_endian_u32_at(p.data, offset))
 		key_len := int(binary.big_endian_u16_at(p.data, offset + 20))

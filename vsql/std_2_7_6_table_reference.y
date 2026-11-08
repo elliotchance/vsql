@@ -5,10 +5,10 @@
 // Reference a table.
 
 table_reference:
-  table_factor { $$.v = TableReference($1.v as TablePrimary) }
-| joined_table { $$.v = TableReference($1.v as QualifiedJoin) }
+  table_factor { $$.v = yy_box(TableReference($1.v as TablePrimary)) }
+| joined_table { $$.v = yy_box(TableReference($1.v as QualifiedJoin)) }
 | parenthesized_joined_table {
-    $$.v = TableReference($1.v as QualifiedJoin)
+    $$.v = yy_box(TableReference($1.v as QualifiedJoin))
   }
 
 parenthesized_joined_table:
@@ -32,30 +32,30 @@ qualified_join:
   }
 
 table_factor:
-  table_primary { $$.v = $1.v as TablePrimary }
+  table_primary { $$.v = $1.v }
 
 table_primary:
   table_or_query_name { 
-    $$.v = TablePrimary{
+    $$.v = yy_box(TablePrimary{
       body: $1.v as Identifier
-    }
+    })
   }
 | table_or_query_name correlation_or_recognition {
-    $$.v = TablePrimary{
+    $$.v = yy_box(TablePrimary{
       body:        $1.v as Identifier
       correlation: $2.v as Correlation
-    }
+    })
   }
 | derived_table {
     // ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Format
     flag(mut yylex, vsql_derived_table_without_name)
-    $$.v = $1.v as TablePrimary
+    $$.v = $1.v
   }
 | derived_table correlation_or_recognition {
-    $$.v = TablePrimary{
+    $$.v = yy_box(TablePrimary{
       body:        ($1.v as TablePrimary).body
       correlation: $2.v as Correlation
-    }
+    })
   }
 
 correlation_or_recognition:
@@ -94,7 +94,7 @@ derived_table:
   table_subquery {
     // ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Conformance Rules, 6
     flag(mut yylex, 'F591')
-    $$.v = $1.v as TablePrimary
+    $$.v = $1.v
   }
 
 table_or_query_name:

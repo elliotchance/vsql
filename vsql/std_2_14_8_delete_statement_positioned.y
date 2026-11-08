@@ -7,8 +7,8 @@
 delete_statement_positioned:
   DELETE FROM target_table target_correlation_name WHERE CURRENT OF cursor_name {
     flag(mut yylex, vsql_delete_positioned)
-    $$.v = Stmt(DeleteStatementPositioned{$3.v as Identifier,
-      $4.v as Identifier, $8.v as string})
+    $$.v = yy_box(Stmt(DeleteStatementPositioned{$3.v as Identifier,
+      $4.v as Identifier, $8.v as string}))
   }
 
 target_table:

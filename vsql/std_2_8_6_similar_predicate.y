@@ -7,8 +7,8 @@ similar_predicate:
   row_value_predicand similar_predicate_part_2 {
     flag(mut yylex, 'T141')
     like := $2.v as SimilarPredicatePart2
-    $$.v = SimilarPredicate{$1.v as RowValueConstructorPredicand, like.right,
-      like.escape, like.not}
+    $$.v = yy_box(SimilarPredicate{$1.v as RowValueConstructorPredicand, like.right,
+      like.escape, like.not})
   }
 
 similar_predicate_part_2:

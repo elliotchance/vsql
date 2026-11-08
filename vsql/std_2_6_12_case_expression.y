@@ -49,18 +49,18 @@ searched_case:
 
 simple_when_clause:
   WHEN when_operand_list THEN result {
-    $$.v = CaseExpressionSimpleWhen{
+    $$.v = yy_box(CaseExpressionSimpleWhen{
       $2.v as RowValueConstructorPredicand
       $4.v as CaseResult
-    }
+    })
   }
 
 searched_when_clause:
   WHEN search_condition THEN result {
-    $$.v = CaseExpressionSearchedWhen{
+    $$.v = yy_box(CaseExpressionSearchedWhen{
       $2.v as BooleanValueExpression
       $4.v as CaseResult
-    }
+    })
   }
 
 else_clause:

@@ -6,33 +6,33 @@
 schema_definition:
   CREATE SCHEMA schema_name_clause {
     flag(mut yylex, 'F171')
-    $$.v = Stmt(SchemaDefinition{
+    $$.v = yy_box(Stmt(SchemaDefinition{
       schema_name: $3.v as Identifier
-    })
+    }))
   }
 | CREATE SCHEMA schema_name_clause schema_elements {
     flag(mut yylex, 'F171')
-    $$.v = Stmt(SchemaDefinition{
+    $$.v = yy_box(Stmt(SchemaDefinition{
       schema_name: $3.v as Identifier
       elements:    $4.v as []SchemaElement
-    })
+    }))
   }
 | CREATE SCHEMA if_not_exists schema_name_clause {
     flag(mut yylex, 'F171')
     flag(mut yylex, vsql_create_schema_if_not_exists)
-    $$.v = Stmt(SchemaDefinition{
+    $$.v = yy_box(Stmt(SchemaDefinition{
       schema_name:   $4.v as Identifier
       if_not_exists: true
-    })
+    }))
   }
 | CREATE SCHEMA if_not_exists schema_name_clause schema_elements {
     flag(mut yylex, 'F171')
     flag(mut yylex, vsql_create_schema_if_not_exists)
-    $$.v = Stmt(SchemaDefinition{
+    $$.v = yy_box(Stmt(SchemaDefinition{
       schema_name:   $4.v as Identifier
       elements:      $5.v as []SchemaElement
       if_not_exists: true
-    })
+    }))
   }
 
 schema_name_clause:

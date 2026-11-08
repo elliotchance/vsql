@@ -3,11 +3,11 @@
 comparison_predicate:
   row_value_predicand comparison_predicate_part_2 {
     comp := $2.v as ComparisonPredicatePart2
-    $$.v = ComparisonPredicate{
+    $$.v = yy_box(ComparisonPredicate{
       $1.v as RowValueConstructorPredicand
       comp.op
       comp.expr
-    }
+    })
   }
 
 comparison_predicate_part_2:

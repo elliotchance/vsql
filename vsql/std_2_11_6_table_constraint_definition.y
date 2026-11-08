@@ -5,38 +5,39 @@
 // Specify an integrity constraint.
 
 table_constraint_definition:
-  table_constraint { $$.v = $1.v as TableElement }
+  table_constraint { $$.v = $1.v }
 | constraint_name_definition unique_constraint_definition {
-    $$.v = TableElement(UniqueConstraintDefinition{
+    $$.v = yy_box(TableElement(UniqueConstraintDefinition{
       ...$2.v as UniqueConstraintDefinition
       name: $1.v as Identifier
-    })
+    }))
   }
 | constraint_name_definition referential_constraint_definition {
-    $$.v = TableElement(ReferentialConstraintDefinition{
+    $$.v = yy_box(TableElement(ReferentialConstraintDefinition{
       ...$2.v as ReferentialConstraintDefinition
       name: $1.v as Identifier
-    })
+    }))
   }
 | constraint_name_definition check_constraint_definition {
-    $$.v = TableElement(CheckConstraintDefinition{
+    $$.v = yy_box(TableElement(CheckConstraintDefinition{
       ...$2.v as CheckConstraintDefinition
       name: $1.v as Identifier
-    })
+    }))
   }
 | table_constraint_definition constraint_characteristic {
-    $$.v = with_constraint_characteristic([$1.v as TableElement], $2.v as string)![0]
+    $$.v = yy_box(with_constraint_characteristic([$1.v as TableElement],
+      $2.v as string)![0])
   }
 
 table_constraint:
   unique_constraint_definition {
-    $$.v = TableElement($1.v as UniqueConstraintDefinition)
+    $$.v = yy_box(TableElement($1.v as UniqueConstraintDefinition))
   }
 | referential_constraint_definition {
-    $$.v = TableElement($1.v as ReferentialConstraintDefinition)
+    $$.v = yy_box(TableElement($1.v as ReferentialConstraintDefinition))
   }
 | check_constraint_definition {
-    $$.v = TableElement($1.v as CheckConstraintDefinition)
+    $$.v = yy_box(TableElement($1.v as CheckConstraintDefinition))
   }
 
 %%

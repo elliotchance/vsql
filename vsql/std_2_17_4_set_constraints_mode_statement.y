@@ -10,11 +10,11 @@
 set_constraints_mode_statement:
   SET CONSTRAINTS constraint_name_list DEFERRED {
     flag(mut yylex, 'F721')
-    $$.v = Stmt(SetConstraintsModeStatement{$3.v as []Identifier, true})
+    $$.v = yy_box(Stmt(SetConstraintsModeStatement{$3.v as []Identifier, true}))
   }
 | SET CONSTRAINTS constraint_name_list IMMEDIATE {
     flag(mut yylex, 'F721')
-    $$.v = Stmt(SetConstraintsModeStatement{$3.v as []Identifier, false})
+    $$.v = yy_box(Stmt(SetConstraintsModeStatement{$3.v as []Identifier, false}))
   }
 
 // ALL is an empty list.

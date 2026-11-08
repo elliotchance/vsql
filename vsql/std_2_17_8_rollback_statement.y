@@ -1,24 +1,24 @@
 %%
 
 rollback_statement:
-  ROLLBACK { $$.v = Stmt(RollbackStatement{}) }
-| ROLLBACK WORK { $$.v = Stmt(RollbackStatement{}) }
+  ROLLBACK { $$.v = yy_box(Stmt(RollbackStatement{})) }
+| ROLLBACK WORK { $$.v = yy_box(Stmt(RollbackStatement{})) }
 // These aren't part of the standard (see the V114 feature in the SQL Flagger).
 | ROLLBACK TRANSACTION {
     flag(mut yylex, vsql_rollback_transaction)
-    $$.v = Stmt(RollbackStatement{})
+    $$.v = yy_box(Stmt(RollbackStatement{}))
   }
 | ABORT {
     flag(mut yylex, vsql_abort)
-    $$.v = Stmt(RollbackStatement{})
+    $$.v = yy_box(Stmt(RollbackStatement{}))
   }
 | ABORT TRANSACTION {
     flag(mut yylex, vsql_abort)
-    $$.v = Stmt(RollbackStatement{})
+    $$.v = yy_box(Stmt(RollbackStatement{}))
   }
 | ABORT WORK {
     flag(mut yylex, vsql_abort)
-    $$.v = Stmt(RollbackStatement{})
+    $$.v = yy_box(Stmt(RollbackStatement{}))
   }
 
 %%

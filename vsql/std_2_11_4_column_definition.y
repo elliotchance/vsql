@@ -63,39 +63,39 @@ data_type_or_domain_name:
   data_type { $$.v = $1.v as Type }
 
 column_constraint_definition:
-  column_constraint { $$.v = $1.v as ColumnConstraint }
+  column_constraint { $$.v = $1.v }
 | constraint_name_definition NOT NULL {
-    $$.v = ColumnConstraint(NotNullConstraint{name: $1.v as Identifier})
+    $$.v = yy_box(ColumnConstraint(NotNullConstraint{name: $1.v as Identifier}))
   }
 | constraint_name_definition unique_specification {
-    $$.v = ColumnConstraint(UniqueConstraintDefinition{
+    $$.v = yy_box(ColumnConstraint(UniqueConstraintDefinition{
       name:           $1.v as Identifier
       is_primary_key: $2.v as bool
-    })
+    }))
   }
 | constraint_name_definition references_specification {
-    $$.v = ColumnConstraint(ReferentialConstraintDefinition{
+    $$.v = yy_box(ColumnConstraint(ReferentialConstraintDefinition{
       ...$2.v as ReferentialConstraintDefinition
       name: $1.v as Identifier
-    })
+    }))
   }
 | constraint_name_definition check_constraint_definition {
-    $$.v = ColumnConstraint(CheckConstraintDefinition{
+    $$.v = yy_box(ColumnConstraint(CheckConstraintDefinition{
       ...$2.v as CheckConstraintDefinition
       name: $1.v as Identifier
-    })
+    }))
   }
 
 column_constraint:
-  NOT NULL { $$.v = ColumnConstraint(NotNullConstraint{}) }
+  NOT NULL { $$.v = yy_box(ColumnConstraint(NotNullConstraint{})) }
 | unique_specification {
-    $$.v = ColumnConstraint(UniqueConstraintDefinition{is_primary_key: $1.v as bool})
+    $$.v = yy_box(ColumnConstraint(UniqueConstraintDefinition{is_primary_key: $1.v as bool}))
   }
 | references_specification {
-    $$.v = ColumnConstraint($1.v as ReferentialConstraintDefinition)
+    $$.v = yy_box(ColumnConstraint($1.v as ReferentialConstraintDefinition))
   }
 | check_constraint_definition {
-    $$.v = ColumnConstraint($1.v as CheckConstraintDefinition)
+    $$.v = yy_box(ColumnConstraint($1.v as CheckConstraintDefinition))
   }
 
 identity_column_specification:

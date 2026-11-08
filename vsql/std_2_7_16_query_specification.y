@@ -7,28 +7,28 @@
 query_specification:
   SELECT select_list table_expression {
     table_expression := $3.v as TableExpression
-    $$.v = QuerySpecification{
+    $$.v = yy_box(QuerySpecification{
       exprs:            $2.v as SelectList
       table_expression: &table_expression
-    }
+    })
   }
 | SELECT set_quantifier select_list table_expression {
     table_expression := $4.v as TableExpression
-    $$.v = QuerySpecification{
+    $$.v = yy_box(QuerySpecification{
       exprs:            $3.v as SelectList
       table_expression: &table_expression
       distinct:         $2.v as bool
-    }
+    })
   }
 // This isn't in the standard, since a <table expression> must have a <from
 // clause>. A bare asterisk needs a table, so it's only in the rules above.
 | SELECT select_sublist_list {
     flag(mut yylex, vsql_select_without_from)
-    $$.v = new_query_specification_without_from($2.v as []SelectSublist, false)
+    $$.v = yy_box(new_query_specification_without_from($2.v as []SelectSublist, false))
   }
 | SELECT set_quantifier select_sublist_list {
     flag(mut yylex, vsql_select_without_from)
-    $$.v = new_query_specification_without_from($3.v as []SelectSublist, $2.v as bool)
+    $$.v = yy_box(new_query_specification_without_from($3.v as []SelectSublist, $2.v as bool))
   }
 
 // A bare asterisk can only appear alone, unlike a qualified asterisk which can
@@ -48,8 +48,8 @@ select_sublist_list:
   }
 
 select_sublist:
-  derived_column { $$.v = SelectSublist($1.v as DerivedColumn) }
-| qualified_asterisk { $$.v = SelectSublist($1.v as QualifiedAsteriskExpr) }
+  derived_column { $$.v = yy_box(SelectSublist($1.v as DerivedColumn)) }
+| qualified_asterisk { $$.v = yy_box(SelectSublist($1.v as QualifiedAsteriskExpr)) }
 
 // was: asterisked_identifier_chain period asterisk
 qualified_asterisk:
@@ -65,10 +65,10 @@ asterisked_identifier_chain:
 
 derived_column:
   value_expression {
-    $$.v = DerivedColumn{$1.v as ValueExpression, Identifier{}}
+    $$.v = yy_box(DerivedColumn{$1.v as ValueExpression, Identifier{}})
   }
 | value_expression as_clause {
-    $$.v = DerivedColumn{$1.v as ValueExpression, $2.v as Identifier}
+    $$.v = yy_box(DerivedColumn{$1.v as ValueExpression, $2.v as Identifier})
   }
 
 as_clause:

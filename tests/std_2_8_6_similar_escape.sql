@@ -169,9 +169,9 @@ VALUES 'a' SIMILAR TO 'a' ESCAPE '';
 VALUES 'a' SIMILAR TO 'a' ESCAPE '!!';
 -- error 22019: invalid escape character
 
--- # Any NULL operand makes the result UNKNOWN (General Rules, 4.b). vsql checks
--- # that before the pattern, so a NULL escape character with an invalid
--- # pattern isn't an error.
+-- # Any NULL operand makes the result UNKNOWN (General Rules, 4.b). When the
+-- # escape character is NULL, the pattern can't be checked, because what's
+-- # valid depends on the escape character.
 VALUES CAST(NULL AS VARCHAR(10)) SIMILAR TO 'a' ESCAPE '!';
 -- COL1: UNKNOWN
 
@@ -186,6 +186,24 @@ VALUES 'a' NOT SIMILAR TO 'a' ESCAPE CAST(NULL AS VARCHAR(10));
 
 VALUES 'a' SIMILAR TO '(' ESCAPE CAST(NULL AS VARCHAR(10));
 -- COL1: UNKNOWN
+
+-- # The pattern and the escape character are checked before a NULL operand
+-- # makes the result UNKNOWN (General Rules, 2 and 3 come before 4), so they're
+-- # still an error with a NULL value or pattern (#1092).
+VALUES CAST(NULL AS VARCHAR(10)) SIMILAR TO '(';
+-- error 2201B: invalid regular expression
+
+VALUES CAST(NULL AS VARCHAR(10)) SIMILAR TO 'a' ESCAPE '!!';
+-- error 22019: invalid escape character
+
+VALUES 'a' SIMILAR TO CAST(NULL AS VARCHAR(10)) ESCAPE '!!';
+-- error 22019: invalid escape character
+
+VALUES CAST(NULL AS VARCHAR(10)) SIMILAR TO 'a%' ESCAPE '%';
+-- error 2200C: invalid use of escape character
+
+VALUES CAST(NULL AS VARCHAR(10)) NOT SIMILAR TO '[[:ALPHA:]]' ESCAPE ':';
+-- error 2200B: escape character conflict
 
 -- # The pattern and the escape character can be expressions or columns, so
 -- # they can be different for each row.

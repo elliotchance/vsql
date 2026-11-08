@@ -441,6 +441,21 @@ with ``SIMILAR``) is not a valid regular expression.
   VALUES SQRT(-1e0);
   -- error 2201F: invalid argument for power function
 
+``2201G`` invalid argument for width bucket function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The count of a ``WIDTH_BUCKET`` must be positive, and its bounds can't be equal.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES WIDTH_BUCKET(5, 0, 10, 0);
+  -- error 2201G: invalid argument for width bucket function
+
+  VALUES WIDTH_BUCKET(5, 1, 1, 3);
+  -- error 2201G: invalid argument for width bucket function
+
 ``2201W`` invalid row count in fetch first clause
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

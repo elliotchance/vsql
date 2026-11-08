@@ -1,0 +1,95 @@
+-- # WIDTH_BUCKET (T612): which of count equal-width buckets between two bounds
+-- # a value is in.
+
+/* types */
+VALUES WIDTH_BUCKET(5, 0, 10, 5);
+-- COL1: 3 (SMALLINT)
+
+VALUES WIDTH_BUCKET(0, 0, 10, 5), WIDTH_BUCKET(1.99, 0, 10, 5), WIDTH_BUCKET(2, 0, 10, 5), WIDTH_BUCKET(9.99, 0, 10, 5);
+-- COL1: 1
+-- COL1: 1
+-- COL1: 2
+-- COL1: 5
+
+VALUES WIDTH_BUCKET(-0.01, 0, 10, 5), WIDTH_BUCKET(10, 0, 10, 5), WIDTH_BUCKET(1000, 0, 10, 5);
+-- COL1: 0
+-- COL1: 6
+-- COL1: 6
+
+VALUES WIDTH_BUCKET(10, 10, 0, 5), WIDTH_BUCKET(8.01, 10, 0, 5), WIDTH_BUCKET(8, 10, 0, 5), WIDTH_BUCKET(0.01, 10, 0, 5);
+-- COL1: 1
+-- COL1: 1
+-- COL1: 2
+-- COL1: 5
+
+VALUES WIDTH_BUCKET(10.01, 10, 0, 5), WIDTH_BUCKET(0, 10, 0, 5), WIDTH_BUCKET(-5, 10, 0, 5);
+-- COL1: 0
+-- COL1: 6
+-- COL1: 6
+
+VALUES WIDTH_BUCKET(-5, -10, -1, 3), WIDTH_BUCKET(1, 0, 3, 3), WIDTH_BUCKET(2, 0, 3, 3);
+-- COL1: 2
+-- COL1: 2
+-- COL1: 3
+
+/* types */
+VALUES WIDTH_BUCKET(3.3e0, 0e0, 10e0, 3);
+-- COL1: 1 (SMALLINT)
+
+VALUES WIDTH_BUCKET(0.3e0, 0, 0.9e0, 3), WIDTH_BUCKET(5, 0e0, 10, 4), WIDTH_BUCKET(CAST(2.5 AS REAL), 0, 10, 4);
+-- COL1: 2
+-- COL1: 3
+-- COL1: 2
+
+/* types */
+VALUES WIDTH_BUCKET(5, 0, 10, 40000);
+-- COL1: 20001 (INTEGER)
+
+/* types */
+VALUES WIDTH_BUCKET(5, 0, 10, CAST(4 AS BIGINT));
+-- COL1: 3 (BIGINT)
+
+/* types */
+VALUES WIDTH_BUCKET(5, 0, 10, CAST(4 AS NUMERIC(3)));
+-- COL1: 3 (NUMERIC(3))
+
+/* types */
+VALUES WIDTH_BUCKET(5, 0, 10, CAST(4 AS DECIMAL(3)));
+-- COL1: 3 (DECIMAL(3))
+
+VALUES WIDTH_BUCKET(CAST(NULL AS INT), 0, 10, 5), WIDTH_BUCKET(5, CAST(NULL AS INT), 10, 5), WIDTH_BUCKET(5, 0, CAST(NULL AS INT), 5), WIDTH_BUCKET(5, 0, 10, CAST(NULL AS INT));
+-- COL1: NULL
+-- COL1: NULL
+-- COL1: NULL
+-- COL1: NULL
+
+VALUES WIDTH_BUCKET(5, 0, 10, CAST(NULL AS INT)), WIDTH_BUCKET(5, 1, 1, CAST(NULL AS INT));
+-- COL1: NULL
+-- COL1: NULL
+
+VALUES WIDTH_BUCKET(5, 0, 10, 0);
+-- error 2201G: invalid argument for width bucket function
+
+VALUES WIDTH_BUCKET(5, 0, 10, -1);
+-- error 2201G: invalid argument for width bucket function
+
+VALUES WIDTH_BUCKET(5, 1, 1, 3);
+-- error 2201G: invalid argument for width bucket function
+
+VALUES WIDTH_BUCKET(5, 1.0, 1e0, 3);
+-- error 2201G: invalid argument for width bucket function
+
+VALUES WIDTH_BUCKET(50, 0, 10, CAST(32767 AS SMALLINT));
+-- error 22003: numeric value out of range
+
+VALUES WIDTH_BUCKET(-50, 10, 0, CAST(9 AS NUMERIC(1)));
+-- error 22003: numeric value out of range
+
+VALUES WIDTH_BUCKET(5, 0, 10, 2.0);
+-- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, NUMERIC(2, 1))
+
+VALUES WIDTH_BUCKET(5, 0, 10, 2e0);
+-- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, DOUBLE PRECISION)
+
+VALUES WIDTH_BUCKET('a', 0, 10, 4);
+-- error 42883: function does not exist: WIDTH_BUCKET(CHARACTER(1), SMALLINT, SMALLINT, SMALLINT)

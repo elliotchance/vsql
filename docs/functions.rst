@@ -236,6 +236,9 @@ Each function also has a **Compatibility** section:
    * - ``VAR_SAMP``
      - Statistical
      - T621
+   * - ``WIDTH_BUCKET``
+     - Arithmetic
+     - T612
 
 Aggregate
 ---------
@@ -626,8 +629,9 @@ A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
 Arithmetic
 ----------
 
-Arithmetic functions return the absolute value or the remainder of a number.
-The result has the type of an argument (see each function).
+Arithmetic functions return the absolute value or the remainder of a number,
+or which bucket it's in. The result has the type of an argument (see each
+function).
 
 They accept any number. If there is no version of the function
 for the argument types, an exact number (such as an ``INTEGER``) is converted to
@@ -734,6 +738,59 @@ vsql extension flagged by ``V403-01`` (see :doc:`sql-flagging`).
     number.
   - SQL Server: ``x % y``.
   - Oracle: ``MOD(x, y)``.
+
+WIDTH_BUCKET
+^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   WIDTH_BUCKET(VALUE, BOUND1, BOUND2, SMALLINT) SMALLINT
+   WIDTH_BUCKET(VALUE, BOUND1, BOUND2, INTEGER) INTEGER
+   WIDTH_BUCKET(VALUE, BOUND1, BOUND2, BIGINT) BIGINT
+   WIDTH_BUCKET(VALUE, BOUND1, BOUND2, NUMERIC(p)) NUMERIC(p)
+   WIDTH_BUCKET(VALUE, BOUND1, BOUND2, DECIMAL(p)) DECIMAL(p)
+
+``WIDTH_BUCKET(VALUE, BOUND1, BOUND2, COUNT)`` splits the range from
+``BOUND1`` to ``BOUND2`` into ``COUNT`` buckets of the same width, numbered from
+1, and returns the bucket that ``VALUE`` is in. Each bucket includes its start
+but not its end. A ``VALUE`` before the range is in bucket 0, and one at
+``BOUND2`` or after it is in bucket ``COUNT + 1``. ``BOUND1`` can be greater
+than ``BOUND2``, then the buckets go down from ``BOUND1``.
+
+``VALUE`` and the bounds can be any numbers. ``COUNT`` must be an integer (an
+exact number with a scale of 0), and the result has its type. The bucket is
+calculated exactly, even for approximate numbers.
+
+A ``COUNT`` that isn't positive, or bounds that are equal, is a ``2201G`` error
+(invalid argument for width bucket function). If ``COUNT + 1`` is too large
+for the type of ``COUNT`` it's a ``22003`` error, but only when ``VALUE`` is
+after the range.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES WIDTH_BUCKET(5, 0, 10, 5);
+  -- COL1: 3
+
+  VALUES WIDTH_BUCKET(10, 0, 10, 5);
+  -- COL1: 6
+
+  VALUES WIDTH_BUCKET(-1, 0, 10, 5);
+  -- COL1: 0
+
+  VALUES WIDTH_BUCKET(8, 10, 0, 5);
+  -- COL1: 2
+
+  VALUES WIDTH_BUCKET(5, 0, 10, 0);
+  -- error 2201G: invalid argument for width bucket function
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations).
+- **Other databases:** PostgreSQL, Oracle and Db2 have ``WIDTH_BUCKET``.
+  PostgreSQL also has a version that takes an array of bounds. MySQL, SQLite
+  and SQL Server don't have it.
 
 Conditional
 -----------

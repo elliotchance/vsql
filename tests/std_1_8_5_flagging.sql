@@ -198,6 +198,11 @@ SELECT COUNT(*) FILTER (WHERE x > 0), SUM(x) FILTER (WHERE x > 0) FROM t;
 -- # Numeric functions outside of Core SQL. Each one is flagged with its own
 -- # feature, so a statement can have several.
 /* flags */
+SELECT WIDTH_BUCKET(x, 0, 10, 5) FROM t;
+-- flags: T612
+-- COL1: 1
+
+/* flags */
 SELECT LISTAGG(y, ',') WITHIN GROUP (ORDER BY 1) FROM t;
 -- flags: T625
 -- COL1: a

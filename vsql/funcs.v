@@ -144,6 +144,16 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'TAN', [double_precision], false, func_tan, double_precision, false, true})!
 	conn.register_func(Func{'TANH', [double_precision], false, func_tanh, double_precision, false, true})!
 	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false, true})!
+	// The operand and bounds of WIDTH_BUCKET are exact (NUMERIC) or approximate
+	// (DOUBLE PRECISION). The result has the type of the count, which must be an
+	// exact numeric (see numeric_function_type), so there's one for each.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 21
+	for operand in [numeric, double_precision] {
+		for count in [smallint, integer, bigint, numeric] {
+			conn.register_func(Func{'WIDTH_BUCKET', [operand, operand, operand, count], false, func_width_bucket, count, false, true})!
+		}
+	}
 
 	// NOW() is a vsql extension (V402-01) that reads the wall clock each time
 	// it's called, so unlike CURRENT_TIMESTAMP (which is fixed for the whole

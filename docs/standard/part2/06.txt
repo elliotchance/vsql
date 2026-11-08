@@ -1201,7 +1201,7 @@
 6.30/SR/20.a             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql
 6.30/SR/20.b             implemented  vsql/funcs.v tests/std_2_6_30_math.sql
 6.30/SR/20.c             n/a          - - DECFLOAT (T076)
-6.30/SR/21               n/a          - - WIDTH_BUCKET (T612)
+6.30/SR/21               implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/funcs.v,vsql/std_2_10_4_routine_invocation.v tests/std_2_6_30_width_bucket.sql
 6.30/SR/22               n/a          - - row pattern recognition (R010)
 6.30/SR/22.a             n/a          - - row pattern recognition (R010)
 6.30/SR/22.b             n/a          - - row pattern recognition (R010)
@@ -1286,18 +1286,18 @@
 6.30/GR/16.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
 6.30/GR/16.b.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
 6.30/GR/16.b.ii          implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_floor_ceil_exact.sql,tests/std_2_6_30_math.sql
-6.30/GR/17               n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.a             n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.b             n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.c             n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.d             n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.d.i           n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.d.ii          n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.d.iii         n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.e             n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.e.i           n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.e.ii          n/a          - - WIDTH_BUCKET (T612)
-6.30/GR/17.e.iii         n/a          - - WIDTH_BUCKET (T612)
+6.30/GR/17               implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.a             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.c             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.d             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.d.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.d.ii          implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/std_2_10_4_routine_invocation.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.d.iii         implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.e             implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.e.i           implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.e.ii          implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/std_2_10_4_routine_invocation.v tests/std_2_6_30_width_bucket.sql
+6.30/GR/17.e.iii         implemented  vsql/std_2_6_30_numeric_value_function.v tests/std_2_6_30_width_bucket.sql
 6.30/GR/18               n/a          - - OCCURRENCES_REGEX (F842)
 6.30/GR/18.a             n/a          - - OCCURRENCES_REGEX (F842)
 6.30/GR/18.b             container    - -
@@ -1338,7 +1338,7 @@
 6.30/CR/15               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
 6.30/CR/16               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
 6.30/CR/17               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.30/CR/18               n/a          - - WIDTH_BUCKET (T612)
+6.30/CR/18               implemented  vsql/std_2_6_30_numeric_value_function.y tests/std_1_8_5_flagging.sql
 6.30/CR/19               n/a          - - OCCURRENCES_REGEX (F842)
 6.30/CR/20               n/a          - - regular expressions (F846)
 6.30/CR/21               n/a          - - POSITION_REGEX (F843)

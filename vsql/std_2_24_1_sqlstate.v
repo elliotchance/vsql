@@ -325,6 +325,18 @@ fn sqlstate_2201f() IError {
 	}
 }
 
+// Invalid argument for width bucket function.
+struct SQLState2201G {
+	SQLState
+}
+
+fn sqlstate_2201g() IError {
+	return SQLState2201G{
+		code: sqlstate_to_int('2201G')
+		msg:  'invalid argument for width bucket function'
+	}
+}
+
 // Invalid character value for cast.
 struct SQLState22018 {
 	SQLState

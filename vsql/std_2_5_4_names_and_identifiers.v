@@ -339,14 +339,26 @@ fn is_regular_identifier(s string) bool {
 	}
 
 	upper := s.to_upper()
+	if upper == 'E' || upper == 'LIMIT' {
+		return true
+	}
+	tok_number := token_numbers[upper] or { return true }
+
+	// Only a non-reserved word can be a regular identifier.
+	return tok_number >= token_a && tok_number <= token_zone
+}
+
+// token_numbers is the token of each name in yy_toknames, so that a name can be
+// found without going through all of them.
+const token_numbers = new_token_numbers()
+
+fn new_token_numbers() map[string]int {
+	mut tokens := map[string]int{}
 	for tok_pos, tok_name in yy_toknames {
-		if tok_name == upper && upper != 'E' && upper != 'LIMIT' {
-			tok_number := tok_pos + 57343
-			return tok_number >= token_a && tok_number <= token_zone
-		}
+		tokens[tok_name] = tok_pos + 57343
 	}
 
-	return true
+	return tokens
 }
 
 fn (e Identifier) compile(mut c Compiler) !CompileResult {

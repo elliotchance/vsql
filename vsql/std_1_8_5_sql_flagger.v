@@ -430,7 +430,7 @@ fn is_character_value_specification(e CharacterValueExpression) bool {
 fn is_column_reference(e RowValueConstructorPredicand) bool {
 	primary := primary_of(e) or { return false }
 
-	return primary is Identifier
+	return primary is &Identifier
 }
 
 // flag_exists flags an EXISTS whose query has a <select list> that isn't "*"
@@ -573,7 +573,7 @@ fn flag_set_quantifier(mut yylex YYLexer, function string, distinct bool, e Valu
 		flag(mut yylex, 'F561')
 		return
 	}
-	flag_if(mut yylex, primary !is Identifier, 'F561')
+	flag_if(mut yylex, primary !is &Identifier, 'F561')
 }
 
 // token_features flags the language that's only allowed without a feature

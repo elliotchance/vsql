@@ -24,13 +24,13 @@ nonparenthesized_value_expression_primary:
     $$.v = NonparenthesizedValueExpressionPrimary($1.v as ValueSpecification)
   }
 | column_reference {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as Identifier)
+    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as Identifier))
   }
 | set_function_specification {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as AggregateFunction)
+    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as AggregateFunction))
   }
 | routine_invocation {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as RoutineInvocation)
+    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as RoutineInvocation))
   }
 | case_expression {
     $$.v = NonparenthesizedValueExpressionPrimary($1.v as CaseExpression)
@@ -39,7 +39,7 @@ nonparenthesized_value_expression_primary:
     $$.v = NonparenthesizedValueExpressionPrimary($1.v as CastSpecification)
   }
 | next_value_expression {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as NextValueExpression)
+    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as NextValueExpression))
   }
 | scalar_subquery {
     $$.v = NonparenthesizedValueExpressionPrimary($1.v as Subquery)

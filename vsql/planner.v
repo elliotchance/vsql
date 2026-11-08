@@ -579,7 +579,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 		order << SortSpecification{
 			expr:   ValueExpression(BooleanValueExpression{
 				term: BooleanTerm{
-					factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(col))),
+					factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(col)))),
 						false, none, false)
 				}
 			})
@@ -917,7 +917,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 			for _, table in tables {
 				columns << table.columns
 				for column in table.columns {
-					exprs << DerivedColumn{ValueExpression(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(column.name))))), Identifier{
+					exprs << DerivedColumn{ValueExpression(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(new_ref(column.name)))))), Identifier{
 						sub_entity_name: column.name.sub_entity_name
 					}}
 				}
@@ -1063,7 +1063,7 @@ fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables
 fn column_derived_column(column Column) DerivedColumn {
 	return DerivedColumn{ValueExpression(BooleanValueExpression{
 		term: BooleanTerm{
-			factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name))),
+			factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(column.name)))),
 				false, none, false)
 		}
 	}), Identifier{

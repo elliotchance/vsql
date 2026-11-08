@@ -72,7 +72,7 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 }
 
 struct AggregateFunctionCount {
-	filter ?BooleanValueExpression
+	filter ?&BooleanValueExpression
 }
 
 // with_filter adds the <search condition> of a <filter clause> to a general set
@@ -83,11 +83,13 @@ fn with_filter(e AggregateFunction, filter BooleanValueExpression) AggregateFunc
 		function_name: f.function_name
 		args:          f.args
 		distinct:      f.distinct
-		filter:        filter
+		filter:        &BooleanValueExpression{
+			...filter
+		}
 	}
 }
 
-fn filter_pstr(filter ?BooleanValueExpression, params map[string]Value) string {
+fn filter_pstr(filter ?&BooleanValueExpression, params map[string]Value) string {
 	if f := filter {
 		return ' FILTER (WHERE ${f.pstr(params)})'
 	}
@@ -102,7 +104,7 @@ fn filter_pstr(filter ?BooleanValueExpression, params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 5
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 8
-fn compile_filter(mut c Compiler, filter ?BooleanValueExpression, agg string) ! {
+fn compile_filter(mut c Compiler, filter ?&BooleanValueExpression, agg string) ! {
 	f := filter or { return }
 
 	in_aggregate := c.in_aggregate
@@ -133,7 +135,7 @@ fn compile_filter(mut c Compiler, filter ?BooleanValueExpression, agg string) ! 
 // is True.
 //
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 4
-fn filter_rows(mut c Compiler, filter ?BooleanValueExpression, rows []Row) ![]Row {
+fn filter_rows(mut c Compiler, filter ?&BooleanValueExpression, rows []Row) ![]Row {
 	f := filter or { return rows }
 
 	compiled := f.compile(mut c)!

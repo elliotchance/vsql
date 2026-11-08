@@ -480,11 +480,10 @@ INSERT INTO b (a_id, id) VALUES (2, 2);
 -- out:   "A_ID" INTEGER,
 -- out:   "ID" INTEGER,
 -- out:   UNIQUE ("ID"),
+-- out:   FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID"),
 -- out:   CHECK (ID > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."B" ("A_ID", "ID") VALUES (1, 1);
--- out: CREATE INDEX "B_FOREIGN_KEY_1" ON "PUBLIC"."B" ("A_ID");
--- out: ALTER TABLE "PUBLIC"."B" ADD CONSTRAINT "B_FOREIGN_KEY_1" FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID");
 -- out: CREATE TABLE "PUBLIC"."A" (
 -- out:   "ID" INTEGER NOT NULL,
 -- out:   PRIMARY KEY ("ID")
@@ -494,11 +493,10 @@ INSERT INTO b (a_id, id) VALUES (2, 2);
 -- out:   "A_ID" INTEGER,
 -- out:   "ID" INTEGER,
 -- out:   UNIQUE ("ID"),
+-- out:   FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID"),
 -- out:   CHECK (ID > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."B" ("A_ID", "ID") VALUES (1, 1);
--- out: CREATE INDEX "B_FOREIGN_KEY_1" ON "PUBLIC"."B" ("A_ID");
--- out: ALTER TABLE "PUBLIC"."B" ADD CONSTRAINT "B_FOREIGN_KEY_1" FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID");
 -- error 23503: violates foreign key constraint: FOREIGN KEY (A_ID) REFERENCES ":memory:".PUBLIC.A (ID) on ":memory:".PUBLIC.B
 
 -- # ALTER TABLE ADD COLUMN keeps the FOREIGN KEYs of the table, and every row
@@ -533,3 +531,82 @@ SELECT * FROM child;
 -- ID: 1 PARENT_ID: 1 P2: 1 P3: NULL
 -- ID: 2 PARENT_ID: NULL P2: 1 P3: NULL
 -- ID: 3 PARENT_ID: NULL P2: 1 P3: 3
+
+-- # vsql out puts a FOREIGN KEY in the CREATE TABLE (which makes its index),
+-- # after the table that it references. When the FOREIGN KEY uses another
+-- # index, or has its own index as well as the index of a UNIQUE constraint,
+-- # it's added at the end instead, so that the indexes are the same.
+/* extensions V002-01 */
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c1 (a INT, b INT);
+CREATE INDEX c1_ab ON c1 (a, b);
+ALTER TABLE c1 ADD CONSTRAINT c1_fk FOREIGN KEY (a) REFERENCES p;
+CREATE TABLE c2 (a INT, CONSTRAINT c2_fk FOREIGN KEY (a) REFERENCES p);
+CREATE INDEX c2_a ON c2 (a DESC);
+CREATE TABLE c3 (a INT UNIQUE, CONSTRAINT c3_fk FOREIGN KEY (a) REFERENCES p);
+CREATE TABLE c4 (a INT, CONSTRAINT c4_fk FOREIGN KEY (a) REFERENCES p);
+ALTER TABLE c4 ADD CONSTRAINT c4_a UNIQUE (a);
+/* out */
+/* in */
+/* out */
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE INDEX 1
+-- msg: ALTER TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE INDEX 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: ALTER TABLE 1
+-- out: CREATE TABLE "PUBLIC"."P" (
+-- out:   "ID" INTEGER NOT NULL,
+-- out:   PRIMARY KEY ("ID")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."C1" (
+-- out:   "A" INTEGER,
+-- out:   "B" INTEGER
+-- out: );
+-- out: CREATE INDEX "C1_AB" ON "PUBLIC"."C1" ("A", "B");
+-- out: CREATE TABLE "PUBLIC"."C2" (
+-- out:   "A" INTEGER,
+-- out:   CONSTRAINT "C2_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID")
+-- out: );
+-- out: CREATE INDEX "C2_A" ON "PUBLIC"."C2" ("A" DESC);
+-- out: CREATE TABLE "PUBLIC"."C3" (
+-- out:   "A" INTEGER,
+-- out:   UNIQUE ("A"),
+-- out:   CONSTRAINT "C3_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."C4" (
+-- out:   "A" INTEGER,
+-- out:   CONSTRAINT "C4_A" UNIQUE ("A")
+-- out: );
+-- out: CREATE INDEX "C4_FK" ON "PUBLIC"."C4" ("A");
+-- out: ALTER TABLE "PUBLIC"."C1" ADD CONSTRAINT "C1_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID");
+-- out: ALTER TABLE "PUBLIC"."C4" ADD CONSTRAINT "C4_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID");
+-- out: CREATE TABLE "PUBLIC"."P" (
+-- out:   "ID" INTEGER NOT NULL,
+-- out:   PRIMARY KEY ("ID")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."C1" (
+-- out:   "A" INTEGER,
+-- out:   "B" INTEGER
+-- out: );
+-- out: CREATE INDEX "C1_AB" ON "PUBLIC"."C1" ("A", "B");
+-- out: CREATE TABLE "PUBLIC"."C2" (
+-- out:   "A" INTEGER,
+-- out:   CONSTRAINT "C2_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID")
+-- out: );
+-- out: CREATE INDEX "C2_A" ON "PUBLIC"."C2" ("A" DESC);
+-- out: CREATE TABLE "PUBLIC"."C3" (
+-- out:   "A" INTEGER,
+-- out:   UNIQUE ("A"),
+-- out:   CONSTRAINT "C3_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."C4" (
+-- out:   "A" INTEGER,
+-- out:   CONSTRAINT "C4_A" UNIQUE ("A")
+-- out: );
+-- out: CREATE INDEX "C4_FK" ON "PUBLIC"."C4" ("A");
+-- out: ALTER TABLE "PUBLIC"."C1" ADD CONSTRAINT "C1_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID");
+-- out: ALTER TABLE "PUBLIC"."C4" ADD CONSTRAINT "C4_FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."P" ("ID");

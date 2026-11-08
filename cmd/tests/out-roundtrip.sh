@@ -39,10 +39,33 @@ CREATE SEQUENCE past_bigint START WITH 9223372036854775807;
 SELECT NEXT VALUE FOR past_bigint FROM (VALUES 1) AS t;
 CREATE SEQUENCE cycles START WITH 1 MAXVALUE 2 CYCLE;
 SELECT NEXT VALUE FOR cycles FROM (VALUES 1, 2) AS t;
+CREATE TABLE z_owner (id INT PRIMARY KEY);
+CREATE TABLE a_item (id INT PRIMARY KEY, z_id INT REFERENCES z_owner);
+INSERT INTO z_owner (id) VALUES (1);
+INSERT INTO a_item (id, z_id) VALUES (1, 1);
+CREATE TABLE emp (id INT PRIMARY KEY, dept_id INT, manager_id INT REFERENCES emp);
+CREATE TABLE dept (id INT PRIMARY KEY, head_id INT REFERENCES emp);
+ALTER TABLE emp ADD CONSTRAINT emp_dept FOREIGN KEY (dept_id) REFERENCES dept (id);
+INSERT INTO emp (id, manager_id) VALUES (2, NULL);
+INSERT INTO emp (id, manager_id) VALUES (1, 2);
+INSERT INTO dept (id, head_id) VALUES (10, 1);
+UPDATE emp SET dept_id = 10;
 EOF
 
 $VSQL out $VSQL_FILE > $SQL_FILE
 cat $SQL_FILE
+
+# A table comes after the table that it references, with the FOREIGN KEY in its
+# CREATE TABLE. DEPT and EMP reference each other, so DEPT (the first by name)
+# comes first and its FOREIGN KEY is added at the end, like the one of EMP to
+# itself, because a row of EMP references a row after it.
+test "$(grep -n 'CREATE TABLE "PUBLIC"."Z_OWNER"' $SQL_FILE | cut -d: -f1)" -lt \
+  "$(grep -n 'CREATE TABLE "PUBLIC"."A_ITEM"' $SQL_FILE | cut -d: -f1)"
+grep -x '  FOREIGN KEY ("Z_ID") REFERENCES "PUBLIC"."Z_OWNER" ("ID")' $SQL_FILE
+grep -x '  CONSTRAINT "EMP_DEPT" FOREIGN KEY ("DEPT_ID") REFERENCES "PUBLIC"."DEPT" ("ID")' $SQL_FILE
+grep -x 'ALTER TABLE "PUBLIC"."DEPT" ADD CONSTRAINT "DEPT_FOREIGN_KEY_1" FOREIGN KEY ("HEAD_ID") REFERENCES "PUBLIC"."EMP" ("ID");' $SQL_FILE
+grep -x 'ALTER TABLE "PUBLIC"."EMP" ADD CONSTRAINT "EMP_FOREIGN_KEY_1" FOREIGN KEY ("MANAGER_ID") REFERENCES "PUBLIC"."EMP" ("ID");' $SQL_FILE
+test "$(grep -c 'ADD CONSTRAINT' $SQL_FILE)" -eq 2
 
 # Loading the dump into a new database, and dumping that, must give the same
 # result.

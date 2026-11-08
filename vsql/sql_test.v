@@ -5,6 +5,7 @@ import math
 import net
 import os
 import regex
+import runtime
 import strings
 import time
 
@@ -341,6 +342,108 @@ fn test_all() ! {
 		return error('MEMORY=0 and FILE=0 leave nothing to test')
 	}
 
+	// The tests are split between SQL_TEST_JOBS processes (by default, one for
+	// each CPU), which are this test program run again with SQL_TEST_SHARD set.
+	// Processes are used rather than threads, because threads wait on each other
+	// to allocate memory. A filter or VERBOSE runs every test in order in this
+	// process, so the output isn't mixed up.
+	tests := get_tests()!
+	shard := os.getenv('SQL_TEST_SHARD')
+	if shard != '' {
+		parts := shard.split('/')
+		// An error stops this process's tests, but the process that started it
+		// still needs to know about it.
+		outcome := run_sql_tests(tests, parts[0].int(), parts[1].int(), false, filter_line) or {
+			SQLTestOutcome{
+				failed: [err.msg()]
+			}
+		}
+		os.write_file(os.getenv('SQL_TEST_OUTCOME'), outcome.encode())!
+		// The other tests in this file are run by the process that started this
+		// one. The coverage is still written, when the process exits.
+		exit(0)
+	}
+	jobs := if verbose != '' || filter_test != '' {
+		1
+	} else if $env('SQL_TEST_JOBS') != '' {
+		math.max($env('SQL_TEST_JOBS').int(), 1)
+	} else {
+		runtime.nr_cpus()
+	}
+	mut outcomes := []SQLTestOutcome{}
+	if jobs == 1 {
+		outcomes << run_sql_tests(tests, 0, 1, verbose != '', filter_line)!
+	} else {
+		os.mkdir_all(sql_test_dir())!
+		defer {
+			os.rmdir_all(sql_test_dir()) or {}
+		}
+		mut processes := []&os.Process{}
+		for i in 0 .. jobs {
+			mut env := os.environ()
+			env['SQL_TEST_SHARD'] = '${i}/${jobs}'
+			env['SQL_TEST_OUTCOME'] = os.join_path(sql_test_dir(), 'outcome-${i}')
+			mut process := os.new_process(os.executable())
+			process.set_environment(env)
+			process.run()
+			processes << process
+		}
+		for i, mut process in processes {
+			process.wait()
+			process.close()
+			outcome_path := os.join_path(sql_test_dir(), 'outcome-${i}')
+			outcomes << decode_sql_test_outcome(os.read_file(outcome_path) or {
+				'failed process ${i}/${jobs} stopped with exit code ${process.code}\n'
+			})
+		}
+	}
+
+	// The V test summary does not include the failed assertions (only the
+	// passing ones) so we keep our own count of the SQL tests.
+	mut passed := 0
+	mut failed := []string{}
+	mut statements := 0
+	mut flagged := map[string]bool{}
+	for outcome in outcomes {
+		passed += outcome.passed
+		failed << outcome.failed
+		statements += outcome.statements
+		for id, _ in outcome.flagged {
+			flagged[id] = true
+		}
+	}
+	failed.sort()
+
+	println('SQL tests: ${passed} passed, ${failed.len} failed, ${passed + failed.len} total, ${statements} statements')
+	for location in failed {
+		println('  FAILED ${location}')
+	}
+	// The asserts of the other processes aren't counted, so this catches every
+	// failure.
+	assert failed == []
+
+	// Every feature that can be flagged (including the vsql extensions) must be
+	// in the flags of at least one test that has the "flags" directive, so it
+	// can't be missed by a test that only happens to use it.
+	if filter_test == '' {
+		missing := sql_flagger_features()!.filter(it !in flagged)
+		assert missing == [], 'not flagged by any test with /* flags */: ${missing.join(', ')}'
+	}
+}
+
+// SQLTestOutcome is the result of the tests that one process ran, see
+// run_sql_tests.
+struct SQLTestOutcome {
+mut:
+	passed     int
+	failed     []string
+	statements int
+	flagged    map[string]bool
+}
+
+// run_sql_tests runs every jobs'th test, starting at the index first, in each
+// mode.
+fn run_sql_tests(tests []SQLTest, first int, jobs int, verbose bool, filter_line int) !SQLTestOutcome {
 	// One server is shared by all of the tests, see through_server.
 	mut server := &Server(unsafe { nil })
 	mut port := 0
@@ -353,17 +456,13 @@ fn test_all() ! {
 			server.stop() or {}
 		}
 	}
-
-	// The V test summary does not include the failed assertions (only the
-	// passing ones) so we keep our own count of the SQL tests.
-	mut passed := 0
-	mut failed := []string{}
-	mut statements := 0
-	mut flagged := map[string]bool{}
 	defer {
 		os.rmdir_all(sql_test_dir()) or {}
 	}
-	for test in get_tests()! {
+
+	mut outcome := SQLTestOutcome{}
+	for i := first; i < tests.len; i += jobs {
+		test := tests[i]
 		modes := test.modes()
 		if modes.len == 0 {
 			continue
@@ -374,8 +473,8 @@ fn test_all() ! {
 		for mode in modes {
 			// An error (rather than a failed assertion) still says which test it
 			// was.
-			result := run_single_test(test, verbose != '', filter_line, mode, through_server,
-				port, mut flagged) or {
+			result := run_single_test(test, verbose, filter_line, mode, through_server, port, mut
+				outcome.flagged) or {
 				return error('${test.file_name}:${test.line_number} (${sql_test_mode_str(mode, through_server)}): ${err}')
 			}
 			match result {
@@ -388,26 +487,45 @@ fn test_all() ! {
 		if skipped {
 			continue
 		}
-		statements += test.statement_count()
+		outcome.statements += test.statement_count()
 		if failed_modes.len > 0 {
-			failed << '${test.file_name}:${test.line_number} (${failed_modes.join(', ')})'
+			outcome.failed << '${test.file_name}:${test.line_number} (${failed_modes.join(', ')})'
 		} else {
-			passed++
+			outcome.passed++
 		}
 	}
 
-	println('SQL tests: ${passed} passed, ${failed.len} failed, ${passed + failed.len} total, ${statements} statements')
-	for location in failed {
-		println('  FAILED ${location}')
+	return outcome
+}
+
+// encode is how a process that ran some of the tests gives its outcome to the
+// process that started it, one line for each value.
+fn (outcome SQLTestOutcome) encode() string {
+	mut lines := ['passed ${outcome.passed}', 'statements ${outcome.statements}']
+	for location in outcome.failed {
+		lines << 'failed ${location}'
+	}
+	for id, _ in outcome.flagged {
+		lines << 'flagged ${id}'
 	}
 
-	// Every feature that can be flagged (including the vsql extensions) must be
-	// in the flags of at least one test that has the "flags" directive, so it
-	// can't be missed by a test that only happens to use it.
-	if filter_test == '' {
-		missing := sql_flagger_features()!.filter(it !in flagged)
-		assert missing == [], 'not flagged by any test with /* flags */: ${missing.join(', ')}'
+	return lines.join('\n') + '\n'
+}
+
+// decode_sql_test_outcome reads what SQLTestOutcome.encode wrote.
+fn decode_sql_test_outcome(s string) SQLTestOutcome {
+	mut outcome := SQLTestOutcome{}
+	for line in s.split_into_lines() {
+		kind, value := line.split_once(' ') or { continue }
+		match kind {
+			'passed' { outcome.passed = value.int() }
+			'statements' { outcome.statements = value.int() }
+			'failed' { outcome.failed << value }
+			else { outcome.flagged[value] = true }
+		}
 	}
+
+	return outcome
 }
 
 // sql_flagger_features returns every Feature ID that the SQL Flagger can flag,

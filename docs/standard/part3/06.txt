@@ -1284,7 +1284,7 @@
 6.33/GR/11.e.iii.1       implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/11.e.iii.2       implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/11.f             container    - -
-6.33/GR/11.f.i           n/a          - - every condition is stored in the diagnostics area
+6.33/GR/11.f.i           implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_more_test.c
 6.33/GR/11.f.ii          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/11.g             implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/11.h             implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c

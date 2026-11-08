@@ -504,7 +504,7 @@ static int vsql_m_into(char *sqlstate, SQLHSTMT stmt, SQLRETURN rc,
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
     return 0;
   }
-  vsql_m_status(sqlstate, truncated ? "01004" : "00000");
+  vsql_m_assigned(sqlstate, truncated);
 
   return 1;
 }
@@ -575,8 +575,8 @@ static int vsql_m_execute_prepared(char *sqlstate, const char *name,
     SQLGetDiagField(SQL_HANDLE_STMT, p->stmt, 0, SQL_DIAG_ROW_COUNT,
                     &vsql_m_da.row_count, 0, NULL);
   }
+  vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, p->stmt);
   if (columns == 0 || vsql_m_failed(rc)) {
-    vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, p->stmt);
     return 0;
   }
 

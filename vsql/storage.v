@@ -376,7 +376,23 @@ fn (mut f Storage) close_file() {
 // (in the search condition of a CHECK constraint), so V would otherwise need an
 // "or" block that's never used.
 fn (f Storage) table(storage_id string) Table {
-	return unsafe { f.tables[storage_id] }
+	// With "or", an empty Table is only made when there's no table, rather
+	// than for every lookup.
+	return f.tables[storage_id] or { Table{} }
+}
+
+// references is true when the table has a FOREIGN KEY that references the
+// table with referenced_id (see Identifier.storage_id). It doesn't copy the
+// table, so it's cheaper than looking at the foreign keys of table().
+fn (f &Storage) references(storage_id string, referenced_id string) bool {
+	foreign_keys := (f.tables[storage_id] or { return false }).foreign_keys
+	for key in foreign_keys {
+		if key.referenced_table.storage_id() == referenced_id {
+			return true
+		}
+	}
+
+	return false
 }
 
 fn (mut f Storage) create_table(definition Table) ! {

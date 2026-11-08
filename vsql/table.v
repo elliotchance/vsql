@@ -141,9 +141,11 @@ fn (t Table) identity_column() ?Column {
 
 // Find a column by name, or return a SQLSTATE 42703 error.
 pub fn (t Table) column(name string) !Column {
-	for col in t.columns {
-		if name == col.name.sub_entity_name {
-			return col
+	// The columns are looked at by index so that only the one returned is
+	// copied.
+	for i in 0 .. t.columns.len {
+		if name == t.columns[i].name.sub_entity_name {
+			return t.columns[i]
 		}
 	}
 

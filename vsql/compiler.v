@@ -207,6 +207,33 @@ fn (mut c Compiler) compile_retrospective(e RowValueConstructorPredicand) !Compi
 	return e.compile(mut c)!
 }
 
+// check_comparison returns an error if values of the declared types left and
+// right can't be compared, or if the comparison isn't allowed in a CHECK
+// constraint (see check_time_zone_comparison). These are the pairs of types that
+// compare() has a rule for, where datetimes must also have the same primary
+// datetime fields. Checking the declared types once, rather than each pair of
+// values, means a predicate can stop at the first value that decides it without
+// the result depending on the order of the values.
+//
+// null_parameter is true when either side is a dynamic parameter whose value is
+// NULL (see CompileResult). It compares with any type, as it did when each pair
+// of values was checked, so a prepared statement can still be described with a
+// NULL for each parameter whose type isn't known yet.
+//
+// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, Syntax Rules, 3
+fn (c Compiler) check_comparison(left Type, right Type, null_parameter bool) ! {
+	if null_parameter {
+		return
+	}
+
+	if !comparable_types(left.typ, right.typ) || (left.typ.is_datetime()
+		&& right.typ.is_datetime() && datetime_fields(left.typ) != datetime_fields(right.typ)) {
+		return sqlstate_42883('cannot compare ${left} and ${right}')
+	}
+
+	c.check_time_zone_comparison(left, right)!
+}
+
 // check_time_zone_comparison returns an error if a datetime with a time zone is
 // compared with one without a time zone in a CHECK constraint. The one without
 // a time zone is in the time zone of the session, so the result depends on the
@@ -226,12 +253,17 @@ struct CompileResult {
 	run          CompiledFn @[required]
 	typ          Type       @[required]
 	contains_agg bool       @[required]
+	// null_parameter is true for a dynamic parameter whose value is NULL. Its
+	// type is the type of that value, which isn't always the type it's used as
+	// (see check_comparison).
+	null_parameter bool
 }
 
 fn (c CompileResult) with_agg(contains_agg bool) CompileResult {
 	return CompileResult{
-		run:          c.run
-		typ:          c.typ
-		contains_agg: contains_agg
+		run:            c.run
+		typ:            c.typ
+		contains_agg:   contains_agg
+		null_parameter: c.null_parameter
 	}
 }

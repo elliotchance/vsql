@@ -1,6 +1,6 @@
 -- # An index is used to find rows in the same way as the PRIMARY KEY (see
--- # primary-key-range.sql). Rows are read in the order of the index. The WHERE
--- # clause is still applied to them.
+-- # impl_planner_primary_key_range.sql). Rows are read in the order of the
+-- # index. The WHERE clause is still applied to them.
 
 /* setup */
 CREATE TABLE t (id INT PRIMARY KEY, x VARCHAR(10), y INT);

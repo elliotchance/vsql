@@ -29,16 +29,16 @@
 18.1/GR/13.d             n/a          - - authorization identifiers (E081)
 18.1/GR/13.e             untested     vsql/std_2_17_3_transaction_characteristics.v - it's 100
 18.1/GR/13.f             implemented  vsql/connection.v vsql/sql_test.v
-18.1/GR/13.g             impl-defined vsql/connection.v tests/set-schema.sql the catalog of the file, the PUBLIC schema and the time zone of the system
+18.1/GR/13.g             impl-defined vsql/connection.v tests/std_2_19_6_set_schema.sql the catalog of the file, the PUBLIC schema and the time zone of the system
 18.1/GR/13.h             n/a          - - triggers (T211)
 18.1/GR/13.i             n/a          - - triggers (T211)
 18.1/GR/13.j             untestable   vsql/connection.v -
 18.1/GR/13.k             untestable   vsql/connection.v -
 18.1/GR/13.l             n/a          - - SQL-invoked routines (T321)
 18.1/GR/13.m             implemented  vsql/connection.v vsql/sql_test.v
-18.1/GR/13.n             unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql each constraint has its initial constraint mode, as after a COMMIT (17.7 GR 10.b.ii), so an INITIALLY DEFERRED constraint is deferred
+18.1/GR/13.n             unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, as after a COMMIT (17.7 GR 10.b.ii), so an INITIALLY DEFERRED constraint is deferred
 18.1/GR/14               n/a          - - savepoints (T271)
-18.1/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/connections.sql
+18.1/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/std_2_18_1_connections.sql
 # 18.2, <set connection statement>
 18.2                     implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
 18.2/GR/1                implemented  vsql/agent.v vsql/sql_test.v
@@ -49,7 +49,7 @@
 18.2/GR/4                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
 18.2/GR/5                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
 18.2/GR/6                implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
-18.2/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/connections.sql
+18.2/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/std_2_18_1_connections.sql
 # 18.3, <disconnect statement>
 18.3                     implemented  vsql/std_2_18_3_disconnect_statement.v vsql/sql_test.v
 18.3/GR/1                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
@@ -61,4 +61,4 @@
 18.3/GR/7                implemented  vsql/agent.v vsql/sql_test.v
 18.3/GR/8                n/a          - - closing an SQL-connection doesn't report errors
 18.3/GR/9                implemented  vsql/agent.v vsql/sql_test.v
-18.3/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/connections.sql
+18.3/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/std_2_18_1_connections.sql

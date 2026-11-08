@@ -63,7 +63,8 @@ SELECT * FROM t AS x WHERE t.id = 1;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
 
 -- # The primary key is only used for a comparison or BETWEEN that's part of an
--- # AND (see primary-key-range.sql). Other conditions read the whole table.
+-- # AND (see impl_planner_primary_key_range.sql). Other conditions read the
+-- # whole table.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id = 1 OR id = 2;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10))

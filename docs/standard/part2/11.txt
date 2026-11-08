@@ -3,38 +3,38 @@
 # 11, Schema definition and manipulation
 11                       container    - -
 # 11.1, <schema definition>
-11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/create-schema.sql the only <schema element>s are tables and sequences, with no forward references (#887), and there's no AUTHORIZATION (#289) or <schema character set or path>
+11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql the only <schema element>s are tables and sequences, with no forward references (#887), and there's no AUTHORIZATION (#289) or <schema character set or path>
 11.1/SR/1                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2.a              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2.b              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
-11.1/SR/3                implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
+11.1/SR/3                implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
 11.1/SR/4                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/5                n/a          - - named character sets (F461)
 11.1/SR/6                n/a          - - SQL paths (S071)
 11.1/SR/7                n/a          - - SQL paths (S071)
 11.1/SR/8                n/a          - - SQL paths (S071)
-11.1/AR/1                impl-defined vsql/std_2_11_1_schema_definition.v tests/create-schema.sql none, there are no privileges
-11.1/GR/1                implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
-11.1/GR/1.a              implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
+11.1/AR/1                impl-defined vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql none, there are no privileges
+11.1/GR/1                implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
+11.1/GR/1.a              implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
 11.1/GR/1.b              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/GR/1.c              n/a          - - named character sets (F461)
 11.1/GR/1.d              n/a          - - SQL paths (S071)
-11.1/GR/1.e              implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
+11.1/GR/1.e              implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
 11.1/GR/2                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/GR/3                n/a          - - named character sets (F461)
 11.1/CR/1                n/a          - - SQL paths (S071)
 11.1/CR/2                n/a          - - named character sets (F461)
-11.1/CR/3                implemented  vsql/std_2_11_1_schema_definition.y tests/flagging.sql every <schema name clause> contains a <schema name>
+11.1/CR/3                implemented  vsql/std_2_11_1_schema_definition.y tests/std_1_8_5_flagging.sql every <schema name clause> contains a <schema name>
 11.1/CR/4                n/a          - - roles (T332)
 # 11.2, <drop schema statement>
-11.2                     implemented  vsql/std_2_11_2_drop_schema_statement.v tests/drop-schema.sql
+11.2                     implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
 11.2/SR/1                definition   - -
-11.2/SR/2                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/drop-schema.sql
-11.2/SR/3                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/information-schema.sql
-11.2/SR/4                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/drop-schema.sql a schema can only contain persistent base tables and sequence generators
+11.2/SR/2                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
+11.2/SR/3                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_11_5_1_information_schema.sql
+11.2/SR/4                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql a schema can only contain persistent base tables and sequence generators
 11.2/AR/1                n/a          - - privileges (E081, #732)
-11.2/GR/1                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/drop-schema.sql
+11.2/GR/1                implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
 11.2/GR/2                n/a          - - views (F031-02)
 11.2/GR/3                n/a          - - domains (F251)
 11.2/GR/4                n/a          - - assertions (F521)
@@ -45,12 +45,12 @@
 11.2/GR/9                n/a          - - triggers (T211)
 11.2/GR/10               n/a          - - SQL-invoked routines (T321)
 11.2/GR/11               n/a          - - SQL-invoked routines (T321)
-11.2/GR/12               implemented  vsql/std_2_11_2_drop_schema_statement.v tests/drop-schema.sql
-11.2/GR/13               implemented  vsql/std_2_11_2_drop_schema_statement.v tests/drop-schema.sql
-11.2/CR/1                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/flagging.sql
-11.2/CR/2                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/flagging.sql
+11.2/GR/12               implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
+11.2/GR/13               implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
+11.2/CR/1                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_8_5_flagging.sql
+11.2/CR/2                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_8_5_flagging.sql
 # 11.3, <table definition>
-11.3                     partial      vsql/std_2_11_3_table_definition.v tests/create-table.sql only persistent base tables with a <table element list> of <column definition>s and <table constraint definition>s
+11.3                     partial      vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql only persistent base tables with a <table element list> of <column definition>s and <table constraint definition>s
 11.3/SR/1                n/a          - - periods (T180, T181)
 11.3/SR/2                n/a          - - periods (T180, T181)
 11.3/SR/2.a              n/a          - - periods (T180, T181)
@@ -69,13 +69,13 @@
 11.3/SR/2.e.v.2.B        n/a          - - periods (T180, T181)
 11.3/SR/3                n/a          - - periods (T180, T181)
 11.3/SR/3.a              n/a          - - periods (T180, T181)
-11.3/SR/4                implemented  vsql/compiler.v tests/check-constraint.sql a parameter can only be in a DEFAULT, CHECK or generation expression, which reject it
+11.3/SR/4                implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql a parameter can only be in a DEFAULT, CHECK or generation expression, which reject it
 11.3/SR/5                definition   - -
-11.3/SR/6                implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
-11.3/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+11.3/SR/6                implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
+11.3/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.3/SR/8                definition   - -
 11.3/SR/9                container    - -
-11.3/SR/9.a              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+11.3/SR/9.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.3/SR/9.b              n/a          - - <like clause> (T171)
 11.3/SR/9.b.i            n/a          - - <like clause> (T171)
 11.3/SR/9.b.ii           n/a          - - <like clause> (T171)
@@ -167,25 +167,25 @@
 11.3/SR/14.a             n/a          - - reference types (S043)
 11.3/SR/14.b             n/a          - - reference types (S043)
 11.3/SR/14.c             n/a          - - reference types (S043)
-11.3/SR/15               implemented  vsql/std_2_11_3_table_definition.v tests/identity-column.sql
-11.3/SR/16               implemented  vsql/std_2_11_3_table_definition.v tests/check-constraint.sql
+11.3/SR/15               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_4_identity_column.sql
+11.3/SR/16               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_9_check_constraint.sql
 11.3/AR/1                n/a          - - privileges (E081, #732)
 11.3/AR/2                n/a          - - <like clause> (T171)
 11.3/AR/3                n/a          - - subtables (S081)
 11.3/AR/4                n/a          - - typed tables (S051)
-11.3/GR/1                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql only a regular persistent base table
+11.3/GR/1                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql only a regular persistent base table
 11.3/GR/1.a              n/a          - - temporary tables (F531)
 11.3/GR/1.b              n/a          - - temporary tables (F531)
 11.3/GR/1.c              n/a          - - system-versioned tables (T180)
-11.3/GR/1.d              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
-11.3/GR/2                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+11.3/GR/1.d              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
+11.3/GR/2                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.3/GR/3                n/a          - - typed tables (S051)
 11.3/GR/3.a              n/a          - - typed tables (S051)
 11.3/GR/3.b              n/a          - - typed tables (S051)
-11.3/GR/4                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
-11.3/GR/4.a              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
-11.3/GR/4.b              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql every table is a regular persistent base table
-11.3/GR/4.c              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+11.3/GR/4                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
+11.3/GR/4.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
+11.3/GR/4.b              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql every table is a regular persistent base table
+11.3/GR/4.c              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.3/GR/4.d              n/a          - - periods (T180, T181)
 11.3/GR/4.e              n/a          - - periods (T180, T181)
 11.3/GR/4.f              n/a          - - typed tables (S051)
@@ -194,7 +194,7 @@
 11.3/GR/4.f.iii          n/a          - - typed tables (S051)
 11.3/GR/4.f.iv           n/a          - - typed tables (S051)
 11.3/GR/4.f.v            n/a          - - typed tables (S051)
-11.3/GR/4.g              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+11.3/GR/4.g              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.3/GR/4.h              n/a          - - typed tables (S051)
 11.3/GR/4.i              n/a          - - subtables (S081)
 11.3/GR/4.j              n/a          - - functional dependencies and candidate keys aren't kept in the table descriptor (T301)
@@ -204,7 +204,7 @@
 11.3/GR/4.m.i            n/a          - - temporary tables (F531)
 11.3/GR/4.m.ii           n/a          - - temporary tables (F531)
 11.3/GR/4.n              container    - -
-11.3/GR/4.n.i            implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql every table is insertable-into
+11.3/GR/4.n.i            implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql every table is insertable-into
 11.3/GR/4.n.ii           n/a          - - typed tables (S051)
 11.3/GR/4.n.ii.1         n/a          - - typed tables (S051)
 11.3/GR/4.n.ii.2         n/a          - - typed tables (S051)
@@ -227,13 +227,13 @@
 11.3/CR/9                n/a          - - periods (T180, T181)
 11.3/CR/10               n/a          - - periods (T180, T181)
 # 11.4, <column definition>
-11.4                     implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/SR/1                implemented  vsql/compiler.v tests/check-constraint.sql
+11.4                     implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/SR/1                implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 11.4/SR/2                container    - -
 11.4/SR/2.a              definition   - -
 11.4/SR/2.b              n/a          - - temporary tables (F531)
 11.4/SR/2.c              definition   - -
-11.4/SR/3                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
+11.4/SR/3                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.4/SR/4                definition   - -
 11.4/SR/5                definition   - -
 11.4/SR/6                n/a          - - system-versioned tables (T180)
@@ -244,66 +244,66 @@
 11.4/SR/7                n/a          - - domains (F251)
 11.4/SR/8                n/a          - - domains (F251)
 11.4/SR/9                n/a          - - domains (F251)
-11.4/SR/10               implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+11.4/SR/10               implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
 11.4/SR/10.a             definition   - -
 11.4/SR/10.b             definition   - -
-11.4/SR/10.c             implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
-11.4/SR/10.d             implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+11.4/SR/10.c             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
+11.4/SR/10.d             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
 11.4/SR/10.e             n/a          - - SQL-invoked routines (T321)
-11.4/SR/10.f             implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
-11.4/SR/11               implemented  vsql/std_2_11_4_column_definition.y tests/generated-column.sql
+11.4/SR/10.f             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
+11.4/SR/11               implemented  vsql/std_2_11_4_column_definition.y tests/std_2_11_4_generated_column.sql
 11.4/SR/12               container    - -
 11.4/SR/12.a             n/a          - - domains (F251)
 11.4/SR/12.b             n/a          - - collations (F690)
-11.4/SR/13               implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
-11.4/SR/13.a             implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+11.4/SR/13               implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
+11.4/SR/13.a             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
 11.4/SR/13.b             n/a          - - domains (F251)
-11.4/SR/13.c             implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+11.4/SR/13.c             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
 11.4/SR/14               n/a          - - system-versioned tables (T180)
 11.4/SR/15               container    - -
 11.4/SR/15.a             definition   - -
 11.4/SR/15.b             n/a          - - named character sets (F461)
-11.4/SR/16               implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
+11.4/SR/16               implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
 11.4/SR/16.a             container    - -
 11.4/SR/16.a.i           n/a          - - distinct types (S011)
-11.4/SR/16.a.ii          implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
+11.4/SR/16.a.ii          implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
 11.4/SR/16.b             definition   - -
-11.4/SR/16.c             implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
-11.4/SR/16.d             implemented  vsql/std_2_11_3_table_definition.v tests/identity-column.sql
-11.4/SR/17               implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/SR/17.a             implemented  vsql/std_2_11_4_column_definition.v tests/constraint-names.sql a NOT NULL is kept as a NOT NULL of the column, with its name
-11.4/SR/17.b             implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/SR/17.c             implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/SR/17.d             implemented  vsql/std_2_11_4_column_definition.v tests/check-constraint.sql
+11.4/SR/16.c             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
+11.4/SR/16.d             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_4_identity_column.sql
+11.4/SR/17               implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/SR/17.a             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_6_constraint_names.sql a NOT NULL is kept as a NOT NULL of the column, with its name
+11.4/SR/17.b             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/SR/17.c             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/SR/17.d             implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_9_check_constraint.sql
 11.4/SR/18               n/a          - - domains (F251)
 11.4/AR/1                n/a          - - domains (F251)
 11.4/GR/1                definition   - -
-11.4/GR/2                implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/3                implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/4                implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
-11.4/GR/5                implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.a              implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
+11.4/GR/2                implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/3                implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/4                implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
+11.4/GR/5                implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.a              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
 11.4/GR/5.b              container    - -
-11.4/GR/5.b.i            implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
+11.4/GR/5.b.i            implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
 11.4/GR/5.b.ii           n/a          - - domains (F251)
-11.4/GR/5.c              implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.d              implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.e              implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.f              implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
-11.4/GR/5.f.i            implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
-11.4/GR/5.f.ii           implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
-11.4/GR/5.f.iii          implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
-11.4/GR/5.f.iv           implemented  vsql/std_2_11_4_column_definition.v tests/identity-column.sql
+11.4/GR/5.c              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.d              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.e              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.f              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
+11.4/GR/5.f.i            implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
+11.4/GR/5.f.ii           implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
+11.4/GR/5.f.iii          implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
+11.4/GR/5.f.iv           implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_identity_column.sql
 11.4/GR/5.g              n/a          - - system-versioned tables (T180)
 11.4/GR/5.h              n/a          - - system-versioned tables (T180)
 11.4/GR/5.i              n/a          - - system-versioned tables (T180)
 11.4/GR/5.j              container    - -
-11.4/GR/5.j.i            implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
-11.4/GR/5.j.ii           implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
-11.4/GR/5.k              implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.l              implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.l.i            implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
-11.4/GR/5.l.ii           implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql
+11.4/GR/5.j.i            implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
+11.4/GR/5.j.ii           implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql
+11.4/GR/5.k              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.l              implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.l.i            implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+11.4/GR/5.l.ii           implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
 11.4/GR/6                n/a          - - domains (F251)
 11.4/GR/6.a              n/a          - - domains (F251)
 11.4/GR/6.b              n/a          - - domains (F251)
@@ -311,73 +311,73 @@
 11.4/GR/6.d              n/a          - - domains (F251)
 11.4/GR/6.e              n/a          - - domains (F251)
 11.4/CR/1                n/a          - - collations (F692)
-11.4/CR/2                implemented  vsql/std_2_11_4_column_definition.y tests/flagging.sql
-11.4/CR/3                implemented  vsql/std_2_11_4_column_definition.y tests/flagging.sql
+11.4/CR/2                implemented  vsql/std_2_11_4_column_definition.y tests/std_1_8_5_flagging.sql
+11.4/CR/3                implemented  vsql/std_2_11_4_column_definition.y tests/std_1_8_5_flagging.sql
 11.4/CR/4                n/a          - - system-versioned tables (T180)
 # 11.5, <default clause>
-11.5                     implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5                     implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/1                definition   - -
 11.5/SR/2                n/a          - - USER and CURRENT_USER (F321)
 11.5/SR/3                container    - -
 11.5/SR/3.a              n/a          - - collection types (S091, S271)
 11.5/SR/3.b              n/a          - - user-defined, reference and row types (S023, S041, T051)
 11.5/SR/4                container    - -
-11.5/SR/4.a              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/SR/4.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5/SR/4.a              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/SR/4.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.ii           n/a          - - binary strings (T021)
-11.5/SR/4.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/SR/4.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/SR/4.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5/SR/4.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/SR/4.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/SR/4.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.vi           n/a          - - intervals (F052)
-11.5/SR/4.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/SR/4.b              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5/SR/4.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/SR/4.b              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.c              n/a          - - SQL paths (S071)
-11.5/SR/4.d              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5/SR/4.d              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.e              n/a          - - collection types (S091, S271)
-11.5/GR/1                implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2                implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.a              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.a.ii           implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5/GR/1                implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2                implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.a              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.a.ii           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.iv           n/a          - - binary strings (T021)
 11.5/GR/2.a.v            n/a          - - binary strings (T021)
-11.5/GR/2.a.vi           implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.b              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql only CURRENT_CATALOG and CURRENT_SCHEMA
-11.5/GR/2.b.i            implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.b.ii           implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/GR/2.c              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
+11.5/GR/2.a.vi           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.b              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql only CURRENT_CATALOG and CURRENT_SCHEMA
+11.5/GR/2.b.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.b.ii           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/2.c              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.d              n/a          - - collection types (S091, S271)
-11.5/GR/3                implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
-11.5/GR/3.a              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
-11.5/GR/3.b              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
+11.5/GR/3                implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/3.a              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
+11.5/GR/3.b              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/3.c              n/a          - - domains (F251)
 11.5/GR/3.d              n/a          - - views (F031-02)
-11.5/GR/3.e              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/column-defaults.sql
+11.5/GR/3.e              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/4                n/a          - - the COLUMN_DEFAULT of the INFORMATION_SCHEMA is long enough for any default
 11.5/CR/1                n/a          - - SQL paths (S071)
 11.5/CR/2                n/a          - - USER and CURRENT_USER (F321)
 11.5/CR/3                n/a          - - roles (T332)
-11.5/CR/4                implemented  vsql/std_2_11_5_default_clause.y tests/flagging.sql
-11.5/CR/5                implemented  vsql/std_2_11_5_default_clause.y tests/flagging.sql
+11.5/CR/4                implemented  vsql/std_2_11_5_default_clause.y tests/std_1_8_5_flagging.sql
+11.5/CR/5                implemented  vsql/std_2_11_5_default_clause.y tests/std_1_8_5_flagging.sql
 # 11.6, <table constraint definition>
-11.6                     implemented  vsql/std_2_11_6_table_constraint_definition.y tests/constraint-names.sql
-11.6/SR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/constraint-characteristics.sql
-11.6/SR/2                implemented  vsql/std_2_11_3_table_definition.v tests/constraint-names.sql
-11.6/SR/3                implemented  vsql/table.v tests/constraint-names.sql the default name, such as T_PKEY, with the first number that isn't used
-11.6/SR/4                implemented  vsql/table.v tests/constraint-names.sql
+11.6                     implemented  vsql/std_2_11_6_table_constraint_definition.y tests/std_2_11_6_constraint_names.sql
+11.6/SR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_constraint_characteristics.sql
+11.6/SR/2                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_6_constraint_names.sql
+11.6/SR/3                implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql the default name, such as T_PKEY, with the first number that isn't used
+11.6/SR/4                implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql
 11.6/SR/5                n/a          - - <constraint enforcement> (F492)
 11.6/GR/1                definition   - -
-11.6/GR/2                implemented  vsql/table.v tests/constraint-names.sql
-11.6/GR/2.a              implemented  vsql/table.v tests/constraint-names.sql
-11.6/GR/2.b              implemented  vsql/table.v tests/constraint-names.sql
-11.6/GR/2.c              implemented  vsql/table.v tests/constraint-names.sql
-11.6/GR/2.d              implemented  vsql/table.v tests/constraint-names.sql every constraint is enforced
-11.6/GR/2.e              implemented  vsql/table.v tests/constraint-names.sql
+11.6/GR/2                implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql
+11.6/GR/2.a              implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql
+11.6/GR/2.b              implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql
+11.6/GR/2.c              implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql
+11.6/GR/2.d              implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql every constraint is enforced
+11.6/GR/2.e              implemented  vsql/table.v tests/std_2_11_6_constraint_names.sql
 # 11.7, <unique constraint definition>
-11.7                     implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/unique-constraint.sql
-11.7/SR/1                implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql every type can be grouped
+11.7                     implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/SR/1                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql every type can be grouped
 11.7/SR/2                definition   - -
 11.7/SR/3                n/a          - - application-time periods (T181)
 11.7/SR/3.a              n/a          - - application-time periods (T181)
@@ -385,63 +385,63 @@
 11.7/SR/4                container    - -
 11.7/SR/4.a              n/a          - - system-versioned tables (T180)
 11.7/SR/4.b              definition   - -
-11.7/SR/5                implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
-11.7/SR/5.a              implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
+11.7/SR/5                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/SR/5.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/5.b              n/a          - - system-versioned tables (T180)
-11.7/SR/5.c              implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
+11.7/SR/5.c              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/5.d              container    - -
 11.7/SR/5.d.i            n/a          - - application-time periods (T181)
-11.7/SR/5.d.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/unique-constraint.sql
+11.7/SR/5.d.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/5.e              container    - -
-11.7/SR/5.e.i            implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/unique-constraint.sql
-11.7/SR/5.e.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/unique-constraint.sql
+11.7/SR/5.e.i            implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/SR/5.e.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6                n/a          - - UNIQUE (VALUE) (S291)
-11.7/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
-11.7/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
-11.7/SR/9                implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/alter-table-add-constraint.sql
+11.7/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/SR/9                implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
 11.7/GR/1                definition   - -
-11.7/GR/2                implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
-11.7/GR/2.a              implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
-11.7/GR/2.b              implemented  vsql/std_2_11_3_table_definition.v tests/unique-constraint.sql
+11.7/GR/2                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/GR/2.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/GR/2.b              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/GR/2.c              n/a          - - application-time periods (T181)
-11.7/GR/3                implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/unique-constraint.sql
+11.7/GR/3                implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/CR/1                n/a          - - UNIQUE (VALUE) (S291)
-11.7/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+11.7/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 11.7/CR/3                n/a          - - application-time periods (T181)
 # 11.8, <referential constraint definition>
-11.8                     implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/1                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql <match type> isn't supported (F741)
+11.8                     implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/1                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql <match type> isn't supported (F741)
 11.8/SR/2                n/a          - - application-time periods (T181)
 11.8/SR/2.a              n/a          - - application-time periods (T181)
 11.8/SR/2.b              n/a          - - application-time periods (T181)
 11.8/SR/3                definition   - -
 11.8/SR/4                container    - -
-11.8/SR/4.a              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/4.b              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/5                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/6                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/6.a              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/SR/4.a              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/4.b              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/5                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/6                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/6.a              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/SR/6.b              n/a          - - temporary tables (F531)
 11.8/SR/6.c              n/a          - - temporary tables (F531)
 11.8/SR/6.d              n/a          - - temporary tables (F531)
 11.8/SR/7                n/a          - - temporary tables (F531)
-11.8/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/foreign-key.sql
-11.8/SR/9                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/9                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/SR/10               n/a          - - system-versioned tables (T180)
-11.8/SR/11               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/12               implemented  vsql/std_2_11_3_table_definition.v tests/foreign-key.sql
-11.8/SR/13               implemented  vsql/std_2_11_3_table_definition.v tests/foreign-key.sql
-11.8/SR/14               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/14.a             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/14.b             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/15               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/SR/11               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/12               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/13               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/14               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/14.a             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/14.b             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/SR/15               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/SR/16               definition   - -
 11.8/SR/16.a             n/a          - - system-versioned tables (T180)
 11.8/SR/16.b             definition   - -
 11.8/SR/17               definition   - -
 11.8/SR/17.a             n/a          - - system-versioned tables (T180)
 11.8/SR/17.b             definition   - -
-11.8/SR/18               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/SR/18               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/SR/18.a             container    - -
 11.8/SR/18.a.i           n/a          - - application-time periods (T181)
 11.8/SR/18.a.i.1         n/a          - - application-time periods (T181)
@@ -460,100 +460,100 @@
 11.8/SR/18.a.ii.2        definition   - -
 11.8/SR/18.a.ii.3        definition   - -
 11.8/SR/18.b             definition   - -
-11.8/SR/18.b.i           implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/SR/18.b.i           implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/SR/18.b.ii          n/a          - - MATCH (F741)
 11.8/SR/18.b.iii         n/a          - - MATCH (F741)
-11.8/SR/18.c             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/SR/18.c             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/AR/1                n/a          - - privileges (E081, #732)
 11.8/GR/1                definition   - -
-11.8/GR/2                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/GR/2.a              impl-defined vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql the order they're given in
-11.8/GR/2.b              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/GR/2.c              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/GR/2                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/GR/2.a              impl-defined vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql the order they're given in
+11.8/GR/2.b              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
+11.8/GR/2.c              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/GR/2.d              n/a          - - application-time periods (T181)
 11.8/GR/2.e              n/a          - - application-time periods (T181)
-11.8/GR/2.f              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql always SIMPLE
-11.8/GR/2.g              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+11.8/GR/2.f              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql always SIMPLE
+11.8/GR/2.g              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/CR/1                n/a          - - RESTRICT (T191)
 11.8/CR/2                n/a          - - MATCH (F741)
-11.8/CR/3                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/flagging.sql
-11.8/CR/4                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/flagging.sql
+11.8/CR/3                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/std_1_8_5_flagging.sql
+11.8/CR/4                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/std_1_8_5_flagging.sql
 11.8/CR/5                missing      - - a referencing column of a different type isn't flagged (#880)
 11.8/CR/6                n/a          - - application-time periods (T181)
 11.8/CR/7                n/a          - - application-time periods (T181)
 # 11.9, <check constraint definition>
-11.9                     implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
-11.9/SR/1                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql there are no system-time period columns
-11.9/SR/2                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+11.9                     implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
+11.9/SR/1                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql there are no system-time period columns
+11.9/SR/2                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 11.9/SR/3                definition   - -
 11.9/SR/3.a              n/a          - - temporary tables (F531)
 11.9/SR/3.b              n/a          - - temporary tables (F531)
 11.9/SR/3.c              n/a          - - temporary tables (F531)
 11.9/SR/3.d              n/a          - - temporary tables (F531)
 11.9/SR/4                n/a          - - temporary tables (F531)
-11.9/SR/5                implemented  vsql/compiler.v tests/check-constraint.sql
+11.9/SR/5                implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 11.9/SR/6                n/a          - - SQL-invoked routines (T321)
 11.9/SR/7                n/a          - - SQL-invoked routines (T321)
 11.9/SR/8                definition   - -
 11.9/SR/8.a              n/a          - - system-versioned tables (T180)
 11.9/SR/8.b              definition   - -
-11.9/SR/9                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+11.9/SR/9                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 11.9/GR/1                definition   - -
 11.9/GR/2                n/a          - - the CHECK_CLAUSE of the INFORMATION_SCHEMA is long enough for any search condition
-11.9/GR/3                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/check-constraint.sql
+11.9/GR/3                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 11.9/CR/1                n/a          - - a subquery can't be used in a CHECK constraint (F671)
 11.9/CR/2                n/a          - - CURRENT_DATE, CURRENT_TIMESTAMP and LOCALTIMESTAMP can't be used in a CHECK constraint (F672, #774)
 11.9/CR/3                n/a          - - SQL-invoked routines (T321)
 # 11.10, <alter table statement>
-11.10                    implemented  vsql/std_2_11_10_alter_table_statement.v tests/alter-table-add-column.sql
+11.10                    implemented  vsql/std_2_11_10_alter_table_statement.v tests/std_2_11_11_add_column.sql
 11.10/SR/1               definition   - -
-11.10/SR/2               implemented  vsql/std_2_11_10_alter_table_statement.v tests/alter-table-add-column.sql
+11.10/SR/2               implemented  vsql/std_2_11_10_alter_table_statement.v tests/std_2_11_11_add_column.sql
 11.10/SR/3               definition   - -
-11.10/SR/4               implemented  vsql/std_2_11_10_alter_table_statement.v tests/alter-table-add-column.sql
+11.10/SR/4               implemented  vsql/std_2_11_10_alter_table_statement.v tests/std_2_11_11_add_column.sql
 11.10/SR/5               n/a          - - temporary tables (F531)
 11.10/AR/1               n/a          - - privileges (E081, #732)
-11.10/GR/1               implemented  vsql/std_2_11_10_alter_table_statement.v tests/alter-table-add-column.sql
-11.10/GR/2               implemented  vsql/std_2_11_10_alter_table_statement.v tests/alter-table-add-column.sql
+11.10/GR/1               implemented  vsql/std_2_11_10_alter_table_statement.v tests/std_2_11_11_add_column.sql
+11.10/GR/2               implemented  vsql/std_2_11_10_alter_table_statement.v tests/std_2_11_11_add_column.sql
 # 11.11, <add column definition>
-11.11                    implemented  vsql/std_2_11_11_add_column_definition.v tests/alter-table-add-column.sql
+11.11                    implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 11.11/SR/1               definition   - -
 11.11/SR/2               n/a          - - typed tables (S051) and system-versioned tables (T180)
-11.11/SR/3               implemented  vsql/std_2_11_11_add_column_definition.v tests/identity-column-alter.sql
+11.11/SR/3               implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_20_identity_column_alter.sql
 11.11/SR/4               n/a          - - application-time periods (T181)
-11.11/GR/1               implemented  vsql/std_2_11_11_add_column_definition.v tests/alter-table-add-column.sql
+11.11/GR/1               implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 11.11/GR/2               definition   - -
-11.11/GR/2.a             implemented  vsql/std_2_11_11_add_column_definition.v tests/alter-table-add-column.sql
+11.11/GR/2.a             implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 11.11/GR/2.b             container    - -
-11.11/GR/2.b.i           implemented  vsql/std_2_11_11_add_column_definition.v tests/identity-column-alter.sql
+11.11/GR/2.b.i           implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_20_identity_column_alter.sql
 11.11/GR/2.b.i.1         n/a          - - distinct types (S011)
-11.11/GR/2.b.i.2         implemented  vsql/std_2_11_11_add_column_definition.v tests/identity-column-alter.sql
-11.11/GR/2.b.ii          implemented  vsql/std_2_11_11_add_column_definition.v tests/alter-table-add-column.sql
+11.11/GR/2.b.i.2         implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_20_identity_column_alter.sql
+11.11/GR/2.b.ii          implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 11.11/GR/3               n/a          - - privileges (E081, #732)
-11.11/GR/4               implemented  vsql/std_2_11_11_add_column_definition.v tests/alter-table-add-column.sql
+11.11/GR/4               implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 # 11.12, <alter column definition>
-11.12                    partial      vsql/std_2_11_12_alter_column_definition.v tests/alter-table-alter-column.sql only SET DEFAULT, DROP DEFAULT and the <alter identity column specification>
+11.12                    partial      vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql only SET DEFAULT, DROP DEFAULT and the <alter identity column specification>
 11.12/SR/1               definition   - -
 11.12/SR/2               n/a          - - system-versioned tables (T180)
 11.12/SR/3               definition   - -
-11.12/SR/4               implemented  vsql/std_2_11_12_alter_column_definition.v tests/alter-table-alter-column.sql
+11.12/SR/4               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
 11.12/SR/5               n/a          - - scope clauses (S043)
-11.12/SR/6               implemented  vsql/std_2_11_12_alter_column_definition.v tests/identity-column-alter.sql
-11.12/SR/7               implemented  vsql/std_2_11_12_alter_column_definition.v tests/identity-column-alter.sql
+11.12/SR/6               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_20_identity_column_alter.sql
+11.12/SR/7               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_20_identity_column_alter.sql
 11.12/SR/8               n/a          - - DROP EXPRESSION (F385)
-11.12/SR/9               implemented  vsql/std_2_11_12_alter_column_definition.v tests/alter-table-alter-column.sql
-11.12/GR/1               implemented  vsql/std_2_11_12_alter_column_definition.v tests/alter-table-alter-column.sql
-11.12/CR/1               implemented  vsql/std_2_11_12_alter_column_definition.y tests/flagging.sql
+11.12/SR/9               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
+11.12/GR/1               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
+11.12/CR/1               implemented  vsql/std_2_11_12_alter_column_definition.y tests/std_1_8_5_flagging.sql
 # 11.13, <set column default clause>
-11.13                    implemented  vsql/std_2_11_13_set_column_default_clause.v tests/alter-table-alter-column.sql
+11.13                    implemented  vsql/std_2_11_13_set_column_default_clause.v tests/std_2_11_12_alter_column.sql
 11.13/GR/1               definition   - -
-11.13/GR/2               implemented  vsql/std_2_11_13_set_column_default_clause.v tests/alter-table-alter-column.sql
-11.13/CR/1               implemented  vsql/std_2_11_13_set_column_default_clause.y tests/flagging.sql
+11.13/GR/2               implemented  vsql/std_2_11_13_set_column_default_clause.v tests/std_2_11_12_alter_column.sql
+11.13/CR/1               implemented  vsql/std_2_11_13_set_column_default_clause.y tests/std_1_8_5_flagging.sql
 # 11.14, <drop column default clause>
-11.14                    implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/alter-table-alter-column.sql
+11.14                    implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
 11.14/SR/1               definition   - -
-11.14/SR/2               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/alter-table-alter-column.sql
-11.14/GR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/alter-table-alter-column.sql
-11.14/CR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.y tests/flagging.sql
+11.14/SR/2               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
+11.14/GR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
+11.14/CR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.y tests/std_1_8_5_flagging.sql
 # 11.15, <set column not null clause>
 11.15                    n/a          - - SET NOT NULL (F383)
 11.15/GR/1               n/a          - - SET NOT NULL (F383)
@@ -683,19 +683,19 @@
 11.19/GR/1               n/a          - - alter column data type (F382)
 11.19/CR/1               n/a          - - alter column data type (F382)
 # 11.20, <alter identity column specification>
-11.20                    partial      vsql/std_2_11_20_alter_identity_column_specification.v tests/identity-column-alter.sql SET GENERATED isn't supported (F386)
-11.20/SR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/identity-column-alter.sql
+11.20                    partial      vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql SET GENERATED isn't supported (F386)
+11.20/SR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
 11.20/SR/1.a             definition   - -
-11.20/SR/1.b             implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/identity-column-alter.sql
-11.20/SR/1.c             implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/identity-column-alter.sql
-11.20/GR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/identity-column-alter.sql
+11.20/SR/1.b             implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
+11.20/SR/1.c             implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
+11.20/GR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
 11.20/GR/2               n/a          - - SET GENERATED (F386)
 11.20/GR/2.a             n/a          - - SET GENERATED (F386)
 11.20/GR/2.b             container    - -
 11.20/GR/2.b.i           n/a          - - SET GENERATED (F386)
 11.20/GR/2.b.ii          n/a          - - SET GENERATED (F386)
-11.20/CR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/flagging.sql
-11.20/CR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/flagging.sql
+11.20/CR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_8_5_flagging.sql
+11.20/CR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_8_5_flagging.sql
 11.20/CR/3               n/a          - - SET GENERATED (F386)
 # 11.21, <drop identity property clause>
 11.21                    n/a          - - DROP IDENTITY (F384)
@@ -716,36 +716,36 @@
 11.22/GR/2.c             n/a          - - DROP EXPRESSION (F385)
 11.22/CR/1               n/a          - - DROP EXPRESSION (F385)
 # 11.23, <drop column definition>
-11.23                    implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
+11.23                    implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
 11.23/SR/1               definition   - -
 11.23/SR/2               definition   - -
 11.23/SR/3               n/a          - - typed tables (S051) and system-versioned tables (T180)
-11.23/SR/4               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
+11.23/SR/4               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
 11.23/SR/5               n/a          - - system-versioned tables (T180)
 11.23/SR/6               n/a          - - application-time periods (T181)
-11.23/SR/7               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
+11.23/SR/7               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
 11.23/SR/7.a             n/a          - - views (F031-02)
-11.23/SR/7.b             implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
+11.23/SR/7.b             implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
 11.23/SR/7.c             n/a          - - SQL-invoked routines (T321)
 11.23/SR/7.d             n/a          - - SQL-invoked routines (T321)
 11.23/SR/7.e             n/a          - - triggers (T211)
-11.23/SR/7.f             implemented  vsql/std_2_11_23_drop_column_definition.v tests/generated-column-alter.sql
+11.23/SR/7.f             implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_generated_column_alter.sql
 11.23/GR/1               n/a          - - triggers (T211)
 11.23/GR/2               n/a          - - privileges (E081, #732)
-11.23/GR/3               implemented  vsql/std_2_11_23_drop_column_definition.v tests/generated-column-alter.sql
-11.23/GR/4               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
-11.23/GR/5               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
-11.23/GR/6               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
-11.23/GR/7               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
-11.23/GR/8               implemented  vsql/std_2_11_23_drop_column_definition.v tests/alter-table-drop-column.sql
-11.23/CR/1               implemented  vsql/std_2_11_23_drop_column_definition.y tests/flagging.sql
+11.23/GR/3               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_generated_column_alter.sql
+11.23/GR/4               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
+11.23/GR/5               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
+11.23/GR/6               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
+11.23/GR/7               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
+11.23/GR/8               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
+11.23/CR/1               implemented  vsql/std_2_11_23_drop_column_definition.y tests/std_1_8_5_flagging.sql
 # 11.24, <add table constraint definition>
-11.24                    implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/alter-table-add-constraint.sql
+11.24                    implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
 11.24/SR/1               definition   - -
 11.24/SR/2               n/a          - - subtables (S081)
-11.24/GR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/alter-table-add-constraint.sql
-11.24/GR/2               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/alter-table-add-constraint.sql
-11.24/CR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.y tests/flagging.sql
+11.24/GR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
+11.24/GR/2               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
+11.24/CR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.y tests/std_1_8_5_flagging.sql
 # 11.25, <alter table constraint definition>
 11.25                    n/a          - - <constraint enforcement> (F492)
 11.25/SR/1               n/a          - - <constraint enforcement> (F492)
@@ -756,10 +756,10 @@
 11.25/GR/1.b             n/a          - - <constraint enforcement> (F492)
 11.25/CR/1               n/a          - - <constraint enforcement> (F492)
 # 11.26, <drop table constraint definition>
-11.26                    implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
+11.26                    implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/SR/1               definition   - -
-11.26/SR/2               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
-11.26/SR/3               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
+11.26/SR/2               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
+11.26/SR/3               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/SR/4               n/a          - - functional dependencies (T301)
 11.26/SR/5               n/a          - - views (F031-02)
 11.26/SR/6               n/a          - - SQL-invoked routines (T321)
@@ -769,28 +769,28 @@
 11.26/SR/10              n/a          - - application-time periods (T181)
 11.26/SR/10.a            n/a          - - application-time periods (T181)
 11.26/SR/10.b            n/a          - - application-time periods (T181)
-11.26/SR/11              implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
-11.26/SR/11.a            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
+11.26/SR/11              implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
+11.26/SR/11.a            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/SR/11.b            n/a          - - system-versioned tables (T180)
 11.26/SR/11.c            n/a          - - system-versioned tables (T180)
-11.26/SR/11.d            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/identity-column-alter.sql
+11.26/SR/11.d            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_20_identity_column_alter.sql
 11.26/SR/12              n/a          - - typed tables (S051)
-11.26/SR/13              implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
-11.26/SR/13.a            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
+11.26/SR/13              implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
+11.26/SR/13.a            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/SR/13.b            n/a          - - SQL-invoked routines (T321)
 11.26/SR/13.c            n/a          - - views (F031-02)
 11.26/SR/13.d            n/a          - - SQL-invoked routines (T321)
 11.26/SR/13.e            n/a          - - a constraint can't contain a <query specification> (F671), and there are no assertions (F521)
 11.26/SR/13.f            n/a          - - triggers (T211)
-11.26/GR/1               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
+11.26/GR/1               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/GR/2               n/a          - - SQL-invoked routines (T321)
 11.26/GR/3               n/a          - - views (F031-02)
 11.26/GR/4               n/a          - - assertions (F521)
 11.26/GR/5               n/a          - - triggers (T211)
-11.26/GR/6               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
-11.26/GR/7               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
-11.26/GR/8               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
-11.26/CR/1               implemented  vsql/std_2_11_26_drop_table_constraint_definition.y tests/flagging.sql
+11.26/GR/6               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
+11.26/GR/7               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
+11.26/GR/8               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
+11.26/CR/1               implemented  vsql/std_2_11_26_drop_table_constraint_definition.y tests/std_1_8_5_flagging.sql
 # 11.27, <add table period definition>
 11.27                    n/a          - - periods (T180, T181)
 11.27/SR/1               n/a          - - periods (T180, T181)
@@ -921,21 +921,21 @@
 11.30/GR/3.e             n/a          - - system-versioned tables (T180)
 11.30/CR/1               n/a          - - system-versioned tables (T180)
 # 11.31, <drop table statement>
-11.31                    implemented  vsql/std_2_11_31_drop_table_statement.v tests/drop-table.sql
+11.31                    implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/SR/1               definition   - -
-11.31/SR/2               implemented  vsql/std_2_11_31_drop_table_statement.v tests/drop-table.sql
-11.31/SR/3               implemented  vsql/std_2_11_31_drop_table_statement.v tests/drop-table.sql
+11.31/SR/2               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
+11.31/SR/3               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/SR/4               n/a          - - temporary tables (F531)
 11.31/SR/5               n/a          - - reference types (S043)
 11.31/SR/5.a             n/a          - - reference types (S043)
 11.31/SR/5.b             n/a          - - reference types (S043)
 11.31/SR/5.c             n/a          - - reference types (S043)
 11.31/SR/6               n/a          - - subtables (S081)
-11.31/SR/7               implemented  vsql/std_2_11_31_drop_table_statement.v tests/drop-table.sql
+11.31/SR/7               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/SR/7.a             n/a          - - views (F031-02)
-11.31/SR/7.b             implemented  vsql/std_2_11_31_drop_table_statement.v tests/drop-table.sql
+11.31/SR/7.b             implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/SR/7.c             n/a          - - assertions (F521)
-11.31/SR/7.d             implemented  vsql/std_2_11_31_drop_table_statement.v tests/foreign-key.sql
+11.31/SR/7.d             implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_8_foreign_key.sql
 11.31/SR/7.e             n/a          - - SQL-invoked routines (T321)
 11.31/SR/7.f             n/a          - - SQL-invoked routines (T321)
 11.31/SR/7.g             n/a          - - triggers (T211)
@@ -949,7 +949,7 @@
 11.31/AR/1               n/a          - - privileges (E081, #732)
 11.31/GR/1               n/a          - - subtables (S081)
 11.31/GR/2               n/a          - - subtables (S081)
-11.31/GR/3               implemented  vsql/std_2_11_31_drop_table_statement.v tests/foreign-key.sql
+11.31/GR/3               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_8_foreign_key.sql
 11.31/GR/4               n/a          - - typed tables (S051)
 11.31/GR/4.a             n/a          - - typed tables (S051)
 11.31/GR/4.a.i           n/a          - - typed tables (S051)
@@ -964,8 +964,8 @@
 11.31/GR/4.b.iv          n/a          - - typed tables (S051)
 11.31/GR/4.b.v           n/a          - - typed tables (S051)
 11.31/GR/5               n/a          - - subtables (S081)
-11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/drop-table.sql
-11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/flagging.sql
+11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
+11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_8_5_flagging.sql
 # 11.32, <view definition>
 11.32                    n/a          - - views (F031-02)
 11.32/SR/1               n/a          - - views (F031-02)
@@ -2931,37 +2931,37 @@
 11.71/GR/1.b.iii         n/a          - - transforms (S241)
 11.71/CR/1               n/a          - - transforms (S241)
 # 11.72, <sequence generator definition>
-11.72                    partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql AS <data type> isn't supported (#399)
+11.72                    partial      vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql AS <data type> isn't supported (#399)
 11.72/SR/1               definition   - -
-11.72/SR/2               implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
-11.72/SR/3               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+11.72/SR/2               implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
+11.72/SR/3               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 11.72/SR/4               definition   - -
-11.72/SR/5               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-11.72/SR/6               partial      vsql/std_2_11_72_sequence_generator_definition.y tests/create-sequence.sql AS <data type> isn't supported (#399), so it's always BIGINT
-11.72/SR/7               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+11.72/SR/5               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
+11.72/SR/6               partial      vsql/std_2_11_72_sequence_generator_definition.y tests/std_2_11_72_create_sequence.sql AS <data type> isn't supported (#399), so it's always BIGINT
+11.72/SR/7               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 11.72/AR/1               n/a          - - privileges (E081, #732)
-11.72/GR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+11.72/GR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 11.72/GR/2               n/a          - - privileges (E081, #732)
-11.72/CR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/flagging.sql
+11.72/CR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/std_1_8_5_flagging.sql
 # 11.73, <alter sequence generator statement>
-11.73                    implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+11.73                    implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 11.73/SR/1               definition   - -
-11.73/SR/2               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+11.73/SR/2               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 11.73/SR/3               definition   - -
-11.73/SR/4               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+11.73/SR/4               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 11.73/AR/1               n/a          - - privileges (E081, #732)
-11.73/GR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-11.73/CR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/flagging.sql
-11.73/CR/2               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/flagging.sql
+11.73/GR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
+11.73/CR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_1_8_5_flagging.sql
+11.73/CR/2               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_1_8_5_flagging.sql
 # 11.74, <drop sequence generator statement>
-11.74                    implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/drop-sequence.sql
+11.74                    implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/std_2_11_74_drop_sequence.sql
 11.74/SR/1               definition   - -
-11.74/SR/2               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/drop-sequence.sql
+11.74/SR/2               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/std_2_11_74_drop_sequence.sql
 11.74/SR/3               n/a          - - SQL-invoked routines (T321)
 11.74/SR/3.a             n/a          - - SQL-invoked routines (T321)
 11.74/SR/3.b             n/a          - - triggers (T211)
 11.74/SR/4               definition   - -
 11.74/AR/1               n/a          - - privileges (E081, #732)
 11.74/GR/1               n/a          - - privileges (E081, #732)
-11.74/GR/2               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/drop-sequence.sql
-11.74/CR/1               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.y tests/flagging.sql
+11.74/GR/2               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/std_2_11_74_drop_sequence.sql
+11.74/CR/1               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.y tests/std_1_8_5_flagging.sql

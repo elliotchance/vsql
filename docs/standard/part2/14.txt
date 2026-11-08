@@ -3,41 +3,41 @@
 # 14, Data manipulation
 14                       container    - -
 # 14.1, <declare cursor>
-14.1                     implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1                     implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
 14.1/SR/1.a              implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 14.1/SR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
 14.1/SR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
-14.1/GR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.1/GR/1.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/GR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.1/GR/1.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
-14.1/GR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.1/GR/1.d              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.1/GR/1.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/GR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.1/GR/1.d              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.1/GR/1.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/CR/1                n/a          - - <cursor scrollability> (F431)
 # 14.2, <cursor properties>
-14.2                     partial      vsql/std_2_14_2_cursor_properties.y tests/cursors.sql only <cursor holdability>
-14.2/SR/1                implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql a cursor's result is found when it's opened, so changes aren't visible through it
-14.2/SR/2                implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
-14.2/SR/3                implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2                     partial      vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql only <cursor holdability>
+14.2/SR/1                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql a cursor's result is found when it's opened, so changes aren't visible through it
+14.2/SR/2                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
+14.2/SR/3                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
 14.2/SR/4                n/a          - - <cursor returnability> (T471)
 14.2/GR/1                container    - -
-14.2/GR/1.a              implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
-14.2/GR/1.b              implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
-14.2/GR/1.c              implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2/GR/1.a              implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
+14.2/GR/1.b              implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
+14.2/GR/1.c              implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
 14.2/GR/1.d              n/a          - - <cursor returnability> (T471)
 14.2/CR/1                n/a          - - SENSITIVE (T231)
 14.2/CR/2                n/a          - - INSENSITIVE (F791)
 14.2/CR/3                n/a          - - ASENSITIVE (F791, T231)
 14.2/CR/4                n/a          - - <cursor scrollability> (F431)
 14.2/CR/5                n/a          - - <cursor returnability> (T471)
-14.2/CR/6                implemented  vsql/std_2_14_2_cursor_properties.y tests/flagging.sql
+14.2/CR/6                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_1_8_5_flagging.sql
 # 14.3, <cursor specification>
-14.3                     implemented  vsql/std_2_14_3_cursor_specification.y tests/cursors.sql
+14.3                     implemented  vsql/std_2_14_3_cursor_specification.y tests/std_2_14_1_cursors.sql
 14.3/SR/1                definition   - -
 14.3/SR/2                definition   - -
 14.3/SR/3                container    - -
-14.3/SR/3.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/3.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/3.b              n/a          - - polymorphic table functions (B200)
 14.3/SR/3.c              n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable> (B031 doesn't have them)
 14.3/SR/3.c.i            n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
@@ -70,32 +70,32 @@
 14.3/SR/3.c.ix.2         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
 14.3/SR/3.c.ix.3         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
 14.3/SR/3.c.x            n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
-14.3/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/4.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/4.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/5                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/4.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/4.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/5                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/6                container    - -
-14.3/SR/6.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/6.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/6.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/6.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/6.c              n/a          - - a prepared query has no <updatability clause>
-14.3/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/8                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+14.3/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/8                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 # 14.4, <open statement>
-14.4                     implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
-14.4/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.4/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.4                     implemented  vsql/std_2_14_4_open_statement.v tests/std_2_14_1_cursors.sql
+14.4/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.4/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.4/SR/3                definition   - -
 14.4/AR/1                n/a          - - there are no users or privileges (#732)
 14.4/GR/1                definition   - -
-14.4/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+14.4/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/std_2_14_1_cursors.sql
 # 14.5, <fetch statement>
-14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/cursors.sql only NEXT; outside of a module there's no <fetch target list> (V110-01)
+14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql only NEXT; outside of a module there's no <fetch target list> (V110-01)
 14.5/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v every target is a host parameter
-14.5/SR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/cursors.sql
-14.5/SR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.5/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.5/SR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_2_14_1_cursors.sql
+14.5/SR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.5/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.5/SR/5                definition   - -
 14.5/SR/6                definition   - -
 14.5/SR/7                n/a          - - only NEXT is supported (F431)
@@ -113,9 +113,9 @@
 14.5/SR/9.b.iv           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 14.5/SR/9.b.v            implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
 14.5/GR/1                definition   - -
-14.5/GR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.5/GR/3                implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
-14.5/GR/4                implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+14.5/GR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.5/GR/3                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
+14.5/GR/4                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
 14.5/GR/5                container    - -
 14.5/GR/5.a              n/a          - - a host parameter can't be a row type
 14.5/GR/5.a.i            n/a          - - SQL parameters (T321)
@@ -142,14 +142,14 @@
 14.5/GR/5.b.ii           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 14.5/GR/5.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
 14.5/GR/6                untestable   - - the values are implementation-dependent
-14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/flagging.sql
+14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql
 # 14.6, <close statement>
-14.6                     implemented  vsql/std_2_14_6_close_statement.v tests/cursors.sql
-14.6/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.6/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.6                     implemented  vsql/std_2_14_6_close_statement.v tests/std_2_14_1_cursors.sql
+14.6/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.6/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.6/SR/3                definition   - -
 14.6/GR/1                definition   - -
-14.6/GR/2                implemented  vsql/std_2_14_6_close_statement.v tests/cursors.sql
+14.6/GR/2                implemented  vsql/std_2_14_6_close_statement.v tests/std_2_14_1_cursors.sql
 # 14.7, <select statement: single row>
 14.7                     implemented  vsql/std_2_14_7_select_statement_single_row.v libvsql/module/test_main.c
 14.7/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
@@ -202,33 +202,33 @@
 14.7/GR/4.b.iv           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
 14.7/GR/5                untestable   - - the values are implementation-dependent
 # 14.8, <delete statement: positioned>
-14.8                     implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
-14.8/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.8/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8                     implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/std_2_14_1_cursors.sql
+14.8/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.8/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.8/SR/3                definition   - -
-14.8/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.8/SR/5                definition   - -
-14.8/SR/6                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/6                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.8/SR/7                n/a          - - triggers (T211)
 14.8/SR/8                n/a          - - ONLY (S111)
 14.8/SR/9                n/a          - - ONLY (S111)
-14.8/SR/10               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/10               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.8/SR/11               container    - -
-14.8/SR/11.a             implemented  vsql/std_2_14_8_delete_statement_positioned.y tests/delete-update-correlation-name.sql
-14.8/SR/11.b             implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
+14.8/SR/11.a             implemented  vsql/std_2_14_8_delete_statement_positioned.y tests/std_2_14_9_delete_update_correlation_name.sql
+14.8/SR/11.b             implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/std_2_14_1_cursors.sql
 14.8/AR/1                container    - -
 14.8/AR/1.a              n/a          - - there are no users or privileges (#732)
 14.8/AR/1.b              n/a          - - there are no users or privileges (#732)
 14.8/GR/1                definition   - -
-14.8/GR/2                implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
+14.8/GR/2                implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/std_2_14_1_cursors.sql
 14.8/CR/1                n/a          - - ONLY (S111)
 # 14.9, <delete statement: searched>
-14.9                     partial      vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql no cursor operation conflict warning (#797)
+14.9                     partial      vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql no cursor operation conflict warning (#797)
 14.9/SR/1                definition   - -
 14.9/SR/2                definition   - -
 14.9/SR/3                n/a          - - every table is a base table, and there are no views (F031-02)
 14.9/SR/4                n/a          - - triggers (T211)
-14.9/SR/5                implemented  vsql/std_2_14_9_delete_statement_searched.y tests/delete.sql
+14.9/SR/5                implemented  vsql/std_2_14_9_delete_statement_searched.y tests/std_2_14_9_delete.sql
 14.9/SR/6                n/a          - - SQL-invoked routines (T321)
 14.9/SR/6.a              n/a          - - system-versioned tables (T180)
 14.9/SR/6.b              definition   - -
@@ -241,9 +241,9 @@
 14.9/SR/7.b              definition   - -
 14.9/SR/8                n/a          - - triggers (T211)
 14.9/SR/9                container    - -
-14.9/SR/9.a              implemented  vsql/std_2_14_9_delete_statement_searched.y tests/delete-update-correlation-name.sql
-14.9/SR/9.b              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
-14.9/SR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/SR/9.a              implemented  vsql/std_2_14_9_delete_statement_searched.y tests/std_2_14_9_delete_update_correlation_name.sql
+14.9/SR/9.b              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
+14.9/SR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/AR/1                container    - -
 14.9/AR/1.a              n/a          - - there are no users or privileges (#732)
 14.9/AR/1.a.i            n/a          - - there are no users or privileges (#732)
@@ -256,21 +256,21 @@
 14.9/GR/2.a              n/a          - - SENSITIVE (T231)
 14.9/GR/2.b              n/a          - - SENSITIVE (T231)
 14.9/GR/3                n/a          - - INSENSITIVE (F791)
-14.9/GR/4                impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
-14.9/GR/5                implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/4                impl-defined vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql nothing is disallowed, since a cursor's result is a copy
+14.9/GR/5                implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/GR/6                container    - -
 14.9/GR/6.a              n/a          - - ONLY (S111)
-14.9/GR/6.b              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/6.b              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/GR/7                definition   - -
 14.9/GR/8                container    - -
-14.9/GR/8.a              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/8.a              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/GR/8.a.i            container    - -
 14.9/GR/8.a.i.1          n/a          - - ONLY (S111)
 14.9/GR/8.a.i.2          n/a          - - subtables (S081)
-14.9/GR/8.a.ii           implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/8.a.ii           implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/GR/8.b              n/a          - - views (F031-02)
 14.9/GR/9                missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
-14.9/GR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/CR/1                missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.9/CR/1.a              missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.9/CR/1.b              n/a          - - external routines (T321)
@@ -301,31 +301,31 @@
 14.10/CR/1               n/a          - - TRUNCATE TABLE (F200)
 14.10/CR/2               n/a          - - TRUNCATE TABLE (F200)
 # 14.11, <insert statement>
-14.11                    implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11                    implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/SR/1               definition   - -
 14.11/SR/2               definition   - -
 14.11/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
 14.11/SR/4               n/a          - - triggers (T211)
 14.11/SR/5               n/a          - - user-defined types (S023)
 14.11/SR/6               n/a          - - DEFAULT VALUES (F222)
-14.11/SR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
-14.11/SR/8               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/SR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_from_query.sql
+14.11/SR/8               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/SR/9               n/a          - - every column of a base table is updatable
-14.11/SR/10              implemented  vsql/std_2_14_11_insert_statement.v tests/generated-column.sql
+14.11/SR/10              implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_generated_column.sql
 14.11/SR/11              container    - -
 14.11/SR/11.a            n/a          - - self-referencing columns (S043)
-14.11/SR/11.b            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
-14.11/SR/11.b.i          implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
+14.11/SR/11.b            implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
+14.11/SR/11.b.i          implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_from_query.sql
 14.11/SR/11.b.ii         n/a          - - <row value special case> needs row types (T051)
-14.11/SR/11.b.iii        implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
-14.11/SR/11.c            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/SR/11.b.iii        implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
+14.11/SR/11.c            implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
 14.11/SR/11.d            n/a          - - system-versioned tables (T180)
-14.11/SR/11.e            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
-14.11/SR/12              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
-14.11/SR/13              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
-14.11/SR/14              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/SR/11.e            implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
+14.11/SR/12              implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
+14.11/SR/13              implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
+14.11/SR/14              implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/SR/15              n/a          - - triggers (T211)
-14.11/SR/16              implemented  vsql/std_2_14_11_insert_statement.y tests/insert-from-query.sql
+14.11/SR/16              implemented  vsql/std_2_14_11_insert_statement.y tests/std_2_14_11_insert_from_query.sql
 14.11/AR/1               container    - -
 14.11/AR/1.a             n/a          - - there are no users or privileges (#732)
 14.11/AR/1.b             n/a          - - there are no users or privileges (#732)
@@ -334,33 +334,33 @@
 14.11/GR/2.a             n/a          - - SENSITIVE (T231)
 14.11/GR/2.b             n/a          - - SENSITIVE (T231)
 14.11/GR/3               n/a          - - INSENSITIVE (F791)
-14.11/GR/4               impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
-14.11/GR/5               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/4               impl-defined vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql nothing is disallowed, since a cursor's result is a copy
+14.11/GR/5               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/GR/6               definition   - -
-14.11/GR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
-14.11/GR/7.a             implemented  vsql/std_2_14_11_insert_statement.v tests/column-defaults.sql
+14.11/GR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
+14.11/GR/7.a             implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_5_column_defaults.sql
 14.11/GR/7.b             definition   - -
-14.11/GR/7.c             implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/7.c             implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/GR/7.d             n/a          - - self-referencing columns (S043)
 14.11/GR/7.d.i           n/a          - - self-referencing columns (S043)
 14.11/GR/7.d.ii          n/a          - - self-referencing columns (S043)
-14.11/GR/7.e             implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/GR/7.e             implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
 14.11/GR/7.e.i           n/a          - - self-referencing columns (S043)
 14.11/GR/7.e.ii          n/a          - - self-referencing columns (S043)
-14.11/GR/7.e.iii         implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
-14.11/GR/7.e.iv          implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/GR/7.e.iii         implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
+14.11/GR/7.e.iv          implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_11_4_identity_column.sql
 14.11/GR/8               definition   - -
-14.11/GR/8.a             implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/8.a             implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/GR/8.a.i           definition   - -
-14.11/GR/8.a.ii          implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/8.a.ii          implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/GR/8.b             n/a          - - views (F031-02)
-14.11/GR/9               implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
+14.11/GR/9               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_from_query.sql
 14.11/CR/1               container    - -
 14.11/CR/1.a             missing      - - F781 isn't flagged, it needs name resolution (#880)
 14.11/CR/1.b             n/a          - - external routines (T321)
 14.11/CR/2               n/a          - - DEFAULT VALUES (F222)
 14.11/CR/3               n/a          - - structured types (S024)
-14.11/CR/4               implemented  vsql/std_2_14_11_insert_statement.y tests/flagging.sql
+14.11/CR/4               implemented  vsql/std_2_14_11_insert_statement.y tests/std_1_8_5_flagging.sql
 # 14.12, <merge statement>
 14.12                    n/a          - - MERGE (F312)
 14.12/SR/1               n/a          - - MERGE (F312)
@@ -492,37 +492,37 @@
 14.12/CR/6               n/a          - - MERGE (F312)
 14.12/CR/7               n/a          - - MERGE (F312)
 # 14.13, <update statement: positioned>
-14.13                    partial      vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql a sort key column can be set (#794)
-14.13/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.13/SR/2               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13                    partial      vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql a sort key column can be set (#794)
+14.13/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.13/SR/2               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.13/SR/3               definition   - -
-14.13/SR/4               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/4               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.13/SR/5               definition   - -
-14.13/SR/6               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/6               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.13/SR/7               n/a          - - triggers (T211)
 14.13/SR/8               n/a          - - ONLY (S111)
 14.13/SR/9               n/a          - - ONLY (S111)
-14.13/SR/10              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/10              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.13/SR/11              container    - -
-14.13/SR/11.a            implemented  vsql/std_2_14_13_update_statement_positioned.y tests/delete-update-correlation-name.sql
-14.13/SR/11.b            implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
-14.13/SR/12              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
-14.13/SR/13              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors-sort-keys.sql
-14.13/SR/14              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+14.13/SR/11.a            implemented  vsql/std_2_14_13_update_statement_positioned.y tests/std_2_14_9_delete_update_correlation_name.sql
+14.13/SR/11.b            implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql
+14.13/SR/12              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql
+14.13/SR/13              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors_sort_keys.sql
+14.13/SR/14              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql
 14.13/AR/1               container    - -
 14.13/AR/1.a             n/a          - - there are no users or privileges (#732)
 14.13/AR/1.b             n/a          - - there are no users or privileges (#732)
 14.13/GR/1               definition   - -
 14.13/GR/2               definition   - -
-14.13/GR/3               implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
-14.13/CR/1               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql flagged on the DECLARE CURSOR
+14.13/GR/3               implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql
+14.13/CR/1               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql flagged on the DECLARE CURSOR
 # 14.14, <update statement: searched>
-14.14                    partial      vsql/std_2_14_14_update_statement_searched.v tests/update.sql no cursor operation conflict warning (#797)
+14.14                    partial      vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql no cursor operation conflict warning (#797)
 14.14/SR/1               definition   - -
 14.14/SR/2               definition   - -
 14.14/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
 14.14/SR/4               n/a          - - triggers (T211)
-14.14/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.y tests/update.sql
+14.14/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.y tests/std_2_14_14_update.sql
 14.14/SR/6               n/a          - - SQL-invoked routines (T321)
 14.14/SR/6.a             n/a          - - system-versioned tables (T180)
 14.14/SR/6.b             definition   - -
@@ -537,9 +537,9 @@
 14.14/SR/7.b             definition   - -
 14.14/SR/8               n/a          - - triggers (T211)
 14.14/SR/9               container    - -
-14.14/SR/9.a             implemented  vsql/std_2_14_14_update_statement_searched.y tests/delete-update-correlation-name.sql
-14.14/SR/9.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
-14.14/SR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/SR/9.a             implemented  vsql/std_2_14_14_update_statement_searched.y tests/std_2_14_9_delete_update_correlation_name.sql
+14.14/SR/9.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
+14.14/SR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/AR/1               container    - -
 14.14/AR/1.a             n/a          - - there are no users or privileges (#732)
 14.14/AR/1.a.i           n/a          - - there are no users or privileges (#732)
@@ -552,32 +552,32 @@
 14.14/GR/2.a             n/a          - - SENSITIVE (T231)
 14.14/GR/2.b             n/a          - - SENSITIVE (T231)
 14.14/GR/3               n/a          - - INSENSITIVE (F791)
-14.14/GR/4               impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
+14.14/GR/4               impl-defined vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql nothing is disallowed, since a cursor's result is a copy
 14.14/GR/5               container    - -
 14.14/GR/5.a             n/a          - - ONLY (S111)
-14.14/GR/5.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/scalar-subquery.sql
+14.14/GR/5.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_7_19_scalar_subquery.sql
 14.14/GR/6               definition   - -
 14.14/GR/7               definition   - -
 14.14/GR/8               missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
 14.14/GR/9               n/a          - - triggers (T211)
-14.14/GR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/scalar-subquery.sql
-14.14/GR/11              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_7_19_scalar_subquery.sql
+14.14/GR/11              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/GR/12              definition   - -
-14.14/GR/13              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/13              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/GR/14              container    - -
-14.14/GR/14.a            implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/14.a            implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/GR/14.a.i          container    - -
 14.14/GR/14.a.i.1        n/a          - - ONLY (S111)
 14.14/GR/14.a.i.2        n/a          - - subtables (S081)
-14.14/GR/14.a.ii         implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/14.a.ii         implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/GR/14.b            n/a          - - views (F031-02)
-14.14/GR/15              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/15              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/CR/1               missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.14/CR/1.a             missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.14/CR/1.b             n/a          - - external routines (T321)
 14.14/CR/2               n/a          - - FOR PORTION OF (T181)
 # 14.15, <set clause list>
-14.15                    partial      vsql/std_2_14_15_set_clause_list.v tests/update.sql only <object column> = <update source>
+14.15                    partial      vsql/std_2_14_15_set_clause_list.v tests/std_2_14_14_update.sql only <object column> = <update source>
 14.15/SR/1               definition   - -
 14.15/SR/2               n/a          - - every column of a base table is updatable
 14.15/SR/3               n/a          - - system-versioned tables (T180)
@@ -585,8 +585,8 @@
 14.15/SR/4.a             n/a          - - <multiple column assignment> (T641)
 14.15/SR/4.b             n/a          - - <multiple column assignment> (T641)
 14.15/SR/4.c             n/a          - - <multiple column assignment> (T641)
-14.15/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.v tests/generated-column.sql
-14.15/SR/6               implemented  vsql/std_2_14_15_set_clause_list.v tests/aggregate-placement.sql
+14.15/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_11_4_generated_column.sql
+14.15/SR/6               implemented  vsql/std_2_14_15_set_clause_list.v tests/std_2_6_9_aggregate_placement.sql
 14.15/SR/7               n/a          - - <mutated set clause> needs structured types (S023)
 14.15/SR/7.a             n/a          - - <mutated set clause> needs structured types (S023)
 14.15/SR/7.b             n/a          - - <mutated set clause> needs structured types (S023)
@@ -609,12 +609,12 @@
 14.15/SR/7.c.ii          n/a          - - <mutated set clause> needs structured types (S023)
 14.15/SR/7.c.ii.1        n/a          - - <mutated set clause> needs structured types (S023)
 14.15/SR/7.c.ii.2        n/a          - - <mutated set clause> needs structured types (S023)
-14.15/SR/8               implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
-14.15/SR/9               implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/SR/8               implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
+14.15/SR/9               implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.15/SR/10              n/a          - - collection types (S091, S271)
 14.15/SR/11              container    - -
 14.15/SR/11.a            n/a          - - arrays (S091)
-14.15/SR/11.b            implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/SR/11.b            implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.15/GR/1               definition   - -
 14.15/GR/2               container    - -
 14.15/GR/2.a             n/a          - - arrays (S091)
@@ -633,7 +633,7 @@
 14.15/GR/2.a.ii.5.B.II   n/a          - - arrays (S091)
 14.15/GR/2.a.ii.5.B.III  n/a          - - arrays (S091)
 14.15/GR/2.a.ii.5.C      n/a          - - arrays (S091)
-14.15/GR/2.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/GR/2.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.15/CR/1               missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.15/CR/1.a             missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.15/CR/1.b             n/a          - - external routines (T321)

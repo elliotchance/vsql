@@ -3,6 +3,6 @@
 # 4, Concepts
 4                        container    - -
 # 4.1, Introduction to the Definition Schema
-4.1                      implemented  vsql/std_11_5_information_schema.v tests/information-schema.sql simulated by the views, each catalog only describes itself (implementation-defined)
+4.1                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql simulated by the views, each catalog only describes itself (implementation-defined)
 # 4.2, Introduction to the Information Schema
-4.2                      implemented  vsql/std_11_5_information_schema.v tests/information-schema.sql read-only, self-describing; no privileges or short name views (#732, #739)
+4.2                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql read-only, self-describing; no privileges or short name views (#732, #739)

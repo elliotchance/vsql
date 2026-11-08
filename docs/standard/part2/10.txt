@@ -621,43 +621,43 @@
 10.7/AR/1.b              n/a          - - collations (F690)
 10.7/CR/1                n/a          - - collations (F690)
 # 10.8, <constraint name definition> and <constraint characteristics>
-10.8                     implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/constraint-characteristics.sql
-10.8/SR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql
+10.8                     implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_constraint_characteristics.sql
+10.8/SR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
 10.8/SR/2                container    - -
 10.8/SR/2.a              container    - -
-10.8/SR/2.a.i            implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/constraint-characteristics.sql
-10.8/SR/2.a.ii           implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql
-10.8/SR/2.b              implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/constraint-characteristics.sql
-10.8/SR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/constraint-characteristics.sql <constraint enforcement> isn't supported (F492)
+10.8/SR/2.a.i            implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_constraint_characteristics.sql
+10.8/SR/2.a.ii           implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
+10.8/SR/2.b              implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_constraint_characteristics.sql
+10.8/SR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_2_10_8_constraint_characteristics.sql <constraint enforcement> isn't supported (F492)
 10.8/GR/1                definition   - -
-10.8/GR/2                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql
-10.8/GR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql
-10.8/GR/4                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/constraint-characteristics.sql every constraint is enforced
-10.8/CR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/flagging.sql
-10.8/CR/2                implemented  vsql/std_2_5_4_names_and_identifiers.y tests/flagging.sql
+10.8/GR/2                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
+10.8/GR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
+10.8/GR/4                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_2_10_8_constraint_characteristics.sql every constraint is enforced
+10.8/CR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_1_8_5_flagging.sql
+10.8/CR/2                implemented  vsql/std_2_5_4_names_and_identifiers.y tests/std_1_8_5_flagging.sql
 10.8/CR/3                n/a          - - <constraint enforcement> (F492)
 # 10.9, <aggregate function>
-10.9                     implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
+10.9                     implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 10.9/SR/1                definition   - -
 10.9/SR/2                n/a          - - STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP (T621)
-10.9/SR/3                implemented  vsql/std_2_10_9_aggregate_function.y tests/set-quantifier.sql
-10.9/SR/4                impl-defined vsql/std_2_10_9_aggregate_function.v tests/count-expression.sql INTEGER
+10.9/SR/3                implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_set_quantifier.sql
+10.9/SR/4                impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_count_expression.sql INTEGER
 10.9/SR/5                n/a          - - row pattern recognition (R010)
 10.9/SR/6                n/a          - - row pattern recognition (R010)
 10.9/SR/7                container    - -
 10.9/SR/7.a              n/a          - - window functions (T611)
 10.9/SR/7.b              definition   - -
-10.9/SR/7.c              implemented  vsql/std_2_10_9_aggregate_function.v tests/set-quantifier.sql
+10.9/SR/7.c              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_quantifier.sql
 10.9/SR/7.d              container    - -
-10.9/SR/7.d.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql every type can be ordered
+10.9/SR/7.d.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql every type can be ordered
 10.9/SR/7.d.ii           n/a          - - row types (T051)
-10.9/SR/7.e              implemented  vsql/funcs.v tests/boolean-set-functions.sql
-10.9/SR/7.f              implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
+10.9/SR/7.e              implemented  vsql/funcs.v tests/std_2_10_9_boolean_set_functions.sql
+10.9/SR/7.f              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 10.9/SR/7.g              container    - -
-10.9/SR/7.g.i            implemented  vsql/funcs.v tests/set-functions.sql
-10.9/SR/7.g.ii           impl-defined vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql BIGINT for an integer, otherwise the NUMERIC or DECIMAL of the argument without a precision
-10.9/SR/7.g.iii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql the type of the argument
-10.9/SR/7.g.iv           impl-defined vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql the type of the argument
+10.9/SR/7.g.i            implemented  vsql/funcs.v tests/std_2_10_9_set_functions.sql
+10.9/SR/7.g.ii           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql BIGINT for an integer, otherwise the NUMERIC or DECIMAL of the argument without a precision
+10.9/SR/7.g.iii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
+10.9/SR/7.g.iv           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
 10.9/SR/7.g.v            n/a          - - DECFLOAT (T076)
 10.9/SR/7.g.vi           n/a          - - intervals (F052)
 10.9/SR/7.h              n/a          - - VAR_POP, VAR_SAMP, STDDEV_POP and STDDEV_SAMP (T621)
@@ -669,7 +669,7 @@
 10.9/SR/7.l              n/a          - - multisets (S271)
 10.9/SR/7.m              n/a          - - FUSION and INTERSECTION (S275)
 10.9/SR/7.n              n/a          - - FUSION and INTERSECTION (S275)
-10.9/SR/8                implemented  vsql/std_2_10_9_aggregate_function.v,vsql/std_2_7_19_subquery.v tests/aggregate-filter.sql
+10.9/SR/8                implemented  vsql/std_2_10_9_aggregate_function.v,vsql/std_2_7_19_subquery.v tests/std_2_10_9_aggregate_filter.sql
 10.9/SR/9                n/a          - - binary set functions (T621)
 10.9/SR/9.a              n/a          - - binary set functions (T621)
 10.9/SR/9.b              n/a          - - binary set functions (T621)
@@ -719,7 +719,7 @@
 10.9/GR/1.c              n/a          - - row pattern recognition (R010)
 10.9/GR/1.c.i            n/a          - - row pattern recognition (R010)
 10.9/GR/1.c.ii           n/a          - - row pattern recognition (R010)
-10.9/GR/1.d              implemented  vsql/std_2_7_13_group_by_clause.v tests/set-functions.sql
+10.9/GR/1.d              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_10_9_set_functions.sql
 10.9/GR/1.e              n/a          - - window functions (T611)
 10.9/GR/2                definition   - -
 10.9/GR/3                container    - -
@@ -727,30 +727,30 @@
 10.9/GR/3.b              n/a          - - multisets (S271)
 10.9/GR/3.c              n/a          - - ARRAY_AGG (S098)
 10.9/GR/3.d              n/a          - - no supported aggregate function has a character string intermediate result (LISTAGG isn't supported, T625)
-10.9/GR/3.e              implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
+10.9/GR/3.e              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 10.9/GR/4                container    - -
-10.9/GR/4.a              implemented  vsql/std_2_10_9_aggregate_function.v tests/aggregate-filter.sql
-10.9/GR/4.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/set-functions.sql
-10.9/GR/5                implemented  vsql/std_2_7_13_group_by_clause.v tests/count-expression.sql
+10.9/GR/4.a              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_aggregate_filter.sql
+10.9/GR/4.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_10_9_set_functions.sql
+10.9/GR/5                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_10_9_count_expression.sql
 10.9/GR/6                n/a          - - row pattern recognition (R010)
-10.9/GR/7                implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/set-functions.sql
+10.9/GR/7                implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
+10.9/GR/7.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_10_9_set_functions.sql
 10.9/GR/7.b              container    - -
-10.9/GR/7.b.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/set-quantifier.sql
-10.9/GR/7.b.ii           implemented  vsql/std_2_10_9_aggregate_function.v tests/set-quantifier.sql
+10.9/GR/7.b.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_quantifier.sql
+10.9/GR/7.b.ii           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_quantifier.sql
 10.9/GR/7.c              definition   - -
 10.9/GR/7.d              container    - -
-10.9/GR/7.d.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.d.ii           implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.d.iii          implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.d.iv           implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.d.v            implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.d.vi           implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
-10.9/GR/7.d.vi.1         implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
-10.9/GR/7.d.vi.2         implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
-10.9/GR/7.d.vii          implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
-10.9/GR/7.d.vii.1        implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
-10.9/GR/7.d.vii.2        implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
+10.9/GR/7.d.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
+10.9/GR/7.d.ii           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
+10.9/GR/7.d.iii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
+10.9/GR/7.d.iv           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
+10.9/GR/7.d.v            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
+10.9/GR/7.d.vi           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_boolean_set_functions.sql
+10.9/GR/7.d.vi.1         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_boolean_set_functions.sql
+10.9/GR/7.d.vi.2         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_boolean_set_functions.sql
+10.9/GR/7.d.vii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_boolean_set_functions.sql
+10.9/GR/7.d.vii.1        implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_boolean_set_functions.sql
+10.9/GR/7.d.vii.2        implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_boolean_set_functions.sql
 10.9/GR/7.d.viii         n/a          - - VAR_POP and VAR_SAMP (T621)
 10.9/GR/7.d.viii.1       n/a          - - VAR_POP and VAR_SAMP (T621)
 10.9/GR/7.d.viii.2       n/a          - - VAR_POP and VAR_SAMP (T621)
@@ -855,9 +855,9 @@
 10.9/GR/12.g.i           n/a          - - ARRAY_AGG (S098)
 10.9/GR/12.g.ii          n/a          - - ARRAY_AGG (S098)
 10.9/CR/1                n/a          - - row pattern recognition (R010)
-10.9/CR/2                implemented  vsql/std_2_10_9_aggregate_function.y tests/boolean-set-functions.sql
-10.9/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-10.9/CR/4                implemented  vsql/std_2_10_9_aggregate_function.y tests/flagging.sql
+10.9/CR/2                implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_boolean_set_functions.sql
+10.9/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+10.9/CR/4                implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
 10.9/CR/5                missing      - - a column reference that isn't of T (an outer reference) isn't flagged (#880)
 10.9/CR/6                n/a          - - binary set functions (T621)
 10.9/CR/7                missing      - - an outer reference isn't flagged (#880)
@@ -866,7 +866,7 @@
 10.9/CR/10               n/a          - - STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP (T621)
 10.9/CR/11               n/a          - - binary set functions (T621)
 10.9/CR/12               n/a          - - T612
-10.9/CR/13               implemented  vsql/std_2_10_9_aggregate_function.y tests/flagging.sql
+10.9/CR/13               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
 10.9/CR/14               n/a          - - multisets (S271)
 10.9/CR/15               n/a          - - FUSION and INTERSECTION (S275)
 10.9/CR/16               n/a          - - ordered set functions (T612)
@@ -878,31 +878,31 @@
 10.9/CR/22               n/a          - - JSON (T811)
 10.9/CR/23               n/a          - - LISTAGG (T625)
 # 10.10, <sort specification list>
-10.10                    implemented  vsql/std_2_10_10_sort_specification_list.v tests/order.sql
+10.10                    implemented  vsql/std_2_10_10_sort_specification_list.v tests/std_2_7_17_order.sql
 10.10/SR/1               definition   - -
-10.10/SR/2               implemented  vsql/std_2_7_17_query_expression.v tests/order.sql every type can be ordered
-10.10/SR/3               impl-defined vsql/std_2_7_17_query_expression.v tests/order-nulls.sql nulls are before any other value, so NULLS FIRST for ASC and NULLS LAST for DESC
-10.10/GR/1               implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
+10.10/SR/2               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql every type can be ordered
+10.10/SR/3               impl-defined vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql nulls are before any other value, so NULLS FIRST for ASC and NULLS LAST for DESC
+10.10/GR/1               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.a             definition   - -
 10.10/GR/1.b             definition   - -
-10.10/GR/1.c             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
+10.10/GR/1.c             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.d             definition   - -
 10.10/GR/1.e             container    - -
 10.10/GR/1.e.i           container    - -
 10.10/GR/1.e.i.1         n/a          - - row types (T051)
-10.10/GR/1.e.i.2         implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
+10.10/GR/1.e.i.2         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.e.ii          container    - -
-10.10/GR/1.e.ii.1        implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.e.ii.2        implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.e.ii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.e.ii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.e.ii.3        implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.e.ii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.e.ii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/order-nulls.sql
-10.10/GR/1.f             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
+10.10/GR/1.e.ii.1        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.2        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.3        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.f             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.g             n/a          - - user-defined types (S023)
-10.10/GR/1.h             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
-10.10/GR/1.i             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql peers keep the order they were read in, since the merge sort is stable
+10.10/GR/1.h             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
+10.10/GR/1.i             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql peers keep the order they were read in, since the merge sort is stable
 10.10/CR/1               n/a          - - <null ordering> (T611)
 # 10.11, <JSON aggregate function>
 10.11                    n/a          - - JSON aggregate functions (T811)

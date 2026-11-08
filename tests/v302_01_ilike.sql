@@ -1,5 +1,5 @@
 -- # ILIKE is LIKE that ignores case (V302-01). It's a vsql extension. See also
--- # ilike-names.sql for "ilike" used as a name.
+-- # v302_01_ilike_names.sql for "ilike" used as a name.
 /* setup */
 CREATE TABLE t (x VARCHAR(10), y VARCHAR(10));
 INSERT INTO t (x, y) VALUES ('Ab', 'aB');

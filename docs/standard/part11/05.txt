@@ -3,33 +3,33 @@
 # 5, Information Schema
 5                        container    - -
 # 5.1, INFORMATION_SCHEMA Schema
-5.1                      implemented  vsql/std_11_5_information_schema.v tests/information-schema.sql always there, no owner since there are no authorization identifiers (#732)
+5.1                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql always there, no owner since there are no authorization identifiers (#732)
 # 5.2, INFORMATION_SCHEMA_CATALOG_NAME base table
 5.2                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
 5.2/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
 5.2/CR/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
 5.2/CR/2                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
 # 5.3, CARDINAL_NUMBER domain
-5.3                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
-5.3/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql INTEGER, which vsql only sets to non-negative values
+5.3                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql as its data type, there are no domains (F251)
+5.3/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql INTEGER, which vsql only sets to non-negative values
 5.3/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.4, CHARACTER_DATA domain
-5.4                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
-5.4/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql UTF8, not SQL_TEXT
-5.4/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/information-schema-columns.sql max_character_length (10485760)
+5.4                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql as its data type, there are no domains (F251)
+5.4/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql UTF8, not SQL_TEXT
+5.4/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql max_character_length (10485760)
 5.4/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.5, SQL_IDENTIFIER domain
-5.5                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
-5.5/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql UTF8, not SQL_IDENTIFIER
-5.5/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/information-schema-columns.sql max_identifier_length (128)
+5.5                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql as its data type, there are no domains (F251)
+5.5/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql UTF8, not SQL_IDENTIFIER
+5.5/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql max_identifier_length (128)
 5.5/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.6, TIME_STAMP domain
 5.6                      n/a          - - no view that vsql has uses it (T011)
 5.6/DE/1                 n/a          - - no view that vsql has uses it (T011)
 5.6/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.7, YES_OR_NO domain
-5.7                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
-5.7/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql only vsql sets them, to YES or NO
+5.7                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql as its data type, there are no domains (F251)
+5.7/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql only vsql sets them, to YES or NO
 5.7/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.8, ADMINISTRABLE_ROLE_AUTHORIZATIONS view
 5.8                      n/a          - - roles (T331)
@@ -53,7 +53,7 @@
 5.13/CR/1                missing      - - SQL-invoked routines (#733)
 5.13/CR/2                missing      - - SQL-invoked routines (#733)
 # 5.14, CHECK_CONSTRAINTS view
-5.14                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-check-constraints.sql every schema, since there are no schema owners (#732)
+5.14                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_14_check_constraints.sql every schema, since there are no schema owners (#732)
 # 5.15, COLLATIONS view
 5.15                     n/a          - - collations (F690)
 5.15/CR/1                n/a          - - collations (F690)
@@ -79,7 +79,7 @@
 5.20                     n/a          - - user-defined types (S023)
 5.20/CR/1                n/a          - - user-defined types (S023)
 # 5.21, COLUMNS view
-5.21                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql every column, since there are no privileges (#732)
+5.21                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql every column, since there are no privileges (#732)
 5.21/CR/1                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
 5.21/CR/2                missing      - - not flagged with T175 (#737)
 5.21/CR/3                missing      - - not flagged with T175 (#737)
@@ -120,7 +120,7 @@
 5.31/CR/1                n/a          - - row types (T051)
 5.31/CR/2                n/a          - - row types (T051)
 # 5.32, KEY_COLUMN_USAGE view
-5.32                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql every constraint, since there are no privileges (#732)
+5.32                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_32_key_column_usage.sql every constraint, since there are no privileges (#732)
 5.32/CR/1                missing      - - not flagged with F341 (#737)
 5.32/CR/2                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
 # 5.33, METHOD_SPECIFICATION_PARAMETERS view
@@ -141,7 +141,7 @@
 5.36/CR/1                n/a          - - reference types (S041)
 5.36/CR/2                n/a          - - reference types (S041)
 # 5.37, REFERENTIAL_CONSTRAINTS view
-5.37                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql every constraint, since there are no privileges (#732)
+5.37                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql every constraint, since there are no privileges (#732)
 5.37/CR/1                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
 # 5.38, ROLE_COLUMN_GRANTS view
 5.38                     n/a          - - roles (T331)
@@ -220,7 +220,7 @@
 5.57/CR/1                n/a          - - enhanced documentation tables (F502)
 5.57/CR/2                n/a          - - enhanced documentation tables (F502)
 # 5.58, TABLE_CONSTRAINTS view
-5.58                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql every table, since there are no privileges (#732), and with ENFORCED from a later edition
+5.58                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_58_table_constraints.sql every table, since there are no privileges (#732), and with ENFORCED from a later edition
 # 5.59, TABLE_METHOD_PRIVILEGES view
 5.59                     n/a          - - type hierarchies (S024)
 5.59/CR/1                n/a          - - type hierarchies (S024)
@@ -229,7 +229,7 @@
 5.60                     n/a          - - privilege tables (F231)
 5.60/CR/1                n/a          - - privilege tables (F231)
 # 5.61, TABLES view
-5.61                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql,tests/information-schema.sql every table, since there are no privileges (#732)
+5.61                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql every table, since there are no privileges (#732)
 5.61/CR/1                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
 # 5.62, TRANSFORMS view
 5.62                     n/a          - - transforms (S241)

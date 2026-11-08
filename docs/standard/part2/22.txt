@@ -6,7 +6,7 @@
 22.1                     implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/SR/1                implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/SR/2                impl-defined vsql/value.v - NULL (or UNKNOWN for a BOOLEAN)
-22.1/SR/3                impl-defined vsql/prepare.v tests/explain.sql EXPLAIN
+22.1/SR/3                impl-defined vsql/prepare.v tests/v001_explain.sql EXPLAIN
 22.1/AR/1                n/a          - - privileges (E081)
 22.1/GR/1                implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/1.a              implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
@@ -39,16 +39,16 @@
 22.1/GR/5.c.iii.2.B      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/5.c.iii.2.C      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/5.c.iii.2.C.I    implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v only the condition area limit; access modes and isolation levels are E152 (#554, #664)
-22.1/GR/5.c.iii.2.C.II   unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql each constraint has its initial constraint mode, so an INITIALLY DEFERRED constraint is deferred; the isolation level is READ COMMITTED (#664)
+22.1/GR/5.c.iii.2.C.II   unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, so an INITIALLY DEFERRED constraint is deferred; the isolation level is READ COMMITTED (#664)
 22.1/GR/5.c.iii.2.D      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/5.c.iv           n/a          - - access modes (E152-02, #554)
 22.1/GR/5.c.v            implemented  vsql/agent.v vsql/sql_test.v
 22.1/GR/5.c.vi           implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/6                n/a          - - authorization identifiers (E081)
-22.1/GR/7                impl-defined vsql/std_2_22_1_direct_sql_statement.v tests/transaction.sql schema and data statements can be in the same SQL-transaction
+22.1/GR/7                impl-defined vsql/std_2_22_1_direct_sql_statement.v tests/std_2_17_1_transaction.sql schema and data statements can be in the same SQL-transaction
 22.1/GR/8                container    - -
 22.1/GR/8.a              implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
-22.1/GR/8.b              implemented  vsql/prepare.v tests/transaction.sql
+22.1/GR/8.b              implemented  vsql/prepare.v tests/std_2_17_1_transaction.sql
 22.1/GR/9                implemented  vsql/agent.v vsql/sql_test.v
 22.1/CR/1                missing      - - a direct SQL statement isn't flagged (#879)
 # 22.2, <direct select statement: multiple rows>

@@ -44,22 +44,22 @@
 19.4/GR/1.b.ii           n/a          - - SET TIME ZONE (F411)
 19.4/CR/1                n/a          - - SET TIME ZONE (F411)
 # 19.5, <set catalog statement>
-19.5                     implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql
-19.5/SR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql a value of any type is used as a string (#231)
-19.5/GR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql the value isn't trimmed (#231)
-19.5/GR/2                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql the value is the catalog name as it is, rather than an identifier, and must be a catalog (3D000) (#231)
-19.5/GR/3                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql
-19.5/CR/1                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/flagging.sql
-19.5/CR/2                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/flagging.sql
+19.5                     implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_5_set_catalog.sql
+19.5/SR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_5_set_catalog.sql a value of any type is used as a string (#231)
+19.5/GR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_5_set_catalog.sql the value isn't trimmed (#231)
+19.5/GR/2                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_5_set_catalog.sql the value is the catalog name as it is, rather than an identifier, and must be a catalog (3D000) (#231)
+19.5/GR/3                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_5_set_catalog.sql
+19.5/CR/1                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/std_1_8_5_flagging.sql
+19.5/CR/2                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/std_1_8_5_flagging.sql
 # 19.6, <set schema statement>
-19.6                     implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql
-19.6/SR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a value of any type is used as a string (#231)
-19.6/GR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql the value isn't trimmed (#231)
-19.6/GR/2                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql the value is the schema name as it is, rather than an identifier, and must be a schema (3F000) (#231)
+19.6                     implemented  vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql
+19.6/SR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql a value of any type is used as a string (#231)
+19.6/GR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql the value isn't trimmed (#231)
+19.6/GR/2                deviates     vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql the value is the schema name as it is, rather than an identifier, and must be a schema (3F000) (#231)
 19.6/GR/3                container    - -
-19.6/GR/3.a              deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a schema name can't have a catalog name (#231)
-19.6/GR/3.b              implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql
-19.6/CR/1                implemented  vsql/std_2_19_6_set_schema_statement.y tests/flagging.sql
+19.6/GR/3.a              deviates     vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql a schema name can't have a catalog name (#231)
+19.6/GR/3.b              implemented  vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql
+19.6/CR/1                implemented  vsql/std_2_19_6_set_schema_statement.y tests/std_1_8_5_flagging.sql
 # 19.7, <set names statement>
 19.7                     n/a          - - named character sets (F461)
 19.7/SR/1                n/a          - - named character sets (F461)

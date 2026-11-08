@@ -369,6 +369,50 @@ A statement can span multiple lines but must be terminated by a ``;``.
 
 Errors will be in the form of ``error SQLSTATE: message``.
 
+Naming Test Files
+^^^^^^^^^^^^^^^^^
+
+The name of a test file says what it tests, so that ``$TEST`` (see `Running
+Specific Test Files`_) can run every test for one part of the standard, one
+extension or one part of vsql. Each name starts with one of these prefixes,
+followed by a title in lower case:
+
+- ``std_PART_SUBCLAUSE_``: a Subclause of the SQL standard (see
+  :doc:`standard-index`), with ``_`` instead of each ``.``. For example,
+  ``std_11_5_21_columns.sql`` tests the COLUMNS view (Part 11, 5.21).
+- ``vNNN_`` or ``vNNN_NN_``: a vsql extension, by its Feature ID (see
+  :doc:`sql-flagging`). For example, ``v302_01_ilike.sql`` tests V302-01.
+- ``impl_AREA_``: how vsql is implemented, where the standard doesn't say
+  anything. ``AREA`` is one of ``storage`` (pages, the B-tree, the WAL and
+  MVCC), ``planner`` (how a query finds its rows), ``api`` (the V API, such as
+  virtual tables and custom functions), ``server``, ``dump``, ``catalog``
+  (catalogs as separate files) or ``harness`` (the test runner itself). For
+  example, ``impl_planner_primary_key_range.sql``.
+
+Several files can have the same prefix with different titles, so that tests
+that need a different setup are kept apart (such as
+``std_11_5_1_information_schema.sql`` and
+``std_11_5_1_information_schema_transactions.sql``). A file is named after the
+Subclause that its tests are mostly about, and a test can also be repeated in
+the files of each Subclause that it tests.
+
+Behaviour that the standard leaves to the implementation (implementation-defined)
+is still tested in the ``std_`` file of its Subclause.
+
+Each prefix ends with ``_``, so that ``TEST=std_11_5_1_`` doesn't also run
+``std_11_5_14_check_constraints.sql``:
+
+.. code-block:: sh
+
+   # all of Part 11
+   TEST=std_11_ make sql-test
+
+   # the INFORMATION_SCHEMA Schema (5.1)
+   TEST=std_11_5_1_ make sql-test
+
+   # every vsql extension
+   TEST=/v make sql-test
+
 Setup
 ^^^^^
 
@@ -726,7 +770,7 @@ location of each failed test:
 .. code-block:: text
 
    SQL tests: 1549 passed, 1 failed, 1550 total, 3120 statements
-     FAILED tests/arithmetic.sql:3 (in memory through server, on disk through server)
+     FAILED tests/std_2_6_29_arithmetic.sql:3 (in memory through server, on disk through server)
 
 The "Summary for running V tests" line printed by V counts all of the SQL
 tests as the one V test ``test_all``, so check the SQL tests summary to see
@@ -787,8 +831,8 @@ you can use the ``$TEST`` environment variable:
 
 .. code-block:: sh
 
-   # only run tests/transaction.sql
-   TEST=transaction make sql-test
+   # only run tests/std_2_17_1_transaction.sql
+   TEST=std_2_17_1_transaction make sql-test
 
 Running Specific Tests
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -802,10 +846,10 @@ For example the output a failed test output might be:
 .. code-block:: text
 
        Left value:
-         at tests/subquery.sql:32 (in memory):
+         at tests/std_2_7_6_subquery.sql:32 (in memory):
    X: 123 Y: hello
        Right value:
-         at tests/subquery.sql:32 (in memory):
+         at tests/std_2_7_6_subquery.sql:32 (in memory):
    error 42601: syntax error: unknown column: Y
 
 Running the specific test again can be done with:

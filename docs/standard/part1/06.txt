@@ -49,7 +49,7 @@
 # 6.3.6, Index typography
 6.3.6                    definition   - - about the standard itself
 # 6.3.7, Feature ID and Feature Name
-6.3.7                    implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql standard features are flagged by ID, and vsql's own have a V
+6.3.7                    implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql standard features are flagged by ID, and vsql's own have a V
 # 6.4, Object identifier for Database Language SQL
 6.4                      n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
 6.4/SR/1                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)

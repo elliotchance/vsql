@@ -3,30 +3,30 @@
 # 8, Predicates
 8                        container    - -
 # 8.1, <predicate>
-8.1                      implemented  vsql/std_2_8_1_predicate.v tests/comparison.sql the other predicates are n/a in their own Subclauses
-8.1/GR/1                 implemented  vsql/std_2_8_1_predicate.v tests/comparison.sql
+8.1                      implemented  vsql/std_2_8_1_predicate.v tests/std_2_8_2_comparison.sql the other predicates are n/a in their own Subclauses
+8.1/GR/1                 implemented  vsql/std_2_8_1_predicate.v tests/std_2_8_2_comparison.sql
 # 8.2, <comparison predicate>
-8.2                      partial      vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql rows of degree > 1 are #722
+8.2                      partial      vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql rows of degree > 1 are #722
 8.2/SR/1                 missing      - - rows of degree > 1 are #722
 8.2/SR/2                 definition   - -
-8.2/SR/3                 partial      vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql checked when evaluated, rather than when prepared
+8.2/SR/3                 partial      vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql checked when evaluated, rather than when prepared
 8.2/SR/4                 definition   - -
-8.2/SR/5                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql there are only scalar operands, so N is 1 (one); rows are #722
+8.2/SR/5                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql there are only scalar operands, so N is 1 (one); rows are #722
 8.2/SR/5.a               container    - -
-8.2/SR/5.a.i             implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
-8.2/SR/5.a.ii            implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
+8.2/SR/5.a.i             implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql
+8.2/SR/5.a.ii            implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql
 8.2/SR/5.b               container    - -
 8.2/SR/5.b.i             n/a          - - user-defined types (S023)
 8.2/SR/5.b.ii            n/a          - - reference types (S041)
 8.2/SR/5.b.iii           n/a          - - arrays (S091) and multisets (S271)
 8.2/SR/5.b.iv            missing      - - rows are #722
-8.2/SR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/SR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/SR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/SR/6.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/SR/6.d               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/SR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/SR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/SR/6.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/SR/6.d               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/1                 definition   - -
-8.2/GR/1.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/null-propagation.sql
+8.2/GR/1.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_29_null_propagation.sql
 8.2/GR/1.b               container    - -
 8.2/GR/1.b.i             missing      - - rows are #722
 8.2/GR/1.b.i.1           missing      - - rows are #722
@@ -59,15 +59,15 @@
 8.2/GR/1.b.iv.3          n/a          - - user-defined types (S023)
 8.2/GR/1.b.iv.3.A        n/a          - - user-defined types (S023)
 8.2/GR/1.b.iv.3.B        n/a          - - user-defined types (S023)
-8.2/GR/1.b.v             implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/GR/1.b.v.1           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/GR/1.b.v.2           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/GR/1.b.v.3           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
-8.2/GR/2                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
-8.2/GR/3                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v             implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.1           implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.2           implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.3           implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/2                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql
+8.2/GR/3                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/3.a               impl-defined vsql/std_2_8_2_comparison_predicate.v - only the default collation, which is PAD SPACE
-8.2/GR/3.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
-8.2/GR/3.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/3.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/3.d               untestable   vsql/std_2_8_2_comparison_predicate.v - which of several equal strings is chosen is implementation-dependent
 8.2/GR/4                 n/a          - - binary strings (T021)
 8.2/GR/5                 n/a          - - binary strings (T021)
@@ -76,66 +76,66 @@
 8.2/GR/5.c               n/a          - - binary strings (T021)
 8.2/GR/5.d               n/a          - - binary strings (T021)
 8.2/GR/5.e               n/a          - - binary strings (T021)
-8.2/GR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
-8.2/GR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
-8.2/GR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
+8.2/GR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/7                 n/a          - - intervals (F052)
 8.2/GR/7.a               n/a          - - intervals (F052)
 8.2/GR/7.b               n/a          - - intervals (F052)
-8.2/GR/8                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/boolean.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/8                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_boolean.sql,tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/9                 n/a          - - reference types (S041)
 # 8.3, <between predicate>
-8.3                      implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
-8.3/SR/1                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3                      implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
+8.3/SR/1                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
 8.3/SR/2                 definition   - -
-8.3/SR/3                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
-8.3/SR/4                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
-8.3/SR/5                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
-8.3/SR/6                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
-8.3/SR/7                 implemented  vsql/std_2_8_3_between_predicate.y tests/flagging.sql the Conformance Rules of 8.2 are only about rows and other unsupported types
-8.3/CR/1                 implemented  vsql/std_2_8_3_between_predicate.y tests/flagging.sql
+8.3/SR/3                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
+8.3/SR/4                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
+8.3/SR/5                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
+8.3/SR/6                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
+8.3/SR/7                 implemented  vsql/std_2_8_3_between_predicate.y tests/std_1_8_5_flagging.sql the Conformance Rules of 8.2 are only about rows and other unsupported types
+8.3/CR/1                 implemented  vsql/std_2_8_3_between_predicate.y tests/std_1_8_5_flagging.sql
 # 8.4, <in predicate>
-8.4                      implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
-8.4/SR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/in-subquery.sql
-8.4/SR/2                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
+8.4                      implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
+8.4/SR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/std_2_8_4_in_subquery.sql
+8.4/SR/2                 implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
 8.4/SR/3                 definition   - -
-8.4/SR/4                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
-8.4/SR/5                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
-8.4/CR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/flagging.sql
+8.4/SR/4                 implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
+8.4/SR/5                 implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
+8.4/CR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/std_1_8_5_flagging.sql
 # 8.5, <like predicate>
-8.5                      partial      vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql there's no <octet like predicate> (T021)
-8.5/SR/1                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5                      partial      vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql there's no <octet like predicate> (T021)
+8.5/SR/1                 implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql
 8.5/SR/2                 n/a          - - binary strings (T021)
-8.5/SR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5/SR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql
 8.5/SR/3.a               definition   - -
-8.5/SR/3.b               implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/SR/3.c               implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
-8.5/SR/3.d               impl-defined vsql/std_2_8_5_like_predicate.v tests/like.sql only the default collation, as NO PAD
+8.5/SR/3.b               implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/SR/3.c               implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like_escape.sql
+8.5/SR/3.d               impl-defined vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql only the default collation, as NO PAD
 8.5/SR/4                 n/a          - - binary strings (T021)
 8.5/SR/4.a               n/a          - - binary strings (T021)
 8.5/SR/4.b               n/a          - - binary strings (T021)
 8.5/SR/4.c               n/a          - - binary strings (T021)
 8.5/GR/1                 definition   - -
 8.5/GR/2                 n/a          - - binary strings (T021)
-8.5/GR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5/GR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql
 8.5/GR/3.a               container    - -
-8.5/GR/3.a.i             implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
-8.5/GR/3.a.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/GR/3.a.i             implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like_escape.sql
+8.5/GR/3.a.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like_escape.sql
 8.5/GR/3.b               container    - -
-8.5/GR/3.b.i             implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
-8.5/GR/3.b.i.1           implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
-8.5/GR/3.b.i.2           implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
-8.5/GR/3.b.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.c               implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5/GR/3.b.i             implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like_escape.sql
+8.5/GR/3.b.i.1           implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like_escape.sql
+8.5/GR/3.b.i.2           implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like_escape.sql
+8.5/GR/3.b.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.c               implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql
 8.5/GR/3.d               container    - -
-8.5/GR/3.d.i             implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.ii.1          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.ii.2          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.ii.3          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.ii.4          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.ii.5          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
-8.5/GR/3.d.iii           implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.i             implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.ii.1          implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.ii.2          implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.ii.3          implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.ii.4          implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.ii.5          implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
+8.5/GR/3.d.iii           implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql
 8.5/GR/4                 n/a          - - binary strings (T021)
 8.5/GR/4.a               container    - -
 8.5/GR/4.a.i             n/a          - - binary strings (T021)
@@ -158,61 +158,61 @@
 8.5/GR/4.f.ii.5          n/a          - - binary strings (T021)
 8.5/GR/4.f.iii           n/a          - - binary strings (T021)
 8.5/CR/1                 n/a          - - binary strings (T021)
-8.5/CR/2                 implemented  vsql/std_2_8_5_like_predicate.y tests/flagging.sql
-8.5/CR/3                 implemented  vsql/std_2_8_5_like_predicate.y tests/flagging.sql
-8.5/CR/4                 implemented  vsql/std_2_8_5_like_predicate.y tests/flagging.sql
+8.5/CR/2                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_8_5_flagging.sql
+8.5/CR/3                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_8_5_flagging.sql
+8.5/CR/4                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_8_5_flagging.sql
 8.5/CR/5                 n/a          - - there are no CLOBs (T041)
 8.5/CR/6                 n/a          - - there are no national character types (F421) or CLOBs (T041)
 8.5/CR/7                 n/a          - - there are no national character types (F421)
 # 8.6, <similar predicate>
-8.6                      implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql,tests/similar-pad-space.sql
-8.6/SR/1                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
-8.6/SR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/SR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql an invalid name is a 2201B when evaluated, since the pattern is a value
-8.6/SR/4                 impl-defined vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql only the default collation
-8.6/SR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
-8.6/SR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
-8.6/SR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql checked when evaluated (2201B), since the pattern is a value
+8.6                      implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql,tests/std_2_8_6_similar_pad_space.sql
+8.6/SR/1                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
+8.6/SR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/SR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql an invalid name is a 2201B when evaluated, since the pattern is a value
+8.6/SR/4                 impl-defined vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql only the default collation
+8.6/SR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
+8.6/SR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
+8.6/SR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql checked when evaluated (2201B), since the pattern is a value
 8.6/GR/1                 definition   - -
-8.6/GR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
-8.6/GR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
-8.6/GR/3.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
-8.6/GR/3.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
-8.6/GR/3.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
+8.6/GR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
+8.6/GR/3.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
+8.6/GR/3.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
+8.6/GR/3.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
 8.6/GR/4                 container    - -
-8.6/GR/4.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
-8.6/GR/4.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
-8.6/GR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/5.a               impl-defined vsql/std_2_8_6_similar_predicate.v tests/similar.sql ordered by code point, which is the default collation
-8.6/GR/5.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/6.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/6.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/6.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql there's no limit, which matches the same strings
-8.6/GR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.d               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.e               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.f               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.g               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.h               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.i               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.j               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.k               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.l               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.m               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.n               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.o               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.p               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.q               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.r               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.s               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.t               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/7.u               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-pad-space.sql
-8.6/CR/1                 implemented  vsql/std_2_8_6_similar_predicate.y tests/flagging.sql
+8.6/GR/4.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
+8.6/GR/4.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
+8.6/GR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/5.a               impl-defined vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql ordered by code point, which is the default collation
+8.6/GR/5.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/6.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/6.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/6.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql there's no limit, which matches the same strings
+8.6/GR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.d               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.e               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.f               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.g               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.h               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.i               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.j               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.k               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.l               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.m               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.n               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.o               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.p               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.q               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.r               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.s               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.t               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/7.u               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
+8.6/GR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_pad_space.sql
+8.6/CR/1                 implemented  vsql/std_2_8_6_similar_predicate.y tests/std_1_8_5_flagging.sql
 8.6/CR/2                 n/a          - - there are no CLOBs (T041)
 # 8.7, <regex like predicate>
 8.7                      n/a          - - LIKE_REGEX (F841)
@@ -227,32 +227,32 @@
 8.7/CR/1                 n/a          - - LIKE_REGEX (F841)
 8.7/CR/2                 n/a          - - LIKE_REGEX (F841)
 # 8.8, <null predicate>
-8.8                      implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql,tests/null-predicate-row.sql
+8.8                      implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null.sql,tests/std_2_8_8_null_predicate_row.sql
 8.8/GR/1                 definition   - -
 8.8/GR/2                 container    - -
-8.8/GR/2.a               implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql,tests/null-predicate-row.sql
+8.8/GR/2.a               implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null.sql,tests/std_2_8_8_null_predicate_row.sql
 8.8/GR/2.b               container    - -
-8.8/GR/2.b.i             implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
-8.8/GR/2.b.i.1           implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
-8.8/GR/2.b.i.2           implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
-8.8/GR/2.b.ii            implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
-8.8/GR/2.b.ii.1          implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
-8.8/GR/2.b.ii.2          implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.i             implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null_predicate_row.sql
+8.8/GR/2.b.i.1           implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null_predicate_row.sql
+8.8/GR/2.b.i.2           implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null_predicate_row.sql
+8.8/GR/2.b.ii            implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null_predicate_row.sql
+8.8/GR/2.b.ii.1          implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null_predicate_row.sql
+8.8/GR/2.b.ii.2          implemented  vsql/std_2_8_8_null_predicate.v tests/std_2_8_8_null_predicate_row.sql
 # 8.9, <quantified comparison predicate>
-8.9                      implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
-8.9/SR/1                 partial      vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql checked when evaluated, rather than when prepared
+8.9                      implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
+8.9/SR/1                 partial      vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql checked when evaluated, rather than when prepared
 8.9/GR/1                 definition   - -
-8.9/GR/2                 implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
-8.9/GR/2.a               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
-8.9/GR/2.b               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
-8.9/GR/2.c               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
-8.9/GR/2.d               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
-8.9/GR/2.e               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/GR/2                 implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
+8.9/GR/2.a               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
+8.9/GR/2.b               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
+8.9/GR/2.c               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
+8.9/GR/2.d               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
+8.9/GR/2.e               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/std_2_8_9_quantified_comparison.sql
 # 8.10, <exists predicate>
-8.10                     implemented  vsql/std_2_8_10_exists_predicate.v tests/exists-predicate.sql
+8.10                     implemented  vsql/std_2_8_10_exists_predicate.v tests/std_2_8_10_exists_predicate.sql
 8.10/GR/1                definition   - -
-8.10/GR/2                implemented  vsql/std_2_8_10_exists_predicate.v tests/exists-predicate.sql
-8.10/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/exists-predicate.sql
+8.10/GR/2                implemented  vsql/std_2_8_10_exists_predicate.v tests/std_2_8_10_exists_predicate.sql
+8.10/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_8_10_exists_predicate.sql
 # 8.11, <unique predicate>
 8.11                     n/a          - - the UNIQUE predicate (F291)
 8.11/SR/1                n/a          - - the UNIQUE predicate (F291)
@@ -477,8 +477,8 @@
 8.20/GR/4.b.ix.2         n/a          - - period predicates (T502)
 8.20/CR/1                n/a          - - period predicates (T502)
 # 8.21, <search condition>
-8.21                     implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql
-8.21/GR/1                implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql
+8.21                     implemented  vsql/std_2_8_21_search_condition.v tests/std_2_7_12_select_where.sql
+8.21/GR/1                implemented  vsql/std_2_8_21_search_condition.v tests/std_2_7_12_select_where.sql
 # 8.22, <JSON predicate>
 8.22                     n/a          - - IS JSON (T822)
 8.22/SR/1                n/a          - - IS JSON (T822)

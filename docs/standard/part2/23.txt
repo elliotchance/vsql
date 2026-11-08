@@ -33,7 +33,7 @@
 23.1/GR/4.b              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
 23.1/GR/4.c              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
 23.1/GR/4.d              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
-23.1/GR/4.e              missing      - - there's no 01001 warning (#797)
+23.1/GR/4.e              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
 23.1/GR/4.f              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/embed/example.sqc
 23.1/GR/4.f.i            implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/embed/example.sqc
 23.1/GR/4.f.ii           container    - -

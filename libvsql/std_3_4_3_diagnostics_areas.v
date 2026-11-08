@@ -20,6 +20,8 @@ struct DiagnosticRecord {
 	// constraint is the constraint that was violated, for an integrity
 	// constraint violation (see vsql.violated_constraint).
 	constraint vsql.Identifier
+	// cursor_name is the cursor that caused a warning: cursor operation conflict.
+	cursor_name string
 mut:
 	// row_number and column_number are the row of the rowset and the column
 	// that the condition applies to, or 0 (zero) if it doesn't apply to one
@@ -144,7 +146,16 @@ fn (mut d Diagnostics) statement_warnings(conn &vsql.Connection, failed bool) {
 		d.more = true
 	}
 	for warning in warnings {
-		d.warning(vsql.sqlstate_from_int(warning.code()), warning.msg())
+		// A warning: cursor operation conflict has the name of the cursor that
+		// caused it (a DELETE or UPDATE can raise it).
+		d.add(DiagnosticRecord{
+			sqlstate:    vsql.sqlstate_from_int(warning.code())
+			msg:         warning.msg()
+			cursor_name: vsql.conflicting_cursor(warning) or { '' }
+		})
+		if d.returncode == sql_success {
+			d.returncode = sql_success_with_info
+		}
 	}
 }
 

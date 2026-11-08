@@ -86,6 +86,34 @@ fn (err SQLState) code() int {
 	return err.code
 }
 
+// cursor operation conflict (warning): the row that a statement changes has
+// also been changed by another statement while a cursor is open. cursor_name is
+// the cursor that caused it.
+//
+// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.e
+struct SQLState01001 {
+	SQLState
+	cursor_name string
+}
+
+fn sqlstate_01001(cursor_name string) IError {
+	return SQLState01001{
+		code:        sqlstate_to_int('01001')
+		msg:         'cursor operation conflict: ${cursor_name}'
+		cursor_name: cursor_name
+	}
+}
+
+// conflicting_cursor returns the name of the cursor that caused a warning:
+// cursor operation conflict (01001), or none for any other condition.
+pub fn conflicting_cursor(err IError) ?string {
+	if err is SQLState01001 {
+		return err.cursor_name
+	}
+
+	return none
+}
+
 // null value eliminated in set function (warning)
 struct SQLState01003 {
 	SQLState

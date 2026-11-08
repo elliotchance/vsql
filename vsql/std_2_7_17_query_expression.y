@@ -4,7 +4,7 @@
 //
 // Specify a table.
 //
-// There's no WITH (T121), CORRESPONDING (F301), explicit table (F661) or FETCH
+// There's no WITH (T121), CORRESPONDING (F301) or FETCH
 // NEXT (#331). LIMIT isn't in the standard, see limit_clause.
 
 // A query_expression is either a parenthesized_query_expression or a
@@ -265,11 +265,16 @@ simple_table:
     $$.v = $1.v as SimpleTable
   }
 | explicit_table {
+    // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 6
     flag(mut yylex, 'F661')
     $$.v = SimpleTable($1.v as QuerySpecification)
   }
 
-// "TABLE t" is the same as "SELECT * FROM t" (Syntax Rule 1).
+// "TABLE t" is the same as "SELECT * FROM t", so its columns are the columns of
+// the table.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 4
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 13.b
 explicit_table:
   TABLE table_or_query_name {
     table_expression := TableExpression{TableReference(TablePrimary{

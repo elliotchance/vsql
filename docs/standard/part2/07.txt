@@ -1264,7 +1264,7 @@
 7.16/CR/5                n/a          - - row types (T053)
 7.16/CR/6                implemented  vsql/planner.v tests/std_2_7_3_values.sql
 # 7.17, <query expression>
-7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH (T121), CORRESPONDING (F301), explicit tables (F661) or FETCH NEXT (#331)
+7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH (T121), CORRESPONDING (F301) or FETCH NEXT (#331)
 7.17/SR/1                definition   - -
 7.17/SR/2                n/a          - - data change delta tables (T495)
 7.17/SR/3                n/a          - - WITH (T121)
@@ -1327,7 +1327,7 @@
 7.17/SR/3.j.xi.2         n/a          - - WITH (T121)
 7.17/SR/3.j.xi.3         n/a          - - WITH (T121)
 7.17/SR/3.k              n/a          - - WITH (T121)
-7.17/SR/4                n/a          - - explicit tables (F661)
+7.17/SR/4                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/SR/5                definition   - -
 7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
 7.17/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
@@ -1351,7 +1351,7 @@
 7.17/SR/12               n/a          - - WITH (T121)
 7.17/SR/13               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
-7.17/SR/13.b             n/a          - - explicit tables (F661)
+7.17/SR/13.b             implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/SR/13.c             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_3_values.sql
 7.17/SR/14               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/14.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
@@ -1537,7 +1537,7 @@
 7.17/CR/3                n/a          - - recursive queries (T131)
 7.17/CR/4                n/a          - - recursive queries (T132)
 7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
-7.17/CR/6                n/a          - - explicit tables (F661)
+7.17/CR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
 7.17/CR/8                n/a          - - CORRESPONDING (F301)
 7.17/CR/9                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql,tests/std_2_7_17_intersect.sql

@@ -23,7 +23,8 @@ VALUES 5 IN (SELECT x FROM t2);
 VALUES 5 NOT IN (SELECT x FROM t2);
 -- COL1: TRUE
 
--- # An empty subquery is FALSE for IN, and TRUE for NOT IN.
+-- # An empty subquery is FALSE for IN, and TRUE for NOT IN, even for a NULL
+-- # value.
 VALUES 1 IN (SELECT x FROM t2 WHERE x > 10);
 -- COL1: FALSE
 
@@ -34,6 +35,7 @@ VALUES CAST(NULL AS INT) IN (SELECT x FROM t2 WHERE x > 10);
 -- COL1: FALSE
 
 -- # A NULL that isn't equal is UNKNOWN, so NOT IN is never TRUE with a NULL.
+-- # A NULL value is UNKNOWN when the subquery has rows.
 VALUES 2 IN (SELECT x FROM t3);
 -- COL1: TRUE
 
@@ -104,10 +106,12 @@ VALUES 1 IN (SELECT x, y FROM t1);
 VALUES 1 IN (SELECT y FROM t1);
 -- error 42883: cannot compare SMALLINT and CHARACTER VARYING(10)
 
--- # Values that can't be compared are an error, even when they're found.
+-- # The column of a UNION ALL has a type that fits both queries, so character
+-- # strings from either one are found.
 VALUES 'a' IN (SELECT y FROM t1 UNION ALL SELECT CAST(x AS VARCHAR(10)) FROM t1);
 -- COL1: TRUE
 
+-- # IN and NOT IN, with a subquery or a list, are kept when they're shown.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 WHERE x NOT IN (SELECT x FROM t2 WHERE x > 1);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))

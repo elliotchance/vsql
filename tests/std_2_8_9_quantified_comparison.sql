@@ -61,7 +61,8 @@ VALUES 3 <= SOME (SELECT x FROM t1);
 VALUES 2 <> ANY (SELECT x FROM t1);
 -- COL1: TRUE
 
--- # An empty subquery is TRUE for ALL, and FALSE for SOME.
+-- # An empty subquery is TRUE for ALL, and FALSE for SOME, even for a NULL
+-- # value.
 VALUES 1 = ALL (SELECT x FROM t2);
 -- COL1: TRUE
 
@@ -90,6 +91,9 @@ VALUES 1 = ANY (SELECT x FROM t3);
 VALUES CAST(NULL AS INT) > ALL (SELECT x FROM t1);
 -- COL1: UNKNOWN
 
+-- # A row is only selected when the result is TRUE, so neither a predicate
+-- # that's UNKNOWN nor its NOT selects it. The value can be a column of the
+-- # outer query.
 SELECT * FROM t1 WHERE x > ALL (SELECT x FROM t3);
 
 SELECT * FROM t1 WHERE NOT (x < ALL (SELECT x FROM t3));
@@ -137,6 +141,7 @@ VALUES 1 < ALL (SELECT foo FROM t2);
 VALUES 1 = ALL (1, 2);
 -- error 42601: syntax error: unexpected number, expecting SELECT or TABLE or VALUES or "("
 
+-- # ANY is shown as SOME, which is the same.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 WHERE x > ALL (SELECT x FROM t2) AND x = ANY (SELECT x FROM t3);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))

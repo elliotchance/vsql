@@ -1,3 +1,6 @@
+-- # SIMILAR TO compares with the collation of its operands (General Rules, 8),
+-- # which is PAD SPACE, like =. So the value can have more or fewer trailing
+-- # spaces than the pattern needs.
 VALUES 'a ' = 'a';
 -- COL1: TRUE
 
@@ -22,6 +25,8 @@ VALUES '' SIMILAR TO '   ';
 VALUES 'é ' SIMILAR TO 'é';
 -- COL1: TRUE
 
+-- # The spaces that pad a CHARACTER value to its length are trailing spaces
+-- # too.
 VALUES CAST('a' AS CHARACTER(3)) SIMILAR TO 'a';
 -- COL1: TRUE
 

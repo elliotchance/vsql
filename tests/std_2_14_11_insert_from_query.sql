@@ -582,10 +582,11 @@ SELECT * FROM b;
 -- X: FALSE
 
 -- # A <from subquery> and an implicit column list are both Core SQL. Only the
--- # clauses of the query are flagged, and they aren't in another query.
+-- # clauses of the query are flagged, and they aren't in another query. Reading
+-- # the same table is F781.
 /* flags */
 INSERT INTO t SELECT x, y FROM t;
--- flags:
+-- flags: F781
 -- msg: INSERT 2
 
 /* flags */
@@ -595,7 +596,7 @@ INSERT INTO t VALUES (1, 'a');
 
 /* flags */
 INSERT INTO t (x) (SELECT x FROM t);
--- flags:
+-- flags: F781
 -- msg: INSERT 2
 
 /* flags */
@@ -605,22 +606,22 @@ INSERT INTO t (x) VALUES (1), (2);
 
 /* flags */
 INSERT INTO t (x) SELECT x FROM t ORDER BY x;
--- flags: F850
+-- flags: F781, F850
 -- msg: INSERT 2
 
 /* flags */
 INSERT INTO t (x) SELECT x FROM t OFFSET 1 ROW;
--- flags: F861
+-- flags: F781, F861
 -- msg: INSERT 1
 
 /* flags */
 INSERT INTO t (x) SELECT x FROM t FETCH FIRST 1 ROW ONLY;
--- flags: F857
+-- flags: F781, F857
 -- msg: INSERT 1
 
 /* flags */
 INSERT INTO t (x) (SELECT x FROM t ORDER BY x OFFSET 1 ROW FETCH FIRST 1 ROW ONLY) UNION ALL SELECT x FROM t;
--- flags: F855, F856, F863
+-- flags: F781, F855, F856, F863
 -- msg: INSERT 3
 
 /* flags */
@@ -630,7 +631,7 @@ INSERT INTO t (x) VALUES (1) UNION ALL VALUES (2);
 
 /* flags */
 INSERT INTO t (x) SELECT x FROM t UNION DISTINCT SELECT x FROM t;
--- flags: T551
+-- flags: F781, T551
 -- msg: INSERT 2
 
 /* flags */

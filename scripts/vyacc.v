@@ -2899,42 +2899,35 @@ fn (mut y Vyacc) others() ! {
 	}
 	y.arout('_tok1', y.temp1, c + 1)!
 
-	// table 2 has private-private+256
-	aryfil(mut y.temp1, 256, 0)
+	// table 2 has every token from private, so that a token is found without a
+	// search through table 3.
+	mut tok2 := []int{len: y.ntokens + 1}
 	c = 0
 	for i = 1; i <= y.ntokens; i++ {
 		j = y.tokset[i].value - private
-		if j >= 0 && j < 256 {
-			if y.temp1[j] != 0 {
+		if j >= 0 && j < tok2.len {
+			if tok2[j] != 0 {
 				print('yacc bug -- cannot have 2 different Ts with same value\n')
-				print('	${y.tokset[i].name} and ${y.tokset[y.temp1[j]].name}\n')
+				print('	${y.tokset[i].name} and ${y.tokset[tok2[j]].name}\n')
 				y.nerrors++
 			}
-			y.temp1[j] = i
+			tok2[j] = i
 			if j > c {
 				c = j
 			}
 		}
 	}
-	y.arout('_tok2', y.temp1, c + 1)!
+	y.arout('_tok2', tok2, c + 1)!
 
-	// table 3 has everything else
-	y.ftable.write_string('\n')!
-	mut v := []int{}
+	// The parser only looks up the end of the input in table 1 and every other
+	// token in table 2, so a character literal can't be used as a token.
 	for i = 1; i <= y.ntokens; i++ {
 		j = y.tokset[i].value
-		if j >= 0 && j < 256 {
-			continue
+		if (j > 0 && j < private) || j - private > y.ntokens {
+			print('yacc bug -- token ${y.tokset[i].name} has the value ${j}, which is out of range\n')
+			y.nerrors++
 		}
-		if j >= private && j < 256 + private {
-			continue
-		}
-
-		v << j
-		v << i
 	}
-	v << 0
-	y.arout('_tok3', v, v.len)!
 	y.ftable.write_string('\n')!
 
 	// Support for custom error messages (%error) was removed because vsql
@@ -3287,10 +3280,12 @@ mut:
 	parse(mut YYLexer) !int
 }
 
+// The stack is kept by the caller between statements, so that it is not made again
+// for each one (a YYSymType is big).
 struct YYParserImpl {
 mut:
 	lval  YYSymType
-	stack [$\$_initial_stack_size]YYSymType
+	stack []YYSymType
 	char  int
 }
 
@@ -3345,14 +3340,7 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	if ch <= 0 {
 		return ch, int($\$_tok1[0])
 	}
-	if ch < $\$_private+$\$_tok2.len {
-		return ch, int($\$_tok2[ch-$\$_private])
-	}
-	mut i := 0
-	for int($\$_tok3[i]) != ch {
-		i += 2
-	}
-	return ch, int($\$_tok3[i+1])
+	return ch, int($\$_tok2[ch-$\$_private])
 }
 
 @[direct_array_access]
@@ -3361,12 +3349,16 @@ fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	mut $\$_val := YYSymType{}
 	mut $\$_dollar := []YYSymType{}
 	_ = $\$_dollar // silence set and not used
-	mut $\$_s := $\$rcvr.stack[..].clone()
+	mut $\$_s := unsafe { $\$rcvr.stack }
+	if $\$_s.len < $\$_initial_stack_size {
+		$\$_s = []YYSymType{len: $\$_initial_stack_size}
+	}
 
 	mut $\$state := 0
 	$\$rcvr.char = -1
 	mut $\$token := -1 // $\$rcvr.char translated into internal numbering
 	defer {
+		$\$rcvr.stack = $\$_s
 		// Make sure we report no lookahead when not parsing.
 		$\$state = -1
 		$\$rcvr.char = -1

@@ -17,7 +17,7 @@ mut:
 	null_type ?Type
 	// default_value is the default of the column that a DEFAULT is assigned to.
 	// A column without a default (or when it's not set) has a default of NULL.
-	default_value ?DefaultOption
+	default_value ?&DefaultOption
 	// identity is the table when a DEFAULT is assigned to its identity column,
 	// so that it's the next value of the sequence of the column instead.
 	identity ?Table

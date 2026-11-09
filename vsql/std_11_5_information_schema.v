@@ -633,7 +633,7 @@ fn check_constraints_view_row(catalog_name string, table Table, name string, che
 // "TRUNCATED" (6.20, Description 7).
 fn column_default(column Column) Value {
 	default_value := column.default_value or { return new_null_value(.is_varchar) }
-	s := default_value.str()
+	s := (*default_value).str()
 	if s.runes().len > max_character_length {
 		return new_varchar_value('TRUNCATED')
 	}

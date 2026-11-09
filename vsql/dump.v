@@ -480,7 +480,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			identity_column := table.identity_column()
 			mut overriding := ''
 			if column := identity_column {
-				if (column.identity or { IdentityColumn{} }).always {
+				if (column.identity or { &IdentityColumn{} }).always {
 					overriding = ' OVERRIDING SYSTEM VALUE'
 				}
 			}

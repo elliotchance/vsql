@@ -68,7 +68,7 @@ fn check_default_clause(mut conn Connection, column Column) ! {
 	}
 
 	if !is_valid {
-		return sqlstate_42601('DEFAULT ${default_value} is not valid for column ${column.name.sub_entity_name} ${column.typ}')
+		return sqlstate_42601('DEFAULT ${*default_value} is not valid for column ${column.name.sub_entity_name} ${column.typ}')
 	}
 }
 

@@ -52,7 +52,7 @@ struct DefaultSpecification {}
 fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
 	if table := c.identity {
 		mut catalog := c.conn.catalog_for(table.name)
-		start_value := ((table.identity_column() or { Column{} }).identity or { IdentityColumn{} }).sequence.start_value
+		start_value := ((table.identity_column() or { Column{} }).identity or { &IdentityColumn{} }).sequence.start_value
 
 		return CompileResult{
 			run:          fn [table, mut catalog, start_value] (mut conn Connection, data Row, params map[string]Value) !Value {

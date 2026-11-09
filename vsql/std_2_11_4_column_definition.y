@@ -16,7 +16,7 @@ column_definition:
       TableElement(Column{
         name:          $1.v as Identifier
         typ:           $2.v as Type
-        default_value: $3.v as DefaultOption
+        default_value: new_ref($3.v as DefaultOption)
       }),
     ]
   }
@@ -26,7 +26,7 @@ column_definition:
       TableElement(Column{
         name:     $1.v as Identifier
         typ:      $2.v as Type
-        identity: $3.v as IdentityColumn
+        identity: new_ref($3.v as IdentityColumn)
       }),
     ]
   }
@@ -36,7 +36,7 @@ column_definition:
       TableElement(Column{
         name:      $1.v as Identifier
         typ:       $2.v as Type
-        generated: $3.v as GenerationClause
+        generated: new_ref($3.v as GenerationClause)
       }),
     ]
   }
@@ -45,10 +45,10 @@ column_definition:
     $$.v = [
       TableElement(Column{
         name:      $1.v as Identifier
-        generated: GenerationClause{
+        generated: new_ref(GenerationClause{
           ...$2.v as GenerationClause
           infer_type: true
-        }
+        })
       }),
     ]
   }

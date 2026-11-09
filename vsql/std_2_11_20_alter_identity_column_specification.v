@@ -36,7 +36,7 @@ fn (s AlterIdentityColumnSpecification) execute(mut conn Connection, table Table
 
 	return Column{
 		...column
-		identity: IdentityColumn{
+		identity: &IdentityColumn{
 			...identity
 			options:  sequence.identity_options()
 			sequence: sequence

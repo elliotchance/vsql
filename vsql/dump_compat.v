@@ -294,7 +294,7 @@ fn (c DumpCompat) create_table_sql(table Table, foreign_keys []ForeignKey) []str
 			if sql_text := c.default_sql(default_value) {
 				clauses += ' DEFAULT ${sql_text}'
 			} else {
-				comments << 'The DEFAULT of ${compat_name(name)} is left out: ${default_value}'
+				comments << 'The DEFAULT of ${compat_name(name)} is left out: ${*default_value}'
 			}
 		}
 		if generated := col.generated {
@@ -313,7 +313,7 @@ fn (c DumpCompat) create_table_sql(table Table, foreign_keys []ForeignKey) []str
 				if col.typ.typ in [.is_decimal, .is_numeric] {
 					column_type = 'BIGINT'
 				}
-				clauses += ' ${identity}'
+				clauses += ' ${*identity}'
 			} else if c == .mysql {
 				clauses += ' AUTO_INCREMENT'
 			} else {
@@ -521,7 +521,7 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 				identity_column := table.identity_column()
 				mut overriding := ''
 				if column := identity_column {
-					if c == .postgresql && (column.identity or { IdentityColumn{} }).always {
+					if c == .postgresql && (column.identity or { &IdentityColumn{} }).always {
 						overriding = ' OVERRIDING SYSTEM VALUE'
 					}
 				}

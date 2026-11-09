@@ -172,7 +172,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					column = Column{
 						...column
 						not_null: true
-						identity: IdentityColumn{
+						identity: &IdentityColumn{
 							...identity
 							sequence: new_identity_sequence(column, identity.options)!
 						}

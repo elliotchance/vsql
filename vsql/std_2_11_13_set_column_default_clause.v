@@ -15,7 +15,7 @@ struct SetColumnDefaultClause {
 fn (c SetColumnDefaultClause) execute(mut conn Connection, column Column) !Column {
 	new_column := Column{
 		...column
-		default_value: c.default_value
+		default_value: new_ref(c.default_value)
 	}
 	check_default_clause(mut conn, new_column)!
 

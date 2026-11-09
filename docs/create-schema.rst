@@ -17,10 +17,11 @@ Syntax
 A schema is a container for other objects such as tables.
 
 Each ``CREATE TABLE`` (see :doc:`create-table`) and ``CREATE SEQUENCE`` (see
-:doc:`create-sequence`) is created in the new schema, in the order they're
-written, so a ``FOREIGN KEY`` can only reference a table that's before it. An
-unqualified name in them is in the new schema, whatever the current schema is. If
-one of them fails, the schema isn't created.
+:doc:`create-sequence`) is created in the new schema. The foreign keys are added
+after all of the tables are created, so a ``FOREIGN KEY`` can reference a table
+that's after it, and two tables can reference each other. An unqualified name in
+them is in the new schema, whatever the current schema is. If one of them fails,
+the schema isn't created.
 
 The names of objects only need to be unique within a single schema and referring
 to an object in a particular schema is done by prepending the schema name
@@ -56,8 +57,8 @@ Examples
   SELECT * FROM warehouse.products;
 
   CREATE SCHEMA store
-    CREATE TABLE customers (id INT PRIMARY KEY)
-    CREATE TABLE orders (customer_id INT REFERENCES customers);
+    CREATE TABLE orders (customer_id INT REFERENCES customers)
+    CREATE TABLE customers (id INT PRIMARY KEY);
 
 See Also
 --------

@@ -552,6 +552,35 @@ fn is_distinct(conn &Connection, a Value, b Value) !bool {
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 9.a, 10.a and 17
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 12 and 13
 fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
+	if changes.len == 0 {
+		return
+	}
+
+	// Without a foreign key that references t there are no actions, and no rows
+	// that reference the old rows, so only the new rows are checked (as below).
+	if !f.is_referenced(t.name.storage_id()) {
+		table := f.table(t.name.storage_id())
+		mut rows := []Row{cap: changes.len}
+		if changes.len == 1 {
+			if !changes[0].is_delete {
+				rows << changes[0].new
+			}
+		} else {
+			mut written := map[string]Row{}
+			for change in changes {
+				if !change.is_delete {
+					mut row := change.new
+					written[row.object_key(t)!.bytestr()] = row
+				}
+			}
+			rows = written.values()
+		}
+		f.check_unique_indexes(table, rows)!
+		f.check_unique_constraints(table, rows)!
+		f.check_foreign_keys(mut conn, table, rows)!
+		return
+	}
+
 	_, time_zone := conn.now()
 	mut sites := ChangedSites{}
 

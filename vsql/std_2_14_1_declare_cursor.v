@@ -513,6 +513,17 @@ fn current_rows(rows []Row, current_of ?&Cursor) []Row {
 	return rows.filter(it.id == id)
 }
 
+// has_open_cursor is true if any cursor of the connection is open.
+fn (conn &Connection) has_open_cursor() bool {
+	for _, cursor in conn.cursors {
+		if cursor.is_open {
+			return true
+		}
+	}
+
+	return false
+}
+
 // note_row_changes is called once a statement can no longer fail, with the rows
 // of table that it identified (rows) and the rows that it deleted or replaced
 // (changes, since an UPDATE doesn't write a row that has the same values).
@@ -545,7 +556,8 @@ fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []Row
 		}
 	}
 
-	if rows.len == 0 {
+	// The rows are only looked for in the open cursors.
+	if rows.len == 0 || !conn.has_open_cursor() {
 		return
 	}
 

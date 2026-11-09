@@ -280,6 +280,11 @@ fn skip_bracketed_comment(text string, start int) int {
 	return text.len
 }
 
+// cursor_name_of is the name of the cursor that is in the invalid state. Without
+// an engine cursor the record was raised by the SQL/CLI routine itself, for the
+// cursor of its own statement. Otherwise it's the name of the cursor as the
+// statement that has it knows it. That statement may have been freed (or the
+// cursor renamed) since, which only leaves the name that the engine keeps.
 fn cursor_name_of(handle_type i16, h i64, record DiagnosticRecord) string {
 	if record.sqlstate == '01001' {
 		return record.cursor_name
@@ -288,7 +293,16 @@ fn cursor_name_of(handle_type i16, h i64, record DiagnosticRecord) string {
 	if handle_type != sql_handle_stmt || record.sqlstate != '24000' {
 		return ''
 	}
-	mut stmt := stmts[h] or { return '' }
+	stmt := stmts[h] or { return '' }
+	if record.cursor == '' {
+		return stmt.name_of_cursor()
+	}
+	for _, other in stmts {
+		if other.dbc == stmt.dbc && other.cursor_name != ''
+			&& normalize_cursor_name(other.cursor_name) == record.cursor {
+			return other.cursor_name
+		}
+	}
 
-	return stmt.get_cursor_name()
+	return record.cursor
 }

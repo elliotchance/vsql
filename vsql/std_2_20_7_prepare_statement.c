@@ -381,14 +381,34 @@ struct vsql_m_output {
 };
 
 /*
+ * vsql_m_cut is where a UTF-8 string is cut so that it has at most length
+ * characters.
+ */
+static char *vsql_m_cut(char *s, SQLINTEGER length) {
+  for (; *s != '\0'; s++) {
+    if (((unsigned char)*s & 0xC0) != 0x80 && length-- == 0) {
+      break;
+    }
+  }
+
+  return s;
+}
+
+/*
  * vsql_m_get_column sets DATA, INDICATOR, RETURNED_LENGTH and
  * RETURNED_OCTET_LENGTH of the item descriptor area to the value of column i,
  * cast to the data type of the item. A CHARACTER is padded with spaces to its
  * length. The returned lengths are of the value that's assigned if the item is
  * a CHARACTER VARYING, otherwise of the value of the column if it's a CHARACTER
  * VARYING (even when it doesn't fit, or the item isn't a string), otherwise
- * they're unchanged. A string isn't cut to LENGTH characters yet (#928).
+ * they're unchanged.
  *
+ * A string is cut to LENGTH characters, like a <cast specification>, so it's a
+ * warning (string data, right truncation) only if a character that's cut isn't
+ * a space. That includes the rest of a value that didn't fit DATA, which is
+ * read (and discarded) to check it.
+ *
+ * ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.d and 12.d
  * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 5.d.ii and 5.e.i
  */
 static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
@@ -433,6 +453,19 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
     return rc;
   }
 
+  if (number[VSQL_M_TYPE] == SQL_CHAR || number[VSQL_M_TYPE] == SQL_VARCHAR) {
+    int truncated = 0;
+
+    while (rc == SQL_SUCCESS_WITH_INFO) {
+      piece[0] = '\0';
+      rc = SQLGetData(stmt, i, SQL_CHAR, piece, sizeof(piece), NULL);
+      truncated |= piece[strspn(piece, " ")] != '\0';
+    }
+    s = vsql_m_cut(data, number[VSQL_M_LENGTH]);
+    truncated |= s[strspn(s, " ")] != '\0';
+    *s = '\0';
+    rc = truncated ? SQL_SUCCESS_WITH_INFO : SQL_SUCCESS;
+  }
   if (number[VSQL_M_TYPE] == SQL_CHAR) {
     SQLINTEGER padded = vsql_m_characters(data);
 

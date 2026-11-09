@@ -26,3 +26,6 @@ PROCEDURE get_char (SQLSTATE, :data CHAR(1));
 
 PROCEDURE get_integer (SQLSTATE, :data INTEGER);
   GET DESCRIPTOR d VALUE 1 :data = DATA;
+
+PROCEDURE get_varchar (SQLSTATE, :data VARCHAR(20));
+  GET DESCRIPTOR d VALUE 1 :data = DATA;

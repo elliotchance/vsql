@@ -12,18 +12,26 @@ import rand
 const wal_magic = 'vsqlwal\n'.bytes()
 
 // wal_version is the version of the layout of the log file. It is separate
-// from file_format_version because the log only exists for as long as a
-// statement is being written.
-const wal_version = u16(1)
+// from file_format_version because the log is only needed until its statements
+// have been synced in the database file.
+const wal_version = u16(2)
 
 const wal_header_size = 32
 
 const wal_frame_header_size = 16
 
-// wal_state_offset is the position of the state in the log header. It isn't
-// covered by the checksum of the header because it's changed after the log has
-// been written.
+// wal_state_offset, wal_tail_offset and wal_tail_checksum_offset are the
+// positions in the log header that change as statements are added, so they
+// aren't covered by the checksum of the header.
 const wal_state_offset = 10
+
+const wal_tail_offset = 20
+
+const wal_tail_checksum_offset = 24
+
+// wal_max_size is the size that a log starts again at, because everything in the
+// log has to be copied after the power fails. A single statement can be larger.
+const wal_max_size = 4 * 1024 * 1024
 
 const wal_state_committed = u8(0)
 
@@ -38,30 +46,30 @@ fn wal_path(path string) string {
 }
 
 // wal_commit makes the changes of a statement permanent. The changed pages and
-// the header are written to the log, which is synced to the disk. Then they
-// are copied into the database file. If the process stops at any point, the
-// database file can be fixed by wal_recover.
+// the header are added to the log, which is synced to the disk. Then they are
+// copied into the database file, without syncing it, because the log still has
+// them. If the process stops or the power fails at any point, the database file
+// can be fixed by wal_recover or wal_replay.
 //
-// It must only be called with the database file locked exclusively.
+// It must only be called with the database file locked exclusively, and after
+// wal_recover.
 fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! {
 	mut page_numbers := pager.dirty.keys().filter(it < pager.total_pages)
 	page_numbers.sort()
 
-	mut pages := map[int][]u8{}
-	for page_number in page_numbers {
-		pages[page_number] = pager.dirty[page_number]
-	}
-
 	header_bytes := header.bytes()
 
-	// The salt is the start of the chain of checksums. A new one is used for
-	// each log so that frames left over from a previous log are never valid.
-	salt := rand.u32()
+	mut pages := map[int][]u8{}
+	mut size := wal_frame_header_size + header_bytes.len
+	for page_number in page_numbers {
+		pages[page_number] = pager.dirty[page_number]
+		size += wal_frame_header_size + pages[page_number].len
+	}
 
 	log_path := wal_path(path)
 	is_new := !os.exists(log_path)
 	// A log is reused because replacing it takes longer. Frames left over from
-	// the previous log are never valid, because this log has a new salt.
+	// the previous log are never valid, because each log has a new salt.
 	mut log := if is_new {
 		os.create(log_path) or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
 	} else {
@@ -72,11 +80,39 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 		log.close()
 	}
 
-	log_header := wal_header(salt, pager.page_size)
-	wal_corrupt_fault(mut log, log_header, salt)!
-	log.write(log_header)!
+	mut salt, mut tail, mut checksum := wal_tail(mut log, pager.page_size)
+	if tail == 0 || tail + size > wal_max_size {
+		// The statements in the log are about to be lost, so the database file
+		// must have them. The new header has to be on the disk before its frames
+		// replace the old ones, otherwise only some of the old statements could
+		// be found after the power fails, and they would be copied over newer
+		// pages.
+		file.flush()
+		fsync(file, path)!
+		salt = rand.u32()
+		tail = wal_header_size
+		checksum = salt
+		log.seek(0, .start)!
+		log.write(wal_header(salt, pager.page_size, wal_state_committed, tail, checksum))!
+		log.flush()
+		fsync(log, log_path)!
 
-	mut checksum := salt
+		// A new file must also be synced in its directory, otherwise it may not
+		// exist after a crash.
+		if is_new {
+			fsync_dir(os.dir(os.real_path(log_path)))!
+		}
+	}
+
+	wal_corrupt_fault(mut log, wal_header(salt, pager.page_size, wal_state_committed,
+		tail, checksum), salt)!
+
+	// If the process stops after this point, the next statement has to look for
+	// this statement in the log.
+	log.seek(wal_state_offset, .start)!
+	log.write([wal_state_committed])!
+
+	log.seek(tail, .start)!
 	for page_number in page_numbers {
 		crash_point()
 		frame, frame_checksum := wal_frame(wal_frame_page, page_number, pages[page_number],
@@ -87,7 +123,8 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 
 	crash_point()
 	fault_point('wal_write')!
-	commit_frame, _ := wal_frame(wal_frame_commit, pager.total_pages, header_bytes, checksum)
+	commit_frame, commit_checksum := wal_frame(wal_frame_commit, pager.total_pages, header_bytes,
+		checksum)
 	if fault_reached('wal_torn_frame') {
 		log.write(commit_frame[..commit_frame.len / 2])!
 		log.flush()
@@ -104,12 +141,6 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 	log.flush()
 	fsync(log, log_path)!
 
-	// A new file must also be synced in its directory, otherwise it may not
-	// exist after a crash.
-	if is_new {
-		fsync_dir(os.dir(os.real_path(log_path)))!
-	}
-
 	// This is the point where the statement is committed, so the statement must
 	// not fail after this. If the log can't be copied into the database file,
 	// it's left as it is, and it's copied by wal_recover before the file is
@@ -119,10 +150,26 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 		return
 	}
 
-	// If this doesn't reach the disk, the log is copied into the database file
-	// again (which doesn't change it) by wal_recover.
-	log.seek(wal_state_offset, .start)!
-	log.write([wal_state_checkpointed])!
+	// This is a single write so that the state and the tail always agree. It
+	// doesn't need to reach the disk because everything in the log is copied
+	// after the power fails, see wal_has_statements.
+	log.seek(0, .start)!
+	log.write(wal_header(salt, pager.page_size, wal_state_checkpointed, tail + size, commit_checksum))!
+}
+
+// wal_tail returns the salt of the log, where the next statement goes, and the
+// checksum before it. The position is zero if a new log needs to be started.
+fn wal_tail(mut log os.File, page_size int) (u32, int, u32) {
+	mut header := []u8{len: wal_header_size}
+	read := log.read(mut header) or { 0 }
+	if read != wal_header_size || !wal_header_is_valid(header)
+		|| binary.big_endian_u16_at(header, wal_magic.len) != wal_version
+		|| int(binary.big_endian_u32_at(header, 12)) != page_size {
+		return 0, 0, 0
+	}
+
+	return binary.big_endian_u32_at(header, 16), int(binary.big_endian_u32_at(header, wal_tail_offset)), binary.big_endian_u32_at(header,
+		wal_tail_checksum_offset)
 }
 
 // wal_corrupt_fault writes a log that is corrupt (and then returns an error) if
@@ -146,14 +193,15 @@ fn wal_corrupt_fault(mut log os.File, header []u8, salt u32) ! {
 		return
 	}
 
+	log.seek(0, .start)!
 	log.write(corrupt)!
 	log.flush()
 
 	return fault_error(name)
 }
 
-// wal_checkpoint copies the pages and header of a committed log into the
-// database file.
+// wal_checkpoint copies the pages and header of committed statements into the
+// database file. The file isn't synced.
 fn wal_checkpoint(mut file os.File, path string, page_size int, pages map[int][]u8, header_bytes []u8, total_pages int) ! {
 	fault_point('checkpoint')!
 
@@ -169,39 +217,63 @@ fn wal_checkpoint(mut file os.File, path string, page_size int, pages map[int][]
 	file.flush()
 
 	truncate_file(file, path, u64(header_size) + u64(page_size) * u64(total_pages))!
-	fsync(file, path)!
 }
 
-// wal_needs_recovery returns true if the log contains a statement that may not
-// have been copied into the database file yet. It doesn't need a lock, but
-// wal_recover does.
-fn wal_needs_recovery(path string) bool {
+// wal_read_header returns the header of the log, or none if it's too short to
+// have one.
+fn wal_read_header(path string) ?[]u8 {
 	log_path := wal_path(path)
 	if !os.exists(log_path) {
-		return false
+		return none
 	}
 
-	mut log := os.open(log_path) or { return true }
+	mut log := os.open(log_path) or { return none }
 	defer {
 		log.close()
 	}
 
 	mut header := []u8{len: wal_header_size}
-	read := log.read(mut header) or { return true }
+	read := log.read(mut header) or { return none }
 
-	return read == wal_header_size && header[wal_state_offset] != wal_state_checkpointed
+	return if read == wal_header_size { header } else { none }
 }
 
-// wal_recover copies a committed statement in the log into the database file,
-// if it wasn't already. This happens when a process stops while it's writing
-// to the database. A statement that wasn't committed (the log doesn't end with
-// a valid commit frame) is ignored, because the database file wasn't changed.
+// wal_needs_recovery returns true if a process stopped before a statement in
+// the log was copied into the database file. It doesn't need a lock, but
+// wal_recover does.
+fn wal_needs_recovery(path string) bool {
+	header := wal_read_header(path) or { return false }
+
+	return header[wal_state_offset] != wal_state_checkpointed
+}
+
+// wal_has_statements returns true if the log contains statements that may not
+// be on the disk in the database file. They are all in the database file unless
+// the power failed, which can only have happened if this is the first connection
+// to the file, see CatalogConnection.recover_log.
+fn wal_has_statements(path string) bool {
+	header := wal_read_header(path) or { return false }
+
+	return header[wal_state_offset] != wal_state_checkpointed
+		|| int(binary.big_endian_u32_at(header, wal_tail_offset)) > wal_header_size
+}
+
+// wal_recover copies the log into the database file if a process stopped before
+// doing it. It must only be called with the database file locked exclusively.
+fn wal_recover(mut file os.File, path string) ! {
+	if wal_needs_recovery(path) {
+		wal_replay(mut file, path)!
+	}
+}
+
+// wal_replay copies the committed statements in the log into the database file,
+// syncs it, and then empties the log. A statement that wasn't committed (it isn't
+// followed by a valid commit frame) is ignored, because the database file wasn't
+// changed. Copying a statement that's already in the database file doesn't change
+// it.
 //
 // It must only be called with the database file locked exclusively.
-fn wal_recover(mut file os.File, path string) ! {
-	if !wal_needs_recovery(path) {
-		return
-	}
+fn wal_replay(mut file os.File, path string) ! {
 	fault_point('recover')!
 
 	log_path := wal_path(path)
@@ -217,6 +289,7 @@ fn wal_recover(mut file os.File, path string) ! {
 	if commit := wal_read(data) {
 		wal_checkpoint(mut file, path, commit.page_size, commit.pages, commit.header_bytes,
 			commit.total_pages)!
+		fsync(file, path)!
 	}
 
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.
@@ -226,6 +299,11 @@ fn wal_recover(mut file os.File, path string) ! {
 	defer {
 		log.close()
 	}
+
+	// A tail of zero means the next statement starts a new log. This has to be
+	// written first, so that the log isn't added to if the process stops here.
+	log.seek(wal_tail_offset, .start)!
+	log.write([]u8{len: 8})!
 	log.seek(wal_state_offset, .start)!
 	log.write([wal_state_checkpointed])!
 }
@@ -237,17 +315,11 @@ struct WalCommit {
 	total_pages  int
 }
 
-// wal_read returns the last committed statement in the log, or none if there
-// isn't one. Reading stops at the first frame that isn't valid, which is where
-// a process stopped while writing the log.
+// wal_read returns the combined changes of the committed statements in the log,
+// or none if there aren't any. Reading stops at the first frame that isn't valid,
+// which is where a process stopped while writing the log.
 fn wal_read(data []u8) ?WalCommit {
-	if data.len < wal_header_size || data[..wal_magic.len] != wal_magic {
-		return none
-	}
-
-	mut header := data[..wal_header_size].clone()
-	header[wal_state_offset] = 0
-	if crc32.sum(header[..wal_header_size - 4]) != binary.big_endian_u32_at(header, wal_header_size - 4) {
+	if data.len < wal_header_size || !wal_header_is_valid(data[..wal_header_size]) {
 		return none
 	}
 
@@ -255,7 +327,10 @@ fn wal_read(data []u8) ?WalCommit {
 	salt := binary.big_endian_u32_at(data, 16)
 
 	mut pages := map[int][]u8{}
-	mut commit := ?WalCommit(none)
+	mut pending := map[int][]u8{}
+	mut header_bytes := []u8{}
+	mut total_pages := 0
+	mut committed := false
 	mut checksum := salt
 	mut offset := wal_header_size
 	for offset + wal_frame_header_size <= data.len {
@@ -278,10 +353,16 @@ fn wal_read(data []u8) ?WalCommit {
 
 		match kind {
 			wal_frame_page {
-				pages[number] = frame_data.clone()
+				pending[number] = frame_data
 			}
 			wal_frame_commit {
-				commit = WalCommit{page_size, pages.clone(), frame_data.clone(), number}
+				for page_number, page in pending {
+					pages[page_number] = page
+				}
+				pending = map[int][]u8{}
+				header_bytes = frame_data.clone()
+				total_pages = number
+				committed = true
 			}
 			else {
 				break
@@ -289,22 +370,45 @@ fn wal_read(data []u8) ?WalCommit {
 		}
 	}
 
-	return commit
+	if !committed {
+		return none
+	}
+
+	return WalCommit{page_size, pages, header_bytes, total_pages}
 }
 
-fn wal_header(salt u32, page_size int) []u8 {
+fn wal_header(salt u32, page_size int, state u8, tail int, tail_checksum u32) []u8 {
 	mut header := []u8{len: wal_header_size}
 	for i, b in wal_magic {
 		header[i] = b
 	}
 	binary.big_endian_put_u16_at(mut header, wal_version, wal_magic.len)
-	header[wal_state_offset] = wal_state_committed
 	binary.big_endian_put_u32_at(mut header, u32(page_size), 12)
 	binary.big_endian_put_u32_at(mut header, salt, 16)
 	binary.big_endian_put_u32_at(mut header, crc32.sum(header[..wal_header_size - 4]),
 		wal_header_size - 4)
 
+	header[wal_state_offset] = state
+	binary.big_endian_put_u32_at(mut header, u32(tail), wal_tail_offset)
+	binary.big_endian_put_u32_at(mut header, tail_checksum, wal_tail_checksum_offset)
+
 	return header
+}
+
+// wal_header_is_valid checks the magic number and the checksum of a log header.
+fn wal_header_is_valid(data []u8) bool {
+	if data[..wal_magic.len] != wal_magic {
+		return false
+	}
+
+	mut header := data.clone()
+	header[wal_state_offset] = 0
+	for i in wal_tail_offset .. wal_header_size - 4 {
+		header[i] = 0
+	}
+
+	return crc32.sum(header[..wal_header_size - 4]) == binary.big_endian_u32_at(header,
+		wal_header_size - 4)
 }
 
 // wal_frame returns the bytes of a frame and its checksum, which continues the

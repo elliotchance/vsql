@@ -10,7 +10,10 @@ INSERT INTO t (x) VALUES (1);' | $VSQL cli $VSQL_FILE
 
 # Set the last transaction ID to the largest 32-bit unsigned integer, so the
 # next transactions need more than 32 bits. The bytes are written in octal
-# because printf in some shells doesn't support \x.
+# because printf in some shells doesn't support \x. The file is opened first,
+# which copies the log into it and empties the log, otherwise the next
+# connection would copy the header in the log over these bytes.
+echo 'SELECT * FROM t;' | $VSQL cli $VSQL_FILE > /dev/null
 printf '\000\000\000\000\377\377\377\377' | dd of=$VSQL_FILE bs=1 seek=24 conv=notrunc 2>/dev/null
 
 echo 'INSERT INTO t (x) VALUES (2);

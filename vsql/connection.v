@@ -180,6 +180,9 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) && path != ':memory:' {
 		check_page_size(options.page_size)!
+		// A log left behind by a file that was deleted must not be copied into
+		// this one.
+		os.rm(wal_path(path)) or {}
 		init_database_file(path, options.page_size)!
 		init_schema = true
 	}
@@ -275,6 +278,10 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
 		catalog.storage.cache_size = options.cache_size
+		catalog.recover_log() or {
+			catalog.storage.session.close()
+			return err
+		}
 	}
 
 	register_information_schema(mut catalog)!
@@ -293,6 +300,44 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		catalog.start_transaction()!
 		catalog.finish_write(true)!
 	}
+}
+
+// recover_log copies the log into the database file when it's the first
+// connection to the file, because the power may have failed since the last
+// connection, which loses changes to the database file that weren't synced. If
+// there's another connection, then the power hasn't failed since it opened.
+fn (mut conn CatalogConnection) recover_log() ! {
+	if !wal_has_statements(conn.path) || !conn.storage.session.try_exclusive()! {
+		return
+	}
+
+	// The session lock must go back to shared even if copying the log fails,
+	// otherwise no other connection can open the database.
+	conn.replay_log() or {
+		conn.storage.session.shared() or {}
+		return err
+	}
+	conn.storage.session.shared()!
+}
+
+// replay_log copies the log into the database file, see recover_log.
+fn (mut conn CatalogConnection) replay_log() ! {
+	conn.options.mutex.@lock()
+	defer {
+		conn.options.mutex.unlock()
+	}
+
+	conn.storage.open_file(conn.path)!
+	defer {
+		conn.storage.close_file()
+	}
+
+	flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)!
+	defer {
+		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
+	}
+
+	wal_replay(mut conn.storage.file, conn.path) or { return io_error(err) }
 }
 
 fn (mut conn Connection) open_read_connection() ! {

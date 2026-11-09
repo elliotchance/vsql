@@ -414,7 +414,7 @@ fn (mut f Storage) create_table(definition Table) ! {
 	f.btree.add(obj)!
 
 	if column := table.identity_column() {
-		f.add_identity(table.id, (column.identity or { IdentityColumn{} }).sequence)!
+		f.add_identity(table.id, (column.identity or { &IdentityColumn{} }).sequence)!
 	}
 
 	f.save_schema()
@@ -650,7 +650,7 @@ fn (mut f Storage) identity_sequence(table Table) !Sequence {
 	}
 	value_object := f.identity_value_object(table.id)!
 
-	return (column.identity or { IdentityColumn{} }).sequence.with_value(value_object.value)
+	return (column.identity or { &IdentityColumn{} }).sequence.with_value(value_object.value)
 }
 
 // identity_next_value returns the next value of the identity column of a table,

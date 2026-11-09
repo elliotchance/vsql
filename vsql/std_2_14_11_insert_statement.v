@@ -273,7 +273,7 @@ fn (stmt InsertStatement) check_override_clause(table Table, columns []Identifie
 	column := table.identity_column() or {
 		return sqlstate_42601('OVERRIDING ${stmt.overriding} VALUE cannot be used without an identity column')
 	}
-	identity := column.identity or { IdentityColumn{} }
+	identity := column.identity or { &IdentityColumn{} }
 	if !columns.any(it.sub_entity_name == column.name.sub_entity_name) {
 		return sqlstate_42601('OVERRIDING ${stmt.overriding} VALUE cannot be used without an identity column')
 	}

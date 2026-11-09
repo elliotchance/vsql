@@ -2646,7 +2646,7 @@ fn test_information_schema_truncated_column_default() {
 			sub_entity_name: 'X'
 		}
 		typ:           new_type('CHARACTER VARYING', max_character_length, 0)
-		default_value: DefaultOption(new_varchar_value('a'.repeat(max_character_length)))
+		default_value: new_ref(DefaultOption(new_varchar_value('a'.repeat(max_character_length))))
 	}
 
 	assert column_default(column).string_value() == 'TRUNCATED'

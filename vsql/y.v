@@ -41433,7 +41433,7 @@ fn yy_action_110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 			TableElement(Column{
 				name:          yy_as[Identifier](yy_dollar[1].v)
 				typ:           yy_as[Type](yy_dollar[2].v)
-				default_value: yy_as[DefaultOption](yy_dollar[3].v)
+				default_value: new_ref(yy_as[DefaultOption](yy_dollar[3].v))
 			}),
 		]
 	}
@@ -41447,7 +41447,7 @@ fn yy_action_111(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 			TableElement(Column{
 				name:     yy_as[Identifier](yy_dollar[1].v)
 				typ:      yy_as[Type](yy_dollar[2].v)
-				identity: yy_as[IdentityColumn](yy_dollar[3].v)
+				identity: new_ref(yy_as[IdentityColumn](yy_dollar[3].v))
 			}),
 		]
 	}
@@ -41461,7 +41461,7 @@ fn yy_action_112(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 			TableElement(Column{
 				name:      yy_as[Identifier](yy_dollar[1].v)
 				typ:       yy_as[Type](yy_dollar[2].v)
-				generated: yy_as[GenerationClause](yy_dollar[3].v)
+				generated: new_ref(yy_as[GenerationClause](yy_dollar[3].v))
 			}),
 		]
 	}
@@ -41474,10 +41474,10 @@ fn yy_action_113(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 		yy_val.v = [
 			TableElement(Column{
 				name:      yy_as[Identifier](yy_dollar[1].v)
-				generated: GenerationClause{
+				generated: new_ref(GenerationClause{
 					...yy_as[GenerationClause](yy_dollar[2].v)
 					infer_type: true
-				}
+				})
 			}),
 		]
 	}

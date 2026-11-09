@@ -19,13 +19,13 @@ pub:
 	not_null bool
 	// default_value is the ``DEFAULT`` of the column, if there is one. A column
 	// without a default has a default of ``NULL``.
-	default_value ?DefaultOption
+	default_value ?&DefaultOption
 	// identity is set when the column is the identity column of the table (see
 	// Table.identity_column).
-	identity ?IdentityColumn
+	identity ?&IdentityColumn
 	// generated is set when the column is a generated column, whose value is
 	// always the result of its generation expression.
-	generated ?GenerationClause
+	generated ?&GenerationClause
 	// unnamed is true when the column of a result has an implementation-dependent
 	// name (such as COL1) because the query didn't name it. For example, an
 	// expression without an AS clause, or a column of VALUES.
@@ -175,13 +175,13 @@ fn (t Table) bytes() []u8 {
 	for i, col in t.columns {
 		mut element := '${delimit_identifier(col.name.sub_entity_name)} ${col.typ}'
 		if default_value := col.default_value {
-			element += ' DEFAULT ${default_value}'
+			element += ' DEFAULT ${*default_value}'
 		}
 		if identity := col.identity {
-			element += ' ${identity}'
+			element += ' ${*identity}'
 		}
 		if generated := col.generated {
-			element += ' ${generated}'
+			element += ' ${*generated}'
 		}
 		if col.not_null {
 			element += ' ${constraint_name_definition(t.not_null_names[col.name.sub_entity_name], constraint_name(t, 'NOT_NULL', i))}NOT NULL'

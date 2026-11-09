@@ -128,6 +128,7 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	}
 
 	mut rows := []Row{}
+	mut condition := []CompileResult{cap: 1}
 	for outer_row in outer_rows {
 		inner_rows := o.inner_rows(outer_row, all_inner_rows)!
 		mut matched := false
@@ -140,7 +141,7 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 				row.data[k] = v
 			}
 
-			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables, mut condition)! {
 				rows << row
 				matched = true
 			}

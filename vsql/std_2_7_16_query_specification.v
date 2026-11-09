@@ -134,13 +134,13 @@ fn (e DerivedColumn) column_reference() ?Identifier {
 struct DistinctOperation {
 	params  map[string]Value
 	columns Columns
-	tables  map[string]Table
+	tables  map[string]&Table
 mut:
 	conn  &Connection
 	exprs []DerivedColumn
 }
 
-fn new_distinct_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]Table, columns Columns) !&DistinctOperation {
+fn new_distinct_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]&Table, columns Columns) !&DistinctOperation {
 	expr_operation := new_expr_operation(mut conn, params, select_list, tables)!
 
 	// The select list is evaluated for each row here, and again for each row

@@ -63,9 +63,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	has_correlation := stmt.correlation_name.sub_entity_name != ''
 	row_columns := if has_correlation { plan.columns() } else { table.columns }
 	row_table_id := if has_correlation { stmt.correlation_name.id() } else { table_name.id() }
-	mut tables := map[string]Table{}
+	mut tables := map[string]&Table{}
 	if has_correlation {
-		tables[row_table_id] = Table{
+		tables[row_table_id] = &Table{
 			name:    stmt.correlation_name
 			columns: row_columns
 		}

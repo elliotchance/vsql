@@ -4,7 +4,7 @@ module vsql
 // constraints.
 
 struct Compiler {
-	tables map[string]Table
+	tables map[string]&Table
 	params map[string]Value @[required]
 mut:
 	conn &Connection @[required]

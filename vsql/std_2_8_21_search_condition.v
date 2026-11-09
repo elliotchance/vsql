@@ -13,12 +13,12 @@ struct WhereOperation {
 	condition BooleanValueExpression
 	params    map[string]Value
 	columns   Columns
-	tables    map[string]Table
+	tables    map[string]&Table
 mut:
 	conn &Connection
 }
 
-fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns, tables map[string]Table) &WhereOperation {
+fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns, tables map[string]&Table) &WhereOperation {
 	return &WhereOperation{condition, params, columns, tables, conn}
 }
 
@@ -48,7 +48,7 @@ fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 
 // eval_as_bool compiles e on the first row (compiled is empty) and keeps it in
 // compiled for the rows after it.
-fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value, tables map[string]Table, mut compiled []CompileResult) !bool {
+fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value, tables map[string]&Table, mut compiled []CompileResult) !bool {
 	if compiled.len == 0 {
 		mut c := Compiler{
 			conn:   conn

@@ -226,7 +226,9 @@ fn (g GenerationClause) compile(mut conn Connection, table Table, column Column,
 		conn:                   conn
 		params:                 map[string]Value{}
 		tables:                 {
-			table.name.id(): table
+			table.name.id(): &Table{
+				...table
+			}
 		}
 		context:                table.name
 		next_value_not_allowed: 'a generation expression'
@@ -250,7 +252,9 @@ fn (g GenerationClause) columns(mut conn Connection, table Table, column Column)
 		conn:              conn
 		params:            map[string]Value{}
 		tables:            {
-			table.name.id(): table
+			table.name.id(): &Table{
+				...table
+			}
 		}
 		context:           table.name
 		restricted:        'a generation expression'

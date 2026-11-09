@@ -46,7 +46,9 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table, store
 		conn:                   conn
 		params:                 map[string]Value{}
 		tables:                 {
-			table.name.id(): table
+			table.name.id(): &Table{
+				...table
+			}
 		}
 		context:                table.name
 		next_value_not_allowed: 'a CHECK constraint'
@@ -64,7 +66,9 @@ fn (e CheckConstraintDefinition) columns(mut conn Connection, table Table) ![]st
 		conn:              conn
 		params:            map[string]Value{}
 		tables:            {
-			table.name.id(): table
+			table.name.id(): &Table{
+				...table
+			}
 		}
 		context:           table.name
 		restricted:        'a CHECK constraint'

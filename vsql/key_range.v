@@ -25,7 +25,7 @@ struct KeyCondition {
 fn key_operation(body QuerySpecification, base_table Table, table Table, params map[string]Value, mut conn Connection) ?&KeyOperation {
 	where := body.table_expression.where_clause or { return none }
 
-	return best_key_operation(and_factors(where), base_table, table, map[string]Table{},
+	return best_key_operation(and_factors(where), base_table, table, map[string]&Table{},
 		params, mut conn)
 }
 
@@ -39,7 +39,7 @@ fn key_operation(body QuerySpecification, base_table Table, table Table, params 
 // A value that a column is compared with can only use the columns of
 // value_tables, which are the other tables of a join (see JoinOperation). They
 // come from the row that's passed to KeyOperation.read.
-fn best_key_operation(factors []BooleanTest, base_table Table, table Table, value_tables map[string]Table, params map[string]Value, mut conn Connection) ?&KeyOperation {
+fn best_key_operation(factors []BooleanTest, base_table Table, table Table, value_tables map[string]&Table, params map[string]Value, mut conn Connection) ?&KeyOperation {
 	if factors.len == 0 {
 		return none
 	}
@@ -90,7 +90,7 @@ fn and_factors(condition BooleanValueExpression) []BooleanTest {
 
 // key_conditions_of are the conditions (in factors) for the key_columns of
 // base_table.
-fn key_conditions_of(factors []BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]Table, params map[string]Value, mut conn Connection) []KeyCondition {
+fn key_conditions_of(factors []BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]&Table, params map[string]Value, mut conn Connection) []KeyCondition {
 	mut conditions := []KeyCondition{}
 	for factor in factors {
 		conditions << key_conditions(factor, base_table, table, key_columns, value_tables,
@@ -119,7 +119,7 @@ fn key_score(conditions []KeyCondition) int {
 
 // key_conditions are the conditions of one part of an AND. BETWEEN is the same
 // as two conditions.
-fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]Table, params map[string]Value, mut conn Connection) []KeyCondition {
+fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]&Table, params map[string]Value, mut conn Connection) []KeyCondition {
 	if _ := test.value {
 		return []
 	}
@@ -174,7 +174,7 @@ fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns [
 // reference), such as a literal, a parameter or "1 + 2", except a column of
 // value_tables. The types must be comparable, otherwise the WHERE clause (or
 // join condition) has to raise the error, even if no rows would be read.
-fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator, value_side RowValueConstructorPredicand, base_table Table, table Table, key_columns []string, value_tables map[string]Table, params map[string]Value, mut conn Connection) ?KeyCondition {
+fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator, value_side RowValueConstructorPredicand, base_table Table, table Table, key_columns []string, value_tables map[string]&Table, params map[string]Value, mut conn Connection) ?KeyCondition {
 	column := new_column_identifier(column_side.pstr(params)) or { return none }
 	if column.custom_id != '' || !column.is_column_of_table(conn, table) {
 		return none
@@ -215,7 +215,7 @@ fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator
 			value_tables
 		} else {
 			{
-				'': Table{}
+				'': &Table{}
 			}
 		}
 		next_value_not_allowed: 'WHERE'

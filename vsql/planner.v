@@ -35,7 +35,7 @@ fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 	}
 }
 
-fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]Table) {
+fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]&Table) {
 	match body {
 		QuerySpecification {
 			return create_select_plan(body, params, mut conn, allow_virtual)
@@ -47,7 +47,7 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			plan.operations << new_values_operation(body, correlation, mut
 				conn, params)!
 
-			return plan, map[string]Table{}
+			return plan, map[string]&Table{}
 		}
 		SetOperation {
 			// Only a query specification that's the whole query can contain a
@@ -72,19 +72,19 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'] or { Plan{} },
 				plan.subplans['\$2'] or { Plan{} }, mut conn)!
 
-			return plan, map[string]Table{}
+			return plan, map[string]&Table{}
 		}
 		ParenthesizedQueryExpression {
-			return create_query_expression_plan(*body.expr, params, mut conn, correlation)!, map[string]Table{}
+			return create_query_expression_plan(*body.expr, params, mut conn, correlation)!, map[string]&Table{}
 		}
 	}
 }
 
-fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]Table) {
+fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]&Table) {
 	from_clause := body.table_expression.from_clause
 
 	mut plan := Plan{}
-	mut tables := map[string]Table{}
+	mut tables := map[string]&Table{}
 
 	match from_clause {
 		TablePrimary {
@@ -97,12 +97,14 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 					}
 				}
 				plan.operations << &SingleRowOperation{}
-				tables[table.name.id()] = table
+				tables[table.name.id()] = &Table{
+					...table
+				}
 			} else {
 				table_plan, table := create_select_plan_without_join(body, from_clause,
 					params, mut conn, allow_virtual, true)!
 				plan = table_plan
-				tables[table.name.id()] = Table{
+				tables[table.name.id()] = &Table{
 					...table
 					columns: table.result_columns()
 				}
@@ -165,7 +167,7 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 // in scope, such as t1 in "FROM t1, t2 JOIN t3 ON ...".
 //
 // ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 2
-fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table) !Plan {
 	outside_join := tables.keys()
 
 	mut plan := Plan{}
@@ -244,7 +246,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	}
 	for name, table in tables.clone() {
 		if name in null_extended {
-			tables[name] = Table{
+			tables[name] = &Table{
 				...table
 				columns: possibly_nullable_columns(table.columns)
 			}
@@ -270,7 +272,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 // side (the tables named in outer_names), the inner side is named in
 // inner_names. It's none when there isn't one, such as when the inner side is a
 // derived table or another join.
-fn join_lookup(inner_reference TableReference, inner_names []string, outer_names []string, specification BooleanValueExpression, tables map[string]Table, params map[string]Value, mut conn Connection, allow_virtual bool) ?JoinLookup {
+fn join_lookup(inner_reference TableReference, inner_names []string, outer_names []string, specification BooleanValueExpression, tables map[string]&Table, params map[string]Value, mut conn Connection, allow_virtual bool) ?JoinLookup {
 	inner := match inner_reference {
 		TablePrimary { inner_reference }
 		QualifiedJoin { return none }
@@ -288,7 +290,7 @@ fn join_lookup(inner_reference TableReference, inner_names []string, outer_names
 		return none
 	}
 
-	mut value_tables := map[string]Table{}
+	mut value_tables := map[string]&Table{}
 	for table_name, outer_table in tables {
 		if table_name in outer_names {
 			value_tables[table_name] = outer_table
@@ -310,25 +312,25 @@ fn join_lookup(inner_reference TableReference, inner_names []string, outer_names
 // first in "SELECT *".
 //
 // ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.a.ii, 10.f.iv and 11.a.i
-fn add_common_columns_range_variable(tables map[string]Table, first_table int, range_variable string, common_columns []CommonColumn) map[string]Table {
+fn add_common_columns_range_variable(tables map[string]&Table, first_table int, range_variable string, common_columns []CommonColumn) map[string]&Table {
 	mut hidden := map[string]bool{}
 	for common in common_columns {
 		hidden[common.left.name.id()] = true
 		hidden[common.right.name.id()] = true
 	}
 
-	mut new_tables := map[string]Table{}
+	mut new_tables := map[string]&Table{}
 	mut i := 0
 	for name, table in tables {
 		if i == first_table {
-			new_tables[range_variable] = Table{
+			new_tables[range_variable] = &Table{
 				name:    Identifier{
 					custom_id: range_variable
 				}
 				columns: common_columns.map(it.column)
 			}
 		}
-		new_tables[name] = Table{
+		new_tables[name] = &Table{
 			...table
 			columns: table.columns.filter(it.name.id() !in hidden)
 		}
@@ -338,7 +340,7 @@ fn add_common_columns_range_variable(tables map[string]Table, first_table int, r
 	return new_tables
 }
 
-fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table) !Plan {
 	match table_reference {
 		TablePrimary {
 			plan, table := create_select_plan_without_join(body, table_reference,
@@ -362,7 +364,7 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 					return sqlstate_42601('table name ${unqualified_range_variable(table.name)} specified more than once')
 				}
 			}
-			tables[table.name.id()] = Table{
+			tables[table.name.id()] = &Table{
 				...table
 				columns: table.result_columns()
 			}
@@ -406,7 +408,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					}
 
 					add_where_plan(mut &plan, body, params, conn, {
-						table.name.id(): table
+						table.name.id(): &Table{
+							...table
+						}
 					})!
 				}
 
@@ -430,7 +434,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				table = virtual_table.table()
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
-						table.name.id(): table
+						table.name.id(): &Table{
+							...table
+						}
 					})!
 				}
 			} else if table_name_id in catalog.storage.tables {
@@ -447,7 +453,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
-						table.name.id(): table
+						table.name.id(): &Table{
+							...table
+						}
 					})!
 				}
 			} else {
@@ -487,7 +495,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
-					table.name.id(): table
+					table.name.id(): &Table{
+						...table
+					}
 				})!
 			}
 		}
@@ -569,7 +579,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 // add_where_plan filters the rows of the last operation with the WHERE clause,
 // if there is one. The condition is only evaluated for each row, so it's
 // compiled here to catch errors even when there are no rows.
-fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]Table) ! {
+fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]&Table) ! {
 	if where := body.table_expression.where_clause {
 		mut c := Compiler{
 			conn:                   conn
@@ -592,7 +602,7 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 	}
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]Table) ! {
+fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]&Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function (or there is a HAVING) we need to
 	// have an implicit GROUP BY for the whole set.
@@ -722,7 +732,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28
 	if stmt.body !is QuerySpecification {
 		tables = {
-			'': Table{
+			'': &Table{
 				columns: plan.columns()
 			}
 		}
@@ -975,10 +985,10 @@ mut:
 	params  map[string]Value
 	exprs   []DerivedColumn
 	columns []Column
-	tables  map[string]Table
+	tables  map[string]&Table
 }
 
-fn new_expr_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]Table) !ExprOperation {
+fn new_expr_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]&Table) !ExprOperation {
 	mut exprs := []DerivedColumn{}
 	mut columns := []Column{}
 
@@ -1094,7 +1104,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 // T101 isn't supported, as can a column of an outer query.
 //
 // ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 20 and 21
-fn column_not_null(reference Identifier, conn &Connection, tables map[string]Table) bool {
+fn column_not_null(reference Identifier, conn &Connection, tables map[string]&Table) bool {
 	for _, table in tables {
 		if column := table.column(reference.sub_entity_name) {
 			if reference.is_column_of_table(conn, table) {
@@ -1107,7 +1117,7 @@ fn column_not_null(reference Identifier, conn &Connection, tables map[string]Tab
 }
 
 // qualified_asterisk_table returns the table that "t.*" refers to.
-fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables map[string]Table) !Table {
+fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables map[string]&Table) !Table {
 	// A derived table, such as "(SELECT ...) AS t", is only known by its
 	// correlation name.
 	if e.table_name.schema_name == '' {

@@ -64,20 +64,15 @@ fn commit_error(err IError) IError {
 fn (mut catalog CatalogConnection) commit_transaction() ! {
 	mut blob_refs := []PageObject{}
 	mut schema_changed := false
-	mut objects := []PageObject{}
 	for page_number, _ in catalog.storage.transaction_pages {
 		// A page is only copied and stored again when it has an object to
 		// remove, see Pager.read_page.
-		(catalog.storage.btree.pager.read_page(page_number)!).objects_in_place(mut objects)
-		for obj in objects {
-			if (obj.tid == catalog.storage.transaction_id
-				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`, `N`] {
-				schema_changed = true
-			}
-		}
+		page_in_place := catalog.storage.btree.pager.read_page(page_number)!
+		schema_changed = schema_changed
+			|| page_in_place.has_schema_object_of(catalog.storage.transaction_id)
 
 		// Only remove the now expired records.
-		expired := objects.filter(it.xid == catalog.storage.transaction_id)
+		expired := page_in_place.expired_objects(catalog.storage.transaction_id)
 		if expired.len == 0 {
 			continue
 		}

@@ -51,30 +51,71 @@ class AppPage:
         return self.folder(f'schema:{catalog}.{schema}')
 
     def sidebar_table(self, name, catalog='db', schema='PUBLIC'):
-        """sidebar_table is the button that queries a table in the sidebar."""
-        return self.schema(catalog, schema).get_by_role('button', name=name, exact=True)
+        """sidebar_table is the name of a table in the sidebar, which opens and
+        closes its columns, indexes and constraints."""
+        return self.table_fields(name, catalog, schema).locator(':scope > summary')
 
     def table_menu(self, name, catalog='db', schema='PUBLIC'):
         """table_menu opens the menu of a table in the sidebar, and returns
         it."""
-        li = self.schema(catalog, schema).locator('li').filter(
-            has=self.page.get_by_role('button', name=name, exact=True))
-        # The indexes of the table are under it, in the same li.
-        li.locator(':scope > button').hover()
+        # INFORMATION_SCHEMA and VSQL_APP start collapsed.
+        folder = self.schema(catalog, schema)
+        if folder.get_attribute('open') is None:
+            folder.locator(':scope > summary').click()
+            expect(folder).to_have_attribute('open', '')
+        li = folder.locator('li.table').filter(
+            has=self.table_fields(name, catalog, schema))
+        li.locator(':scope > details.fields > summary').hover()
         li.locator(':scope > details.menu > summary').click()
         return li.locator(':scope > details.menu > .menu-items')
+
+    def select_table(self, name, catalog='db', schema='PUBLIC'):
+        """select_table queries a table in a new tab, with Select on its menu."""
+        self.table_menu(name, catalog, schema).get_by_role('button', name='Select').click()
 
     def sidebar_indexes(self, table, catalog='db', schema='PUBLIC'):
         """sidebar_indexes are the names (and columns) of the indexes under a
         table in the sidebar."""
-        return self.schema(catalog, schema).locator('li').filter(
-            has=self.page.get_by_role('button', name=table, exact=True)).locator('li.index .index-name')
+        return self.table_fields(table, catalog, schema).locator('li.index .index-name')
 
-    def index_menu(self, name, catalog='db', schema='PUBLIC'):
-        """index_menu opens the menu of an index in the sidebar, and returns
-        it."""
-        li = self.schema(catalog, schema).locator('li.index').filter(
+    def table_fields(self, table, catalog='db', schema='PUBLIC'):
+        """table_fields is the folder under a table in the sidebar with its
+        columns, indexes and constraints. It starts collapsed."""
+        return self.folder(f'table:{catalog}.{schema}.{table}')
+
+    def field_rows(self, table, catalog='db', schema='PUBLIC'):
+        """field_rows are the columns, indexes and constraints of a table in the
+        sidebar, without the menus of the indexes and constraints."""
+        return self.table_fields(table, catalog, schema).locator('li > .field-name, li > .index-name')
+
+    def open_table_fields(self, table, catalog='db', schema='PUBLIC'):
+        """open_table_fields opens the columns, indexes and constraints of a
+        table with the arrow next to it, and returns them."""
+        fields = self.table_fields(table, catalog, schema)
+        self.sidebar_table(table, catalog, schema).click()
+        expect(fields).to_have_attribute('open', '')
+        return fields
+
+    def index_menu(self, name, table, catalog='db', schema='PUBLIC'):
+        """index_menu opens the menu of an index of a table in the sidebar, and
+        returns it."""
+        fields = self.table_fields(table, catalog, schema)
+        if fields.get_attribute('open') is None:
+            self.open_table_fields(table, catalog, schema)
+        li = fields.locator('li.index').filter(
             has=self.page.locator('.index-name .name').get_by_text(name, exact=True))
+        li.hover()
+        li.locator('details.menu > summary').click()
+        return li.locator('.menu-items')
+
+    def constraint_menu(self, name, table, catalog='db', schema='PUBLIC'):
+        """constraint_menu opens the menu of a constraint of a table in the
+        sidebar, and returns it."""
+        fields = self.table_fields(table, catalog, schema)
+        if fields.get_attribute('open') is None:
+            self.open_table_fields(table, catalog, schema)
+        li = fields.locator('li.constraint').filter(
+            has=self.page.locator('.field-name .name').get_by_text(name, exact=True))
         li.hover()
         li.locator('details.menu > summary').click()
         return li.locator('.menu-items')
@@ -114,7 +155,7 @@ class AppPage:
     @property
     def sidebar_tabs(self):
         """sidebar_tabs are the tabs listed in the sidebar (see titles)."""
-        return self.page.locator('details[data-folder^="tabs:"] li > button')
+        return self.page.locator('details[data-folder^="tabs:"] li > button[name=goto]')
 
     @property
     def sidebar_tab_rows(self):
@@ -253,6 +294,13 @@ class AppPage:
         """empty is the message when there are no tabs or no result yet."""
         return self.page.locator('main .empty')
 
+    def sidebar_tab_close(self, title):
+        """sidebar_tab_close is the x that closes a tab in the sidebar, which is
+        shown when the tab is hovered."""
+        li = self.page.locator('details[data-folder^="tabs:"] li').filter(has=self.page.get_by_role('button', name=title, exact=True))
+        li.hover()
+        return li.locator('button.close-tab')
+
     def tab_menu(self, title):
         """tab_menu opens the menu of a tab in the sidebar, and returns it."""
         li = self.page.locator('details[data-folder^="tabs:"] li').filter(has=self.page.get_by_role('button', name=title, exact=True))
@@ -293,7 +341,7 @@ class AppPage:
 
     def catalog_tabs(self, catalog):
         """catalog_tabs are the tabs of a file in the sidebar."""
-        return self.folder(f'tabs:{catalog}').locator('li > button')
+        return self.folder(f'tabs:{catalog}').locator('li > button[name=goto]')
 
     def new_catalog_tab(self, catalog):
         """new_catalog_tab adds a tab to a file from the sidebar."""

@@ -84,7 +84,7 @@ def test_alter(alter_ui, db_file):
     alter_button(ui).click()
     expect(ui.tab_bar).to_have_count(1)
     expect(ui.editor).to_have_value('SELECT * FROM PUBLIC.PEOPLE')
-    expect(ui.headers).to_have_text(['', 'IDINTEGER NOT NULL', 'NAMECHARACTER VARYING(10)', 'GINTEGER', 'ACTIVEBOOLEAN NOT NULL'])
+    expect(ui.headers).to_have_text(['', '🟦IDINTEGER NOT NULL', '🟩NAMECHARACTER VARYING(10)', '🟦GINTEGER', '🟪ACTIVEBOOLEAN NOT NULL'])
     expect(ui.rows.nth(0).locator('td')).to_have_text(['×', '1', 'a', '2', 'TRUE'])
     cli(db_file, 'INSERT INTO people (id) VALUES (5);')
     assert re.search(r'^ *5 \| y +\| +10 \| TRUE *$', cli(db_file, 'SELECT * FROM people WHERE id = 5;'), re.MULTILINE)

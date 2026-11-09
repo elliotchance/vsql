@@ -69,36 +69,53 @@ if (resultTable) {
 	});
 
 	// Clicking a column sorts by it, then the other way, then back to the order
-	// of the query. Only the rows of the result are sorted, not the table, and
-	// NULLs are always last. The order is kept on each row, because the rows are
-	// put back from their HTML when editing is cancelled.
-	const tbody = resultTable.tBodies[0];
-	[...tbody.rows].forEach((tr, i) => { tr.dataset.order = i; });
-	const sortValue = (td, isNumber) => {
-		if (td.classList.contains('null')) return null;
-		const text = td.dataset.full ?? td.textContent;
-		return isNumber ? Number(text) : text;
+	// of the query. It's the query that's sorted, not the rows that are shown:
+	// the ORDER BY at the end of the query is changed, and it's run again. A query
+	// that has its own ORDER BY, FETCH, OFFSET or LIMIT is sorted as a subquery,
+	// which is taken away again when it's back to its own order. A column
+	// without a name (such as COL1) can't be sorted, since ORDER BY can't refer
+	// to it.
+	const editor = document.querySelector('.editor textarea');
+	const sortClause = /\s+ORDER\s+BY\s+("(?:[^"]|"")+")(\s+DESC)?$/i;
+	const subquery = /^SELECT \* FROM \(\n([\s\S]*)\n\) AS sorted$/;
+	const quote = name => '"' + name.replace(/"/g, '""') + '"';
+	// sortedBy is the column and direction of the ORDER BY at the end of sql,
+	// if it's one that clicking a column makes.
+	const sortedBy = sql => {
+		const match = sql.match(sortClause);
+		return match && { name: match[1].slice(1, -1).replace(/""/g, '"'), desc: match[2] !== undefined };
 	};
+	// hasOwnOrder is true if sql (without its strings and comments) has an
+	// ORDER BY, FETCH, OFFSET or LIMIT, which another ORDER BY can't follow.
+	const hasOwnOrder = sql => /\b(ORDER\s+BY|FETCH|OFFSET|LIMIT)\b/i.test(
+		sql.replace(/'(?:[^']|'')*'|"(?:[^"]|"")*"|--[^\n]*|\/\*[\s\S]*?\*\//g, ' '));
+	const query = () => editor.value.replace(/[\s;]+$/, '');
+	const current = sortedBy(query());
+	if (current) {
+		for (const th of resultTable.tHead.rows[0].cells) {
+			const name = th.querySelector('.name');
+			if (name && name.textContent === current.name) th.setAttribute('aria-sort', current.desc ? 'descending' : 'ascending');
+		}
+	}
 	resultTable.tHead.addEventListener('click', e => {
 		const th = e.target.closest('th');
-		if (!th || th.classList.contains('row-actions') || resultTable.classList.contains('editing')) return;
-		const before = th.getAttribute('aria-sort');
-		const direction = before === null ? 'ascending' : before === 'ascending' ? 'descending' : null;
-		for (const other of th.parentElement.cells) other.removeAttribute('aria-sort');
-		const rows = [...tbody.rows];
-		if (direction === null) {
-			rows.sort((a, b) => a.dataset.order - b.dataset.order);
-		} else {
-			th.setAttribute('aria-sort', direction);
-			const isNumber = th.classList.contains('number');
-			const sign = direction === 'ascending' ? 1 : -1;
-			const values = new Map(rows.map(tr => [tr, sortValue(tr.cells[th.cellIndex], isNumber)]));
-			rows.sort((a, b) => {
-				const x = values.get(a), y = values.get(b);
-				if (x === null || y === null) return (x === null) - (y === null);
-				return x < y ? -sign : x > y ? sign : 0;
-			});
+		if (!th || th.classList.contains('row-actions') || th.hasAttribute('data-unnamed') || resultTable.classList.contains('editing')) return;
+		const name = th.querySelector('.name').textContent;
+		let sql = query();
+		const sorted = sortedBy(sql);
+		if (sorted) {
+			sql = sql.replace(sortClause, '');
+		} else if (hasOwnOrder(sql)) {
+			sql = `SELECT * FROM (\n${sql}\n) AS sorted`;
 		}
-		tbody.append(...rows);
+		if (!sorted || sorted.name !== name) {
+			sql += ` ORDER BY ${quote(name)}`;
+		} else if (!sorted.desc) {
+			sql += ` ORDER BY ${quote(name)} DESC`;
+		} else {
+			sql = sql.replace(subquery, '$1');
+		}
+		editor.value = sql;
+		editor.form.submit();
 	});
 }

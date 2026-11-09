@@ -20,6 +20,10 @@ th { background: var(--side); position: sticky; top: 0; }
 th:first-child, td:first-child { border-left: 0; }
 td.null, .empty { color: var(--muted); }
 th .type { display: block; font-size: 11px; font-weight: normal; color: var(--muted); }
+th .title { white-space: nowrap; }
+th .icon { margin-right: 4px; font-size: 10px; }
+th .name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+th.not-null .name { text-decoration: underline; }
 td.null { font-style: italic; }
 th.number, td.number { text-align: right; }
 td.number { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -71,6 +75,10 @@ button.explain { color: var(--fg); background: var(--side); border-color: var(--
 .sidebar li button { display: block; width: 100%; padding: 2px 12px 2px 28px; overflow: hidden; font-weight: normal; text-align: left; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); background: transparent; border: 0; border-radius: 0; }
 .sidebar li button:hover, .sidebar li.active button { background: var(--border); }
 .sidebar li.active button { font-weight: 600; }
+.sidebar li:has(> button.close-tab) > button[name=goto] { padding-right: 52px; }
+.sidebar li > button.close-tab { position: absolute; top: 0; right: 30px; width: auto; padding: 0 6px; font-weight: normal; color: var(--muted); background: transparent; border-radius: 4px; visibility: hidden; }
+.sidebar li:hover > button.close-tab, .sidebar li > button.close-tab:focus-visible { visibility: visible; }
+.sidebar li > button.close-tab:hover { color: var(--fg); background: var(--border); }
 details.section { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); }
 details.section > summary { font-size: 12px; color: var(--muted); }
 .catalog-row > details.section > summary { padding-right: 28px; overflow: hidden; text-overflow: ellipsis; }
@@ -131,11 +139,11 @@ dialog.history::backdrop { background: rgba(0, 0, 0, 0.4); }
 .history-list .meta .failed { color: #cf222e; }
 button.show-history { padding: 2px 10px; font-size: 12px; color: var(--fg); background: var(--side); border-color: var(--border); }
 .sidebar li { position: relative; }
-.sidebar li:has(> details.menu) > button, .sidebar li:has(> details.menu) > .index-name { padding-right: 28px; }
+.sidebar li:has(> details.menu) > button, .sidebar li:has(> details.menu) > .index-name, .sidebar li:has(> details.menu) > .field-name { padding-right: 28px; }
 details.menu { position: absolute; top: 0; right: 4px; }
 details.menu > summary { padding: 0 6px; font-weight: normal; color: var(--muted); list-style: none; border-radius: 4px; visibility: hidden; }
 details.menu > summary::-webkit-details-marker { display: none; }
-.sidebar li:hover:not(:has(li.index:hover)) > details.menu > summary, details.menu[open] > summary, details.menu > summary:focus-visible { visibility: visible; }
+.sidebar li:hover:not(:has(details.fields li:hover)) > details.menu > summary, details.menu[open] > summary, details.menu > summary:focus-visible { visibility: visible; }
 details.menu > summary:hover, details.menu[open] > summary { color: var(--fg); background: var(--border); }
 .sidebar .menu-items button, .sidebar li.active .menu-items button { padding: 4px 12px; font-weight: normal; background: transparent; }
 .sidebar .menu-items button:hover, .sidebar li.active .menu-items button:hover { background: var(--border); }
@@ -178,9 +186,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 dialog.discard p { margin: 0; }
 .confirm label { flex: 1 1 100%; font-weight: 600; }
 .confirm label input { margin-left: 6px; padding: 3px 6px; font: inherit; font-weight: normal; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; }
-.sidebar .index-name { display: block; padding: 2px 12px 2px 44px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: default; }
-.sidebar li.index:hover { background: var(--border); }
-.sidebar .index-name .columns { color: var(--muted); font-size: 12px; }
+.sidebar .index-name, .sidebar .field-name { display: block; padding: 2px 12px 2px 44px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: default; }
+.sidebar li.index:hover, .sidebar li.column:hover, .sidebar li.constraint:hover { background: var(--border); }
+.sidebar .index-name .columns, .sidebar .field-name .type { color: var(--muted); font-size: 12px; }
+.sidebar .field-name .key { margin-left: 4px; font-size: 11px; }
+/* Identifiers and expressions under a table are in a fixed width font. */
+.sidebar li.column .name, .sidebar li.index .name, .sidebar li.index .columns, .sidebar li.constraint .name, .sidebar li.constraint .type { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sidebar li.not-null .name { text-decoration: underline; }
+.sidebar .entity-name { display: block; padding: 2px 12px 2px 28px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: default; }
+.sidebar li.sequence:hover { background: var(--border); }
+/* Clicking a table opens its columns, indexes and constraints (see write_fields). */
+.sidebar details.fields > summary { padding: 2px 12px 2px 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.sidebar details.fields > summary:hover { background: var(--border); }
+.sidebar li:has(> details.menu) > details.fields > summary { padding-right: 28px; }
 .sidebar li.empty { margin: 0; padding: 2px 12px 2px 28px; }
 details.folder > summary:has(button.new-tab) { position: relative; }
 button.new-tab { position: absolute; top: 2px; right: 4px; padding: 0 6px; font-size: 12px; font-weight: normal; line-height: 1.4; color: var(--muted); background: transparent; border: 0; border-radius: 4px; }

@@ -13,7 +13,7 @@ def test_restore_tabs(ui, db_file, start_app):
     # The tabs (and which is active) are restored when the file is opened
     # again, but not their results. Every tab is a QUERY tab, the only tab type
     # so far, and its PAYLOAD is JSON with its SQL.
-    ui.sidebar_table('my <t>').click()
+    ui.select_table('my <t>')
     ui.new_tab()
     ui.run('INSERT INTO foo.bar (y) VALUES (TRUE)')
     ui.tab('SELECT * FROM PUBLIC."my <t>"').click()

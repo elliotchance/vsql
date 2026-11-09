@@ -16,11 +16,13 @@ def test_sidebar(ui):
     expect(ui.sections).to_have_text([re.compile('db$')])
     for schema, table in [('FOO', 'FOO.BAR'), ('PUBLIC', 'PUBLIC."my <t>"')]:
         expect(ui.schema('db', schema).locator('summary .count')).to_have_text('1')
-        expect(ui.schema('db', schema).locator('li > button')).to_have_attribute('value', table)
+        expect(ui.schema('db', schema).get_by_role('button', name='Select', include_hidden=True)).to_have_attribute('value', table)
     expect(ui.schema('db', 'VSQL_APP').locator('summary .count')).to_have_text('2')
-    expect(ui.schema('db', 'VSQL_APP').locator('button').nth(0)).to_have_attribute('value', 'VSQL_APP.HISTORY')
-    expect(ui.schema('db', 'VSQL_APP').locator('button').nth(1)).to_have_attribute('value', 'VSQL_APP.TABS')
-    expect(ui.sidebar_table('my <t>')).to_have_attribute('title', 'SELECT * FROM PUBLIC."my <t>"')
+    expect(ui.schema('db', 'VSQL_APP').get_by_role('button', name='Select', include_hidden=True)).to_have_count(2)
+    expect(ui.sidebar_table('HISTORY', schema='VSQL_APP')).to_have_text('📄HISTORY')
+    expect(ui.sidebar_table('TABS', schema='VSQL_APP')).to_have_text('📄TABS')
+    expect(ui.schema('db', 'PUBLIC').get_by_role('button', name='Select', include_hidden=True)).to_have_attribute(
+        'title', 'SELECT * FROM PUBLIC."my <t>"')
 
 
 def test_sidebar_is_remembered(ui):
@@ -53,9 +55,9 @@ def test_catalogs(page, db_file, make_file, start_app):
     other_file = make_file('other.vsql', 'CREATE TABLE t (x INT);')
     ui = AppPage(page, start_app(db_file, other_file))
     expect(ui.sections).to_have_text([re.compile('db$'), re.compile('other$')])
-    expect(ui.sidebar_table('T', catalog='other')).to_have_attribute('value', 'PUBLIC.T')
-    expect(ui.sidebar_table('BAR', schema='FOO')).to_have_attribute('value', 'FOO.BAR')
-    ui.sidebar_table('T', catalog='other').click()
+    expect(ui.folder('schema:other.PUBLIC').get_by_role('button', name='Select', include_hidden=True)).to_have_attribute('value', 'PUBLIC.T')
+    expect(ui.schema('db', 'FOO').get_by_role('button', name='Select', include_hidden=True)).to_have_attribute('value', 'FOO.BAR')
+    ui.select_table('T', catalog='other')
     expect(ui.editor).to_have_value('SELECT * FROM PUBLIC.T')
     expect(ui.tab_catalog).to_have_text('other')
     expect(ui.status).to_have_text(re.compile(r'^0 rows \('))
@@ -99,26 +101,105 @@ def test_indexes(page, db_file, start_app):
     expect(ui.sidebar_indexes('my <t>')).to_have_count(0)
     expect(ui.sidebar_indexes('BAR', schema='FOO')).to_have_text([re.compile(r'my <i> \(Y\)$')])
 
-    ui.index_menu('T_Y').get_by_role('button', name='Drop index').click()
+    ui.index_menu('T_Y', 'T').get_by_role('button', name='Drop index').click()
     expect(ui.confirm_sql).to_have_text('DROP INDEX PUBLIC.T_Y')
     ui.confirm.get_by_role('link', name='Cancel').click()
     expect(ui.sidebar_indexes('T')).to_have_count(2)
 
-    ui.index_menu('my <i>', schema='FOO').get_by_role('button', name='Drop index').click()
+    ui.index_menu('my <i>', 'BAR', schema='FOO').get_by_role('button', name='Drop index').click()
     expect(ui.confirm_sql).to_have_text('DROP INDEX FOO."my <i>"')
     ui.run_change()
     expect(ui.sidebar_indexes('BAR', schema='FOO')).to_have_count(0)
     assert 'my <i>' not in cli(db_file, 'EXPLAIN SELECT * FROM foo.bar WHERE y;')
 
     # The table menu is still only the table's.
-    expect(ui.table_menu('T').get_by_role('button')).to_have_count(5)
+    expect(ui.table_menu('T').get_by_role('button')).to_have_count(6)
+
+
+def test_table_fields(page, db_file, start_app):
+    # The arrow next to a table opens its columns (with an emoji for the group of its type,
+    # and a key for the PRIMARY KEY), then its indexes and constraints. The
+    # index of a constraint is only listed as the constraint, and a NOT NULL
+    # is on its column. The sequences of a schema are after its tables.
+    cli(db_file, 'CREATE TABLE p (id INT PRIMARY KEY, code VARCHAR(5) NOT NULL UNIQUE, n SMALLINT CHECK (n > 0)); '
+        'CREATE TABLE c (id BIGINT, pid INT REFERENCES p (id), d DATE, t TIMESTAMP WITH TIME ZONE); '
+        'CREATE INDEX c_d ON c (d DESC); CREATE UNIQUE INDEX c_t ON c (t); CREATE SEQUENCE s START WITH 10;')
+    ui = AppPage(page, start_app(db_file))
+    expect(ui.table_fields('P')).not_to_have_attribute('open', '')
+    fields = ui.open_table_fields('P')
+    expect(ui.field_rows('P')).to_have_text([
+        '🟦ID INTEGER NOT NULL 🔑',
+        '🟩CODE CHARACTER VARYING(5) NOT NULL',
+        '🟦N SMALLINT',
+        '🔑P_PRIMARY_KEY (ID)',
+        '❄️P_UNIQUE_1 (CODE)',
+        '✅P_CHECK_1 (N > 0)',
+    ])
+    # The name of a NOT NULL column is also underlined.
+    expect(fields.locator('li.column').nth(0).locator('.field-name')).to_have_attribute(
+        'title', 'ID INTEGER NOT NULL')
+    expect(fields.locator('li.column.not-null .name')).to_have_text(['ID', 'CODE'])
+    expect(fields.locator('li.column').nth(1).locator('.name')).to_have_css('text-decoration-line', 'underline')
+    expect(fields.locator('li.column').nth(2).locator('.name')).to_have_css('text-decoration-line', 'none')
+
+    # So is a constraint whose columns are all NOT NULL, but not a CHECK, which
+    # doesn't have columns, or a FOREIGN KEY that can be NULL.
+    expect(fields.locator('li.constraint.not-null .name')).to_have_text(['P_PRIMARY_KEY', 'P_UNIQUE_1'])
+    expect(fields.locator('li.constraint').filter(has_text='P_CHECK_1').locator('.name')).to_have_css('text-decoration-line', 'none')
+
+    # Names and the columns or condition of a constraint are in a fixed width
+    # font, but the type of a column isn't.
+    for name in ['li.column .name', 'li.constraint .name', 'li.constraint .type']:
+        expect(fields.locator(name).nth(0)).to_have_css('font-family', re.compile('monospace'))
+    expect(fields.locator('li.column .type').nth(0)).not_to_have_css('font-family', re.compile('monospace'))
+    ui.open_table_fields('C')
+    expect(ui.field_rows('C')).to_have_text([
+        '🟦ID BIGINT',
+        '🟦PID INTEGER',
+        '🟧D DATE',
+        '🟧T TIMESTAMP(6) WITH TIME ZONE',
+        '📇C_D (D DESC)',
+        '❄️C_T (T)',
+        '🔗C_FOREIGN_KEY_1 (PID) → PUBLIC.P',
+    ])
+    expect(ui.table_fields('C').locator('li.constraint.not-null')).to_have_count(0)
+
+    sequence = ui.schema('db', 'PUBLIC').locator('li.sequence')
+    expect(sequence).to_have_text('🎟️S')
+    expect(sequence.locator('.entity-name')).to_have_attribute('title', re.compile(r'^CREATE SEQUENCE "PUBLIC"."S" START WITH 10'))
+    expect(ui.schema('db', 'PUBLIC').locator('summary .count')).to_have_text('4')
+
+    # It stays open.
+    ui.reload()
+    expect(ui.table_fields('P')).to_have_attribute('open', '')
+    expect(ui.table_fields('C')).to_have_attribute('open', '')
+
+    # A constraint is dropped from its menu, once it's confirmed. A PRIMARY KEY
+    # that a FOREIGN KEY references is dropped with CASCADE, which drops the
+    # FOREIGN KEY too.
+    ui.constraint_menu('P_CHECK_1', 'P').get_by_role('button', name='Drop constraint').click()
+    expect(ui.confirm_sql).to_have_text('ALTER TABLE PUBLIC.P DROP CONSTRAINT P_CHECK_1')
+    ui.run_change()
+    ui.constraint_menu('P_PRIMARY_KEY', 'P').get_by_role('button', name='Drop constraint').click()
+    expect(ui.confirm_sql).to_have_text('ALTER TABLE PUBLIC.P DROP CONSTRAINT P_PRIMARY_KEY CASCADE')
+    ui.run_change()
+    expect(ui.field_rows('P')).to_have_text([
+        '🟦ID INTEGER NOT NULL',
+        '🟩CODE CHARACTER VARYING(5) NOT NULL',
+        '🟦N SMALLINT',
+        '❄️P_UNIQUE_1 (CODE)',
+    ])
+    expect(ui.table_fields('C').locator('li.constraint')).to_have_count(0)
 
 
 def test_table_menu(ui):
-    # INFORMATION_SCHEMA and VSQL_APP don't have a menu.
+    # The tables of INFORMATION_SCHEMA and VSQL_APP can only be selected.
     for schema in ['INFORMATION_SCHEMA', 'VSQL_APP']:
-        expect(ui.schema('db', schema).locator('li')).not_to_have_count(0)
-        expect(ui.schema('db', schema).locator('details.menu')).to_have_count(0)
+        tables = ui.schema('db', schema).locator('li.table')
+        expect(tables).not_to_have_count(0)
+        expect(ui.schema('db', schema).locator('details.menu')).to_have_count(tables.count())
+        expect(ui.schema('db', schema).locator('details.menu button')).to_have_count(tables.count())
+    expect(ui.table_menu('HISTORY', schema='VSQL_APP').get_by_role('button')).to_have_text(['Select'])
     expect(ui.schema('db', 'FOO').locator('details.menu')).to_have_count(1)
 
     # Only one menu is open, and a click outside it closes it.
@@ -156,13 +237,13 @@ def test_system_schemas_start_collapsed(ui):
     expect(ui.folder('schema:db.PUBLIC')).to_have_attribute('open', '')
 
     # Once it's opened it stays open, and collapses again the same way.
-    ui.folder('schema:db.VSQL_APP').locator('summary').click()
+    ui.folder('schema:db.VSQL_APP').locator(':scope > summary').click()
     expect(ui.folder('schema:db.VSQL_APP')).to_have_attribute('open', '')
     ui.page.wait_for_function("localStorage['vsql.sidebar.expanded']?.includes('VSQL_APP')")
     ui.reload()
     expect(ui.folder('schema:db.VSQL_APP')).to_have_attribute('open', '')
     expect(ui.folder('schema:db.INFORMATION_SCHEMA')).not_to_have_attribute('open', '')
-    ui.folder('schema:db.VSQL_APP').locator('summary').click()
+    ui.folder('schema:db.VSQL_APP').locator(':scope > summary').click()
     ui.page.wait_for_function("!localStorage['vsql.sidebar.expanded'].includes('VSQL_APP')")
     ui.reload()
     expect(ui.folder('schema:db.VSQL_APP')).not_to_have_attribute('open', '')

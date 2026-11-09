@@ -307,10 +307,11 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 			a.query_table(mut conn, file, table)!
 			return '/'
 		}
-		// A table or schema in the sidebar is dropped (such as "TABLE FOO.BAR" or
-		// "SCHEMA FOO CASCADE") in its file once it's confirmed. Then the tab is
-		// shown again, its result isn't run again.
-		if object := form.get('drop:${file}') {
+		// A schema, table, index or constraint in the sidebar is dropped (such as
+		// "DROP TABLE FOO.BAR" or "ALTER TABLE FOO.BAR DROP CONSTRAINT C") in its
+		// file once it's confirmed. Then the tab is shown again, its result isn't
+		// run again.
+		if stmt := form.get('drop:${file}') {
 			last := rlock a.results {
 				a.results[tab.ref()] or { TabResult{} }
 			}
@@ -319,10 +320,10 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 				query_text: query_text
 				params:     params
 				payload:    payload
-			}, last, Confirm{'DROP ${object}', 'drop_confirmed:${file}', object, file})
+			}, last, Confirm{stmt, 'drop_confirmed:${file}', stmt, file})
 		}
-		if object := form.get('drop_confirmed:${file}') {
-			a.run_in_file(mut conn, file, 'DROP ${object}') or {
+		if stmt := form.get('drop_confirmed:${file}') {
+			a.run_in_file(mut conn, file, stmt) or {
 				last := rlock a.results {
 					a.results[tab.ref()] or { TabResult{} }
 				}

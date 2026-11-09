@@ -106,6 +106,20 @@ fn (mut p Btree) update(obj PageObject) !int {
 	// tid.
 	own_version := page.get(obj.key, obj.tid)
 	page.update(obj, obj.tid)!
+
+	// Usually the new version fits in the same page, so it's added there rather
+	// than storing the page and finding it again (see add). It has the same key,
+	// so it's on the same page that add would find.
+	obj_len := obj.length()
+	if !own_version.is_blob_ref && obj_len <= p.max_allowed_in_page() / 2
+		&& page.used + obj_len <= p.page_size {
+		page.add(obj)!
+		p.store_page(page_number, page)!
+		p.fix_parent_pages(path)!
+
+		return page_number
+	}
+
 	p.store_page(page_number, page)!
 	if own_version.is_blob_ref {
 		p.remove_blob(own_version)!

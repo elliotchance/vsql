@@ -239,29 +239,32 @@ fn (mut p Page) add(obj PageObject) ! {
 	//
 	// We return a SQLSTATE 40001 to let the client know it should retry the
 	// entire transaction again.
-	mut objects := p.objects()
-	if p.versions(obj.key).len >= 2 {
+	end := int(p.used) - page_header_size
+	mut versions := 0
+	mut at := 0
+	for at < end {
+		cmp := compare_bytes(p.object_key(at), obj.key)
+		if cmp > 0 {
+			break
+		}
+		if cmp == 0 {
+			versions++
+		}
+		at += p.object_len(at)
+	}
+	if versions >= 2 {
 		return sqlstate_40001('avoiding concurrent write on individual row')
 	}
 
-	// Make sure the object is added in sorted order. This is not the most
-	// efficient way to do this. It will have to do for now.
-	objects << obj
-
-	objects.sort_with_compare(fn (a &PageObject, b &PageObject) int {
-		return compare_bytes(a.key, b.key)
-	})
-
-	mut offset := 0
-	for object in objects {
-		s := object.bytes()
-		for i in 0 .. s.len {
-			p.data[offset] = s[i]
-			offset++
-		}
+	// Objects are kept in order of their key, so the objects after it are moved
+	// to make room.
+	data := obj.bytes()
+	if at < end {
+		unsafe { vmemmove(&p.data[at + data.len], &p.data[at], end - at) }
 	}
+	unsafe { vmemcpy(&p.data[at], data.data, data.len) }
 
-	p.used += u16(obj.length())
+	p.used += u16(data.len)
 }
 
 // delete will remove a key from a page if it exists, otherwise no action will

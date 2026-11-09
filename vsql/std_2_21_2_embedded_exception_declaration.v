@@ -129,6 +129,18 @@ fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema stri
 	}
 }
 
+// whenever_features returns the features of an <SQL condition>, from its first
+// word.
+//
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Conformance Rules, 1 and 2
+fn whenever_features(condition string) []string {
+	return match condition.to_upper() {
+		'SQLSTATE' { ['B041'] }
+		'CONSTRAINT' { ['B041', 'F491'] }
+		else { []string{} }
+	}
+}
+
 // sqlstate_code reads an <SQLSTATE class code> or <SQLSTATE subclass code>,
 // which may be more than one token (such as 2B), but there can't be a
 // <separator> in it.

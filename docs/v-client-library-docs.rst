@@ -33,6 +33,8 @@ fn compile_module
 
 compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C source includes the header as name + ".h", so name is usually the file name of the module without its extension. The C source must be compiled with libvsql.h and linked with libvsql.
 
+ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Conformance Rules, 6
+
 fn conflicting_cursor
 ---------------------
 
@@ -52,6 +54,18 @@ fn default_connection_options
    pub fn default_connection_options() ConnectionOptions
 
 default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
+
+fn direct_features
+------------------
+
+
+.. code-block:: v
+
+   pub fn direct_features(sql_stmt string) ![]string
+
+direct_features returns the Feature IDs outside of Core SQL that a <direct SQL statement> of Connection.direct or Agent.direct uses (see the SQL Flagging docs), sorted and without duplicates. The statement is only parsed, not executed.
+
+ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Conformance Rules, 1
 
 fn extension_keywords
 ---------------------
@@ -568,6 +582,9 @@ struct CompiledModule
    pub:
    	header string
    	source string
+   	// features are the Feature IDs outside of Core SQL that the module uses
+   	// (see the SQL Flagging docs), sorted and without duplicates.
+   	features []string
    }
 
 CompiledModule is the C header (.h) and source (.c) of an SQL-client module.
@@ -906,6 +923,10 @@ struct PrecompiledProgram
    pub:
    	implied_module string
    	source         string
+   	// features are the Feature IDs outside of Core SQL that the program uses
+   	// (see the SQL Flagging docs), sorted and without duplicates. The implied
+   	// module doesn't need the language of a module (B112).
+   	features []string
    }
 
 PrecompiledProgram is the C of an <embedded SQL C program>, and its implied module.

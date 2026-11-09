@@ -424,9 +424,15 @@ fn test_all() ! {
 
 	// Every feature that can be flagged (including the vsql extensions) must be
 	// in the flags of at least one test that has the "flags" directive, so it
-	// can't be missed by a test that only happens to use it.
+	// can't be missed by a test that only happens to use it. A feature that's
+	// only found in an SQL-client module (such as a descriptor name) is checked
+	// by test_flagging_module instead.
 	if filter_test == '' {
-		missing := sql_flagger_features()!.filter(it !in flagged)
+		mut module_features := []string{}
+		for _, features in flagging_modules {
+			module_features << features
+		}
+		missing := sql_flagger_features()!.filter(it !in flagged && it !in module_features)
 		assert missing == [], 'not flagged by any test with /* flags */: ${missing.join(', ')}'
 	}
 }
@@ -2185,6 +2191,179 @@ fn test_split_terminated_statements() {
 		assert [...statements, rest] == expected, script
 	}
 	assert split_statements('VALUES 1; VALUES 2 ') == ['VALUES 1', 'VALUES 2']
+}
+
+const flagging_prepare = 'PROCEDURE s (SQLSTATE, :q CHAR(9)); PREPARE s FROM :q; '
+
+const flagging_dynamic_cursor = flagging_prepare + 'DECLARE c CURSOR FOR s; '
+
+// SQL-client modules. Every module needs its language (B112), which isn't listed
+// in each row here.
+const flagging_modules = {
+	// A host parameter isn't a <dynamic parameter specification> (B031), and a
+	// cursor doesn't need its vsql extensions in a module.
+	'PROCEDURE p (SQLSTATE); COMMIT;':                                                                                                                                                                                                                                                  []string{}
+	'PROCEDURE p (SQLSTATE, :x INT); DELETE FROM t WHERE x = :x;':                                                                                                                                                                                                                      []string{}
+	'PROCEDURE p (SQLSTATE, :x INT); SELECT x INTO :x FROM t;':                                                                                                                                                                                                                         []string{}
+	"PROCEDURE p (SQLSTATE); SET SCHEMA 'x';":                                                                                                                                                                                                                                          ['F761']
+	'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN c; PROCEDURE f (SQLSTATE, :x INT); FETCH c INTO :x; PROCEDURE d (SQLSTATE); DELETE FROM t WHERE CURRENT OF c; PROCEDURE u (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF c; PROCEDURE e (SQLSTATE); CLOSE c;': []string{}
+	// The grammar and the lexer still find features, including of a host
+	// parameter that isn't used.
+	'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = CURRENT_SCHEMA;':                                                                                                                                                                                                                  ['F763']
+	'PROCEDURE p (SQLSTATE, :x BIGINT); COMMIT;':                                                                                                                                                                                                                                       ['T071']
+	"PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = 'a'\n'b';":                                                                                                                                                                                                                        ['F271']
+	'DECLARE c CURSOR WITHOUT HOLD FOR SELECT x FROM t FETCH FIRST 1 ROW ONLY; PROCEDURE o (SQLSTATE); OPEN c;':                                                                                                                                                                        [
+		'F857',
+		'T551',
+	]
+	'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN c; PROCEDURE f (SQLSTATE, :x INT); FETCH NEXT FROM c INTO :x;':                                                                                                                                                 ['F431']
+	// Connection statements.
+	'PROCEDURE p (SQLSTATE); CONNECT TO DEFAULT;':                                                                                                                                                                                                                                      ['F771']
+	'PROCEDURE p (SQLSTATE); SET CONNECTION DEFAULT;':                                                                                                                                                                                                                                  ['F771']
+	'PROCEDURE p (SQLSTATE); DISCONNECT ALL;':                                                                                                                                                                                                                                          ['F771']
+	// A descriptor name that's an identifier also needs B035.
+	'PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR d;':                                                                                                                                                                                                                                   [
+		'B031',
+		'B035',
+	]
+	'PROCEDURE p (SQLSTATE); ALLOCATE SQL DESCRIPTOR "d";':                                                                                                                                                                                                                             [
+		'B031',
+		'B035',
+	]
+	"PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR 'd' WITH MAX 5;":                                                                                                                                                                                                                      ['B031']
+	"PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR GLOBAL 'd';":                                                                                                                                                                                                                          ['B031']
+	"PROCEDURE p (SQLSTATE, :n INT); ALLOCATE DESCRIPTOR 'd' WITH MAX :n;":                                                                                                                                                                                                             [
+		'B031',
+		'B032',
+	]
+	"PROCEDURE p (SQLSTATE); DEALLOCATE DESCRIPTOR 'd';":                                                                                                                                                                                                                               ['B031']
+	'PROCEDURE p (SQLSTATE); DEALLOCATE DESCRIPTOR d;':                                                                                                                                                                                                                                 [
+		'B031',
+		'B035',
+	]
+	"PROCEDURE p (SQLSTATE, :n INT); GET DESCRIPTOR 'd' :n = COUNT;":                                                                                                                                                                                                                   ['B031']
+	"PROCEDURE p (SQLSTATE, :n INT); GET DESCRIPTOR 'd' VALUE 1 :n = KEY_MEMBER;":                                                                                                                                                                                                      [
+		'B031',
+		'T301',
+	]
+	"PROCEDURE p (SQLSTATE); SET DESCRIPTOR 'd' COUNT = 1;":                                                                                                                                                                                                                            ['B031']
+	// Prepared statements. A literal is an extension.
+	flagging_prepare:                                                                                                                                                                                                                                                                   ['B031']
+	"PROCEDURE s (SQLSTATE); PREPARE s FROM 'VALUES 1';":                                                                                                                                                                                                                               [
+		'B031',
+		'V117-01',
+	]
+	'PROCEDURE p (SQLSTATE, :q CHAR(9)); EXECUTE IMMEDIATE :q;':                                                                                                                                                                                                                        ['B031']
+	"PROCEDURE p (SQLSTATE); EXECUTE IMMEDIATE 'COMMIT';":                                                                                                                                                                                                                              [
+		'B031',
+		'V118-01',
+	]
+	flagging_prepare + 'PROCEDURE p (SQLSTATE); DEALLOCATE PREPARE s;':                                                                                                                                                                                                                 [
+		'B031',
+		'B032',
+	]
+	flagging_prepare + "PROCEDURE p (SQLSTATE); DESCRIBE s USING DESCRIPTOR 'd';":                                                                                                                                                                                                      ['B031']
+	flagging_prepare + 'PROCEDURE p (SQLSTATE); DESCRIBE s USING SQL DESCRIPTOR d;':                                                                                                                                                                                                    [
+		'B031',
+		'B035',
+	]
+	flagging_prepare + 'PROCEDURE p (SQLSTATE, :n INT); EXECUTE s USING :n;':                                                                                                                                                                                                           ['B031']
+	flagging_prepare + 'PROCEDURE p (SQLSTATE, :n INT); EXECUTE s INTO :n;':                                                                                                                                                                                                            [
+		'B031',
+		'B032',
+	]
+	flagging_prepare + 'PROCEDURE p (SQLSTATE); EXECUTE s INTO DESCRIPTOR d;':                                                                                                                                                                                                          [
+		'B031',
+		'B032',
+		'B035',
+	]
+	// A statement or a host parameter can be named DESCRIPTOR.
+	flagging_prepare + 'PROCEDURE p (SQLSTATE, :descriptor INT, :i INT); EXECUTE s USING :descriptor INDICATOR :i;':                                                                                                                                                                    ['B031']
+	'PROCEDURE s (SQLSTATE, :q CHAR(9)); PREPARE descriptor FROM :q; PROCEDURE p (SQLSTATE); EXECUTE descriptor;':                                                                                                                                                                      ['B031']
+	// Dynamic cursors, each statement on its own.
+	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE, :n INT); OPEN c USING :n;':                                                                                                                                                                                                       ['B031']
+	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE, :n INT); FETCH c INTO :n;':                                                                                                                                                                                                       ['B031']
+	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE, :n INT); FETCH NEXT FROM c INTO :n;':                                                                                                                                                                                             [
+		'B031',
+		'F431',
+	]
+	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE); CLOSE c;':                                                                                                                                                                                                                       ['B031']
+	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE CURRENT OF c;':                                                                                                                                                                                              ['B031']
+	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF c;':                                                                                                                                                                                         ['B031']
+	flagging_prepare + 'DECLARE c CURSOR WITHOUT HOLD FOR s; PROCEDURE p (SQLSTATE); CLOSE c;':                                                                                                                                                                                         [
+		'B031',
+		'T551',
+	]
+	// Diagnostics.
+	'PROCEDURE p (SQLSTATE, :n INT); GET DIAGNOSTICS :n = NUMBER;':                                                                                                                                                                                                                     ['F121']
+	'PROCEDURE p (SQLSTATE, :n INT, :m INT); GET DIAGNOSTICS :n = TRANSACTIONS_COMMITTED, :m = ROW_COUNT;':                                                                                                                                                                             [
+		'F121',
+		'T511',
+	]
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(9), :n INT); GET DIAGNOSTICS CONDITION 1 :s = MESSAGE_TEXT, :n = CONDITION_NUMBER;':                                                                                                                                                             ['F121']
+	'PROCEDURE p (SQLSTATE, :s CHAR(9)); GET DIAGNOSTICS CONDITION 1 :s = MESSAGE_TEXT;':                                                                                                                                                                                               [
+		'F121',
+		'F122',
+	]
+	// Indicator parameters that have different data types, in any statement.
+	'PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; PROCEDURE q (SQLSTATE, :x INT, :i SMALLINT); SELECT x INTO :x INDICATOR :i FROM t;':                                                                                                                   []string{}
+	'PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; PROCEDURE q (SQLSTATE, :x INT, :i INT); SELECT x INTO :x INDICATOR :i FROM t;':                                                                                                                        ['F611']
+	"PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :x :i AND y = ':' AND z = ':'; PROCEDURE o (SQLSTATE, :x INT, :i INT); OPEN c;":                                                                        ['F611']
+}
+
+fn test_flagging_module() ! {
+	for body, features in flagging_modules {
+		m := compile_module(module_header + body, 'm')!
+		assert m.features == unique_features(features, 'B112'), body
+	}
+}
+
+fn test_flagging_embedded() ! {
+	precompiled := fn (body string) ![]string {
+		return precompile_c(embed_header + body, 'x.sqc')!.features
+	}
+
+	// A program needs its language (B012), but not the language of its implied
+	// module (B112). The rules of the statements are the same as a module.
+	assert precompiled('EXEC SQL COMMIT;')! == ['B012']
+	assert precompiled('EXEC SQL DELETE FROM t WHERE x = CURRENT_SCHEMA;')! == ['B012', 'F763']
+	assert precompiled('EXEC SQL CONNECT TO DEFAULT;')! == ['B012', 'F771']
+
+	// long long needs T071, even if it isn't used.
+	assert precompile_c('EXEC SQL BEGIN DECLARE SECTION;
+char SQLSTATE[6]; long long a;
+EXEC SQL END DECLARE SECTION;
+EXEC SQL COMMIT;',
+		'x.sqc')!.features == ['B012', 'T071']
+
+	// The <SQL condition> of an <embedded exception declaration>.
+	assert precompiled('EXEC SQL WHENEVER SQLEXCEPTION CONTINUE; EXEC SQL COMMIT;')! == ['B012']
+	assert precompiled('EXEC SQL WHENEVER SQLSTATE (22) CONTINUE; EXEC SQL COMMIT;')! == [
+		'B012',
+		'B041',
+	]
+	assert precompiled('EXEC SQL WHENEVER CONSTRAINT c CONTINUE; EXEC SQL COMMIT;')! == [
+		'B012',
+		'B041',
+		'F491',
+	]
+}
+
+fn test_flagging_direct() ! {
+	// Direct SQL itself, and whatever else the statement uses. It's only parsed.
+	assert direct_features('COMMIT;')! == ['B021']
+	assert direct_features('SELECT * FROM does_not_exist;')! == ['B021']
+	assert direct_features('SELECT CURRENT_SCHEMA FROM t;')! == ['B021', 'F763']
+	assert 'B021' in direct_features('CONNECT TO DEFAULT;')!
+
+	// The same errors as Connection.direct.
+	for stmt in ['VALUES 1', 'VALUES 1; VALUES 2;', 'VALUES ?;', 'VALUES :x;'] {
+		direct_features(stmt) or {
+			assert err.code() == sqlstate_to_int('42601')
+			continue
+		}
+		assert false, stmt
+	}
 }
 
 // ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>

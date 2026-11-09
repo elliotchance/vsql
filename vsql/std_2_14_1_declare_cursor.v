@@ -627,6 +627,8 @@ struct ModuleCursor {
 	query     string
 	degree    int
 	statement string
+	// features are the features that the declaration uses.
+	features []string
 }
 
 // begin is begin for a statement of the cursor, which is also the cursor of any
@@ -650,6 +652,7 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 	// instead.
 	//
 	// ISO/IEC 9075-2:2016(E), 20.15, <dynamic declare cursor>, General Rules, 1.e
+	// ISO/IEC 9075-2:2016(E), 20.15, <dynamic declare cursor>, Conformance Rules, 1
 	query := cursor_specification(text)!
 	mut statement := ''
 	mut q := new_module_tokens(query)!
@@ -659,14 +662,18 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 	declaration_text := if statement == '' {
 		text
 	} else {
-		text.runes()[..text.runes().len - query.runes().len].string() + ' VALUES 1'
+		text.runes()[..text.runes().len - query.runes().len].string() + ' SELECT 1 FROM t'
 	}
 
 	text_sql, _ := replace_host_parameters(declaration_text, fn (_ string) !string {
 		return '?'
 	})!
 	// The text starts with DECLARE, so it's a <declare cursor> if it parses.
-	declaration := parse_tokens(tokenize(text_sql)!)! as DeclareCursor
+	stmt, mut features := parse_module_sql(text_sql)!
+	declaration := stmt as DeclareCursor
+	if statement != '' {
+		features << 'B031'
+	}
 	if declaration.updatability != none {
 		return sqlstate_42601('cursor ${declaration.name}: FOR READ ONLY and FOR UPDATE are not supported in a module')
 	}
@@ -686,6 +693,7 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 		query:     if statement == '' { query } else { '' }
 		degree:    degree
 		statement: statement
+		features:  features
 	}
 }
 

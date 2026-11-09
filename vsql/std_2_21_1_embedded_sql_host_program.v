@@ -30,6 +30,10 @@ pub struct PrecompiledProgram {
 pub:
 	implied_module string
 	source         string
+	// features are the Feature IDs outside of Core SQL that the program uses
+	// (see the SQL Flagging docs), sorted and without duplicates. The implied
+	// module doesn't need the language of a module (B112).
+	features []string
 }
 
 // precompile_c precompiles an <embedded SQL C program>. file_name is used for
@@ -58,6 +62,8 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 	mut runtime := []string{}
 	mut in_declare := false
 	mut procedure_lines := []int{}
+	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Conformance Rules, 1
+	mut features := ['B012']
 	mut start := 0
 	mut i := 0
 	for i < cs.len {
@@ -160,6 +166,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 			// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.c
 			'WHENEVER' {
 				whenever.declare(mut t, 'PUBLIC') or { return embedded_error(line, err) }
+				features << whenever_features(t.tokens[1].text)
 				program += new_lines
 				continue
 			}
@@ -250,6 +257,14 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		return error_with_code(message, err.code())
 	}
 
+	// A <C numeric variable> that contains long long, even if it's not used.
+	//
+	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Conformance Rules, 11
+	if variables.values().any(it.typ == 'BIGINT') {
+		features << 'T071'
+	}
+	features << m.features
+
 	// A static function that isn't called would be a warning of the C compiler,
 	// so it's only in the implied module.
 	called := SQLClientModule{
@@ -261,6 +276,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		implied_module: implied
 		source:         called.c_source('', true, runtime) + '#line 1 ${c_string(file_name)}\n' +
 			program
+		features:       unique_features(features)
 	}
 }
 

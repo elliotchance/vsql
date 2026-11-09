@@ -19,6 +19,9 @@ pub struct CompiledModule {
 pub:
 	header string
 	source string
+	// features are the Feature IDs outside of Core SQL that the module uses
+	// (see the SQL Flagging docs), sorted and without duplicates.
+	features []string
 }
 
 struct SQLClientModule {
@@ -31,6 +34,9 @@ struct SQLClientModule {
 	schema     string
 	cursors    []ModuleCursor
 	procedures []ExternallyInvokedProcedure
+	// features are the features that the module uses, other than its language
+	// (see compile_module).
+	features []string
 }
 
 // require adds a section of the C runtime, and the sections that it uses.
@@ -87,12 +93,15 @@ const c_runtime_requires = {
 // source includes the header as name + ".h", so name is usually the file name
 // of the module without its extension. The C source must be compiled with
 // libvsql.h and linked with libvsql.
+//
+// ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Conformance Rules, 6
 pub fn compile_module(source string, name string) !CompiledModule {
 	m := parse_sql_client_module(source)!
 
 	return CompiledModule{
-		header: m.c_header(name)
-		source: m.c_source(name, false, [])
+		header:   m.c_header(name)
+		source:   m.c_source(name, false, [])
+		features: unique_features(m.features, 'B112')
 	}
 }
 
@@ -161,6 +170,8 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 
 	mut procedures := []ExternallyInvokedProcedure{}
 	mut opened := []string{}
+	mut features := []string{}
+	mut indicators := []string{}
 	for j, declaration in declarations {
 		t = declaration
 		mut procedure := t.procedure_declaration()!
@@ -178,10 +189,15 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 		procedure.statement = parse_module_statement(statements[j], procedure, declared,
 			prepared)!
 		procedures << procedure
+		features << procedure.parameter_features()!
+		features << module_statement_features(statements[j], procedure, declared)!
+		indicators << indicator_types(statements[j], procedure)!
 
 		mut statement := new_module_tokens(statements[j])!
 		if statement.next_word() == 'OPEN' {
-			opened << statement.module_cursor(procedure, declared)!.name
+			cursor := statement.module_cursor(procedure, declared)!
+			opened << cursor.name
+			indicators << indicator_types(cursor.query, procedure)!
 		}
 	}
 
@@ -192,7 +208,21 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 		}
 	}
 
-	return SQLClientModule{schema, cursors, procedures}
+	for cursor in cursors {
+		features << cursor.features
+	}
+	_, lexical_features := tokenize_with_features(source)!
+	features << lexical_features
+
+	// The indicator parameters must have the same data type without F611. Each
+	// of the exact numeric types that vsql allows is implementation-defined.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, Conformance Rules, 7
+	if unique_features(indicators).len > 1 {
+		features << 'F611'
+	}
+
+	return SQLClientModule{schema, cursors, procedures, features}
 }
 
 // module_header reads everything before the first PROCEDURE, and returns the

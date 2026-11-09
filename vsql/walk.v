@@ -9,10 +9,14 @@ struct PageIterator {
 	max []u8
 mut:
 	btree Btree
-	// objects is just for performance so we dont need to parse the objects in
-	// the page several times while we iterate that page.
-	objects []PageObject
-	// path describes the depth. At each depth is an iterator for that page.
+	// leaf is the leaf page that's being iterated, and leaf_end is where its
+	// objects end. Only the objects that are returned are read, rather than all
+	// of them for every page (a search for one key reads one page).
+	leaf     Page
+	leaf_end int
+	// path describes the depth. At each depth is an iterator for that page,
+	// which is the index of a pointer in a page before the leaf, and the offset
+	// of the next object in the leaf.
 	path           []int
 	depth_iterator []int
 	// parents are the objects of the pages of path before the leaf, kept so that
@@ -57,21 +61,22 @@ fn (mut iter PageIterator) next() ?PageObject {
 		// belongs to the leaf not which is does not search.
 		iter.depth_iterator << 0
 
-		// Load all the objects for this leaf. Making sure to skip over any keys
-		// that are out of bounds.
-		(iter.btree.pager.read_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects_in_place(mut iter.objects)
-		for object in iter.objects {
-			if compare_bytes(object.key, iter.min) < 0 {
-				iter.depth_iterator[iter.depth_iterator.len - 1]++
-			}
+		// Skip over the keys of this leaf that are before min. The keys of a page
+		// are in order.
+		iter.leaf = iter.btree.pager.read_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }
+		iter.leaf_end = int(iter.leaf.used) - page_header_size
+		mut offset := 0
+		for offset < iter.leaf_end && iter.leaf.compare_key_at(offset, iter.min) < 0 {
+			offset += iter.leaf.object_len(offset)
 		}
+		iter.depth_iterator[iter.depth_iterator.len - 1] = offset
 	}
 
 	// If this page is done, roll up to the parent and continue to traverse
 	// down. This repeats because leaf pages may be empty after objects are
 	// removed by COMMIT, ROLLBACK or isolation_end, since those don't remove
 	// empty pages from the B-tree.
-	for iter.depth_iterator[iter.depth_iterator.len - 1] >= iter.objects.len {
+	for iter.depth_iterator[iter.depth_iterator.len - 1] >= iter.leaf_end {
 		for {
 			if iter.path.len == 1 {
 				return none
@@ -100,7 +105,8 @@ fn (mut iter PageIterator) next() ?PageObject {
 				if page.kind != kind_not_leaf {
 					// The page is only used by the iterator, so its objects don't
 					// need to be copied.
-					page.objects_in_place(mut iter.objects)
+					iter.leaf = page
+					iter.leaf_end = int(page.used) - page_header_size
 					break
 				}
 				mut objects := []PageObject{}
@@ -114,8 +120,9 @@ fn (mut iter PageIterator) next() ?PageObject {
 		}
 	}
 
-	o := iter.objects[iter.depth_iterator[iter.depth_iterator.len - 1]]
-	iter.depth_iterator[iter.depth_iterator.len - 1]++
+	offset := iter.depth_iterator[iter.depth_iterator.len - 1]
+	o := iter.leaf.object_in_place(offset)
+	iter.depth_iterator[iter.depth_iterator.len - 1] = offset + iter.leaf.object_len(offset)
 
 	// We also need to bail out if we encounter a value greater the upper bound.
 	if compare_bytes(o.key, iter.max) > 0 {

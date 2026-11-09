@@ -189,6 +189,26 @@ fn (mut p Page) update(old PageObject, tid u64) ! {
 	}
 }
 
+// compare_key_at compares the key of the object at offset with key, like
+// compare_bytes, but without slicing the key out of the page. It's used for
+// every key that a search looks at.
+@[direct_array_access]
+fn (p Page) compare_key_at(offset int, key []u8) int {
+	key_len := int(binary.big_endian_u16_at(p.data, offset + 20))
+	min := if key_len < key.len { key_len } else { key.len }
+	if min > 0 {
+		cmp := unsafe {
+			int(C.memcmp(&u8(p.data.data) + offset + page_object_prefix_length - 1, key.data,
+				u32(min)))
+		}
+		if cmp != 0 {
+			return cmp
+		}
+	}
+
+	return key_len - key.len
+}
+
 // object_len returns the length of the object at offset.
 fn (p Page) object_len(offset int) int {
 	return int(binary.big_endian_u32_at(p.data, offset))
@@ -199,12 +219,6 @@ fn (p Page) object_tid(offset int) u64 {
 	return binary.big_endian_u64_at(p.data, offset + page_object_tid_at)
 }
 
-// object_key returns the key of the object at offset, without copying it. It
-// must not be kept after the page is changed.
-fn (p Page) object_key(offset int) []u8 {
-	return p.data[offset + page_object_prefix_length - 1..page_object_value_at(p.data, offset) - 1]
-}
-
 // versions returns all versions of a record. The result will have 0, 1 or 2
 // elements.
 fn (p Page) versions(key []u8) []u64 {
@@ -212,7 +226,7 @@ fn (p Page) versions(key []u8) []u64 {
 	end := int(p.used) - page_header_size
 	mut offset := 0
 	for offset < end {
-		if compare_bytes(p.object_key(offset), key) == 0 {
+		if p.compare_key_at(offset, key) == 0 {
 			versions << p.object_tid(offset)
 		}
 		offset += p.object_len(offset)
@@ -243,7 +257,7 @@ fn (mut p Page) add(obj PageObject) ! {
 	mut versions := 0
 	mut at := 0
 	for at < end {
-		cmp := compare_bytes(p.object_key(at), obj.key)
+		cmp := p.compare_key_at(at, obj.key)
 		if cmp > 0 {
 			break
 		}
@@ -276,7 +290,7 @@ fn (mut p Page) delete(key []u8, tid u64) bool {
 	mut did_delete := false
 	for offset < end {
 		len := p.object_len(offset)
-		if p.object_tid(offset) != tid || compare_bytes(key, p.object_key(offset)) != 0 {
+		if p.object_tid(offset) != tid || p.compare_key_at(offset, key) != 0 {
 			offset += len
 			continue
 		}
@@ -297,7 +311,7 @@ fn (p Page) get(key []u8, tid u64) PageObject {
 	end := int(p.used) - page_header_size
 	mut offset := 0
 	for offset < end {
-		if p.object_tid(offset) == tid && compare_bytes(key, p.object_key(offset)) == 0 {
+		if p.object_tid(offset) == tid && p.compare_key_at(offset, key) == 0 {
 			_, object := parse_page_object(p.data[offset..])
 
 			return object
@@ -322,7 +336,7 @@ fn (mut p Page) expire(key []u8, tid u64, xid u64) !bool {
 	mut offset := 0
 	mut modified := false
 	for offset < end {
-		if p.object_tid(offset) == tid && compare_bytes(key, p.object_key(offset)) == 0 {
+		if p.object_tid(offset) == tid && p.compare_key_at(offset, key) == 0 {
 			object_xid := binary.big_endian_u64_at(p.data, offset + page_object_xid_at)
 			if xid != 0 && object_xid != 0 && object_xid != xid {
 				return sqlstate_40001('avoiding concurrent write on individual row')
@@ -406,8 +420,7 @@ fn (p Page) find_pointer(key []u8) (int, int) {
 	mut pointer_at := page_object_value_at(p.data, 0)
 	for i := 0; offset < end; i++ {
 		value_at := page_object_value_at(p.data, offset)
-		key_at := offset + page_object_prefix_length - 1
-		if compare_bytes(key, p.data[key_at..value_at - 1]) < 0 {
+		if p.compare_key_at(offset, key) > 0 {
 			break
 		}
 

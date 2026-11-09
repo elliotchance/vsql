@@ -65,25 +65,35 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4.a
-			if left.is_null || right.is_null {
+			// The pattern and the escape character are checked before a NULL
+			// operand makes the result UNKNOWN, so they're still an error when
+			// the value is NULL. When the escape character is NULL the format
+			// of the pattern depends on it, so it can't be checked.
+			//
+			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules,
+			// 2 and 3
+			mut escape := ?rune(none)
+			mut escape_is_null := false
+			if has_escape {
+				escape_value := compiled_escape.run(mut conn, data, params)!
+				if escape_value.is_null {
+					escape_is_null = true
+				} else {
+					escape = escape_character(escape_value)!
+				}
+			}
+
+			mut pattern := RegularNode{}
+			if !right.is_null && !escape_is_null {
+				pattern = parse_similar_pattern(right.string_value(), escape)!
+			}
+
+			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules,
+			// 4.a and 4.b
+			if left.is_null || right.is_null || escape_is_null {
 				return new_unknown_value()
 			}
 
-			mut escape := ?rune(none)
-			if has_escape {
-				escape_value := compiled_escape.run(mut conn, data, params)!
-
-				// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General
-				// Rules, 4.b
-				if escape_value.is_null {
-					return new_unknown_value()
-				}
-
-				escape = escape_character(escape_value)!
-			}
-
-			pattern := parse_similar_pattern(right.string_value(), escape)!
 			result := pattern.matches(left.string_value())
 
 			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>,Syntax Rules, 2

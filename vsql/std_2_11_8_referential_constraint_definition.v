@@ -246,7 +246,7 @@ fn (mut f Storage) check_foreign_keys(mut conn Connection, t Table, rows []Row) 
 
 	for key in t.foreign_keys {
 		referencing_rows := rows.filter(fn [key] (row Row) bool {
-			return !key.columns.any(row.data[it].is_null)
+			return !key.columns.any((row.data[it] or { Value{} }).is_null)
 		})
 		if referencing_rows.len == 0 || f.defer_check(t, key.name, key.characteristics) {
 			continue
@@ -292,7 +292,7 @@ fn search_row(mut conn Connection, row Row, from_columns []string, to_table Tabl
 	mut data := map[string]Value{}
 	for i, column in to_columns {
 		typ := (to_table.column(column) or { return none }).typ
-		data[column] = exact_cast(mut conn, row.data[from_columns[i]], typ) or { return none }
+		data[column] = exact_cast(mut conn, row.data[from_columns[i]] or { Value{} }, typ) or { return none }
 	}
 
 	return Row{
@@ -492,12 +492,14 @@ fn (mut s ChangedSites) add(conn &Connection, table Table, changes []RowChange, 
 			if sites.len > 0 {
 				return sqlstate_27000('a row of ${table.name} that was updated is deleted')
 			}
-			s.deleted[table.name.storage_id()] << change.old
+			unsafe {
+				s.deleted[table.name.storage_id()] << change.old
+			}
 			continue
 		}
 
 		for column in columns {
-			value := change.new.data[column]
+			value := change.new.data[column] or { Value{} }
 			if previous := sites[column] {
 				if is_distinct(conn, previous, value)! {
 					return sqlstate_27000('column ${column} of a row of ${table.name} is updated to two different values')
@@ -559,10 +561,15 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 	mut old := map[string][]Row{}
 	mut written := map[string]map[string]Row{}
 	for change in changes {
-		old[t.name.storage_id()] << change.old
+		unsafe {
+			old[t.name.storage_id()] << change.old
+		}
 		if !change.is_delete {
 			mut row := change.new
-			written[t.name.storage_id()][row.object_key(t)!.bytestr()] = row
+			key := row.object_key(t)!.bytestr()
+			unsafe {
+				written[t.name.storage_id()][key] = row
+			}
 		}
 	}
 
@@ -620,7 +627,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				// A row that was deleted can't also be updated by an action
 				// (General Rule 13). It's no longer stored, so it isn't one
 				// of the matching rows.
-				for row in sites.deleted[table_name] {
+				for row in sites.deleted[table_name] or { []Row{} } {
 					value := key_value(row, key.columns, types, time_zone).bytestr()
 					if value in updated_keys
 						|| (value in deleted_keys && key.delete_rule != 'CASCADE') {
@@ -657,7 +664,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						column := referencing.column(column_name)!
 						after.data[column_name] = match rule {
 							'CASCADE' {
-								v := cast(mut conn, 'for column ${column_name}', updated_keys[value].data[key.referenced_columns[i]],
+								v := cast(mut conn, 'for column ${column_name}', (updated_keys[value] or { Row{} }).data[key.referenced_columns[i]] or { Value{} },
 									column.typ)!
 								if column.not_null && v.is_null {
 									return sqlstate_23502(referencing, column_name)
@@ -688,8 +695,13 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				mut moved := []Row{}
 				for change in new_changes {
 					mut before := change.old
-					old[table_name] << before
-					written[table_name].delete(before.object_key(referencing)!.bytestr())
+					unsafe {
+						old[table_name] << before
+					}
+					before_key := before.object_key(referencing)!.bytestr()
+					unsafe {
+						written[table_name].delete(before_key)
+					}
 					if change.is_delete {
 						f.delete_row(table_name, mut before)!
 						continue
@@ -701,15 +713,23 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						moved << after
 					} else {
 						f.update_row(before, mut after, referencing)!
-						written[table_name][after.object_key(referencing)!.bytestr()] = after
+						after_key := after.object_key(referencing)!.bytestr()
+						unsafe {
+							written[table_name][after_key] = after
+						}
 					}
 				}
 				for mut row in moved {
 					f.write_row(mut row, referencing)!
-					written[table_name][row.object_key(referencing)!.bytestr()] = row
+					row_key := row.object_key(referencing)!.bytestr()
+					unsafe {
+						written[table_name][row_key] = row
+					}
 				}
 
-				action_changes[table_name] << new_changes
+				unsafe {
+					action_changes[table_name] << new_changes
+				}
 				pending_tables << table_name
 				pending_changes << new_changes
 			}
@@ -724,15 +744,15 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		}
 
 		table := f.table(table_name)
-		rows := written[table_name].values()
+		rows := (written[table_name] or { map[string]Row{} }).values()
 		f.check_unique_indexes(table, rows)!
 		f.check_unique_constraints(table, rows)!
 		f.check_foreign_keys(mut conn, table, rows)!
-		f.check_referencing_rows(mut conn, table, old[table_name], rows, time_zone)!
+		f.check_referencing_rows(mut conn, table, old[table_name] or { []Row{} }, rows, time_zone)!
 	}
 
 	for table_name in table_names {
-		table_changes := action_changes[table_name]
+		table_changes := action_changes[table_name] or { []RowChange{} }
 		conn.note_row_changes(f.table(table_name), table_changes.map(it.old), table_changes,
 			none)!
 	}
@@ -775,7 +795,7 @@ fn (mut f Storage) matching_rows(mut conn Connection, key ForeignKey, referencin
 	mut row_keys := matching.keys()
 	row_keys.sort()
 
-	return row_keys.map(matching[it])
+	return row_keys.map(matching[it] or { Row{} })
 }
 
 // read_existing_objects are the objects (index entries or rows) from start to

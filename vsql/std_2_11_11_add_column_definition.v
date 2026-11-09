@@ -79,7 +79,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 			mut after := row.for_storage()
 			after.data[column.name.sub_entity_name] = value
 			generated_columns.apply(mut conn, mut after)!
-			if column.not_null && after.data[column.name.sub_entity_name].is_null {
+			if column.not_null && (after.data[column.name.sub_entity_name] or { Value{} }).is_null {
 				return sqlstate_23502(new_table, column.name.sub_entity_name)
 			}
 			check_constraints.verify(mut conn, after)!

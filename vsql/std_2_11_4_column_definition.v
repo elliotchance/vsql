@@ -320,7 +320,7 @@ fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
 	// the table.
 	mut data := map[string]Value{}
 	for column in g.table.columns {
-		data[column.name.id()] = row.data[column.name.sub_entity_name]
+		data[column.name.id()] = row.data[column.name.sub_entity_name] or { Value{} }
 	}
 	full_row := new_row(data)
 

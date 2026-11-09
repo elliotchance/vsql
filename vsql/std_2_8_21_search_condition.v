@@ -16,10 +16,14 @@ struct WhereOperation {
 	tables    map[string]&Table
 mut:
 	conn &Connection
+	// compiled is the condition once it's compiled, which is when the plan is
+	// made for a WHERE (see add_where_plan), or on the first row (see
+	// eval_as_bool).
+	compiled []CompileResult
 }
 
-fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns, tables map[string]&Table) &WhereOperation {
-	return &WhereOperation{condition, params, columns, tables, conn}
+fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns, tables map[string]&Table, compiled []CompileResult) &WhereOperation {
+	return &WhereOperation{condition, params, columns, tables, conn, compiled}
 }
 
 fn (o &WhereOperation) str() string {
@@ -34,10 +38,9 @@ fn (o &WhereOperation) columns() Columns {
 
 fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 	mut new_rows := []Row{cap: rows.len}
-	mut compiled := []CompileResult{cap: 1}
 
 	for row in rows {
-		mut ok := eval_as_bool(mut o.conn, row, o.condition, o.params, o.tables, mut compiled)!
+		mut ok := eval_as_bool(mut o.conn, row, o.condition, o.params, o.tables, mut o.compiled)!
 		if ok {
 			new_rows << row
 		}

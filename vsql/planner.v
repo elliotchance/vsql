@@ -592,13 +592,16 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 		//
 		// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Syntax Rules, 1
 		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
-		if where.compile(mut c)!.contains_agg {
+		compiled := where.compile(mut c)!
+		if compiled.contains_agg {
 			return sqlstate_42601('an aggregate function cannot be used in WHERE')
 		}
 
+		// The condition that was just compiled is used for the rows, rather than
+		// compiling it again.
 		last_operation := plan.operations[plan.operations.len - 1]
 		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
-			tables)
+			tables, [compiled])
 	}
 }
 
@@ -677,7 +680,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, General Rules, 1
 	if having := having_clause {
 		plan.operations << new_where_operation(having, params, conn, plan.columns(),
-			tables)
+			tables, [])
 	}
 }
 

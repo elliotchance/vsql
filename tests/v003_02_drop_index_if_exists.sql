@@ -72,7 +72,7 @@ DROP INDEX IF EXISTS t_x;
 -- msg: DROP INDEX 1
 
 DROP INDEX IF NOT EXISTS t_x;
--- error 42601: syntax error: unexpected NOT
+-- error 42601: syntax error: unexpected NOT at line 1, column 15 near "DROP INDEX IF NOT EXISTS"
 
 /* extensions V003-01 V003-02 */
 EXPLAIN DROP INDEX IF EXISTS t_x;

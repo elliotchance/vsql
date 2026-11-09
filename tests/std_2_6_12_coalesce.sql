@@ -1,6 +1,6 @@
 -- # COALESCE needs at least two values.
 VALUES COALESCE(1);
--- error 42601: syntax error: unexpected ")", expecting ","
+-- error 42601: syntax error: unexpected ")" at line 1, column 18 near "COALESCE(1)", expecting ","
 
 -- # COALESCE of three or more values is a nested COALESCE (Syntax Rules, 1.e),
 -- # but EXPLAIN shows it as it was written.
@@ -13,7 +13,7 @@ EXPLAIN VALUES COALESCE(1, 2, 3);
 -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(COALESCE(1, 2, 3))
 
 VALUES COALESCE(1);
--- error 42601: syntax error: unexpected ")", expecting ","
+-- error 42601: syntax error: unexpected ")" at line 1, column 18 near "COALESCE(1)", expecting ","
 
 -- # The type combines the types of all the values (Syntax Rules, 5), and the
 -- # first value that isn't NULL is cast to it, so 1 becomes INTEGER or 1e0.

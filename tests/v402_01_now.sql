@@ -62,7 +62,7 @@ SELECT "NOW"() FROM t;
 -- error 42883: function does not exist: NOW()
 
 SELECT PUBLIC.NOW() FROM t;
--- error 42601: syntax error: unexpected "("
+-- error 42601: syntax error: unexpected "(" at line 1, column 18 near "PUBLIC.NOW()"
 
 -- # The flagger: what CURRENT_TIMESTAMP needs, and which alias was used.
 /* flags */

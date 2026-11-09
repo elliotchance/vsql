@@ -139,7 +139,7 @@ VALUES 1 < ALL (SELECT foo FROM t2);
 
 -- # The subquery isn't optional.
 VALUES 1 = ALL (1, 2);
--- error 42601: syntax error: unexpected number, expecting SELECT or TABLE or VALUES or "("
+-- error 42601: syntax error: unexpected number at line 1, column 17 near "= ALL (1,", expecting SELECT or TABLE or VALUES or "("
 
 -- # ANY is shown as SOME, which is the same.
 /* extensions V001-01 */

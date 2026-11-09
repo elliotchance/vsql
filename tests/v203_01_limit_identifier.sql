@@ -220,7 +220,7 @@ CREATE TABLE t4 (limit TIMESTAMP(0));
 
 -- # A name after LIMIT is an alias and then a syntax error, as before.
 SELECT * FROM limit LIMIT x;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 27 near "FROM limit LIMIT x"; hint: is a "," missing before x?
 
 -- # This was always a syntax error, so a sign after a name is the clause.
 /* extensions V203-01 */
@@ -229,14 +229,14 @@ SELECT * FROM limit limit - 1;
 
 -- # A delimited identifier isn't the clause.
 SELECT * FROM limit "limit" 1;
--- error 42601: syntax error: unexpected number
+-- error 42601: syntax error: unexpected number at line 1, column 29 near "FROM limit "limit" 1"
 
 SELECT * FROM limit "LIMIT" 1;
--- error 42601: syntax error: unexpected number
+-- error 42601: syntax error: unexpected number at line 1, column 29 near "FROM limit "LIMIT" 1"
 
 -- # At the start of the statement, it can't be either of them.
 limit - 1;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 1 near "limit -"
 
 -- # != (V301-01) is an operator that limit - 1 can follow, the same as <>.
 /* extensions V301-01 */

@@ -468,10 +468,10 @@ SELECT x FROM t WHERE x ILIKE COALESCE(y, 'c');
 -- # as a name it's a syntax error. LIKE NULL is a syntax error for another
 -- # reason: NULL on its own isn't a value.
 SELECT x FROM t WHERE x ILIKE NULL;
--- error 42601: syntax error: unexpected ILIKE
+-- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE NULL"
 
 SELECT x FROM t WHERE x LIKE NULL;
--- error 42601: syntax error: unexpected NULL
+-- error 42601: syntax error: unexpected NULL at line 1, column 30 near "WHERE x LIKE NULL"
 
 -- # More functions that return a character string.
 /* extensions V302-01 */
@@ -533,7 +533,7 @@ INSERT INTO c (x) VALUES ('B');
 -- # A pattern can't start with TRUE either, so it isn't ILIKE, while LIKE TRUE
 -- # parses and is an error because TRUE isn't a character string.
 SELECT x FROM t WHERE x ILIKE TRUE;
--- error 42601: syntax error: unexpected ILIKE
+-- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE TRUE"
 
 SELECT x FROM t WHERE x LIKE TRUE;
 -- error 42883: operator does not exist: CHARACTER VARYING LIKE BOOLEAN

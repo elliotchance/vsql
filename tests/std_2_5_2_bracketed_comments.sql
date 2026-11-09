@@ -83,7 +83,7 @@ comment */ 'b';
 -- COL1: ab
 
 VALUES 'a' /* there is no new line */ 'b';
--- error 42601: syntax error: unexpected string
+-- error 42601: syntax error: unexpected string at line 1, column 39 near "'a' /* there is no new line */ 'b'"; hint: is a "," missing before 'b'?
 
 -- # A comment that isn't closed is an error, including when a nested comment
 -- # is closed but the outer one isn't. "/ *" with a space is a divide followed
@@ -95,7 +95,7 @@ VALUES 1 /* a /* nested */ comment that doesn't end;
 -- error 42601: syntax error: unterminated comment: /* a /* nested */ comment that doesn't end
 
 VALUES 4/ *2;
--- error 42601: syntax error: unexpected "*"
+-- error 42601: syntax error: unexpected "*" at line 1, column 11 near "VALUES 4/ *2"
 
 -- # A statement that's only comments is empty, which is a syntax error.
  /* a statement that is only a comment */;

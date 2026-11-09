@@ -102,13 +102,13 @@ VALUES !1;
 
 -- # The error is about what was written.
 VALUES != 1;
--- error 42601: syntax error: unexpected "!="
+-- error 42601: syntax error: unexpected "!=" at line 1, column 8 near "VALUES != 1"
 
 VALUES <> 1;
--- error 42601: syntax error: unexpected "<>"
+-- error 42601: syntax error: unexpected "<>" at line 1, column 8 near "VALUES <> 1"
 
 VALUES 1 !== 2;
--- error 42601: syntax error: unexpected "="
+-- error 42601: syntax error: unexpected "=" at line 1, column 12 near "VALUES 1 !== 2"
 
 -- # A CHECK constraint and a generated column keep the standard spelling, so
 -- # that a dump doesn't depend on the extension.

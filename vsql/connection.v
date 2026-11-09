@@ -535,7 +535,7 @@ fn parse_sql(sql_stmt string) !(Stmt, bool, []Token, []string) {
 		}
 	}
 
-	stmt, mut features := parse_statement(tokens)!
+	stmt, mut features := parse_statement(tokens, sql_stmt)!
 	features << lexical_features
 	// Only a query, searched DELETE or searched UPDATE can be explained, any
 	// other statement is an error when it's executed (so isn't flagged).
@@ -552,16 +552,18 @@ fn parse_sql(sql_stmt string) !(Stmt, bool, []Token, []string) {
 }
 
 fn parse_tokens(tokens []Token) !Stmt {
-	stmt, _ := parse_statement(tokens)!
+	stmt, _ := parse_statement(tokens, '')!
 
 	return stmt
 }
 
 // parse_statement parses a statement, and also returns the features outside of
-// Core SQL that it uses (see flag).
-fn parse_statement(tokens []Token) !(Stmt, []string) {
+// Core SQL that it uses (see flag). source is the text of the tokens, if a syntax
+// error should say where it is (see describe_syntax_error).
+fn parse_statement(tokens []Token, source string) !(Stmt, []string) {
 	mut lexer := Lexer{
 		tokens: tokens
+		source: source
 	}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!
@@ -760,6 +762,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 	mut tokens := tokenize(create_table)!
 	mut lexer := Lexer{
 		tokens: tokens
+		source: create_table
 	}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!

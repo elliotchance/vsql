@@ -1,0 +1,224 @@
+// syntax_error.v describes where a syntax error from the parser is, and gives a
+// hint for some common mistakes.
+
+module vsql
+
+// syntax_error_context_length is the most characters of the statement that a
+// syntax error shows (see syntax_error_context).
+const syntax_error_context_length = 40
+
+const create_table_docs = 'https://vsql.readthedocs.io/en/latest/create-table.html'
+
+// describe_syntax_error adds where the error is to the message of the parser
+// (such as 'unexpected PRIMARY, expecting ")"'), and a hint if the mistake is a
+// common one. index is the position of the token that wasn't expected, or the
+// number of tokens if it's the end of the statement. For example:
+//
+//   unexpected KEY at line 1, column 25 near "PRIMARY KEY id", expecting "("; hint: ...
+//
+// The message is still one line, so that it can be compared in the tests and by
+// clients.
+fn describe_syntax_error(msg string, source string, tokens []Token, index int) string {
+	// A statement without any tokens (only white space and comments) doesn't have
+	// a position.
+	if tokens.len == 0 {
+		return msg
+	}
+
+	cs := source.runes()
+	at_end := index >= tokens.len
+	position := if at_end { tokens.last().end } else { tokens[index].start }
+	line, column := syntax_error_position(cs, position)
+	unexpected := msg.all_before(', expecting ')
+	expecting := msg[unexpected.len..]
+	mut result := '${unexpected} at line ${line}, column ${column} near "${syntax_error_context(cs, tokens, index)}"${expecting}'
+	hint := syntax_error_hint(cs, tokens, index)
+	if hint != '' {
+		result += '; hint: ${hint}'
+	}
+
+	return result
+}
+
+// syntax_error_position returns the line and column (both start at 1) of a
+// position in the text. The column counts characters, not bytes.
+fn syntax_error_position(cs []rune, position int) (int, int) {
+	mut line := 1
+	mut column := 1
+	for i in 0 .. position {
+		if cs[i] == `\n` {
+			line++
+			column = 1
+		} else {
+			column++
+		}
+	}
+
+	return line, column
+}
+
+// syntax_error_context is the text around the token at index: up to three
+// tokens before it and one after it that are on the same line. White space
+// (including new lines in a string) is shown as one space, and it's at most
+// syntax_error_context_length characters.
+fn syntax_error_context(cs []rune, tokens []Token, index int) string {
+	target := if index < tokens.len { index } else { tokens.len - 1 }
+	line, _ := syntax_error_position(cs, tokens[target].start)
+	mut first := target
+	for first > 0 && target - first < 3 {
+		previous_line, _ := syntax_error_position(cs, tokens[first - 1].start)
+		if previous_line != line {
+			break
+		}
+		first--
+	}
+	mut last := target
+	if index < tokens.len - 1 {
+		next_line, _ := syntax_error_position(cs, tokens[index + 1].start)
+		if next_line == line {
+			last++
+		}
+	}
+
+	// The tokens furthest from the error are left out first if it's too long.
+	mut text := syntax_error_text(cs, tokens[first].start, tokens[last].end)
+	for text.runes().len > syntax_error_context_length && first < target {
+		first++
+		text = syntax_error_text(cs, tokens[first].start, tokens[last].end)
+	}
+	if text.runes().len > syntax_error_context_length && last > target {
+		last--
+		text = syntax_error_text(cs, tokens[first].start, tokens[last].end)
+	}
+
+	return syntax_error_shorten(text)
+}
+
+// syntax_error_shorten returns the text, or the start of it if it's longer than
+// syntax_error_context_length characters.
+fn syntax_error_shorten(text string) string {
+	if text.runes().len > syntax_error_context_length {
+		return text.runes()[..syntax_error_context_length - 3].string() + '...'
+	}
+
+	return text
+}
+
+// syntax_error_text is the text from start to end, with each run of white
+// space as one space.
+fn syntax_error_text(cs []rune, start int, end int) string {
+	return cs[start..end].string().fields().join(' ')
+}
+
+// syntax_error_hint returns a hint for a common mistake that causes the syntax
+// error at index, or an empty string.
+fn syntax_error_hint(cs []rune, tokens []Token, index int) string {
+	previous := if index > 0 { tokens[index - 1].token } else { 0 }
+
+	// A list that ends with a comma, if the statement is correct without it.
+	if previous == token_operator_comma {
+		mut without_comma := tokens[..index - 1].clone()
+		without_comma << tokens[index..]
+		if parses(without_comma) {
+			return if index >= tokens.len {
+				'remove the "," at the end'
+			} else {
+				'remove the "," before ${syntax_error_text(cs, tokens[index].start, tokens[index].end)}'
+			}
+		}
+	}
+
+	if index >= tokens.len {
+		return ''
+	}
+
+	token := tokens[index]
+	text := syntax_error_shorten(syntax_error_text(cs, token.start, token.end))
+	before_previous := if index > 1 { tokens[index - 2].token } else { 0 }
+
+	// MySQL and SQLite number a column with AUTO_INCREMENT or AUTOINCREMENT, and
+	// PostgreSQL with a SERIAL type.
+	if token.token == token_literal_identifier && text.to_upper() in ['AUTO_INCREMENT', 'AUTOINCREMENT',
+		'SERIAL', 'SMALLSERIAL', 'BIGSERIAL'] {
+		return 'use GENERATED BY DEFAULT AS IDENTITY for a column that is numbered automatically, such as id INTEGER GENERATED BY DEFAULT AS IDENTITY (see ${create_table_docs}#identity-columns)'
+	}
+
+	// SQL Server limits the rows with SELECT TOP n.
+	if before_previous == token_select && previous == token_literal_identifier
+		&& cs[tokens[index - 1].start..tokens[index - 1].end].string().to_upper() == 'TOP'
+		&& token.token == token_literal_number {
+		return 'TOP is not supported, use FETCH FIRST ${text} ROWS ONLY at the end of the query'
+	}
+
+	// A reserved word can only be a name if it's quoted. The words that are also
+	// values (or are used before a value) are left out, because they are more
+	// likely to be in the wrong place than meant as a name.
+	// The word must also be in the statement (it's not CURRENT_TIMESTAMP for
+	// NOW()).
+	name := yy_toknames[token.token - 57343]
+	if name in reserved_words() && text.to_upper() == name
+		&& name !in ['ALL', 'DEFAULT', 'DISTINCT', 'FALSE', 'NULL', 'TRUE', 'UNKNOWN'] {
+		mut quoted := tokens.clone()
+		quoted[index] = Token{token_literal_identifier, YYSymType{
+			v: IdentifierChain{
+				identifier: '"${name}"'
+			}
+		}, token.start, token.end}
+		if parses(quoted) {
+			return '${name} is a reserved word, so it must be quoted to be used as a name, such as "${name}" (see https://vsql.readthedocs.io/en/latest/keywords.html)'
+		}
+	}
+
+	// Two values or names that are only separated by white space are usually a
+	// list that's missing a comma, if the statement is then correct.
+	if token.token in [token_literal_identifier, token_literal_number, token_literal_string]
+		&& index > 0 && tokens[index - 1].end < token.start && is_missing_comma(tokens, index) {
+		return 'is a "," missing before ${text}?'
+	}
+
+	// The columns of a PRIMARY KEY (or UNIQUE) table constraint must be in
+	// parentheses.
+	if token.token == token_literal_identifier && (previous == token_unique
+		|| (before_previous == token_primary && previous == token_key)) {
+		keyword, section := if previous == token_unique {
+			'UNIQUE', 'unique-constraints'
+		} else {
+			'PRIMARY KEY', 'primary-keys'
+		}
+		return 'the columns of a ${keyword} table constraint must be in parentheses, such as ${keyword} (${text}), or it can be written on the column, such as ${text} INTEGER ${keyword} (see ${create_table_docs}#${section})'
+	}
+
+	// The DEFAULT of a column must be before its constraints. A column
+	// constraint ends with one of these tokens (a ")" for CHECK or REFERENCES).
+	if token.token == token_default && tokens[0].token in [token_create, token_alter]
+		&& previous in [token_null, token_key, token_unique, token_operator_right_paren] {
+		return 'the DEFAULT of a column must be before its constraints, such as x INTEGER DEFAULT 0 NOT NULL (see ${create_table_docs}#defaults)'
+	}
+
+	return ''
+}
+
+// is_missing_comma reports whether a "," before the token at index would let
+// the statement be parsed.
+fn is_missing_comma(tokens []Token, index int) bool {
+	mut with_comma := tokens[..index].clone()
+	with_comma << Token{token_operator_comma, YYSymType{
+		v: ','
+	}, 0, 0}
+	with_comma << tokens[index..]
+
+	return parses(with_comma)
+}
+
+// parses reports whether the tokens are a statement that can be parsed. It's
+// only used to find a hint for a syntax error, so it doesn't say where an error
+// is.
+fn parses(tokens []Token) bool {
+	mut lexer := Lexer{
+		tokens: tokens
+	}
+	mut parser := yy_new_parser()
+	parser.parse(mut lexer) or { return false }
+
+	return true
+}

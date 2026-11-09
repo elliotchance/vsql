@@ -90,7 +90,7 @@ EXPLAIN DROP TABLE foo CASCADE;
 CREATE TABLE foo (x INT);
 DROP TABLE foo RESTRICT CASCADE;
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unexpected CASCADE
+-- error 42601: syntax error: unexpected CASCADE at line 1, column 25 near "TABLE foo RESTRICT CASCADE"
 
 -- # A table with an identity column is dropped outside of a transaction (#657),
 -- # including for a connection that opens the file afterwards.

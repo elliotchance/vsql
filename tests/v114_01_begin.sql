@@ -85,10 +85,10 @@ SELECT * FROM t;
 -- # BEGIN is a reserved word, so it can't be a column name (5.2, Syntax
 -- # Rules, 26). Only TRANSACTION or WORK can follow it.
 SELECT begin FROM t;
--- error 42601: syntax error: unexpected BEGIN
+-- error 42601: syntax error: unexpected BEGIN at line 1, column 8 near "SELECT begin FROM"; hint: BEGIN is a reserved word, so it must be quoted to be used as a name, such as "BEGIN" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 BEGIN ROW;
--- error 42601: syntax error: unexpected ROW
+-- error 42601: syntax error: unexpected ROW at line 1, column 7 near "BEGIN ROW"
 
 -- # The flagger: what the standard form needs, and which alias was used.
 /* flags */

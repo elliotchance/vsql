@@ -202,7 +202,7 @@ SELECT ALL NEXT VALUE FOR s FROM t FETCH FIRST 1 ROW ONLY;
 
 -- # The set quantifier can only be given once.
 SELECT DISTINCT DISTINCT a FROM t;
--- error 42601: syntax error: unexpected DISTINCT
+-- error 42601: syntax error: unexpected DISTINCT at line 1, column 17 near "SELECT DISTINCT DISTINCT a"
 
 -- # With a join, ORDER BY must use the selected columns, which are found the
 -- # same way as in the select list. A u.* selects u.a and u.d, and an

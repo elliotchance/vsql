@@ -108,7 +108,9 @@ fn get_tests() ![]SQLTest {
 						setup_stmt = ''
 					}
 				} else {
-					stmt += '\n${line}'
+					// The first line isn't after a new line, so that the line
+					// numbers of a syntax error are the lines of the statement.
+					stmt += if stmt == '' { line } else { '\n${line}' }
 					if line.ends_with(';') {
 						stmts << replace_unicode(stmt)
 						stmt = ''

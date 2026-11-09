@@ -178,10 +178,16 @@ mut:
 	// flag_sort_key).
 	sort_key_parts  []SortKeyPart
 	sort_key_starts []int
+	// source is the text that the tokens are from, if it's known. A syntax error
+	// then says where it is (see syntax_error_position).
+	source string
+	// at_end is true once the parser has been given the end of the tokens.
+	at_end bool
 }
 
 fn (mut l Lexer) lex(mut lval YYSymType) int {
 	if l.pos >= l.tokens.len {
+		l.at_end = true
 		return 0
 	}
 
@@ -193,7 +199,16 @@ fn (mut l Lexer) lex(mut lval YYSymType) int {
 }
 
 fn (mut l Lexer) error(s string) IError {
-	return sqlstate_42601(cleanup_yacc_error(s))
+	msg := cleanup_yacc_error(s)
+	if l.source == '' {
+		return sqlstate_42601(msg)
+	}
+
+	// The token that the parser didn't expect is the last one it was given, or
+	// the end.
+	index := if l.at_end { l.tokens.len } else { l.pos - 1 }
+
+	return sqlstate_42601(describe_syntax_error(msg, l.source, l.tokens, index))
 }
 
 fn cleanup_yacc_error(s string) string {
@@ -229,9 +244,15 @@ fn cleanup_yacc_error(s string) string {
 	return msg['syntax error: '.len..]
 }
 
+// Token is a token of a statement. start and end are where it is in the text
+// that was tokenized, as the positions of its first character and the
+// character after it (see syntax_error_position).
 struct Token {
 	token int
 	sym   YYSymType
+mut:
+	start int
+	end   int
 }
 
 fn tokenize(sql_stmt string) ![]Token {
@@ -251,6 +272,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
 	cs := sql_stmt.trim(';').runes()
+	// The positions of the tokens are in sql_stmt, before the semicolons at the
+	// start are trimmed.
+	offset := sql_stmt.len - sql_stmt.trim_left(';').len
 	mut i := 0
 	mut dynamic_parameters := 0
 
@@ -264,6 +288,11 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			continue
 		}
 
+		// Every token that is found from here (there can be more than one, such
+		// as "1E") is given the position from start to i.
+		start_tokens := tokens.len
+		first_position := offset + i
+
 		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target
 		// specification>
 		//
@@ -273,7 +302,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			dynamic_parameters++
 			tokens << Token{token_operator_question_mark, YYSymType{
 				v: '?${dynamic_parameters}'
-			}}
+			}, offset + i, offset + i + 1}
 			i++
 			continue
 		}
@@ -287,7 +316,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			word := cs[start..i].string()
 			tokens << Token{token_literal_number, YYSymType{
 				v: word
-			}}
+			}, 0, 0}
 
 			// There is a special case for approximate numbers where 'E' is considered
 			// a separate token in the SQL BNF. However, "e2" should not be treated as
@@ -298,11 +327,11 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			if is_exponent(cs, i + 1) && cs[i] == `.` {
 				tokens << Token{token_operator_period, YYSymType{
 					v: '.'
-				}}
+				}, 0, 0}
 				i++
 			}
 			if is_exponent(cs, i) {
-				tokens << Token{token_e, YYSymType{}}
+				tokens << Token{token_e, YYSymType{}, 0, 0}
 				i++
 			}
 
@@ -334,7 +363,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			// (5.3 General Rule 2), after a compound literal is put together.
 			tokens << Token{token_literal_string, YYSymType{
 				v: new_character_value(normalize_nfc(word))
-			}}
+			}, 0, 0}
 			unsafe {
 				goto next
 			}
@@ -371,7 +400,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				v: IdentifierChain{
 					identifier: '"${word}"'
 				}
-			}}
+			}, 0, 0}
 			unsafe {
 				goto next
 			}
@@ -383,7 +412,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			if multi_token != 0 {
 				tokens << Token{multi_token, YYSymType{
 					v: cs[i..i + 2].string()
-				}}
+				}, 0, 0}
 				i += 2
 				unsafe {
 					goto next
@@ -394,7 +423,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		if single_token := single_operator_tokens[cs[i]] {
 			tokens << Token{single_token, YYSymType{
 				v: cs[i].str()
-			}}
+			}, 0, 0}
 			i++
 			unsafe {
 				goto next
@@ -428,20 +457,25 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		if tok_number != 0 && upper_word != 'E' && upper_word != 'LIMIT' {
 			tokens << Token{tok_number, YYSymType{
 				v: upper_word
-			}}
+			}, 0, 0}
 		} else {
 			tokens << Token{token_literal_identifier, YYSymType{
 				v: IdentifierChain{
 					identifier: word
 				}
-			}}
+			}, 0, 0}
 		}
 
-		next:
+		next: for j in start_tokens .. tokens.len {
+			tokens[j].start = first_position
+			tokens[j].end = offset + i
+		}
 		length, new_token := tail_substitution(tokens)
 		if length > 0 {
+			start := tokens[tokens.len - length].start
+			end := tokens[tokens.len - 1].end
 			tokens = tokens[..tokens.len - length].clone()
-			tokens << Token{new_token, YYSymType{}}
+			tokens << Token{new_token, YYSymType{}, start, end}
 		}
 	}
 
@@ -449,7 +483,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 
 	for position, token in tokens {
 		if token.token == token_ilike && is_ilike_operator(tokens, position) {
-			tokens[position] = Token{token_operator_ilike, token.sym}
+			tokens[position] = Token{token_operator_ilike, token.sym, token.start, token.end}
 		}
 	}
 
@@ -457,7 +491,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		if is_limit_clause(tokens, pos) {
 			tokens[pos] = Token{token_limit, YYSymType{
 				v: 'LIMIT'
-			}}
+			}, tokens[pos].start, tokens[pos].end}
 		}
 	}
 
@@ -477,7 +511,7 @@ fn replace_now_function(tokens []Token, mut features []string) []Token {
 			features << vsql_now
 			result << Token{token_current_timestamp, YYSymType{
 				v: 'CURRENT_TIMESTAMP'
-			}}
+			}, tokens[i].start, tokens[i + 2].end}
 			i += 3
 			continue
 		}

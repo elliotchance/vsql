@@ -69,7 +69,7 @@ SELECT * FROM t;
 
 -- # Only TRANSACTION or WORK can follow ABORT.
 ABORT ROW;
--- error 42601: syntax error: unexpected ROW
+-- error 42601: syntax error: unexpected ROW at line 1, column 7 near "ABORT ROW"
 
 -- # The flagger: START TRANSACTION is T241, and the alias is flagged on the
 -- # statement that uses it.

@@ -145,10 +145,10 @@ SELECT * FROM t JOIN u USING (x, x);
 -- error 42601: syntax error: column X is specified more than once
 
 SELECT * FROM t JOIN u USING ();
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 31 near "u USING ()"
 
 SELECT * FROM t JOIN u USING x;
--- error 42601: syntax error: unexpected identifier, expecting "("
+-- error 42601: syntax error: unexpected identifier at line 1, column 30 near "JOIN u USING x", expecting "("
 
 SELECT * FROM (SELECT x, x FROM t) AS p JOIN u USING (x);
 -- error 42702: ambiguous column: X

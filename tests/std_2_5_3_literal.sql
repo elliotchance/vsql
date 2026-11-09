@@ -30,10 +30,10 @@ VALUES 1E2;
 -- COL1: 100e0 (DOUBLE PRECISION)
 
 VALUES 1 E 2;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 10 near "VALUES 1 E 2"
 
 VALUES 1E 2;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 9 near "VALUES 1E 2"
 
 -- # A sign is a monadic operator on the literal (General Rules, 6), and the
 -- # exponent can be signed too. The same value is the same double whether it's

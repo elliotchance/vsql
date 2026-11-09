@@ -36,7 +36,7 @@ VALUES U&'\0041'
 -- # Rules, 7), and there can't be one between the U, the & and the quote (5.3,
 -- # Syntax Rules, 11).
 VALUES 'a' 'b';
--- error 42601: syntax error: unexpected string
+-- error 42601: syntax error: unexpected string at line 1, column 12 near "VALUES 'a' 'b'"; hint: is a "," missing before 'b'?
 
 VALUES U & 'x';
 -- error 42601: syntax error: invalid character: &
@@ -81,7 +81,7 @@ VALUES U&'x' UESCAPE;
 -- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
 
 VALUES U&'x' UESCAPEX;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 14 near "VALUES U&'x' UESCAPEX"; hint: is a "," missing before UESCAPEX?
 
 -- # A noncharacter can't be in a character string.
 VALUES U&'\FFFF';

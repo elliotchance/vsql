@@ -12,4 +12,4 @@ VALUES no_such_function(1, 'a', 2.5);
 
 -- # An argument can't be left out.
 VALUES no_such_function(1,);
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 27 near "(1,)"; hint: remove the "," before )

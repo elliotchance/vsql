@@ -118,7 +118,7 @@ CREATE INDEX t_x ON t (x, y, x);
 -- # The name of the index can't be qualified, it's always in the schema of the
 -- # table.
 CREATE INDEX public.t_x ON t (x);
--- error 42601: syntax error: unexpected ".", expecting ON
+-- error 42601: syntax error: unexpected "." at line 1, column 20 near "CREATE INDEX public.t_x", expecting ON
 
 -- # CREATE INDEX can't be explained.
 /* extensions V002-01 */

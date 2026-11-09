@@ -273,7 +273,7 @@ DELETE FROM t1 WHERE CURRENT OF c;
 
 -- # There must be a table on both sides of the comma.
 SELECT * FROM t1, ;
--- error 42601: syntax error: unexpected $end
+-- error 42601: syntax error: unexpected $end at line 1, column 18 near "* FROM t1,"; hint: remove the "," at the end
 
 SELECT * FROM , t1;
--- error 42601: syntax error: unexpected ","
+-- error 42601: syntax error: unexpected "," at line 1, column 15 near "SELECT * FROM , t1"

@@ -236,7 +236,7 @@ SELECT * FROM t1 WHERE SUBSTRING('abc' FROM 1 FOR MAX(x)) = 'abc';
 
 -- # GROUP BY can only be column names.
 SELECT x FROM t1 GROUP BY MAX(x);
--- error 42601: syntax error: unexpected MAX
+-- error 42601: syntax error: unexpected MAX at line 1, column 27 near "t1 GROUP BY MAX("
 
 -- # Nested aggregate functions (Syntax Rules, 1), even if the inner one is of
 -- # an outer query.
@@ -283,7 +283,7 @@ CREATE TABLE c4 (a INT, b INT GENERATED ALWAYS AS (COUNT(*)));
 -- error 42601: syntax error: an aggregate function cannot be used in a generation expression
 
 CREATE TABLE c5 (a INT DEFAULT MAX(1));
--- error 42601: syntax error: unexpected MAX
+-- error 42601: syntax error: unexpected MAX at line 1, column 32 near "a INT DEFAULT MAX("
 
 -- # An aggregate function in a function argument makes the query grouped.
 SELECT ABS(MAX(y)) AS m FROM t1;

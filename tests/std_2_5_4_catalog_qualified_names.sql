@@ -124,4 +124,4 @@ CREATE TABLE "my catalog".public.t1 (x INT);
 -- error 3D000: invalid catalog name: my catalog
 
 SELECT * FROM a.b.c.d;
--- error 42601: syntax error: unexpected "."
+-- error 42601: syntax error: unexpected "." at line 1, column 20 near "b.c.d"

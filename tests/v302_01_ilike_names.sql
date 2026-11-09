@@ -182,4 +182,4 @@ SELECT ilike.ilike ILIKE ilike.ilike FROM ilike;
 
 -- # A syntax error names the operator.
 DROP TABLE t ILIKE 'a';
--- error 42601: syntax error: unexpected ILIKE
+-- error 42601: syntax error: unexpected ILIKE at line 1, column 14 near "DROP TABLE t ILIKE 'a'"

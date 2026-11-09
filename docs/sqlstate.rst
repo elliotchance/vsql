@@ -808,12 +808,22 @@ The ``INFORMATION_SCHEMA`` (see :doc:`information-schema`) can't be changed.
 ``42601`` syntax error
 ^^^^^^^^^^^^^^^^^^^^^^
 
+When a statement can't be parsed, the error says which token wasn't expected,
+where it is (the line and column, which start at 1) and the text around it on
+that line. It also lists what was expected, if there are only a few. For some
+common mistakes there is a hint after it, such as a reserved word that's used as
+a name (see :doc:`keywords`), a missing or extra comma, or the syntax of another
+database (such as ``AUTO_INCREMENT``, ``SERIAL`` or ``SELECT TOP``).
+
 **Examples**
 
 .. code-block:: sql
 
   TABLE;
-  -- error 42601: syntax error: unexpected TABLE
+  -- error 42601: syntax error: unexpected $end at line 1, column 6 near "TABLE"
+
+  CREATE TABLE t (a INT NOT NULL DEFAULT 3);
+  -- error 42601: syntax error: unexpected DEFAULT at line 1, column 32 near "INT NOT NULL DEFAULT 3", expecting ")" or ","; hint: the DEFAULT of a column must be before its constraints, such as x INTEGER DEFAULT 0 NOT NULL (see https://vsql.readthedocs.io/en/latest/create-table.html#defaults)
 
   CREATE TABLE foo (b BOOLEAN);
   INSERT INTO foo (b) VALUES (123, 456);
@@ -821,7 +831,7 @@ The ``INFORMATION_SCHEMA`` (see :doc:`information-schema`) can't be changed.
   -- error 42601: syntax error: INSERT has more values than columns
 
   CREATE TABLE ABS (x INT);
-  -- error 42601: syntax error: unexpected ABS
+  -- error 42601: syntax error: unexpected ABS at line 1, column 14 near "CREATE TABLE ABS ("; hint: ABS is a reserved word, so it must be quoted to be used as a name, such as "ABS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 ``42602`` invalid name
 ^^^^^^^^^^^^^^^^^^^^^^

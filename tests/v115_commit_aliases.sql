@@ -75,13 +75,13 @@ SELECT * FROM t;
 -- # Rules, 26). Only TRANSACTION or WORK can follow END, and ROW can't follow
 -- # COMMIT.
 SELECT end FROM t;
--- error 42601: syntax error: unexpected END
+-- error 42601: syntax error: unexpected END at line 1, column 8 near "SELECT end FROM"; hint: END is a reserved word, so it must be quoted to be used as a name, such as "END" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 END ROW;
--- error 42601: syntax error: unexpected ROW
+-- error 42601: syntax error: unexpected ROW at line 1, column 5 near "END ROW"
 
 COMMIT ROW;
--- error 42601: syntax error: unexpected ROW
+-- error 42601: syntax error: unexpected ROW at line 1, column 8 near "COMMIT ROW"
 
 -- # The flagger: START TRANSACTION is T241, and the alias is flagged on the
 -- # statement that uses it.

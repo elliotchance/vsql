@@ -8,13 +8,13 @@ INSERT INTO bar (z) VALUES (5);
 -- # A plain * must be the whole select list, so it can't be mixed with other
 -- # columns or repeated.
 SELECT *, 1 FROM foo;
--- error 42601: syntax error: unexpected ",", expecting FROM
+-- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, 1", expecting FROM
 
 SELECT 1, * FROM foo;
--- error 42601: syntax error: unexpected "*"
+-- error 42601: syntax error: unexpected "*" at line 1, column 11 near "SELECT 1, * FROM"
 
 SELECT *, * FROM foo;
--- error 42601: syntax error: unexpected ",", expecting FROM
+-- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, *", expecting FROM
 
 -- # A qualified asterisk is all the columns of its table, in order (Syntax
 -- # Rules, 8.g.i). It can be mixed with other columns, repeated, and used for

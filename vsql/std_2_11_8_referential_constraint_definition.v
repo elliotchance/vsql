@@ -246,7 +246,7 @@ fn (mut f Storage) check_foreign_keys(mut conn Connection, t Table, rows []Row) 
 
 	for key in t.foreign_keys {
 		referencing_rows := rows.filter(fn [key] (row Row) bool {
-			return !key.columns.any((row.data[it] or { Value{} }).is_null)
+			return !key.columns.any(row.data.value(it).is_null)
 		})
 		if referencing_rows.len == 0 || f.defer_check(t, key.name, key.characteristics) {
 			continue
@@ -289,10 +289,10 @@ fn (mut f Storage) check_foreign_keys(mut conn Connection, t Table, rows []Row) 
 // exactly by its column of to_table (see exact_cast), so no row of to_table can
 // have the same key. None of the values can be NULL.
 fn search_row(mut conn Connection, row Row, from_columns []string, to_table Table, to_columns []string) ?Row {
-	mut data := map[string]Value{}
+	mut data := RowData{}
 	for i, column in to_columns {
 		typ := (to_table.column(column) or { return none }).typ
-		data[column] = exact_cast(mut conn, row.data[from_columns[i]] or { Value{} }, typ) or { return none }
+		data.set(column, exact_cast(mut conn, row.data.value(from_columns[i]), typ) or { return none })
 	}
 
 	return Row{
@@ -499,7 +499,7 @@ fn (mut s ChangedSites) add(conn &Connection, table Table, changes []RowChange, 
 		}
 
 		for column in columns {
-			value := change.new.data[column] or { Value{} }
+			value := change.new.data.value(column)
 			if previous := sites[column] {
 				if is_distinct(conn, previous, value)! {
 					return sqlstate_27000('column ${column} of a row of ${table.name} is updated to two different values')
@@ -662,9 +662,9 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 					}
 					for i, column_name in key.columns {
 						column := referencing.column(column_name)!
-						after.data[column_name] = match rule {
+						new_value := match rule {
 							'CASCADE' {
-								v := cast(mut conn, 'for column ${column_name}', (updated_keys[value] or { Row{} }).data[key.referenced_columns[i]] or { Value{} },
+								v := cast(mut conn, 'for column ${column_name}', (updated_keys[value] or { Row{} }).data.value(key.referenced_columns[i]),
 									column.typ)!
 								if column.not_null && v.is_null {
 									return sqlstate_23502(referencing, column_name)
@@ -678,6 +678,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
 							}
 						}
+						after.data.set(column_name, new_value)
 					}
 					generated_columns.apply(mut conn, mut after)!
 					check_constraints.verify(mut conn, after)!

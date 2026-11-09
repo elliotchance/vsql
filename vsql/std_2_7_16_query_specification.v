@@ -97,7 +97,7 @@ fn (o &SingleRowOperation) columns() Columns {
 
 fn (mut o SingleRowOperation) execute(_ []Row) ![]Row {
 	return [Row{
-		data: map[string]Value{}
+		data: RowData{}
 	}]
 }
 

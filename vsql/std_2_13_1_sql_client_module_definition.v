@@ -37,6 +37,11 @@ struct SQLClientModule {
 	// features are the features that the module uses, other than its language
 	// (see compile_module).
 	features []string
+	// name_features are the features of the names of the module, its
+	// procedures and their host parameters. They're not in features, since an
+	// embedded SQL program's implied module has names that weren't written in
+	// SQL (a <host identifier> isn't an <identifier>).
+	name_features []string
 }
 
 // require adds a section of the C runtime, and the sections that it uses.
@@ -97,11 +102,13 @@ const c_runtime_requires = {
 // ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Conformance Rules, 6
 pub fn compile_module(source string, name string) !CompiledModule {
 	m := parse_sql_client_module(source)!
+	mut features := m.features.clone()
+	features << m.name_features
 
 	return CompiledModule{
 		header:   m.c_header(name)
 		source:   m.c_source(name, false, [])
-		features: unique_features(m.features, 'B112')
+		features: unique_features(features, 'B112')
 	}
 }
 
@@ -168,6 +175,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 		}
 	}
 
+	mut names := t.names.clone()
 	mut procedures := []ExternallyInvokedProcedure{}
 	mut opened := []string{}
 	mut features := []string{}
@@ -185,10 +193,15 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 			}
 		}
 
+		names << procedure.name
+		names << procedure.parameters.map(it.name)
+
 		declared := cursors[..declared_counts[j]]
-		procedure.statement = parse_module_statement(statements[j], procedure, declared,
-			prepared)!
+		compiled, statement_names := parse_module_statement(statements[j], procedure,
+			declared, prepared)!
+		procedure.statement = compiled
 		procedures << procedure
+		features << name_features(statement_names)
 		features << procedure.parameter_features()!
 		features << module_statement_features(statements[j], procedure, declared)!
 		indicators << indicator_types(statements[j], procedure)!
@@ -222,7 +235,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 		features << 'F611'
 	}
 
-	return SQLClientModule{schema, cursors, procedures, features}
+	return SQLClientModule{schema, cursors, procedures, features, name_features(names)}
 }
 
 // module_header reads everything before the first PROCEDURE, and returns the
@@ -431,6 +444,9 @@ struct ModuleTokens {
 	tokens []ModuleToken
 mut:
 	pos int
+	// names are the identifiers read by identifier, with the quotes of a
+	// <delimited identifier>, which are flagged by name_features.
+	names []string
 }
 
 fn new_module_tokens(text string) !ModuleTokens {
@@ -528,11 +544,15 @@ fn (mut t ModuleTokens) identifier(what string) !string {
 	if tok := t.peek() {
 		if tok.kind == .delimited {
 			t.pos++
+			t.names << '"' + tok.text.replace('"', '""') + '"'
 			return tok.text
 		}
 	}
 
-	return t.c_name(what)!.to_upper()
+	name := t.c_name(what)!
+	t.names << name
+
+	return name.to_upper()
 }
 
 // c_name reads an <identifier> that is also used as a C name, so it must be a

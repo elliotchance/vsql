@@ -381,6 +381,20 @@ fn (f Storage) table(storage_id string) Table {
 	return f.tables[storage_id] or { Table{} }
 }
 
+// is_referenced is true if a foreign key of any table (including the table
+// itself) references the table.
+fn (f &Storage) is_referenced(referenced_id string) bool {
+	for _, table in f.tables {
+		for key in table.foreign_keys {
+			if key.referenced_table.storage_id() == referenced_id {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // references is true when the table has a FOREIGN KEY that references the
 // table with referenced_id (see Identifier.storage_id). It doesn't copy the
 // table, so it's cheaper than looking at the foreign keys of table().

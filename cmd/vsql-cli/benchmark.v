@@ -10,6 +10,7 @@
 
 module main
 
+import os
 import rand
 import runtime
 import time
@@ -38,7 +39,44 @@ fn new_benchmark(conn &vsql.Connection) Benchmark {
 	}
 }
 
+// set_options changes the number of accounts and the seconds to run
+// transactions for, when they aren't 0.
+fn (mut b Benchmark) set_options(accounts int, duration int) {
+	if accounts > 0 {
+		b.account_rows = accounts
+	}
+	if duration > 0 {
+		b.run_for = duration * time.second
+	}
+}
+
 fn (mut b Benchmark) start() ! {
+	b.setup()!
+
+	t := vsql.start_timer()
+	mut txn_count := 0
+	for {
+		b.run_transaction()!
+		txn_count++
+		if txn_count % 10 == 0 {
+			b.sample_memory()
+		}
+
+		if t.elapsed() > b.run_for {
+			break
+		}
+	}
+
+	b.print_stat('TPC-B (sort of)', txn_count, 'transactions', t.elapsed())
+
+	b.sample_memory()
+	if b.peak_memory > 0 {
+		println('Peak memory: ${f64(b.peak_memory) / (1024 * 1024):.1f} MiB')
+	}
+}
+
+// setup creates the tables and their rows.
+fn (mut b Benchmark) setup() ! {
 	b.conn.query('CREATE TABLE accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ')!
 
 	mut t := vsql.start_timer()
@@ -68,27 +106,89 @@ fn (mut b Benchmark) start() ! {
 	b.conn.query('SELECT abalance FROM accounts WHERE abalance = 0')!
 	b.sample_memory()
 	b.print_stat('SELECT', b.account_rows, 'rows', t.elapsed())
+}
 
-	t = vsql.start_timer()
-	mut txn_count := 0
-	for {
-		b.run_transaction()!
-		txn_count++
-		if txn_count % 10 == 0 {
-			b.sample_memory()
-		}
+// run_processes starts processes that each run transactions on file at the same
+// time (see run_worker). When they've all finished, every balance must be the
+// sum of the deltas in history for it, and history must have a row for each
+// transaction that was committed.
+fn (mut b Benchmark) run_processes(file string, processes int) ! {
+	b.setup()!
 
-		if t.elapsed() > b.run_for {
-			break
+	// The connection isn't used while the processes run, so they only share
+	// the file.
+	args := [os.executable(), 'bench', '-worker', '-file', file, '-accounts', '${b.account_rows}',
+		'-duration', '${int(b.run_for.seconds())}']
+	t := vsql.start_timer()
+	mut threads := []thread os.Result{}
+	for _ in 0 .. processes {
+		threads << spawn os.exec(args)
+	}
+	results := threads.wait()
+	elapsed := t.elapsed()
+
+	mut committed := 0
+	mut rolled_back := 0
+	for i, result in results {
+		if result.exit_code != 0 {
+			return error('process ${i + 1} failed (exit code ${result.exit_code}): ${result.output.trim_space()}')
 		}
+		parts := result.output.trim_space().split(' ')
+		if parts.len != 2 {
+			return error('process ${i + 1} printed: ${result.output.trim_space()}')
+		}
+		println('Process ${i + 1}: ${parts[0]} committed, ${parts[1]} rolled back')
+		if parts[0].int() == 0 {
+			return error("process ${i + 1} didn't commit any transactions")
+		}
+		committed += parts[0].int()
+		rolled_back += parts[1].int()
 	}
 
-	b.print_stat('TPC-B (sort of)', txn_count, 'transactions', t.elapsed())
+	b.print_stat('TPC-B (sort of)', committed, 'transactions', elapsed)
+	println('Rolled back: ${rolled_back} transactions')
 
-	b.sample_memory()
-	if b.peak_memory > 0 {
-		println('Peak memory: ${f64(b.peak_memory) / (1024 * 1024):.1f} MiB')
+	b.check_balances('accounts', 'aid', 'abalance')!
+	b.check_balances('tellers', 'tid', 'tbalance')!
+	b.check_balances('branches', 'bid', 'bbalance')!
+	history := b.conn.query('SELECT COUNT(*) AS c FROM history')!
+	for row in history {
+		count := row.get_int('C')!
+		if count != committed {
+			return error('history has ${count} rows, but ${committed} transactions were committed')
+		}
 	}
+	println('Balances: OK')
+}
+
+// check_balances returns an error if a balance of table isn't the sum of the
+// deltas for its row in history.
+fn (mut b Benchmark) check_balances(table string, id string, balance string) ! {
+	rows := b.conn.query('SELECT t.${id} AS id, t.${balance} AS balance, COALESCE(h.total, 0) AS total FROM ${table} AS t LEFT JOIN (SELECT ${id}, SUM(delta) AS total FROM history GROUP BY ${id}) AS h ON t.${id} = h.${id} WHERE t.${balance} <> COALESCE(h.total, 0)')!
+	for row in rows {
+		return error('${table} ${row.get_string('ID')!} has a balance of ${row.get_string('BALANCE')!}, but its deltas add up to ${row.get_string('TOTAL')!}')
+	}
+}
+
+// run_worker runs transactions until run_for has passed, then prints how many
+// were committed and how many were rolled back, because another process changed
+// a row first.
+fn (mut b Benchmark) run_worker() ! {
+	t := vsql.start_timer()
+	mut committed := 0
+	mut rolled_back := 0
+	for t.elapsed() <= b.run_for {
+		b.run_transaction() or {
+			if vsql.sqlstate_from_int(err.code()).starts_with('40') {
+				b.conn.query('ROLLBACK') or {}
+				rolled_back++
+				continue
+			}
+			return err
+		}
+		committed++
+	}
+	println('${committed} ${rolled_back}')
 }
 
 // sample_memory updates peak_memory with the memory the process is using now.

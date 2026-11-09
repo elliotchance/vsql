@@ -1,8 +1,9 @@
 #!/bin/sh
 
-# windows-test.sh runs a few statements, a short benchmark and the server with
-# the Windows binary, since the CLI tests aren't run on Windows. Each statement
-# locks the database file again.
+# windows-test.sh runs a few statements, a short benchmark (also in several
+# processes at once, see cmd/tests/bench-processes.sh) and the server with the
+# Windows binary, since the CLI tests aren't run on Windows. Each statement locks
+# the database file again.
 
 set -e
 
@@ -19,5 +20,6 @@ grep "^Instant Pot | 144.89e0" out.txt
 grep "^Kettle      |     20e0" out.txt
 
 $VSQL bench -accounts 1000 -duration 2
+$VSQL bench -accounts 1000 -duration 10 -processes 4
 
 VSQL=$VSQL cmd/tests/server-concurrent.sh

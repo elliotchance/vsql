@@ -52,6 +52,7 @@ bench
    vsql bench                                 # on disk, in bench.vsql
    vsql bench -file ':memory:'                # in memory
    vsql bench -accounts 1000 -duration 5      # a quick test
+   vsql bench -processes 4 -duration 10       # 4 processes at once
 
 Options are:
 
@@ -59,6 +60,11 @@ Options are:
   test (default ``bench.vsql``). Use ``:memory:`` for an in-memory database.
 - ``-accounts``: The number of rows in the ``ACCOUNTS`` table (default 100000).
 - ``-duration``: The number of seconds to run transactions for (default 60).
+- ``-processes``: The number of processes that run transactions on the file at
+  the same time (default 1). The balances are checked afterwards (see
+  :doc:`benchmark`).
+- ``-worker``: Used by ``-processes``, it runs transactions on a file that's
+  already been set up, and prints how many were committed and rolled back.
 
 cli
 ^^^

@@ -61,6 +61,42 @@ Where:
   spike between samples may not be seen. It isn't shown on a platform that
   can't report it.
 
+Several Processes
+-----------------
+
+``-processes`` runs the transactions in several processes at the same time, all
+on the same file, such as:
+
+.. code-block:: sh
+
+   vsql bench -accounts 1000 -duration 10 -processes 4
+
+The tables are created first, then each process runs transactions for the
+duration. A transaction that changes a row that another process has changed
+first is rolled back (with a serialization failure) and isn't retried. It
+reports something like:
+
+.. code-block:: text
+
+   Process 1: 780 committed, 1248 rolled back
+   Process 2: 756 committed, 1346 rolled back
+   Process 3: 716 committed, 1393 rolled back
+   Process 4: 783 committed, 1247 rolled back
+   TPC-B (sort of): 3035 transactions in 10.009 (303.238 transactions/s)
+   Rolled back: 5234 transactions
+   Balances: OK
+
+Afterwards the balances are checked, and it fails if:
+
+- the balance of an account, teller or branch isn't the sum of the deltas in
+  ``HISTORY`` for it,
+- ``HISTORY`` doesn't have a row for each committed transaction, or
+- a process didn't commit any transactions, or failed with any other error.
+
+This is a test of processes sharing a file (it's one of the CLI tests), rather
+than a benchmark to compare, because most of the transactions conflict on the
+single row of ``BRANCHES``. It needs a file, it can't be ``:memory:``.
+
 Notes
 -----
 

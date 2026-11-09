@@ -184,6 +184,30 @@ fn parse_timestamp_components(s string) !time.Time {
 	return new_lenient_time(year, month, day, hour, minute, second, nanosecond)
 }
 
+// timestamp_value is the TIMESTAMP(prec) value of the local time t, WITH TIME
+// ZONE time_zone (in minutes from UTC) if there is one. The fraction of a second
+// is cut to prec digits (see Time.str_fractional_seconds). It's the same value
+// as new_timestamp_value of its literal, without formatting and parsing it.
+fn timestamp_value(t time.Time, prec int, time_zone ?i16) Value {
+	typ := Type{
+		typ:  if time_zone != none {
+			.is_timestamp_with_time_zone
+		} else {
+			.is_timestamp_without_time_zone
+		}
+		size: prec
+	}
+	unit := [1000000000, 100000000, 10000000, 1000000, 100000, 10000, 1000][prec]
+
+	return Value{
+		typ: typ
+		v:   InternalValue{
+			time_value: box_time(Time{typ, time_zone or { 0 }, new_lenient_time(t.year,
+				t.month, t.day, t.hour, t.minute, t.second, t.nanosecond / unit * unit)})
+		}
+	}
+}
+
 // new_lenient_time works like time.new except that components outside of their
 // usual range overflow into the next unit (ie. 75 seconds becomes 1 minute and
 // 15 seconds) rather than causing a panic.

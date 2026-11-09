@@ -62,8 +62,7 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 
 			return CompileResult{
 				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_timestamp_value(local_now(conn).strftime('%Y-%m-%d ') +
-						time_value(conn, e.prec, true))!
+					return timestamp_value(local_now(conn), e.prec, conn.statement_time_zone)
 				}
 				typ:          new_type('TIMESTAMP WITH TIME ZONE', e.prec, 0)
 				contains_agg: false
@@ -89,8 +88,7 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 
 			return CompileResult{
 				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_timestamp_value(local_now(conn).strftime('%Y-%m-%d ') +
-						time_value(conn, e.prec, false))!
+					return timestamp_value(local_now(conn), e.prec, none)
 				}
 				typ:          new_type('TIMESTAMP WITHOUT TIME ZONE', e.prec, 0)
 				contains_agg: false

@@ -564,7 +564,7 @@ fn cast_timestamp_with_to_time_without(_ &Connection, v Value, to Type) !Value {
 
 // '2022-06-30 12:34:56.999999+0500' => '2022-06-30 12:34:56.999999'
 fn cast_timestamp_with_to_timestamp_without(_ &Connection, v Value, to Type) !Value {
-	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))
+	return timestamp_value(v.time_value().t, to.size, none)
 }
 
 // '12:34:56.999999+0500' => '12:34:56.999999+0500'

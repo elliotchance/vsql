@@ -111,7 +111,7 @@ def test_indexes(page, db_file, start_app):
     assert 'my <i>' not in cli(db_file, 'EXPLAIN SELECT * FROM foo.bar WHERE y;')
 
     # The table menu is still only the table's.
-    expect(ui.table_menu('T').get_by_role('button')).to_have_count(4)
+    expect(ui.table_menu('T').get_by_role('button')).to_have_count(5)
 
 
 def test_table_menu(ui):

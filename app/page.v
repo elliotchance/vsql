@@ -120,6 +120,11 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 	sb.write_string('<p class="confirm-file"></p><label class="schema-name">Schema name <input spellcheck="false" placeholder="NAME"></label><pre class="sql"></pre>')
 	sb.write_string('<button type="submit" class="create">Create schema</button><button type="button" class="keep">Cancel</button></form></dialog>')
 
+	// Create index (in the menu of a table) is a popup, see app_index.js.
+	sb.write_string('<dialog class="confirm create-index"><form method="post" action="/"><input type="hidden" name="tab" value="${html_escape(tab.ref())}"><input type="hidden" name="create_index" value=""><input type="hidden" name="create_index_catalog" value="">')
+	sb.write_string('<p class="confirm-file"></p><label class="index-name">Index name <input spellcheck="false" placeholder="NAME"></label><fieldset class="index-columns"><legend>Columns, in the order they&rsquo;re chosen</legend><ul></ul></fieldset><pre class="sql"></pre>')
+	sb.write_string('<button type="submit" class="create">Create index</button><button type="button" class="keep">Cancel</button></form></dialog>')
+
 	// The scripts are after the result, so they can find the editable table.
 	// The full value of a cell in a result is a popup, see app_result.js.
 	if tab.id != no_tab.id && tab.tab_type == query_tab {
@@ -127,7 +132,7 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		sb.write_string('<button type="button" class="create" hidden>Done</button><button type="button" class="copy">Copy</button><button type="button" class="keep">Close</button></form></dialog>')
 	}
 
-	sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_schema_js.to_string()}')
+	sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_schema_js.to_string()}${app_index_js.to_string()}')
 	if tab.id != no_tab.id && tab.tab_type == query_tab {
 		sb.write_string(app_js.to_string() + app_result_js.to_string() + app_edit_js.to_string())
 	}
@@ -207,8 +212,9 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 // import.v) or export (see export.v) the file, or open its Query History. Each schema and
 // table (other than in INFORMATION_SCHEMA, which can't be changed, and VSQL_APP,
 // which the app needs) has a menu to import, export or drop it, and a schema to add a table to it
-// (see create_table.v). They run in the file of the catalog, so it's not in the
-// SQL. The indexes of a table are under it (see write_indexes).
+// (see create_table.v) or an index to it (see app_index.js). They run in the
+// file of the catalog, so it's not in the SQL. The indexes of a table are under
+// it (see write_indexes).
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -219,12 +225,21 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		mut schemas := map[string][]vsql.Identifier{}
 		// The indexes of each table, by its schema and name.
 		mut indexes := map[string][]vsql.Index{}
+		// The names of the columns of each table (by its schema and name), and
+		// how they're used in SQL, for Create index (see app_index.js).
+		mut columns := map[string][][]string{}
 		for schema in catalog.schemas()! {
 			schemas[schema.name] = []
 			for index in catalog.indexes(schema.name)! {
 				indexes['${schema.name}.${index.table_name.entity_name}'] << index
 			}
 			for table in catalog.schema_tables(schema.name)! {
+				columns['${schema.name}.${table.name.entity_name}'] = table.column_names().map([
+					it,
+					vsql.Identifier{
+						sub_entity_name: it
+					}.str(),
+				])
 				// The tab of the table runs in this catalog, so it's left out of
 				// the query.
 				schemas[schema.name] << vsql.Identifier{
@@ -295,6 +310,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 						schema_name,
 						table.entity_name,
 					]))}">Alter table</button>')
+					sb.write_string('<button type="button" class="create-index" data-catalog="${html_escape(catalog_name)}" data-table="${html_escape(table.str())}" data-table-name="${html_escape(table.entity_name)}" data-columns="${html_escape(json2.encode(columns['${schema_name}.${table.entity_name}']))}">Create index</button>')
 					sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 						schema_name,
 						table.entity_name,
@@ -380,6 +396,7 @@ const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
 const app_confirm_js = $embed_file('app_confirm.js')
 const app_schema_js = $embed_file('app_schema.js')
+const app_index_js = $embed_file('app_index.js')
 const app_import_js = $embed_file('app_import.js')
 const app_import_progress_js = $embed_file('app_import_progress.js')
 const app_demo_js = $embed_file('app_demo.js')

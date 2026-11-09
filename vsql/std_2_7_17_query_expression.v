@@ -155,14 +155,14 @@ struct OrderOperation {
 	order   []SortSpecification
 	params  map[string]Value
 	columns Columns
-	tables  map[string]Table
+	tables  map[string]&Table
 	// result_columns is what a name in a sort key can be, see set_result_columns.
 	result_columns map[string][]ValueExpression
 mut:
 	conn &Connection
 }
 
-fn new_order_operation(order []SortSpecification, params map[string]Value, conn &Connection, columns Columns, tables map[string]Table, result_columns map[string][]ValueExpression) &OrderOperation {
+fn new_order_operation(order []SortSpecification, params map[string]Value, conn &Connection, columns Columns, tables map[string]&Table, result_columns map[string][]ValueExpression) &OrderOperation {
 	return &OrderOperation{order, params, columns, tables, result_columns, conn}
 }
 

@@ -12,7 +12,7 @@ struct JoinOperation {
 	// common_columns are the columns of a named columns join ("USING").
 	common_columns []CommonColumn
 	params         map[string]Value
-	tables         map[string]Table
+	tables         map[string]&Table
 	// names are the names of the columns of the rows that lookup reads, when
 	// the table has a correlation name (see JoinLookup).
 	names map[string]string
@@ -25,7 +25,7 @@ mut:
 	lookup ?&KeyOperation
 }
 
-fn new_join_operation(left_columns Columns, join_type JoinType, right_columns Columns, specification BooleanValueExpression, common_columns []CommonColumn, params map[string]Value, conn &Connection, plan Plan, tables map[string]Table, lookup ?JoinLookup) &JoinOperation {
+fn new_join_operation(left_columns Columns, join_type JoinType, right_columns Columns, specification BooleanValueExpression, common_columns []CommonColumn, params map[string]Value, conn &Connection, plan Plan, tables map[string]&Table, lookup ?JoinLookup) &JoinOperation {
 	mut names := map[string]string{}
 	mut operation := ?&KeyOperation(none)
 	if l := lookup {

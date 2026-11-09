@@ -29,7 +29,7 @@ struct GroupOperation {
 
 	params  map[string]Value
 	columns Columns
-	tables  map[string]Table
+	tables  map[string]&Table
 mut:
 	conn &Connection
 	// sort_keys is the ORDER BY of the query, which may also use aggregate
@@ -39,7 +39,7 @@ mut:
 	result_columns map[string][]ValueExpression
 }
 
-fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, having ?BooleanValueExpression, params map[string]Value, mut conn Connection, tables map[string]Table) !&GroupOperation {
+fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, having ?BooleanValueExpression, params map[string]Value, mut conn Connection, tables map[string]&Table) !&GroupOperation {
 	mut columns := []Column{}
 
 	for expr in group_exprs {
@@ -72,7 +72,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, h
 // FROM clause. A qualified name (such as "b.x") must match the table name.
 //
 // ISO/IEC 9075-2:2016(E), 7.13, <group by clause>, Syntax Rules, 1
-fn group_column(expr Identifier, tables map[string]Table) !Column {
+fn group_column(expr Identifier, tables map[string]&Table) !Column {
 	// An unqualified column name must only be in one of the tables.
 	//
 	// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.a.ii

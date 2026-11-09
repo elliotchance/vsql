@@ -34,7 +34,7 @@ fn (e Subquery) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8
 struct SubqueryScope {
-	tables  map[string]Table
+	tables  map[string]&Table
 	context Identifier
 	// grouping_columns is set when the subquery is in the select list (or
 	// HAVING) of a grouped query, so an outer reference must be one of these

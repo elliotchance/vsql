@@ -317,7 +317,7 @@ fn (stmt DeclareCursor) compile_result_column(spec SortSpecification, mut c Comp
 // collect_column adds the column that a column reference identifies to the
 // collected columns. It's in the innermost query that has a column with the
 // name, see Identifier.compile_column.
-fn (mut conn Connection) collect_column(e Identifier, tables map[string]Table) {
+fn (mut conn Connection) collect_column(e Identifier, tables map[string]&Table) {
 	mut scopes := conn.subquery_scopes.map(it.tables)
 	scopes << tables
 	for i := scopes.len - 1; i >= 0; i-- {

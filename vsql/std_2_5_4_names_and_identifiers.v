@@ -430,7 +430,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 10.c
 	if c.generation_column != '' && e.custom_id == '' {
-		table := c.tables[c.context.id()] or { Table{} }
+		table := c.tables[c.context.id()] or { &Table{} }
 		column := table.column(e.sub_entity_name) or { Column{} }
 		if _ := column.generated {
 			return sqlstate_42601('generation expression of ${c.generation_column} cannot use generated column ${e.sub_entity_name}')
@@ -656,7 +656,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 
 // is_column_of is true if the column reference is a column of one of the
 // tables, or of the table of the context (such as the table of an UPDATE).
-fn (e Identifier) is_column_of(conn &Connection, tables map[string]Table, context Identifier) bool {
+fn (e Identifier) is_column_of(conn &Connection, tables map[string]&Table, context Identifier) bool {
 	for _, table in tables {
 		if e.is_column_of_table(conn, table) {
 			return true

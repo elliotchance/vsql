@@ -90,7 +90,7 @@ struct SequenceValuesOperation {
 	params  map[string]Value
 	exprs   []ValueExpression
 	columns Columns
-	tables  map[string]Table
+	tables  map[string]&Table
 mut:
 	conn &Connection
 }

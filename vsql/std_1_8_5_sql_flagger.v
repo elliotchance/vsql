@@ -387,6 +387,9 @@ fn primary_of(e RowValueConstructorPredicand) ?NonparenthesizedValueExpressionPr
 			primary := common_primary_of(e)?
 			if primary is NonparenthesizedValueExpressionPrimary { primary } else { none }
 		}
+		ExplicitRowValueConstructor {
+			none
+		}
 	}
 }
 

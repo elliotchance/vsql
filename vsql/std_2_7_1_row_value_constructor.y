@@ -15,8 +15,10 @@ row_value_constructor:
     $$.v = RowValueConstructor($1.v as ExplicitRowValueConstructor)
   }
 
-// A row in parentheses can also start a null_predicate, so it has the same
-// contextually typed elements (see null_predicate).
+// A row in parentheses is parsed with the contextually typed elements of a
+// VALUES row (which allow NULL and DEFAULT), so that the parser doesn't have to
+// choose between them before it sees what follows the row.
+// new_explicit_row_value_constructor rejects a NULL or DEFAULT.
 explicit_row_value_constructor:
   left_paren contextually_typed_row_value_constructor_element comma
   contextually_typed_row_value_constructor_element_list right_paren {
@@ -92,6 +94,12 @@ row_value_constructor_predicand:
   }
 | boolean_predicand {
     $$.v = RowValueConstructorPredicand($1.v as BooleanPredicand)
+  }
+| explicit_row_value_constructor {
+    row := $1.v as ExplicitRowValueConstructor
+    // ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>, Conformance Rules, 3
+    flag_if(mut yylex, row.exprs.len > 1, 'F641')
+    $$.v = RowValueConstructorPredicand(row)
   }
 
 %%

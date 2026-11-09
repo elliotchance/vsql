@@ -97,20 +97,20 @@ VALUES (2, 3), (1, NULL);
 
 -- # A row isn't a value, because there are no row types.
 VALUES ((1, 2));
--- error 42601: syntax error: unexpected ")", expecting IS
+-- error 42601: syntax error: unexpected ")"
 
 VALUES ((1, 2), 3);
--- error 42601: syntax error: unexpected ",", expecting IS
+-- error 42601: syntax error: unexpected ","
 
 VALUES (1, (2, 3));
--- error 42601: syntax error: unexpected ")", expecting IS
+-- error 42601: syntax error: unexpected ")"
 
 VALUES (ROW(1, 2), 3);
--- error 42601: syntax error: unexpected ",", expecting IS
+-- error 42601: syntax error: unexpected ","
 
--- # A row followed by IS [NOT] NULL is a null predicate. IS NULL is FALSE
--- # unless every field is NULL (8.8, General Rules, 2.b.i). A field still
--- # can't be NULL, and other predicates on a row aren't supported.
+-- # A row followed by IS [NOT] NULL is a null predicate, and a row can be
+-- # compared with another row. IS NULL is FALSE unless every field is NULL
+-- # (8.8, General Rules, 2.b.i). A field still can't be NULL.
 VALUES (1, 2) IS NULL;
 -- COL1: FALSE
 
@@ -125,7 +125,7 @@ VALUES (1, NULL) IS NULL;
 -- error 42601: syntax error: unexpected NULL
 
 VALUES (1, 2) = (1, 2);
--- error 42601: syntax error: unexpected "="
+-- COL1: TRUE
 
 -- # Other syntax errors.
 VALUES ();

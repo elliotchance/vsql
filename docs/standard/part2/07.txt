@@ -794,7 +794,7 @@
 7.12/SR/2                n/a          - - window functions (T611)
 7.12/GR/1                implemented  vsql/std_2_7_12_where_clause.y tests/std_2_7_12_select_where.sql
 7.12/GR/2                implemented  vsql/std_2_8_21_search_condition.v tests/std_2_7_12_select_where.sql
-7.12/CR/1                missing      - - a column of a derived table that contains a set function isn't flagged (#880)
+7.12/CR/1                partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter, or in the VALUES of an INSERT, or when the aggregate function is only in a subquery of the derived column
 # 7.13, <group by clause>
 7.13                     implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql only grouping column references (T431)
 7.13/SR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_6_6_ambiguous_column.sql

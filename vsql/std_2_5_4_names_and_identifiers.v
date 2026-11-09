@@ -394,6 +394,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	// columns, otherwise an unknown column would be reported as not grouped.
 	aggregated_columns := c.aggregated_columns.len
 	compiled := e.compile_column(mut c)!
+	c.flag_column_reference(e)
 
 	// A column of this query, rather than an outer reference (which is added by
 	// compile_outer).

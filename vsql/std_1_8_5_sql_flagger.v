@@ -12,7 +12,9 @@ import arrays
 //
 // The features are recorded by the grammar actions (see flag) of the language
 // that each Conformance Rule of ISO/IEC 9075-2 doesn't allow without a
-// feature. An implementation-defined feature (an extension that only vsql has)
+// feature. The rules that depend on what a name refers to are found by planning
+// the statement with the catalog (see Connection.resolved_features). An
+// implementation-defined feature (an extension that only vsql has)
 // has a Feature ID whose letter is "V" (see ISO/IEC 9075-1:2003(E), 6.3.7,
 // Feature ID and Feature Name). It's VXXX-YY, where VXXX is what's extended and
 // YY is each extension of it. The first digit of VXXX is the kind of thing that's
@@ -918,12 +920,203 @@ fn unique_features(all []string, others ...string) []string {
 	return features
 }
 
+// resolved_features returns the features of the rules that depend on what a
+// name refers to. Nothing can be flagged falsely, because the names are resolved
+// by the planner, as they are when the statement is executed, but nothing is
+// executed. A statement that can't be planned (such as for a table that doesn't
+// exist, or a dynamic parameter that doesn't have a value) only has the features
+// that were found up to that point.
+fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) []string {
+	conn.open_read_connection() or { return [] }
+	defer {
+		conn.release_read_connection()
+	}
+
+	conn.flagging = true
+	conn.flagged_features = []
+	conn.flagged_tables = []
+	defer {
+		conn.flagging = false
+	}
+
+	match stmt {
+		AlterTableStatement {
+			conn.flag_alter_table(stmt)
+		}
+		DeclareCursor {
+			create_query_expression_plan(stmt.query, params, mut conn, Correlation{}) or {}
+		}
+		DeleteStatementSearched {
+			create_plan(stmt, params, mut conn) or {}
+			conn.flag_self_reference(stmt.table_name)
+		}
+		QueryExpression {
+			create_plan(stmt, params, mut conn) or {}
+		}
+		TableDefinition {
+			conn.flag_foreign_keys(stmt, conn.resolve_identifier(stmt.table_name), 0)
+		}
+		UpdateStatementPositioned {
+			conn.flag_set_clauses(stmt.table_name, stmt.set, params)
+		}
+		UpdateStatementSearched {
+			create_plan(stmt, params, mut conn) or {}
+			conn.flag_set_clauses(stmt.table_name, stmt.set, params)
+		}
+		else {}
+	}
+
+	return conn.flagged_features
+}
+
+// flag_subquery_table records a base table that's read by a subquery.
+fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
+	if conn.flagging && conn.subquery_scopes.len > 0 {
+		conn.flagged_tables << table_name.id()
+	}
+}
+
+// flag_self_reference flags a DELETE or UPDATE with a subquery that reads the
+// table being changed. There are no views, so the leaf generally underlying
+// tables are the base tables that are read.
+//
+// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Conformance Rules, 1.a
+fn (mut conn Connection) flag_self_reference(table_name Identifier) {
+	if conn.resolve_identifier(table_name).id() in conn.flagged_tables {
+		conn.flagged_features << 'F781'
+	}
+}
+
+// flag_set_clauses compiles the value of each <set clause>, which isn't part of
+// the plan of an UPDATE.
+fn (mut conn Connection) flag_set_clauses(table_name Identifier, set []SetClause, params map[string]Value) {
+	mut c := Compiler{
+		conn:    conn
+		params:  params
+		context: conn.resolve_identifier(table_name)
+	}
+	for clause in set {
+		clause.source.compile(mut c) or {}
+	}
+	conn.flag_self_reference(table_name)
+}
+
+// flag_alter_table flags a FOREIGN KEY that an ALTER TABLE adds, either as a
+// constraint or on a new column. The existing ones aren't part of the statement.
+fn (mut conn Connection) flag_alter_table(stmt AlterTableStatement) {
+	table_name := conn.resolve_table_identifier(stmt.table_name, false) or { return }
+	table := conn.catalog_for(table_name).storage.table(table_name.storage_id())
+	mut elements := table.elements()
+	match stmt.action {
+		AddColumnDefinition { elements << stmt.action.column_definition }
+		AddTableConstraintDefinition { elements << stmt.action.constraint }
+		else { return }
+	}
+	conn.flag_foreign_keys(TableDefinition{table.name, elements, false}, table.name, table.foreign_keys.len)
+}
+
+// flag_foreign_keys flags each FOREIGN KEY of a definition, other than the
+// existing ones that are first, with a referencing column that doesn't have the
+// same data type as its referenced column. The referenced table must already
+// exist to be checked.
+//
+// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Conformance Rules, 5
+fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_name Identifier, existing int) {
+	mut table := definition.table(table_name, 0) or { return }
+	resolve_foreign_keys(mut conn, mut table) or { return }
+	for key in table.foreign_keys[existing..] {
+		referenced := if key.referenced_table.storage_id() == table_name.storage_id() {
+			table
+		} else {
+			conn.catalog_for(key.referenced_table).storage.table(key.referenced_table.storage_id())
+		}
+		for i, name in key.referenced_columns {
+			a := (referenced.column(name) or { Column{} }).typ
+			b := (table.column(key.columns[i]) or { Column{} }).typ
+			if a.typ != b.typ || a.size != b.size || a.scale != b.scale {
+				conn.flagged_features << 'T201'
+			}
+		}
+	}
+}
+
+// flag_set_function flags an aggregate function with an argument that contains
+// an outer reference, unless it's only that column reference. The aggregation
+// query is the innermost query of its column references, so a column that isn't
+// of the table being aggregated (10.9, Conformance Rules, 5) can only be one of
+// several, which is also covered by this. An expression may be compiled more
+// than once, so the same column is only counted once.
+//
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 5, 7 and 18
+fn (mut c Compiler) flag_set_function(e RoutineInvocation) {
+	if !c.conn.flagging || !c.aggregated_columns.any(it.scope >= 0) {
+		return
+	}
+
+	mut is_column := false
+	if primary := value_primary_of(e.args[0]) {
+		is_column = primary is &Identifier
+	}
+	if !is_column {
+		c.conn.flagged_features << 'F441'
+	}
+
+	mut columns := map[string]bool{}
+	for column in c.aggregated_columns {
+		columns['${column.scope} ${column.name}'] = true
+	}
+	if columns.len > 1 {
+		c.conn.flagged_features << 'F442'
+	}
+}
+
+// flag_column_reference flags a column reference that's derived from an
+// aggregate function when it's in a WHERE clause or an aggregate function. It's
+// only called once the reference has been compiled, so it's known to be valid.
+//
+// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 9
+fn (mut c Compiler) flag_column_reference(e Identifier) {
+	if !c.conn.flagging || e.custom_id != ''
+		|| (!c.in_aggregate && c.next_value_not_allowed != 'WHERE') {
+		return
+	}
+
+	// The same order that Identifier.compile_column finds the column.
+	mut tables := c.tables.clone()
+	if !e.is_column_of(c.conn, tables, c.context) {
+		for i := c.conn.subquery_scopes.len - 1; i >= 0; i-- {
+			scope := c.conn.subquery_scopes[i]
+			if e.is_column_of(c.conn, scope.tables, scope.context) {
+				tables = scope.tables.clone()
+				break
+			}
+		}
+	}
+
+	for _, table in tables {
+		if e.is_column_of_table(c.conn, table) {
+			if (table.column(e.sub_entity_name) or { Column{} }).from_aggregate {
+				c.conn.flagged_features << 'F441'
+			}
+		}
+	}
+}
+
 // features returns the Feature IDs outside of Core SQL that the statement uses
 // (see the SQL Compliance docs), sorted and without duplicates. A statement
 // that only uses Core SQL returns an empty array.
 //
+// The rules that depend on what a name refers to use the catalog as it is when
+// this is called. The statement isn't executed.
+//
 // IDs that start with "V" are features that only vsql has, such as "V001-01"
 // for EXPLAIN.
 pub fn (p PreparedStmt) features() []string {
-	return unique_features(p.features)
+	mut conn := unsafe { p.c }
+
+	return unique_features(p.features, ...conn.resolved_features(p.stmt, p.params))
 }

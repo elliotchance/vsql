@@ -25,7 +25,7 @@ VALUES LOWER(TRUE);
 -- error 42883: function does not exist: LOWER(BOOLEAN)
 
 VALUES UPPER();
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 14 near "VALUES UPPER()"
 
 VALUES LOWER('abc', 123);
--- error 42601: syntax error: unexpected ",", expecting ")" or "||"
+-- error 42601: syntax error: unexpected "," at line 1, column 19 near "LOWER('abc', 123", expecting ")" or "||"

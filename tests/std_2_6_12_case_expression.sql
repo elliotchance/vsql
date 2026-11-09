@@ -106,13 +106,13 @@ VALUES CASE WHEN TRUE THEN 'a' WHEN FALSE THEN 1 END;
 -- # Syntax errors: an extra END, a CASE without a WHEN and an ELSE without a
 -- # WHEN.
 VALUES CASE 1 WHEN 1 THEN 'a' END END;
--- error 42601: syntax error: unexpected END
+-- error 42601: syntax error: unexpected END at line 1, column 35 near "THEN 'a' END END"
 
 VALUES CASE 1 END;
--- error 42601: syntax error: unexpected END, expecting WHEN
+-- error 42601: syntax error: unexpected END at line 1, column 15 near "VALUES CASE 1 END", expecting WHEN
 
 VALUES CASE ELSE 1 END;
--- error 42601: syntax error: unexpected ELSE
+-- error 42601: syntax error: unexpected ELSE at line 1, column 13 near "VALUES CASE ELSE 1"
 
 -- # On rows, a NULL in A matches no WHEN, so the simple CASE uses the ELSE (B).
 -- # The searched CASE has no ELSE, so it's NULL when A is 1.

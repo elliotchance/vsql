@@ -84,13 +84,13 @@ VALUES U&'a!0041' /* c */;
 
 -- # A comment doesn't change what isn't a specifier.
 VALUES U&'x' /* c */ UESCAPEX;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 22 near "VALUES U&'x' /* c */ UESCAPEX"; hint: is a "," missing before UESCAPEX?
 
 VALUES U&'x' /* c */ 'y';
--- error 42601: syntax error: unexpected string
+-- error 42601: syntax error: unexpected string at line 1, column 22 near "VALUES U&'x' /* c */ 'y'"; hint: is a "," missing before 'y'?
 
 VALUES 'x' /* c */ UESCAPE '!';
--- error 42601: syntax error: unexpected UESCAPE
+-- error 42601: syntax error: unexpected UESCAPE at line 1, column 20 near "VALUES 'x' /* c */ UESCAPE '!'"
 
 -- # The character must still follow.
 VALUES U&'x' /* c */ UESCAPE /* d */;

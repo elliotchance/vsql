@@ -139,13 +139,13 @@ SELECT * FROM t LIMIT 1, 1.5;
 -- # LIMIT offset, count already has an offset, so it can't also have an OFFSET
 -- # before or after it, or a third number.
 SELECT * FROM t LIMIT 1, 2 OFFSET 1;
--- error 42601: syntax error: unexpected OFFSET
+-- error 42601: syntax error: unexpected OFFSET at line 1, column 28 near "1, 2 OFFSET 1"
 
 SELECT * FROM t LIMIT 1, 2, 3;
--- error 42601: syntax error: unexpected ","
+-- error 42601: syntax error: unexpected "," at line 1, column 27 near "1, 2, 3"
 
 SELECT * FROM t OFFSET 1 LIMIT 1, 2;
--- error 42601: syntax error: unexpected ","
+-- error 42601: syntax error: unexpected "," at line 1, column 33 near "1 LIMIT 1, 2"
 
 -- # With ORDER BY, LIMIT keeps the first rows in that order, and OFFSET skips
 -- # rows before that wherever it's written.
@@ -306,33 +306,33 @@ SELECT * FROM t LIMIT 1 OFFSET 1.5;
 
 -- # A dynamic parameter isn't allowed, the same as FETCH FIRST.
 SELECT * FROM t LIMIT ?;
--- error 42601: syntax error: unexpected "?"
+-- error 42601: syntax error: unexpected "?" at line 1, column 23 near "FROM t LIMIT ?"
 
 SELECT * FROM t FETCH FIRST ? ROWS ONLY;
--- error 42601: syntax error: unexpected "?"
+-- error 42601: syntax error: unexpected "?" at line 1, column 29 near "t FETCH FIRST ? ROWS"
 
 -- # Both of them is a syntax error, in any order.
 SELECT * FROM t LIMIT 1 FETCH FIRST 1 ROW ONLY;
--- error 42601: syntax error: unexpected FETCH
+-- error 42601: syntax error: unexpected FETCH at line 1, column 25 near "t LIMIT 1 FETCH FIRST"
 
 SELECT * FROM t FETCH FIRST 1 ROW ONLY LIMIT 1;
--- error 42601: syntax error: unexpected LIMIT
+-- error 42601: syntax error: unexpected LIMIT at line 1, column 40 near "1 ROW ONLY LIMIT 1"
 
 SELECT * FROM t OFFSET 1 ROW FETCH FIRST 1 ROW ONLY LIMIT 1;
--- error 42601: syntax error: unexpected LIMIT
+-- error 42601: syntax error: unexpected LIMIT at line 1, column 53 near "1 ROW ONLY LIMIT 1"
 
 SELECT * FROM t LIMIT 1 LIMIT 1;
--- error 42601: syntax error: unexpected LIMIT
+-- error 42601: syntax error: unexpected LIMIT at line 1, column 25 near "t LIMIT 1 LIMIT 1"
 
 SELECT * FROM t LIMIT 1 OFFSET 1 OFFSET 1;
--- error 42601: syntax error: unexpected OFFSET
+-- error 42601: syntax error: unexpected OFFSET at line 1, column 34 near "1 OFFSET 1 OFFSET 1"
 
 SELECT * FROM t LIMIT 1 ORDER BY x;
--- error 42601: syntax error: unexpected ORDER
+-- error 42601: syntax error: unexpected ORDER at line 1, column 25 near "t LIMIT 1 ORDER BY"
 
 -- # There's no "LIMIT ALL".
 SELECT * FROM t LIMIT ALL;
--- error 42601: syntax error: unexpected ALL
+-- error 42601: syntax error: unexpected ALL at line 1, column 23 near "FROM t LIMIT ALL"
 
 -- # The flagger: LIMIT is V203-01, and FETCH FIRST isn't. They are both a row
 -- # count of a query, so they need the same features to be written the standard

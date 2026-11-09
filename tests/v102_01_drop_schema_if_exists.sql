@@ -32,7 +32,7 @@ SELECT * FROM foo.t;
 
 -- # One of CASCADE or RESTRICT is still required.
 DROP SCHEMA IF EXISTS foo;
--- error 42601: syntax error: unexpected $end, expecting CASCADE or RESTRICT
+-- error 42601: syntax error: unexpected $end at line 1, column 26 near "SCHEMA IF EXISTS foo", expecting CASCADE or RESTRICT
 
 -- # Only the schema is optional: a catalog that doesn't exist is still an
 -- # error, and INFORMATION_SCHEMA exists but can't be dropped.

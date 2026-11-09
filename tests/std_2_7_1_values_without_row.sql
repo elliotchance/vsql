@@ -97,16 +97,16 @@ VALUES (2, 3), (1, NULL);
 
 -- # A row isn't a value, because there are no row types.
 VALUES ((1, 2));
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 15 near ", 2))"
 
 VALUES ((1, 2), 3);
--- error 42601: syntax error: unexpected ","
+-- error 42601: syntax error: unexpected "," at line 1, column 15 near ", 2), 3"
 
 VALUES (1, (2, 3));
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 18 near ", 3))"
 
 VALUES (ROW(1, 2), 3);
--- error 42601: syntax error: unexpected ","
+-- error 42601: syntax error: unexpected "," at line 1, column 18 near ", 2), 3"
 
 -- # A row followed by IS [NOT] NULL is a null predicate, and a row can be
 -- # compared with another row. IS NULL is FALSE unless every field is NULL
@@ -129,16 +129,16 @@ VALUES (1, 2) = (1, 2);
 
 -- # Other syntax errors.
 VALUES ();
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 9 near "VALUES ()"
 
 VALUES (1,);
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 11 near "(1,)"; hint: remove the "," before )
 
 VALUES (1, 2;
--- error 42601: syntax error: unexpected $end, expecting ")" or ","
+-- error 42601: syntax error: unexpected $end at line 1, column 13 near "(1, 2", expecting ")" or ","
 
 VALUES (1 2);
--- error 42601: syntax error: unexpected number, expecting ","
+-- error 42601: syntax error: unexpected number at line 1, column 11 near "VALUES (1 2)", expecting ","; hint: is a "," missing before 2?
 
 -- # As a derived table.
 /* extensions V201-02 */

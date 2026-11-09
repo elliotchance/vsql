@@ -120,7 +120,7 @@ VALUES<U+0009><U+0009><U+0009>123;
 
 -- # A letter isn't white space, so VALUES and 123 become one identifier.
 VALUES<U+0061>123;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 1 near "VALUESa123"
 
 -- # A character that isn't part of a token or white space isn't ignored.
 VALUES 1 @;

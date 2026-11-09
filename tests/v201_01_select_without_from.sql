@@ -68,13 +68,13 @@ SELECT NEXT VALUE FOR seq;
 -- # There are no columns: * needs a FROM to parse, and a column reference or
 -- # T.* is an unknown name. WHERE, GROUP BY and HAVING need a FROM too.
 SELECT *;
--- error 42601: syntax error: unexpected $end, expecting FROM
+-- error 42601: syntax error: unexpected $end at line 1, column 9 near "SELECT *", expecting FROM
 
 SELECT DISTINCT *;
--- error 42601: syntax error: unexpected $end, expecting FROM
+-- error 42601: syntax error: unexpected $end at line 1, column 18 near "SELECT DISTINCT *", expecting FROM
 
 SELECT *, 1;
--- error 42601: syntax error: unexpected ",", expecting FROM
+-- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, 1", expecting FROM
 
 /* extensions V201-01 */
 SELECT t.*;
@@ -93,13 +93,13 @@ SELECT t.x;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 
 SELECT 1 WHERE TRUE;
--- error 42601: syntax error: unexpected WHERE
+-- error 42601: syntax error: unexpected WHERE at line 1, column 10 near "SELECT 1 WHERE TRUE"
 
 SELECT 1 GROUP BY x;
--- error 42601: syntax error: unexpected GROUP
+-- error 42601: syntax error: unexpected GROUP at line 1, column 10 near "SELECT 1 GROUP BY"
 
 SELECT 1 HAVING TRUE;
--- error 42601: syntax error: unexpected HAVING
+-- error 42601: syntax error: unexpected HAVING at line 1, column 10 near "SELECT 1 HAVING TRUE"
 
 -- # An aggregate sees the one row, so COUNT(*) is 1. In a subquery, COUNT(*)
 -- # has no column reference, so it counts the subquery's own row (6.9, Syntax

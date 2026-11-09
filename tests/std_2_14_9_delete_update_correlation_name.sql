@@ -280,21 +280,21 @@ SELECT * FROM t;
 
 -- # A derived column list isn't allowed.
 DELETE FROM t AS u (a, b);
--- error 42601: syntax error: unexpected "("
+-- error 42601: syntax error: unexpected "(" at line 1, column 20 near "t AS u (a"
 
 UPDATE t AS u (a, b) SET a = 1;
--- error 42601: syntax error: unexpected "(", expecting SET
+-- error 42601: syntax error: unexpected "(" at line 1, column 15 near "t AS u (a", expecting SET
 
 -- # A reserved word can't be the correlation name, and neither can a qualified
 -- # name.
 DELETE FROM t AS WHERE x = 1;
--- error 42601: syntax error: unexpected WHERE
+-- error 42601: syntax error: unexpected WHERE at line 1, column 18 near "FROM t AS WHERE x"
 
 UPDATE t AS SET x = 1;
--- error 42601: syntax error: unexpected SET
+-- error 42601: syntax error: unexpected SET at line 1, column 13 near "UPDATE t AS SET x"
 
 DELETE FROM t AS a.b;
--- error 42601: syntax error: unexpected "."
+-- error 42601: syntax error: unexpected "." at line 1, column 19 near "t AS a.b"
 
 -- # EXPLAIN.
 /* extensions V001-02 */

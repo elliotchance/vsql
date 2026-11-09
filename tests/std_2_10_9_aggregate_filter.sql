@@ -101,13 +101,13 @@ SELECT (SELECT MAX(t2.x) FILTER (WHERE t1.x > 1) FROM t t2) FROM t t1;
 
 -- # Only an aggregate function can have a FILTER, and it needs WHERE.
 SELECT x FILTER (WHERE x > 1) FROM t;
--- error 42601: syntax error: unexpected FILTER
+-- error 42601: syntax error: unexpected FILTER at line 1, column 10 near "SELECT x FILTER ("
 
 SELECT ABS(x) FILTER (WHERE x > 1) FROM t;
--- error 42601: syntax error: unexpected FILTER
+-- error 42601: syntax error: unexpected FILTER at line 1, column 15 near "(x) FILTER ("
 
 SELECT COUNT(*) FILTER (x > 1) FROM t;
--- error 42601: syntax error: unexpected identifier, expecting WHERE
+-- error 42601: syntax error: unexpected identifier at line 1, column 25 near ") FILTER (x >", expecting WHERE
 
 -- # A filtered function is still an aggregate function: it can't be in WHERE,
 -- # and the query is grouped, so other columns must be grouping columns.

@@ -474,7 +474,7 @@ INSERT INTO t VALUES (1, DEFAULT) UNION VALUES ROW(2, 'a');
 -- error 42601: syntax error: NULL and DEFAULT cannot be used in the VALUES of a query
 
 INSERT INTO t (x) (VALUES (DEFAULT));
--- error 42601: syntax error: unexpected ")", expecting ","
+-- error 42601: syntax error: unexpected ")" at line 1, column 35 near "VALUES (DEFAULT))", expecting ","
 
 -- # ORDER BY, OFFSET and FETCH FIRST decide the rows and their order.
 INSERT INTO t (x) SELECT x + 10 FROM t ORDER BY x DESC;
@@ -562,10 +562,10 @@ EXPLAIN INSERT INTO t SELECT * FROM t;
 -- error 42601: syntax error: Cannot EXPLAIN INSERT
 
 INSERT INTO t;
--- error 42601: syntax error: unexpected $end, expecting OVERRIDING or SELECT or VALUES or "("
+-- error 42601: syntax error: unexpected $end at line 1, column 14 near "INSERT INTO t", expecting OVERRIDING or SELECT or VALUES or "("
 
 INSERT INTO t (x);
--- error 42601: syntax error: unexpected $end, expecting OVERRIDING or SELECT or VALUES or "("
+-- error 42601: syntax error: unexpected $end at line 1, column 18 near "t (x)", expecting OVERRIDING or SELECT or VALUES or "("
 
 -- # A row of a boolean value, with or without parentheses, at the start of a
 -- # query.

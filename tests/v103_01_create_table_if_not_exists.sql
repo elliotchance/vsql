@@ -200,10 +200,10 @@ SELECT * FROM if;
 -- # EXISTS must follow IF NOT. IF EXISTS is only for DROP: here IF is read as
 -- # the table name, so EXISTS is unexpected.
 CREATE TABLE IF NOT (x INT);
--- error 42601: syntax error: unexpected "(", expecting EXISTS
+-- error 42601: syntax error: unexpected "(" at line 1, column 21 near "TABLE IF NOT (x", expecting EXISTS
 
 CREATE TABLE IF EXISTS t (x INT);
--- error 42601: syntax error: unexpected EXISTS, expecting "("
+-- error 42601: syntax error: unexpected EXISTS at line 1, column 17 near "CREATE TABLE IF EXISTS t", expecting "("
 
 -- # IF NOT EXISTS isn't kept: "vsql out" writes plain CREATE statements, and
 -- # the dump is the same after they're read back in.

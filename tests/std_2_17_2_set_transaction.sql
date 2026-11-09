@@ -76,7 +76,7 @@ SET LOCAL TRANSACTION DIAGNOSTICS SIZE 1;
 -- msg: SET TRANSACTION
 -- error 42804: data type mismatch for DIAGNOSTICS SIZE: expected exact numeric with scale 0 but got NUMERIC(2, 1)
 -- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
--- error 42601: syntax error: unexpected LOCAL
+-- error 42601: syntax error: unexpected LOCAL at line 1, column 5 near "SET LOCAL TRANSACTION"
 
 -- # SET TRANSACTION isn't allowed in an active transaction (General Rules,
 -- # 1.a.i).

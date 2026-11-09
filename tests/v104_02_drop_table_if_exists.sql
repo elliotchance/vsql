@@ -149,7 +149,7 @@ DROP TABLE IF EXISTS if CASCADE;
 
 -- # IF NOT EXISTS is only for CREATE.
 DROP TABLE IF NOT EXISTS t;
--- error 42601: syntax error: unexpected NOT
+-- error 42601: syntax error: unexpected NOT at line 1, column 15 near "DROP TABLE IF NOT EXISTS"
 
 -- # Flagging: only the form that's used, and not the standard forms.
 

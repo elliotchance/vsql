@@ -29,4 +29,4 @@ VALUES ROW(1.E2, .5e2, 1.5E-1, 1.e+1);
 -- COL1: 100e0 (DOUBLE PRECISION) COL2: 50e0 (DOUBLE PRECISION) COL3: 0.15e0 (DOUBLE PRECISION) COL4: 10e0 (DOUBLE PRECISION)
 
 VALUES 1.e;
--- error 42601: syntax error: unexpected identifier
+-- error 42601: syntax error: unexpected identifier at line 1, column 10 near "VALUES 1.e"

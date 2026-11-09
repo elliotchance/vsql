@@ -61,13 +61,13 @@ SELECT COUNT(DISTINCT x), SUM(DISTINCT x), AVG(DISTINCT x), SUM(x), AVG(x) FROM 
 -- # COUNT(*) can't have a set quantifier, and a set quantifier needs an
 -- # argument and can only be given once.
 SELECT COUNT(DISTINCT *) FROM t;
--- error 42601: syntax error: unexpected "*"
+-- error 42601: syntax error: unexpected "*" at line 1, column 23 near "COUNT(DISTINCT *)"
 
 SELECT COUNT(ALL *) FROM t;
--- error 42601: syntax error: unexpected "*"
+-- error 42601: syntax error: unexpected "*" at line 1, column 18 near "COUNT(ALL *)"
 
 SELECT SUM(DISTINCT) FROM t;
--- error 42601: syntax error: unexpected ")"
+-- error 42601: syntax error: unexpected ")" at line 1, column 20 near "SUM(DISTINCT) FROM"
 
 SELECT SUM(DISTINCT ALL x) FROM t;
--- error 42601: syntax error: unexpected ALL
+-- error 42601: syntax error: unexpected ALL at line 1, column 21 near "SUM(DISTINCT ALL x"

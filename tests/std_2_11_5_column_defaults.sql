@@ -148,18 +148,18 @@ SELECT * FROM t;
 
 -- # The DEFAULT must be before any constraints.
 CREATE TABLE t (a INT NOT NULL DEFAULT 3);
--- error 42601: syntax error: unexpected DEFAULT, expecting ")" or ","
+-- error 42601: syntax error: unexpected DEFAULT at line 1, column 32 near "INT NOT NULL DEFAULT 3", expecting ")" or ","; hint: the DEFAULT of a column must be before its constraints, such as x INTEGER DEFAULT 0 NOT NULL (see https://vsql.readthedocs.io/en/latest/create-table.html#defaults)
 
 -- # A default can only be a literal, NULL, a datetime value function,
 -- # CURRENT_CATALOG or CURRENT_SCHEMA, not an expression or a parameter.
 CREATE TABLE t (a INT DEFAULT 1 + 2);
--- error 42601: syntax error: unexpected "+", expecting ")" or ","
+-- error 42601: syntax error: unexpected "+" at line 1, column 33 near "INT DEFAULT 1 + 2", expecting ")" or ","
 
 CREATE TABLE t (a INT DEFAULT (1));
--- error 42601: syntax error: unexpected "("
+-- error 42601: syntax error: unexpected "(" at line 1, column 31 near "a INT DEFAULT (1"
 
 CREATE TABLE t (a INT DEFAULT ?);
--- error 42601: syntax error: unexpected "?"
+-- error 42601: syntax error: unexpected "?" at line 1, column 31 near "a INT DEFAULT ?)"
 
 -- # A literal must suit the type of the column (Syntax Rules, 4.a). A string
 -- # must fit in a character string column, even with trailing spaces (Syntax

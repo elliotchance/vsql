@@ -101,7 +101,7 @@ ALTER TABLE t DROP CONSTRAINT;
 -- msg: CREATE TABLE 1
 -- error 42703: no such column: B
 -- error 42601: syntax error: cannot drop the only column of ":memory:".PUBLIC.T
--- error 42601: syntax error: unexpected $end
+-- error 42601: syntax error: unexpected $end at line 1, column 30 near "TABLE t DROP CONSTRAINT"
 
 -- # The constraints that only use the column are dropped with it: its NOT NULL,
 -- # a CHECK, and a PRIMARY KEY or UNIQUE of only that column. The rows move

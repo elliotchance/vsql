@@ -91,7 +91,7 @@ DROP INDEX IF EXISTS if;
 -- msg: DROP INDEX 0
 
 CREATE INDEX IF EXISTS t_x ON t (x);
--- error 42601: syntax error: unexpected EXISTS, expecting ON
+-- error 42601: syntax error: unexpected EXISTS at line 1, column 17 near "CREATE INDEX IF EXISTS t_x", expecting ON
 
 -- # CREATE UNIQUE INDEX IF NOT EXISTS
 

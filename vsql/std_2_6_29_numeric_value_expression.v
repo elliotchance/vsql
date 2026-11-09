@@ -37,7 +37,8 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 			}
 			typ:          arithmetic_type(compiled_n.typ, compiled_term.typ, e.op)
 			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
-		}
+			constant:     compiled_n.constant && compiled_term.constant
+		}.fold()
 	}
 
 	return compiled_term
@@ -72,7 +73,8 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 			}
 			typ:          arithmetic_type(compiled_term.typ, compiled_factor.typ, e.op)
 			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
-		}
+			constant:     compiled_term.constant && compiled_factor.constant
+		}.fold()
 	}
 
 	return compiled_factor
@@ -110,7 +112,8 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 		}
 		typ:          compiled.typ
 		contains_agg: compiled.contains_agg
-	}
+		constant:     compiled.constant
+	}.fold()
 }
 
 type NumericPrimary = RoutineInvocation | SignedValueExpressionPrimary | ValueExpressionPrimary

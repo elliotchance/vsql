@@ -39,7 +39,7 @@ fn (mut t TransactionIDs) add(transaction_id u64) ! {
 }
 
 fn (mut t TransactionIDs) remove(transaction_id u64) {
-	for i in 0 .. 256 {
+	for i in 0 .. t.end {
 		if t.tids[i] == transaction_id {
 			t.tids[i] = 0
 			t.update_end()
@@ -49,8 +49,10 @@ fn (mut t TransactionIDs) remove(transaction_id u64) {
 }
 
 // has_other returns true if a transaction other than transaction_id is active.
-fn (t TransactionIDs) has_other(transaction_id u64) bool {
-	for i in 0 .. 256 {
+// It's called for every row that's written, so t isn't copied (it's 2 KB) and
+// only the slots in use are searched.
+fn (t &TransactionIDs) has_other(transaction_id u64) bool {
+	for i in 0 .. t.end {
 		if t.tids[i] != 0 && t.tids[i] != transaction_id {
 			return true
 		}

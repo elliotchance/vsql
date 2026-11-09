@@ -25,6 +25,24 @@ EXPLAIN SELECT * FROM "q r";
 -- EXPLAIN: TABLE ":memory:".PUBLIC."q r" ("s t" INTEGER NOT NULL)
 -- EXPLAIN: EXPR (":memory:".PUBLIC."q r"."s t" INTEGER NOT NULL)
 
+-- # A result column that names the column is known not null too, and so is a
+-- # renamed or qualified one, but an expression of it isn't.
+/* extensions V001-01 */
+EXPLAIN SELECT a, t.b AS y, c, d, f, a + 1 FROM t;
+-- EXPLAIN: TABLE ":memory:".PUBLIC.T (A INTEGER NOT NULL, B INTEGER NOT NULL, C INTEGER, D INTEGER, E INTEGER, F INTEGER)
+-- EXPLAIN: EXPR (A INTEGER NOT NULL, Y INTEGER NOT NULL, C INTEGER, D INTEGER, F INTEGER, COL6 INTEGER)
+
+/* extensions V001-01 */
+EXPLAIN SELECT x, y FROM p WHERE id = 1;
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.P (ID INTEGER NOT NULL, X INTEGER NOT NULL, Y INTEGER) RANGE ID = 1
+-- EXPLAIN: WHERE ID = 1
+-- EXPLAIN: EXPR (X INTEGER NOT NULL, Y INTEGER)
+
+/* extensions V001-01 */
+EXPLAIN SELECT "s t" FROM "q r";
+-- EXPLAIN: TABLE ":memory:".PUBLIC."q r" ("s t" INTEGER NOT NULL)
+-- EXPLAIN: EXPR ("s t" INTEGER NOT NULL)
+
 -- # The columns stay NOT NULL when the rows are found by a primary key lookup.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM p WHERE id = 1;

@@ -66,6 +66,19 @@ UTEST_F(db, 6_15_describe_col_nullable_named_column) {
   EXPECT_EQ(col.nullable, SQL_NULLABLE);
 }
 
+UTEST_F(db, 6_15_describe_col_nullable_check) {
+  struct column col;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE t (x INT, y INT, CHECK (x IS NOT NULL))"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT x, y FROM t"), SQL_SUCCESS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NO_NULLS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 2, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NULLABLE);
+}
+
 UTEST_F(db, 6_15_describe_col_nullable_outer_join) {
   struct column col;
 

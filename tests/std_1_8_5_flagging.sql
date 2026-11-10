@@ -198,6 +198,16 @@ SELECT COUNT(*) FILTER (WHERE x > 0), SUM(x) FILTER (WHERE x > 0) FROM t;
 -- # Numeric functions outside of Core SQL. Each one is flagged with its own
 -- # feature, so a statement can have several.
 /* flags */
+SELECT LISTAGG(y, ',') WITHIN GROUP (ORDER BY 1) FROM t;
+-- flags: T625
+-- COL1: a
+
+/* flags */
+SELECT LISTAGG(DISTINCT y, ',' ON OVERFLOW TRUNCATE WITH COUNT) WITHIN GROUP (ORDER BY y) FILTER (WHERE x > 0) FROM t;
+-- flags: T612, T625
+-- COL1: a
+
+/* flags */
 SELECT ABS(x), MOD(x, 2), SIN(x), LOG10(x), LN(x), EXP(x), POWER(x, 2), SQRT(x), FLOOR(x), CEILING(x) FROM t;
 -- flags: T441, T621, T622, T624
 -- COL1: 1 COL2: 1 COL3: 0.841470984808e0 COL4: 0e0 COL5: 0e0 COL6: 2.718281828459e0 COL7: 1e0 COL8: 1e0 COL9: 1 COL10: 1

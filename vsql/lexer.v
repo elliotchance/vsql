@@ -72,6 +72,8 @@ type YYSym = AddColumnDefinition
 	| InsertStatement
 	| JoinSpecification
 	| JoinType
+	| ListaggOverflow
+	| ListaggSetFunction
 	| LocalTime
 	| LocalTimestamp
 	| NextValueExpression

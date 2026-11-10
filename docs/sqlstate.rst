@@ -277,6 +277,9 @@ large enough to store it.
 
 A ``CAST`` to a shorter type is a ``01004`` warning instead.
 
+``LISTAGG`` also returns this error when its result would be longer than
+10485760 characters, unless it has ``ON OVERFLOW TRUNCATE``.
+
 ``22003`` numeric value out of range
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -548,35 +548,49 @@ The C tests of libvsql can't use a directive, so they call
 
 The faults are:
 
-- ``open``: opening the database file.
-- ``lock``: locking the database file to write to it.
-- ``lock_shared``: locking the database file to read it.
-- ``read_header``: reading the header of the database file.
-- ``read_page``: reading a page from the database file.
-- ``write_version``: the file needs a newer version of vsql to be changed.
-- ``wal_write``: writing a statement to the write-ahead log, before it's
-  committed.
-- ``wal_torn_frame``: only half of the commit frame is written to the
-  write-ahead log.
-- ``wal_corrupt_frame``: the commit frame in the write-ahead log has the wrong
-  checksum.
-- ``wal_bad_magic``, ``wal_bad_header`` and ``wal_unknown_frame``: the
-  write-ahead log is corrupt in other ways.
-- ``checkpoint``: copying a committed statement from the write-ahead log into
-  the database file (including when it's recovered).
-- ``recover``: copying a statement that was left in the write-ahead log into
-  the database file.
-- ``session_shared``: changing the session lock back to shared, after
-  recovering the transactions of a connection that stopped.
-- ``isolation_start``: starting the isolation block of an operation on the
-  file.
-- ``isolation_end``: ending the isolation block of an operation on the file,
-  which removes the rows that were deleted outside of a transaction.
-- ``accept``: a server accepting a client. A test with a ``fault`` doesn't run
-  through the server, so this is only used by the server tests in
-  ``vsql/sql_test.v``.
-- ``constraint_index``: a new table doesn't get the indexes of its constraints,
-  like a table from an older version of vsql. This isn't an error.
+.. list-table::
+   :header-rows: 1
+
+   * - Fault
+     - What fails
+   * - ``open``
+     - Opening the database file.
+   * - ``lock``
+     - Locking the database file to write to it.
+   * - ``lock_shared``
+     - Locking the database file to read it.
+   * - ``read_header``
+     - Reading the header of the database file.
+   * - ``read_page``
+     - Reading a page from the database file.
+   * - ``write_version``
+     - The file needs a newer version of vsql to be changed.
+   * - ``wal_write``
+     - Writing a statement to the write-ahead log, before it's committed.
+   * - ``wal_torn_frame``
+     - Only half of the commit frame is written to the write-ahead log.
+   * - ``wal_corrupt_frame``
+     - The commit frame in the write-ahead log has the wrong checksum.
+   * - ``wal_bad_magic``
+     - The write-ahead log doesn't start with its magic number.
+   * - ``wal_bad_header``
+     - The header of the write-ahead log has the wrong checksum.
+   * - ``wal_unknown_frame``
+     - The write-ahead log has a frame of an unknown kind.
+   * - ``checkpoint``
+     - Copying a committed statement from the write-ahead log into the database file (including when it's recovered).
+   * - ``recover``
+     - Copying a statement that was left in the write-ahead log into the database file.
+   * - ``session_shared``
+     - Changing the session lock back to shared, after recovering the transactions of a connection that stopped.
+   * - ``isolation_start``
+     - Starting the isolation block of an operation on the file.
+   * - ``isolation_end``
+     - Ending the isolation block of an operation on the file, which removes the rows that were deleted outside of a transaction.
+   * - ``accept``
+     - A server accepting a client. A test with a ``fault`` doesn't run through the server, so this is only used by the server tests in ``vsql/sql_test.v``.
+   * - ``constraint_index``
+     - A new table doesn't get the indexes of its constraints, like a table from an older version of vsql. This isn't an error.
 
 Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
 ``vsql/fault.v``. A test with a fault only runs on disk.

@@ -18,6 +18,6 @@ cat out.txt
 grep "^Instant Pot | 144.89e0" out.txt
 grep "^Kettle      |     20e0" out.txt
 
-$VSQL bench -accounts 1000 -duration 2
+$VSQL bench -duration 2
 
 VSQL=$VSQL cmd/tests/server-concurrent.sh

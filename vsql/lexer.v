@@ -271,7 +271,12 @@ fn tokenize(sql_stmt string) ![]Token {
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
-	cs := sql_stmt.trim(';').runes()
+	text := sql_stmt.trim(';')
+	cs := statement_runes(text)
+	// If every character is ASCII, the position of a character in cs is also its
+	// position in text, so a token is a slice of text rather than being encoded
+	// again from its runes (see substring).
+	ascii := cs.len == text.len
 	// The positions of the tokens are in sql_stmt, before the semicolons at the
 	// start are trimmed.
 	offset := sql_stmt.len - sql_stmt.trim_left(';').len
@@ -313,7 +318,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
 				i++
 			}
-			word := cs[start..i].string()
+			word := substring(text, cs, ascii, start, i)
 			tokens << Token{token_literal_number, YYSymType{
 				v: word
 			}, 0, 0}
@@ -411,7 +416,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			multi_token := multi_operator_token(cs[i], cs[i + 1])
 			if multi_token != 0 {
 				tokens << Token{multi_token, YYSymType{
-					v: cs[i..i + 2].string()
+					v: substring(text, cs, ascii, i, i + 2)
 				}, 0, 0}
 				i += 2
 				unsafe {
@@ -420,9 +425,10 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			}
 		}
 
-		if single_token := single_operator_tokens[cs[i]] {
+		single_token := single_operator_token(cs[i])
+		if single_token != 0 {
 			tokens << Token{single_token, YYSymType{
-				v: cs[i].str()
+				v: substring(text, cs, ascii, i, i + 1)
 			}, 0, 0}
 			i++
 			unsafe {
@@ -437,7 +443,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			i++
 			is_not_first = true
 		}
-		word := cs[word_start..i].string()
+		word := substring(text, cs, ascii, word_start, i)
 
 		// A character that doesn't start a token must be a separator.
 		//
@@ -529,6 +535,33 @@ fn is_now_function(tokens []Token, i int) bool {
 		&& tokens[i + 1].token == token_operator_left_paren
 		&& tokens[i + 2].token == token_operator_right_paren
 		&& (i == 0 || tokens[i - 1].token != token_operator_period)
+}
+
+// statement_runes is text.runes(), but an ASCII statement is copied straight
+// into the runes, rather than decoding and appending one character at a time.
+@[direct_array_access]
+fn statement_runes(text string) []rune {
+	mut cs := []rune{len: text.len}
+	for i in 0 .. text.len {
+		if text[i] >= 0x80 {
+			return text.runes()
+		}
+		cs[i] = rune(text[i])
+	}
+
+	return cs
+}
+
+// substring is the characters from start to end (not including end) of the
+// text that the runes cs are from. If the text is ASCII, the positions are the
+// same in both, so it's a slice of the text.
+@[inline]
+fn substring(text string, cs []rune, ascii bool, start int, end int) string {
+	if ascii {
+		return text[start..end]
+	}
+
+	return cs[start..end].string()
 }
 
 // is_ilike_operator reports whether the word ILIKE at tokens[i] is the operator
@@ -980,20 +1013,26 @@ fn multi_operator_token(a rune, b rune) int {
 	return 0
 }
 
-const single_operator_tokens = {
-	`(`: token_operator_left_paren
-	`)`: token_operator_right_paren
-	`*`: token_operator_asterisk
-	`+`: token_operator_plus
-	`,`: token_operator_comma
-	`-`: token_operator_minus
-	`/`: token_operator_solidus
-	`;`: token_operator_semicolon
-	`<`: token_operator_less_than
-	`=`: token_operator_equals
-	`>`: token_operator_greater_than
-	`.`: token_operator_period
-	`:`: token_operator_colon
+// single_operator_token is the token of an operator that's one character, or 0
+// if c isn't one. It's a match rather than a map, since it's looked up for the
+// first character of every word.
+fn single_operator_token(c rune) int {
+	return match c {
+		`(` { token_operator_left_paren }
+		`)` { token_operator_right_paren }
+		`*` { token_operator_asterisk }
+		`+` { token_operator_plus }
+		`,` { token_operator_comma }
+		`-` { token_operator_minus }
+		`/` { token_operator_solidus }
+		`;` { token_operator_semicolon }
+		`<` { token_operator_less_than }
+		`=` { token_operator_equals }
+		`>` { token_operator_greater_than }
+		`.` { token_operator_period }
+		`:` { token_operator_colon }
+		else { 0 }
+	}
 }
 
 // keyword_tokens is the token of each name that the grammar has.

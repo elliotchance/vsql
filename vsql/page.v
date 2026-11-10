@@ -244,6 +244,46 @@ fn (p Page) object_key(offset int) []u8 {
 	return p.data[offset + page_object_prefix_length - 1..page_object_value_at(p.data, offset) - 1]
 }
 
+// object_xid returns the xid of the object at offset, without reading the
+// object.
+fn (p Page) object_xid(offset int) u64 {
+	return binary.big_endian_u64_at(p.data, offset + page_object_xid_at)
+}
+
+// expired_objects are the objects of the page that were expired by xid (see
+// Storage.isolation_end), read in place (see object_in_place). The other
+// objects aren't read.
+fn (p Page) expired_objects(xid u64) []PageObject {
+	mut expired := []PageObject{}
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	for offset < end {
+		if p.object_xid(offset) == xid {
+			expired << p.object_in_place(offset)
+		}
+		offset += p.object_len(offset)
+	}
+
+	return expired
+}
+
+// has_schema_object_of is true if the page has an object of the schema (a
+// table, sequence or name, see Storage.load_schema) that was created or expired
+// by the transaction.
+fn (p Page) has_schema_object_of(transaction_id u64) bool {
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	for offset < end {
+		if (p.object_tid(offset) == transaction_id || p.object_xid(offset) == transaction_id)
+			&& p.data[offset + page_object_prefix_length - 1] in [`T`, `S`, `N`] {
+			return true
+		}
+		offset += p.object_len(offset)
+	}
+
+	return false
+}
+
 // versions returns all versions of a record. The result will have 0, 1 or 2
 // elements.
 fn (p Page) versions(key []u8) []u64 {

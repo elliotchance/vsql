@@ -1116,10 +1116,8 @@ fn (mut f Storage) isolation_end() ! {
 	// objects expired in this transaction are removed. Most pages don't have
 	// any, so they're only read, not copied and stored again.
 	mut blob_refs := []PageObject{}
-	mut objects := []PageObject{}
 	for page_number, _ in f.transaction_pages {
-		(f.btree.pager.read_page(page_number)!).objects_in_place(mut objects)
-		expired := objects.filter(it.xid == f.transaction_id)
+		expired := (f.btree.pager.read_page(page_number)!).expired_objects(f.transaction_id)
 		if expired.len == 0 {
 			continue
 		}

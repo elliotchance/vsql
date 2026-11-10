@@ -296,3 +296,23 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- name: b Count: 2
+
+-- # A NULL that's set to NULL doesn't change the row, so the row isn't written
+-- # (it can't conflict with another transaction), but it's still counted.
+/* connection 1 */
+CREATE TABLE foo (x INT, y INT);
+INSERT INTO foo (x, y) VALUES (NULL, 1);
+START TRANSACTION;
+UPDATE foo SET x = NULL;
+/* connection 2 */
+UPDATE foo SET y = 2;
+/* connection 1 */
+COMMIT;
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: UPDATE 1
+-- 2: msg: UPDATE 1
+-- 1: msg: COMMIT
+-- 1: X: NULL Y: 2

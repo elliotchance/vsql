@@ -425,13 +425,16 @@ fn wal_frame(kind u8, number int, data []u8, previous_checksum u32) ([]u8, u32) 
 	return frame, checksum
 }
 
+// wal_checksum is the CRC-32 of the previous checksum, the frame header and the
+// data, one after the other. It's calculated in parts, so that the data isn't
+// copied.
 fn wal_checksum(previous_checksum u32, frame_header []u8, data []u8) u32 {
-	mut b := binary.big_endian_get_u32(previous_checksum)
-	b << frame_header
-	b << data
+	checksum := crc32.sum(binary.big_endian_get_u32(previous_checksum))
 
-	return crc32.sum(b)
+	return wal_crc32.update(wal_crc32.update(checksum, frame_header), data)
 }
+
+const wal_crc32 = crc32.new(crc32.ieee)
 
 // crash_point stops the process, without flushing any files, when it has been
 // reached the number of times in the VSQL_CRASH_AT environment variable. It's

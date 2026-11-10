@@ -829,6 +829,18 @@ struct DumpOptions
 
 
 
+struct FunctionContext
+----------------------
+
+
+.. code-block:: v
+
+   pub struct FunctionContext {
+   	conn &Connection
+   }
+
+A FunctionContext is passed to every function (including one registered with register_function) when it's called. It gives the function what it can know besides its arguments: the statement that's executing, the session and transaction it's in, and the database itself.
+
 struct Identifier
 -----------------
 

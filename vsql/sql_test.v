@@ -1811,10 +1811,10 @@ fn test_module_errors() ! {
 // even if it has the name of a builtin numeric function, and it may return NULL.
 fn test_custom_function_returns_numeric() ! {
 	mut db := open(':memory:')!
-	db.register_function('half(numeric) numeric', fn (a []Value) !Value {
+	db.register_function('half(numeric) numeric', fn (_ FunctionContext, a []Value) !Value {
 		return new_numeric_value('${a[0].numeric_value().f64() / 2}')
 	})!
-	db.register_function('abs(varchar) numeric', fn (a []Value) !Value {
+	db.register_function('abs(varchar) numeric', fn (_ FunctionContext, a []Value) !Value {
 		return new_null_value(.is_numeric)
 	})!
 
@@ -1827,7 +1827,7 @@ fn test_custom_function_returns_numeric() ! {
 // themselves.
 fn test_custom_function_receives_null() ! {
 	mut db := open(':memory:')!
-	db.register_function('is_missing(float) float', fn (a []Value) !Value {
+	db.register_function('is_missing(float) float', fn (_ FunctionContext, a []Value) !Value {
 		return new_double_precision_value(if a[0].is_null { 1 } else { 0 })
 	})!
 
@@ -1845,7 +1845,7 @@ fn test_custom_function_receives_null() ! {
 
 fn test_custom_function_with_two_arguments() ! {
 	mut db := open(':memory:')!
-	db.register_function('add_both(float, float) float', fn (a []Value) !Value {
+	db.register_function('add_both(float, float) float', fn (_ FunctionContext, a []Value) !Value {
 		return new_double_precision_value(a[0].f64_value() + a[1].f64_value())
 	})!
 
@@ -1861,7 +1861,7 @@ fn test_custom_function_with_two_arguments() ! {
 // constraint.
 fn test_custom_function_in_check_constraint() ! {
 	mut db := open(':memory:')!
-	db.register_function('double_it(integer) integer', fn (a []Value) !Value {
+	db.register_function('double_it(integer) integer', fn (_ FunctionContext, a []Value) !Value {
 		return new_integer_value(int(a[0].int_value() * 2))
 	})!
 
@@ -1883,7 +1883,7 @@ mut:
 fn test_custom_function_in_subquery() ! {
 	mut db := open(':memory:')!
 	mut counter := &SQLTestCallCounter{}
-	db.register_function('next_call(integer) integer', fn [mut counter] (a []Value) !Value {
+	db.register_function('next_call(integer) integer', fn [mut counter] (_ FunctionContext, a []Value) !Value {
 		counter.calls++
 		return new_integer_value(counter.calls)
 	})!
@@ -1908,7 +1908,7 @@ fn test_custom_function_in_subquery() ! {
 // with the same ones can't be registered, even if it returns a different type.
 fn test_custom_function_already_exists() ! {
 	mut db := open(':memory:')!
-	db.register_function('foo(integer) integer', fn (a []Value) !Value {
+	db.register_function('foo(integer) integer', fn (_ FunctionContext, a []Value) !Value {
 		return new_integer_value(1)
 	})!
 
@@ -1920,7 +1920,7 @@ fn test_custom_function_already_exists() ! {
 	assert register_function_error(mut db, 'char_length(character) integer') == '42723 duplicate function: CHAR_LENGTH(CHARACTER)'
 
 	// A function with the same name and different argument types is fine.
-	db.register_function('foo(varchar) varchar', fn (a []Value) !Value {
+	db.register_function('foo(varchar) varchar', fn (_ FunctionContext, a []Value) !Value {
 		return new_varchar_value('three')
 	})!
 
@@ -1929,7 +1929,7 @@ fn test_custom_function_already_exists() ! {
 }
 
 fn register_function_error(mut db Connection, prototype string) string {
-	db.register_function(prototype, fn (a []Value) !Value {
+	db.register_function(prototype, fn (_ FunctionContext, a []Value) !Value {
 		return new_integer_value(0)
 	}) or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
 
@@ -3178,19 +3178,52 @@ fn test_positioned_cursor() {
 // flagging", in tests/std_1_8_5_flagging.sql).
 // NOW() is always CURRENT_TIMESTAMP. A function with that name is called by
 // quoting it.
+// NOW() is a builtin function, so another one with the same arguments is a
+// duplicate.
 fn test_registered_now_function() ! {
 	mut db := open(':memory:')!
-	db.register_function('now() float', fn (a []Value) !Value {
-		return new_double_precision_value(1.5)
+	assert register_function_error(mut db, 'now() float') == '42723 duplicate function: NOW()'
+	assert db.query('VALUES NOW()')!.columns[0].typ.str() == 'TIMESTAMP(6) WITH TIME ZONE'
+}
+
+// NOW() reads the wall clock each time it's called, while CURRENT_TIMESTAMP is
+// the time that the statement started.
+fn test_now_reads_the_clock() ! {
+	mut db := open(':memory:')!
+	mut counter := &SQLTestCallCounter{}
+	db.now = fn [mut counter] () (time.Time, i16) {
+		counter.calls++
+		now, offset := sql_test_now()
+		return now.add_seconds(counter.calls), offset
+	}
+
+	row := db.query('VALUES (NOW(), NOW(), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)')!.rows[0]
+	assert row.get_string('COL1')! != row.get_string('COL2')!
+	assert row.get_string('COL1')! > row.get_string('COL3')!
+	assert row.get_string('COL2')! > row.get_string('COL3')!
+	assert row.get_string('COL3')! == row.get_string('COL4')!
+}
+
+// A function gets the statement, session and database values from its
+// FunctionContext.
+fn test_function_context() ! {
+	mut db := open(':memory:')!
+	db.now = sql_test_now
+	db.register_function('context_values() varchar', fn (ctx FunctionContext, _ []Value) !Value {
+		now, offset := ctx.statement_timestamp()
+		return new_varchar_value('${ctx.current_timestamp()!.str()} ${now.unix()} ${offset} ${ctx.current_catalog()} ${ctx.current_schema()} ${ctx.in_transaction()} ${ctx.version() == version()}')
 	})!
 
-	assert db.query('VALUES "NOW"()')!.rows[0].get_f64('COL1')! == 1.5
-	assert db.query('VALUES NOW()')!.columns[0].typ.str() == 'TIMESTAMP(6) WITH TIME ZONE'
+	now, offset := sql_test_now()
+	expected := '${db.query('VALUES CURRENT_TIMESTAMP')!.rows[0].get_string('COL1')!} ${now.unix()} ${offset} :memory: PUBLIC'
+	assert db.query('VALUES context_values()')!.rows[0].get_string('COL1')! == '${expected} false true'
+	db.query('START TRANSACTION')!
+	assert db.query('VALUES context_values()')!.rows[0].get_string('COL1')! == '${expected} true true'
 }
 
 fn test_features_of_routine_invocation() ! {
 	mut db := open(':memory:')!
-	db.register_function('twice(float) float', fn (a []Value) !Value {
+	db.register_function('twice(float) float', fn (_ FunctionContext, a []Value) !Value {
 		return new_double_precision_value(a[0].f64_value() * 2)
 	})!
 

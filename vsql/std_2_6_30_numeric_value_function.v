@@ -7,7 +7,7 @@ import math
 // Specify a function yielding a value of type numeric.
 
 // POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
-fn func_position(args []Value) !Value {
+fn func_position(_ FunctionContext, args []Value) !Value {
 	// An empty string is found at the start of any string, even an empty one.
 	//
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 2.a
@@ -25,21 +25,21 @@ fn func_position(args []Value) !Value {
 // CHAR_LENGTH(CHARACTER VARYING) INTEGER
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 5.b
-fn func_char_length(args []Value) !Value {
+fn func_char_length(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(args[0].string_value().runes().len)
 }
 
 // OCTET_LENGTH(CHARACTER VARYING) INTEGER
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 6
-fn func_octet_length(args []Value) !Value {
+fn func_octet_length(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(args[0].string_value().len)
 }
 
 // UPPER(CHARACTER VARYING) CHARACTER VARYING
 //
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.i
-fn func_upper(args []Value) !Value {
+fn func_upper(_ FunctionContext, args []Value) !Value {
 	s := args[0].string_value()
 	if s.is_pure_ascii() {
 		return new_varchar_value(s.to_upper_ascii())
@@ -51,7 +51,7 @@ fn func_upper(args []Value) !Value {
 // LOWER(CHARACTER VARYING) CHARACTER VARYING
 //
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.ii
-fn func_lower(args []Value) !Value {
+fn func_lower(_ FunctionContext, args []Value) !Value {
 	s := args[0].string_value()
 	if s.is_pure_ascii() {
 		return new_varchar_value(s.to_lower_ascii())
@@ -115,12 +115,12 @@ fn find_case_mapping(c rune, mappings []CaseMapping) int {
 }
 
 // ABS(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_abs(args []Value) !Value {
+fn func_abs(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.abs(args[0].f64_value()))
 }
 
 // ABS(NUMERIC) NUMERIC
-fn func_abs_numeric(args []Value) !Value {
+fn func_abs_numeric(_ FunctionContext, args []Value) !Value {
 	n := args[0].numeric_value()
 	if n.is_negative() {
 		return new_numeric_value_from_numeric(n.neg())
@@ -130,7 +130,7 @@ fn func_abs_numeric(args []Value) !Value {
 }
 
 // ABS(DECIMAL) DECIMAL
-fn func_abs_decimal(args []Value) !Value {
+fn func_abs_decimal(_ FunctionContext, args []Value) !Value {
 	n := args[0].numeric_value()
 	if n.is_negative() {
 		return new_decimal_value_from_numeric(n.neg())
@@ -144,7 +144,7 @@ fn func_abs_decimal(args []Value) !Value {
 // ABS(BIGINT) BIGINT
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 8.c
-fn func_abs_integer(args []Value) !Value {
+fn func_abs_integer(_ FunctionContext, args []Value) !Value {
 	x := args[0].int_value()
 	if x >= 0 {
 		return args[0]
@@ -164,42 +164,42 @@ fn func_abs_integer(args []Value) !Value {
 }
 
 // ABS(REAL) REAL
-fn func_abs_real(args []Value) !Value {
+fn func_abs_real(_ FunctionContext, args []Value) !Value {
 	return new_real_value(f32(math.abs(args[0].f64_value())))
 }
 
 // SIN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_sin(args []Value) !Value {
+fn func_sin(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.sin(args[0].f64_value()))
 }
 
 // COS(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_cos(args []Value) !Value {
+fn func_cos(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.cos(args[0].f64_value()))
 }
 
 // TAN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_tan(args []Value) !Value {
+fn func_tan(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.tan(args[0].f64_value()))
 }
 
 // SINH(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_sinh(args []Value) !Value {
+fn func_sinh(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.sinh(args[0].f64_value()))
 }
 
 // COSH(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_cosh(args []Value) !Value {
+fn func_cosh(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.cosh(args[0].f64_value()))
 }
 
 // TANH(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_tanh(args []Value) !Value {
+fn func_tanh(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.tanh(args[0].f64_value()))
 }
 
 // ASIN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_asin(args []Value) !Value {
+fn func_asin(_ FunctionContext, args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 10.b.ii.1
 	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
 		return sqlstate_22003()
@@ -209,7 +209,7 @@ fn func_asin(args []Value) !Value {
 }
 
 // ACOS(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_acos(args []Value) !Value {
+fn func_acos(_ FunctionContext, args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 10.b.i.1
 	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
 		return sqlstate_22003()
@@ -219,12 +219,12 @@ fn func_acos(args []Value) !Value {
 }
 
 // ATAN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_atan(args []Value) !Value {
+fn func_atan(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.atan(args[0].f64_value()))
 }
 
 // MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
-fn func_mod(args []Value) !Value {
+fn func_mod(_ FunctionContext, args []Value) !Value {
 	if args[1].f64_value() == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -233,7 +233,7 @@ fn func_mod(args []Value) !Value {
 }
 
 // MOD(NUMERIC, NUMERIC) NUMERIC
-fn func_mod_numeric(args []Value) !Value {
+fn func_mod_numeric(_ FunctionContext, args []Value) !Value {
 	value := args[0].numeric_value()
 	modulus := args[1].numeric_value()
 
@@ -249,7 +249,7 @@ fn func_mod_numeric(args []Value) !Value {
 // always fits in because it's smaller than the divisor.
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 9
-fn func_mod_integer(args []Value) !Value {
+fn func_mod_integer(_ FunctionContext, args []Value) !Value {
 	value := args[0].int_value()
 	modulus := args[1].int_value()
 	if modulus == 0 {
@@ -267,7 +267,7 @@ fn func_mod_integer(args []Value) !Value {
 }
 
 // LOG(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
-fn func_log(args []Value) !Value {
+fn func_log(_ FunctionContext, args []Value) !Value {
 	base := args[0].f64_value()
 	x := args[1].f64_value()
 
@@ -292,7 +292,7 @@ fn func_log(args []Value) !Value {
 }
 
 // LOG10(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_log10(args []Value) !Value {
+fn func_log10(_ FunctionContext, args []Value) !Value {
 	// LOG10(x) is LOG(10, x).
 	//
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 15
@@ -305,7 +305,7 @@ fn func_log10(args []Value) !Value {
 }
 
 // LN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_ln(args []Value) !Value {
+fn func_ln(_ FunctionContext, args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 12.b
 	if args[0].f64_value() <= 0 {
 		return sqlstate_2201e()
@@ -315,13 +315,13 @@ fn func_ln(args []Value) !Value {
 }
 
 // EXP(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_exp(args []Value) !Value {
+fn func_exp(_ FunctionContext, args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13.b
 	return approximate_nonzero_value(math.exp(args[0].f64_value()), .is_double_precision)
 }
 
 // SQRT(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_sqrt(args []Value) !Value {
+fn func_sqrt(_ FunctionContext, args []Value) !Value {
 	// SQRT(x) is POWER(x, 0.5), so x can't be negative.
 	//
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 19
@@ -334,7 +334,7 @@ fn func_sqrt(args []Value) !Value {
 }
 
 // POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
-fn func_power(args []Value) !Value {
+fn func_power(_ FunctionContext, args []Value) !Value {
 	base := args[0].f64_value()
 	exponent := args[1].f64_value()
 
@@ -354,12 +354,12 @@ fn func_power(args []Value) !Value {
 }
 
 // FLOOR(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_floor(args []Value) !Value {
+fn func_floor(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.floor(args[0].f64_value()))
 }
 
 // FLOOR(NUMERIC) NUMERIC
-fn func_floor_numeric(args []Value) !Value {
+fn func_floor_numeric(_ FunctionContext, args []Value) !Value {
 	n := args[0].numeric_value()
 	t := n.trunc()
 	if n.is_negative() && !n.equals(t) {
@@ -370,12 +370,12 @@ fn func_floor_numeric(args []Value) !Value {
 }
 
 // CEIL(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_ceil(args []Value) !Value {
+fn func_ceil(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.ceil(args[0].f64_value()))
 }
 
 // CEIL(NUMERIC) NUMERIC
-fn func_ceil_numeric(args []Value) !Value {
+fn func_ceil_numeric(_ FunctionContext, args []Value) !Value {
 	n := args[0].numeric_value()
 	t := n.trunc()
 	if !n.is_negative() && !n.equals(t) {

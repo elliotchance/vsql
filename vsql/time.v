@@ -560,6 +560,19 @@ fn local_now(conn &Connection) time.Time {
 	return conn.statement_timestamp.add_seconds(int(conn.statement_time_zone) * 60)
 }
 
+// timestamp_with_time_zone_str formats a time (in UTC) in a time zone (in
+// minutes from UTC) as a TIMESTAMP(prec) WITH TIME ZONE literal, such as
+// "2022-07-04 14:05:03.120056+05:00".
+fn timestamp_with_time_zone_str(utc time.Time, time_zone i16, prec int) string {
+	local := utc.add_seconds(int(time_zone) * 60)
+	mut s := local.strftime('%Y-%m-%d %H:%M:%S')
+	if prec > 0 {
+		s += '.' + left_pad(int(local.nanosecond / 1000).str(), '0', 6).substr(0, prec)
+	}
+
+	return s + time_zone_str(time_zone)
+}
+
 fn default_now() (time.Time, i16) {
 	return time.utc(), i16(time.offset() / 60)
 }

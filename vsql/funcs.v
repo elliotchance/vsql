@@ -4,11 +4,13 @@
 
 module vsql
 
+import time
+
 struct Func {
 	name        string
 	arg_types   []Type
 	is_agg      bool
-	func        fn ([]Value) !Value // not used by aggregates, see eval_set_function
+	func        fn (FunctionContext, []Value) !Value // not used by aggregates, see eval_set_function
 	return_type Type
 	// called_on_null_input means the function is still called when one of the
 	// arguments is NULL. Otherwise, the result will be NULL without calling the
@@ -25,6 +27,58 @@ struct Func {
 	//
 	// ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked routine>
 	is_deterministic bool
+}
+
+// A FunctionContext is passed to every function (including one registered
+// with register_function) when it's called. It gives the function what it can
+// know besides its arguments: the statement that's executing, the session and
+// transaction it's in, and the database itself.
+pub struct FunctionContext {
+	conn &Connection
+}
+
+// current_timestamp is the same value as CURRENT_TIMESTAMP: the time that the
+// statement started, as a TIMESTAMP(6) WITH TIME ZONE in the session's time
+// zone. Every call in the same statement returns the same time.
+pub fn (ctx FunctionContext) current_timestamp() !Value {
+	return new_timestamp_value(local_now(ctx.conn).strftime('%Y-%m-%d ') +
+		time_value(ctx.conn, 6, true))
+}
+
+// clock_timestamp is the time now, read from the wall clock each time it's
+// called, as a TIMESTAMP(6) WITH TIME ZONE in the session's time zone. Unlike
+// current_timestamp, two calls in the same statement can return different
+// times. NOW() returns this.
+pub fn (ctx FunctionContext) clock_timestamp() !Value {
+	now, time_zone := ctx.conn.now()
+	return new_timestamp_value(timestamp_with_time_zone_str(now, time_zone, 6))
+}
+
+// statement_timestamp is the time that the statement started (in UTC), and the
+// time zone of the session (in minutes from UTC).
+pub fn (ctx FunctionContext) statement_timestamp() (time.Time, i16) {
+	return ctx.conn.statement_timestamp, ctx.conn.statement_time_zone
+}
+
+// current_catalog is the same as CURRENT_CATALOG.
+pub fn (ctx FunctionContext) current_catalog() string {
+	return ctx.conn.current_catalog
+}
+
+// current_schema is the same as CURRENT_SCHEMA.
+pub fn (ctx FunctionContext) current_schema() string {
+	return ctx.conn.current_schema
+}
+
+// version is the version of vsql, the same as version().
+pub fn (ctx FunctionContext) version() string {
+	return version()
+}
+
+// in_transaction is true if the statement is in a transaction that was started
+// with START TRANSACTION, rather than being its own transaction.
+pub fn (ctx FunctionContext) in_transaction() bool {
+	return ctx.conn.in_transaction()
 }
 
 fn register_builtin_funcs(mut conn Connection) ! {
@@ -91,6 +145,14 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'TANH', [double_precision], false, func_tanh, double_precision, false, true})!
 	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false, true})!
 
+	// NOW() is a vsql extension (V402-01) that reads the wall clock each time
+	// it's called, so unlike CURRENT_TIMESTAMP (which is fixed for the whole
+	// statement) it's NOT DETERMINISTIC. That's why it can't be in a CHECK, and as
+	// a function it can't be where only a datetime value function can, such as a
+	// DEFAULT.
+	conn.register_func(Func{'NOW', [], false, func_now, new_type('TIMESTAMP WITH TIME ZONE',
+		6, 0), false, false})!
+
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can
 	// be ordered, which is every type (SR 7.d), SUM and AVG accept any number
@@ -137,4 +199,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 			return_type: set_function_type(name, double_precision)
 		})!
 	}
+}
+
+fn func_now(ctx FunctionContext, _ []Value) !Value {
+	return ctx.clock_timestamp()
 }

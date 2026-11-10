@@ -48,7 +48,7 @@ SELECT x FROM t WHERE x IS NOT TRUE TRUE;
 -- error 42601: syntax error: unexpected TRUE at line 1, column 37 near "WHERE x IS NOT TRUE TRUE"
 
 SELECT NOW() NOW() FROM t;
--- error 42601: syntax error: unexpected CURRENT_TIMESTAMP at line 1, column 14 near "SELECT NOW() NOW() FROM"
+-- error 42601: syntax error: unexpected "(" at line 1, column 17 near "() NOW()"
 
 SELECT x FROM t LIMIT 1 LIMIT 2;
 -- error 42601: syntax error: unexpected LIMIT at line 1, column 25 near "t LIMIT 1 LIMIT 2"

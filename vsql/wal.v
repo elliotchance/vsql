@@ -5,7 +5,6 @@
 module vsql
 
 import encoding.binary
-import hash.crc32
 import os
 import rand
 
@@ -385,7 +384,7 @@ fn wal_header(salt u32, page_size int, state u8, tail int, tail_checksum u32) []
 	binary.big_endian_put_u16_at(mut header, wal_version, wal_magic.len)
 	binary.big_endian_put_u32_at(mut header, u32(page_size), 12)
 	binary.big_endian_put_u32_at(mut header, salt, 16)
-	binary.big_endian_put_u32_at(mut header, crc32.sum(header[..wal_header_size - 4]),
+	binary.big_endian_put_u32_at(mut header, crc32_update(0, header[..wal_header_size - 4]),
 		wal_header_size - 4)
 
 	header[wal_state_offset] = state
@@ -407,7 +406,7 @@ fn wal_header_is_valid(data []u8) bool {
 		header[i] = 0
 	}
 
-	return crc32.sum(header[..wal_header_size - 4]) == binary.big_endian_u32_at(header,
+	return crc32_update(0, header[..wal_header_size - 4]) == binary.big_endian_u32_at(header,
 		wal_header_size - 4)
 }
 
@@ -429,12 +428,10 @@ fn wal_frame(kind u8, number int, data []u8, previous_checksum u32) ([]u8, u32) 
 // data, one after the other. It's calculated in parts, so that the data isn't
 // copied.
 fn wal_checksum(previous_checksum u32, frame_header []u8, data []u8) u32 {
-	checksum := crc32.sum(binary.big_endian_get_u32(previous_checksum))
+	checksum := crc32_update(0, binary.big_endian_get_u32(previous_checksum))
 
-	return wal_crc32.update(wal_crc32.update(checksum, frame_header), data)
+	return crc32_update(crc32_update(checksum, frame_header), data)
 }
-
-const wal_crc32 = crc32.new(crc32.ieee)
 
 // crash_point stops the process, without flushing any files, when it has been
 // reached the number of times in the VSQL_CRASH_AT environment variable. It's

@@ -1,6 +1,7 @@
 module vsql
 
 import encoding.binary
+import hash.crc32
 import math
 import net
 import os
@@ -2055,6 +2056,20 @@ fn test_crash_point() ! {
 // The database file isn't synced for each statement, so when the power fails it
 // may have lost statements that are in the log. This puts the file back to how it
 // was on the disk to simulate that.
+// crc32_update reads 8 bytes at a time, so it's checked against hash.crc32 for
+// every length that leaves a different number of bytes after the last 8, and
+// for a checksum that's continued.
+fn test_crc32_update() {
+	mut data := []u8{}
+	for i in 0 .. 100 {
+		assert crc32_update(0, data) == crc32.sum(data)
+		data << u8(i * 37 + 11)
+	}
+	for at in [0, 3, 8, 50, 100] {
+		assert crc32_update(crc32_update(0, data[..at]), data[at..]) == crc32.sum(data)
+	}
+}
+
 fn test_wal_recovers_statements_lost_from_the_file() ! {
 	path := os.join_path(os.temp_dir(), 'vsql-wal-${os.getpid()}.vsql')
 	defer {

@@ -716,7 +716,7 @@ Optional Features
    * - ❌ F111-03
      - REPEATABLE READ isolation level
 
-   * - ⭕ **F121**
+   * - ✅ **F121**
      - **Basic diagnostics management**
 
    * - ✅ F121-01
@@ -758,7 +758,7 @@ Optional Features
    * - ❌ **F271**
      - **Compound character literals**
 
-   * - ⭕ **F281**
+   * - ✅ **F281**
      - **LIKE enhancements**
 
    * - ❌ **F291**
@@ -926,7 +926,7 @@ Optional Features
    * - ✅ **F651**
      - **Catalog name qualifiers**
 
-   * - ⭕ **F661**
+   * - ✅ **F661**
      - **Simple tables**
 
    * - ❌ **F671**

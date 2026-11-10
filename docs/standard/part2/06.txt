@@ -350,7 +350,7 @@
 # 6.9, <set function specification>
 6.9                      implemented  vsql/std_2_6_9_set_function_specification.y tests/std_2_10_9_set_functions.sql
 6.9/SR/1                 implemented  vsql/std_2_10_4_routine_invocation.v,vsql/std_2_7_19_subquery.v tests/std_2_7_14_having.sql,tests/std_2_6_9_aggregate_placement.sql
-6.9/SR/2                 n/a          - - binary set functions (T621)
+6.9/SR/2                 implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_10_9_statistical_set_functions.sql
 6.9/SR/3                 definition   - -
 6.9/SR/4                 definition   - -
 6.9/SR/5                 implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_aggregate_filter.sql

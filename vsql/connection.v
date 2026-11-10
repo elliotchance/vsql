@@ -723,8 +723,9 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 				break
 			}
 
-			// Aggregate functions are not (yet) implicitly cast.
-			if c > 0 && f.is_agg {
+			// Aggregate functions are not (yet) implicitly cast, except the binary
+			// set functions (see register_builtin_funcs).
+			if c > 0 && f.is_agg && f.name !in binary_set_functions {
 				cost = -1
 				break
 			}

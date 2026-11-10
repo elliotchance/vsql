@@ -1060,6 +1060,11 @@ struct Sequence
    pub mut:
    	// name contains the other parts such as the schema.
    	name Identifier
+   	// typ is the data type of the values, which is an exact numeric type with a
+   	// scale of 0 (zero). It's BIGINT unless the sequence was created with
+   	// "AS <data type>". Values are always kept as an i64, so a NUMERIC or
+   	// DECIMAL with a larger precision is still limited to the range of a BIGINT.
+   	typ Type
    	// start_value is the START WITH value. If START WITH isn't given, it's the
    	// minimum value (or the maximum value for a descending sequence), which is 1
    	// (or -1) without a MINVALUE (or MAXVALUE). It's used by "ALTER SEQUENCE ...
@@ -1087,7 +1092,7 @@ struct Sequence
    	max_value i64
    }
 
-A SEQUENCE definition, which is the sequence generator descriptor. The data type is always BIGINT (#399). The current base value is current_value plus increment_by when the sequence is unused, otherwise the next value after current_value.
+A SEQUENCE definition, which is the sequence generator descriptor. The current base value is current_value plus increment_by when the sequence is unused, otherwise the next value after current_value.
 
 ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, General Rules, 2
 

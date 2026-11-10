@@ -33,16 +33,26 @@ sequence_generator_definition:
     }
   }
 
-// sequence_generator_option is already a list of options, so it can't repeat.
-// There's no <sequence generator data type option> (#399), so the data type is
-// always BIGINT.
-//
-// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 6
+// <common sequence generator options> is already a list, so each option is a
+// single <common sequence generator option> here, otherwise the grammar would be
+// ambiguous.
 sequence_generator_options:
-  sequence_generator_option { $$.v = $1.v as []SequenceGeneratorOption }
+  sequence_generator_option { $$.v = [$1.v as SequenceGeneratorOption] }
+| sequence_generator_options sequence_generator_option {
+    $$.v = append_list($1.v as []SequenceGeneratorOption,
+      $2.v as SequenceGeneratorOption)
+  }
 
 sequence_generator_option:
-  common_sequence_generator_options { $$.v = $1.v as []SequenceGeneratorOption }
+  sequence_generator_data_type_option { $$.v = $1.v as SequenceGeneratorOption }
+| common_sequence_generator_option { $$.v = $1.v as SequenceGeneratorOption }
+
+sequence_generator_data_type_option:
+  AS data_type {
+    $$.v = SequenceGeneratorOption(SequenceGeneratorDataTypeOption{
+      typ: $2.v as Type
+    })
+  }
 
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 2
 common_sequence_generator_options:

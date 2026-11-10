@@ -49,6 +49,9 @@ exclude the next value (or the ``RESTART`` value). Limits that aren't changed ar
 a sequence that has gone past its ``MAXVALUE`` can be continued with ``CYCLE``,
 ``NO MAXVALUE`` or a higher ``MAXVALUE``.
 
+The data type of a sequence can't be changed. The new options must be values of
+its data type (see :doc:`create-sequence`).
+
 Examples
 --------
 

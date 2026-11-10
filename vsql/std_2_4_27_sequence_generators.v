@@ -5,10 +5,9 @@ module vsql
 // The concept is described by ISO/IEC 9075-1:2003(E), 4.6.11, Sequence
 // generators.
 
-// A SEQUENCE definition, which is the sequence generator descriptor. The data
-// type is always BIGINT (#399). The current base value is current_value plus
-// increment_by when the sequence is unused, otherwise the next value after
-// current_value.
+// A SEQUENCE definition, which is the sequence generator descriptor. The current
+// base value is current_value plus increment_by when the sequence is unused,
+// otherwise the next value after current_value.
 //
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, General Rules, 2
 pub struct Sequence {
@@ -28,6 +27,11 @@ mut:
 pub mut:
 	// name contains the other parts such as the schema.
 	name Identifier
+	// typ is the data type of the values, which is an exact numeric type with a
+	// scale of 0 (zero). It's BIGINT unless the sequence was created with
+	// "AS <data type>". Values are always kept as an i64, so a NUMERIC or
+	// DECIMAL with a larger precision is still limited to the range of a BIGINT.
+	typ Type
 	// start_value is the START WITH value. If START WITH isn't given, it's the
 	// minimum value (or the maximum value for a descending sequence), which is 1
 	// (or -1) without a MINVALUE (or MAXVALUE). It's used by "ALTER SEQUENCE ...
@@ -59,7 +63,13 @@ pub mut:
 //
 //   CREATE SEQUENCE "PUBLIC"."foo" START WITH 12 MINVALUE 10;
 pub fn (s Sequence) str() string {
-	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()} START WITH ${s.start_value}']
+	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()}']
+
+	if !s.is_bigint() {
+		parts << 'AS ${s.typ}'
+	}
+
+	parts << 'START WITH ${s.start_value}'
 
 	if s.increment_by != 1 {
 		parts << 'INCREMENT BY ${s.increment_by}'
@@ -86,10 +96,27 @@ fn (s Sequence) copy() Sequence {
 	}
 }
 
+// is_bigint is true if the data type is BIGINT, which is the default, so it
+// isn't written in the definition.
+fn (s Sequence) is_bigint() bool {
+	return s.typ.typ == .is_bigint
+}
+
+// type_range is the smallest and largest values of the data type. A NUMERIC or
+// DECIMAL without a precision (or a precision that's too large) has the range
+// of a BIGINT.
+fn (s Sequence) type_range() (i64, i64) {
+	if s.typ.typ in [.is_decimal, .is_numeric] && s.typ.size == 0 {
+		return min_i64, max_i64
+	}
+
+	return exact_numeric_range(s.typ)
+}
+
 // min is the minimum value of the sequence. Without a MINVALUE, it's
 // implementation-defined. Like PostgreSQL (and identity columns, see
-// identity_range), it's 1 for an ascending sequence, and the smallest BIGINT for
-// a descending one.
+// identity_range), it's 1 for an ascending sequence, and the smallest value of
+// the data type for a descending one.
 //
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 8
 // ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 7.a.i
@@ -102,12 +129,14 @@ fn (s Sequence) min() i64 {
 		return 1
 	}
 
-	return min_i64
+	min, _ := s.type_range()
+
+	return min
 }
 
 // max is the maximum value of the sequence. Without a MAXVALUE, it's
-// implementation-defined: the largest BIGINT for an ascending sequence, and -1
-// for a descending one (see min).
+// implementation-defined: the largest value of the data type for an ascending
+// sequence, and -1 for a descending one (see min).
 //
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 7
 // ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 6.a.i
@@ -117,7 +146,9 @@ fn (s Sequence) max() i64 {
 	}
 
 	if s.increment_by > 0 {
-		return max_i64
+		_, max := s.type_range()
+
+		return max
 	}
 
 	return -1
@@ -147,6 +178,28 @@ fn (s Sequence) check() ! {
 	if s.min() >= s.max() {
 		return sqlstate_42601('MAXVALUE (${s.max()}) must be greater than MINVALUE (${s.min()})')
 	}
+}
+
+// check_data_type is the same as check, and also that the INCREMENT BY,
+// MINVALUE and MAXVALUE are values of the data type. The START WITH and RESTART
+// WITH are between the MINVALUE and MAXVALUE (see check_in_range), so they are
+// too.
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 10
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 10
+fn (s Sequence) check_data_type() ! {
+	min, max := s.type_range()
+	for name, value in {
+		'INCREMENT BY': s.increment_by
+		'MINVALUE':     s.min()
+		'MAXVALUE':     s.max()
+	} {
+		if value < min || value > max {
+			return sqlstate_42601('${name} (${value}) is out of range for ${s.typ}')
+		}
+	}
+
+	s.check()!
 }
 
 // check_in_range is used for the START WITH and RESTART WITH values.
@@ -218,14 +271,20 @@ fn add_i64(a i64, b i64) (i64, bool) {
 // SEQUENCE statement, with each option on its own line, like:
 //
 //   CREATE SEQUENCE "PUBLIC"."SEQ1"
+//     AS SMALLINT
 //     START WITH 10
 //     INCREMENT BY 5
 //     MINVALUE 10
 //
-// The current value is stored separately, see value_bytes.
+// The data type is only written when it isn't BIGINT, so a sequence is stored
+// the same as before AS was supported. The current value is stored separately,
+// see value_bytes.
 fn (s Sequence) definition_bytes() []u8 {
-	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()}', 'START WITH ${s.start_value}',
-		'INCREMENT BY ${s.increment_by}']
+	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()}']
+	if !s.is_bigint() {
+		parts << 'AS ${s.typ}'
+	}
+	parts << ['START WITH ${s.start_value}', 'INCREMENT BY ${s.increment_by}']
 
 	if s.has_min_value {
 		parts << 'MINVALUE ${s.min_value}'

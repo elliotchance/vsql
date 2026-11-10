@@ -49,6 +49,21 @@ VALUES LN(0e0);
 VALUES LN(-1e0);
 -- error 2201E: invalid argument for natural logarithm
 
+VALUES LOG(10, 0e0);
+-- error 22003: numeric value out of range
+
+VALUES LOG(10, -5e0);
+-- error 22003: numeric value out of range
+
+VALUES LOG(0, 10);
+-- error 22003: numeric value out of range
+
+VALUES LOG(-2, 10);
+-- error 22003: numeric value out of range
+
+VALUES LOG(1, 10);
+-- error 22003: numeric value out of range
+
 VALUES LOG10(0e0);
 -- error 22003: numeric value out of range
 

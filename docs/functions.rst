@@ -119,6 +119,9 @@ Each function also has a **Compatibility** section:
    * - ``LOCALTIMESTAMP``
      - Date and Time
      - Core (F051-08)
+   * - ``LOG``
+     - Exponent and Logarithm
+     - T623
    * - ``LOG10``
      - Exponent and Logarithm
      - T624
@@ -963,6 +966,46 @@ it's a ``2201E`` error (invalid argument for natural logarithm).
   - SQL Server: ``LOG(x)``. MySQL also has ``LOG(x)``, which is the natural
     logarithm there too, but in PostgreSQL and SQLite ``LOG(x)`` is base 10.
 
+LOG
+^^^
+
+.. code-block:: sql
+
+   LOG(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+
+``LOG(BASE, NUMBER)`` is the logarithm of ``NUMBER`` in ``BASE``, so ``LOG(2, 8)`` is 3. ``NUMBER`` must be
+greater than 0, and ``BASE`` must be greater than 0 and not 1, otherwise it's a
+``22003`` error (numeric value out of range). A ``BASE`` between 0 and 1 gives
+the negative of the logarithm in ``1 / BASE``.
+
+``LOG(10, x)`` is the same as ``LOG10(x)``, and ``LN(x)`` is the logarithm in
+base *e*. There is no ``LOG`` with one argument, because other databases
+disagree on its base.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LOG(2, 8);
+  -- COL1: 3e0
+
+  VALUES LOG(10, 1000);
+  -- COL1: 3e0
+
+  VALUES LOG(2.5, 13.7);
+  -- COL1: 2.856512394795e0
+
+  VALUES LOG(1, 10);
+  -- error 22003: numeric value out of range
+
+**Compatibility**
+
+- **SQL standard:** T623 (general logarithm functions).
+- **Other databases:**
+
+  - PostgreSQL, MySQL, SQLite and Oracle: ``LOG(base, number)``.
+  - SQL Server: ``LOG(number, base)``, the arguments are the other way around.
+
 LOG10
 ^^^^^
 
@@ -970,8 +1013,8 @@ LOG10
 
    LOG10(DOUBLE PRECISION) DOUBLE PRECISION
 
-Logarithm in base 10. The argument must be greater than 0, otherwise it's a
-``22003`` error (numeric value out of range).
+Logarithm in base 10, the same as ``LOG(10, NUMBER)``. The argument must be
+greater than 0, otherwise it's a ``22003`` error (numeric value out of range).
 
 **Examples**
 

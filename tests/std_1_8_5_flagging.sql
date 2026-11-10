@@ -152,6 +152,11 @@ SELECT x FROM t WHERE y SIMILAR TO 'a';
 -- X: 1
 
 /* flags */
+SELECT SUBSTRING(y SIMILAR '#"a#"' ESCAPE '#') FROM t;
+-- flags: T581
+-- COL1: a
+
+/* flags */
 SELECT x FROM t WHERE x IN (1, x + 1);
 -- flags: F561
 -- X: 1

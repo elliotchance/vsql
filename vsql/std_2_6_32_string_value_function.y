@@ -12,6 +12,9 @@ character_value_function:
   character_substring_function {
     $$.v = CharacterValueFunction($1.v as CharacterSubstringFunction)
   }
+| regular_expression_substring_function {
+    $$.v = CharacterValueFunction($1.v as RegularExpressionSubstringFunction)
+  }
 | fold { $$.v = CharacterValueFunction($1.v as RoutineInvocation) }
 | character_overlay_function {
     flag(mut yylex, 'T312')
@@ -45,6 +48,16 @@ character_substring_function:
     $$.v = new_character_substring_function($3.v as CharacterValueExpression,
       $5.v as NumericValueExpression, $7.v as NumericValueExpression,
       $9.v as string)
+  }
+
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Conformance Rules, 2
+regular_expression_substring_function:
+  SUBSTRING left_paren character_value_expression SIMILAR
+  character_value_expression ESCAPE escape_character right_paren {
+    flag(mut yylex, 'T581')
+    $$.v = new_regular_expression_substring_function(
+      $3.v as CharacterValueExpression, $5.v as CharacterValueExpression,
+      $7.v as CharacterValueExpression)
   }
 
 fold:

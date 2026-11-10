@@ -1406,7 +1406,7 @@ Optional Features
    * - ❌ **T301**
      - **Functional dependencies**
 
-   * - ❌ **T312**
+   * - ✅ **T312**
      - **OVERLAY function**
 
    * - ❌ **T323**

@@ -14,9 +14,9 @@
 14.1/GR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.d              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-14.1/CR/1                n/a          - - <cursor scrollability> (F431)
+14.1/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_14_5_scrollable_cursors.sql
 # 14.2, <cursor properties>
-14.2                     partial      vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql only <cursor holdability>
+14.2                     partial      vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql only <cursor scrollability> and <cursor holdability>
 14.2/SR/1                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql a cursor's result is found when it's opened, so changes aren't visible through it
 14.2/SR/2                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
 14.2/SR/3                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql
@@ -29,7 +29,7 @@
 14.2/CR/1                n/a          - - SENSITIVE (T231)
 14.2/CR/2                n/a          - - INSENSITIVE (F791)
 14.2/CR/3                n/a          - - ASENSITIVE (F791, T231)
-14.2/CR/4                n/a          - - <cursor scrollability> (F431)
+14.2/CR/4                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_5_scrollable_cursors.sql
 14.2/CR/5                n/a          - - <cursor returnability> (T471)
 14.2/CR/6                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_1_8_5_flagging.sql
 # 14.3, <cursor specification>
@@ -71,7 +71,7 @@
 14.3/SR/3.c.ix.3         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
 14.3/SR/3.c.x            n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
 14.3/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-14.3/SR/4.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+14.3/SR/4.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
 14.3/SR/4.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/5                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/6                container    - -
@@ -91,15 +91,15 @@
 14.4/GR/1                definition   - -
 14.4/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/std_2_14_1_cursors.sql
 # 14.5, <fetch statement>
-14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql only NEXT; outside of a module there's no <fetch target list> (V110-01)
+14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql a module can only FETCH NEXT; outside of a module there's no <fetch target list> (V110-01)
 14.5/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v every target is a host parameter
 14.5/SR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_2_14_1_cursors.sql
 14.5/SR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.5/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.5/SR/5                definition   - -
 14.5/SR/6                definition   - -
-14.5/SR/7                n/a          - - only NEXT is supported (F431)
-14.5/SR/8                n/a          - - only NEXT is supported (F431)
+14.5/SR/7                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_5_scrollable_cursors.sql
+14.5/SR/8                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_5_scrollable_cursors.sql
 14.5/SR/9                container    - -
 14.5/SR/9.a              n/a          - - a host parameter can't be a row type
 14.5/SR/9.a.i            n/a          - - SQL parameters (T321)
@@ -142,7 +142,7 @@
 14.5/GR/5.b.ii           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 14.5/GR/5.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
 14.5/GR/6                untestable   - - the values are implementation-dependent
-14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql
+14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
 # 14.6, <close statement>
 14.6                     implemented  vsql/std_2_14_6_close_statement.v tests/std_2_14_1_cursors.sql
 14.6/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql

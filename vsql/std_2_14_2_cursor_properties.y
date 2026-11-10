@@ -4,11 +4,27 @@
 //
 // Specify the declared properties of a cursor.
 
-// cursor_properties is true for a holdable cursor. Only the <cursor
-// holdability> is supported.
+// Only the <cursor scrollability> and <cursor holdability> are supported.
 cursor_properties:
-  CURSOR { $$.v = false }
-| CURSOR cursor_holdability { $$.v = $2.v as bool }
+  CURSOR { $$.v = CursorProperties{} }
+| CURSOR cursor_holdability { $$.v = CursorProperties{hold: $2.v as bool} }
+| cursor_scrollability CURSOR {
+    $$.v = CursorProperties{scroll: $1.v as bool, scrollability: true}
+  }
+| cursor_scrollability CURSOR cursor_holdability {
+    $$.v = CursorProperties{scroll: $1.v as bool, scrollability: true,
+      hold: $3.v as bool}
+  }
+
+cursor_scrollability:
+  SCROLL {
+    flag(mut yylex, 'F431')
+    $$.v = true
+  }
+| NO SCROLL {
+    flag(mut yylex, 'F431')
+    $$.v = false
+  }
 
 cursor_holdability:
   WITH HOLD { $$.v = true }

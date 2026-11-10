@@ -50,37 +50,37 @@
 15.2/GR/6                n/a          - - returned result sets (T471)
 15.2/GR/7                n/a          - - returned result sets (T471)
 # 15.3, Determination of the current row of a cursor
-15.3                     partial      vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql only NEXT (F431)
+15.3                     implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
 15.3/GR/1                definition   - -
 15.3/GR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 15.3/GR/3                definition   - -
-15.3/GR/4                n/a          - - only NEXT is supported (F431)
+15.3/GR/4                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
 15.3/GR/5                container    - -
-15.3/GR/5.a              n/a          - - only NEXT is supported (F431)
-15.3/GR/5.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/5.c              n/a          - - only NEXT is supported (F431)
+15.3/GR/5.a              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/5.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/5.c              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
 15.3/GR/6                definition   - -
 15.3/GR/7                container    - -
-15.3/GR/7.a              n/a          - - only NEXT is supported (F431)
-15.3/GR/7.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/7.b.i            implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/7.b.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/7.b.iii          implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/7.c              n/a          - - only NEXT is supported (F431)
-15.3/GR/7.c.i            n/a          - - only NEXT is supported (F431)
-15.3/GR/7.c.ii           n/a          - - only NEXT is supported (F431)
-15.3/GR/7.c.iii          n/a          - - only NEXT is supported (F431)
-15.3/GR/7.c.iv           n/a          - - only NEXT is supported (F431)
-15.3/GR/7.d              n/a          - - only NEXT is supported (F431)
-15.3/GR/7.d.i            n/a          - - only NEXT is supported (F431)
-15.3/GR/7.d.ii           n/a          - - only NEXT is supported (F431)
-15.3/GR/8                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
+15.3/GR/7.a              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.b.i            implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.b.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.b.iii          implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.c              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.c.i            implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.c.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.c.iii          implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.c.iv           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.d              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.d.i            implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/7.d.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/8                implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
 15.3/GR/9                container    - -
-15.3/GR/9.a              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/9.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/9.b.i            n/a          - - only NEXT is supported (F431)
-15.3/GR/9.b.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql
-15.3/GR/9.b.iii          n/a          - - only NEXT is supported (F431)
+15.3/GR/9.a              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/9.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/9.b.i            implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/9.b.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
+15.3/GR/9.b.iii          implemented  vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql
 # 15.4, Effect of closing a cursor
 15.4                     implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 15.4/GR/1                definition   - -

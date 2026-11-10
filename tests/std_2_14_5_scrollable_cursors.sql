@@ -1,0 +1,327 @@
+/* setup */
+CREATE TABLE t (x INTEGER);
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (x) VALUES (2);
+INSERT INTO t (x) VALUES (3);
+INSERT INTO t (x) VALUES (4);
+
+/* extensions V108-01 V109-01 V110-01 V111-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+FETCH LAST FROM c;
+FETCH PRIOR FROM c;
+FETCH FIRST FROM c;
+FETCH NEXT FROM c;
+FETCH ABSOLUTE 3 FROM c;
+FETCH ABSOLUTE -1 FROM c;
+FETCH ABSOLUTE -4 FROM c;
+FETCH RELATIVE 2 FROM c;
+FETCH RELATIVE -1 FROM c;
+FETCH RELATIVE 0 FROM c;
+FETCH c;
+FETCH RELATIVE -2 FROM c;
+CLOSE c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 4
+-- X: 3
+-- X: 1
+-- X: 2
+-- X: 3
+-- X: 4
+-- X: 1
+-- X: 3
+-- X: 2
+-- X: 2
+-- X: 3
+-- X: 1
+-- msg: CLOSE
+
+/* extensions V108-01 V109-01 V110-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+FETCH PRIOR FROM c;
+FETCH PRIOR FROM c;
+FETCH NEXT FROM c;
+FETCH PRIOR FROM c;
+FETCH RELATIVE 0 FROM c;
+FETCH RELATIVE 2 FROM c;
+FETCH LAST FROM c;
+FETCH NEXT FROM c;
+FETCH NEXT FROM c;
+FETCH RELATIVE 0 FROM c;
+FETCH PRIOR FROM c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- warning 02000: no data
+-- warning 02000: no data
+-- X: 1
+-- warning 02000: no data
+-- warning 02000: no data
+-- X: 2
+-- X: 4
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- X: 4
+
+/* extensions V108-01 V109-01 V110-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+FETCH ABSOLUTE 5 FROM c;
+FETCH PRIOR FROM c;
+FETCH ABSOLUTE 0 FROM c;
+FETCH NEXT FROM c;
+FETCH ABSOLUTE -5 FROM c;
+FETCH NEXT FROM c;
+FETCH ABSOLUTE 9 FROM c;
+FETCH RELATIVE -2 FROM c;
+FETCH ABSOLUTE -9 FROM c;
+FETCH RELATIVE 3 FROM c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- warning 02000: no data
+-- X: 4
+-- warning 02000: no data
+-- X: 1
+-- warning 02000: no data
+-- X: 1
+-- warning 02000: no data
+-- X: 3
+-- warning 02000: no data
+-- X: 3
+
+/* extensions V108-01 V109-01 V110-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+FETCH RELATIVE 2 FROM c;
+FETCH RELATIVE 3 FROM c;
+FETCH PRIOR FROM c;
+FETCH RELATIVE -3 FROM c;
+FETCH RELATIVE -1 FROM c;
+FETCH NEXT FROM c;
+FETCH RELATIVE 9223372036854775807 FROM c;
+FETCH RELATIVE -9223372036854775807 FROM c;
+FETCH ABSOLUTE 9223372036854775807 FROM c;
+FETCH ABSOLUTE -9223372036854775807 FROM c;
+FETCH NEXT FROM c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 2
+-- warning 02000: no data
+-- X: 4
+-- X: 1
+-- warning 02000: no data
+-- X: 1
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- X: 1
+
+/* extensions V108-01 V109-01 V110-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t WHERE x > 10;
+OPEN c;
+FETCH FIRST FROM c;
+FETCH LAST FROM c;
+FETCH PRIOR FROM c;
+FETCH NEXT FROM c;
+FETCH ABSOLUTE 1 FROM c;
+FETCH ABSOLUTE -1 FROM c;
+FETCH RELATIVE 1 FROM c;
+FETCH RELATIVE -1 FROM c;
+FETCH RELATIVE 0 FROM c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+-- warning 02000: no data
+
+/* extensions V108-01 V109-01 V110-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+FETCH ABSOLUTE 1.5 FROM c;
+FETCH RELATIVE 1e0 FROM c;
+FETCH ABSOLUTE 'a' FROM c;
+FETCH RELATIVE 2.0 FROM c;
+FETCH NEXT FROM c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- error 42601: syntax error: ABSOLUTE value must be an exact numeric with scale 0, got NUMERIC(2, 1)
+-- error 42601: syntax error: RELATIVE value must be an exact numeric with scale 0, got DOUBLE PRECISION
+-- error 42601: syntax error: ABSOLUTE value must be an exact numeric with scale 0, got CHARACTER(1)
+-- error 42601: syntax error: RELATIVE value must be an exact numeric with scale 0, got NUMERIC(2, 1)
+-- X: 1
+
+/* extensions V108-01 V109-01 V110-01 */
+START TRANSACTION;
+DECLARE c CURSOR FOR SELECT x FROM t ORDER BY x;
+DECLARE d NO SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+OPEN d;
+FETCH PRIOR FROM c;
+FETCH FIRST FROM c;
+FETCH LAST FROM d;
+FETCH ABSOLUTE 1 FROM d;
+FETCH RELATIVE 1 FROM d;
+FETCH NEXT FROM c;
+FETCH NEXT FROM d;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- msg: OPEN
+-- error 42601: syntax error: cursor C is not a SCROLL cursor, so it can only FETCH NEXT
+-- error 42601: syntax error: cursor C is not a SCROLL cursor, so it can only FETCH NEXT
+-- error 42601: syntax error: cursor D is not a SCROLL cursor, so it can only FETCH NEXT
+-- error 42601: syntax error: cursor D is not a SCROLL cursor, so it can only FETCH NEXT
+-- error 42601: syntax error: cursor D is not a SCROLL cursor, so it can only FETCH NEXT
+-- X: 1
+-- X: 1
+
+/* extensions V108-01 V110-01 */
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t;
+FETCH PRIOR FROM c;
+FETCH PRIOR FROM d;
+-- msg: DECLARE CURSOR
+-- error 24000: invalid cursor state: cursor C is not open
+-- error 34000: invalid cursor name: cursor D does not exist
+
+/* extensions V108-01 V109-01 V110-01 */
+DECLARE c SCROLL CURSOR WITH HOLD FOR SELECT x FROM t ORDER BY x;
+OPEN c;
+FETCH LAST FROM c;
+START TRANSACTION;
+FETCH PRIOR FROM c;
+COMMIT;
+FETCH FIRST FROM c;
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 4
+-- msg: START TRANSACTION
+-- X: 3
+-- msg: COMMIT
+-- X: 1
+
+/* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t;
+OPEN c;
+FETCH LAST FROM c;
+DELETE FROM t WHERE CURRENT OF c;
+UPDATE t SET x = 40 WHERE CURRENT OF c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 4
+-- error 34000: invalid cursor name: cursor C is not updatable
+-- error 34000: invalid cursor name: cursor C is not updatable
+
+/* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t FOR UPDATE;
+OPEN c;
+FETCH LAST FROM c;
+UPDATE t SET x = 40 WHERE CURRENT OF c;
+FETCH FIRST FROM c;
+DELETE FROM t WHERE CURRENT OF c;
+FETCH RELATIVE 0 FROM c;
+FETCH NEXT FROM c;
+FETCH PRIOR FROM c;
+UPDATE t SET x = 10 WHERE CURRENT OF c;
+FETCH ABSOLUTE -1 FROM c;
+UPDATE t SET x = 41 WHERE CURRENT OF c;
+FETCH ABSOLUTE 3 FROM c;
+DELETE FROM t WHERE CURRENT OF c;
+FETCH PRIOR FROM c;
+SELECT * FROM t;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 4
+-- msg: UPDATE 1
+-- X: 1
+-- msg: DELETE 1
+-- warning 02000: no data
+-- X: 2
+-- X: 1
+-- error 24000: invalid cursor state: the current row of cursor C has been deleted
+-- X: 4
+-- msg: UPDATE 1
+-- X: 3
+-- msg: DELETE 1
+-- X: 3
+-- X: 2
+-- X: 41
+
+/* extensions V108-01 V109-01 V110-01 V111-01 V112-01 V113-01 */
+/* flags */
+START TRANSACTION;
+DECLARE c SCROLL CURSOR FOR SELECT x FROM t;
+DECLARE d NO SCROLL CURSOR WITHOUT HOLD FOR SELECT x FROM t;
+DECLARE e SCROLL CURSOR FOR SELECT x FROM t FOR UPDATE;
+DECLARE f NO SCROLL CURSOR FOR SELECT x FROM t FOR UPDATE;
+DECLARE g SCROLL CURSOR FOR SELECT x FROM t FOR READ ONLY;
+DECLARE h CURSOR FOR SELECT x FROM t FOR UPDATE;
+OPEN e;
+FETCH PRIOR FROM e;
+FETCH FIRST FROM e;
+FETCH LAST FROM e;
+FETCH ABSOLUTE 2 FROM e;
+FETCH RELATIVE -1 FROM e;
+FETCH e;
+UPDATE t SET x = 20 WHERE CURRENT OF e;
+DELETE FROM t WHERE CURRENT OF e;
+CLOSE e;
+-- flags: T241
+-- msg: START TRANSACTION
+-- flags: F431, V108-01
+-- msg: DECLARE CURSOR
+-- flags: F431, T551, V108-01
+-- msg: DECLARE CURSOR
+-- flags: F431, F831, V108-01
+-- msg: DECLARE CURSOR
+-- flags: F431, F831, V108-01
+-- msg: DECLARE CURSOR
+-- flags: F431, V108-01
+-- msg: DECLARE CURSOR
+-- flags: V108-01
+-- msg: DECLARE CURSOR
+-- flags: V109-01
+-- msg: OPEN
+-- flags: F431, V110-01
+-- warning 02000: no data
+-- flags: F431, V110-01
+-- X: 1
+-- flags: F431, V110-01
+-- X: 4
+-- flags: F431, V110-01
+-- X: 2
+-- flags: F431, V110-01
+-- X: 1
+-- flags: V110-01
+-- X: 2
+-- flags: V113-01
+-- msg: UPDATE 1
+-- flags: V112-01
+-- msg: DELETE 1
+-- flags: V111-01
+-- msg: CLOSE

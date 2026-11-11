@@ -299,6 +299,16 @@ fn import_name(name string) string {
 	return trimmed.to_upper()
 }
 
+// isolation_flag is the value of -isolation for level.
+fn isolation_flag(level vsql.IsolationLevel) string {
+	return match level {
+		.read_uncommitted { 'read-uncommitted' }
+		.read_committed { 'read-committed' }
+		.repeatable_read { 'repeatable-read' }
+		.serializable { 'serializable' }
+	}
+}
+
 // import_quote is a name exactly, for -schema and -table (see import_name).
 fn import_quote(name string) string {
 	return if name == name.to_upper() { name } else { '"${name.replace('"', '""')}"' }
@@ -307,8 +317,9 @@ fn import_quote(name string) string {
 // import_command is built from what's posted. It's the only place that knows how
 // the options become arguments, so what's shown is what's run. Each mapping is a
 // field and its column, which is empty to skip the field. -map isn't needed if
-// each field goes to the column with its name.
-fn import_command(form urllib.Values, path string) !ImportCommand {
+// each field goes to the column with its name. -isolation is the isolation level
+// of the app, so that the import doesn't stop the app from changing the file.
+fn import_command(form urllib.Values, path string, isolation_level vsql.IsolationLevel) !ImportCommand {
 	options := import_form(form)
 	format := form.get('import_format') or { '' }
 	mut args := []string{}
@@ -348,6 +359,9 @@ fn import_command(form urllib.Values, path string) !ImportCommand {
 	}
 	if options.on_error == 'continue' {
 		args << '-continue-on-error'
+	}
+	if isolation_level != .serializable {
+		args << ['-isolation', isolation_flag(isolation_level)]
 	}
 	args << path
 
@@ -553,7 +567,7 @@ fn (a &App) import_preview(form urllib.Values) !string {
 		save_payload(mut conn, tab, encoded)!
 	}
 
-	return json2.encode(ImportPreview{import_command(form, a.db_path(tab.catalog))!.str()})
+	return json2.encode(ImportPreview{import_command(form, a.db_path(tab.catalog), a.options[0].isolation_level)!.str()})
 }
 
 // start_import starts a tab, which runs in the background. A tab can only be
@@ -565,7 +579,7 @@ fn (a &App) start_import(form urllib.Values, text string) ! {
 	}
 	tab := a.import_tab_of(mut conn, form)!
 	file := form.get('import_file') or { '' }
-	command := import_command(form, a.db_path(tab.catalog))!
+	command := import_command(form, a.db_path(tab.catalog), a.options[0].isolation_level)!
 	a.run_in_background(mut conn, tab, command, ImportPayload{
 		...import_form(form)
 		running_file: file

@@ -11,18 +11,20 @@ import time
 // The concept is also described by:
 //
 // ISO/IEC 9075-2:2016(E), 4.41, SQL-transactions
-//
-// The isolation level is always READ COMMITTED, rather than an implicit
-// SERIALIZABLE (#664).
-//
-// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 3
 
 struct StartTransactionStatement {
+	// modes is empty when there are no <transaction characteristics>.
 	modes []TransactionMode
+	// implicit is set when the SQL-transaction is started for a statement that
+	// isn't a START TRANSACTION, which has these characteristics instead of
+	// modes, see Connection.direct.
+	implicit ?TransactionCharacteristics
 }
 
 fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
+
+	check_transaction_modes(stmt.modes)!
 
 	// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 1
 	if conn.in_transaction() {
@@ -32,9 +34,14 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 	// A SET TRANSACTION before doesn't change the characteristics (NOTE 710).
 	//
 	// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 2 to 5
-	limit := condition_area_limit(mut conn, params, stmt.modes)!
+	characteristics := stmt.implicit or {
+		new_transaction_characteristics(mut conn, params, stmt.modes)!
+	}
+	if characteristics.isolation_level.locks_transaction() {
+		conn.lock_transaction()!
+	}
 	conn.start_transaction()!
-	conn.initiate_transaction(limit)
+	conn.initiate_transaction(characteristics)
 
 	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
 }

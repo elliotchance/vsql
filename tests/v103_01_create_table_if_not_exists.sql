@@ -158,7 +158,7 @@ SELECT * FROM t;
 -- # A table that another connection hasn't committed isn't visible, so it's the
 -- # same as CREATE TABLE. The next test is the same without IF NOT EXISTS.
 /* connection 1 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 CREATE TABLE t (x INT);
 /* connection 2 */
 /* extensions V103-01 */
@@ -167,6 +167,27 @@ CREATE TABLE IF NOT EXISTS t (y INT);
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: CREATE TABLE 1
 
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+START TRANSACTION;
+CREATE TABLE t (x INT);
+/* connection 2 */
+/* extensions V103-01 */
+CREATE TABLE IF NOT EXISTS t (y INT);
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE TABLE 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+
+/* connection 1 */
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+CREATE TABLE t (x INT);
+/* connection 2 */
+CREATE TABLE t (y INT);
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE TABLE 1
+-- 2: msg: CREATE TABLE 1
+
+-- # The same test with the default isolation level (SERIALIZABLE).
 /* connection 1 */
 START TRANSACTION;
 CREATE TABLE t (x INT);
@@ -174,7 +195,7 @@ CREATE TABLE t (x INT);
 CREATE TABLE t (y INT);
 -- 1: msg: START TRANSACTION
 -- 1: msg: CREATE TABLE 1
--- 2: msg: CREATE TABLE 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 
 -- # IF is still a name.
 /* extensions V103-01 */

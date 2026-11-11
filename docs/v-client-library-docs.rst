@@ -484,6 +484,23 @@ enum DumpCompat
 
 DumpCompat is the database that a dump is written for.
 
+enum IsolationLevel
+-------------------
+
+
+.. code-block:: v
+
+   pub enum IsolationLevel {
+   	read_uncommitted
+   	read_committed
+   	repeatable_read
+   	serializable
+   }
+
+IsolationLevel is the <level of isolation>. An SQL-implementation may use a stricter level than the one that is asked for, so READ UNCOMMITTED runs as READ COMMITTED, and REPEATABLE READ runs as SERIALIZABLE. See isolation.v.
+
+ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 6
+
 enum SQLType
 ------------
 
@@ -694,14 +711,19 @@ struct Connection
    	// set_statement_timestamp.
    	statement_timestamp time.Time
    	statement_time_zone i16
+   	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
+   	// whether it's started by START TRANSACTION or implicitly by a statement.
+   	next_transaction ?TransactionCharacteristics
+   	// isolation_level is the isolation level of the current SQL-transaction.
+   	isolation_level IsolationLevel = .serializable
+   	// default_isolation_level is ConnectionOptions.isolation_level, see
+   	// enduring_characteristics.
+   	default_isolation_level IsolationLevel = .serializable
    pub mut:
    	// condition_area_limit is the most warnings that are kept during the current
    	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
    	// initiate_transaction).
    	condition_area_limit int = max_conditions
-   	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
-   	// the next SQL-transaction, or 0.
-   	next_condition_area_limit int
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
    	// or negative minutes).
@@ -767,6 +789,20 @@ struct ConnectionOptions
    	// Pages are only kept for one statement, since another connection may
    	// change the file between statements.
    	cache_size int
+   	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
+   	// (including a statement that changes the database outside of a
+   	// transaction) waits for another connection's transaction to finish, before
+   	// it fails with a 40001 serialization failure. The default is 5 seconds.
+   	lock_timeout time.Duration
+   	// isolation_level is the isolation level of an SQL-transaction that doesn't
+   	// have one from START TRANSACTION or SET TRANSACTION, including a statement
+   	// outside of a transaction. The default is SERIALIZABLE, like the standard.
+   	// A READ COMMITTED transaction doesn't stop other connections from
+   	// committing while it runs (see isolation.v), but it fails with 40001 if it
+   	// commits while another connection has a REPEATABLE READ or SERIALIZABLE
+   	// transaction. Only the options that the connection is opened with are
+   	// used, not the ones given to add_catalog.
+   	isolation_level IsolationLevel = .serializable
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.

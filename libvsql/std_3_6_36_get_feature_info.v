@@ -6,13 +6,16 @@ module main
 //
 // vsql doesn't have the SQL_FEATURES view of the INFORMATION_SCHEMA, so the
 // features (and subfeatures) and whether they're supported are read from the
-// tables in docs/sql-compliance.rst, which is embedded when libvsql is built.
+// tables in the docs/sql-compliance-9075-*.rst pages (one for each part of the
+// standard), which are embedded when libvsql is built.
 // A feature that's in more than one table (for different parts of the
 // standard) is only supported if it's supported in all of them. There are no
 // packages. Since there's no ExecDirect (General Rules, 13 to 16), there are no
 // status conditions from it.
 
-const compliance_rst = $embed_file('../docs/sql-compliance.rst').to_string()
+const compliance_rst = $embed_file('../docs/sql-compliance-9075-2.rst').to_string() +
+	$embed_file('../docs/sql-compliance-9075-3.rst').to_string() +
+	$embed_file('../docs/sql-compliance-9075-11.rst').to_string()
 
 // supported_features is whether each feature ("E011") and subfeature ("E011-01") is
 // supported.

@@ -17,7 +17,24 @@ Syntax
 
 .. code-block:: text
 
-  START TRANSACTION [ DIAGNOSTICS SIZE <number> ]
+  START TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
+
+  <transaction_mode> ::=
+      ISOLATION LEVEL <level_of_isolation>
+    | DIAGNOSTICS SIZE <number>
+
+  <level_of_isolation> ::=
+      READ UNCOMMITTED
+    | READ COMMITTED
+    | REPEATABLE READ
+    | SERIALIZABLE
+
+Characteristics
+---------------
+
+The isolation level decides which changes from other transactions it can see
+(see *Isolation Levels* in :doc:`transactions`). Without one, it's
+``SERIALIZABLE``, even after a :doc:`set-transaction`.
 
 ``DIAGNOSTICS SIZE`` is the most warnings that are kept for each statement in
 the transaction (see :doc:`set-transaction`). Without it, it's 100, even after
@@ -76,3 +93,4 @@ See Also
 
 - :doc:`commit`
 - :doc:`rollback`
+- :doc:`set-transaction`

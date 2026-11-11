@@ -11,7 +11,9 @@ import vsql
 
 // serve runs the web server on host and port for the files (see App). It
 // doesn't return unless it can't start.
-pub fn serve(paths []string, host string, port int) ! {
+// serve runs the app on host and port. isolation_level is the level of each
+// transaction that doesn't have one, including the imports.
+pub fn serve(paths []string, host string, port int, isolation_level vsql.IsolationLevel) ! {
 	// The other files are attached as catalogs, named after their file. The
 	// names must be unique. Each request opens the files again (see below), so
 	// an in-memory database would be empty for each request.
@@ -35,6 +37,7 @@ pub fn serve(paths []string, host string, port int) ! {
 	for _ in paths {
 		mut file_options := vsql.default_connection_options()
 		file_options.mutex = sync.new_rwmutex()
+		file_options.isolation_level = isolation_level
 		options << file_options
 	}
 

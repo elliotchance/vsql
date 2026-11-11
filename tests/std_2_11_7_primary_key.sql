@@ -94,7 +94,7 @@ INSERT INTO pk1 (id) VALUES (2);
 /* connection 1 */
 CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
 INSERT INTO pk3 (id) VALUES (1);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO pk3 (id) VALUES (2);
 /* connection 2 */
 INSERT INTO pk3 (id) VALUES (2);
@@ -104,6 +104,34 @@ INSERT INTO pk3 (id) VALUES (2);
 -- 1: msg: INSERT 1
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
+INSERT INTO pk3 (id) VALUES (1);
+START TRANSACTION;
+INSERT INTO pk3 (id) VALUES (2);
+/* connection 2 */
+INSERT INTO pk3 (id) VALUES (2);
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+
+/* connection 1 */
+CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
+INSERT INTO pk3 (id) VALUES (1);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+DELETE FROM pk3 WHERE id = 1;
+/* connection 2 */
+INSERT INTO pk3 (id) VALUES (1);
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: DELETE 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+
+-- # The same test with the default isolation level (SERIALIZABLE).
 /* connection 1 */
 CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
 INSERT INTO pk3 (id) VALUES (1);
@@ -115,7 +143,7 @@ INSERT INTO pk3 (id) VALUES (1);
 -- 1: msg: INSERT 1
 -- 1: msg: START TRANSACTION
 -- 1: msg: DELETE 1
--- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 
 -- # The rows are in key order, so negative numbers come first, for each size of
 -- # integer up to its limits.

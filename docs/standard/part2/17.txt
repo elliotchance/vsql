@@ -6,7 +6,7 @@
 17.1                     implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
 17.1/GR/1                implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
 17.1/GR/2                container    - -
-17.1/GR/2.a              partial      vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_2_set_transaction.sql only the number of conditions; access modes and isolation levels are E152 (#554, #664)
+17.1/GR/2.a              partial      vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_2_set_transaction.sql access modes are E152-02 (#554)
 17.1/GR/2.b              implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.1/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.1/GR/4                implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_2_set_transaction.sql
@@ -18,7 +18,7 @@
 17.2/GR/1                container    - -
 17.2/GR/1.a              implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/1.a.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
-17.2/GR/1.a.ii           n/a          - - there's only one isolation level (E152-01, #664)
+17.2/GR/1.a.ii           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_levels.sql only when the statement has a <level of isolation>
 17.2/GR/1.b              n/a          - - LOCAL (T251)
 17.2/GR/1.b.i            n/a          - - LOCAL (T251)
 17.2/GR/1.b.ii           n/a          - - LOCAL (T251)
@@ -31,21 +31,21 @@
 17.2/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql the most is 100
 17.2/GR/4                definition   - -
 17.2/GR/5                n/a          - - access modes (E152-02, #554)
-17.2/GR/6                n/a          - - isolation levels (E152-01, #664)
+17.2/GR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql READ UNCOMMITTED runs as READ COMMITTED and REPEATABLE READ as SERIALIZABLE
 17.2/GR/7                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/CR/1                n/a          - - LOCAL (T251)
 # 17.3, <transaction characteristics>
-17.3                     partial      vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql only <diagnostics size>; access modes and isolation levels are E152 (#554, #664)
+17.3                     partial      vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql access modes are E152-02 (#554)
 17.3/SR/1                definition   - -
 17.3/SR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
-17.3/SR/3                deviates     vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_3_isolation_read_committed.sql always READ COMMITTED (#664)
-17.3/SR/4                n/a          - - access modes (E152-02) and READ UNCOMMITTED (F111-01)
+17.3/SR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql
+17.3/SR/4                n/a          - - access modes (E152-02, #554)
 17.3/SR/5                container    - -
-17.3/SR/5.a              n/a          - - READ UNCOMMITTED (F111-01)
+17.3/SR/5.a              n/a          - - access modes (E152-02, #554), READ UNCOMMITTED can change the database for now
 17.3/SR/5.b              implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_1_transaction.sql every SQL-transaction is read-write
 17.3/SR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.3/SR/7                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql it's 100
-17.3/CR/1                n/a          - - isolation levels (E152-01, F111)
+17.3/CR/1                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
 17.3/CR/2                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_2_17_2_set_transaction.sql
 # 17.4, <set constraints mode statement>
 17.4                     implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
@@ -90,7 +90,7 @@
 17.7/GR/10               container    - -
 17.7/GR/10.a             n/a          - - chained transactions (T261)
 17.7/GR/10.b             container    - -
-17.7/GR/10.b.i           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+17.7/GR/10.b.i           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql access modes are E152-02 (#554)
 17.7/GR/10.b.ii          implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_17_4_set_constraints.sql
 17.7/GR/11               impl-defined vsql/prepare.v tests/std_2_14_1_cursors.sql no prepared statement is deallocated
 17.7/CR/1                n/a          - - chained transactions (T261)
@@ -110,7 +110,7 @@
 17.8/GR/2.h              container    - -
 17.8/GR/2.h.i            n/a          - - chained transactions (T261)
 17.8/GR/2.h.ii           container    - -
-17.8/GR/2.h.ii.1         implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+17.8/GR/2.h.ii.1         implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql access modes are E152-02 (#554)
 17.8/GR/2.h.ii.2         implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_17_4_set_constraints.sql
 17.8/GR/3                n/a          - - savepoints (T271)
 17.8/GR/3.a              n/a          - - savepoints (T271)

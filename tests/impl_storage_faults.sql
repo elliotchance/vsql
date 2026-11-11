@@ -172,10 +172,10 @@ SELECT * FROM t;
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 INSERT INTO foo (bar) VALUES (123);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 UPDATE foo SET bar = 456;
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO foo (bar) VALUES (999);
 /* fault lock 2 */
 UPDATE foo SET bar = 789;
@@ -191,6 +191,29 @@ SELECT * FROM foo;
 -- 2: msg: COMMIT
 -- 2: BAR: 123
 -- 2: BAR: 999
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+START TRANSACTION;
+UPDATE foo SET bar = 456;
+/* connection 2 */
+START TRANSACTION;
+INSERT INTO foo (bar) VALUES (999);
+/* fault lock 2 */
+UPDATE foo SET bar = 789;
+COMMIT;
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: UPDATE 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 2D000: invalid transaction termination
+-- 2: BAR: 123
 
 -- # The values given by a sequence are kept when a statement fails. If that
 -- # can't be written either, the original error is returned and the value is

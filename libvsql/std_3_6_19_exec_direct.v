@@ -168,12 +168,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	//
 	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i and 7
 	if !conn.in_transaction() && stmt.diag.dynamic_function != 'SET TRANSACTION' {
-		limit := conn.next_condition_area_limit
-		db_query(mut conn, if limit > 0 {
-			'START TRANSACTION DIAGNOSTICS SIZE ${limit}'
-		} else {
-			'START TRANSACTION'
-		})!
+		db_query(mut conn, 'START TRANSACTION ${conn.next_transaction_characteristics()}')!
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
 		dbc.autocommit_transaction = dbc.autocommit
 	}

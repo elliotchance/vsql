@@ -26,6 +26,9 @@ mut:
 	// in bytes. It's sampled while the benchmark runs (see sample_memory), so
 	// it's 0 if the platform can't report it.
 	peak_memory u64
+	// isolation_level is used to start each transaction, such as
+	// "READ COMMITTED", unless it's empty.
+	isolation_level string
 }
 
 fn new_benchmark(conn &vsql.Connection) Benchmark {
@@ -109,7 +112,11 @@ fn (mut b Benchmark) run_transaction() ! {
 	tid := b.random(1, b.teller_rows)
 	delta := b.random(-5000, 5000)
 
-	b.conn.query('START TRANSACTION')!
+	if b.isolation_level == '' {
+		b.conn.query('START TRANSACTION')!
+	} else {
+		b.conn.query('START TRANSACTION ISOLATION LEVEL ${b.isolation_level}')!
+	}
 
 	b.conn.query('UPDATE accounts SET abalance = abalance + ${delta} WHERE aid = ${aid}')!
 	b.conn.query('SELECT abalance FROM accounts WHERE aid = ${aid}')!

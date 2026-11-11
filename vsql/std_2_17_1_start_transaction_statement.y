@@ -9,7 +9,7 @@ start_transaction_statement:
   }
 | START TRANSACTION transaction_characteristics {
     flag(mut yylex, 'T241')
-    $$.v = yy_box(Stmt(StartTransactionStatement{$3.v as []TransactionMode}))
+    $$.v = yy_box(Stmt(StartTransactionStatement{modes: $3.v as []TransactionMode}))
   }
 | begin_transaction {
     flag(mut yylex, vsql_begin)
@@ -19,7 +19,7 @@ start_transaction_statement:
 | begin_transaction transaction_characteristics {
     flag(mut yylex, vsql_begin)
     flag(mut yylex, 'T241')
-    $$.v = yy_box(Stmt(StartTransactionStatement{$2.v as []TransactionMode}))
+    $$.v = yy_box(Stmt(StartTransactionStatement{modes: $2.v as []TransactionMode}))
   }
 
 // BEGIN isn't part of the standard (see the V114 feature in the SQL Flagger).

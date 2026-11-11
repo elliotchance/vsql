@@ -80,7 +80,14 @@ UTEST_F(db, 6_38_get_info_integer) {
   EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_DEFAULT_TRANSACTION_ISOLATION,
                        &value, 0, NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(value, SQL_TRANSACTION_READ_COMMITTED);
+  EXPECT_EQ(value, SQL_TRANSACTION_SERIALIZABLE);
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_TRANSACTION_ISOLATION_OPTION,
+                       &value, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_TRANSACTION_READ_UNCOMMITTED |
+                       SQL_TRANSACTION_READ_COMMITTED |
+                       SQL_TRANSACTION_REPEATABLE_READ |
+                       SQL_TRANSACTION_SERIALIZABLE);
   EXPECT_EQ(
       SQLGetInfo(utest_fixture->dbc, SQL_FETCH_DIRECTION, &value, 0, NULL),
       SQL_SUCCESS);

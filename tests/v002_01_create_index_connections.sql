@@ -65,7 +65,7 @@ COMMIT;
 CREATE TABLE t (a INT);
 CREATE TABLE t2 (a INT);
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t2 (a) VALUES (2);
 /* connection 1 */
 CREATE INDEX t_a ON t (a);
@@ -80,12 +80,33 @@ COMMIT;
 -- 2: msg: INSERT 1
 -- 2: msg: COMMIT
 
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* extensions V002-01 */
+/* connection 1 */
+CREATE TABLE t (a INT);
+CREATE TABLE t2 (a INT);
+/* connection 2 */
+START TRANSACTION;
+INSERT INTO t2 (a) VALUES (2);
+/* connection 1 */
+CREATE INDEX t_a ON t (a);
+/* connection 2 */
+INSERT INTO t (a) VALUES (2);
+COMMIT;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: CREATE TABLE 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: INSERT 1
+-- 1: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
+-- 2: msg: INSERT 1
+-- 2: msg: COMMIT
+
 -- # Another transaction can't change the table while an index that it can't see
 -- # is being created or dropped.
 /* extensions V002-01 */
 /* connection 1 */
 CREATE TABLE t (a INT);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 CREATE INDEX t_a ON t (a);
 /* connection 2 */
 INSERT INTO t (a) VALUES (1);
@@ -102,6 +123,52 @@ UPDATE t SET a = 2;
 -- 2: msg: INSERT 1
 -- 2: msg: UPDATE 1
 
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* extensions V002-01 */
+/* connection 1 */
+CREATE TABLE t (a INT);
+START TRANSACTION;
+CREATE INDEX t_a ON t (a);
+/* connection 2 */
+INSERT INTO t (a) VALUES (1);
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+INSERT INTO t (a) VALUES (1);
+UPDATE t SET a = 2;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE INDEX 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: msg: COMMIT
+-- 2: msg: INSERT 1
+-- 2: msg: UPDATE 1
+
+/* extensions V002-01 V003-01 */
+/* connection 1 */
+CREATE TABLE t (a INT);
+INSERT INTO t (a) VALUES (1);
+CREATE INDEX t_a ON t (a);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+DROP INDEX t_a;
+/* connection 2 */
+UPDATE t SET a = 2;
+DELETE FROM t;
+/* connection 1 */
+ROLLBACK;
+/* connection 2 */
+UPDATE t SET a = 2;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: CREATE INDEX 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: DROP INDEX 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on table definition
+-- 2: error 40001: serialization failure: avoiding concurrent write on table definition
+-- 1: msg: ROLLBACK
+-- 2: msg: UPDATE 1
+
+-- # The same test with the default isolation level (SERIALIZABLE).
 /* extensions V002-01 V003-01 */
 /* connection 1 */
 CREATE TABLE t (a INT);
@@ -121,8 +188,8 @@ UPDATE t SET a = 2;
 -- 1: msg: CREATE INDEX 1
 -- 1: msg: START TRANSACTION
 -- 1: msg: DROP INDEX 1
--- 2: error 40001: serialization failure: avoiding concurrent write on table definition
--- 2: error 40001: serialization failure: avoiding concurrent write on table definition
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: ROLLBACK
 -- 2: msg: UPDATE 1
 
@@ -228,7 +295,7 @@ CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1);
 CREATE UNIQUE INDEX t_a ON t (a);
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (a) VALUES (2);
 DELETE FROM t WHERE a = 1;
 /* connection 1 */
@@ -255,6 +322,41 @@ SELECT * FROM t;
 -- 1: error 23505: violates unique constraint: UNIQUE INDEX T_A on "test".PUBLIC.T
 -- 1: A: 1
 -- 1: A: 3
+-- 1: A: 2
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* extensions V002-01 V002-02 */
+/* connection 1 */
+CREATE TABLE t (a INT);
+INSERT INTO t (a) VALUES (1);
+CREATE UNIQUE INDEX t_a ON t (a);
+/* connection 2 */
+START TRANSACTION;
+INSERT INTO t (a) VALUES (2);
+DELETE FROM t WHERE a = 1;
+/* connection 1 */
+INSERT INTO t (a) VALUES (2);
+INSERT INTO t (a) VALUES (1);
+INSERT INTO t (a) VALUES (3);
+/* connection 2 */
+ROLLBACK;
+/* connection 1 */
+INSERT INTO t (a) VALUES (2);
+INSERT INTO t (a) VALUES (1);
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: CREATE INDEX 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: INSERT 1
+-- 2: msg: DELETE 1
+-- 1: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: msg: ROLLBACK
+-- 1: msg: INSERT 1
+-- 1: error 23505: violates unique constraint: UNIQUE INDEX T_A on "test".PUBLIC.T
+-- 1: A: 1
 -- 1: A: 2
 
 -- # IF NOT EXISTS still waits, unless the index already exists (then nothing

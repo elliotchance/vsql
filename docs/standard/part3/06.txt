@@ -610,7 +610,7 @@
 6.17/GR/12.d.iv          implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/12.e             n/a          - - there are no savepoints
 6.17/GR/12.f             n/a          - - there are no locators
-6.17/GR/12.g             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c every SQL-transaction is READ WRITE and READ COMMITTED
+6.17/GR/12.g             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c every SQL-transaction is READ WRITE, and the isolation level is kept
 6.17/GR/13               implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/13.a             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/13.b             definition   - -
@@ -621,7 +621,7 @@
 6.17/GR/14.b             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/14.c             n/a          - - there are no savepoints
 6.17/GR/14.d             n/a          - - there are no locators
-6.17/GR/14.e             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c every SQL-transaction is READ WRITE and READ COMMITTED
+6.17/GR/14.e             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c every SQL-transaction is READ WRITE, and the isolation level is kept
 6.17/GR/15               implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/15.a             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/15.b             definition   - -
@@ -1451,8 +1451,8 @@
 6.36/GR/11.b             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/12               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c there are no packages
 6.36/GR/13               definition   - -
-6.36/GR/14               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance.rst is used
-6.36/GR/15               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance.rst is used
+6.36/GR/14               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance-9075-3.rst is used
+6.36/GR/15               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance-9075-3.rst is used
 6.36/GR/16               n/a          - - there's no implicit ExecDirect
 6.36/GR/16.a             n/a          - - there's no implicit ExecDirect
 6.36/GR/16.b             n/a          - - there's no implicit ExecDirect
@@ -1497,7 +1497,7 @@
 6.38/GR/10.b             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the same values as SQL_IMPLEMENTATION_INFO would have
 6.38/GR/10.b.i           n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
 6.38/GR/10.b.ii          n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/10.c             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c READ COMMITTED, upper case and DDL in transactions
+6.38/GR/10.c             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c SERIALIZABLE, upper case and DDL in transactions
 6.38/GR/10.c.i           n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
 6.38/GR/10.c.ii          n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
 6.38/GR/10.d             container    - -
@@ -1551,8 +1551,8 @@
 6.38/GR/10.m.i           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/10.m.ii          implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/10.m.iii         implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
-6.38/GR/10.m.iv          n/a          - - REPEATABLE READ isn't supported (#664)
-6.38/GR/10.m.v           n/a          - - SERIALIZABLE isn't supported (#664)
+6.38/GR/10.m.iv          implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
+6.38/GR/10.m.v           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/10.n             n/a          - - there are no users (#732), so it's a zero-length string
 6.38/GR/10.o             container    - -
 6.38/GR/10.o.i           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
@@ -2511,7 +2511,7 @@
 6.61/GR/6                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/7                definition   - -
 6.61/GR/8                deviates     libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c READ ONLY is HYC00 (#554)
-6.61/GR/9                deviates     libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c REPEATABLE READ and SERIALIZABLE are HYC00 (#664)
+6.61/GR/9                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/10               deviates     libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c more than one connection is 0A001 (#747)
 # 6.62, TablePrivileges
 6.62                     n/a          - - privileges (E081) aren't supported: HYC00

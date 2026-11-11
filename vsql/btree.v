@@ -31,6 +31,11 @@ mut:
 	// than the page numbers returned) to find all the pages a transaction
 	// changed.
 	written_pages map[int]bool
+	// written_keys contains the key of every object that has been added,
+	// updated or expired. Another connection can split a page later, which
+	// moves objects to a page this one never wrote, so Storage uses these to
+	// find them again at the end of a transaction.
+	written_keys map[string]bool
 }
 
 fn new_btree(pager Pager, page_size int) &Btree {
@@ -95,6 +100,7 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 // obj as the new version. The key never changes, because a row that gets a new
 // PRIMARY KEY is deleted and added again (see UpdateStatementSearched).
 fn (mut p Btree) update(obj PageObject) !int {
+	p.written_keys[obj.key.bytestr()] = true
 	// Find the page that would contain our old object (if it exists).
 	mut path, _ := p.search_page(obj.key)!
 	page_number := path[path.len - 1]
@@ -204,6 +210,7 @@ fn (mut p Btree) remove_blob(ref PageObject) ! {
 
 // add returns the page number that the object was added to.
 fn (mut p Btree) add(object PageObject) !int {
+	p.written_keys[object.key.bytestr()] = true
 	mut obj := object
 
 	// If the object is larger than half a page it needs to be moved to blob
@@ -547,6 +554,7 @@ fn (mut p Btree) expire(key []u8, tid u64, xid u64) !int {
 	mut page := p.pager.fetch_page(page_number)!
 
 	if page.expire(key, tid, xid)! {
+		p.written_keys[key.bytestr()] = true
 		p.store_page(page_number, page)!
 		return page_number
 	}

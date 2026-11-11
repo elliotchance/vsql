@@ -67,7 +67,7 @@ fn commit_error(err IError) IError {
 fn (mut catalog CatalogConnection) commit_transaction() ! {
 	mut blob_refs := []PageObject{}
 	mut schema_changed := false
-	for page_number, _ in catalog.storage.transaction_pages {
+	for page_number in catalog.storage.transaction_page_numbers()! {
 		// A page is only copied and stored again when it has an object to
 		// remove, see Pager.read_page.
 		page_in_place := catalog.storage.btree.pager.read_page(page_number)!
@@ -107,6 +107,7 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	// We can erase these now.
 	catalog.storage.save_transaction_pages()
 	catalog.storage.transaction_pages = map[int]bool{}
+	catalog.storage.transaction_keys = map[string]bool{}
 	catalog.storage.end_constraint_modes()
 
 	// Other connections may have loaded the schema while this transaction was

@@ -69,6 +69,7 @@ fn (mut catalog CatalogConnection) start_transaction() ! {
 	// This would fail is a implicit or explicit transaction did not perform
 	// cleanup.
 	assert catalog.storage.transaction_pages.len == 0
+	assert catalog.storage.transaction_keys.len == 0
 
 	catalog.storage.transaction_pages = map[int]bool{}
 }

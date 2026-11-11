@@ -36,7 +36,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	}
 
 	mut schema_changed := false
-	for page_number, _ in catalog.storage.transaction_pages {
+	for page_number in catalog.storage.transaction_page_numbers()! {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			if (obj.tid == catalog.storage.transaction_id
@@ -65,6 +65,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	// We can erase these now.
 	catalog.storage.save_transaction_pages()
 	catalog.storage.transaction_pages = map[int]bool{}
+	catalog.storage.transaction_keys = map[string]bool{}
 	catalog.storage.end_constraint_modes()
 
 	// Tables, schemas and indexes that were created or dropped in this

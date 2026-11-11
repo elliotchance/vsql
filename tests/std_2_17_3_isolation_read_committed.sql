@@ -330,3 +330,66 @@ SELECT * FROM foo;
 -- 1: error 40001: serialization failure: avoiding concurrent write on individual row
 -- 2: msg: COMMIT
 -- 1: BAR: 456
+
+
+-- # A ROLLBACK finds the row versions it wrote after another connection's change
+-- # split their page, which moves them to a new page. Otherwise, the rolled back change would still be seen,
+-- # and the row couldn't be changed again (40001). With these pages, the two
+-- # rows share a page that's split by the second UPDATE.
+/* page_size 256 */
+/* connection 1 */
+CREATE TABLE t (id INT, x INT);
+INSERT INTO t (id, x) VALUES (1, 0), (2, 0);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+UPDATE t SET x = 999 WHERE id = 2;
+/* connection 2 */
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+UPDATE t SET x = 1 WHERE id = 1;
+COMMIT;
+/* connection 1 */
+ROLLBACK;
+SELECT x FROM t WHERE id = 2;
+UPDATE t SET x = x + 1 WHERE id = 2;
+SELECT x FROM t WHERE id = 2;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 2
+-- 1: msg: START TRANSACTION
+-- 1: msg: UPDATE 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: UPDATE 1
+-- 2: msg: COMMIT
+-- 1: msg: ROLLBACK
+-- 1: X: 0
+-- 1: msg: UPDATE 1
+-- 1: X: 1
+
+-- # A COMMIT finds the row versions it wrote after another connection's change
+-- # split their page, which moves them to a new page. Otherwise, the expired version would be left behind,
+-- # and the row couldn't be changed again (40001). With these pages, the two
+-- # rows share a page that's split by the second UPDATE.
+/* page_size 256 */
+/* connection 1 */
+CREATE TABLE t (id INT, x INT);
+INSERT INTO t (id, x) VALUES (1, 0), (2, 0);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+UPDATE t SET x = 999 WHERE id = 2;
+/* connection 2 */
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+UPDATE t SET x = 1 WHERE id = 1;
+COMMIT;
+/* connection 1 */
+COMMIT;
+SELECT x FROM t WHERE id = 2;
+UPDATE t SET x = x + 1 WHERE id = 2;
+SELECT x FROM t WHERE id = 2;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 2
+-- 1: msg: START TRANSACTION
+-- 1: msg: UPDATE 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: UPDATE 1
+-- 2: msg: COMMIT
+-- 1: msg: COMMIT
+-- 1: X: 999
+-- 1: msg: UPDATE 1
+-- 1: X: 1000

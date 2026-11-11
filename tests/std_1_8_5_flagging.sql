@@ -320,7 +320,13 @@ SELECT x FROM t WHERE ROW(x, y) IS NOT NULL AND (x, y) IS NOT NULL;
 
 -- # An identifier of more than 18 characters needs F391, whether it's quoted or
 -- # not (Part 2, 5.2, Conformance Rules, 1 and 2), and a name with a catalog
--- # needs F651.
+-- # needs F651. A regular identifier of 18 characters is an <identifier start>
+-- # and 17 <identifier part>s, so it's Core SQL.
+/* flags */
+SELECT abcdefghijklmnopqr FROM t AS u (abcdefghijklmnopqr, a, b, c);
+-- flags:
+-- ABCDEFGHIJKLMNOPQR: 1
+
 /* flags */
 SELECT averylongidentifier1 FROM t AS averylongidentifier1 (averylongidentifier1, a, b, c);
 -- flags: F391

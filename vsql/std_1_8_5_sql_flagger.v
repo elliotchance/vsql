@@ -190,23 +190,26 @@ fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 // flag_identifier flags an identifier (a <regular identifier>, or a
 // <delimited identifier> that's in quotes) that is too long for Core SQL
 // (ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 1
-// and 2). A regular identifier of 18 characters is also flagged, which is
-// #738. That's also why "INFORMATION_SCHEMA" is flagged with F391, but the views
-// that need F391 are flagged by what they are (see
+// and 2). "INFORMATION_SCHEMA" has 18 characters, so it isn't flagged, but the
+// views that need F391 are flagged by what they are (see
 // information_schema_features).
 fn flag_identifier(mut yylex YYLexer, identifier string) {
 	flag_if(mut yylex, is_long_identifier(identifier), 'F391')
 }
 
 // is_long_identifier is true if an identifier (with the quotes of a <delimited
-// identifier>) needs F391, see flag_identifier.
+// identifier>) needs F391, see flag_identifier. Either kind can have up to 18
+// characters: the body of a <regular identifier> is an <identifier start>
+// followed by fewer than 18 <identifier part>s, and a doubled quote in a
+// <delimited identifier> is one <delimited identifier part>.
 fn is_long_identifier(identifier string) bool {
-	if identifier.starts_with('"') {
-		body := identifier[1..identifier.len - 1].replace('""', '"')
-		return body.runes().len > 18
+	body := if identifier.starts_with('"') {
+		identifier[1..identifier.len - 1].replace('""', '"')
+	} else {
+		identifier
 	}
 
-	return identifier.runes().len >= 18
+	return body.runes().len > 18
 }
 
 // name_features returns F391 if any of the names (each as it's written, with the

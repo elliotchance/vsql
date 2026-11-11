@@ -407,11 +407,11 @@ const flagging_modules = {
 	"PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :x :i AND y = ':' AND z = ':'; PROCEDURE o (SQLSTATE, :x INT, :i INT); OPEN c;":                                                                        ['F611']
 	// A name that's only read by the module (not the grammar) is flagged with
 	// F391 too, but not a descriptor name in a literal or an item name.
-	'PROCEDURE procedure_name_17 (SQLSTATE, :parameter_name_17 INT); DELETE FROM t WHERE x = :parameter_name_17;':                                                                                                                                                                      []string{}
-	'PROCEDURE procedure_name_18c (SQLSTATE); COMMIT;':                                                                                                                                                                                                                                 ['F391']
-	'PROCEDURE p (SQLSTATE, :parameter_name_18c INT); DELETE FROM t WHERE x = :parameter_name_18c;':                                                                                                                                                                                    ['F391']
-	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE statement_name_17 FROM :s;':                                                                                                                                                                                                       ['B031']
-	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE statement_name_18c FROM :s;':                                                                                                                                                                                                      [
+	'PROCEDURE procedure_name_18c (SQLSTATE, :parameter_name_18c INT); DELETE FROM t WHERE x = :parameter_name_18c;':                                                                                                                                                                   []string{}
+	'PROCEDURE procedure_name_19ch (SQLSTATE); COMMIT;':                                                                                                                                                                                                                                ['F391']
+	'PROCEDURE p (SQLSTATE, :parameter_name_19ch INT); DELETE FROM t WHERE x = :parameter_name_19ch;':                                                                                                                                                                                  ['F391']
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE statement_name_18c FROM :s;':                                                                                                                                                                                                      ['B031']
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE statement_name_19ch FROM :s;':                                                                                                                                                                                                     [
 		'B031',
 		'F391',
 	]
@@ -420,13 +420,13 @@ const flagging_modules = {
 		'B031',
 		'F391',
 	]
-	'PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR descriptor_name_18;':                                                                                                                                                                                                                  [
+	'PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR descriptor_name_19c;':                                                                                                                                                                                                                 [
 		'B031',
 		'B035',
 		'F391',
 	]
 	"PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR 'descriptor_name_18';":                                                                                                                                                                                                                ['B031']
-	'DECLARE cursor_name_18char CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN cursor_name_18char; PROCEDURE c (SQLSTATE); CLOSE cursor_name_18char;':                                                                                                                        ['F391']
+	'DECLARE cursor_name_19chars CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN cursor_name_19chars; PROCEDURE c (SQLSTATE); CLOSE cursor_name_19chars;':                                                                                                                     ['F391']
 }
 
 fn query_error(mut db Connection, sql_stmt string) string {

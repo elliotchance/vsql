@@ -1901,7 +1901,7 @@
 6.48/GR/2.b              implemented  libvsql/std_3_6_48_num_result_cols.v libvsql/std_3_6_48_num_result_cols_test.c
 6.48/GR/3                implemented  libvsql/std_3_6_48_num_result_cols.v libvsql/std_3_6_48_num_result_cols_test.c
 # 6.49, ParamData
-6.49                     partial      libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c an exception condition removes the deferred parameter number (#750); see also #730
+6.49                     implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c an exception condition before the last deferred parameter is done leaves the deferred parameter number until Cancel (#750); see also #730
 6.49/GR/1                definition   - -
 6.49/GR/2                container    - -
 6.49/GR/2.a              implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c

@@ -676,7 +676,8 @@ SQLRETURN SQLBindParameter(
 /*
  * SQLCancel cancels a routine that's running on the statement. libvsql isn't
  * thread safe, so there's never one running and SQLCancel only clears the
- * diagnostics of the statement.
+ * diagnostics of the statement. It also ends a statement that's waiting for
+ * the values of its SQL_DATA_AT_EXEC parameters (see SQLParamData).
  */
 SQLRETURN SQLCancel(
     SQLHSTMT StatementHandle
@@ -1485,6 +1486,12 @@ SQLRETURN SQLNumResultCols(
  * ParameterValue of the next parameter and returns SQL_NEED_DATA, and then
  * the value is given with SQLPutData. After the last one, it executes the
  * statement.
+ *
+ * If SQLParamData (or SQLPutData) fails before the statement is executed, such
+ * as when a value can't be cast to the type of its parameter, the statement is
+ * still waiting for its parameters, so every other routine on it fails with
+ * HY010 until SQLCancel is called. A failure when the statement is executed
+ * (after the last parameter) ends it.
  *
  *   SQLPOINTER p;
  *   SQLINTEGER at_exec = SQL_DATA_AT_EXEC;

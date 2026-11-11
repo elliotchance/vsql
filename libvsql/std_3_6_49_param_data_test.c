@@ -83,7 +83,10 @@ UTEST_F(db, 6_49_param_data_sequence) {
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
 
-  /* An error ends the statement. */
+  /* An error doesn't end the statement, only Cancel does. */
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
   ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }
@@ -143,6 +146,7 @@ UTEST_F(db, 6_49_param_data_cast) {
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_SUCCESS);
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
 
   /* The cast of a string to an INTEGER can fail. */
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
@@ -155,6 +159,68 @@ UTEST_F(db, 6_49_param_data_cast) {
             SQL_SUCCESS);
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22018");
+}
+
+/* An exception condition before the last deferred parameter is done leaves
+ * the deferred parameter number, so the statement is still waiting for it
+ * until it's cancelled. */
+UTEST_F(db, 6_49_param_data_cast_failure_stays_deferred) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC;
+  char s[10];
+  SQLPOINTER p;
+  SQLSMALLINT n;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_INTEGER, 0, 0, s, sizeof(s),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(p, (SQLPOINTER) s);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "abc", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22018");
+
+  /* Other routines are a function sequence error. */
+  EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, &n), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+
+  /* The parameter value is still associated with the deferred parameter, so
+   * another piece is concatenated to it and the cast fails again. */
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22018");
+
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+}
+
+/* The deferred parameter number is removed before the statement is executed,
+ * so an exception condition from executing it ends the statement. */
+UTEST_F(db, 6_49_param_data_execution_failure) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x = 0;
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1 / ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22012");
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }
 
 /* A descriptor of one connection can be the APD of a statement of another

@@ -17,8 +17,14 @@ import vsql
 // there are no large objects or locators (General Rules 11.a.i.1.B, 11.a.i.2,
 // 11.a.i.3 and 14.a). The data type of a dynamic parameter isn't determined, so
 // there's no second cast (General Rules 14.b.ii and 14.b.iii), which is #649.
-// An exception condition also removes the deferred parameter number, which
-// is #750.
+//
+// An exception condition raised before the last deferred parameter is done
+// (such as a cast that fails) leaves the deferred parameter number, so the
+// statement is still waiting for its deferred parameters and only Cancel,
+// ParamData or PutData can be used with it (5.2, "<CLI routine> invocation",
+// General Rules 3.b.i.6). The deferred parameter number is only removed once
+// the last one is done (General Rules 17.a), so an exception condition from
+// executing the statement doesn't leave it.
 
 @[export: 'SQLParamData']
 fn sql_param_data(statement_handle SQLInteger, value &voidptr) i16 {
@@ -33,13 +39,7 @@ fn sql_param_data(statement_handle SQLInteger, value &voidptr) i16 {
 	// 3.b.i
 	stmt.invoke(true) or { return stmt.diag.error(err) }
 
-	return param_data(mut stmt, value) or {
-		// The statement can't continue after an exception condition.
-		if err !is NoData {
-			stmt.cancel_deferred()
-		}
-		stmt.diag.error(err)
-	}
+	return param_data(mut stmt, value) or { stmt.diag.error(err) }
 }
 
 fn param_data(mut stmt Stmt, value &voidptr) !i16 {

@@ -6,11 +6,15 @@ module main
 // which can uniquely identify any row within a single specified table described
 // by the Information Schemas of the connected data source.
 //
-// The columns that best identify a row are the PRIMARY KEY (a table without
-// one has none). The values are valid for the SQL-session (unless they're
-// updated), and they aren't pseudo-columns (General Rules, 10.a.iii and 10.h).
-// The columns of a PRIMARY KEY are never null, so General Rules 22.a never
-// applies. There are no interval or reference types (General Rules, 10.c.i,
+// Which columns best identify a row is implementation-dependent (General
+// Rules, 6). They are the PRIMARY KEY or, for a table without one, a UNIQUE
+// constraint whose columns are all NOT NULL (a UNIQUE column that allows nulls
+// can have the null value in more than one row). When there's more than one
+// such UNIQUE constraint the one with the fewest columns is used, then the
+// first by name, so the result is always the same. A table with neither has
+// none. The values are valid for the SQL-session (unless they're updated), and
+// they aren't pseudo-columns (General Rules, 10.a.iii and 10.h). The columns of
+// the key are never null, so General Rules 22.a never applies. There are no interval or reference types (General Rules, 10.c.i,
 // 10.e.v and 10.e.vi).
 
 // Codes from Table 43, "Column types and scopes used with SpecialColumns".
@@ -64,8 +68,8 @@ fn special_columns(mut stmt Stmt, identifier_type i16, catalog_name &char, name_
 	sch := catalog_arg(schema_name, name_length2)!
 	tbl := catalog_arg(table_name, name_length3)!
 
-	// - 19 to 23. ExecDirect is implicitly invoked. The columns of a PRIMARY
-	// KEY are never null, so Nullable doesn't change the result. SCOPE is a
+	// - 19 to 23. ExecDirect is implicitly invoked. The columns of the key
+	// are never null, so Nullable doesn't change the result. SCOPE is a
 	// reserved word, so it's quoted.
 	pred := name_predicate(stmt, 'TABLE_CAT', cat, false) +
 		name_predicate(stmt, 'TABLE_SCHEM', sch, false) +
@@ -96,9 +100,54 @@ fn special_columns_query() string {
 		AND K.TABLE_SCHEMA = C.TABLE_SCHEM
 		AND K.TABLE_NAME = C.TABLE_NAME
 		AND K.COLUMN_NAME = C.COLUMN_NAME
-	JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS T
+	JOIN ${special_columns_keys()} AS T
 		ON T.CONSTRAINT_CATALOG = K.CONSTRAINT_CATALOG
 		AND T.CONSTRAINT_SCHEMA = K.CONSTRAINT_SCHEMA
-		AND T.CONSTRAINT_NAME = K.CONSTRAINT_NAME
-	WHERE T.CONSTRAINT_TYPE = \'PRIMARY KEY\') AS SPECIAL_COLUMNS_QUERY'
+		AND T.CONSTRAINT_NAME = K.CONSTRAINT_NAME) AS SPECIAL_COLUMNS_QUERY'
+}
+
+// special_columns_keys is the constraint that best identifies the rows of each
+// table: the PRIMARY KEY, otherwise the UNIQUE constraint with the fewest
+// columns (then the first by name) whose columns are all NOT NULL. Any other
+// candidate of the same table that comes before it in that order excludes it.
+fn special_columns_keys() string {
+	candidates := special_columns_candidates()
+	return '(SELECT * FROM ${candidates} AS X
+	WHERE NOT EXISTS (SELECT 1 FROM ${candidates} AS Y
+		WHERE Y.TABLE_CATALOG = X.TABLE_CATALOG
+		AND Y.TABLE_SCHEMA = X.TABLE_SCHEMA
+		AND Y.TABLE_NAME = X.TABLE_NAME
+		AND (Y.KEY_RANK < X.KEY_RANK
+			OR Y.KEY_RANK = X.KEY_RANK AND (Y.KEY_COLUMNS < X.KEY_COLUMNS
+			OR Y.KEY_COLUMNS = X.KEY_COLUMNS AND Y.CONSTRAINT_NAME < X.CONSTRAINT_NAME))))'
+}
+
+// special_columns_candidates is every PRIMARY KEY (KEY_RANK 0) and UNIQUE
+// constraint (KEY_RANK 1) whose columns are all NOT NULL, with the number of
+// its columns. IS_NULLABLE is YES or NO, so the maximum is NO only when every
+// column is NOT NULL.
+fn special_columns_candidates() string {
+	return "(SELECT
+		T.CONSTRAINT_CATALOG,
+		T.CONSTRAINT_SCHEMA,
+		T.CONSTRAINT_NAME,
+		T.TABLE_CATALOG,
+		T.TABLE_SCHEMA,
+		T.TABLE_NAME,
+		MIN(CASE T.CONSTRAINT_TYPE WHEN 'PRIMARY KEY' THEN 0 ELSE 1 END) AS KEY_RANK,
+		COUNT(*) AS KEY_COLUMNS
+	FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS T
+	JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS K
+		ON K.CONSTRAINT_CATALOG = T.CONSTRAINT_CATALOG
+		AND K.CONSTRAINT_SCHEMA = T.CONSTRAINT_SCHEMA
+		AND K.CONSTRAINT_NAME = T.CONSTRAINT_NAME
+	JOIN INFORMATION_SCHEMA.COLUMNS AS C
+		ON C.TABLE_CATALOG = K.TABLE_CATALOG
+		AND C.TABLE_SCHEMA = K.TABLE_SCHEMA
+		AND C.TABLE_NAME = K.TABLE_NAME
+		AND C.COLUMN_NAME = K.COLUMN_NAME
+	WHERE T.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
+	GROUP BY T.CONSTRAINT_CATALOG, T.CONSTRAINT_SCHEMA, T.CONSTRAINT_NAME,
+		T.TABLE_CATALOG, T.TABLE_SCHEMA, T.TABLE_NAME
+	HAVING MAX(C.IS_NULLABLE) = 'NO')"
 }

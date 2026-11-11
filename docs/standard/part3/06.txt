@@ -2398,7 +2398,7 @@
 6.60/GR/3                definition   - -
 6.60/GR/4                definition   - -
 6.60/GR/5                definition   - -
-6.60/GR/6                impl-defined libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c the columns of the PRIMARY KEY
+6.60/GR/6                impl-defined libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c the PRIMARY KEY, otherwise the UNIQUE constraint with only NOT NULL columns that has the fewest columns, then the first by name
 6.60/GR/6.a              n/a          - - C041 isn't supported
 6.60/GR/6.b              container    - -
 6.60/GR/6.b.i            n/a          - - C041 isn't supported

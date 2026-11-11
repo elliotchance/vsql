@@ -254,6 +254,36 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
+	// ISO/IEC 9075-11:2008(E), 5.53, SQL_IMPLEMENTATION_INFO view. The ID is a
+	// character string (6.44).
+	catalog.add_information_schema_table('CREATE TABLE SQL_IMPLEMENTATION_INFO (
+		IMPLEMENTATION_INFO_ID ${cd} NOT NULL,
+		IMPLEMENTATION_INFO_NAME ${cd} NOT NULL,
+		INTEGER_VALUE ${cn},
+		CHARACTER_VALUE ${cd},
+		COMMENTS ${cd}
+	)',
+		fn [c] (mut t VirtualTable) ! {
+			for item in sql_implementation_info(c.path) {
+				t.next_values(implementation_info_view_row(item))
+			}
+			t.done()
+		})!
+
+	// ISO/IEC 9075-11:2008(E), 5.56, SQL_SIZING view
+	catalog.add_information_schema_table('CREATE TABLE SQL_SIZING (
+		SIZING_ID ${cn} NOT NULL,
+		SIZING_NAME ${cd} NOT NULL,
+		SUPPORTED_VALUE ${cn},
+		COMMENTS ${cd}
+	)',
+		fn (mut t VirtualTable) ! {
+			for item in sql_sizing() {
+				t.next_values(sql_sizing_view_row(item))
+			}
+			t.done()
+		})!
+
 	// ISO/IEC 9075-11:2008(E), 5.77, Short name views
 	catalog.add_short_name_view('COLUMNS_S', 'COLUMNS', {
 		'CHARACTER_MAXIMUM_LENGTH': 'CHAR_MAX_LENGTH'

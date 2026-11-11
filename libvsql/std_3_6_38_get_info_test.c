@@ -118,3 +118,81 @@ UTEST_F(env, 6_38_get_info_not_connected) {
       SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
 }
+
+/* The sizes and the implementation information are the rows of the SQL_SIZING
+ * and SQL_IMPLEMENTATION_INFO views, with the same answers as before they were
+ * read from the views. */
+UTEST_F(db, 6_38_get_info_views) {
+  static const struct {
+    SQLSMALLINT code;
+    SQLSMALLINT value;
+  } smallints[] = {
+      {SQL_MAXIMUM_DRIVER_CONNECTIONS, 0},
+      {SQL_MAXIMUM_CONCURRENT_ACTIVITIES, 0},
+      {SQL_MAXIMUM_COLUMN_NAME_LENGTH, 128},
+      {SQL_MAXIMUM_CURSOR_NAME_LENGTH, 128},
+      {SQL_MAXIMUM_SCHEMA_NAME_LENGTH, 128},
+      {SQL_MAXIMUM_CATALOG_NAME_LENGTH, 128},
+      {SQL_MAXIMUM_TABLE_NAME_LENGTH, 128},
+      {SQL_MAXIMUM_COLUMNS_IN_GROUP_BY, 0},
+      {SQL_MAXIMUM_COLUMNS_IN_ORDER_BY, 0},
+      {SQL_MAXIMUM_COLUMNS_IN_SELECT, 0},
+      {SQL_MAXIMUM_COLUMNS_IN_TABLE, 1600},
+      {SQL_MAXIMUM_TABLES_IN_SELECT, 0},
+      {SQL_MAXIMUM_USER_NAME_LENGTH, 0},
+      {SQL_MAXIMUM_IDENTIFIER_LENGTH, 128},
+      {SQL_MAXIMUM_STMT_OCTETS, 0},
+      {SQL_MAXIMUM_STMT_OCTETS_DATA, 0},
+      {SQL_MAXIMUM_STMT_OCTETS_SCHEMA, 0},
+      {SQL_CURSOR_COMMIT_BEHAVIOR, SQL_CB_PRESERVE},
+      {SQL_IDENTIFIER_CASE, SQL_IC_UPPER},
+      {SQL_NULL_COLLATION, SQL_NC_LOW},
+      {SQL_TRANSACTION_CAPABLE, SQL_TC_ALL},
+  };
+  static const struct {
+    SQLSMALLINT code;
+    const char *value;
+  } strings[] = {
+      {SQL_DATA_SOURCE_NAME, ":memory:"},
+      {SQL_SERVER_NAME, ":memory:"},
+      {SQL_SEARCH_PATTERN_ESCAPE, "\\"},
+      {SQL_DBMS_NAME, "vsql"},
+      {SQL_SPECIAL_CHARACTERS, ""},
+      {SQL_CATALOG_NAME, "Y"},
+      {SQL_COLLATING_SEQUENCE, ""},
+  };
+  size_t i;
+  SQLSMALLINT smallint;
+  SQLINTEGER integer = -1;
+  SQLCHAR value[100];
+
+  for (i = 0; i < sizeof(smallints) / sizeof(smallints[0]); i++) {
+    smallint = -1;
+    EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, smallints[i].code, &smallint, 0,
+                         NULL),
+              SQL_SUCCESS);
+    EXPECT_EQ(smallint, smallints[i].value);
+  }
+  for (i = 0; i < sizeof(strings) / sizeof(strings[0]); i++) {
+    EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, strings[i].code, value,
+                         sizeof(value), NULL),
+              SQL_SUCCESS);
+    EXPECT_STREQ((char *)value, strings[i].value);
+  }
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_DEFAULT_TRANSACTION_ISOLATION,
+                       &integer, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(integer, SQL_TRANSACTION_SERIALIZABLE);
+
+  /* The sizing items that SQL/CLI doesn't have an information type for aren't
+   * one. */
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, 25000, &integer, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY096");
+
+  /* The views are read without an implicit ExecDirect, so there's still no
+   * SQL-transaction. */
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      0);
+}

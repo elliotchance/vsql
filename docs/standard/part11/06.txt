@@ -360,17 +360,17 @@
 6.43/DE/7                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
 6.43/DE/8                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
 # 6.44, SQL_IMPLEMENTATION_INFO base table
-6.44                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.44/DE/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.44/DE/2                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.44/DE/3                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.44/DE/4                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.44                     implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
+6.44/DE/1                implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql the items of SQL/CLI (ISO/IEC 9075-3, 7.1), and SEARCH PATTERN ESCAPE, which GetInfo reads from it
+6.44/DE/2                implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
+6.44/DE/3                implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
+6.44/DE/4                impl-defined vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql what the value means
 # 6.45, SQL_SIZING base table
-6.45                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.45/DE/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.45/DE/2                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.45/DE/3                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
-6.45/DE/4                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.45                     implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql
+6.45/DE/1                implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql the items of SQL/CLI (ISO/IEC 9075-3, 7.2)
+6.45/DE/2                implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql
+6.45/DE/3                implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql
+6.45/DE/4                impl-defined vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql what the limit is
 # 6.46, SQL_SIZING_PROFILES base table
 6.46                     n/a          - - enhanced documentation tables (F502)
 6.46/DE/1                n/a          - - enhanced documentation tables (F502)

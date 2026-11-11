@@ -301,6 +301,25 @@ fn test_information_schema_truncated_check_clause() {
 	assert row[3].is_null
 }
 
+// The DATA SOURCE NAME and SERVER NAME of SQL_IMPLEMENTATION_INFO are the path
+// of the database (which the SQL tests can't show, since it's different for
+// each one), and the DBMS VERSION for a release (which a test build isn't).
+fn test_sql_implementation_info() ! {
+	mut db := open(':memory:')!
+	defer {
+		db.close()
+	}
+	mut names := []string{}
+	for row in db.query("SELECT character_value FROM information_schema.sql_implementation_info WHERE implementation_info_id IN ('2', '13')")! {
+		names << row.get_string('CHARACTER_VALUE')!
+	}
+	assert names == [':memory:', ':memory:']
+
+	assert dbms_version('', '') == '00.00.0000'
+	assert dbms_version('v1.2.3', '2026-11-11') == '01.02.0003 v1.2.3 2026-11-11'
+	assert dbms_version('v12', '2026-11-11') == '12.00.0000 v12 2026-11-11'
+}
+
 // column_names is only used by vorm, so it's tested directly.
 fn test_table_column_names() ! {
 	mut db := open(':memory:')!

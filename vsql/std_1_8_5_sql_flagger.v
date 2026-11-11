@@ -1014,6 +1014,7 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // ISO/IEC 9075-11:2008(E), 5.21, COLUMNS view, Conformance Rules, 1, 2, 3 and 4
 // ISO/IEC 9075-11:2008(E), 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2008(E), 5.53, SQL_IMPLEMENTATION_INFO view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2008(E), 5.61, TABLES view, Conformance Rules, 1
 const information_schema_features = {
 	'COLUMNS':                       ['F391']
@@ -1022,6 +1023,7 @@ const information_schema_features = {
 	'COLUMNS.IS_UPDATABLE':          ['T111']
 	'KEY_COLUMN_USAGE':              ['F341', 'F391']
 	'REFERENTIAL_CONSTRAINTS':       ['F391']
+	'SQL_IMPLEMENTATION_INFO':       ['F391', 'F502']
 	'TABLES':                        ['F391']
 }
 

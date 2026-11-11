@@ -6,11 +6,14 @@ import vsql
 //
 // Get information about the implementation.
 //
-// vsql doesn't have the SQL_IMPLEMENTATION_INFO and SQL_SIZING views of the
-// INFORMATION_SCHEMA, so the values are the same as they would have, and
-// there's no implicit ExecDirect (General Rules, 4, 9, 10.a, 10.b and 10.c). A
-// maximum of 0 (zero) means that there isn't a limit. There are no
-// implementation-defined information types (General Rules, 10.p and 10.q).
+// The sizes and the implementation information are the rows of the SQL_SIZING
+// and SQL_IMPLEMENTATION_INFO views of the INFORMATION_SCHEMA (General Rules,
+// 10.a, 10.b and 10.c). They're read from vsql.sql_sizing() and
+// vsql.sql_implementation_info(), which the views are built from, rather than
+// by an implicit ExecDirect (General Rules, 4 and 9), so that GetInfo can't
+// start an SQL-transaction or fail. A maximum of 0 (zero) means that there
+// isn't a limit. There are no implementation-defined information types
+// (General Rules, 10.p and 10.q).
 // Cursors are a copy of the result, so CURSOR SENSITIVITY is INSENSITIVE
 // (General Rules, 10.e). There are no users, so USER NAME is a zero-length
 // string (General Rules, 10.n).
@@ -166,65 +169,43 @@ fn get_info(mut dbc Dbc, info_type i16, info_value voidptr, buffer_length i16, s
 // info_value_of is the value of an information type, or none if it's not one
 // of the codes.
 fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
-	return match int(info_type) {
-		// - 10.a. The sizes. A name is an <identifier>, which has up to 128
-		// characters, and a table has up to 1600 columns.
-		sql_maximum_catalog_name_length, sql_maximum_column_name_length,
-		sql_maximum_cursor_name_length, sql_maximum_identifier_length,
-		sql_maximum_schema_name_length, sql_maximum_table_name_length {
-			InfoValue(i16(128))
+	code := int(info_type)
+
+	// - 10.a. The SUPPORTED_VALUE of the SQL_SIZING row, which are all
+	// SMALLINT. Only the codes of Table 28 are information types.
+	if code < 25000 {
+		for item in vsql.sql_sizing() {
+			if item.id == code {
+				return InfoValue(i16(item.supported_value or { 0 }))
+			}
 		}
-		sql_maximum_columns_in_table {
-			InfoValue(i16(1600))
+	}
+
+	// - 10.b, 10.c. The CHARACTER_VALUE or INTEGER_VALUE of the
+	// SQL_IMPLEMENTATION_INFO row, whichever isn't NULL: 10.b reads CURSOR
+	// COMMIT BEHAVIOR and NULL COLLATION from CHARACTER_VALUE, but 7.1,
+	// "SQL_IMPLEMENTATION_INFO base table", has them in INTEGER_VALUE (and
+	// they're a SMALLINT in Table 28). The DATA SOURCE NAME and SERVER NAME are
+	// the ServerName of Connect (which is 'DEFAULT' for the default
+	// connection). An INTEGER_VALUE uses the codes of 7.1, which are different
+	// for two of them: DEFAULT TRANSACTION ISOLATION is a bit of Table 35 (1 to
+	// 4 are 1, 2, 4 and 8), and NULL COLLATION is one more (SQL_NC_HIGH is 1
+	// and SQL_NC_LOW is 2, see Annex A).
+	for item in vsql.sql_implementation_info(dbc.server_name) {
+		if item.id == code {
+			if s := item.character_value {
+				return InfoValue(s)
+			}
+			v := item.integer_value or { 0 }
+			return match code {
+				sql_default_transaction_isolation { InfoValue(int(1 << (v - 1))) }
+				sql_null_collation { InfoValue(i16(v + 1)) }
+				else { InfoValue(i16(v)) }
+			}
 		}
-		sql_maximum_columns_in_group_by, sql_maximum_columns_in_order_by,
-		sql_maximum_columns_in_select, sql_maximum_concurrent_activities,
-		sql_maximum_driver_connections, sql_maximum_stmt_octets, sql_maximum_stmt_octets_data,
-		sql_maximum_stmt_octets_schema, sql_maximum_tables_in_select,
-		sql_maximum_user_name_length {
-			InfoValue(i16(0))
-		}
-		// - 10.b. The implementation information. The DATA SOURCE NAME and
-		// SERVER NAME are the ServerName of Connect. vsql doesn't have
-		// collations, and NULLs sort before other values.
-		sql_catalog_name {
-			InfoValue('Y')
-		}
-		sql_collating_sequence {
-			InfoValue('')
-		}
-		sql_cursor_commit_behavior {
-			InfoValue(i16(sql_cb_preserve))
-		}
-		sql_data_source_name, sql_server_name {
-			InfoValue(dbc.server_name)
-		}
-		sql_dbms_name {
-			InfoValue('vsql')
-		}
-		sql_dbms_version {
-			InfoValue(dbms_version(vsql.version(), vsql.version_date()))
-		}
-		sql_null_collation {
-			InfoValue(i16(sql_nc_low))
-		}
-		sql_search_pattern_escape {
-			InfoValue(search_pattern_escape)
-		}
-		sql_special_characters {
-			InfoValue('')
-		}
-		// - 10.c. Regular identifiers are stored in upper case, and a
-		// transaction can include DDL.
-		sql_default_transaction_isolation {
-			InfoValue(int(sql_transaction_serializable))
-		}
-		sql_identifier_case {
-			InfoValue(i16(sql_ic_upper))
-		}
-		sql_transaction_capable {
-			InfoValue(i16(sql_tc_all))
-		}
+	}
+
+	return match code {
 		// - 10.d to 10.o. The deprecated information types.
 		sql_alter_table {
 			InfoValue(sql_at_add_column | sql_at_drop_column | sql_at_alter_column | sql_at_add_constraint | sql_at_drop_constraint)
@@ -260,19 +241,4 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 			none
 		}
 	}
-}
-
-// dbms_version is the DBMS VERSION for a version (such as "v1.2.3") and its
-// date: two digits, a period, two digits, a period, four digits, and then the
-// version and date themselves (see 7.1, "SQL_IMPLEMENTATION_INFO base table").
-fn dbms_version(version string, date string) string {
-	if version == '' {
-		return '00.00.0000'
-	}
-	parts := version.trim_left('v').split('.')
-	major := (parts[0] or { '0' }).int()
-	minor := (parts[1] or { '0' }).int()
-	patch := (parts[2] or { '0' }).int()
-
-	return '${major:02}.${minor:02}.${patch:04} ${version} ${date}'
 }

@@ -100,12 +100,24 @@ SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'T';
 -- flags: F391
 -- COL1: 1
 
+-- # SQL_IMPLEMENTATION_INFO needs F502 and F391 (5.53, Conformance Rules, 1
+-- # and 2).
+/* flags */
+SELECT CHARACTER_VALUE FROM INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO WHERE IMPLEMENTATION_INFO_ID = '17';
+-- flags: F391, F502
+-- CHARACTER_VALUE: vsql
+
 -- # The other views, and a table with the same name as a view in another
 -- # schema, can be referenced in Core SQL (other than the long schema name).
 /* flags */
 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME = 'T';
 -- flags: F391
 -- COL1: 1
+
+/* flags */
+SELECT SUPPORTED_VALUE FROM INFORMATION_SCHEMA.SQL_SIZING WHERE SIZING_ID = 30;
+-- flags: F391
+-- SUPPORTED_VALUE: 128
 
 /* flags */
 SELECT is_updatable, is_generated FROM columns;

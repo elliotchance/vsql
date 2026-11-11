@@ -1482,24 +1482,24 @@
 6.38/GR/2.a              implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/2.b              definition   - -
 6.38/GR/3                implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
-6.38/GR/4                n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/4.a              n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/4.b              n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
+6.38/GR/4                n/a          - - there's no implicit ExecDirect, the rows of the views are read directly and can't fail
+6.38/GR/4.a              n/a          - - there's no implicit ExecDirect, the rows of the views are read directly and can't fail
+6.38/GR/4.b              n/a          - - there's no implicit ExecDirect, the rows of the views are read directly and can't fail
 6.38/GR/5                definition   - -
 6.38/GR/6                implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/7                definition   - -
 6.38/GR/8                definition   - -
 6.38/GR/9                definition   - -
 6.38/GR/10               container    - -
-6.38/GR/10.a             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c 128 for names, 1600 columns in a table, otherwise 0 (zero) for no limit
-6.38/GR/10.a.i           n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/10.a.ii          n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/10.b             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the same values as SQL_IMPLEMENTATION_INFO would have
-6.38/GR/10.b.i           n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/10.b.ii          n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/10.c             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c SERIALIZABLE, upper case and DDL in transactions
-6.38/GR/10.c.i           n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
-6.38/GR/10.c.ii          n/a          - - there are no SQL_IMPLEMENTATION_INFO or SQL_SIZING views (#655), so there's no implicit ExecDirect
+6.38/GR/10.a             impl-defined libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c,tests/std_11_5_56_sql_sizing.sql the SUPPORTED_VALUE of SQL_SIZING: 128 for names, 1600 columns in a table, otherwise 0 (zero) for no limit
+6.38/GR/10.a.i           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the row of the view is read directly rather than by an implicit ExecDirect, so GetInfo doesn't start an SQL-transaction
+6.38/GR/10.a.ii          implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the row of the view is read directly rather than by an implicit ExecDirect, so GetInfo doesn't start an SQL-transaction
+6.38/GR/10.b             impl-defined libvsql/std_3_6_38_get_info.v,vsql/std_11_6_44_sql_implementation_info.v libvsql/std_3_6_38_get_info_test.c,tests/std_11_5_53_sql_implementation_info.sql the value of SQL_IMPLEMENTATION_INFO; NULL COLLATION and CURSOR COMMIT BEHAVIOR are an INTEGER_VALUE there, and NULL COLLATION is the SQL_NC_LOW code of Annex A
+6.38/GR/10.b.i           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the row of the view is read directly rather than by an implicit ExecDirect, so GetInfo doesn't start an SQL-transaction
+6.38/GR/10.b.ii          implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the row of the view is read directly rather than by an implicit ExecDirect, so GetInfo doesn't start an SQL-transaction
+6.38/GR/10.c             impl-defined libvsql/std_3_6_38_get_info.v,vsql/std_11_6_44_sql_implementation_info.v libvsql/std_3_6_38_get_info_test.c,tests/std_11_5_53_sql_implementation_info.sql the INTEGER_VALUE of SQL_IMPLEMENTATION_INFO: SERIALIZABLE (as its bit of Table 35), upper case and DDL in transactions
+6.38/GR/10.c.i           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the row of the view is read directly rather than by an implicit ExecDirect, so GetInfo doesn't start an SQL-transaction
+6.38/GR/10.c.ii          implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c the row of the view is read directly rather than by an implicit ExecDirect, so GetInfo doesn't start an SQL-transaction
 6.38/GR/10.d             container    - -
 6.38/GR/10.d.i           implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/10.d.ii          implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c

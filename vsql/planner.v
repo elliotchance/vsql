@@ -925,6 +925,7 @@ fn (mut o Plan) execute_scan(mut table TableOperation, end int) ![]Row {
 
 	mut rows := []Row{}
 	for {
+		table.conn.check_canceled()!
 		mut batch := scanner.next_rows(scan_batch_size)!
 		if batch.len == 0 {
 			break
@@ -1190,6 +1191,7 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	}
 
 	for row in rows {
+		o.conn.check_canceled()!
 		o.conn.begin_row()
 		if compiled.len == 0 {
 			for expr in o.exprs {

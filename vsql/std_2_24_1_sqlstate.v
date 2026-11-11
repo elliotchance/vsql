@@ -1099,6 +1099,18 @@ fn sqlstate_54000(msg string) IError {
 	}
 }
 
+// query canceled: the statement was stopped by Connection.cancel.
+struct SQLState57014 {
+	SQLState
+}
+
+fn sqlstate_57014() IError {
+	return SQLState57014{
+		code: sqlstate_to_int('57014')
+		msg:  'query canceled'
+	}
+}
+
 // io error: reading, writing or locking a file failed.
 struct SQLState58030 {
 	SQLState

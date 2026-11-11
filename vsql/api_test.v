@@ -704,6 +704,31 @@ fn test_query_from_another_thread() ! {
 	assert db.query('SELECT * FROM t')!.rows.len == 2
 }
 
+// cancel stops a statement that's executing on another thread, and does nothing
+// when there isn't one.
+fn test_cancel() ! {
+	mut db := open(':memory:')!
+	assert !db.cancel()
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	for _ in 0 .. 10 {
+		db.query('INSERT INTO t SELECT x FROM t')!
+	}
+	assert !db.cancel()
+
+	t := spawn fn (mut db Connection) string {
+		return query_error(mut db, 'SELECT COUNT(*) FROM t AS a JOIN t AS b ON a.x + b.x < 0')
+	}(mut db)
+	for !db.cancel() {
+		time.sleep(time.millisecond)
+	}
+	assert t.wait() == '57014 query canceled'
+
+	// The next statement isn't canceled.
+	assert !db.cancel()
+	assert db.query('SELECT * FROM t')!.rows.len == 1024
+}
+
 // The maximum length of the result of LISTAGG is too long to reach in a test, so
 // a much smaller one is used to test ON OVERFLOW.
 fn test_listagg_overflow() ! {

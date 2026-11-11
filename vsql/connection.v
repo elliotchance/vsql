@@ -6,6 +6,7 @@ module vsql
 import builtin.closure
 import os
 import sync
+import sync.stdatomic
 import time
 
 // The concepts are described by:
@@ -134,6 +135,10 @@ mut:
 	// default_isolation_level is ConnectionOptions.isolation_level, see
 	// enduring_characteristics.
 	default_isolation_level IsolationLevel = .serializable
+	// cancel_state is whether a statement is executing (statement_running) and
+	// whether it's been asked to stop (statement_canceled), see cancel. It's
+	// changed by other threads, so it's only used atomically.
+	cancel_state &stdatomic.AtomicVal[u32] = stdatomic.new_atomic[u32](statement_idle)
 pub mut:
 	// condition_area_limit is the most warnings that are kept during the current
 	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
@@ -655,6 +660,34 @@ pub fn (mut conn Connection) query(sql_stmt string) !Result {
 	mut prepared := conn.prepare(sql_stmt)!
 
 	return prepared.query(map[string]Value{})
+}
+
+// The values of Connection.cancel_state.
+const statement_idle = u32(0)
+const statement_running = u32(1)
+const statement_canceled = u32(2)
+
+// cancel asks the statement that's executing on the connection (on another
+// thread) to stop, and returns true if there was one. It's the only function
+// that may be called while the connection is being used by another thread. The
+// statement fails soon after with a 57014 query canceled, which (like any other
+// error) leaves the database as it was before the statement. Nothing happens
+// if a statement isn't executing, so a statement that starts after cancel
+// returns isn't canceled.
+pub fn (conn &Connection) cancel() bool {
+	mut state := conn.cancel_state
+
+	return state.compare_and_swap(statement_running, statement_canceled)
+}
+
+// check_canceled raises 57014 query canceled if the statement that's executing
+// has been canceled. It's checked for each row (or batch of rows) that's
+// processed, so that a long statement stops soon after it's canceled.
+fn (conn &Connection) check_canceled() ! {
+	mut state := conn.cancel_state
+	if state.load() == statement_canceled {
+		return sqlstate_57014()
+	}
 }
 
 // in_transaction is true while START TRANSACTION is active. Every catalog is in

@@ -199,6 +199,13 @@ pub fn open(path string) !&Connection {
 //
 // See ConnectionOptions and default_connection_options().
 pub fn open_database(path string, options ConnectionOptions) !&Connection {
+	return open_database_named(path, catalog_name_from_path(path), options)
+}
+
+// open_database_named is open_database with a catalog name that doesn't come
+// from the file name. The SQL tests use it for a file whose catalog is called
+// ":memory:", since a file can't be named ":memory:.vsql" on Windows.
+fn open_database_named(path string, catalog_name string, options ConnectionOptions) !&Connection {
 	mut init_schema := false
 
 	// If the file doesn't exist we initialize it and reopen it.
@@ -211,7 +218,7 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 		init_schema = true
 	}
 
-	mut conn := open_connection(path, options)!
+	mut conn := open_connection(path, catalog_name, options)!
 	if init_schema {
 		// The file is kept, but the connection must release its session lock.
 		conn.query('CREATE SCHEMA public') or {
@@ -239,9 +246,7 @@ pub fn catalog_name_from_path(path string) string {
 // no statement that's being executed.
 //
 // ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 13, 13.f, 13.g, 13.j, 13.k and 13.m
-fn open_connection(path string, options ConnectionOptions) !&Connection {
-	catalog_name := catalog_name_from_path(path)
-
+fn open_connection(path string, catalog_name string, options ConnectionOptions) !&Connection {
 	mut conn := &Connection{
 		current_catalog:         catalog_name
 		current_schema:          default_schema_name

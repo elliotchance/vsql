@@ -260,26 +260,92 @@ fn start_sql_test_server_with(options ServerOptions) !&Server {
 	return server
 }
 
-// run_in_child runs f in a child process, and returns its exit code and what it
-// wrote to stderr. It's for code that stops the process, such as a panic, which
-// can't be recovered from. The child's coverage is still counted, because it's
-// written when the child exits.
-fn run_in_child(f fn ()) !(int, string) {
-	stderr_path := os.join_path(os.temp_dir(), 'vsql-sql-test-child-${os.getpid()}.txt')
-	pid := os.fork()
-	if pid == 0 {
-		stderr_file := os.create(stderr_path) or { exit(100) }
-		C.dup2(stderr_file.fd, 2)
-		f()
-		exit(0)
+// run_in_child runs the child function with the name (see child_function) in a
+// child process, and returns its exit code and what it wrote to stderr. It's for
+// code that stops the process, such as a panic, which can't be recovered from.
+// The child's coverage is still counted, because it's written when the child
+// exits.
+//
+// Windows has no fork, so there the child is this test program again, with
+// VSQL_TEST_CHILD set to the name, which only runs that function (see
+// testsuite_begin in storage_test.v). What the child writes to stdout is also in
+// the result, since os.exec can't keep them apart, and the line endings are \r\n.
+fn run_in_child(name string) !(int, string) {
+	$if windows {
+		os.setenv('VSQL_TEST_CHILD', name, true)
+		result := os.exec([os.executable()])
+		os.unsetenv('VSQL_TEST_CHILD')
+
+		return result.exit_code, result.output.replace('\r\n', '\n')
+	} $else {
+		stderr_path := os.join_path(os.temp_dir(), 'vsql-sql-test-child-${os.getpid()}.txt')
+		pid := os.fork()
+		if pid == 0 {
+			stderr_file := os.create(stderr_path) or { exit(100) }
+			C.dup2(stderr_file.fd, 2)
+			child_function(name)()
+			exit(0)
+		}
+
+		mut status := 0
+		C.waitpid(pid, &status, 0)
+		stderr := os.read_file(stderr_path)!
+		os.rm(stderr_path)!
+
+		return (status >> 8) & 0xff, stderr
 	}
+}
 
-	mut status := 0
-	C.waitpid(pid, &status, 0)
-	stderr := os.read_file(stderr_path)!
-	os.rm(stderr_path)!
-
-	return (status >> 8) & 0xff, stderr
+// child_function is the code that run_in_child runs in a child process.
+fn child_function(name string) fn () {
+	return match name {
+		'catalog' {
+			fn () {
+				mut db := open(':memory:') or { panic(err) }
+				db.current_catalog = 'NOPE'
+				_ := db.catalog()
+			}
+		}
+		'catalog_for' {
+			fn () {
+				mut db := open(':memory:') or { panic(err) }
+				_ := db.catalog_for(Identifier{ catalog_name: 'NOPE' })
+			}
+		}
+		'yy_as' {
+			fn () {
+				_ := yy_as[string](YYSym(true))
+			}
+		}
+		'yy_unbox' {
+			fn () {
+				_ := yy_unbox[Stmt](YYSym(yy_box(Table{})))
+			}
+		}
+		'page_add' {
+			fn () {
+				mut page := new_page(kind_leaf, 64)
+				page.add(new_page_object('k'.bytes(), 1, 0, []u8{len: 100})) or {}
+			}
+		}
+		'crash_point' {
+			fn () {
+				mut state := unsafe { &CrashPoint(crash_point_state) }
+				unsafe {
+					*state = CrashPoint{
+						at: 2
+					}
+				}
+				crash_point()
+				eprintln('first crash point passed')
+				crash_point()
+				eprintln('second crash point passed')
+			}
+		}
+		else {
+			panic('unknown child function: ${name}')
+		}
+	}
 }
 
 // A panic is for something that can't happen, so these break an invariant

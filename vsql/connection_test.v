@@ -2,6 +2,7 @@ module vsql
 
 import os
 import sync
+import time
 
 const verbose = os.getenv('VERBOSE') != ''
 
@@ -15,6 +16,10 @@ fn test_concurrent_writes() ! {
 	// file within multiple goroutines. See ConnectionOptions.
 	mut options := default_connection_options()
 	options.mutex = sync.new_rwmutex()
+
+	// Each INSERT waits for the other connections' transactions, which can take
+	// longer than the default lock_timeout on a slow machine.
+	options.lock_timeout = time.minute
 
 	mut db := open_database(file_name, options)!
 	db.query('CREATE TABLE foo (x INT)')!

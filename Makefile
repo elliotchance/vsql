@@ -67,6 +67,15 @@ LIBVSQL_RPATH = -Wl,-rpath,$(CURDIR)/bin
 endif
 LIBVSQL_C ?= cc
 LIBVSQL_CPP ?= c++
+# VSQL_BIN is the vsql binary that the CLI tests run and that compiles the
+# modules. On Windows it's bin/vsql.exe, which CI builds with MinGW (see
+# ci.yml), the same as libvsql.dll.
+ifeq ($(OS),Windows_NT)
+VSQL_BIN ?= bin/vsql.exe
+else
+VSQL_BIN ?= bin/vsql
+endif
+
 # The tests use POSIX threads, except on Windows.
 ifneq ($(OS),Windows_NT)
 LIBVSQL_PTHREAD = -pthread
@@ -316,16 +325,24 @@ uncovered_lines = awk -v root="$(CURDIR)/" ' \
 
 # CLI Tests
 
-cli-test: bin/vsql
+# On Windows the tests run in an MSYS shell (such as Git Bash), where mktemp
+# makes paths such as /tmp/tmp.1234 that vsql.exe can't open. TMPDIR is changed
+# to the same folder as a Windows path (such as C:/Users/.../Temp), which both
+# understand.
+ifeq ($(OS),Windows_NT)
+CLI_TEST_ENV = TMPDIR="$$(cygpath -m "$${TMPDIR:-/tmp}")"
+endif
+
+cli-test: $(VSQL_BIN)
 	for f in `ls cmd/tests/*.sh`; do \
-		echo $$f; VSQL=bin/vsql ./$$f || exit 1; \
+		echo $$f; $(CLI_TEST_ENV) VSQL=$(VSQL_BIN) ./$$f || exit 1; \
 	done
 
-concurrency-test: bin/vsql
-	VSQL=bin/vsql CONNECTIONS=$(CONNECTIONS) DURATION=$(DURATION) MAX_FAILURE_PERCENT=$(MAX_FAILURE_PERCENT) scripts/concurrency-test.sh
+concurrency-test: $(VSQL_BIN)
+	$(CLI_TEST_ENV) VSQL=$(VSQL_BIN) CONNECTIONS=$(CONNECTIONS) DURATION=$(DURATION) MAX_FAILURE_PERCENT=$(MAX_FAILURE_PERCENT) scripts/concurrency-test.sh
 
-cmd/tests/%: bin/vsql
-	VSQL=bin/vsql ./cmd/tests/$*.sh
+cmd/tests/%: $(VSQL_BIN)
+	$(CLI_TEST_ENV) VSQL=$(VSQL_BIN) ./cmd/tests/$*.sh
 
 # App Tests
 
@@ -353,10 +370,6 @@ libvsql-example: $(LIBVSQL)
 	bin/libvsql-example
 	$(LIBVSQL_CXX) libvsql/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-example-cpp
 	bin/libvsql-example-cpp
-
-# VSQL_BIN is the vsql binary that compiles the modules (bin/vsql.exe on
-# Windows, where it isn't built by this Makefile).
-VSQL_BIN ?= bin/vsql
 
 # module-example compiles libvsql/module/example.mod (see
 # docs/language-c.rst) and runs example_main.c with it. The generated C

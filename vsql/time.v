@@ -404,9 +404,10 @@ fn (t Time) str_date() string {
 }
 
 // str_time returns the time portion, such as '12:34:56'. This does not include
-// fractional seconds or time zone information.
+// fractional seconds or time zone information. It doesn't use strftime because
+// the C library on Windows returns an empty string for years before 1900.
 fn (t Time) str_time() string {
-	return t.t.strftime('%H:%M:%S')
+	return '${t.t.hour:02}:${t.t.minute:02}:${t.t.second:02}'
 }
 
 // str_full_time returns the time, fractional seconds (rounded to prec) and time

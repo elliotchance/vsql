@@ -162,42 +162,34 @@ fn test_full_fsync() ! {
 	assert result.next()?.get_int('C')! == 3
 }
 
-fn test_panics() ! {
-	$if windows {
-		return
+// testsuite_begin runs the child function, and nothing else, in a child process
+// on Windows (see run_in_child).
+fn testsuite_begin() {
+	name := os.getenv('VSQL_TEST_CHILD')
+	if name != '' {
+		child_function(name)()
+		exit(0)
 	}
+}
 
-	mut code, mut stderr := run_in_child(fn () {
-		mut db := open(':memory:') or { panic(err) }
-		db.current_catalog = 'NOPE'
-		_ := db.catalog()
-	})!
+fn test_panics() ! {
+	mut code, mut stderr := run_in_child('catalog')!
 	assert code in panic_exit_codes
 	assert stderr.contains('unknown catalog: NOPE')
 
-	code, stderr = run_in_child(fn () {
-		mut db := open(':memory:') or { panic(err) }
-		_ := db.catalog_for(Identifier{ catalog_name: 'NOPE' })
-	})!
+	code, stderr = run_in_child('catalog_for')!
 	assert code in panic_exit_codes
 	assert stderr.contains('unknown catalog: NOPE')
 
-	code, stderr = run_in_child(fn () {
-		_ := yy_as[string](YYSym(true))
-	})!
+	code, stderr = run_in_child('yy_as')!
 	assert code in panic_exit_codes
 	assert stderr.contains('V panic: expected string')
 
-	code, stderr = run_in_child(fn () {
-		_ := yy_unbox[Stmt](YYSym(yy_box(Table{})))
-	})!
+	code, stderr = run_in_child('yy_unbox')!
 	assert code in panic_exit_codes
 	assert stderr.contains('V panic: expected vsql.Stmt')
 
-	code, stderr = run_in_child(fn () {
-		mut page := new_page(kind_leaf, 64)
-		page.add(new_page_object('k'.bytes(), 1, 0, []u8{len: 100})) or {}
-	})!
+	code, stderr = run_in_child('page_add')!
 	assert code in panic_exit_codes
 	assert stderr.contains('page cannot fit object of 124 b in page using 16 b')
 }
@@ -205,24 +197,10 @@ fn test_panics() ! {
 // crash_point stops the process the VSQL_CRASH_AT'th time it's reached, without
 // flushing anything, see cmd/tests/crash-recovery.sh.
 fn test_crash_point() ! {
-	$if windows {
-		return
-	}
-
-	code, stderr := run_in_child(fn () {
-		mut state := unsafe { &CrashPoint(crash_point_state) }
-		unsafe {
-			*state = CrashPoint{
-				at: 2
-			}
-		}
-		crash_point()
-		eprintln('first crash point passed')
-		crash_point()
-		eprintln('second crash point passed')
-	})!
+	code, stderr := run_in_child('crash_point')!
 	assert code == 1
-	assert stderr == 'first crash point passed\n'
+	assert stderr.contains('first crash point passed\n')
+	assert !stderr.contains('second crash point passed')
 }
 
 // crc32_update reads 8 bytes at a time, so it's checked against hash.crc32 for

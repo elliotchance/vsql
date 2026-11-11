@@ -146,12 +146,17 @@ fn test_direct_query_isolation() ! {
 	a.direct('COMMIT;')!
 
 	// Queries don't conflict with each other, and don't create the isolation
-	// file, which may not be possible.
+	// file, which may not be possible. A connection keeps the file open, which
+	// stops it being removed on Windows, so they're reopened.
+	a.close()
+	b.close()
+	os.rm(isolation_path(path))!
+	a = open_database(path, options)!
+	b = open_database(path, options)!
 	mut c := open_database(path, options)!
 	defer {
 		c.close()
 	}
-	os.rm(isolation_path(path))!
 	a.direct('SELECT * FROM t;')!
 	c.direct('SELECT * FROM t;')!
 	a.direct('SELECT * FROM t;')!

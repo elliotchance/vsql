@@ -134,6 +134,43 @@ fn test_server_empty_query() ! {
 	assert client.query('VALUES 1;')!.rows == ['COL1: 1']
 }
 
+// A client that disconnects in the middle of a transaction is rolled back. If
+// the rollback fails, the server only logs it.
+fn test_server_disconnect_rollback_fails() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-server-rollback-${os.getpid()}')
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+
+	mut server := start_sql_test_server_with(ServerOptions{
+		db_file: os.join_path(dir, 'test.vsql')
+	})!
+	defer {
+		server.stop() or {}
+	}
+
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	client.query('CREATE TABLE t (x INT)')!
+	client.query('START TRANSACTION')!
+	client.query('INSERT INTO t (x) VALUES (1)')!
+
+	// The rollback locks the file, which fails once the client has gone.
+	arm_fault('lock', 1)!
+	defer {
+		disarm_faults()
+	}
+	client.close()
+	mut faults := unsafe { &FaultPoints(fault_points) }
+	for _ in 0 .. 500 {
+		if 'lock' !in faults.armed {
+			break
+		}
+		time.sleep(10 * time.millisecond)
+	}
+	assert 'lock' !in faults.armed
+}
+
 fn test_server_client_errors() ! {
 	mut server := start_sql_test_server_with(ServerOptions{
 		connect: fn (database string) !&Connection {
@@ -179,7 +216,21 @@ fn test_server_client_errors() ! {
 
 // verbose prints every message in and out of the server.
 fn test_server_verbose() ! {
+	// stdout can't be captured the same way on Windows, so the messages are
+	// only printed there.
 	$if windows {
+		mut server := start_sql_test_server_with(ServerOptions{
+			connect: fn (database string) !&Connection {
+				return open(':memory:')
+			}
+			verbose: true
+		})!
+		defer {
+			server.stop() or {}
+		}
+		mut client := new_pg_test_client(server.port()!, 'db')!
+		assert client.query('VALUES 1')!.rows == ['COL1: 1']
+		client.close()
 		return
 	}
 

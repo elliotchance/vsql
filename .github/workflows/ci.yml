@@ -258,8 +258,8 @@ jobs:
           name: release-macos-${{ matrix.arch }}
           path: vsql-*-macos-${{ matrix.arch }}.zip
 
-  # The test suites don't run on Windows yet, so this builds the binary and runs
-  # some statements, a short benchmark and the server with it.
+  # Windows runs the same tests as the other OSs, with the binaries built with
+  # MinGW (the Makefile uses bin/vsql.exe for the tests there).
   windows:
     name: Windows (${{ matrix.name }})
     needs: v
@@ -276,9 +276,10 @@ jobs:
             v_arch: arm64
             runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
-    # About twice the longest run on Windows, so that a test that hangs fails the
-    # job instead of holding a runner for GitHub's limit of 6 hours.
-    timeout-minutes: 60
+    # About twice the longest run on Windows (ARM64 takes over an hour), so that
+    # a test that hangs fails the job instead of holding a runner for GitHub's
+    # limit of 6 hours.
+    timeout-minutes: 150
     defaults:
       run:
         shell: bash
@@ -322,6 +323,8 @@ jobs:
           v -n -nocache -prod -cc gcc -showcc cmd/vsql-cli -o bin/vsql.exe | tee "$RUNNER_TEMP/showcc/vsql.showcc"
           make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
           .github/workflows/hello-test.sh bin/vsql.exe
+          git checkout vsql/version.v
+          touch bin/*
 
       - name: Zip binary
         shell: pwsh
@@ -340,12 +343,6 @@ jobs:
           scripts/amalgamation.sh generate amalgamation-windows-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
           scripts/amalgamation.sh check amalgamation-windows-${{ matrix.v_arch }}
 
-      # The programs are built in bin/, next to libvsql.dll, since Windows has
-      # no rpath.
-      - name: Run libvsql tests
-        run: |
-          make libvsql-test libvsql-example module-test module-example embed-example embed-test VSQL_BIN=bin/vsql.exe
-
       # psql is used by the server tests. PostgreSQL is installed on the x86-64
       # runner (but isn't on the PATH), and not on the ARM64 one. choco succeeds
       # even when it can't reach its feed and installs nothing, so the install
@@ -356,10 +353,18 @@ jobs:
           .github/workflows/retry.sh sh -c "choco install postgresql17 --no-progress -y --params '/Password:postgres' && test -f 'C:/Program Files/PostgreSQL/17/bin/psql.exe'"
           echo "PGBIN=C:\Program Files\PostgreSQL\17\bin" >> $GITHUB_ENV
 
+      # The C programs that use libvsql are built in bin/, next to
+      # libvsql.dll, since Windows has no rpath.
+      #
+      # On ARM64, V builds without -prod with the x86-64 tcc that setup-v.sh
+      # downloads, and those programs crash under emulation (even V's own test
+      # runner), so everything is built with llvm-mingw's clang instead.
       - name: Run tests
+        env:
+          VFLAGS: ${{ matrix.arch == 'arm64' && '-cc clang' || '' }}
         run: |
           export PATH="$(cygpath -u "$PGBIN"):$PATH"
-          .github/workflows/windows-test.sh bin/vsql.exe
+          make -k test
 
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7

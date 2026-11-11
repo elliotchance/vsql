@@ -57,6 +57,16 @@ COMMIT;
 -- msg: CREATE TABLE 1
 -- error 2D000: invalid transaction termination
 
+-- # The same when the file can't be opened for writing (it was opened for
+-- # reading first).
+/* fault open 2 */
+START TRANSACTION;
+CREATE TABLE t (x INT);
+COMMIT;
+-- error 58030: open failed (fault injected by test)
+-- msg: CREATE TABLE 1
+-- error 2D000: invalid transaction termination
+
 -- # Opening, locking or reading the file can fail for reads and writes. The
 -- # next statement opens the file again.
 CREATE TABLE t (x INT);

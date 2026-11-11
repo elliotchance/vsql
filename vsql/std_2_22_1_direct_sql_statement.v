@@ -29,16 +29,16 @@ pub:
 // committed or rolled back. An empty result of a query also has the warning
 // 02000 (no data). A schema statement and a data statement can be in the same
 // SQL-transaction. EXPLAIN is transaction-initiating, like the statement it
-// explains. A query can't have an <updatability clause>, since that's only
-// part of a DECLARE CURSOR.
+// explains. A query can't have an <updatability clause> (see
+// check_direct_query).
 //
 // ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 1, 5.c.ii, 5.c.vi, 7, 8.a and 9
-// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 2
 pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Result {
 	text := direct_statement_text(sql_stmt)!
 	tokens := tokenize(text)!
 	mut prepared := conn.parse(text)!
 	check_direct_parameters(tokens)!
+	check_direct_query(prepared.stmt)!
 
 	// The SQL-transaction has the characteristics of a SET TRANSACTION. Each
 	// constraint has its initial constraint mode, rather than immediate.
@@ -119,8 +119,9 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 // ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Conformance Rules, 1
 pub fn direct_features(sql_stmt string) ![]string {
 	mut stack := []YYSymType{}
-	_, _, tokens, features := parse_sql(direct_statement_text(sql_stmt)!, mut stack)!
+	stmt, _, tokens, features := parse_sql(direct_statement_text(sql_stmt)!, mut stack)!
 	check_direct_parameters(tokens)!
+	check_direct_query(stmt)!
 
 	return unique_features(features, 'B021')
 }
@@ -136,6 +137,16 @@ fn direct_statement_text(sql_stmt string) !string {
 	}
 
 	return statements[0]
+}
+
+// check_direct_query is an error for a query that has an <updatability
+// clause>, which is only for a cursor (see PreparedStmt.open_cursor).
+//
+// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 2
+fn check_direct_query(stmt Stmt) ! {
+	if stmt is QueryExpression && stmt.updatability != none {
+		return sqlstate_42601('FOR READ ONLY and FOR UPDATE can only be used for a cursor')
+	}
 }
 
 // check_direct_parameters is an error for a "?" or a host parameter, since

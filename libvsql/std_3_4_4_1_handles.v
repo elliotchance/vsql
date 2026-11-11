@@ -105,8 +105,11 @@ mut:
 	is_query    bool
 	has_cursor  bool
 	// dynamic_cursor is the name of the cursor of the connection (see
-	// PreparedStmt.open_cursor) while a query's cursor is open, so a positioned
-	// DELETE or UPDATE of another statement can change its current row.
+	// PreparedStmt.open_cursor) from when a query's cursor is opened until it's
+	// destroyed, so a positioned DELETE or UPDATE of another statement can
+	// change its current row. While it's closed, it's still declared, so a
+	// positioned DELETE or UPDATE is an invalid cursor state, rather than an
+	// invalid cursor name.
 	dynamic_cursor string
 	// prepared is the statement prepared by Prepare, if any, and the
 	// DYNAMIC_FUNCTION and DYNAMIC_FUNCTION_CODE that identify it.
@@ -187,12 +190,17 @@ fn new_handle() i64 {
 	return 0
 }
 
+// close_cursor closes the cursor of a statement (if it's open). The cursor of
+// the connection is closed too, but it's still declared until the cursor is
+// destroyed (see destroy_cursor).
+//
+// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 6
+// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 6
 fn (mut stmt Stmt) close_cursor() {
 	if stmt.dynamic_cursor != '' {
 		if mut conn := stmt_connection(stmt) {
-			conn.remove_cursor(stmt.dynamic_cursor)
+			conn.close_cursor(stmt.dynamic_cursor)
 		}
-		stmt.dynamic_cursor = ''
 	}
 	stmt.cursor = none
 	stmt.rows = []
@@ -210,6 +218,7 @@ fn (mut stmt Stmt) close_cursor() {
 // ISO/IEC 9075-3:2003(E), 6.50, Prepare, General Rules, 10
 fn (mut stmt Stmt) destroy_cursor() {
 	stmt.close_cursor()
+	stmt.remove_dynamic_cursor()
 	if !stmt.has_cursor {
 		return
 	}
@@ -224,6 +233,17 @@ fn (mut stmt Stmt) destroy_cursor() {
 				}
 			}
 		}
+	}
+}
+
+// remove_dynamic_cursor removes the cursor of the connection (see
+// dynamic_cursor), so that it doesn't exist any more.
+fn (mut stmt Stmt) remove_dynamic_cursor() {
+	if stmt.dynamic_cursor != '' {
+		if mut conn := stmt_connection(stmt) {
+			conn.remove_cursor(stmt.dynamic_cursor)
+		}
+		stmt.dynamic_cursor = ''
 	}
 }
 

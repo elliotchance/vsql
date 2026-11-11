@@ -579,6 +579,9 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		QueryExpression {
+			// A query without a cursor is the same as a <direct select
+			// statement: multiple rows>.
+			check_direct_query(stmt)!
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

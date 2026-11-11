@@ -15,6 +15,11 @@ struct QueryExpression {
 	fetch  ?ValueSpecification
 	offset ?ValueSpecification
 	order  []SortSpecification
+	// updatability is the <updatability clause> of a <dynamic select statement>
+	// (see cursor_specification), which is only used when it's opened as a
+	// cursor (see PreparedStmt.open_cursor). It's always none for any other
+	// query, including a subquery.
+	updatability ?UpdatabilityClause
 }
 
 fn (e QueryExpression) pstr(params map[string]Value) string {

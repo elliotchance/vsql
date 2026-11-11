@@ -385,7 +385,11 @@ PROCEDURE upd2 (SQLSTATE); UPDATE t AS u SET y = u.y WHERE CURRENT OF "c";',
 	assert module_error(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :y; PROCEDURE p (SQLSTATE); OPEN c;') == 'syntax error: procedure p: host parameter :y is not declared'
 	assert module_error(cursor_header + 'COMMIT; DECLARE C CURSOR FOR VALUES 2;') == 'syntax error: cursor C is declared more than once'
 	assert module_error(module_header + 'DECLARE c CURSOR FOR VALUES ?; PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: a module cannot contain a dynamic parameter (?), use a host parameter (:name)'
-	assert module_error(module_header + 'DECLARE c CURSOR FOR VALUES 1 FOR READ ONLY; PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: cursor C: FOR READ ONLY and FOR UPDATE are not supported in a module'
+	// The <updatability clause> is part of the query that OPEN executes (see
+	// PreparedStmt.open_cursor).
+	updatable := compile_module(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF x; PROCEDURE p (SQLSTATE); OPEN c;',
+		'm')!
+	assert updatable.source.contains(', "SELECT x FROM t FOR UPDATE OF x", 0, ')
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT; DECLARE c CURSOR FOR VALUES 1; PROCEDURE q (SQLSTATE);') == 'syntax error: a module must end with a procedure that has a statement'
 	assert module_error(module_header + 'DECLARE c CURSOR VALUES 1; PROCEDURE p (SQLSTATE); COMMIT;').starts_with('syntax error')
 

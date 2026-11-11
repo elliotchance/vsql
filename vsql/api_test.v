@@ -556,8 +556,8 @@ fn test_column_unnamed() {
 }
 
 // A prepared positioned UPDATE is checked like any other. A cursor opened by
-// PreparedStmt.open_cursor (a dynamic cursor, for the SQL/CLI and a module) has
-// no <updatability clause>, so it isn't updatable if it's ordered, and a sort
+// PreparedStmt.open_cursor (a dynamic cursor, for the SQL/CLI and a module)
+// without an <updatability clause> isn't updatable if it's ordered, and a sort
 // key column can't be assigned through it.
 fn test_positioned_update_of_sort_key() ! {
 	mut db := open(':memory:')!
@@ -655,6 +655,103 @@ fn test_open_cursor() ! {
 		'?1': new_integer_value(0)
 	}) or { assert err.code() == sqlstate_to_int('24000') }
 	assert all.open_cursor('D', true, {})!.rows.len == 2
+}
+
+// A query opened by PreparedStmt.open_cursor can have an <updatability
+// clause>. Without a cursor, it's a syntax error.
+fn test_open_cursor_updatability() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INTEGER, y INTEGER)')!
+	db.query('INSERT INTO t (x, y) VALUES (1, 2)')!
+	db.query('START TRANSACTION')!
+
+	// FOR READ ONLY isn't updatable, even though the query is.
+	mut read_only := db.prepare('SELECT x, y FROM t FOR READ ONLY')!
+	read_only.open_cursor('R', false, {})!
+	db.position_cursor('R', 0)!
+	mut failed := false
+	db.query('DELETE FROM t WHERE CURRENT OF r') or {
+		failed = true
+		assert err.code() == sqlstate_to_int('34000')
+	}
+	assert failed
+
+	// FOR UPDATE OF only allows the columns in the list.
+	mut update_y := db.prepare('SELECT x, y FROM t FOR UPDATE OF y')!
+	update_y.open_cursor('U', false, {})!
+	db.position_cursor('U', 0)!
+	failed = false
+	db.query('UPDATE t SET x = 5 WHERE CURRENT OF u') or {
+		failed = true
+		assert err.code() == sqlstate_to_int('42601')
+	}
+	assert failed
+	assert db.query('UPDATE t SET y = 5 WHERE CURRENT OF u')!.msg == 'UPDATE 1'
+
+	// FOR UPDATE makes an ordered query updatable (F831), but the query must be
+	// simply updatable.
+	mut ordered := db.prepare('SELECT x, y FROM t ORDER BY x FOR UPDATE')!
+	ordered.open_cursor('O', false, {})!
+	db.position_cursor('O', 0)!
+	assert db.query('DELETE FROM t WHERE CURRENT OF o')!.msg == 'DELETE 1'
+	mut grouped := db.prepare('SELECT x FROM t GROUP BY x FOR UPDATE')!
+	failed = false
+	grouped.open_cursor('G', false, {}) or {
+		failed = true
+		assert err.code() == sqlstate_to_int('42601')
+	}
+	assert failed
+
+	for sql in ['SELECT x FROM t FOR READ ONLY', 'SELECT x FROM t FOR UPDATE'] {
+		failed = false
+		db.query(sql) or {
+			failed = true
+			assert err.msg() == 'syntax error: FOR READ ONLY and FOR UPDATE can only be used for a cursor'
+		}
+		assert failed
+		failed = false
+		db.direct(sql + ';') or {
+			failed = true
+			assert err.code() == sqlstate_to_int('42601')
+		}
+		assert failed
+		failed = false
+		direct_features(sql + ';') or {
+			failed = true
+			assert err.code() == sqlstate_to_int('42601')
+		}
+		assert failed
+	}
+}
+
+// A closed cursor (of the SQL/CLI) is still declared until it's removed, so a
+// positioned DELETE is an invalid cursor state, rather than an invalid cursor
+// name.
+fn test_close_cursor() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INTEGER)')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	db.query('START TRANSACTION')!
+
+	mut stmt := db.prepare('SELECT x FROM t')!
+	stmt.open_cursor('C', false, {})!
+	db.position_cursor('C', 0)!
+	db.close_cursor('C')
+	mut failed := false
+	db.query('DELETE FROM t WHERE CURRENT OF c') or {
+		failed = true
+		assert err.code() == sqlstate_to_int('24000')
+	}
+	assert failed
+
+	db.remove_cursor('C')
+	db.close_cursor('C')
+	failed = false
+	db.query('DELETE FROM t WHERE CURRENT OF c') or {
+		failed = true
+		assert err.code() == sqlstate_to_int('34000')
+	}
+	assert failed
 }
 
 // constraint_violated is the constraint that a statement violated.

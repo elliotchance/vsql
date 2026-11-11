@@ -185,6 +185,11 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// same instant (General Rules, 8.a.iii), which is #742.
 	is_select := stmt.diag.dynamic_function == 'SELECT CURSOR'
 	name := if is_select { normalize_cursor_name(stmt.get_cursor_name()) } else { '' }
+	// A cursor that was closed (by CloseCursor, for example) is still declared,
+	// and is replaced by the cursor that's opened.
+	if is_select {
+		stmt.remove_dynamic_cursor()
+	}
 	conn.clear_warnings()
 	result := query_statement(mut prepared, name, stmt.cursor_holdable == sql_holdable,
 		params) or {

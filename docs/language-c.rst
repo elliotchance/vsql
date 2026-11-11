@@ -301,7 +301,8 @@ declared in the module, before the procedures that use it:
 
 .. code-block:: text
 
-   DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <query> ;
+   DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <query>
+     [ FOR READ ONLY | FOR UPDATE [ OF <column name> [, <column name> ]... ] ] ;
 
 Exactly one procedure must open the cursor, and the query can use its
 parameters. The procedures use the cursor with these statements (see
@@ -320,8 +321,9 @@ as ``SELECT ... INTO``. After the last row, the ``SQLSTATE`` is ``02000`` (no
 data). A cursor that isn't open (or that's opened when it's already open) is
 ``24000`` (invalid cursor state). Each SQL-connection has its own cursors, and
 a ``COMMIT`` closes every cursor that isn't ``WITH HOLD`` (``ROLLBACK`` closes
-all of them). ``FOR READ ONLY`` and ``FOR UPDATE`` aren't supported in a module
-yet.
+all of them). ``FOR READ ONLY`` and ``FOR UPDATE`` decide whether the cursor is
+updatable, and which columns a positioned ``UPDATE`` can set, as they do for any
+cursor.
 
 .. code-block:: sql
 

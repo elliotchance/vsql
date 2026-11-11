@@ -265,13 +265,14 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	return conn
 }
 
-// close releases the session lock of each file catalog. The connection must not
-// be used after it's closed.
+// close releases the session lock of each file catalog, and closes its files.
+// The connection must not be used after it's closed.
 pub fn (mut conn Connection) close() {
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
 			catalog.storage.isolation.close()
+			catalog.storage.close_files()
 		}
 	}
 }
@@ -302,12 +303,16 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
 		catalog.storage.cache_size = options.cache_size
-		catalog.storage.full_fsync = options.full_fsync
 		catalog.storage.isolation = IsolationLock{
 			path: isolation_path(path)
 		}
+		catalog.storage.log = WalLog{
+			path:       wal_path(path)
+			full_fsync: options.full_fsync
+		}
 		catalog.recover_log() or {
 			catalog.storage.session.close()
+			catalog.storage.close_files()
 			return err
 		}
 	}
@@ -322,6 +327,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		catalog.lock_transaction(conn.read_only) or {
 			catalog.storage.session.close()
 			catalog.storage.isolation.close()
+			catalog.storage.close_files()
 			return err
 		}
 	}
@@ -344,7 +350,8 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 // connection, which loses changes to the database file that weren't synced. If
 // there's another connection, then the power hasn't failed since it opened.
 fn (mut conn CatalogConnection) recover_log() ! {
-	if !wal_has_statements(conn.path) || !conn.storage.session.try_exclusive()! {
+	conn.storage.log.sync()
+	if !wal_has_statements(mut conn.storage.log) || !conn.storage.session.try_exclusive()! {
 		return
 	}
 
@@ -364,17 +371,44 @@ fn (mut conn CatalogConnection) replay_log() ! {
 		conn.options.mutex.unlock()
 	}
 
-	conn.storage.open_file(conn.path)!
+	conn.lock_file(true)!
 	defer {
-		conn.storage.close_file()
+		conn.unlock_file(true)
 	}
 
-	flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)!
-	defer {
+	wal_replay(mut conn.storage.file, conn.path, mut conn.storage.log) or { return io_error(err) }
+}
+
+// lock_file opens the database file (unless it's already open, see
+// Storage.file) and locks it. Another process may have replaced the file while
+// it wasn't locked, in which case it's opened and locked again.
+fn (mut conn CatalogConnection) lock_file(exclusive bool) ! {
+	for {
+		conn.storage.open_file(conn.path)!
+		if exclusive {
+			flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)!
+		} else {
+			flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)!
+		}
+
+		if !conn.storage.file_replaced(conn.path) {
+			break
+		}
+
+		conn.unlock_file(exclusive)
+		conn.storage.close_files()
+	}
+
+	conn.storage.log.sync()
+}
+
+// unlock_file unlocks the database file, which stays open.
+fn (mut conn CatalogConnection) unlock_file(exclusive bool) {
+	if exclusive {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
+	} else {
+		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
 	}
-
-	wal_replay(mut conn.storage.file, conn.path, conn.options.full_fsync) or { return io_error(err) }
 }
 
 fn (mut conn Connection) open_read_connection() ! {
@@ -390,12 +424,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 
 	conn.options.mutex.@rlock()
 
-	conn.storage.open_file(conn.path) or {
-		conn.options.mutex.runlock()
-		return err
-	}
-	flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
-		conn.storage.close_file()
+	conn.lock_file(false) or {
 		conn.options.mutex.runlock()
 		return err
 	}
@@ -404,29 +433,25 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 	// into the database file (because the process stopped) must be copied
 	// before the file can be read. That needs the file to be locked
 	// exclusively.
-	if wal_needs_recovery(conn.path) {
-		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
-			conn.storage.close_file()
+	if wal_needs_recovery(mut conn.storage.log) {
+		conn.unlock_file(false)
+		conn.lock_file(true) or {
 			conn.options.mutex.runlock()
 			return err
 		}
-		wal_recover(mut conn.storage.file, conn.path, conn.options.full_fsync) or {
-			flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
-			conn.storage.close_file()
+		wal_recover(mut conn.storage.file, conn.path, mut conn.storage.log) or {
+			conn.unlock_file(true)
 			conn.options.mutex.runlock()
 			return io_error(err)
 		}
-		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
-			conn.storage.close_file()
+		conn.unlock_file(true)
+		conn.lock_file(false) or {
 			conn.options.mutex.runlock()
 			return err
 		}
 	}
 	conn.storage.open(conn.catalog_name, false) or {
-		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		conn.storage.close_file()
+		conn.unlock_file(false)
 		conn.options.mutex.runlock()
 		return err
 	}
@@ -446,30 +471,22 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 
 	conn.options.mutex.@lock()
 
-	conn.storage.open_file(conn.path) or {
+	conn.lock_file(true) or {
 		conn.options.mutex.unlock()
 		return err
 	}
-	flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
-		conn.storage.close_file()
-		conn.options.mutex.unlock()
-		return err
-	}
-	wal_recover(mut conn.storage.file, conn.path, conn.options.full_fsync) or {
-		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		conn.storage.close_file()
+	wal_recover(mut conn.storage.file, conn.path, mut conn.storage.log) or {
+		conn.unlock_file(true)
 		conn.options.mutex.unlock()
 		return io_error(err)
 	}
 	conn.storage.open(conn.catalog_name, true) or {
-		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		conn.storage.close_file()
+		conn.unlock_file(true)
 		conn.options.mutex.unlock()
 		return err
 	}
 	if !conn.storage.header.is_writable() || fault_reached('write_version') {
-		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		conn.storage.close_file()
+		conn.unlock_file(true)
 		conn.options.mutex.unlock()
 		return sqlstate_25006('database needs file format ${conn.storage.header.write_version} to be changed, but this version of vsql only supports up to ${file_format_version}')
 	}
@@ -524,9 +541,7 @@ fn (mut conn Connection) finish_write(success bool) ! {
 
 	for mut catalog in catalogs {
 		if catalog.path != ':memory:' {
-			flock_unlock_exclusive(mut catalog.storage.data_lock, catalog.storage.file,
-				catalog.path)
-			catalog.storage.close_file()
+			catalog.unlock_file(true)
 			catalog.options.mutex.unlock()
 		}
 	}
@@ -612,8 +627,7 @@ fn (mut conn CatalogConnection) release_read_connection() {
 
 	// Readers must not write anything, including the header, since other
 	// readers may be reading the file at the same time.
-	flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
-	conn.storage.close_file()
+	conn.unlock_file(false)
 
 	conn.options.mutex.runlock()
 }

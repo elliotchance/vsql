@@ -44,10 +44,53 @@ fn wal_path(path string) string {
 	return '${path}.wal'
 }
 
+// WalLog is the log of a database file, which stays open between statements
+// (like Storage.file) once it exists.
+struct WalLog {
+	path string
+	// full_fsync is ConnectionOptions.full_fsync.
+	full_fsync bool
+mut:
+	file     os.File
+	identity FileIdentity
+}
+
+// sync must be called each time the database file is locked, because another
+// connection may have created the log, or something else may have replaced or
+// deleted it, while it wasn't locked. The log is opened again if it isn't the
+// file at path. It's unbuffered, so nothing read before the lock is used.
+fn (mut l WalLog) sync() {
+	identity := path_file_identity(l.path) or {
+		l.file.close()
+		return
+	}
+	if l.file.is_opened && identity == l.identity {
+		return
+	}
+
+	l.file.close()
+	// The "b" is needed on Windows, otherwise the file is opened in text mode.
+	l.file = os.open_file(l.path, 'rb+') or { return }
+	l.opened()
+}
+
+// create starts a new log, which must not exist yet. It's opened for reading
+// too, because it stays open for the statements after this one.
+fn (mut l WalLog) create() ! {
+	l.file = os.open_file(l.path, 'wb+')!
+	l.opened()
+}
+
+fn (mut l WalLog) opened() {
+	l.file.set_unbuffered()
+	l.identity = open_file_identity(l.file)
+}
+
 // WalPrepared is a statement that has been added to the log, except for the
 // commit frame, see wal_prepare.
 struct WalPrepared {
 mut:
+	// log is a copy of WalLog.file, which stays open.
 	log          os.File
 	log_path     string
 	salt         u32
@@ -76,18 +119,18 @@ mut:
 // changes several catalogs (each with its own log) find out that one of them
 // can't be written before any of them is committed, see commit_catalogs.
 //
-// It must be followed by wal_finish, or by closing the log of the WalPrepared
-// to give up. Frames without a commit frame are ignored by wal_read.
-fn wal_prepare(mut file os.File, path string, header Header, pager &FilePager, full_fsync bool) !WalPrepared {
+// It must be followed by wal_finish, or the WalPrepared can be dropped to give
+// up. Frames without a commit frame are ignored by wal_read.
+fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pager &FilePager) !WalPrepared {
 	mut page_numbers := pager.dirty.keys().filter(it < pager.total_pages)
 	page_numbers.sort()
 
 	mut prepared := WalPrepared{
-		log_path:     wal_path(path)
+		log_path:     wal.path
 		page_size:    pager.page_size
 		header_bytes: header.bytes()
 		total_pages:  pager.total_pages
-		full_fsync:   full_fsync
+		full_fsync:   wal.full_fsync
 	}
 
 	prepared.size = wal_frame_header_size + prepared.header_bytes.len
@@ -97,28 +140,25 @@ fn wal_prepare(mut file os.File, path string, header Header, pager &FilePager, f
 	}
 
 	log_path := prepared.log_path
-	is_new := !os.exists(log_path)
+	is_new := !wal.file.is_opened
 	// A log is reused because replacing it takes longer. Frames left over from
 	// the previous log are never valid, because each log has a new salt.
-	prepared.log = if is_new {
-		os.create(log_path) or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
-	} else {
-		// The "b" is needed on Windows, otherwise the file is opened in text mode.
-		os.open_file(log_path, 'rb+') or { return sqlstate_58030('unable to open ${log_path}: ${err}') }
+	if is_new {
+		wal.create() or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
 	}
+	prepared.log = wal.file
 
-	wal_write_pages(mut file, path, is_new, page_numbers, mut prepared) or {
-		prepared.log.close()
-		return err
-	}
+	wal_write_pages(mut file, path, is_new, page_numbers, mut prepared)!
 
 	return prepared
 }
 
 // wal_write_pages writes the page frames for wal_prepare.
 fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []int, mut prepared WalPrepared) ! {
+	// The copy is the same open file.
 	mut log := prepared.log
 	log_path := prepared.log_path
+	log.seek(0, .start)!
 	mut salt, mut tail, mut checksum := wal_tail(mut log, prepared.page_size)
 	if tail == 0 || tail + prepared.size > wal_max_size {
 		// The statements in the log are about to be lost, so the database file
@@ -170,12 +210,10 @@ fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []in
 
 // wal_finish is the second half, see wal_prepare. It adds the commit frame, which
 // commits the statement once it's synced, and then copies the statement into
-// the database file. It closes the log.
+// the database file. The log stays open.
 fn wal_finish(mut file os.File, path string, mut prepared WalPrepared) ! {
+	// The copy is the same open file.
 	mut log := prepared.log
-	defer {
-		log.close()
-	}
 
 	commit_frame, commit_checksum := wal_frame(wal_frame_commit, prepared.total_pages,
 		prepared.header_bytes, prepared.checksum)
@@ -279,21 +317,11 @@ fn wal_checkpoint(mut file os.File, path string, page_size int, pages map[int][]
 	truncate_file(file, path, u64(header_size) + u64(page_size) * u64(total_pages))!
 }
 
-// wal_read_header returns the header of the log, or none if it's too short to
-// have one.
-fn wal_read_header(path string) ?[]u8 {
-	log_path := wal_path(path)
-	if !os.exists(log_path) {
-		return none
-	}
-
-	mut log := os.open(log_path) or { return none }
-	defer {
-		log.close()
-	}
-
+// wal_read_header returns the header of the log, or none if it doesn't exist or
+// is too short to have one.
+fn wal_read_header(mut wal WalLog) ?[]u8 {
 	mut header := []u8{len: wal_header_size}
-	read := log.read(mut header) or { return none }
+	read := wal.file.read_from(0, mut header) or { return none }
 
 	return if read == wal_header_size { header } else { none }
 }
@@ -301,8 +329,8 @@ fn wal_read_header(path string) ?[]u8 {
 // wal_needs_recovery returns true if a process stopped before a statement in
 // the log was copied into the database file. It doesn't need a lock, but
 // wal_recover does.
-fn wal_needs_recovery(path string) bool {
-	header := wal_read_header(path) or { return false }
+fn wal_needs_recovery(mut wal WalLog) bool {
+	header := wal_read_header(mut wal) or { return false }
 
 	return header[wal_state_offset] != wal_state_checkpointed
 }
@@ -311,8 +339,8 @@ fn wal_needs_recovery(path string) bool {
 // be on the disk in the database file. They are all in the database file unless
 // the power failed, which can only have happened if this is the first connection
 // to the file, see CatalogConnection.recover_log.
-fn wal_has_statements(path string) bool {
-	header := wal_read_header(path) or { return false }
+fn wal_has_statements(mut wal WalLog) bool {
+	header := wal_read_header(mut wal) or { return false }
 
 	return header[wal_state_offset] != wal_state_checkpointed
 		|| int(binary.big_endian_u32_at(header, wal_tail_offset)) > wal_header_size
@@ -320,9 +348,9 @@ fn wal_has_statements(path string) bool {
 
 // wal_recover copies the log into the database file if a process stopped before
 // doing it. It must only be called with the database file locked exclusively.
-fn wal_recover(mut file os.File, path string, full_fsync bool) ! {
-	if wal_needs_recovery(path) {
-		wal_replay(mut file, path, full_fsync)!
+fn wal_recover(mut file os.File, path string, mut wal WalLog) ! {
+	if wal_needs_recovery(mut wal) {
+		wal_replay(mut file, path, mut wal)!
 	}
 }
 
@@ -333,10 +361,10 @@ fn wal_recover(mut file os.File, path string, full_fsync bool) ! {
 // it.
 //
 // It must only be called with the database file locked exclusively.
-fn wal_replay(mut file os.File, path string, full_fsync bool) ! {
+fn wal_replay(mut file os.File, path string, mut wal WalLog) ! {
 	fault_point('recover')!
 
-	log_path := wal_path(path)
+	log_path := wal.path
 	data := os.read_bytes(log_path) or { return sqlstate_58030('unable to read ${log_path}: ${err}') }
 
 	if data.len >= wal_header_size && data[..wal_magic.len] == wal_magic {
@@ -349,16 +377,11 @@ fn wal_replay(mut file os.File, path string, full_fsync bool) ! {
 	if commit := wal_read(data) {
 		wal_checkpoint(mut file, path, commit.page_size, commit.pages, commit.header_bytes,
 			commit.total_pages)!
-		fsync(file, path, full_fsync)!
+		fsync(file, path, wal.full_fsync)!
 	}
 
-	// The "b" is needed on Windows, otherwise the file is opened in text mode.
-	mut log := os.open_file(log_path, 'rb+') or {
-		return sqlstate_58030('unable to open ${log_path}: ${err}')
-	}
-	defer {
-		log.close()
-	}
+	// The copy is the same open file.
+	mut log := wal.file
 
 	// A tail of zero means the next statement starts a new log. This has to be
 	// written first, so that the log isn't added to if the process stops here.

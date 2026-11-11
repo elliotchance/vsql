@@ -239,6 +239,32 @@ fn test_crc32_update() {
 	}
 }
 
+// log_has_statements and log_needs_recovery open the log at path to check it
+// with wal_has_statements or wal_needs_recovery.
+fn log_has_statements(path string) bool {
+	mut wal := WalLog{
+		path: wal_path(path)
+	}
+	wal.sync()
+	defer {
+		wal.file.close()
+	}
+
+	return wal_has_statements(mut wal)
+}
+
+fn log_needs_recovery(path string) bool {
+	mut wal := WalLog{
+		path: wal_path(path)
+	}
+	wal.sync()
+	defer {
+		wal.file.close()
+	}
+
+	return wal_needs_recovery(mut wal)
+}
+
 // The database file isn't synced for each statement, so when the power fails it
 // may have lost statements that are in the log. This puts the file back to how it
 // was on the disk to simulate that.
@@ -256,23 +282,23 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 
 	// Opening the file empties the log, so now the file has everything.
 	db = open(path)!
-	assert !wal_has_statements(path)
+	assert !log_has_statements(path)
 	on_disk := os.read_bytes(path)!
 
 	db.query('INSERT INTO t (x) VALUES (1)')!
 	db.query('INSERT INTO t (x) VALUES (2)')!
-	assert wal_has_statements(path)
-	assert !wal_needs_recovery(path)
+	assert log_has_statements(path)
+	assert !log_needs_recovery(path)
 
 	// Nothing is copied while there's another connection.
 	mut other := open(path)!
-	assert wal_has_statements(path)
+	assert log_has_statements(path)
 	other.close()
 	db.close()
 
 	os.write_file_array(path, on_disk)!
 	db = open(path)!
-	assert !wal_has_statements(path)
+	assert !log_has_statements(path)
 	assert db.query('SELECT * FROM t')!.rows.len == 2
 
 	// The log can be used again.
@@ -290,6 +316,53 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 	db = open(path)!
 	db.query('CREATE TABLE t (x INT)')!
 	assert db.query('SELECT * FROM t')!.rows.len == 0
+	db.close()
+}
+
+// The database file and the log stay open between statements, so a file that's
+// replaced or deleted (by something other than vsql) while the connection is
+// open has to be opened again.
+fn test_kept_files_are_replaced() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-kept-${os.getpid()}.vsql')
+	other_path := os.join_path(os.temp_dir(), 'vsql-kept-other-${os.getpid()}.vsql')
+	defer {
+		for file in [path, other_path] {
+			for suffix in ['', '.wal', '.session', '.isolation', '.isolation.queue', '.lock'] {
+				os.rm(file + suffix) or {}
+			}
+		}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+
+	mut other := open(other_path)!
+	other.query('CREATE TABLE t (x INT)')!
+	other.query('INSERT INTO t (x) VALUES (2)')!
+	other.query('INSERT INTO t (x) VALUES (3)')!
+	other.close()
+
+	// Both files are replaced (with new inodes).
+	os.mv(other_path, path)!
+	os.mv(wal_path(other_path), wal_path(path))!
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+	db.query('INSERT INTO t (x) VALUES (4)')!
+	assert db.query('SELECT * FROM t')!.rows.len == 3
+
+	// A log that was deleted is started again.
+	os.rm(wal_path(path))!
+	db.query('INSERT INTO t (x) VALUES (5)')!
+	assert log_has_statements(path)
+	assert db.query('SELECT * FROM t')!.rows.len == 4
+
+	// The file can't be used once it's deleted.
+	os.rm(path)!
+	if _ := db.query('SELECT * FROM t') {
+		assert false
+	} else {
+		assert err.msg().contains('unable to open')
+	}
 	db.close()
 }
 

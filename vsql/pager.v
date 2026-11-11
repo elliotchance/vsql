@@ -111,7 +111,7 @@ mut:
 	file        os.File
 	total_pages int
 	// dirty contains the pages that have been changed, which are only written
-	// to the file at the end of the statement, see wal_commit.
+	// to the file at the end of the statement, see wal_prepare.
 	dirty map[int][]u8
 	// root_page is the starting page for a traversal. The root page may change
 	// as balancing happens on the tree.
@@ -229,7 +229,7 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 fn (mut p FilePager) discard() {
 	p.dirty = map[int][]u8{}
 
-	// A page that was committed before (see wal_commit) may be different to the
+	// A page that was committed before (see wal_prepare) may be different to the
 	// cached one, which was read before it was changed.
 	p.cache = map[int][]u8{}
 	p.cache_order = []int{}

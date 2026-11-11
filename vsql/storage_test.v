@@ -350,6 +350,65 @@ fn test_wal_recover_fails_for_write() ! {
 	assert db.query('SELECT * FROM t')!.rows.len == 1
 }
 
+// A COMMIT that changes two files writes the pages of both before it commits
+// either, so failing to write the second one rolls back the first too (#942).
+// The create_catalog directive only makes catalogs in memory, so this needs a
+// direct test. There's still a gap between committing one file and the next,
+// see commit_catalogs.
+fn test_commit_catalogs_faults() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-commit-catalogs-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path_a := os.join_path(dir, 'a.vsql')
+	path_b := os.join_path(dir, 'b.vsql')
+
+	mut b := open_database(path_b, default_connection_options())!
+	b.query('CREATE TABLE t (x INT)')!
+	b.close()
+
+	mut db := open_database(path_a, default_connection_options())!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE t (x INT)')!
+	// Each catalog of a connection needs its own mutex.
+	db.add_catalog('b', path_b, default_connection_options())!
+	defer {
+		disarm_faults()
+	}
+
+	// The pages of a are written, but not committed, when b can't be written.
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO "a".public.t (x) VALUES (1)')!
+	db.query('INSERT INTO "b".public.t (x) VALUES (1)')!
+	arm_fault('wal_write', 2)!
+	assert query_error(mut db, 'COMMIT') == '40V01 transaction rollback: wal_write failed (fault injected by test)'
+	assert !db.in_transaction()
+	assert db.query('SELECT * FROM "a".public.t')!.rows.len == 0
+	assert db.query('SELECT * FROM "b".public.t')!.rows.len == 0
+
+	// This is the gap: a is committed before b fails to add its commit frame.
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO "a".public.t (x) VALUES (2)')!
+	db.query('INSERT INTO "b".public.t (x) VALUES (2)')!
+	arm_fault('wal_torn_frame', 2)!
+	assert query_error(mut db, 'COMMIT') == '40V01 transaction rollback: wal_torn_frame failed (fault injected by test)'
+	assert !db.in_transaction()
+	assert db.query('SELECT * FROM "a".public.t')!.rows.len == 1
+	assert db.query('SELECT * FROM "b".public.t')!.rows.len == 0
+
+	// Both files can still be changed.
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO "a".public.t (x) VALUES (3)')!
+	db.query('INSERT INTO "b".public.t (x) VALUES (3)')!
+	db.query('COMMIT')!
+	assert db.query('SELECT * FROM "a".public.t')!.rows.len == 2
+	assert db.query('SELECT * FROM "b".public.t')!.rows.len == 1
+}
+
 // expire returns -1 when there's no object with the key and tid.
 fn test_btree_expire_missing_object() ! {
 	mut btree := new_btree(new_memory_pager(), 256)

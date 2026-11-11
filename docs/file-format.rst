@@ -913,6 +913,14 @@ may contain many statements) are still made atomic with MVCC (see :doc:`mvcc`),
 and a transaction that was left behind by a process that stopped is rolled back
 by the next connection.
 
+A statement (such as a ``COMMIT``) that changes more than one database file
+(catalog) uses the log of each file. The pages are added to every log first,
+and only then is the *Commit* frame added to each log in turn, so failing to
+write the pages of any file leaves all of them unchanged. Each log is still
+recovered on its own, so if adding a *Commit* frame fails (or the process stops)
+after another file has been committed, that file keeps the changes and the rest
+don't.
+
 On Linux and Windows, syncing a file waits for the drive to write it to
 permanent storage. On macOS, ``fsync`` only hands the data to the drive, which
 may keep it in its cache for a while and write it in a different order. So, on

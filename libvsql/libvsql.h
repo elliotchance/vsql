@@ -162,6 +162,11 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_BOOLEAN  16 /* BOOLEAN */
 #define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
 
+/* Large object locator types, for the LocatorType of SQLGetLength,
+ * SQLGetPosition and SQLGetSubString. */
+#define SQL_BLOB_LOCATOR 31 /* BINARY LARGE OBJECT LOCATOR */
+#define SQL_CLOB_LOCATOR 41 /* CHARACTER LARGE OBJECT LOCATOR */
+
 /* SQL_DESC_DATETIME_INTERVAL_CODEs of SQL_DATETIME. */
 #define SQL_CODE_DATE           1 /* DATE */
 #define SQL_CODE_TIME           2 /* TIME */
@@ -721,8 +726,9 @@ SQLRETURN SQLColAttribute(
 /*
  * SQLColumnPrivileges would return a result set that describes the privileges
  * of columns.
- * vsql doesn't have privileges, so it always returns SQL_ERROR with SQLSTATE
- * HYC00 (optional feature not implemented).
+ * vsql doesn't have privileges, so it always returns SQL_ERROR. The arguments
+ * are checked like those of SQLColumns (SQLSTATE 24000, HY009 or HY090), then
+ * it's SQLSTATE HYC00 (optional feature not implemented).
  */
 SQLRETURN SQLColumnPrivileges(
     SQLHSTMT     StatementHandle,
@@ -1345,8 +1351,11 @@ SQLRETURN SQLGetInfo(
 
 /*
  * SQLGetLength would read the length of the value of a large object locator.
- * vsql doesn't have large objects, so it always returns SQL_ERROR with SQLSTATE
- * HYC00 (optional feature not implemented).
+ * vsql doesn't have large objects, so it always returns SQL_ERROR: SQLSTATE
+ * HY010 (function sequence error) if the statement has been prepared or
+ * executed, HY024 (invalid attribute value) if LocatorType isn't
+ * SQL_BLOB_LOCATOR or SQL_CLOB_LOCATOR, otherwise 0F001 (invalid locator
+ * specification).
  */
 SQLRETURN SQLGetLength(
     SQLHSTMT     StatementHandle,
@@ -1357,9 +1366,9 @@ SQLRETURN SQLGetLength(
 );
 
 /*
- * SQLGetParamData would read the value of a dynamic output parameter. vsql
- * doesn't have procedures (or SQL_PARAM_MODE_OUT), so it always returns
- * SQL_ERROR with SQLSTATE HYC00 (optional feature not implemented).
+ * SQLGetParamData would read the value of a dynamic output parameter of a
+ * CALL statement. vsql doesn't have procedures (or SQL_PARAM_MODE_OUT), so it
+ * always returns SQL_ERROR with SQLSTATE HY010 (function sequence error).
  */
 SQLRETURN SQLGetParamData(
     SQLHSTMT     StatementHandle,
@@ -1373,8 +1382,11 @@ SQLRETURN SQLGetParamData(
 /*
  * SQLGetPosition would find a string within the value of a large object
  * locator.
- * vsql doesn't have large objects, so it always returns SQL_ERROR with SQLSTATE
- * HYC00 (optional feature not implemented).
+ * vsql doesn't have large objects, so it always returns SQL_ERROR: SQLSTATE
+ * HY010 (function sequence error) if the statement has been prepared or
+ * executed, HY092 (invalid attribute identifier) if LocatorType isn't
+ * SQL_BLOB_LOCATOR or SQL_CLOB_LOCATOR, otherwise 0F001 (invalid locator
+ * specification).
  */
 SQLRETURN SQLGetPosition(
     SQLHSTMT     StatementHandle,
@@ -1417,8 +1429,11 @@ SQLRETURN SQLGetStmtAttr(
 
 /*
  * SQLGetSubString would read part of the value of a large object locator.
- * vsql doesn't have large objects, so it always returns SQL_ERROR with SQLSTATE
- * HYC00 (optional feature not implemented).
+ * vsql doesn't have large objects, so it always returns SQL_ERROR: SQLSTATE
+ * HY010 (function sequence error) if the statement has been prepared or
+ * executed, HY024 (invalid attribute value) if LocatorType isn't
+ * SQL_BLOB_LOCATOR or SQL_CLOB_LOCATOR, otherwise 0F001 (invalid locator
+ * specification).
  */
 SQLRETURN SQLGetSubString(
     SQLHSTMT     StatementHandle,
@@ -1743,8 +1758,9 @@ SQLRETURN SQLStartTran(
 /*
  * SQLTablePrivileges would return a result set that describes the privileges
  * of tables.
- * vsql doesn't have privileges, so it always returns SQL_ERROR with SQLSTATE
- * HYC00 (optional feature not implemented).
+ * vsql doesn't have privileges, so it always returns SQL_ERROR. The arguments
+ * are checked like those of SQLTables (SQLSTATE 24000, HY009 or HY090), then
+ * it's SQLSTATE HYC00 (optional feature not implemented).
  */
 SQLRETURN SQLTablePrivileges(
     SQLHSTMT     StatementHandle,

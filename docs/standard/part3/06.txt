@@ -215,11 +215,11 @@
 6.9/GR/12.b.i.3          implemented  libvsql/std_3_6_9_col_attribute.v libvsql/std_3_6_9_col_attribute_test.c
 6.9/GR/12.b.ii           implemented  libvsql/std_3_6_9_col_attribute.v libvsql/std_3_6_9_col_attribute_test.c
 # 6.10, ColumnPrivileges
-6.10                     n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/1                n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/2                n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/3                n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/4                n/a          - - privileges (E081) aren't supported: HYC00
+6.10                     n/a          - - privileges (E081) aren't supported: HYC00 once the arguments are checked
+6.10/GR/1                definition   - -
+6.10/GR/2                implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/3                definition   - -
+6.10/GR/4                definition   - -
 6.10/GR/5                n/a          - - privileges (E081) aren't supported: HYC00
 6.10/GR/6                n/a          - - privileges (E081) aren't supported: HYC00
 6.10/GR/6.a              n/a          - - privileges (E081) aren't supported: HYC00
@@ -235,29 +235,29 @@
 6.10/GR/7.f              n/a          - - privileges (E081) aren't supported: HYC00
 6.10/GR/7.g              n/a          - - privileges (E081) aren't supported: HYC00
 6.10/GR/7.h              n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/8                n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/9                n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/10               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/10.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/10.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/11               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/12               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/13               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/13.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/13.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/13.c             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/14               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/14.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/14.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/14.c             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/15               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/15.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/15.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/15.c             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/16               n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/16.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/16.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.10/GR/16.c             n/a          - - privileges (E081) aren't supported: HYC00
+6.10/GR/8                definition   - -
+6.10/GR/9                definition   - -
+6.10/GR/10               implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/10.a             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/10.b             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/11               implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/12               implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/13               container    - -
+6.10/GR/13.a             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/13.b             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/13.c             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/14               container    - -
+6.10/GR/14.a             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/14.b             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/14.c             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/15               container    - -
+6.10/GR/15.a             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/15.b             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/15.c             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/16               container    - -
+6.10/GR/16.a             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/16.b             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
+6.10/GR/16.c             implemented  libvsql/std_3_6_10_column_privileges.v libvsql/std_3_6_10_column_privileges_test.c
 6.10/GR/17               n/a          - - privileges (E081) aren't supported: HYC00
 6.10/GR/17.a             n/a          - - privileges (E081) aren't supported: HYC00
 6.10/GR/17.a.i           n/a          - - privileges (E081) aren't supported: HYC00
@@ -1568,145 +1568,145 @@
 6.38/GR/12.a             implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/12.b             implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 # 6.39, GetLength
-6.39                     n/a          - - large object locators (T041) aren't supported: HYC00
+6.39                     n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
 6.39/GR/1                definition   - -
-6.39/GR/2                unclear      - - HYC00 is returned instead (#725)
-6.39/GR/3                unclear      - - HYC00 is returned instead (#725)
-6.39/GR/4                n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/5                unclear      - - HYC00 is returned instead (#725)
-6.39/GR/6                n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/7                n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/8                n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9                n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.a              n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.a.i            n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.a.ii           n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.a.ii.1         n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.a.ii.2         n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.b              n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.b.i            n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.b.ii           n/a          - - large object locators (T041) aren't supported: HYC00
-6.39/GR/9.b.iii          n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/2                implemented  libvsql/std_3_6_39_get_length.v libvsql/std_3_6_39_get_length_test.c
+6.39/GR/3                implemented  libvsql/std_3_6_39_get_length.v libvsql/std_3_6_39_get_length_test.c
+6.39/GR/4                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/5                implemented  libvsql/std_3_6_39_get_length.v libvsql/std_3_6_39_get_length_test.c
+6.39/GR/6                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/7                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/8                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.a              n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.a.i            n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.a.ii           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.a.ii.1         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.a.ii.2         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.b              n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.b.i            n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.b.ii           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.39/GR/9.b.iii          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
 # 6.40, GetParamData
-6.40                     n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
+6.40                     n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
 6.40/GR/1                definition   - -
-6.40/GR/2                unclear      - - HYC00 is returned instead (#725)
-6.40/GR/3                unclear      - - HYC00 is returned instead (#725)
-6.40/GR/4                n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/5                n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/6                n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/7                n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/8                n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/9                n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/10               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/11               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/12               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/13               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/13.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/13.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/14               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15.b.i           n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15.b.ii          n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15.b.ii.1        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/15.b.ii.2        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/16               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/17               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/18               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/18.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/18.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/19               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/20               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/21               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/21.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/21.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/22               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/23               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/24               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/24.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/24.a.i           n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/24.a.ii          n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/24.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.a.i           n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.a.ii          n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.i           n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.ii          n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iii         n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv          n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.1        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.1.A      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.1.B      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.2        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.2.A      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.2.B      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.2.B.I    n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.2.B.II   n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.2.B.III  n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.A      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.B      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.C      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.C.I    n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.C.I.1  n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.C.I.2  n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/25.b.iv.3.C.II   n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/26               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/27               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/27.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/27.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/28               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/29               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30               n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.a             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b             n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.i           n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii          n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.1        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.1.A      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.1.B      n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.2        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.3        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.4        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
-6.40/GR/30.b.ii.5        n/a          - - output parameters need SQL-invoked procedures (T321), which aren't supported: HYC00
+6.40/GR/2                implemented  libvsql/std_3_6_40_get_param_data.v libvsql/std_3_6_40_get_param_data_test.c
+6.40/GR/3                implemented  libvsql/std_3_6_40_get_param_data.v libvsql/std_3_6_40_get_param_data_test.c
+6.40/GR/4                n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/5                n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/6                n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/7                n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/8                n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/9                n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/10               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/11               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/12               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/13               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/13.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/13.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/14               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15.b.i           n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15.b.ii          n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15.b.ii.1        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/15.b.ii.2        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/16               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/17               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/18               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/18.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/18.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/19               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/20               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/21               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/21.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/21.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/22               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/23               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/24               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/24.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/24.a.i           n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/24.a.ii          n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/24.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.a.i           n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.a.ii          n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.i           n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.ii          n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iii         n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv          n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.1        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.1.A      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.1.B      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.2        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.2.A      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.2.B      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.2.B.I    n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.2.B.II   n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.2.B.III  n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.A      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.B      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.C      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.C.I    n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.C.I.1  n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.C.I.2  n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/25.b.iv.3.C.II   n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/26               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/27               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/27.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/27.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/28               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/29               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30               n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.a             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b             n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.i           n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii          n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.1        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.1.A      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.1.B      n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.2        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.3        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.4        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
+6.40/GR/30.b.ii.5        n/a          - - output parameters need a CALL statement (T321), which isn't supported, so GR 3 always fails
 # 6.41, GetPosition
-6.41                     n/a          - - large object locators (T041) aren't supported: HYC00
+6.41                     n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
 6.41/GR/1                definition   - -
-6.41/GR/2                unclear      - - HYC00 is returned instead (#725)
-6.41/GR/3                unclear      - - HYC00 is returned instead (#725)
-6.41/GR/4                n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/5                unclear      - - HYC00 is returned instead (#725)
-6.41/GR/6                n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/7                n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8                n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8.a              n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8.a.i            n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8.a.ii           n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8.b              n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8.b.i            n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/8.b.ii           n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/9                n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10               n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a             n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a.i           n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a.ii          n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a.iii         n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a.iv          n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a.v           n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.a.vi          n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.b             n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.b.i           n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/10.b.ii          n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/11               n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/12               n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/13               n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/14               n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/14.a             n/a          - - large object locators (T041) aren't supported: HYC00
-6.41/GR/14.b             n/a          - - large object locators (T041) aren't supported: HYC00
+6.41/GR/2                implemented  libvsql/std_3_6_41_get_position.v,libvsql/std_3_6_39_get_length.v libvsql/std_3_6_41_get_position_test.c
+6.41/GR/3                implemented  libvsql/std_3_6_41_get_position.v,libvsql/std_3_6_39_get_length.v libvsql/std_3_6_41_get_position_test.c
+6.41/GR/4                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/5                implemented  libvsql/std_3_6_41_get_position.v,libvsql/std_3_6_39_get_length.v libvsql/std_3_6_41_get_position_test.c
+6.41/GR/6                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/7                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8.a              n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8.a.i            n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8.a.ii           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8.b              n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8.b.i            n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/8.b.ii           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/9                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a.i           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a.ii          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a.iii         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a.iv          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a.v           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.a.vi          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.b             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.b.i           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/10.b.ii          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/11               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/12               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/13               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/14               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/14.a             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.41/GR/14.b             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
 # 6.42, GetSessionInfo
 6.42                     partial      libvsql/std_3_6_42_get_session_info.v libvsql/std_3_6_42_get_session_info_test.c every <general value specification> is a syntax error since none are supported yet; GetFunctions reports it as not supported
 6.42/GR/1                container    - -
@@ -1772,37 +1772,37 @@
 6.43/GR/5.b.ii           n/a          - - there are no implementation-defined statement attributes
 6.43/GR/5.b.iii          n/a          - - there are no implementation-defined statement attributes
 # 6.44, GetSubString
-6.44                     n/a          - - large object locators (T041) aren't supported: HYC00
+6.44                     n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
 6.44/GR/1                definition   - -
-6.44/GR/2                unclear      - - HYC00 is returned instead (#725)
-6.44/GR/3                unclear      - - HYC00 is returned instead (#725)
-6.44/GR/4                n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/5                unclear      - - HYC00 is returned instead (#725)
-6.44/GR/6                n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/7                n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/8                n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/9                n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/10               n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/10.a             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/10.b             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/11               n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12               n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.a             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.b             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.c             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.d             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.e             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.e.i           n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.e.ii          n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.e.iii         n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.f             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.g             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.h             n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.h.i           n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.h.i.1         n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.h.i.2         n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.h.ii          n/a          - - large object locators (T041) aren't supported: HYC00
-6.44/GR/12.h.iii         n/a          - - large object locators (T041) aren't supported: HYC00
+6.44/GR/2                implemented  libvsql/std_3_6_44_get_sub_string.v,libvsql/std_3_6_39_get_length.v libvsql/std_3_6_44_get_sub_string_test.c
+6.44/GR/3                implemented  libvsql/std_3_6_44_get_sub_string.v,libvsql/std_3_6_39_get_length.v libvsql/std_3_6_44_get_sub_string_test.c
+6.44/GR/4                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/5                implemented  libvsql/std_3_6_44_get_sub_string.v,libvsql/std_3_6_39_get_length.v libvsql/std_3_6_44_get_sub_string_test.c
+6.44/GR/6                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/7                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/8                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/9                n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/10               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/10.a             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/10.b             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/11               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12               n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.a             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.b             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.c             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.d             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.e             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.e.i           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.e.ii          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.e.iii         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.f             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.g             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.h             n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.h.i           n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.h.i.1         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.h.i.2         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.h.ii          n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
+6.44/GR/12.h.iii         n/a          - - large object locators (T041) aren't supported, so a locator is never valid (GR 5)
 # 6.45, GetTypeInfo
 6.45                     container    - -
 6.45/GR/1                definition   - -
@@ -2514,11 +2514,11 @@
 6.61/GR/9                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/10               deviates     libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c more than one connection is 0A001 (#747)
 # 6.62, TablePrivileges
-6.62                     n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/1                n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/2                n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/3                n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/4                n/a          - - privileges (E081) aren't supported: HYC00
+6.62                     n/a          - - privileges (E081) aren't supported: HYC00 once the arguments are checked
+6.62/GR/1                definition   - -
+6.62/GR/2                implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/3                definition   - -
+6.62/GR/4                definition   - -
 6.62/GR/5                n/a          - - privileges (E081) aren't supported: HYC00
 6.62/GR/6                n/a          - - privileges (E081) aren't supported: HYC00
 6.62/GR/6.a              n/a          - - privileges (E081) aren't supported: HYC00
@@ -2534,24 +2534,24 @@
 6.62/GR/7.f              n/a          - - privileges (E081) aren't supported: HYC00
 6.62/GR/7.g              n/a          - - privileges (E081) aren't supported: HYC00
 6.62/GR/7.h              n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/8                n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/9                n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/10               n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/10.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/10.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/11               n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/12               n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/12.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/12.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/12.c             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/13               n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/13.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/13.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/13.c             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/14               n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/14.a             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/14.b             n/a          - - privileges (E081) aren't supported: HYC00
-6.62/GR/14.c             n/a          - - privileges (E081) aren't supported: HYC00
+6.62/GR/8                definition   - -
+6.62/GR/9                definition   - -
+6.62/GR/10               implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/10.a             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/10.b             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/11               implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/12               container    - -
+6.62/GR/12.a             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/12.b             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/12.c             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/13               container    - -
+6.62/GR/13.a             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/13.b             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/13.c             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/14               container    - -
+6.62/GR/14.a             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/14.b             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
+6.62/GR/14.c             implemented  libvsql/std_3_6_62_table_privileges.v libvsql/std_3_6_62_table_privileges_test.c
 6.62/GR/15               n/a          - - privileges (E081) aren't supported: HYC00
 6.62/GR/15.a             n/a          - - privileges (E081) aren't supported: HYC00
 6.62/GR/15.a.i           n/a          - - privileges (E081) aren't supported: HYC00

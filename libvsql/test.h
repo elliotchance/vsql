@@ -78,6 +78,15 @@ const char *desc_string(SQLHDESC desc, SQLSMALLINT rn, SQLSMALLINT field);
  * a column of each row with ",", then closes the cursor. A NULL is "NULL". */
 const char *fetch_strings(SQLHSTMT stmt, SQLSMALLINT column);
 
+/* inactive_stmt allocates a statement on a new connection (other_dbc) to
+ * another in-memory database, then starts a transaction on the connection of
+ * stmt, so that a routine on the new statement raises 0A001 (see 5.3
+ * ImplicitSetConnection). It returns SQL_NULL_HANDLE if that fails.
+ * free_inactive_stmt rolls back the transaction (of dbc) and frees the new
+ * handles. */
+SQLHSTMT inactive_stmt(SQLHENV env, SQLHSTMT stmt, SQLHDBC *other_dbc);
+void free_inactive_stmt(SQLHDBC dbc, SQLHDBC other_dbc, SQLHSTMT other_stmt);
+
 /* The handles are freed even if the test already freed some of them, so the
  * return values are ignored. */
 void free_handles(SQLHENV env, SQLHDBC dbc, SQLHSTMT stmt);

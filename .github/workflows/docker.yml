@@ -15,9 +15,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up V master
-        uses: vlang/setup-v@v1.7
-        with:
-          check-latest: true
+        run: .github/workflows/setup-v.sh
 
       - name: Build linux binaries
         run: |

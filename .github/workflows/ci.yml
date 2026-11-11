@@ -48,25 +48,26 @@ concurrency:
 # Steps that use the network are retried (see retry.sh), since they sometimes
 # fail for reasons that have nothing to do with vsql.
 jobs:
-  # Users get V master from "v up", so that's what vsql is tested and released
-  # with. The commit is found once, so that every job uses the same V, and V can
-  # be cached for each commit, instead of being built by every job.
+  # Users get V master from "v up", so vsql is tested and released with the
+  # newest V that has been generated as C (vlang/vc), which is what V is built
+  # from. It's found once, so that every job starts from the same V. A job where
+  # it doesn't build uses an earlier one (see setup-v.sh).
   v:
     name: V master
     if: github.event.action != 'edited' || github.event.changes.base
     runs-on: ubuntu-latest
     outputs:
-      commit: ${{ steps.commit.outputs.commit }}
+      vc: ${{ steps.vc.outputs.vc }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Find V master
-        id: commit
+        id: vc
         run: |
-          commit=$(.github/workflows/retry.sh git ls-remote https://github.com/vlang/v refs/heads/master | cut -f1)
-          test -n "$commit"
-          echo "commit=$commit" >> $GITHUB_OUTPUT
+          vc=$(.github/workflows/retry.sh git ls-remote https://github.com/vlang/vc refs/heads/master | cut -f1)
+          test -n "$vc"
+          echo "vc=$vc" >> $GITHUB_OUTPUT
 
   # The name of the Linux x86-64 job is the check that the main ruleset
   # requires, so it mustn't change.
@@ -93,28 +94,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # setup-v can't be retried with retry.sh, so it's run again if it fails.
-      # clean is off because it deletes V's problem matcher before the runner
-      # has read it, which fails the step (mostly on the slower macOS x86-64
-      # runner).
-      - name: Set up V master
-        id: setup-v
-        continue-on-error: true
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Remove failed V
-        if: steps.setup-v.outcome == 'failure'
-        run: rm -rf ~/vlang
-
-      - name: Set up V master (retry)
-        if: steps.setup-v.outcome == 'failure'
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
+      - name: Set up V
+        run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
 
       - name: Show V version
         run: v version
@@ -222,28 +203,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # setup-v can't be retried with retry.sh, so it's run again if it fails.
-      # clean is off because it deletes V's problem matcher before the runner
-      # has read it, which fails the step (mostly on the slower macOS x86-64
-      # runner).
-      - name: Set up V master
-        id: setup-v
-        continue-on-error: true
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Remove failed V
-        if: steps.setup-v.outcome == 'failure'
-        run: rm -rf ~/vlang
-
-      - name: Set up V master (retry)
-        if: steps.setup-v.outcome == 'failure'
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
+      - name: Set up V
+        run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
 
       - name: Show V version
         run: v version
@@ -318,37 +279,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # setup-v can't be retried with retry.sh, so it's run again if it fails.
-      # clean is off because it deletes V's problem matcher before the runner
-      # has read it, which fails the step (mostly on the slower macOS x86-64
-      # runner).
-      - name: Set up V master
-        id: setup-v
-        continue-on-error: true
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Remove failed V
-        if: steps.setup-v.outcome == 'failure'
-        run: rm -rf ~/vlang
-
-      - name: Set up V master (retry)
-        id: setup-v-retry
-        if: steps.setup-v.outcome == 'failure'
-        continue-on-error: true
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      # V master sometimes doesn't build on Windows when it does everywhere else.
-      # That isn't a problem with vsql, so rather than fail, this job uses the
-      # newest earlier commit that builds, with a warning.
-      - name: Build an earlier V
-        if: steps.setup-v-retry.outcome == 'failure'
-        run: .github/workflows/earlier-v.sh ${{ needs.v.outputs.commit }}
+      - name: Set up V
+        run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
 
       - name: Show V version
         run: v version

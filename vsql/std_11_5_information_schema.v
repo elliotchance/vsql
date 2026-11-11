@@ -252,6 +252,62 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			}
 			t.done()
 		})!
+
+	// ISO/IEC 9075-11:2008(E), 5.77, Short name views
+	catalog.add_short_name_view('COLUMNS_S', 'COLUMNS', {
+		'CHARACTER_MAXIMUM_LENGTH': 'CHAR_MAX_LENGTH'
+		'CHARACTER_OCTET_LENGTH':   'CHAR_OCTET_LENGTH'
+		'NUMERIC_PRECISION_RADIX':  'NUMERIC_PREC_RADIX'
+		'CHARACTER_SET_CATALOG':    'CHAR_SET_CATALOG'
+		'CHARACTER_SET_SCHEMA':     'CHAR_SET_SCHEMA'
+		'MAXIMUM_CARDINALITY':      'MAX_CARDINALITY'
+		'IS_SELF_REFERENCING':      'IS_SELF_REF'
+		'IDENTITY_GENERATION':      'ID_GENERATION'
+		'IDENTITY_START':           'ID_START'
+		'IDENTITY_INCREMENT':       'ID_INCREMENT'
+		'IDENTITY_MAXIMUM':         'ID_MAXIMUM'
+		'IDENTITY_MINIMUM':         'ID_MINIMUM'
+		'IDENTITY_CYCLE':           'ID_CYCLE'
+		'GENERATION_EXPRESSION':    'GENERATION_EXPR'
+	})!
+	catalog.add_short_name_view('KEY_COLUMN_USAGE_S', 'KEY_COLUMN_USAGE', {
+		'POSITION_IN_UNIQUE_CONSTRAINT': 'POSITION_IN_UC'
+	})!
+	catalog.add_short_name_view('REF_CONSTRAINTS', 'REFERENTIAL_CONSTRAINTS', {
+		'UNIQUE_CONSTRAINT_CATALOG': 'UNIQUE_CONSTR_CAT'
+		'UNIQUE_CONSTRAINT_SCHEMA':  'UNIQUE_CONSTR_SCH'
+		'UNIQUE_CONSTRAINT_NAME':    'UNIQUE_CONSTR_NAME'
+	})!
+	catalog.add_short_name_view('TABLES_S', 'TABLES', {
+		'SELF_REFERENCING_COLUMN_NAME': 'SELF_REF_COL_NAME'
+		'REFERENCE_GENERATION':         'REF_GENERATION'
+		'USER_DEFINED_TYPE_CATALOG':    'UDT_CATALOG'
+		'USER_DEFINED_TYPE_SCHEMA':     'UDT_SCHEMA'
+		'USER_DEFINED_TYPE_NAME':       'UDT_NAME'
+	})!
+}
+
+// add_short_name_view adds a view of the INFORMATION_SCHEMA that has the same
+// rows as another view (that's already added), with some of its columns
+// renamed. These are the short name views, which have names (of the view and
+// its columns) that are short enough to not need Feature F391, "Long
+// identifiers". Each one selects every column of its view, in the same order
+// (ISO/IEC 9075-11:2008(E), 5.77, Short name views).
+fn (mut catalog CatalogConnection) add_short_name_view(name string, view_name string, renamed map[string]string) ! {
+	view := catalog.virtual_tables[Identifier{
+		catalog_name: catalog.catalog_name
+		schema_name:  information_schema_name
+		entity_name:  view_name
+	}.storage_id()] or { return }
+
+	// Each column is on its own line, and is followed by its type.
+	mut create_table := view.create_table_sql.replace_once('CREATE TABLE ${view_name} (',
+		'CREATE TABLE ${name} (')
+	for column_name, short_name in renamed {
+		create_table = create_table.replace_once('\t${column_name} ', '\t${short_name} ')
+	}
+
+	catalog.add_information_schema_table(create_table, view.data)!
 }
 
 // add_information_schema_table adds a view of the INFORMATION_SCHEMA from its

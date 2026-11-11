@@ -310,6 +310,51 @@ One row for each column of each ``PRIMARY KEY``, ``UNIQUE`` and ``FOREIGN KEY``
       ``PRIMARY KEY`` or ``UNIQUE`` that it references (see
       ``REFERENTIAL_CONSTRAINTS``). Otherwise, ``NULL``.
 
+Short Name Views
+----------------
+
+Some of the tables also have a short name view, which has the same rows and
+columns, but with names that are no longer than 18 characters (so they can be
+used without Feature F391, "Long identifiers"):
+
+.. list-table::
+  :header-rows: 1
+
+  * - Table
+    - Short name view
+    - Renamed columns
+
+  * - ``COLUMNS``
+    - ``COLUMNS_S``
+    - ``CHAR_MAX_LENGTH``, ``CHAR_OCTET_LENGTH``, ``NUMERIC_PREC_RADIX``,
+      ``CHAR_SET_CATALOG``, ``CHAR_SET_SCHEMA``, ``MAX_CARDINALITY``,
+      ``IS_SELF_REF``, ``ID_GENERATION``, ``ID_START``, ``ID_INCREMENT``,
+      ``ID_MAXIMUM``, ``ID_MINIMUM``, ``ID_CYCLE`` and ``GENERATION_EXPR``.
+
+  * - ``KEY_COLUMN_USAGE``
+    - ``KEY_COLUMN_USAGE_S``
+    - ``POSITION_IN_UC``.
+
+  * - ``REFERENTIAL_CONSTRAINTS``
+    - ``REF_CONSTRAINTS``
+    - ``UNIQUE_CONSTR_CAT``, ``UNIQUE_CONSTR_SCH`` and ``UNIQUE_CONSTR_NAME``.
+
+  * - ``TABLES``
+    - ``TABLES_S``
+    - ``SELF_REF_COL_NAME``, ``REF_GENERATION``, ``UDT_CATALOG``,
+      ``UDT_SCHEMA`` and ``UDT_NAME``.
+
+.. code-block:: sql
+
+  SELECT table_name, ref_generation FROM information_schema.tables_s
+  WHERE table_schema = 'PUBLIC';
+  -- TABLE_NAME: PRODUCTS REF_GENERATION: NULL
+
+The columns are in the same order as the table, so a renamed column replaces
+the column with the longer name. Like the other tables of the
+``INFORMATION_SCHEMA``, they're described by ``TABLES`` (as a ``VIEW``) and
+``COLUMNS``.
+
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,
 other text is a ``CHARACTER VARYING(10485760)``, a number is an ``INTEGER`` and

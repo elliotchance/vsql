@@ -99,15 +99,27 @@ UTEST_F(env, 6_61_start_tran_not_connected) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
 
-  /* An environment without established connections has nothing to start. */
+  /* An environment without established connections still starts one, which
+   * is started in the first connection that executes a statement. EndTran
+   * doesn't end it, since none of the connections is active. */
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_ENV, utest_fixture->env, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_ENV, utest_fixture->env, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
 }
 
-/* A transaction can only be started in one connection, which becomes the
- * current connection. */
+/* An environment with more than one connection starts the transaction
+ * without it being in any connection, since none of them is active. The first
+ * connection that executes a statement starts it, after which the other
+ * connections can't be used until it ends (#747). */
 UTEST_F(db, 6_61_start_tran_multiple_connections) {
   SQLHDBC dbc2;
   SQLHSTMT stmt2;
@@ -119,28 +131,114 @@ UTEST_F(db, 6_61_start_tran_multiple_connections) {
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "0A001");
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_ENV, utest_fixture->env, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+  EXPECT_EQ(diag_int(SQL_HANDLE_DBC, dbc2, SQL_DIAG_TRANSACTION_ACTIVE), 1);
 
+  /* None of the connections is active, so another StartTran for the
+   * environment replaces it. */
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_SERIALIZABLE),
+            SQL_SUCCESS);
+
+  /* It's started in the second connection, which is now the only one that
+   * can be used. AUTOCOMMIT doesn't end it. */
+  ASSERT_EQ(SQLSetConnectAttr(dbc2, SQL_ATTR_AUTOCOMMIT,
+                              INTEGER_VALUE(SQL_AUTOCOMMIT_ON), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(stmt2, "CREATE TABLE t (x INT)"), SQL_SUCCESS);
+  EXPECT_EQ(diag_int(SQL_HANDLE_DBC, dbc2, SQL_DIAG_TRANSACTION_ACTIVE), 1);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "0A001");
+
+  /* Now that the second connection is active, StartTran is 25001. */
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "25001");
+
+  /* Ending it for the environment ends it in the second connection. */
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_ENV, utest_fixture->env, SQL_DIAG_TRANSACTION_ACTIVE),
+      0);
+  EXPECT_EQ(run_sql(stmt2, "SELECT * FROM t"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "42P01");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_ROLLBACK),
+            SQL_SUCCESS);
+
+  /* A StartTran for a connection replaces one for the environment that no
+   * connection has started yet, and is started in that connection. */
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, dbc2, SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "0A001");
   EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
-
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "25001");
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
             SQL_SUCCESS);
-  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, dbc2, SQL_TRANSACTION_READ_WRITE,
-                         SQL_TRANSACTION_READ_COMMITTED),
-            SQL_SUCCESS);
-  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_COMMIT), SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_ENV, utest_fixture->env, SQL_DIAG_TRANSACTION_ACTIVE),
+      0);
+
   EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
+}
+
+/* The isolation level is that of the StartTran, not of a SET TRANSACTION, which
+ * can't be executed while the transaction is active. */
+UTEST_F(db, 6_61_start_tran_environment_set_transaction) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_SERIALIZABLE),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt,
+                    "SET TRANSACTION ISOLATION LEVEL READ COMMITTED"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "25001");
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+
+  /* No connection is active, so EndTran leaves it, with or without AND
+   * CHAIN. */
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT_AND_CHAIN),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+
+  /* Once the connection has started it, EndTran ends it. */
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      0);
 }
 
 /* A handle that isn't allocated is invalid, for each type of handle, and a

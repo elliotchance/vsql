@@ -1,11 +1,35 @@
 module main
 
+import vsql
+
 // ISO/IEC 9075-3:2003(E), 6.61, StartTran
 //
 // Explicitly start an SQL-transaction and set its characteristics.
 //
 // READ WRITE with READ UNCOMMITTED is 42601, as it is for START TRANSACTION
 // (ISO/IEC 9075-2:2016(E), 17.3, Syntax Rules, 4).
+//
+// For an SQL-environment, L1 is only its active SQL-connections (General Rules,
+// 3.d.ii.3), which are the ones that have executed a statement in the current
+// SQL-transaction (ISO/IEC 9075-2:2016(E), 4.42, SQL-connections). Any of those
+// has an active SQL-transaction, which is an exception condition (General
+// Rules, 4), so TXN is started without being in any SQL-connection yet
+// (General Rules, 10). It's started in the first connection that executes a
+// statement (see run_statement), and switching to another connection after
+// that is 0A001 like any other SQL-transaction (see 5.3, "Implicit set
+// connection"). Until then, any of its connections can be used, and it's the
+// active SQL-transaction of the SQL-environment (4.1, Introduction to SQL/CLI),
+// so a statement doesn't initiate another one.
+//
+// Because none of the connections is active, L1 is also empty for a later
+// StartTran, whether it's given the SQL-environment or one of its connections
+// (General Rules, 3.c.ii.4), so General Rules 4 doesn't raise an exception, and
+// TXN is a new SQL-transaction (General Rules, 7). An SQL-agent has one current
+// SQL-transaction, so TXN replaces the one that hasn't been started in any
+// connection, which has had no effects.
+//
+// For a connection, TXN is started in its SQL-connection straight away, since
+// that's the only one it can be in.
 
 // Codes from Table 36, "Values for TRANSACTION ACCESS MODE with StartTran".
 const sql_transaction_read_only = 0x00000001
@@ -51,7 +75,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	// SQL-connections contained in L1, then an exception condition is raised:
 	// invalid transaction state — active SQL-transaction.
 	for dh in l1 {
-		if transaction_active(sql_handle_dbc, dh) {
+		if connection_active(dh) {
 			return cli_error('25001', 'active SQL-transaction')
 		}
 	}
@@ -74,24 +98,43 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 		else { 'SERIALIZABLE' }
 	}
 
-	// vsql doesn't support transactions that affect more than one SQL-server
-	// (see 5.3, "Implicit set connection"), so TXN can only be started in one
-	// SQL-connection, which becomes the current SQL-connection (General Rules,
-	// 10), which is #747.
-	if l1.len > 1 {
-		return cli_error('0A001', 'multiple server transactions')
+	// - 10. TXN is started in each SQL-connection contained in L1. For an
+	// SQL-environment there aren't any, so it's started in the first
+	// connection that executes a statement. Either way, it replaces an
+	// SQL-transaction that StartTran started for the SQL-environment that
+	// hasn't been started in a connection yet.
+	mut e := envs[handle_env(handle_type, h)] or { return sql_invalid_handle }
+	if handle_type == sql_handle_env {
+		e.start_tran = '${access}, ISOLATION LEVEL ${level}'
+		return sql_success
 	}
-	for dh in l1 {
-		implicit_set_connection(dh)!
-	}
-
-	// - 10. TXN is started in each SQL-connection contained in L1.
-	for dh in l1 {
-		mut dbc := dbcs[dh] or { continue }
-		mut conn := dbc.conn or { continue }
-		db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}')!
-		dbc.autocommit_transaction = false
-	}
+	mut dbc := dbcs[h] or { return sql_invalid_handle }
+	mut conn := dbc.conn or { return cli_error('08003', 'connection does not exist') }
+	implicit_set_connection(h)!
+	db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}')!
+	e.start_tran = ''
+	dbc.autocommit_transaction = false
 
 	return sql_success
+}
+
+// start_tran_pending is true if StartTran started an SQL-transaction for an
+// SQL-environment that hasn't been started in any of its connections yet.
+fn start_tran_pending(env i64) bool {
+	return (envs[env] or { return false }).start_tran != ''
+}
+
+// join_start_tran starts the SQL-transaction that StartTran started for the
+// SQL-environment of a connection in that connection (General Rules, 10),
+// when it doesn't have an active SQL-transaction.
+fn join_start_tran(mut conn vsql.Connection, dh i64) ! {
+	mut dbc := dbcs[dh] or { return }
+	mut e := envs[dbc.env] or { return }
+	if e.start_tran == '' || conn.in_transaction() {
+		return
+	}
+
+	db_query(mut conn, 'START TRANSACTION ${e.start_tran}')!
+	e.start_tran = ''
+	dbc.autocommit_transaction = false
 }

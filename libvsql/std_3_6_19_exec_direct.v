@@ -165,6 +165,18 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		return cli_error('36001', 'cursor sensitivity exception — request rejected')
 	}
 
+	// An SQL-transaction that StartTran started for the SQL-environment is
+	// started in the first connection that executes a statement. It's active,
+	// so it can't be changed by a <set transaction statement>.
+	//
+	// ISO/IEC 9075-3:2003(E), 6.61, StartTran, General Rules, 10
+	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i
+	if stmt.diag.dynamic_function == 'SET TRANSACTION' && !conn.in_transaction()
+		&& start_tran_pending(handle_env(sql_handle_stmt, stmt.handle)) {
+		return cli_error('25001', 'active SQL-transaction')
+	}
+	join_start_tran(mut conn, stmt.dbc)!
+
 	// A <set transaction statement> doesn't initiate an SQL-transaction, it sets
 	// the characteristics of the next one, which is started here.
 	//

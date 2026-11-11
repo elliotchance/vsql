@@ -245,7 +245,9 @@ fn server_name(handle_type i16, h i64) string {
 }
 
 // transaction_active is true if an SQL-transaction is active for the
-// connection of the handle, or any connection of an SQL-environment.
+// connection of the handle, or any connection of an SQL-environment. That
+// includes an SQL-transaction that StartTran started for the SQL-environment
+// before any of its connections executed a statement.
 fn transaction_active(handle_type i16, h i64) bool {
 	for dh, dbc in dbcs {
 		matches := match handle_type {
@@ -254,15 +256,21 @@ fn transaction_active(handle_type i16, h i64) bool {
 			sql_handle_desc { dh == (descs[h] or { return false }).dbc }
 			else { dh == (stmts[h] or { return false }).dbc }
 		}
-		if matches {
-			if mut conn := dbc.conn {
-				if conn.in_transaction() {
-					return true
-				}
-			}
+		if matches && connection_active(dh) {
+			return true
 		}
 	}
 
+	return start_tran_pending(handle_env(handle_type, h))
+}
+
+// connection_active is true if the established SQL-connection of a connection
+// has an active SQL-transaction, which makes it an active SQL-connection
+// (ISO/IEC 9075-2:2016(E), 4.42, SQL-connections).
+fn connection_active(dh i64) bool {
+	if mut conn := (dbcs[dh] or { return false }).conn {
+		return conn.in_transaction()
+	}
 	return false
 }
 

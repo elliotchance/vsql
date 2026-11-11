@@ -271,7 +271,7 @@ pub fn (mut conn Connection) close() {
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
-			catalog.storage.isolation.release()
+			catalog.storage.isolation.close()
 		}
 	}
 }
@@ -321,6 +321,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	if in_transaction && conn.isolation_level.locks_transaction() {
 		catalog.lock_transaction(conn.read_only) or {
 			catalog.storage.session.close()
+			catalog.storage.isolation.close()
 			return err
 		}
 	}

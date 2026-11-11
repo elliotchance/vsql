@@ -99,28 +99,42 @@ fn (mut l SessionLock) close() {
 
 // IsolationLock is held on the isolation file by REPEATABLE READ and
 // SERIALIZABLE transactions, and by a statement that commits changes. See
-// isolation.v.
+// isolation.v. The file is opened the first time it's locked, and is kept open
+// until close() so that each statement doesn't have to open it again.
 struct IsolationLock {
 	path string
 mut:
-	lock  filelock.FileLock
+	file  os.File
 	state IsolationLockState
+	// queue is the lock that's taken in turns to wait for this one, see
+	// acquire.
+	queue &IsolationLock = unsafe { nil }
 }
+
+@[typedef]
+struct C.OVERLAPPED {}
+
+fn C.LockFileEx(voidptr, u32, u32, u32, u32, &C.OVERLAPPED) bool
+fn C.UnlockFileEx(voidptr, u32, u32, u32, &C.OVERLAPPED) bool
 
 // try_lock gets the lock, which must not be held yet. It returns false if
 // another connection holds a lock that conflicts.
 fn (mut l IsolationLock) try_lock(state IsolationLockState) !bool {
 	fault_point('isolation_lock')!
-
-	// Make sure the file exists without truncating it.
-	mut file := os.open_append(l.path) or {
-		return sqlstate_58030('unable to open ${l.path}: ${err}')
+	if !l.file.is_opened {
+		l.file = os.open_file(l.path, 'a') or {
+			return sqlstate_58030('unable to open ${l.path}: ${err}')
+		}
 	}
-	file.close()
 
-	mode := if state == .shared { filelock.LockMode.shared } else { filelock.LockMode.exclusive }
-	l.lock = filelock.new_file(l.path, mode: mode)
-	if !l.lock.try_acquire() {
+	// The whole file (and beyond) is locked, from the start.
+	mut flags := u32(C.LOCKFILE_FAIL_IMMEDIATELY)
+	if state == .exclusive {
+		flags |= u32(C.LOCKFILE_EXCLUSIVE_LOCK)
+	}
+	mut overlapped := C.OVERLAPPED{}
+	if !C.LockFileEx(voidptr(C._get_osfhandle(l.file.fd)), flags, 0, max_u32, max_u32,
+		&overlapped) {
 		return false
 	}
 	l.state = state
@@ -128,12 +142,18 @@ fn (mut l IsolationLock) try_lock(state IsolationLockState) !bool {
 	return true
 }
 
-// release unlocks the lock, if it's held.
+// release unlocks the lock, if it's held. The file stays open.
 fn (mut l IsolationLock) release() {
 	if l.state != .unlocked {
-		l.lock.release()
+		mut overlapped := C.OVERLAPPED{}
+		C.UnlockFileEx(voidptr(C._get_osfhandle(l.file.fd)), 0, max_u32, max_u32, &overlapped)
 	}
 	l.state = .unlocked
+}
+
+// close_file closes the file, if it's open. The lock must be released first.
+fn (mut l IsolationLock) close_file() {
+	l.file.close()
 }
 
 #include <io.h>

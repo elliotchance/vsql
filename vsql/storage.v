@@ -12,9 +12,20 @@ import os
 
 enum TransactionState {
 	not_active
+	// reading is an SQL-transaction (started by START TRANSACTION, not an
+	// implicit transaction) that hasn't changed anything yet. It doesn't have a
+	// transaction ID, so it doesn't need a write lock or a change to the
+	// header, and it works on a database that can only be read. Each statement
+	// reads like a statement on its own (see isolation_start), and a
+	// SERIALIZABLE transaction is kept isolated by the isolation lock (see
+	// isolation.v). A REPEATABLE READ transaction is only in this state if the
+	// database could only be read when it started, see snapshot_pending. The
+	// first statement that changes the database makes it active, see
+	// CatalogConnection.open_write_connection.
+	reading
 	// Whilst in a transaction (specifically START TRANSACTION, not an implicit
-	// transaction). This is important to stop a nested transaction from
-	// starting or closing an unstarted transaction.
+	// transaction) that has changed the database. This is important to stop a
+	// nested transaction from starting or closing an unstarted transaction.
 	active
 }
 
@@ -110,6 +121,17 @@ mut:
 	// which sees transaction_snapshot (see take_snapshot).
 	snapshot_isolation   bool
 	transaction_snapshot TransactionSnapshot
+	// snapshot_pending is true for a REPEATABLE READ transaction that hasn't
+	// taken its snapshot yet, because the database could only be read when it
+	// started (see CatalogConnection.start_transaction). It takes it when it
+	// first changes the database (see begin_transaction). Until then, nothing
+	// it can't see may have committed since snapshot_header, which was the
+	// header when it started, since a COMMIT may remove the versions of rows
+	// that it would have to see (see remove_expired). So a statement fails
+	// with a serialization failure if a transaction has ended since then, see
+	// open.
+	snapshot_pending bool
+	snapshot_header  Header
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
@@ -297,6 +319,12 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.isolation_depth = f.snapshot.isolation_depth
 	f.snapshot_isolation = f.snapshot.snapshot_isolation
 	f.transaction_snapshot = f.snapshot.transaction_snapshot
+	// A transaction that still hasn't changed anything has no rows for a
+	// deferred constraint to check, and COMMIT doesn't lock its file to check
+	// them (see TransactionState).
+	if f.transaction_state == .reading {
+		f.deferred_checks = map[string]string{}
+	}
 	if f.snapshot.pages_saved {
 		f.transaction_pages = f.snapshot.transaction_pages.clone()
 		f.transaction_keys = f.snapshot.transaction_keys.clone()
@@ -366,6 +394,11 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 		}
 	}
 
+	if f.transaction_state == .reading && f.snapshot_pending
+		&& header.has_ended_since(f.snapshot_header) {
+		return sqlstate_40001('another connection has committed since this transaction started reading')
+	}
+
 	// Avoid reloading the schema if it hasn't changed.
 	if header.schema_version == f.header.schema_version {
 		f.header = header
@@ -428,7 +461,7 @@ fn parse_definition(data []u8) !Stmt {
 fn (f Storage) other_transaction_ids(header Header) []u64 {
 	mut tids := []u64{}
 	for tid in header.active_transaction_ids.tids {
-		if tid != 0 && (f.transaction_state == .not_active || tid != f.transaction_id) {
+		if tid != 0 && (f.transaction_state != .active || tid != f.transaction_id) {
 			tids << tid
 		}
 	}
@@ -1224,14 +1257,15 @@ fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 }
 
 // isolation_start signals the start of an operation that shall be atomic until
-// isolation_end is invoked. If there is no active transaction, a new
+// isolation_end is invoked. If there is no active transaction (including a
+// transaction that hasn't changed anything yet, see TransactionState), a new
 // transaction will be created. Otherwise, this isolation block will be part of
 // the current transaction.
 fn (mut f Storage) isolation_start() ! {
 	fault_point('isolation_start')!
 
 	match f.transaction_state {
-		.not_active {
+		.not_active, .reading {
 			// Fallthrough to the logic below.
 		}
 		.active {
@@ -1291,7 +1325,7 @@ fn (mut f Storage) isolation_end() ! {
 	// The implicit transaction ends with the outermost isolation block. This
 	// is counted before anything can fail, so that the next statement still
 	// starts its own transaction.
-	if f.transaction_state == .not_active {
+	if f.transaction_state != .active {
 		f.isolation_depth--
 	}
 
@@ -1306,7 +1340,7 @@ fn (mut f Storage) isolation_end() ! {
 	f.btree.written_keys = map[string]bool{}
 
 	match f.transaction_state {
-		.not_active {
+		.not_active, .reading {
 			// Fallthrough to logic below.
 		}
 		.active {

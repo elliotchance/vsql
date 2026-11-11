@@ -47,14 +47,14 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- X: 2
 
--- # If a transaction can't be started, the statements after it are not in a
--- # transaction.
+-- # A transaction doesn't lock the file until a statement changes something
+-- # (#672). If that statement can't lock it, the transaction is still active.
 /* fault lock */
 START TRANSACTION;
 CREATE TABLE t (x INT);
 COMMIT;
+-- msg: START TRANSACTION
 -- error 58030: lock failed (fault injected by test)
--- msg: CREATE TABLE 1
 -- msg: COMMIT
 
 -- # The same when the file can't be opened for writing (it was opened for
@@ -63,8 +63,8 @@ COMMIT;
 START TRANSACTION;
 CREATE TABLE t (x INT);
 COMMIT;
+-- msg: START TRANSACTION
 -- error 58030: open failed (fault injected by test)
--- msg: CREATE TABLE 1
 -- msg: COMMIT
 
 -- # Opening, locking or reading the file can fail for reads and writes. The

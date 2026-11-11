@@ -353,6 +353,9 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		conn.query("SET CATALOG '${conn.current_catalog}'")!
 	}
 
+	// It joins the SQL-transaction without changing anything (unless it's
+	// REPEATABLE READ, see CatalogConnection.start_transaction), and becomes
+	// active with the next statement that changes the database.
 	if in_transaction {
 		catalog.start_transaction(conn.isolation_level)!
 		conn.finish_write(true)!
@@ -485,6 +488,7 @@ fn (mut conn Connection) open_write_connection() ! {
 fn (mut conn CatalogConnection) open_write_connection() ! {
 	if conn.path == ':memory:' {
 		conn.storage.begin_statement()
+		conn.begin_transaction()!
 		return
 	}
 
@@ -511,6 +515,23 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 	}
 
 	conn.storage.begin_statement()
+	conn.begin_transaction()!
+}
+
+// begin_transaction starts an SQL-transaction that hasn't changed anything yet
+// in storage, because the statement that opened the write connection changes
+// the database (#672). It's part of the statement, so if the statement fails,
+// the SQL-transaction hasn't changed anything again.
+fn (mut conn CatalogConnection) begin_transaction() ! {
+	if conn.storage.transaction_state != .reading {
+		return
+	}
+
+	conn.storage.begin_transaction() or {
+		conn.storage.discard_statement(conn.path) or {}
+		conn.unlock_write()
+		return err
+	}
 }
 
 fn (mut conn Connection) release_write_connection() {
@@ -559,14 +580,20 @@ fn (mut conn Connection) finish_write(success bool) ! {
 	}
 
 	for mut catalog in catalogs {
-		if catalog.path != ':memory:' {
-			catalog.unlock_file(true)
-			catalog.options.mutex.unlock()
-		}
+		catalog.unlock_write()
 	}
 
 	if err := first_err {
 		return err
+	}
+}
+
+// unlock_write unlocks the file that open_write_connection locked, once the
+// changes of the statement have been kept or discarded.
+fn (mut conn CatalogConnection) unlock_write() {
+	if conn.path != ':memory:' {
+		conn.unlock_file(true)
+		conn.options.mutex.unlock()
 	}
 }
 
@@ -815,7 +842,7 @@ fn (conn &Connection) check_canceled() ! {
 // the same SQL-transaction.
 pub fn (conn Connection) in_transaction() bool {
 	for _, catalog in conn.catalogs {
-		if catalog.storage.transaction_state == .active {
+		if catalog.storage.transaction_state != .not_active {
 			return true
 		}
 	}

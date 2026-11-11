@@ -14,6 +14,12 @@ BEFORE=$(cksum < $VSQL_FILE)
 echo 'SELECT * FROM t;' | $VSQL cli $VSQL_FILE
 test "$(cksum < $VSQL_FILE)" = "$BEFORE"
 
+# So is a transaction that hasn't changed anything, including one that a query
+# starts without autocommit.
+printf 'START TRANSACTION;\nSELECT * FROM t;\nCOMMIT;\n' | $VSQL cli $VSQL_FILE
+printf 'SELECT * FROM t;\nROLLBACK;\nSELECT * FROM t;\n' | $VSQL cli -autocommit=false $VSQL_FILE
+test "$(cksum < $VSQL_FILE)" = "$BEFORE"
+
 # Except for NEXT VALUE FOR, which needs to take a write lock instead.
 echo 'SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;' | $VSQL cli $VSQL_FILE > $TXT_FILE
 echo 'SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;' | $VSQL cli $VSQL_FILE >> $TXT_FILE

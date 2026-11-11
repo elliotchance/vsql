@@ -44,9 +44,13 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 // commit_transaction commits the SQL-transaction in every catalog. It returns the
 // constraint modes that it ended with, which every constraint is immediate.
 fn (mut conn Connection) commit_transaction() !map[string]map[string]bool {
-	conn.open_write_connection()!
-	defer {
-		conn.release_write_connection()
+	// A catalog that the SQL-transaction hasn't changed has nothing to commit,
+	// so it isn't locked (and it can be one that can only be read).
+	for _, mut catalog in conn.catalogs {
+		if catalog.storage.transaction_state == .active {
+			catalog.open_write_connection()!
+			catalog.release_write_connection()
+		}
 	}
 
 	// Every deferred constraint is checked first, as if by SET CONSTRAINTS ALL
@@ -87,8 +91,15 @@ fn commit_error(err IError) IError {
 	}
 }
 
-// commit_transaction must be called with the write connection open.
+// commit_transaction must be called with the write connection open, unless the
+// SQL-transaction hasn't changed anything.
 fn (mut catalog CatalogConnection) commit_transaction() ! {
+	if catalog.storage.transaction_state == .reading {
+		catalog.storage.transaction_state = .not_active
+		catalog.storage.end_constraint_modes()
+		return
+	}
+
 	// Only remove the now expired records.
 	schema_changed := catalog.storage.remove_expired(catalog.storage.transaction_page_numbers()!,
 		true)!

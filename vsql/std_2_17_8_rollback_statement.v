@@ -43,6 +43,14 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 }
 
 fn (mut catalog CatalogConnection) rollback_transaction() ! {
+	// There's nothing to undo for an SQL-transaction that hasn't changed
+	// anything, so the file isn't locked.
+	if catalog.storage.transaction_state == .reading {
+		catalog.storage.transaction_state = .not_active
+		catalog.storage.end_constraint_modes()
+		return
+	}
+
 	catalog.open_write_connection()!
 	defer {
 		catalog.release_write_connection()

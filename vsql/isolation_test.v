@@ -132,9 +132,14 @@ fn test_direct_query_isolation() ! {
 	b.query('COMMIT')!
 	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
 
-	// A rollback looks the same in the file.
+	// A rollback looks the same in the file. (A transaction that hasn't
+	// changed anything doesn't change the file, see TransactionState.)
 	a.direct('SELECT * FROM t;')!
 	b.query('START TRANSACTION')!
+	b.query('ROLLBACK')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 4
+	b.query('START TRANSACTION')!
+	b.query('INSERT INTO t (x) VALUES (0)')!
 	b.query('ROLLBACK')!
 	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
 
@@ -500,6 +505,156 @@ fn test_isolation_with_catalogs() ! {
 	assert 'b' !in d.catalogs
 	d.query('COMMIT')!
 	b.query('COMMIT')!
+}
+
+// A transaction doesn't lock or change the file until it changes something
+// (#672), but it's still isolated at every level, and it works on a database
+// that can only be read.
+fn test_read_transaction() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-read-transaction-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+	options := isolation_test_options(0)
+
+	mut a := open_database(path, options)!
+	defer {
+		a.close()
+	}
+	a.query('CREATE TABLE t (x INT NOT NULL)')!
+	a.query('INSERT INTO t (x) VALUES (1)')!
+
+	mut b := open_database(path, options)!
+	defer {
+		b.close()
+	}
+
+	// Neither a query nor the end of the transaction changes the file.
+	for level in ['READ COMMITTED', 'SERIALIZABLE'] {
+		before := os.read_bytes(path)!
+		a.query('START TRANSACTION ISOLATION LEVEL ${level}')!
+		assert a.query('SELECT * FROM t')!.rows.len == 1
+		assert transaction_state(a) == .reading
+		a.query('COMMIT')!
+		a.query('START TRANSACTION ISOLATION LEVEL ${level}')!
+		a.query('ROLLBACK')!
+		assert os.read_bytes(path)! == before
+	}
+
+	// A SERIALIZABLE transaction that has only read still stops another
+	// connection from committing. (A query through direct doesn't start one,
+	// see check_direct_query.)
+	a.query('START TRANSACTION ISOLATION LEVEL SERIALIZABLE')!
+	assert a.query('SELECT * FROM t')!.rows.len == 1
+	assert transaction_state(a) == .reading
+	assert query_error(mut b, 'INSERT INTO t (x) VALUES (2)').starts_with('40001 ')
+	b.query('SET TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert query_error(mut b, 'INSERT INTO t (x) VALUES (2)') == '40001 serialization failure: cannot commit while another connection has a SERIALIZABLE transaction'
+	assert a.query('SELECT * FROM t')!.rows.len == 1
+	a.query('COMMIT')!
+
+	// A READ COMMITTED one sees what's committed by each statement, and the
+	// first statement that changes something gives it a transaction ID.
+	a.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert a.query('SELECT * FROM t')!.rows.len == 1
+	b.query('INSERT INTO t (x) VALUES (2)')!
+	assert a.query('SELECT * FROM t')!.rows.len == 2
+	a.query('INSERT INTO t (x) VALUES (3)')!
+	assert transaction_state(a) == .active
+	assert b.query('SELECT * FROM t')!.rows.len == 2
+	a.query('COMMIT')!
+	assert b.query('SELECT * FROM t')!.rows.len == 3
+
+	// A statement that fails hasn't changed anything, so neither has the
+	// transaction, including when it can't be given a transaction ID.
+	a.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert query_error(mut a, 'INSERT INTO t (x) VALUES (NULL)').starts_with('23502 ')
+	assert transaction_state(a) == .reading
+	arm_fault('isolation_start', 1)!
+	assert query_error(mut a, 'INSERT INTO t (x) VALUES (4)') == '58030 isolation_start failed (fault injected by test)'
+	assert transaction_state(a) == .reading
+	b.query('INSERT INTO t (x) VALUES (5)')!
+	a.query('INSERT INTO t (x) VALUES (6)')!
+	a.query('COMMIT')!
+	assert b.query('SELECT * FROM t')!.rows.len == 5
+
+	// A deferred constraint isn't checked for a statement that failed, since
+	// the transaction still hasn't changed anything.
+	a.query('CREATE TABLE u (x INT NOT NULL UNIQUE DEFERRABLE INITIALLY DEFERRED)')!
+	a.query('INSERT INTO u (x) VALUES (1)')!
+	a.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert query_error(mut a, 'INSERT INTO u (x) VALUES (1), (NULL)').starts_with('23502 ')
+	assert transaction_state(a) == .reading
+	a.query('COMMIT')!
+
+	// A REPEATABLE READ transaction is given its transaction ID when it starts
+	// instead, so that it can publish its snapshot (see
+	// CatalogConnection.start_transaction). If it can't be given one, there
+	// isn't a transaction.
+	a.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	assert transaction_state(a) == .active
+	b.query('INSERT INTO t (x) VALUES (7)')!
+	assert a.query('SELECT * FROM t')!.rows.len == 5
+	a.query('COMMIT')!
+	b.query('DELETE FROM t WHERE x = 7')!
+	arm_fault('isolation_start', 1)!
+	assert query_error(mut a, 'START TRANSACTION ISOLATION LEVEL REPEATABLE READ') == '58030 isolation_start failed (fault injected by test)'
+	assert !a.in_transaction()
+
+	// If the database can only be read, it starts without a snapshot, so a
+	// statement fails (and the transaction is rolled back) once a transaction
+	// that it can't see has ended, because the versions of rows it would see
+	// may have been removed.
+	arm_fault('write_version', 1)!
+	a.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	assert transaction_state(a) == .reading
+	assert a.query('SELECT * FROM t')!.rows.len == 5
+	b.query('INSERT INTO t (x) VALUES (7)')!
+	assert query_error(mut a, 'SELECT * FROM t') == '40001 serialization failure: another connection has committed since this transaction started reading'
+	assert !a.in_transaction()
+	b.query('DELETE FROM t WHERE x = 7')!
+
+	// Until then, the snapshot it takes when it first changes the database is
+	// the one it would have taken when it started: a transaction that was
+	// active (or started since) still isn't seen once it commits.
+	arm_fault('write_version', 1)!
+	a.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	b.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	b.query('INSERT INTO t (x) VALUES (8)')!
+	assert a.query('SELECT * FROM t')!.rows.len == 5
+	a.query('INSERT INTO t (x) VALUES (9)')!
+	assert transaction_state(a) == .active
+	b.query('COMMIT')!
+	assert a.query('SELECT * FROM t')!.rows.len == 6
+	a.query('COMMIT')!
+	assert b.query('SELECT * FROM t')!.rows.len == 7
+
+	// A file with a newer write version can be read in a transaction, but
+	// not changed. Opening the file again first copies the log into it, so
+	// that the log doesn't put the header back.
+	b.close()
+	a.close()
+	a = open_database(path, options)!
+	a.close()
+	mut f := os.open_file(path, 'r+')!
+	f.write_to(10, [u8(0xff), 0xff])!
+	f.close()
+	a = open_database(path, options)!
+	a.query('START TRANSACTION')!
+	assert a.query('SELECT * FROM t')!.rows.len == 7
+	assert query_error(mut a, 'INSERT INTO t (x) VALUES (10)').starts_with('25006 ')
+	assert a.in_transaction()
+	a.query('COMMIT')!
+	a.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	assert transaction_state(a) == .reading
+	assert a.query('SELECT * FROM t')!.rows.len == 7
+	a.query('COMMIT')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 7
+	a.direct('ROLLBACK;')!
+	b = open_database(path, options)!
 }
 
 // A SERIALIZABLE transaction waits for another connection's transaction to

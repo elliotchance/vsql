@@ -150,10 +150,11 @@ fn (mut catalog CatalogConnection) lock_transaction(read_only bool) ! {
 
 // check_direct_query must be called after each query of an SQL-transaction that
 // hasn't been started in storage (see Connection.direct), and after it has been
-// started by the statement that follows them. The header is what that statement
-// read, while the database file was locked, so nothing can be committed between
-// them. A REPEATABLE READ or SERIALIZABLE transaction that can't be isolated any
-// more is rolled back with a serialization failure, which has nothing to undo.
+// started by the statement that follows them (see check_direct_transaction).
+// The header is what the query read, while the database file was locked, so
+// nothing can be committed between them. A REPEATABLE READ or SERIALIZABLE
+// transaction that can't be isolated any more is rolled back with a
+// serialization failure, which has nothing to undo.
 //
 // ISO/IEC 9075-2:2016(E), 4.41.5, Implicit rollbacks
 fn (mut conn Connection) check_direct_query() ! {
@@ -176,6 +177,16 @@ fn (mut conn Connection) check_direct_query() ! {
 			return sqlstate_40001('another connection has committed since this transaction started reading')
 		}
 	}
+}
+
+// check_direct_transaction is check_direct_query for the statement that starts
+// the SQL-transaction that queries started (see Connection.direct). Starting it
+// doesn't read the file (see TransactionState), so the header is read again,
+// now that the isolation lock (if any) is held.
+fn (mut conn Connection) check_direct_transaction() ! {
+	conn.open_read_connection()!
+	conn.release_read_connection()
+	conn.check_direct_query()!
 }
 
 // has_ended_since is true if a transaction that was active at the time of the
@@ -205,7 +216,7 @@ fn (h Header) has_ended_since(before Header) bool {
 fn (mut conn Connection) unlock_transactions() {
 	for _, mut catalog in conn.catalogs {
 		catalog.storage.commit_locked = false
-		if catalog.storage.transaction_state != .active {
+		if catalog.storage.transaction_state == .not_active {
 			catalog.storage.isolation.release()
 		}
 	}

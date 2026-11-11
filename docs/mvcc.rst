@@ -12,6 +12,21 @@ At most 256 transactions can be active at the same time, because their IDs are
 kept in the header of the database file (see :doc:`file-format`). Starting
 another one is an error ``0B000``.
 
+A transaction is only given an ID by its first statement that changes the
+database. Until then, each statement reads the rows that are committed, like a
+statement on its own, and the transaction doesn't lock the file for writing or
+change it. So a transaction that only reads works on a database that can only
+be read, such as one that needs a newer version of vsql to be changed (see
+:doc:`file-format`). Its isolation level still applies from when it starts (see
+*Isolation Levels* in :doc:`transactions`).
+
+A ``REPEATABLE READ`` transaction is given its ID when it starts instead, so
+that it can publish its snapshot (see *Snapshots*). If the database can only be
+read, it can't be, so it starts without one. Since a ``COMMIT`` may remove a
+version of a row that it would have seen, each of its statements then fails with
+a ``40001`` if a transaction has ended since it started, until it changes the
+database and takes its snapshot.
+
 Snapshots
 ---------
 

@@ -500,3 +500,10 @@ fn query_error(mut db Connection, sql_stmt string) string {
 
 	return ''
 }
+
+// transaction_state is the state of the transaction in the storage of the
+// current catalog.
+fn transaction_state(db &Connection) TransactionState {
+	catalog := unsafe { db.catalogs[db.current_catalog] }
+	return catalog.storage.transaction_state
+}

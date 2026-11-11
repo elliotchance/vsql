@@ -47,10 +47,12 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.iii.2.B to 5.c.iii.2.D
 	if !options.autocommit && !conn.in_transaction() && prepared.is_transaction_initiating() {
 		if !prepared.writes && prepared.stmt is QueryExpression {
-			// Starting the transaction in each catalog needs a write lock (and
-			// fails for a database that can only be read), so it isn't started
-			// until a statement changes something (#672). Until then, it's
-			// isolated by check_direct_query rather than a lock.
+			// Starting the transaction would take the isolation lock, which
+			// needs the isolation file (that may not be possible to create for
+			// a database that can only be read), and would stop other
+			// connections, so it isn't started until a statement changes
+			// something. Until then, it's isolated by check_direct_query rather
+			// than a lock.
 			if !conn.direct_query_transaction {
 				conn.initiate_transaction(conn.next_transaction or { conn.enduring_characteristics() })
 				conn.direct_query_headers = map[string]Header{}
@@ -80,7 +82,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			}
 			start.query(map[string]Value{})!
 			if conn.direct_query_transaction {
-				conn.check_direct_query() or {
+				conn.check_direct_transaction() or {
 					conn.query('ROLLBACK')!
 					return err
 				}

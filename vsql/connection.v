@@ -53,6 +53,8 @@ mut:
 	frame_params map[string]Value
 	frame_result Result
 	frame_err    IError = none
+	// parser_stack is kept between statements, see parse_statement.
+	parser_stack []YYSymType
 	catalogs     map[string]&CatalogConnection
 	// funcs only needs to be initialized once on open()
 	funcs []Func
@@ -553,7 +555,7 @@ fn has_next_value(tokens []Token) bool {
 // with different provided parameters.
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
-	stmt, explain, tokens, features := parse_sql(sql_stmt)!
+	stmt, explain, tokens, features := parse_sql(sql_stmt, mut conn.parser_stack)!
 	elapsed_parse := t.elapsed()
 
 	return PreparedStmt{
@@ -569,21 +571,21 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 
 // parse_sql parses a statement. It returns the statement, whether it's
 // EXPLAINed, its tokens (without the EXPLAIN) and the features that it uses.
-fn parse_sql(sql_stmt string) !(Stmt, bool, []Token, []string) {
+fn parse_sql(sql_stmt string, mut stack []YYSymType) !(Stmt, bool, []Token, []string) {
 	mut tokens, lexical_features := tokenize_with_features(sql_stmt)!
 
 	// EXPLAIN is super helpful, but not part of the SQL standard so we only
 	// treat it as a prefix that is trimmed off before parsing. A statement that
 	// is only white space and comments has no tokens, which is a syntax error.
 	mut explain := false
-	if tokens.len > 0 && tokens[0].sym.v is IdentifierChain {
-		if tokens[0].sym.v.identifier.to_upper() == 'EXPLAIN' {
+	if tokens.len > 0 && tokens[0].value is IdentifierChain {
+		if tokens[0].value.identifier.to_upper() == 'EXPLAIN' {
 			explain = true
 			tokens = tokens[1..].clone()
 		}
 	}
 
-	stmt, mut features := parse_statement(tokens, sql_stmt)!
+	stmt, mut features := parse_statement(tokens, sql_stmt, mut stack)!
 	features << lexical_features
 	// Only a query, searched DELETE or searched UPDATE can be explained, any
 	// other statement is an error when it's executed (so isn't flagged).
@@ -600,7 +602,8 @@ fn parse_sql(sql_stmt string) !(Stmt, bool, []Token, []string) {
 }
 
 fn parse_tokens(tokens []Token) !Stmt {
-	stmt, _ := parse_statement(tokens, '')!
+	mut stack := []YYSymType{}
+	stmt, _ := parse_statement(tokens, '', mut stack)!
 
 	return stmt
 }
@@ -608,16 +611,24 @@ fn parse_tokens(tokens []Token) !Stmt {
 // parse_statement parses a statement, and also returns the features outside of
 // Core SQL that it uses (see flag). source is the text of the tokens, if a syntax
 // error should say where it is (see describe_syntax_error).
-fn parse_statement(tokens []Token, source string) !(Stmt, []string) {
+//
+// stack is the stack of the parser, which is kept by a connection so that it's
+// only made once.
+fn parse_statement(tokens []Token, source string, mut stack []YYSymType) !(Stmt, []string) {
 	mut lexer := Lexer{
 		tokens: tokens
 		source: source
 	}
-	mut parser := yy_new_parser()
+	mut parser := YYParserImpl{
+		stack: stack
+	}
+	defer {
+		stack = parser.stack
+	}
 	parser.parse(mut lexer)!
 	lexer.features << token_features(tokens)
 
-	return (parser as YYParserImpl).lval.v as Stmt, lexer.features
+	return parser.lval.v as Stmt, lexer.features
 }
 
 // query executes a statement. If there is a result set it will be returned.

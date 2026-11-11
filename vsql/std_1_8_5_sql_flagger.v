@@ -712,7 +712,8 @@ fn distinct_count(tokens []Token, start int) int {
 // uses. A module can't contain a "?" of its own, so that's not a <dynamic
 // parameter specification> (B031), and a cursor is meant to be in a module.
 fn parse_module_sql(text_sql string) !(Stmt, []string) {
-	stmt, _, _, features := parse_sql(text_sql)!
+	mut stack := []YYSymType{}
+	stmt, _, _, features := parse_sql(text_sql, mut stack)!
 
 	return stmt, features.filter(it !in ['B031', vsql_declare_cursor, vsql_delete_positioned,
 		vsql_update_positioned])

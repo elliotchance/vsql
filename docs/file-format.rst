@@ -19,8 +19,8 @@ Log`_. It must not be deleted, because it may contain the only copy of a
 statement that was committed when the process stopped.
 
 A fourth file, with the same name followed by ``.isolation``, is created the
-first time a ``REPEATABLE READ`` or ``SERIALIZABLE`` transaction (the default)
-is started (see :doc:`transactions`). Like the ``.session`` file,
+first time a ``SERIALIZABLE`` transaction (the default) is started (see
+:doc:`transactions`). Like the ``.session`` file,
 it's always empty, is only used for locking, and can be deleted whenever there
 are no open connections to the database. The same goes for a fifth file, with
 that name followed by ``.queue``, which is created the first time a connection
@@ -146,7 +146,7 @@ remaining space is reserved (see `Compatibility`_).
 Compatibility
 -------------
 
-The version of the file format that vsql reads and writes is 2. Every version
+The version of the file format that vsql reads and writes is 3. Every version
 of vsql can open a file created by an older version, and most features don't
 need to change the file format at all. The *Read Version* and *Write Version*
 in the `Header`_ work the same way as the read and write versions of SQLite:
@@ -178,6 +178,14 @@ the feature is no longer used.
       index of a ``UNIQUE`` or ``FOREIGN KEY`` constraint) raises the
       *Write Version* to 2. The *Read Version* stays at 1, because version 1
       ignores the new objects.
+
+  * - 3
+    - Snapshots of ``REPEATABLE READ`` transactions (see `Snapshot Object`_
+      and `Retained Version Object`_). The first ``REPEATABLE READ``
+      transaction raises the *Write Version* to 3, because an older version
+      would remove versions of rows that the snapshot needs when it commits.
+      The *Read Version* stays at 1, because older versions ignore the new
+      objects.
 
 These rules keep changes compatible:
 
@@ -417,11 +425,17 @@ are ignored, so that new types of objects can be added (see
   * - ``F``
     - `Fragment Object`_
 
+  * - ``G``
+    - `Retained Version Object`_
+
   * - ``I``
     - `Identity Value Object`_
 
   * - ``N``
     - `Index Object`_
+
+  * - ``P``
+    - `Snapshot Object`_
 
   * - ``Q``
     - `Sequence Object`_
@@ -854,6 +868,47 @@ version of the row that it can see:
 
 - A row that's moved (because its ``PRIMARY KEY`` changed) is deleted and
   inserted, so its entries have the new row ID.
+
+Snapshot Object
+---------------
+
+A ``REPEATABLE READ`` transaction has a snapshot of which transactions had
+committed when it started (see :doc:`mvcc`). The snapshot is published as a
+Snapshot Object (has the ``P`` prefix), so that other connections don't remove
+versions of rows that it can still see when they commit. The key is the
+transaction ID of the transaction as a u64. The object is created by that
+transaction, and removed when it commits or rolls back (or by recovery, if
+the process stopped).
+
+.. list-table::
+  :header-rows: 1
+
+  * - Part
+    - Format
+    - Description
+
+  * - *Transaction ID*
+    - u64 (8 bytes)
+    - The ID of the transaction itself. Every transaction with a lower ID had
+      committed (or rolled back) when the snapshot was taken, except for the
+      *Active Transactions*.
+
+  * - *Active Transactions*
+    - u64 (8 bytes) each
+    - The other transactions that were active when the snapshot was taken.
+      There can be none.
+
+Retained Version Object
+-----------------------
+
+When a transaction commits, it removes the versions of objects that it expired.
+A version that a snapshot (see `Snapshot Object`_) can still see is kept
+instead, and gets a Retained Version Object (has the ``G`` prefix). The key is
+the ID of the transaction that expired the version as a u64, followed by the
+key of the version. The value is the TID of the version as a u64.
+
+When a ``REPEATABLE READ`` transaction ends, every version that no snapshot can
+see anymore is removed, with its Retained Version Object.
 
 Write-Ahead Log
 ---------------

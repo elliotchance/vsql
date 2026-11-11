@@ -427,24 +427,19 @@ fn (mut o KeyOperation) read(row Row) ![]Row {
 	}
 
 	mut catalog := o.conn.catalog_for(o.table.name)
-	tid := catalog.storage.transaction_id
-	mut transaction_ids := catalog.storage.header.active_transaction_ids
-
-	index := o.index or {
-		return o.read_rows(mut catalog, min, max, false, tid, mut transaction_ids)
-	}
+	index := o.index or { return o.read_rows(mut catalog, min, max, false) }
 
 	mut rows := []Row{}
 	mut entries := catalog.storage.btree.new_range_iterator(min, max)
 	for {
 		entry := entries.next() or { break }
-		if !object_is_visible(entry.tid, entry.xid, tid, mut transaction_ids) {
+		if !catalog.storage.is_visible(entry.tid, entry.xid) {
 			continue
 		}
 
 		mut key := row_key_prefix(o.table.id)
 		key << index.entry_row_id(o.table, entry.key)!
-		rows << o.read_rows(mut catalog, key, key, true, tid, mut transaction_ids)!
+		rows << o.read_rows(mut catalog, key, key, true)!
 	}
 	if err := entries.err {
 		return err
@@ -455,7 +450,7 @@ fn (mut o KeyOperation) read(row Row) ![]Row {
 
 // read_rows are the visible rows from min to max, which only includes max when
 // include_max is true.
-fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8, include_max bool, tid u64, mut transaction_ids TransactionIDs) ![]Row {
+fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8, include_max bool) ![]Row {
 	mut rows := []Row{}
 	ids := o.table.column_ids()
 	mut iter := catalog.storage.btree.new_range_iterator(min, max)
@@ -464,7 +459,7 @@ fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8
 		if !include_max && object.key == max {
 			break
 		}
-		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
+		if catalog.storage.is_visible(object.tid, object.xid) {
 			rows << new_row_from_bytes_with_ids(o.table, ids, object.value, object.tid)
 		}
 	}

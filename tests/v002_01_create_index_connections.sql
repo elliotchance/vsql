@@ -97,7 +97,7 @@ COMMIT;
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1
--- 1: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
+-- 1: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
 -- 2: msg: INSERT 1
 -- 2: msg: COMMIT
 

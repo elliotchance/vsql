@@ -1,11 +1,15 @@
-// isolation.v implements the REPEATABLE READ and SERIALIZABLE isolation levels.
+// isolation.v implements the SERIALIZABLE isolation level.
 //
 // Each statement only sees changes that were committed before it started (see
-// object_is_visible), which is READ COMMITTED. A REPEATABLE READ or
-// SERIALIZABLE transaction must also not see changes that other transactions
-// commit after it has started. Instead of keeping a snapshot, no other
-// transaction is allowed to commit until it has finished. That's done with a
-// lock on the isolation file (the database file name followed by
+// object_is_visible), which is READ COMMITTED. A REPEATABLE READ transaction
+// sees the snapshot that it took when it started instead (see
+// Storage.take_snapshot), so other transactions can still commit while it's
+// active.
+//
+// A snapshot isn't serializable: two transactions can each read something that
+// the other one changes (write skew). So a SERIALIZABLE transaction doesn't
+// allow any other transaction to commit until it has finished. That's done
+// with a lock on the isolation file (the database file name followed by
 // ".isolation"):
 //
 // - A READ WRITE transaction holds the lock exclusively until it ends, so only
@@ -31,22 +35,23 @@
 // active, so it runs as if it came after every transaction that committed
 // before it started, and before every transaction that commits after it ends.
 //
-// A READ COMMITTED (or READ UNCOMMITTED) transaction doesn't take the lock, but
-// committing its changes needs the lock exclusively, until the end of the
-// statement. The database file is already locked by then, so it can't wait:
-// it fails with 40001 straight away, and the transaction is rolled back.
-// Uncommitted changes from other transactions are already invisible, and
+// A READ COMMITTED (or READ UNCOMMITTED) or REPEATABLE READ transaction doesn't
+// take the lock, but committing its changes needs the lock exclusively, until
+// the end of the statement. The database file is already locked by then, so it
+// can't wait: it fails with 40001 straight away, and the transaction is rolled
+// back. Uncommitted changes from other transactions are already invisible, and
 // changing the same row in two transactions is already a 40001, so READ
-// COMMITTED transactions can still read and write while the lock is held. They
-// just can't commit. If the isolation file doesn't exist, no transaction can be
-// holding a lock on it, so it isn't created just to commit.
+// COMMITTED and REPEATABLE READ transactions can still read and write while the
+// lock is held. They just can't commit. If the isolation file doesn't exist, no
+// transaction can be holding a lock on it, so it isn't created just to commit.
 //
 // A query through Connection.direct that starts an SQL-transaction doesn't take
 // the lock, since that isn't possible for a database that can only be read. It
 // also means that readers don't wait for each other, or stop anything from
 // committing. It's still isolated, because a query that would see something that
 // was committed since the first query of the transaction fails instead, see
-// check_direct_query.
+// check_direct_query. That includes a REPEATABLE READ transaction, which doesn't
+// take its snapshot until it's started in storage.
 
 module vsql
 
@@ -59,8 +64,8 @@ enum IsolationLockState {
 	exclusive
 }
 
-// isolation_path is the file that is locked by REPEATABLE READ and
-// SERIALIZABLE transactions on the database at path.
+// isolation_path is the file that is locked by SERIALIZABLE transactions on the
+// database at path.
 fn isolation_path(path string) string {
 	return '${path}.isolation'
 }
@@ -122,10 +127,9 @@ fn (mut l IsolationLock) wait(state IsolationLockState, deadline time.Time, mess
 	}
 }
 
-// lock_transaction must be called before a REPEATABLE READ or SERIALIZABLE
-// transaction starts, before any database file is locked. The catalogs are
-// locked in the same order by every connection, so two connections can't wait
-// for each other.
+// lock_transaction must be called before a SERIALIZABLE transaction starts,
+// before any database file is locked. The catalogs are locked in the same order
+// by every connection, so two connections can't wait for each other.
 fn (mut conn Connection) lock_transaction(read_only bool) ! {
 	mut catalogs := conn.catalogs.values()
 	catalogs.sort(a.path < b.path)
@@ -153,7 +157,7 @@ fn (mut catalog CatalogConnection) lock_transaction(read_only bool) ! {
 //
 // ISO/IEC 9075-2:2016(E), 4.41.5, Implicit rollbacks
 fn (mut conn Connection) check_direct_query() ! {
-	if !conn.isolation_level.locks_transaction() {
+	if conn.isolation_level !in [.repeatable_read, .serializable] {
 		return
 	}
 
@@ -207,15 +211,15 @@ fn (mut conn Connection) unlock_transactions() {
 	}
 }
 
-// lock_commit must be called before a READ COMMITTED transaction (or a
-// statement on its own) makes its changes visible to other transactions. The
-// lock is kept until the end of the statement, see unlock_transactions. It's only
-// called while commit_locked is false, so that a page isn't read to find out if
-// it needs the lock when it's already held.
+// lock_commit must be called before a READ COMMITTED or REPEATABLE READ
+// transaction (or a statement on its own) makes its changes visible to other
+// transactions. The lock is kept until the end of the statement, see
+// unlock_transactions. It's only called while commit_locked is false, so that a
+// page isn't read to find out if it needs the lock when it's already held.
 fn (mut f Storage) lock_commit() ! {
 	f.commit_locked = true
 
 	if f.isolation.file.is_opened || os.exists(f.isolation.path) {
-		f.isolation.acquire(.exclusive, 0, 'cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction')!
+		f.isolation.acquire(.exclusive, 0, 'cannot commit while another connection has a SERIALIZABLE transaction')!
 	}
 }

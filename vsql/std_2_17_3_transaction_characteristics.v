@@ -26,7 +26,8 @@ enum TransactionAccessMode {
 
 // IsolationLevel is the <level of isolation>. An SQL-implementation may use a
 // stricter level than the one that is asked for, so READ UNCOMMITTED runs as READ
-// COMMITTED, and REPEATABLE READ runs as SERIALIZABLE. See isolation.v.
+// COMMITTED. REPEATABLE READ uses snapshot isolation (see
+// Storage.take_snapshot). See isolation.v.
 //
 // ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 6
 pub enum IsolationLevel {
@@ -39,7 +40,7 @@ pub enum IsolationLevel {
 // locks_transaction is true if the SQL-transaction must hold the isolation lock
 // until it ends, so that no other transaction can commit in the meantime.
 fn (level IsolationLevel) locks_transaction() bool {
-	return level in [.repeatable_read, .serializable]
+	return level == .serializable
 }
 
 fn (level IsolationLevel) str() string {
@@ -237,9 +238,8 @@ fn (mut conn Connection) initiate_transaction(characteristics TransactionCharact
 }
 
 // changes_database is true for a statement that always changes the database. On
-// its own, it's a transaction that must wait for other REPEATABLE READ and
-// SERIALIZABLE transactions, see isolation.v. It can't be used in a READ ONLY
-// transaction.
+// its own, a SERIALIZABLE transaction must wait for other SERIALIZABLE
+// transactions, see isolation.v. It can't be used in a READ ONLY transaction.
 fn (p PreparedStmt) changes_database() bool {
 	return p.changes_database_name() != ''
 }

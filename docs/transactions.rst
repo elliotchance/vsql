@@ -13,9 +13,9 @@ back.
 
 Two transactions can't change the same row at the same time. The second one
 gets a ``40001`` serialization failure, and its transaction is rolled back so
-that it can be retried. That can only happen with ``READ COMMITTED``
-transactions, since only one ``SERIALIZABLE`` transaction (the default) can
-change the database at a time, see *Isolation Levels*.
+that it can be retried. That can only happen with ``READ COMMITTED`` and
+``REPEATABLE READ`` transactions, since only one ``SERIALIZABLE`` transaction
+(the default) can change the database at a time, see *Isolation Levels*.
 
 The same applies to a table definition that's changed by a transaction that
 isn't committed yet (such as with ``CREATE TABLE`` or ``ALTER TABLE``). Another
@@ -104,12 +104,17 @@ in between. A *phantom* is a row that appears or disappears when a query is
 repeated, because another transaction inserted or deleted it.
 
 A database may always run a transaction at a stricter level than the one it
-asks for. vsql only has two ways of running a transaction:
+asks for. vsql has three ways of running a transaction:
 
-- ``REPEATABLE READ`` and ``SERIALIZABLE`` run as ``SERIALIZABLE``, which is
-  the default (it can be changed with the ``isolation_level`` of the
-  connection's options, see :doc:`v-client-library-docs`). No other connection can commit changes until the transaction
-  ends, so nothing it reads can change (other than by itself). See below.
+- ``SERIALIZABLE`` is the default (it can be changed with the
+  ``isolation_level`` of the connection's options, see
+  :doc:`v-client-library-docs`). No other connection can commit changes until
+  the transaction ends, so nothing it reads can change (other than by itself).
+  See below.
+
+- ``REPEATABLE READ`` sees a snapshot of the database from when the
+  transaction started. Other connections can still commit changes, but the
+  transaction doesn't see them. See below.
 
 - ``READ UNCOMMITTED`` and ``READ COMMITTED`` run as ``READ COMMITTED``: each
   statement sees the changes that other transactions committed before it
@@ -150,15 +155,11 @@ Other connections can always read (outside of a transaction, or in a
 ``READ COMMITTED`` one). ``NEXT VALUE FOR`` is not part of a transaction, so
 it doesn't wait either.
 
-A ``READ COMMITTED`` transaction doesn't wait, and it can change the database
-while a ``SERIALIZABLE`` transaction is active, but it can't commit those
-changes until the ``SERIALIZABLE`` transaction ends. Committing fails with a
-``40001`` serialization failure straight away, and the transaction is rolled
-back.
-
-This makes ``REPEATABLE READ`` stricter (and slower when there are other
-connections changing the database) than it needs to be, so it may not always
-work the same way.
+A ``READ COMMITTED`` or ``REPEATABLE READ`` transaction doesn't wait, and it
+can change the database while a ``SERIALIZABLE`` transaction is active, but it
+can't commit those changes until the ``SERIALIZABLE`` transaction ends.
+Committing fails with a ``40001`` serialization failure straight away, and the
+transaction is rolled back.
 
 .. code-block:: sql
 
@@ -177,6 +178,70 @@ work the same way.
 
   -- From connection 2:
   -- msg: UPDATE 1
+
+REPEATABLE READ
+^^^^^^^^^^^^^^^
+
+A ``REPEATABLE READ`` transaction uses snapshot isolation. It takes a snapshot
+when it starts, and every statement sees the rows (and tables) that had been
+committed by then, as well as its own changes. Rows that other transactions
+change, insert or delete after that aren't seen, even once they're committed.
+Unlike ``SERIALIZABLE``, it doesn't wait for other transactions, and other
+connections can still commit while it's active.
+
+.. code-block:: sql
+
+  -- From connection 1:
+  START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+  SELECT * FROM products;
+  -- NAME: Espresso PRICE: 4
+
+  -- From connection 2 (this doesn't wait):
+  UPDATE products SET price = 5;
+  -- msg: UPDATE 1
+
+  -- From connection 1:
+  SELECT * FROM products;
+  -- NAME: Espresso PRICE: 4
+  COMMIT;
+
+  SELECT * FROM products;
+  -- NAME: Espresso PRICE: 5
+
+The first transaction to commit a change to a row wins. Updating or deleting a
+row that another transaction has changed since the snapshot was taken (or is
+changing) fails with a ``40001`` serialization failure, and the transaction is
+rolled back so that it can be retried. The same goes for:
+
+- Inserting a row with a ``PRIMARY KEY`` (or ``UNIQUE`` value) that another
+  transaction has inserted since then.
+- A ``FOREIGN KEY`` that refers to a row that has been inserted or deleted
+  since then. Constraints are always checked against the latest rows.
+- Writing to a table whose definition (or indexes) has changed since then.
+- Changing the schema (such as ``CREATE TABLE``) after another transaction has
+  changed it.
+- A sequence that has been dropped or created since then. ``NEXT VALUE FOR``
+  isn't part of any transaction, so it always uses the latest value.
+
+Snapshot isolation prevents all three phenomena of the standard, but it still
+isn't serializable. Two transactions can each read rows that the other one
+changes, and both commit (a *write skew*), which can't happen if they run one
+after the other. For example, if two transactions check that at least one
+doctor is on call, and each takes a different doctor off call, then nobody is
+on call. That isn't one of the phenomena that ``REPEATABLE READ`` has to
+prevent, which is why it isn't used for ``SERIALIZABLE``.
+
+When a transaction commits, it removes the versions of rows that it replaced or
+deleted, unless a ``REPEATABLE READ`` transaction can still see them. Those are
+kept until it ends (see :doc:`mvcc`). Only two versions of a row can exist at a
+time, so until then, another transaction that tries to change the row again
+gets a ``40001``.
+
+A query through ``Connection.direct`` that starts a ``REPEATABLE READ``
+transaction doesn't take a snapshot yet, the same as for ``SERIALIZABLE`` (see
+above): the next statement fails with a ``40001`` if another transaction has
+ended since the first query. The snapshot is taken when a statement changes
+something.
 
 See Also
 --------

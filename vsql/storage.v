@@ -101,6 +101,10 @@ mut:
 	// wal_prepared is the current statement once it has been added to the
 	// write-ahead log, but not committed yet, see prepare_commit.
 	wal_prepared ?WalPrepared
+	// snapshot_isolation is true while a REPEATABLE READ transaction is active,
+	// which sees transaction_snapshot (see take_snapshot).
+	snapshot_isolation   bool
+	transaction_snapshot TransactionSnapshot
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
@@ -118,6 +122,10 @@ mut:
 	transaction_pages map[int]bool
 	transaction_keys  map[string]bool
 	isolation_depth   int
+	// snapshot_isolation and transaction_snapshot are put back because a
+	// START TRANSACTION, COMMIT or ROLLBACK that fails doesn't change them.
+	snapshot_isolation   bool
+	transaction_snapshot TransactionSnapshot
 	// in_statement is true between begin_statement and the end of the
 	// statement.
 	in_statement bool
@@ -134,14 +142,16 @@ mut:
 // commit_statement or discard_statement.
 fn (mut f Storage) begin_statement() {
 	f.snapshot = StatementSnapshot{
-		header:            Header{
+		header:               Header{
 			...f.header
 			reserved: f.header.reserved.clone()
 		}
-		transaction_state: f.transaction_state
-		transaction_id:    f.transaction_id
-		isolation_depth:   f.isolation_depth
-		in_statement:      true
+		transaction_state:    f.transaction_state
+		transaction_id:       f.transaction_id
+		isolation_depth:      f.isolation_depth
+		snapshot_isolation:   f.snapshot_isolation
+		transaction_snapshot: f.transaction_snapshot
+		in_statement:         true
 	}
 	f.btree.written_pages = map[int]bool{}
 	f.btree.written_keys = map[string]bool{}
@@ -250,6 +260,8 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.transaction_state = f.snapshot.transaction_state
 	f.transaction_id = f.snapshot.transaction_id
 	f.isolation_depth = f.snapshot.isolation_depth
+	f.snapshot_isolation = f.snapshot.snapshot_isolation
+	f.transaction_snapshot = f.snapshot.transaction_snapshot
 	if f.snapshot.pages_saved {
 		f.transaction_pages = f.snapshot.transaction_pages.clone()
 		f.transaction_keys = f.snapshot.transaction_keys.clone()
@@ -331,9 +343,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	mut iter := f.btree.new_range_iterator('T'.bytes(), 'U'.bytes())
 	for {
 		object := iter.next() or { break }
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
-			f.header.active_transaction_ids)
-		{
+		if f.is_visible(object.tid, object.xid) {
 			table := new_table_from_bytes(object.key, object.value, object.tid, catalog_name)!
 			f.tables[table.name.storage_id()] = table
 		}
@@ -346,9 +356,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	iter = f.btree.new_range_iterator('S'.bytes(), 'T'.bytes())
 	for {
 		object := iter.next() or { break }
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
-			f.header.active_transaction_ids)
-		{
+		if f.is_visible(object.tid, object.xid) {
 			schema := new_schema_from_bytes(object.value, object.tid)!
 			f.schemas[schema.name] = schema
 		}
@@ -416,12 +424,29 @@ fn (mut f Storage) recover(mut header Header) ! {
 		header.active_transaction_ids.remove(tid)
 	}
 
+	// A dead REPEATABLE READ transaction may have been the only one that
+	// needed the versions that were kept for it.
+	f.remove_retained_versions(header.active_transaction_ids)!
+
 	// The dead transactions may have created or dropped tables, so any cached
 	// schema must be reloaded.
 	header.schema_version++
 }
 
-fn (mut f Storage) schema_changed() {
+// schema_changed must be called when the schema is changed, so that other
+// connections load it again. A REPEATABLE READ transaction can only change the
+// schema if no other transaction has changed it since it started (or since its
+// own last change), because the schema it can see might not be the latest one.
+// That's stricter than it needs to be (any change to the schema counts), but
+// it also covers names that are only unique once both transactions commit.
+fn (mut f Storage) schema_changed() ! {
+	if f.snapshot_isolation {
+		if f.header.schema_version != f.transaction_snapshot.schema_version {
+			return sqlstate_40001('avoiding concurrent change to the schema')
+		}
+		f.transaction_snapshot.schema_version = f.header.schema_version + 1
+	}
+
 	// We don't need to read the header again because write operations on a file
 	// are exclusive so the version (and the header itself) we already have can
 	// be incremented.
@@ -495,7 +520,7 @@ fn (mut f Storage) create_table(definition Table) ! {
 
 	f.save_schema()
 	f.tables[table.name.storage_id()] = table
-	f.schema_changed()
+	f.schema_changed()!
 
 	// The fault makes a table like one from before indexes, which doesn't have
 	// the indexes of its constraints until they're needed.
@@ -551,7 +576,7 @@ fn (mut f Storage) update_table(definition Table) ! {
 
 	f.save_schema()
 	f.tables[table.name.storage_id()] = table
-	f.schema_changed()
+	f.schema_changed()!
 	f.build_constraint_indexes(old, table)!
 }
 
@@ -576,7 +601,7 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 
 	f.save_schema()
 	f.schemas[schema_name] = schema
-	f.schema_changed()
+	f.schema_changed()!
 }
 
 fn (mut f Storage) create_sequence(sequence Sequence) ! {
@@ -611,15 +636,12 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 		f.end_isolation()
 	}
 
-	value_object := f.sequence_value_object(name.storage_id()) or {
-		return sqlstate_42p01('sequence', name.str()) // sequence does not exist
-	}
-
 	definition_key := 'Q${name.storage_id()}'.bytes()
 	definition_objects := f.read_objects(definition_key, definition_key)!
 	if definition_objects.len == 0 {
 		return sqlstate_42p01('sequence', name.str()) // sequence does not exist
 	}
+	value_object := f.sequence_value_object(name.storage_id())!
 
 	sequence := new_sequence_from_bytes(definition_objects[0].value, value_object.value,
 		definition_objects[0].tid)!
@@ -670,13 +692,24 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	return next_sequence.current_value
 }
 
-// sequence_value_object returns the version of the value of a sequence that is
-// visible to the current transaction.
+// sequence_value_object returns the current version of the value of a
+// sequence, see current_object.
 fn (mut f Storage) sequence_value_object(storage_id string) !PageObject {
-	key := 'V${storage_id}'.bytes()
-	objects := f.read_objects(key, key)!
+	return f.current_object('V${storage_id}'.bytes(), 'value for sequence ${storage_id}')
+}
+
+// current_object returns the version of the value of a sequence (or of an
+// identity column) that's visible now. The value isn't part of any transaction
+// (see sequence_next_value), so a REPEATABLE READ transaction uses the latest
+// one, rather than the one in its snapshot. If there isn't one, but there was
+// when it started, another transaction has dropped the sequence since then.
+fn (mut f Storage) current_object(key []u8, description string) !PageObject {
+	objects := f.read_current_objects(key, key)!
 	if objects.len == 0 {
-		return sqlstate_xx001('no value for sequence ${storage_id}')
+		if f.snapshot_isolation {
+			return sqlstate_40001('avoiding concurrent write on sequence')
+		}
+		return sqlstate_xx001('no ${description}')
 	}
 
 	return objects[0]
@@ -785,13 +818,7 @@ fn (mut f Storage) delete_identity(table_id u64) ! {
 }
 
 fn (mut f Storage) identity_value_object(table_id u64) !PageObject {
-	key := identity_key(table_id)
-	objects := f.read_objects(key, key)!
-	if objects.len == 0 {
-		return sqlstate_xx001('no identity value for table ${table_id}')
-	}
-
-	return objects[0]
+	return f.current_object(identity_key(table_id), 'identity value for table ${table_id}')
 }
 
 fn (mut f Storage) delete_table(table_name string, tid u64) ! {
@@ -820,7 +847,7 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 
 	f.save_schema()
 	f.tables.delete(table_name)
-	f.schema_changed()
+	f.schema_changed()!
 }
 
 fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
@@ -833,7 +860,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 
 	f.save_schema()
 	f.schemas.delete(schema_name)
-	f.schema_changed()
+	f.schema_changed()!
 }
 
 fn (mut f Storage) delete_sequence(name Identifier, tid u64) ! {
@@ -955,9 +982,9 @@ fn (mut f Storage) check_concurrent_referenced_tables(definition Table, old_keys
 // of t would otherwise not check the rows that reference it. It must be called
 // from inside an isolation block.
 fn (mut f Storage) check_concurrent_references(t Table) ! {
-	// Only another active transaction can have written a concurrent object, so
+	// Only another transaction can have written a concurrent object, so
 	// there's no need to read them.
-	if !f.header.active_transaction_ids.has_other(f.transaction_id) {
+	if !f.may_have_concurrent_writes() {
 		return
 	}
 
@@ -988,9 +1015,9 @@ fn (mut f Storage) check_concurrent_references(t Table) ! {
 // name, the same as a PRIMARY KEY (see check_primary_key). It must be called
 // from inside an isolation block.
 fn (mut f Storage) check_concurrent_name(kind u8, name Identifier) ! {
-	// Only another active transaction can have written a concurrent object, so
-	// there's no need to read them.
-	if !f.header.active_transaction_ids.has_other(f.transaction_id) {
+	// Only another transaction can have written a concurrent object, so there's
+	// no need to read them.
+	if !f.may_have_concurrent_writes() {
 		return
 	}
 
@@ -1030,9 +1057,9 @@ fn (mut f Storage) check_concurrent_objects(start []u8, end []u8) ! {
 // has_concurrent_objects is true if another active transaction has created or
 // expired an object from start to end (inclusive).
 fn (mut f Storage) has_concurrent_objects(start []u8, end []u8) !bool {
-	// Only another active transaction can have written a concurrent object, so
+	// Only another transaction can have written a concurrent object, so
 	// there's no need to read them.
-	if !f.header.active_transaction_ids.has_other(f.transaction_id) {
+	if !f.may_have_concurrent_writes() {
 		return false
 	}
 
@@ -1091,9 +1118,7 @@ fn (mut s RowScanner) next_rows(limit int) ![]Row {
 	mut rows := []Row{}
 	for rows.len < limit {
 		object := s.iter.next() or { break }
-		if object_is_visible(object.tid, object.xid, s.storage.transaction_id, mut
-			s.storage.header.active_transaction_ids)
-		{
+		if s.storage.is_visible(object.tid, object.xid) {
 			rows << new_row_from_bytes_needed(s.table, s.ids, s.needed, object.value, object.tid)
 		}
 	}
@@ -1109,14 +1134,34 @@ fn (mut s RowScanner) finish() {
 	s.storage.end_isolation()
 }
 
+// read_current_objects is read_objects, but without the snapshot of a
+// REPEATABLE READ transaction, so it's the versions that are visible now.
+fn (mut f Storage) read_current_objects(start []u8, end []u8) ![]PageObject {
+	snapshot_isolation := f.snapshot_isolation
+	f.snapshot_isolation = false
+	defer {
+		f.snapshot_isolation = snapshot_isolation
+	}
+
+	return f.read_objects(start, end)
+}
+
+// may_have_concurrent_writes is false when there can't be any objects that
+// is_concurrent_write would be true for: no other transaction is active, and
+// for a REPEATABLE READ transaction, none could have committed since it
+// started.
+fn (f &Storage) may_have_concurrent_writes() bool {
+	return f.header.active_transaction_ids.has_other(f.transaction_id)
+		|| (f.snapshot_isolation && (f.transaction_snapshot.active.len > 0
+			|| f.header.transaction_id > f.transaction_snapshot.xmax))
+}
+
 fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 	mut objs := []PageObject{}
 	mut iter := f.btree.new_range_iterator(start, end)
 	for {
 		object := iter.next() or { break }
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
-			f.header.active_transaction_ids)
-		{
+		if f.is_visible(object.tid, object.xid) {
 			objs << object
 		}
 	}
@@ -1236,34 +1281,8 @@ fn (mut f Storage) isolation_end() ! {
 	}
 
 	// Revist any remaining pages to clean out any expired rows. Only the
-	// objects expired in this transaction are removed. Most pages don't have
-	// any, so they're only read, not copied and stored again.
-	mut blob_refs := []PageObject{}
-	for page_number, _ in f.transaction_pages {
-		page_in_place := f.btree.pager.read_page(page_number)!
-		if !f.commit_locked && page_in_place.has_object_of(f.transaction_id) {
-			f.lock_commit()!
-		}
-
-		expired := page_in_place.expired_objects(f.transaction_id)
-		if expired.len == 0 {
-			continue
-		}
-
-		mut page := f.btree.pager.fetch_page(page_number)!
-		for obj in expired {
-			page.delete(obj.key, obj.tid)
-			if obj.is_blob_ref {
-				blob_refs << obj
-			}
-		}
-
-		f.btree.pager.store_page(page_number, page)!
-	}
-
-	for obj in blob_refs {
-		f.btree.remove_blob(obj)!
-	}
+	// objects expired in this transaction are removed.
+	f.remove_expired(f.transaction_pages.keys(), false)!
 
 	f.save_transaction_pages()
 	f.transaction_pages = map[int]bool{}

@@ -157,7 +157,21 @@ fn key_type_value(value Value, typ SQLType, time_zone i16) Value {
 // is_concurrent_write is true if another transaction is creating or deleting
 // the object, so it may or may not exist when that transaction finishes. It
 // must be called from inside an isolation block.
+//
+// For a REPEATABLE READ transaction, it's also true when another transaction
+// created or deleted it after the snapshot was taken (first committer wins).
+// Otherwise, a change to a row that it can't see (or can still see after it
+// was deleted) would be lost, or a constraint would be checked against rows
+// that aren't the latest, which isn't allowed at any isolation level
+// (ISO/IEC 9075-2:2016(E), 4.41.4, Isolation levels of SQL-transactions).
 fn (mut f Storage) is_concurrent_write(object PageObject) bool {
+	if f.snapshot_isolation {
+		return (object.tid != f.transaction_id
+			&& !f.transaction_snapshot.is_committed(object.tid))
+			|| (object.xid != 0 && object.xid != f.transaction_id
+				&& !f.transaction_snapshot.is_committed(object.xid))
+	}
+
 	return (object.tid != f.transaction_id && f.header.active_transaction_ids.exists(object.tid))
 		|| (object.xid != 0 && object.xid != f.transaction_id
 			&& f.header.active_transaction_ids.exists(object.xid))

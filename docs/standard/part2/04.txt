@@ -419,7 +419,7 @@
 # 4.41.3, Properties of SQL-transactions
 4.41.3                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 # 4.41.4, Isolation levels of SQL-transactions
-4.41.4                   implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql see vsql/isolation.v
+4.41.4                   implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql,tests/std_2_17_3_isolation_repeatable_read.sql see vsql/isolation.v and Storage.take_snapshot
 # 4.41.5, Implicit rollbacks
 4.41.5                   implemented  vsql/connection.v tests/std_2_17_3_isolation_read_committed.sql
 # 4.41.6, Effects of SQL-statements in an SQL-transaction

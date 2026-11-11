@@ -13,6 +13,6 @@ unique_specification:
 | PRIMARY KEY { $$.v = true }
 
 unique_column_list:
-  column_name_list { $$.v = $1.v as []Identifier }
+  column_name_list { $$.v = $1.v }
 
 %%

@@ -4,52 +4,52 @@
 aggregate_function:
   COUNT OPERATOR_LEFT_PAREN_ASTERISK right_paren {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = AggregateFunction(AggregateFunctionCount{})
+    $$.v = yy_box(AggregateFunction(AggregateFunctionCount{}))
   }
 | COUNT OPERATOR_LEFT_PAREN_ASTERISK right_paren filter_clause {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = AggregateFunction(AggregateFunctionCount{
+    $$.v = yy_box(AggregateFunction(AggregateFunctionCount{
       filter: &BooleanValueExpression{
         ...$4.v as BooleanValueExpression
       }
-    })
+    }))
   }
 | general_set_function {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = $1.v as AggregateFunction
+    $$.v = $1.v
   }
 | general_set_function filter_clause {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = with_filter($1.v as AggregateFunction, $2.v as BooleanValueExpression)
+    $$.v = yy_box(with_filter($1.v as AggregateFunction, $2.v as BooleanValueExpression))
   }
 | binary_set_function {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = $1.v as AggregateFunction
+    $$.v = $1.v
   }
 | listagg_set_function {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = AggregateFunction($1.v as ListaggSetFunction)
+    $$.v = yy_box(AggregateFunction($1.v as ListaggSetFunction))
   }
 | listagg_set_function filter_clause {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = with_filter(AggregateFunction($1.v as ListaggSetFunction),
-      $2.v as BooleanValueExpression)
+    $$.v = yy_box(with_filter(AggregateFunction($1.v as ListaggSetFunction),
+      $2.v as BooleanValueExpression))
   }
 | ordered_set_function {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = AggregateFunction($1.v as OrderedSetFunction)
+    $$.v = yy_box(AggregateFunction($1.v as OrderedSetFunction))
   }
 | ordered_set_function filter_clause {
     parsed_sort_key_part(mut yylex, .set_function)
-    $$.v = with_filter(AggregateFunction($1.v as OrderedSetFunction),
-      $2.v as BooleanValueExpression)
+    $$.v = yy_box(with_filter(AggregateFunction($1.v as OrderedSetFunction),
+      $2.v as BooleanValueExpression))
   }
 
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 13
 filter_clause:
   FILTER left_paren WHERE search_condition right_paren {
     flag(mut yylex, 'T612')
-    $$.v = $4.v as BooleanValueExpression
+    $$.v = $4.v
   }
 
 // ALL is the same as no <set quantifier>.
@@ -63,57 +63,57 @@ filter_clause:
 general_set_function:
   set_function_type left_paren value_expression right_paren {
     flag_if(mut yylex, $1.v as string == 'COUNT', 'F441')
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$3.v as ValueExpression]
-    })
+    }))
   }
 | set_function_type left_paren set_quantifier value_expression right_paren {
     flag_set_quantifier(mut yylex, $1.v as string, $3.v as bool, $4.v as ValueExpression)
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$4.v as ValueExpression]
       distinct:      $3.v as bool
-    })
+    }))
   }
 | SOME left_paren value_expression right_paren {
     flag(mut yylex, 'T031')
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$3.v as ValueExpression]
-    })
+    }))
   }
 | SOME left_paren set_quantifier value_expression right_paren {
     flag(mut yylex, 'T031')
     flag_set_quantifier(mut yylex, $1.v as string, $3.v as bool, $4.v as ValueExpression)
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$4.v as ValueExpression]
       distinct:      $3.v as bool
-    })
+    }))
   }
 | ANY left_paren value_expression right_paren {
     flag(mut yylex, 'T031')
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$3.v as ValueExpression]
-    })
+    }))
   }
 | ANY left_paren set_quantifier value_expression right_paren {
     flag(mut yylex, 'T031')
     flag_set_quantifier(mut yylex, $1.v as string, $3.v as bool, $4.v as ValueExpression)
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$4.v as ValueExpression]
       distinct:      $3.v as bool
-    })
+    }))
   }
 | statistical_operation left_paren value_expression right_paren {
     flag(mut yylex, 'T621')
-    $$.v = AggregateFunction(RoutineInvocation{
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{
       function_name: $1.v as string
       args:          [$3.v as ValueExpression]
-    })
+    }))
   }
 
 // STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP are a <computational
@@ -144,27 +144,27 @@ listagg_set_function:
   LISTAGG left_paren character_value_expression comma listagg_separator
   right_paren within_group_specification {
     flag(mut yylex, 'T625')
-    $$.v = new_listagg_set_function(false, $3.v as CharacterValueExpression,
-      $5.v as Value, ListaggOverflow{}, $7.v as []SortSpecification)
+    $$.v = yy_box(new_listagg_set_function(false, $3.v as CharacterValueExpression,
+      $5.v as Value, ListaggOverflow{}, $7.v as []SortSpecification))
   }
 | LISTAGG left_paren character_value_expression comma listagg_separator
   listagg_overflow_clause right_paren within_group_specification {
     flag(mut yylex, 'T625')
-    $$.v = new_listagg_set_function(false, $3.v as CharacterValueExpression,
-      $5.v as Value, $6.v as ListaggOverflow, $8.v as []SortSpecification)
+    $$.v = yy_box(new_listagg_set_function(false, $3.v as CharacterValueExpression,
+      $5.v as Value, $6.v as ListaggOverflow, $8.v as []SortSpecification))
   }
 | LISTAGG left_paren set_quantifier character_value_expression comma
   listagg_separator right_paren within_group_specification {
     flag(mut yylex, 'T625')
-    $$.v = new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
-      $6.v as Value, ListaggOverflow{}, $8.v as []SortSpecification)
+    $$.v = yy_box(new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
+      $6.v as Value, ListaggOverflow{}, $8.v as []SortSpecification))
   }
 | LISTAGG left_paren set_quantifier character_value_expression comma
   listagg_separator listagg_overflow_clause right_paren
   within_group_specification {
     flag(mut yylex, 'T625')
-    $$.v = new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
-      $6.v as Value, $7.v as ListaggOverflow, $9.v as []SortSpecification)
+    $$.v = yy_box(new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
+      $6.v as Value, $7.v as ListaggOverflow, $9.v as []SortSpecification))
   }
 
 // A <hypothetical set function> or an <inverse distribution function>. A
@@ -177,20 +177,20 @@ ordered_set_function:
   hypothetical_set_function_value_expression_list right_paren
   within_group_specification {
     flag(mut yylex, 'T612')
-    $$.v = OrderedSetFunction{
+    $$.v = yy_box(OrderedSetFunction{
       name:  $1.v as string
       args:  $3.v as []ValueExpression
       order: $5.v as []SortSpecification
-    }
+    })
   }
 | inverse_distribution_function_type left_paren numeric_value_expression
   right_paren within_group_specification {
     flag(mut yylex, 'T612')
-    $$.v = OrderedSetFunction{
+    $$.v = yy_box(OrderedSetFunction{
       name:  $1.v as string
       args:  [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]
       order: $5.v as []SortSpecification
-    }
+    })
   }
 
 rank_function_type:
@@ -200,9 +200,9 @@ rank_function_type:
 | CUME_DIST { $$.v = $1.v as string }
 
 hypothetical_set_function_value_expression_list:
-  value_expression { $$.v = [$1.v as ValueExpression] }
+  value_expression { $$.v = yy_box([$1.v as ValueExpression]) }
 | hypothetical_set_function_value_expression_list comma value_expression {
-    $$.v = append_list($1.v as []ValueExpression, $3.v as ValueExpression)
+    $$.v = yy_box(append_list($1.v as []ValueExpression, $3.v as ValueExpression))
   }
 
 inverse_distribution_function_type:
@@ -213,45 +213,45 @@ inverse_distribution_function_type:
 // aren't flagged (see flag_sort_key).
 within_group_specification:
   WITHIN GROUP left_paren ORDER BY within_group_sort_specification_list
-  right_paren { $$.v = $6.v as []SortSpecification }
+  right_paren { $$.v = $6.v }
 
 within_group_sort_specification_list:
   within_group_sort_specification {
-    $$.v = [$1.v as SortSpecification]
+    $$.v = yy_box([$1.v as SortSpecification])
   }
 | within_group_sort_specification_list comma within_group_sort_specification {
-    $$.v = append_list($1.v as []SortSpecification, $3.v as SortSpecification)
+    $$.v = yy_box(append_list($1.v as []SortSpecification, $3.v as SortSpecification))
   }
 
 within_group_sort_specification:
-  value_expression { $$.v = SortSpecification{$1.v as ValueExpression, true} }
+  value_expression { $$.v = yy_box(SortSpecification{$1.v as ValueExpression, true}) }
 | value_expression ordering_specification {
-    $$.v = SortSpecification{$1.v as ValueExpression, $2.v as bool}
+    $$.v = yy_box(SortSpecification{$1.v as ValueExpression, $2.v as bool})
   }
 
 listagg_separator:
-  character_string_literal { $$.v = $1.v as Value }
+  character_string_literal { $$.v = $1.v }
 
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
 listagg_overflow_clause:
-  ON OVERFLOW ERROR { $$.v = ListaggOverflow{} }
+  ON OVERFLOW ERROR { $$.v = yy_box(ListaggOverflow{}) }
 | ON OVERFLOW TRUNCATE listagg_count_indication {
-    $$.v = ListaggOverflow{
+    $$.v = yy_box(ListaggOverflow{
       truncate:   true
       filler:     new_varchar_value('...')
       with_count: $4.v as bool
-    }
+    })
   }
 | ON OVERFLOW TRUNCATE listagg_truncation_filler listagg_count_indication {
-    $$.v = ListaggOverflow{
+    $$.v = yy_box(ListaggOverflow{
       truncate:   true
       filler:     $4.v as Value
       with_count: $5.v as bool
-    }
+    })
   }
 
 listagg_truncation_filler:
-  character_string_literal { $$.v = $1.v as Value }
+  character_string_literal { $$.v = $1.v }
 
 // WITH COUNT is true.
 listagg_count_indication:
@@ -273,10 +273,10 @@ binary_set_function:
   binary_set_function_type left_paren dependent_variable_expression comma
   independent_variable_expression right_paren {
     flag(mut yylex, 'T621')
-    $$.v = AggregateFunction(RoutineInvocation{function_name: $1.v as string, args: [
+    $$.v = yy_box(AggregateFunction(RoutineInvocation{function_name: $1.v as string, args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
       ValueExpression(CommonValueExpression($5.v as NumericValueExpression)),
-    ]})
+    ]}))
   }
 
 binary_set_function_type:
@@ -294,9 +294,9 @@ binary_set_function_type:
 | REGR_SXY { $$.v = $1.v as string }
 
 dependent_variable_expression:
-  numeric_value_expression { $$.v = $1.v as NumericValueExpression }
+  numeric_value_expression { $$.v = $1.v }
 
 independent_variable_expression:
-  numeric_value_expression { $$.v = $1.v as NumericValueExpression }
+  numeric_value_expression { $$.v = $1.v }
 
 %%

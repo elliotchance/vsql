@@ -10,6 +10,6 @@ set_catalog_statement:
   }
 
 catalog_name_characteristic:
-  CATALOG value_specification { $$.v = $2.v as ValueSpecification }
+  CATALOG value_specification { $$.v = $2.v }
 
 %%

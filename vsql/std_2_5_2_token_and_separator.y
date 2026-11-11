@@ -4,16 +4,16 @@ concatenation_operator:
   OPERATOR_DOUBLE_PIPE
 
 regular_identifier:
-  identifier_body { $$.v = $1.v as IdentifierChain }
-| non_reserved_word { $$.v = IdentifierChain{$1.v as string} }
+  identifier_body { $$.v = $1.v }
+| non_reserved_word { $$.v = yy_box(IdentifierChain{$1.v as string}) }
 
 identifier_body:
-  identifier_start { $$.v = $1.v as IdentifierChain }
+  identifier_start { $$.v = $1.v }
 
 identifier_start:
   LITERAL_IDENTIFIER {
     flag_identifier(mut yylex, ($1.v as IdentifierChain).identifier)
-    $$.v = $1.v as IdentifierChain
+    $$.v = $1.v
   }
 
 not_equals_operator:

@@ -5,9 +5,9 @@
 // Specify a list of updates.
 
 set_clause_list:
-  set_clause { $$.v = [$1.v as SetClause] }
+  set_clause { $$.v = yy_box([$1.v as SetClause]) }
 | set_clause_list comma set_clause {
-    $$.v = append_list($1.v as []SetClause, $3.v as SetClause)
+    $$.v = yy_box(append_list($1.v as []SetClause, $3.v as SetClause))
   }
 
 set_clause:
@@ -16,18 +16,18 @@ set_clause:
   }
 
 set_target:
-  update_target { $$.v = $1.v as Identifier }
+  update_target { $$.v = $1.v }
 
 update_target:
-  object_column { $$.v = $1.v as Identifier }
+  object_column { $$.v = $1.v }
 
 update_source:
-  value_expression { $$.v = UpdateSource($1.v as ValueExpression) }
+  value_expression { $$.v = yy_box(UpdateSource($1.v as ValueExpression)) }
 | contextually_typed_value_specification {
-    $$.v = UpdateSource($1.v as ContextuallyTypedValueSpecification)
+    $$.v = yy_box(UpdateSource($1.v as ContextuallyTypedValueSpecification))
   }
 
 object_column:
-  column_name { $$.v = $1.v as Identifier }
+  column_name { $$.v = $1.v }
 
 %%

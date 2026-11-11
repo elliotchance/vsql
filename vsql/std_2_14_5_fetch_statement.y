@@ -23,21 +23,21 @@ fetch_statement:
   }
 
 fetch_orientation:
-  NEXT { $$.v = FetchOrientation{} }
-| PRIOR { $$.v = FetchOrientation{direction: .prior} }
-| FIRST { $$.v = FetchOrientation{direction: .first} }
-| LAST { $$.v = FetchOrientation{direction: .last} }
+  NEXT { $$.v = yy_box(FetchOrientation{}) }
+| PRIOR { $$.v = yy_box(FetchOrientation{direction: .prior}) }
+| FIRST { $$.v = yy_box(FetchOrientation{direction: .first}) }
+| LAST { $$.v = yy_box(FetchOrientation{direction: .last}) }
 | ABSOLUTE simple_value_specification {
-    $$.v = FetchOrientation{
+    $$.v = yy_box(FetchOrientation{
       direction: .absolute
       value:     $2.v as ValueSpecification
-    }
+    })
   }
 | RELATIVE simple_value_specification {
-    $$.v = FetchOrientation{
+    $$.v = yy_box(FetchOrientation{
       direction: .relative
       value:     $2.v as ValueSpecification
-    }
+    })
   }
 
 %%

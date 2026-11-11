@@ -6,13 +6,13 @@
 
 value_expression:
   common_value_expression {
-    $$.v = ValueExpression($1.v as CommonValueExpression)
+    $$.v = yy_box(ValueExpression($1.v as CommonValueExpression))
   }
 | boolean_value_expression {
     // ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Conformance Rules, 1
     // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Conformance Rules, 1
     flag_if(mut yylex, is_boolean_operation($1.v as BooleanValueExpression), 'T031')
-    $$.v = ValueExpression($1.v as BooleanValueExpression)
+    $$.v = yy_box(ValueExpression($1.v as BooleanValueExpression))
   }
 
 // A value_expression_primary on its own could be a numeric, string, datetime
@@ -24,19 +24,19 @@ value_expression:
 // DatetimePrimary because that's how it was parsed before (any type works).
 common_value_expression:
   parenthesized_value_expression {
-    $$.v = CommonValueExpression(DatetimePrimary(ValueExpressionPrimary($1.v as ParenthesizedValueExpression)))
+    $$.v = yy_box(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary($1.v as ParenthesizedValueExpression))))
   }
 | operator_numeric_value_expression {
-    $$.v = CommonValueExpression($1.v as NumericValueExpression)
+    $$.v = yy_box(CommonValueExpression($1.v as NumericValueExpression))
   }
 | concatenation {
-    $$.v = CommonValueExpression(CharacterValueExpression($1.v as Concatenation))
+    $$.v = yy_box(CommonValueExpression(CharacterValueExpression($1.v as Concatenation)))
   }
 | string_value_function {
-    $$.v = CommonValueExpression(CharacterValueExpression(CharacterPrimary($1.v as CharacterValueFunction)))
+    $$.v = yy_box(CommonValueExpression(CharacterValueExpression(CharacterPrimary($1.v as CharacterValueFunction))))
   }
 | datetime_value_expression {
-    $$.v = CommonValueExpression($1.v as DatetimePrimary)
+    $$.v = yy_box(CommonValueExpression($1.v as DatetimePrimary))
   }
 
 %%

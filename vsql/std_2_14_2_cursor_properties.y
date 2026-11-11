@@ -6,14 +6,14 @@
 
 // Only the <cursor scrollability> and <cursor holdability> are supported.
 cursor_properties:
-  CURSOR { $$.v = CursorProperties{} }
-| CURSOR cursor_holdability { $$.v = CursorProperties{hold: $2.v as bool} }
+  CURSOR { $$.v = yy_box(CursorProperties{}) }
+| CURSOR cursor_holdability { $$.v = yy_box(CursorProperties{hold: $2.v as bool}) }
 | cursor_scrollability CURSOR {
-    $$.v = CursorProperties{scroll: $1.v as bool, scrollability: true}
+    $$.v = yy_box(CursorProperties{scroll: $1.v as bool, scrollability: true})
   }
 | cursor_scrollability CURSOR cursor_holdability {
-    $$.v = CursorProperties{scroll: $1.v as bool, scrollability: true,
-      hold: $3.v as bool}
+    $$.v = yy_box(CursorProperties{scroll: $1.v as bool, scrollability: true,
+      hold: $3.v as bool})
   }
 
 cursor_scrollability:

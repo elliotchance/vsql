@@ -2,19 +2,19 @@
 
 contextually_typed_value_specification:
   implicitly_typed_value_specification {
-    $$.v = ContextuallyTypedValueSpecification($1.v as NullSpecification)
+    $$.v = yy_box(ContextuallyTypedValueSpecification($1.v as NullSpecification))
   }
 | default_specification {
-    $$.v = ContextuallyTypedValueSpecification($1.v as DefaultSpecification)
+    $$.v = yy_box(ContextuallyTypedValueSpecification($1.v as DefaultSpecification))
   }
 
 implicitly_typed_value_specification:
-  null_specification { $$.v = $1.v as NullSpecification }
+  null_specification { $$.v = $1.v }
 
 null_specification:
-  NULL { $$.v = NullSpecification{} }
+  NULL { $$.v = yy_box(NullSpecification{}) }
 
 default_specification:
-  DEFAULT { $$.v = DefaultSpecification{} }
+  DEFAULT { $$.v = yy_box(DefaultSpecification{}) }
 
 %%

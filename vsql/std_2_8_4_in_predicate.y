@@ -35,10 +35,10 @@ in_predicate_value:
   }
 
 in_value_list:
-  row_value_predicand { $$.v = [$1.v as RowValueConstructorPredicand] }
+  row_value_predicand { $$.v = yy_box([$1.v as RowValueConstructorPredicand]) }
 | in_value_list comma row_value_predicand {
-    $$.v = append_list($1.v as []RowValueConstructorPredicand,
-      $3.v as RowValueConstructorPredicand)
+    $$.v = yy_box(append_list($1.v as []RowValueConstructorPredicand,
+      $3.v as RowValueConstructorPredicand))
   }
 
 %%

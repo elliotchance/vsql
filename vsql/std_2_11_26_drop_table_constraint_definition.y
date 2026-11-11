@@ -11,11 +11,11 @@ drop_table_constraint_definition:
   DROP CONSTRAINT constraint_name {
     flag(mut yylex, 'F381')
     flag(mut yylex, vsql_drop_constraint_behavior)
-    $$.v = DropTableConstraintDefinition{$3.v as Identifier, 'RESTRICT'}
+    $$.v = yy_box(DropTableConstraintDefinition{$3.v as Identifier, 'RESTRICT'})
   }
 | DROP CONSTRAINT constraint_name drop_behavior {
     flag(mut yylex, 'F381')
-    $$.v = DropTableConstraintDefinition{$3.v as Identifier, $4.v as string}
+    $$.v = yy_box(DropTableConstraintDefinition{$3.v as Identifier, $4.v as string})
   }
 
 %%

@@ -52,7 +52,9 @@ fn yysym_variants(lexer_path string) map[string]bool {
 	for line in content.split_into_lines() {
 		if line.starts_with('type YYSym = ') {
 			in_type = true
-			variants[line.all_after('type YYSym = ').trim_space()] = true
+			for variant in line.all_after('type YYSym = ').split('|') {
+				variants[variant.trim_space()] = true
+			}
 			continue
 		}
 		if in_type {

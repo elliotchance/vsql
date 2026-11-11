@@ -196,15 +196,15 @@ query_set_operation:
   }
 
 query_set_operator:
-  UNION { $$.v = QuerySetOperator{'UNION', false} }
+  UNION { $$.v = yy_box(QuerySetOperator{'UNION', false}) }
 | UNION set_quantifier {
     flag_if(mut yylex, $2.v as bool, 'T551')
-    $$.v = QuerySetOperator{'UNION', !($2.v as bool)}
+    $$.v = yy_box(QuerySetOperator{'UNION', !($2.v as bool)})
   }
-| EXCEPT { $$.v = QuerySetOperator{'EXCEPT', false} }
+| EXCEPT { $$.v = yy_box(QuerySetOperator{'EXCEPT', false}) }
 | EXCEPT set_quantifier {
     flag(mut yylex, if $2.v as bool { 'T551' } else { 'F304' })
-    $$.v = QuerySetOperator{'EXCEPT', !($2.v as bool)}
+    $$.v = yy_box(QuerySetOperator{'EXCEPT', !($2.v as bool)})
   }
 
 query_term:
@@ -228,12 +228,12 @@ query_intersect_operation:
 intersect_operator:
   INTERSECT {
     flag(mut yylex, 'F302')
-    $$.v = QuerySetOperator{'INTERSECT', false}
+    $$.v = yy_box(QuerySetOperator{'INTERSECT', false})
   }
 | INTERSECT set_quantifier {
     flag(mut yylex, 'F302')
     flag_if(mut yylex, $2.v as bool, 'T551')
-    $$.v = QuerySetOperator{'INTERSECT', !($2.v as bool)}
+    $$.v = yy_box(QuerySetOperator{'INTERSECT', !($2.v as bool)})
   }
 
 query_primary:
@@ -303,7 +303,7 @@ fetch_first_clause:
 // Without a row count, it's 1.
 //
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, General Rules, 7.b.iii
-| FETCH first_or_next row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
+| FETCH first_or_next row_or_rows ONLY { $$.v = yy_box(ValueSpecification(new_integer_value(1))) }
 
 // LIMIT is a vsql extension that's the same as a fetch_first_clause (V203-01).
 // "LIMIT offset, count" is in query_expression_with_clauses (V203-03), since it
@@ -329,13 +329,13 @@ first_or_next:
 | NEXT
 
 fetch_first_quantity:
-  fetch_first_row_count { $$.v = $1.v as ValueSpecification }
+  fetch_first_row_count { $$.v = $1.v }
 
 offset_row_count:
-  simple_value_specification { $$.v = $1.v as ValueSpecification }
+  simple_value_specification { $$.v = $1.v }
 
 fetch_first_row_count:
-  simple_value_specification { $$.v = $1.v as ValueSpecification }
+  simple_value_specification { $$.v = $1.v }
 
 row_or_rows:
   ROW

@@ -9,40 +9,40 @@
 // characteristics>.
 column_definition:
   column_name data_type_or_domain_name {
-    $$.v = [TableElement(Column{name: $1.v as Identifier, typ: $2.v as Type})]
+    $$.v = yy_box([TableElement(Column{name: $1.v as Identifier, typ: $2.v as Type})])
   }
 | column_name data_type_or_domain_name default_clause {
-    $$.v = [
+    $$.v = yy_box([
       TableElement(Column{
         name:          $1.v as Identifier
         typ:           $2.v as Type
         default_value: new_ref($3.v as DefaultOption)
       }),
-    ]
+    ])
   }
 | column_name data_type_or_domain_name identity_column_specification {
     flag(mut yylex, 'T174')
-    $$.v = [
+    $$.v = yy_box([
       TableElement(Column{
         name:     $1.v as Identifier
         typ:      $2.v as Type
         identity: new_ref($3.v as IdentityColumn)
       }),
-    ]
+    ])
   }
 | column_name data_type_or_domain_name generation_clause {
     flag(mut yylex, 'T175')
-    $$.v = [
+    $$.v = yy_box([
       TableElement(Column{
         name:      $1.v as Identifier
         typ:       $2.v as Type
         generated: new_ref($3.v as GenerationClause)
       }),
-    ]
+    ])
   }
 | column_name generation_clause {
     flag(mut yylex, 'T175')
-    $$.v = [
+    $$.v = yy_box([
       TableElement(Column{
         name:      $1.v as Identifier
         generated: new_ref(GenerationClause{
@@ -50,17 +50,17 @@ column_definition:
           infer_type: true
         })
       }),
-    ]
+    ])
   }
 | column_definition column_constraint_definition {
-    $$.v = add_column_constraint($1.v as []TableElement, $2.v as ColumnConstraint)
+    $$.v = yy_box(add_column_constraint($1.v as []TableElement, $2.v as ColumnConstraint))
   }
 | column_definition constraint_characteristic {
-    $$.v = with_constraint_characteristic($1.v as []TableElement, $2.v as string)!
+    $$.v = yy_box(with_constraint_characteristic($1.v as []TableElement, $2.v as string)!)
   }
 
 data_type_or_domain_name:
-  data_type { $$.v = $1.v as Type }
+  data_type { $$.v = $1.v }
 
 column_constraint_definition:
   column_constraint { $$.v = $1.v }
@@ -119,10 +119,10 @@ identity_column_specification:
 // would conflict with the <identity column specification>.
 generation_clause:
   GENERATED ALWAYS AS generation_expression {
-    $$.v = GenerationClause{expr: $4.v as ValueExpression}
+    $$.v = yy_box(GenerationClause{expr: $4.v as ValueExpression})
   }
 
 generation_expression:
-  left_paren value_expression right_paren { $$.v = $2.v as ValueExpression }
+  left_paren value_expression right_paren { $$.v = $2.v }
 
 %%

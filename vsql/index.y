@@ -50,22 +50,22 @@ create_index_statement:
   }
 
 index_column_list:
-  index_column { $$.v = [$1.v as IndexColumn] }
+  index_column { $$.v = yy_box([$1.v as IndexColumn]) }
 | index_column_list comma index_column {
-    $$.v = append_list($1.v as []IndexColumn, $3.v as IndexColumn)
+    $$.v = yy_box(append_list($1.v as []IndexColumn, $3.v as IndexColumn))
   }
 
 index_column:
   column_name {
-    $$.v = IndexColumn{
+    $$.v = yy_box(IndexColumn{
       name: ($1.v as Identifier).sub_entity_name
-    }
+    })
   }
 | column_name ordering_specification {
-    $$.v = IndexColumn{
+    $$.v = yy_box(IndexColumn{
       name: ($1.v as Identifier).sub_entity_name
       desc: !($2.v as bool)
-    }
+    })
   }
 
 drop_index_statement:

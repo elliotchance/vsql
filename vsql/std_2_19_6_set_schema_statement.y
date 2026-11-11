@@ -5,7 +5,7 @@
 set_schema_statement:
   SET schema_name_characteristic {
     flag(mut yylex, 'F761')
-    $$.v = SetSchemaStatement{$2.v as ValueSpecification}
+    $$.v = yy_box(SetSchemaStatement{$2.v as ValueSpecification})
   }
 
 schema_name_characteristic:

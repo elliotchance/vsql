@@ -3,125 +3,12 @@
 
 module vsql
 
-// YYSym allows for every possible type that needs to pass through $$ rules in
-// the grammar. If V ever supports some kind of "any" type this would be a
-// little easier.
-type YYSym = AddColumnDefinition
-	| AggregateFunction
-	| AggregateFunctionCount
-	| AlterColumnAction
-	| AlterIdentityColumnSpecification
-	| AlterSequenceGeneratorStatement
-	| BooleanPredicand
-	| BooleanTerm
-	| BooleanTest
-	| BooleanValueExpression
-	| CaseExpression
-	| CaseExpressionSearched
-	| CaseExpressionSimple
-	| CaseResult
-	| CastOperand
-	| CastSpecification
-	| CharacterLikePredicatePart2
-	| CharacterPrimary
-	| CharacterSubstringFunction
-	| CharacterValueExpression
-	| CharacterValueFunction
-	| CommonValueExpression
-	| ComparisonOperator
-	| ComparisonPredicatePart2
-	| Concatenation
-	| ContextuallyTypedRowValueConstructor
-	| ContextuallyTypedRowValueConstructorElement
-	| ContextuallyTypedValueSpecification
-	| Correlation
-	| CurrentDate
-	| CurrentTime
-	| CurrentTimestamp
-	| CursorProperties
-	| DatetimePrimary
-	| DatetimeValueFunction
-	| DefaultOption
-	| DefaultSpecification
-	| DropColumnDefaultClause
-	| DropColumnDefinition
-	| DropTableConstraintDefinition
-	| ExistsPredicate
-	| ExplicitRowValueConstructor
-	| FetchOrientation
-	| GeneralValueSpecification
-	| GenerationClause
-	| Identifier
-	| IdentifierChain
-	| IndexColumn
-	| DiagnosticsSize
-	| IsolationLevel
-	| JoinSpecification
-	| JoinType
-	| ListaggOverflow
-	| ListaggSetFunction
-	| LocalTime
-	| LocalTimestamp
-	| NextValueExpression
-	| NonparenthesizedValueExpressionPrimary
-	| NullSpecification
-	| NumericPrimary
-	| NumericValueExpression
-	| OrderedSetFunction
-	| OverlayFunction
-	| ParenthesizedValueExpression
-	| QualifiedAsteriskExpr
-	| QualifiedJoin
-	| QuerySetOperator
-	| RegularExpressionSubstringFunction
-	| RoutineInvocation
-	| RowValueConstructor
-	| RowValueConstructorPredicand
-	| SelectList
-	| SequenceGeneratorDefinition
-	| SequenceGeneratorIncrementByOption
-	| SequenceGeneratorMaxvalueOption
-	| SequenceGeneratorMinvalueOption
-	| SequenceGeneratorOption
-	| SequenceGeneratorRestartOption
-	| SequenceGeneratorStartWithOption
-	| SetColumnDefaultClause
-	| SetSchemaStatement
-	| SimilarPredicatePart2
-	| SortSpecification
-	| Subquery
-	| TableDefinition
-	| Term
-	| TransactionAccessMode
-	| TransactionMode
-	| TrimFunction
-	| Type
-	| UpdatabilityClause
-	| UpdateSource
-	| Value
-	| ValueExpression
-	| ValueExpressionPrimary
-	| ValueSpecification
-	| YYBox
-	| []CaseExpressionSearchedWhen
-	| []CaseExpressionSimpleWhen
-	| []ContextuallyTypedRowValueConstructor
-	| []ContextuallyTypedRowValueConstructorElement
-	| []DerivedColumn
-	| []Identifier
-	| []IndexColumn
-	| []RowValueConstructor
-	| []RowValueConstructorPredicand
-	| []SchemaElement
-	| []SelectSublist
-	| []SequenceGeneratorOption
-	| []SetClause
-	| []SortSpecification
-	| []TableElement
-	| []TransactionMode
-	| []ValueExpression
-	| bool
-	| string
+// YYSym is the value of a symbol on the parser's stack. Every node of the
+// syntax tree is kept in a YYBox (see below), so that YYSym stays small. Only a
+// string (the text of a token, like a keyword or a number) and a bool aren't
+// boxed, because they're no bigger than a YYBox and are only ever read as
+// themselves.
+type YYSym = YYBox | bool | string
 
 // YYSymType is the yacc internal type for the stack that contains the symbols
 // to reduce (pass to the code). The only requirement here is that `yys` is
@@ -138,10 +25,10 @@ fn yy_as[T](sym YYSym) T {
 	panic('expected ${T.name}')
 }
 
-// YYBox holds a node of the syntax tree that is too big to be in YYSym. A sum
-// type is as big as its biggest type, and the parser copies a YYSymType for
-// every token and every rule it reduces, so the big nodes (like a
-// TableExpression, which is more than 1 KB) are kept on the heap instead. The
+// YYBox holds a node of the syntax tree on the heap. A sum type is as big as
+// its biggest type, and the parser copies a YYSymType for every token and every
+// rule it reduces, so every node (even a small one, so that no one has to decide
+// which are big enough) is boxed, and a YYSymType is only a few words. The
 // grammar actions use yy_box to make one, and yy_unbox (generated for any type
 // that is not in YYSym, see scripts/generate-grammar.vsh) to get it back.
 struct YYBox {
@@ -277,8 +164,8 @@ mut:
 fn (t Token) sym() YYSymType {
 	return YYSymType{
 		v: match t.value {
-			IdentifierChain { YYSym(t.value) }
-			Value { YYSym(t.value) }
+			IdentifierChain { YYSym(yy_box[IdentifierChain](t.value)) }
+			Value { YYSym(yy_box[Value](t.value)) }
 			string { YYSym(t.value) }
 		}
 	}

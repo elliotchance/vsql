@@ -36,15 +36,15 @@ query_specification:
 //
 // ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 4 and 8
 select_list:
-  asterisk { $$.v = SelectList(AsteriskExpr(true)) }
-| select_sublist_list { $$.v = SelectList($1.v as []SelectSublist) }
+  asterisk { $$.v = yy_box(SelectList(AsteriskExpr(true))) }
+| select_sublist_list { $$.v = yy_box(SelectList($1.v as []SelectSublist)) }
 
 select_sublist_list:
-  select_sublist { $$.v = [$1.v as SelectSublist] }
+  select_sublist { $$.v = yy_box([$1.v as SelectSublist]) }
 | select_sublist_list comma select_sublist {
     mut new_select_list := ($1.v as []SelectSublist).clone()
     new_select_list << $3.v as SelectSublist
-    $$.v = new_select_list
+    $$.v = yy_box(new_select_list)
   }
 
 select_sublist:
@@ -54,14 +54,14 @@ select_sublist:
 // was: asterisked_identifier_chain period asterisk
 qualified_asterisk:
   asterisked_identifier_chain OPERATOR_PERIOD_ASTERISK {
-    $$.v = QualifiedAsteriskExpr{
+    $$.v = yy_box(QualifiedAsteriskExpr{
       new_table_identifier(($1.v as IdentifierChain).identifier)!
-    }
+    })
   }
 
 // was: asterisked_identifier [ { period asterisked_identifier }... ]
 asterisked_identifier_chain:
-  identifier_chain { $$.v = $1.v as IdentifierChain }
+  identifier_chain { $$.v = $1.v }
 
 derived_column:
   value_expression {
@@ -72,7 +72,7 @@ derived_column:
   }
 
 as_clause:
-  AS column_name { $$.v = $2.v as Identifier }
-| column_name { $$.v = $1.v as Identifier }
+  AS column_name { $$.v = $2.v }
+| column_name { $$.v = $1.v }
 
 %%

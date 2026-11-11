@@ -191,15 +191,9 @@ fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 // <delimited identifier> that's in quotes) that is too long for Core SQL
 // (ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 1
 // and 2). A regular identifier of 18 characters is also flagged, which is
-// #738.
-//
-// INFORMATION_SCHEMA has 18 characters, so a reference to one of its views is
-// flagged with F391. That's what meets these rules (#737):
-//
-// ISO/IEC 9075-11:2008(E), 5.21, COLUMNS view, Conformance Rules, 1
-// ISO/IEC 9075-11:2008(E), 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 2
-// ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
-// ISO/IEC 9075-11:2008(E), 5.61, TABLES view, Conformance Rules, 1
+// #738. That's also why "INFORMATION_SCHEMA" is flagged with F391, but the views
+// that need F391 are flagged by what they are (see
+// information_schema_features).
 fn flag_identifier(mut yylex YYLexer, identifier string) {
 	flag_if(mut yylex, is_long_identifier(identifier), 'F391')
 }
@@ -1010,6 +1004,56 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 	}
 }
 
+// information_schema_features are the features that a reference to a view of
+// the INFORMATION_SCHEMA ("VIEW"), or to one of its columns ("VIEW.COLUMN"),
+// needs. A view is referenced when it's read (with or without
+// "INFORMATION_SCHEMA." in front of it), and a column when a column reference or
+// an asterisk resolves to it (see Column.features). A view that isn't here can
+// be referenced in Core SQL.
+//
+// ISO/IEC 9075-11:2008(E), 5.21, COLUMNS view, Conformance Rules, 1, 2, 3 and 4
+// ISO/IEC 9075-11:2008(E), 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2008(E), 5.61, TABLES view, Conformance Rules, 1
+const information_schema_features = {
+	'COLUMNS':                       ['F391']
+	'COLUMNS.IS_GENERATED':          ['T175']
+	'COLUMNS.GENERATION_EXPRESSION': ['T175']
+	'COLUMNS.IS_UPDATABLE':          ['T111']
+	'KEY_COLUMN_USAGE':              ['F341', 'F391']
+	'REFERENTIAL_CONSTRAINTS':       ['F391']
+	'TABLES':                        ['F391']
+}
+
+// information_schema_column_features are the features that a reference to a
+// column of a table needs, if it's a view of the INFORMATION_SCHEMA (see
+// information_schema_features).
+fn information_schema_column_features(table_name Identifier, column_name string) []string {
+	if table_name.schema_name != information_schema_name {
+		return []
+	}
+
+	return information_schema_features['${table_name.entity_name}.${column_name}'] or { [] }
+}
+
+// flag_information_schema_view flags a view of the INFORMATION_SCHEMA that's
+// read (see information_schema_features).
+fn (mut conn Connection) flag_information_schema_view(table_name Identifier) {
+	if conn.flagging && table_name.schema_name == information_schema_name {
+		conn.flagged_features << information_schema_features[table_name.entity_name] or { [] }
+	}
+}
+
+// flag_asterisk flags the columns of a table that an asterisk (such as "SELECT
+// *" or "SELECT t.*") expands to, since each of them is referenced.
+fn (mut conn Connection) flag_asterisk(table Table) {
+	if conn.flagging {
+		for column in table.columns {
+			conn.flagged_features << column.features
+		}
+	}
+}
+
 // flag_self_reference flags a DELETE or UPDATE with a subquery that reads the
 // table being changed, or an INSERT with a query that reads it anywhere. There
 // are no views, so the leaf generally underlying tables are the base tables
@@ -1111,14 +1155,14 @@ fn (mut c Compiler) flag_set_function(e RoutineInvocation) {
 }
 
 // flag_column_reference flags a column reference that's derived from an
-// aggregate function when it's in a WHERE clause or an aggregate function. It's
+// aggregate function when it's in a WHERE clause or an aggregate function, and
+// a column that needs a feature to be referenced (see Column.features). It's
 // only called once the reference has been compiled, so it's known to be valid.
 //
 // ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Conformance Rules, 1
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 9
 fn (mut c Compiler) flag_column_reference(e Identifier) {
-	if !c.conn.flagging || e.custom_id != ''
-		|| (!c.in_aggregate && c.next_value_not_allowed != 'WHERE') {
+	if !c.conn.flagging || e.custom_id != '' {
 		return
 	}
 
@@ -1134,11 +1178,14 @@ fn (mut c Compiler) flag_column_reference(e Identifier) {
 		}
 	}
 
+	in_where_or_aggregate := c.in_aggregate || c.next_value_not_allowed == 'WHERE'
 	for _, table in tables {
 		if e.is_column_of_table(c.conn, table) {
-			if (table.column(e.sub_entity_name) or { Column{} }).from_aggregate {
+			column := table.column(e.sub_entity_name) or { Column{} }
+			if column.from_aggregate && in_where_or_aggregate {
 				c.conn.flagged_features << 'F441'
 			}
+			c.conn.flagged_features << column.features
 		}
 	}
 }

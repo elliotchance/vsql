@@ -34,6 +34,10 @@ pub:
 	// expression that contains an aggregate function of that query, such as
 	// "COUNT(*) AS c". It's only used by the SQL Flagger.
 	from_aggregate bool
+	// features are what a reference to the column needs, other than the
+	// features of its table, such as T111 for INFORMATION_SCHEMA.COLUMNS.IS_UPDATABLE
+	// (see information_schema_features). It's only used by the SQL Flagger.
+	features []string
 }
 
 // is_generated_always is true if a value can't be assigned to the column, other

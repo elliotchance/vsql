@@ -132,6 +132,7 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 					}
 					QualifiedAsteriskExpr {
 						table := qualified_asterisk_table(item, mut conn, tables)!
+						conn.flag_asterisk(table)
 						for column in table.columns {
 							select_exprs << column_derived_column(column)
 						}
@@ -141,6 +142,7 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 		}
 		AsteriskExpr {
 			for _, table in tables {
+				conn.flag_asterisk(table)
 				for column in table.columns {
 					select_exprs << column_derived_column(column)
 				}
@@ -432,6 +434,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				virtual_table := unsafe { catalog.virtual_tables[table_name_id] }
 				plan.operations << VirtualTableOperation{table_name_id, virtual_table, conn}
 				table = virtual_table.table()
+				conn.flag_information_schema_view(table_name)
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): &Table{
@@ -558,6 +561,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			typ:            col.typ
 			not_null:       col.not_null
 			from_aggregate: col.from_aggregate
+			features:       col.features
 		}
 		if conn.collect_columns {
 			conn.correlated_columns[columns[i].name.id()] << col.name.id()

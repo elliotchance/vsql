@@ -786,17 +786,41 @@ static void vsql_m_execute(char *sqlstate, const char *sql, int n,
 }
 
 /* section start */
-static void vsql_m_start(char *sqlstate) {
+/*
+ * vsql_m_start is a <start transaction statement>. The SET TRANSACTION sql
+ * sets its <transaction characteristics> (and checks them), and SQLStartTran
+ * starts it with them. A warning of the SET TRANSACTION (such as a DIAGNOSTICS
+ * SIZE that's too big) is the condition of the statement.
+ *
+ * ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 4 and 5
+ */
+static void vsql_m_start(char *sqlstate, SQLINTEGER access_mode,
+                         SQLINTEGER isolation_level, const char *sql) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
-  SQLRETURN rc;
+  SQLHSTMT stmt;
+  SQLRETURN rc, set_rc;
 
   if (c == NULL) {
     return;
   }
 
-  rc = SQLStartTran(SQL_HANDLE_DBC, c->dbc, SQL_TRANSACTION_READ_WRITE,
-                    SQL_TRANSACTION_READ_COMMITTED);
-  vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
+  rc = SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, &stmt);
+  if (vsql_m_failed(rc)) {
+    vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
+    return;
+  }
+  rc = SQLExecDirect(stmt, (SQLCHAR *)sql, SQL_NTS);
+  vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
+  SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+  if (vsql_m_failed(rc)) {
+    return;
+  }
+
+  set_rc = rc;
+  rc = SQLStartTran(SQL_HANDLE_DBC, c->dbc, access_mode, isolation_level);
+  if (vsql_m_failed(rc) || set_rc == SQL_SUCCESS) {
+    vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
+  }
   if (!vsql_m_failed(rc)) {
     c->active = 1;
   }

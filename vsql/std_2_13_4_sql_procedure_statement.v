@@ -125,8 +125,7 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 			sqlstate_42601('procedure ${p.name}: a query is not an SQL procedure statement, use SELECT ... INTO')
 		}
 		StartTransactionStatement {
-			ModuleStatement{['connection', 'start'], [], begin('START TRANSACTION', 111) +
-				'  vsql_m_start(SQLSTATE);\n'}
+			start_transaction_statement(stmt, text_sql)
 		}
 		CommitStatement {
 			ModuleStatement{['connection', 'end'], [], begin('COMMIT WORK', 11) +
@@ -171,6 +170,54 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 			execute_statement(text_sql, references, p, begin('', 0))!
 		}
 	}
+}
+
+// start_transaction_statement starts an SQL-transaction with SQLStartTran,
+// which only has an access mode and an isolation level. The
+// <transaction characteristics> are set first by a SET TRANSACTION, so that
+// SQLStartTran uses its DIAGNOSTICS SIZE. When
+// there isn't one, it's the most conditions, rather than the DIAGNOSTICS SIZE of
+// a SET TRANSACTION before the START TRANSACTION (NOTE 710). The access mode is
+// READ WRITE when there isn't one, except for READ UNCOMMITTED, which is READ
+// ONLY (17.3, <transaction characteristics>, Syntax Rules, 4).
+//
+// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 2 to 5
+fn start_transaction_statement(stmt StartTransactionStatement, text_sql string) ModuleStatement {
+	mut access := ''
+	mut level := 'SQL_TRANSACTION_SERIALIZABLE'
+	mut has_size := false
+	for mode in stmt.modes {
+		match mode {
+			TransactionAccessMode {
+				access = if mode == .read_only {
+					'SQL_TRANSACTION_READ_ONLY'
+				} else {
+					'SQL_TRANSACTION_READ_WRITE'
+				}
+			}
+			IsolationLevel { level = 'SQL_TRANSACTION_${mode.str().replace(' ', '_')}' }
+			DiagnosticsSize { has_size = true }
+		}
+	}
+	if access == '' {
+		access = if level == 'SQL_TRANSACTION_READ_UNCOMMITTED' {
+			'SQL_TRANSACTION_READ_ONLY'
+		} else {
+			'SQL_TRANSACTION_READ_WRITE'
+		}
+	}
+
+	// The text_sql starts with START, since a comment is replaced by a space.
+	mut sql := 'SET' + text_sql.trim_space()[5..]
+	if !has_size {
+		if stmt.modes.len > 0 {
+			sql += ','
+		}
+		sql += ' DIAGNOSTICS SIZE ${max_conditions}'
+	}
+
+	return ModuleStatement{['connection', 'start'], [], begin('START TRANSACTION', 111) +
+		'  vsql_m_start(SQLSTATE, ${access}, ${level}, ${c_string(sql)});\n'}
 }
 
 // begin empties the first diagnostics area for a statement that isn't a

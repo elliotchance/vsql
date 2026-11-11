@@ -38,10 +38,13 @@ fn test_default_isolation_level() ! {
 fn test_next_transaction_characteristics() ! {
 	mut db := open(':memory:')!
 	assert db.next_transaction_characteristics() == ''
+	assert db.next_diagnostics_size() == 0
 	db.query('SET TRANSACTION ISOLATION LEVEL READ COMMITTED')!
 	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL READ COMMITTED'
+	assert db.next_diagnostics_size() == 0
 	db.query('SET TRANSACTION DIAGNOSTICS SIZE 1')!
 	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL SERIALIZABLE, DIAGNOSTICS SIZE 1'
+	assert db.next_diagnostics_size() == 1
 	db.query('SET TRANSACTION READ ONLY')!
 	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL SERIALIZABLE, READ ONLY'
 	db.query('SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED')!

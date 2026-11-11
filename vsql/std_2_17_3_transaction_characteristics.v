@@ -78,6 +78,16 @@ pub fn (conn Connection) next_transaction_characteristics() string {
 	return modes.join(', ')
 }
 
+// next_diagnostics_size returns the <number of conditions> of the DIAGNOSTICS
+// SIZE that a SET TRANSACTION set for the next SQL-transaction, or 0 if there
+// wasn't one. libvsql uses this for an SQL-transaction that's started by
+// SQLStartTran, which only has an access mode and isolation level.
+pub fn (conn Connection) next_diagnostics_size() int {
+	next := conn.next_transaction or { return 0 }
+
+	return next.condition_area_limit
+}
+
 // transaction_read_only returns true if the current SQL-transaction (or the
 // previous one, if there isn't a current one) is READ ONLY.
 pub fn (conn Connection) transaction_read_only() bool {

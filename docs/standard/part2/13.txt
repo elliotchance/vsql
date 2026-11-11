@@ -194,7 +194,7 @@
 13.4/GR/8                container    - -
 13.4/GR/8.a              implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
 13.4/GR/8.b              implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/api_test.v the statement is checked when the module is compiled
-13.4/GR/9                implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+13.4/GR/9                implemented  vsql/std_2_13_1_sql_client_module_definition.c,vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,libvsql/module/test_more_main.c
 13.4/GR/10               impl-defined - - schema and data statements can be in the same transaction
 13.4/GR/11               implemented  vsql/prepare.v tests/std_2_17_2_set_transaction.sql
 13.4/GR/12               container    - -

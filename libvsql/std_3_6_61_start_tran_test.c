@@ -263,3 +263,20 @@ UTEST_F(db, 6_61_start_tran_handle_types) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, apd, "HY092");
 }
+
+/* The DIAGNOSTICS SIZE of a SET TRANSACTION is kept, since StartTran doesn't
+ * have one. */
+UTEST_F(db, 6_61_start_tran_diagnostics_size) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SET TRANSACTION DIAGNOSTICS SIZE 1"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt,
+                    "SELECT CAST('abc' AS CHAR(1)) AS a, "
+                    "CAST('xyz' AS CHAR(1)) AS b FROM (VALUES 1) AS t (x)"),
+            SQL_SUCCESS_WITH_INFO);
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_NUMBER), 1);
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_MORE), 1);
+}

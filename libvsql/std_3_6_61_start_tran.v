@@ -30,6 +30,12 @@ import vsql
 //
 // For a connection, TXN is started in its SQL-connection straight away, since
 // that's the only one it can be in.
+//
+// StartTran doesn't have a DIAGNOSTICS SIZE, so a SET TRANSACTION before it
+// still sets the DIAGNOSTICS SIZE of TXN (but not its access mode or isolation
+// level). That's how a <start transaction statement> in an SQL-client module is
+// done, since it effectively executes a SET TRANSACTION first (ISO/IEC
+// 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 4).
 
 // Codes from Table 36, "Values for TRANSACTION ACCESS MODE with StartTran".
 const sql_transaction_read_only = 0x00000001
@@ -111,7 +117,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	mut conn := dbc.conn or { return cli_error('08003', 'connection does not exist') }
 	implicit_set_connection(h)!
-	db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}')!
+	db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}${diagnostics_size(conn)}')!
 	e.start_tran = ''
 	dbc.autocommit_transaction = false
 
@@ -134,7 +140,14 @@ fn join_start_tran(mut conn vsql.Connection, dh i64) ! {
 		return
 	}
 
-	db_query(mut conn, 'START TRANSACTION ${e.start_tran}')!
+	db_query(mut conn, 'START TRANSACTION ${e.start_tran}${diagnostics_size(conn)}')!
 	e.start_tran = ''
 	dbc.autocommit_transaction = false
+}
+
+// diagnostics_size is the DIAGNOSTICS SIZE that a SET TRANSACTION before
+// StartTran set for the next SQL-transaction of a connection, if there was one.
+fn diagnostics_size(conn vsql.Connection) string {
+	size := conn.next_diagnostics_size()
+	return if size > 0 { ', DIAGNOSTICS SIZE ${size}' } else { '' }
 }

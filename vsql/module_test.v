@@ -45,7 +45,7 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	assert m.source.contains('INSERT INTO \\"t;\\" (a) VALUES (\'a;\\\\\\"\\n\\t\\r\', CAST(? AS CHARACTER(1)), CAST(? AS CHARACTER VARYING(10)), CAST(? AS SMALLINT)')
 	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[1].indicator = SQL_NULL_DATA;\n  } else if (!vsql_m_string(SQLSTATE, v, 44)) {')
 	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[2].indicator = SQL_NULL_DATA;\n  }\n')
-	assert m.source.contains('void procedure(char SQLSTATE[6]) {\n  vsql_m_begin("START TRANSACTION", 111);\n  vsql_m_start(SQLSTATE);')
+	assert m.source.contains('void procedure(char SQLSTATE[6]) {\n  vsql_m_begin("START TRANSACTION", 111);\n  vsql_m_start(SQLSTATE, SQL_TRANSACTION_READ_WRITE, SQL_TRANSACTION_SERIALIZABLE, "SET TRANSACTION DIAGNOSTICS SIZE 100");')
 	assert m.source.contains('void c2(char SQLSTATE[6]) {\n  vsql_m_begin("COMMIT WORK", 11);\n  vsql_m_end(SQLSTATE, SQL_COMMIT);')
 	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK);')
 	assert m.source.contains('vsql_m_connect(SQLSTATE, "file", n, u);')
@@ -58,6 +58,18 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'C', NULL);")
 	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'n', n);")
 	assert m.source.contains('vsql_m_execute(SQLSTATE, "SET SCHEMA \'x\'", 0, NULL);')
+
+	// 17.1 <start transaction statement>, GR 2 to 5: the characteristics are
+	// set by a SET TRANSACTION, then SQLStartTran has the access
+	// mode and isolation level.
+	m5 := compile_module(module_header +
+		'PROCEDURE p (SQLSTATE); START TRANSACTION ISOLATION LEVEL READ UNCOMMITTED, DIAGNOSTICS SIZE 3; ' +
+		'PROCEDURE q (SQLSTATE); start transaction /* c */ isolation level repeatable read; ' +
+		'PROCEDURE r (SQLSTATE); START TRANSACTION READ ONLY;',
+		'm')!
+	assert m5.source.contains('  vsql_m_start(SQLSTATE, SQL_TRANSACTION_READ_ONLY, SQL_TRANSACTION_READ_UNCOMMITTED, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED, DIAGNOSTICS SIZE 3");\n')
+	assert m5.source.contains('  vsql_m_start(SQLSTATE, SQL_TRANSACTION_READ_WRITE, SQL_TRANSACTION_REPEATABLE_READ, "SET transaction   isolation level repeatable read, DIAGNOSTICS SIZE 100");\n')
+	assert m5.source.contains('  vsql_m_start(SQLSTATE, SQL_TRANSACTION_READ_ONLY, SQL_TRANSACTION_SERIALIZABLE, "SET TRANSACTION READ ONLY, DIAGNOSTICS SIZE 100");\n')
 
 	// 23.1 <get diagnostics statement> doesn't empty the diagnostics area.
 	m4 := compile_module(module_header + 'PROCEDURE p (SQLSTATE, :n INT, :s CHAR(5), :c SMALLINT); GET DIAGNOSTICS :n = NUMBER, :s = DYNAMIC_FUNCTION; ' +

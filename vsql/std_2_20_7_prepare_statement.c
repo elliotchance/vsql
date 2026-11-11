@@ -605,11 +605,14 @@ static int vsql_m_execute_prepared(char *sqlstate, const char *name,
     return 0;
   }
 
-  /* The statement initiates an SQL-transaction.
+  /* The statement initiates an SQL-transaction, other than a <set
+   * transaction statement> (75).
    *
    * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 9
    * ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 9 */
-  vsql_m_current->active = 1;
+  if (p->dynamic_function_code != 75) {
+    vsql_m_current->active = 1;
+  }
   rc = SQLExecute(p->stmt);
   if (!vsql_m_failed(rc)) {
     SQLGetDiagField(SQL_HANDLE_STMT, p->stmt, 0, SQL_DIAG_ROW_COUNT,
@@ -682,12 +685,15 @@ static void vsql_m_execute_immediate(char *sqlstate, const char *sql) {
     return;
   }
 
-  /* The statement initiates an SQL-transaction.
+  /* The statement initiates an SQL-transaction, other than a <set
+   * transaction statement> (75).
    *
    * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 9
    */
   if (!vsql_m_failed(rc)) {
-    c->active = 1;
+    if (vsql_m_da.dynamic_function_code != 75) {
+      c->active = 1;
+    }
     rc = SQLExecute(stmt);
   }
   if (!vsql_m_failed(rc)) {

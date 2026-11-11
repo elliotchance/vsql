@@ -349,10 +349,10 @@
 20.7/GR/5.a.xxxv         n/a          - - regular expressions (F841)
 20.7/GR/5.a.xxxvi        n/a          - - regular expressions (F841) and row pattern recognition (R010)
 20.7/GR/5.b              missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/6                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.7/GR/6                implemented  vsql/std_2_20_7_prepare_statement.c,vsql/prepare.v libvsql/module/test_main.c,vsql/api_test.v
 20.7/GR/6.a              n/a          - - extended dynamic cursors (B032)
 20.7/GR/6.b              n/a          - - extended dynamic cursors (B032)
-20.7/GR/6.c              implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.7/GR/6.c              implemented  vsql/std_2_20_7_prepare_statement.c,vsql/prepare.v libvsql/module/test_main.c,vsql/api_test.v
 20.7/GR/7                definition   - -
 20.7/GR/7.a              n/a          - - SQL-invoked routines (T321)
 20.7/GR/7.a.i            n/a          - - SQL-invoked routines (T321)

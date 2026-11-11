@@ -37,7 +37,7 @@ pub:
 pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Result {
 	text := direct_statement_text(sql_stmt)!
 	tokens := tokenize(text)!
-	mut prepared := conn.prepare(text)!
+	mut prepared := conn.parse(text)!
 	check_direct_parameters(tokens)!
 
 	// The SQL-transaction has the characteristics of a SET TRANSACTION. Each

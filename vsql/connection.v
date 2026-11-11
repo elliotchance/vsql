@@ -571,8 +571,20 @@ fn has_next_value(tokens []Token) bool {
 }
 
 // prepare returns a precompiled statement that can be executed multiple times
-// with different provided parameters.
+// with different provided parameters. The tables and columns that it uses must
+// exist (see PreparedStmt.resolve_names), but they're found again each time
+// it's executed.
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
+	mut prepared := conn.parse(sql_stmt)!
+	prepared.resolve_names()!
+
+	return prepared
+}
+
+// parse returns a statement that's only been parsed, like prepare, but without
+// resolving the names that it uses. Executing it resolves them, so a statement
+// that's executed straight away (such as by query) doesn't need to do it first.
+pub fn (mut conn Connection) parse(sql_stmt string) !PreparedStmt {
 	t := start_timer()
 	stmt, explain, tokens, features := parse_sql(sql_stmt, mut conn.parser_stack)!
 	elapsed_parse := t.elapsed()
@@ -652,7 +664,7 @@ fn parse_statement(tokens []Token, source string, mut stack []YYSymType) !(Stmt,
 
 // query executes a statement. If there is a result set it will be returned.
 pub fn (mut conn Connection) query(sql_stmt string) !Result {
-	mut prepared := conn.prepare(sql_stmt)!
+	mut prepared := conn.parse(sql_stmt)!
 
 	return prepared.query(map[string]Value{})
 }

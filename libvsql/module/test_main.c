@@ -650,8 +650,7 @@ int main(void) {
   strcpy(sql, "COMMIT");
   EXPECT(prepare_s1(sqlstate, sql), "42000");
   strcpy(sql, "DELETE FROM missing");
-  EXPECT(prepare_s1(sqlstate, sql), "00000");
-  EXPECT(execute_s1(sqlstate), "42P01");
+  EXPECT(prepare_s1(sqlstate, sql), "42P01");
 
   /* 20.2 to 20.5, and 20.10 <describe statement>. */
   max = 0;

@@ -296,6 +296,32 @@ fn test_wal_recover_log_fails() ! {
 	db.close()
 }
 
+// A statement that writes recovers the write-ahead log itself, when nothing
+// read the file before it. A statement that's prepared reads the file first
+// (see PreparedStmt.resolve_names), but query() doesn't.
+fn test_wal_recover_fails_for_write() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-wal-write-fails-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path)] {
+			os.rm(file) or {}
+		}
+	}
+
+	mut db := open(path)!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE t (x INT)')!
+	arm_fault('checkpoint', 1)!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	disarm_faults()
+
+	arm_fault('recover', 1)!
+	assert query_error(mut db, 'INSERT INTO t (x) VALUES (2)') == '58030 recover failed (fault injected by test)'
+	disarm_faults()
+	assert db.query('SELECT * FROM t')!.rows.len == 1
+}
+
 // expire returns -1 when there's no object with the key and tid.
 fn test_btree_expire_missing_object() ! {
 	mut btree := new_btree(new_memory_pager(), 256)

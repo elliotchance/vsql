@@ -343,6 +343,63 @@ fn test_prepared_stmt_dynamic_parameters() {
 	assert explain.columns({})!.map(it.name.sub_entity_name) == ['EXPLAIN']
 }
 
+// A table or column that doesn't exist is an error when a statement is
+// prepared (#651). A schema statement is only checked when it's executed, so
+// the table it creates can only be used by statements prepared after that.
+fn test_prepare_resolves_names() ! {
+	mut db := open(':memory:')!
+	assert prepare_error(mut db, 'SELECT * FROM t') == '42P01 no such table: ":memory:".PUBLIC.T'
+	assert prepare_error(mut db, 'INSERT INTO t (x) VALUES (1)') == '42P01 no such table: ":memory:".PUBLIC.T'
+	assert prepare_error(mut db, 'SELECT * FROM nope.t') == '3F000 invalid schema name: NOPE'
+	mut create := db.prepare('CREATE TABLE t (x INT)')!
+	assert prepare_error(mut db, 'SELECT * FROM t') == '42P01 no such table: ":memory:".PUBLIC.T'
+	create.query({})!
+
+	// The table is empty, so none of these would fail when they're executed.
+	assert prepare_error(mut db, 'SELECT y FROM t') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'INSERT INTO t (y) VALUES (?)') == '42703 no such column: Y'
+	assert prepare_error(mut db, 'INSERT INTO t (x) SELECT y FROM t') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'UPDATE t SET y = 1') == '42703 no such column: Y'
+	assert prepare_error(mut db, 'UPDATE t SET x = y') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'UPDATE t AS u SET x = t.x') == '42601 syntax error: unknown column: ":memory:".PUBLIC.T.X'
+	assert prepare_error(mut db, 'DELETE FROM t WHERE y = 1') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'DECLARE c CURSOR FOR SELECT y FROM t') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'SELECT * FROM t AS a, t AS b WHERE x = 1') == '42702 ambiguous column: X'
+	assert prepare_error(mut db, 'UPDATE t SET y = 1 WHERE CURRENT OF c') == '42703 no such column: Y'
+	assert prepare_error(mut db, 'UPDATE t AS u SET x = u.x + ?') == ''
+	assert prepare_error(mut db, 'UPDATE t SET x = DEFAULT') == ''
+	assert prepare_error(mut db, 'DROP TABLE nope') == ''
+
+	// The type of a "?" isn't known yet (it would be "function does not exist:
+	// ABS(CHARACTER VARYING)"), so other errors are found when it's executed.
+	mut stmt := db.prepare('SELECT ABS(?) AS y FROM t')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	assert stmt.query({
+		'?1': new_integer_value(-2)
+	})!.rows[0].get_int('Y')! == 2
+
+	// The names are resolved again each time it's executed.
+	db.query('DROP TABLE t')!
+	mut failed := false
+	stmt.query({
+		'?1': new_integer_value(-2)
+	}) or {
+		failed = true
+		assert err.msg() == 'no such table: ":memory:".PUBLIC.T'
+	}
+	assert failed
+	db.query('CREATE TABLE t (x INT)')!
+	assert stmt.query({
+		'?1': new_integer_value(-2)
+	})!.rows.len == 0
+}
+
+fn prepare_error(mut db Connection, sql_stmt string) string {
+	db.prepare(sql_stmt) or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
+
+	return ''
+}
+
 fn test_command_function() {
 	mut db := open(':memory:')!
 	for sql, want in {
@@ -376,7 +433,7 @@ fn test_command_function() {
 		'DELETE FROM t u WHERE CURRENT OF c':    'DELETE CURSOR 18'
 		'UPDATE t u SET x=1 WHERE CURRENT OF c': 'UPDATE CURSOR 81'
 	} {
-		stmt := db.prepare(sql)!
+		stmt := db.parse(sql)!
 		name, code := stmt.command_function()
 		assert '${name} ${code}' == want, sql
 	}
@@ -389,7 +446,7 @@ fn test_positioned_cursor() {
 		'DELETE FROM t WHERE CURRENT OF c':          'C'
 		'UPDATE t SET x = 1 WHERE CURRENT OF "c 1"': 'c 1'
 	} {
-		stmt := db.prepare(sql)!
+		stmt := db.parse(sql)!
 		assert stmt.positioned_cursor() == want, sql
 	}
 }

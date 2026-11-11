@@ -88,10 +88,12 @@ fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInte
 
 // prepare_statement prepares the text of a statement for ExecDirect or Prepare,
 // and sets the DYNAMIC_FUNCTION and DYNAMIC_FUNCTION_CODE that identify it.
+// It's only parsed, the names that it uses are resolved by Prepare (or when
+// it's executed).
 fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 	mut conn := stmt_connection(stmt)!
 	prepared := &vsql.PreparedStmt{
-		...db_prepare(mut conn, p)!
+		...conn.parse(p)!
 	}
 	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = prepared.command_function()
 

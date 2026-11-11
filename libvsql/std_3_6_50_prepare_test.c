@@ -47,6 +47,28 @@ UTEST_F(db, 6_50_prepare_syntax_error) {
 }
 
 /* These fail when they're prepared, rather than when they're executed. */
+/* A table or column that doesn't exist is an error from Prepare. */
+UTEST_F(db, 6_50_prepare_unknown_name) {
+  EXPECT_EQ(
+      SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"SELECT * FROM bar", SQL_NTS),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42P01");
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE bar (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"INSERT INTO bar (y) VALUES (?)", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42703");
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"SELECT x FROM bar WHERE y = ?", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42601");
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"SELECT x FROM bar WHERE x = ?", SQL_NTS),
+            SQL_SUCCESS);
+}
+
 UTEST_F(db, 6_50_prepare_not_preparable) {
   const char *statements[] = {
       "DECLARE c CURSOR FOR VALUES 1",

@@ -50,14 +50,21 @@ the ``WHERE`` clause compares columns of the key with a value that's the same fo
 every row (such as ``=``, ``<``, ``>=`` or ``BETWEEN``), and those comparisons are
 joined by ``AND``. With a ``PRIMARY KEY`` of more than one column, the columns
 compared with ``=`` must be the first ones, then the next column can have a range.
-The ``WHERE`` clause is still applied to each row that's read:
+The ``WHERE`` clause is still applied to each row that's read, without the
+comparisons that the range already covers exactly. Those are only comparisons
+with ``=``, ``>=``, ``<=`` or ``BETWEEN`` of an integer column (``SMALLINT``,
+``INTEGER`` or ``BIGINT``) with an integer value that the column can hold, that
+only uses literals and parameters, and that's used for the range. A ``<`` or
+``>`` includes the bound in the range, and other types (such as strings or
+approximate numbers) aren't always compared in the same way as their keys, so
+they're always applied again:
 
 .. code-block:: sql
 
    EXPLAIN DELETE FROM products
    WHERE product_id >= 100 AND product_id < 200 AND price > 10;
    -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2)) RANGE PRODUCT_ID >= 100 AND PRODUCT_ID < 200
-   -- EXPLAIN: WHERE PRODUCT_ID >= 100 AND PRODUCT_ID < 200 AND PRICE > 10
+   -- EXPLAIN: WHERE PRODUCT_ID < 200 AND PRICE > 10
 
 An ``INDEX`` (see :doc:`create-index`) is used in the same way, for its columns.
 It reads the range of the index, then the row of each entry, in the order of the

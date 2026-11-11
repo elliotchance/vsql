@@ -5,8 +5,9 @@ module vsql
 
 // A KeyCondition is a condition of the WHERE clause that compares a column of
 // a key (the PRIMARY KEY or an index) with a value that's the same for every
-// row, such as "id >= 10" (or "10 <= id"). The conditions only narrow down the
-// rows that are read, the whole WHERE clause is still applied to each of them.
+// row, such as "id >= 10" (or "10 <= id"). The conditions narrow down the rows
+// that are read. The WHERE clause is still applied to each of them, except for
+// the parts that the range is known to cover exactly (see covered_factors).
 struct KeyCondition {
 	// column is the position of the column in the key.
 	column int
@@ -15,18 +16,27 @@ struct KeyCondition {
 	value CompileResult
 	// text is how the condition is shown by EXPLAIN.
 	text string
+	// factor is the position of the part of the AND that it's from.
+	factor int
+	// exact is true when the value is known (before any rows are read) to be
+	// usable in the key exactly, see is_exact_key_value.
+	exact bool
 }
 
 // key_operation reads only the rows of a table that the WHERE clause can be
-// true for (see best_key_operation).
+// true for (see best_key_operation), and knows which parts of it are covered
+// (see covered_factors).
 //
 // base_table is the stored table and table is how the query names it, which is
 // different with a correlation name, such as "t AS x (a, b)".
 fn key_operation(body QuerySpecification, base_table Table, table Table, params map[string]Value, mut conn Connection) ?&KeyOperation {
 	where := body.table_expression.where_clause or { return none }
+	factors := and_factors(where)
+	mut operation := best_key_operation(factors, base_table, table, map[string]&Table{},
+		params, mut conn) or { return none }
+	operation.covered = operation.covered_factors(factors)
 
-	return best_key_operation(and_factors(where), base_table, table, map[string]&Table{},
-		params, mut conn)
+	return operation
 }
 
 // best_key_operation reads only the rows of a table that the conditions in
@@ -92,9 +102,14 @@ fn and_factors(condition BooleanValueExpression) []BooleanTest {
 // base_table.
 fn key_conditions_of(factors []BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]&Table, params map[string]Value, mut conn Connection) []KeyCondition {
 	mut conditions := []KeyCondition{}
-	for factor in factors {
-		conditions << key_conditions(factor, base_table, table, key_columns, value_tables,
-			params, mut conn)
+	for i, factor in factors {
+		for condition in key_conditions(factor, base_table, table, key_columns, value_tables,
+			params, mut conn) {
+			conditions << KeyCondition{
+				...condition
+				factor: i
+			}
+		}
 	}
 
 	return conditions
@@ -225,7 +240,34 @@ fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator
 		return none
 	}
 
-	return KeyCondition{key_column, op, value, '${column_side.pstr(params)} ${op} ${value_side.pstr(params)}'}
+	return KeyCondition{
+		column: key_column
+		op:     op
+		value:  value
+		text:   '${column_side.pstr(params)} ${op} ${value_side.pstr(params)}'
+		exact:  is_exact_key_value(mut conn, value, column_type, params)
+	}
+}
+
+// is_exact_key_value is true when the value is always used by key_range, and
+// comparing its key with the key of the column gives the same result as
+// comparing the values. That's only when it's a constant integer (so it has the
+// same value when the rows are read, and doesn't raise an error) that the
+// column, also an integer, can hold. Integers are compared exactly as 64-bit
+// integers, whereas other types can be rounded (such as a BIGINT compared with
+// a DOUBLE PRECISION), or compared differently than their keys (such as with
+// trailing spaces).
+fn is_exact_key_value(mut conn Connection, value CompileResult, typ Type, params map[string]Value) bool {
+	integers := [SQLType.is_smallint, .is_integer, .is_bigint]
+	if !value.constant || typ.typ !in integers || value.typ.typ !in integers {
+		return false
+	}
+
+	// NULL isn't exact either, since it's not equal to itself.
+	v := value.run(mut conn, Row{}, params) or { return false }
+	exact_cast(mut conn, v, typ) or { return false }
+
+	return true
 }
 
 // is_key_comparable is true when a value of type b can be compared with a
@@ -260,14 +302,16 @@ struct KeyOperation {
 	params     map[string]Value
 mut:
 	conn &Connection
+	// covered is set by key_operation, see covered_factors.
+	covered []bool
 }
 
 fn new_primary_key_operation(table Table, conditions []KeyCondition, params map[string]Value, conn &Connection) &KeyOperation {
-	return &KeyOperation{table, none, conditions, params, conn}
+	return &KeyOperation{table, none, conditions, params, conn, []}
 }
 
 fn new_index_operation(table Table, index Index, conditions []KeyCondition, params map[string]Value, conn &Connection) &KeyOperation {
-	return &KeyOperation{table, index, conditions, params, conn}
+	return &KeyOperation{table, index, conditions, params, conn, []}
 }
 
 fn (o &KeyOperation) str() string {
@@ -279,6 +323,69 @@ fn (o &KeyOperation) str() string {
 	}
 
 	return '${columns} RANGE ${o.conditions.map(it.text).join(' AND ')}'
+}
+
+// covered_factors are true for each of the factors (the parts of the AND that
+// the conditions came from) that every row read is known to be true for, so
+// they don't need to be checked again. That's when each condition of the factor
+// (BETWEEN has two) is exact, and is used for the range in the same way by
+// key_range: every column before it in the key is compared with = (the last =
+// of the column, which is the one that's used), and it's the last = of its
+// column, or a >= or <= of the first column that isn't compared with =. A
+// condition with > or < can't be covered, because the bound is part of the
+// range.
+fn (o &KeyOperation) covered_factors(factors []BooleanTest) []bool {
+	key_len := if index := o.index { index.columns.len } else { o.table.primary_key.len }
+	mut used := []bool{len: o.conditions.len}
+	for column in 0 .. key_len {
+		mut equal := -1
+		for i, condition in o.conditions {
+			if condition.column == column && condition.op == .equal {
+				equal = i
+			}
+		}
+
+		if equal >= 0 {
+			if !o.conditions[equal].exact {
+				break
+			}
+			used[equal] = true
+			continue
+		}
+
+		for i, condition in o.conditions {
+			used[i] = used[i] || (condition.column == column && condition.exact
+				&& condition.op in [.greater_than_or_equal, .less_than_or_equal])
+		}
+		break
+	}
+
+	mut covered := []bool{len: factors.len}
+	for i, factor in factors {
+		mut count := 0
+		mut all_used := true
+		for j, condition in o.conditions {
+			if condition.factor == i {
+				count++
+				all_used = all_used && used[j]
+			}
+		}
+		covered[i] = all_used && count == key_conditions_len(factor)
+	}
+
+	return covered
+}
+
+// key_conditions_len is how many conditions key_conditions has for a factor when
+// all of it is a condition of the key: two for BETWEEN, otherwise one.
+fn key_conditions_len(test BooleanTest) int {
+	primary := *test.expr
+	predicate := match primary {
+		Predicate { primary }
+		else { return 1 }
+	}
+
+	return if predicate is BetweenPredicate { 2 } else { 1 }
 }
 
 fn (o &KeyOperation) columns() Columns {
@@ -324,7 +431,7 @@ fn (mut o KeyOperation) read(row Row) ![]Row {
 	mut transaction_ids := catalog.storage.header.active_transaction_ids
 
 	index := o.index or {
-		return o.read_rows(mut catalog, min, max, tid, mut transaction_ids)
+		return o.read_rows(mut catalog, min, max, false, tid, mut transaction_ids)
 	}
 
 	mut rows := []Row{}
@@ -337,7 +444,7 @@ fn (mut o KeyOperation) read(row Row) ![]Row {
 
 		mut key := row_key_prefix(o.table.id)
 		key << index.entry_row_id(o.table, entry.key)!
-		rows << o.read_rows(mut catalog, key, key, tid, mut transaction_ids)!
+		rows << o.read_rows(mut catalog, key, key, true, tid, mut transaction_ids)!
 	}
 	if err := entries.err {
 		return err
@@ -346,13 +453,17 @@ fn (mut o KeyOperation) read(row Row) ![]Row {
 	return rows
 }
 
-// read_rows are the visible rows from min to max (inclusive).
-fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8, tid u64, mut transaction_ids TransactionIDs) ![]Row {
+// read_rows are the visible rows from min to max, which only includes max when
+// include_max is true.
+fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8, include_max bool, tid u64, mut transaction_ids TransactionIDs) ![]Row {
 	mut rows := []Row{}
 	ids := o.table.column_ids()
 	mut iter := catalog.storage.btree.new_range_iterator(min, max)
 	for {
 		object := iter.next() or { break }
+		if !include_max && object.key == max {
+			break
+		}
 		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
 			rows << new_row_from_bytes_with_ids(o.table, ids, object.value, object.tid)
 		}
@@ -408,14 +519,17 @@ fn (c KeyColumn) part(value []u8) []u8 {
 	return part
 }
 
-// key_range is the first and last keys (inclusive) to read, of the keys that
-// start with prefix. Each column of the key that's compared with = adds its
-// value to the start of every key in the range, until a column that isn't, which
-// can have a lower and upper bound. The range can include rows that the
-// conditions aren't true for (such as the row with a value that's equal to the
-// bound of "<"), since the WHERE clause is still applied. A column with a lower
-// or upper bound never includes NULL, because a comparison with NULL is never
-// true.
+// key_range is the first key to read and the key after the last one, of the
+// keys that start with prefix. The key after (from next_key) can be the key of
+// a row, such as the next INTEGER of a PRIMARY KEY, so it isn't read (an index
+// entry is always longer, since it ends with the row ID). Each column of the
+// key that's compared with = adds its value to the start of every key in the
+// range, until a column that isn't, which can have a lower and upper bound. The
+// range can include rows that the conditions aren't true for (such as the row
+// with a value that's equal to the bound of "<"), so the WHERE clause is still
+// applied, except for what covered_factors says the range covers. A column with
+// a lower or upper bound never includes NULL, because a comparison with NULL is
+// never true.
 //
 // The values of the conditions can use the columns of row. It's none when one
 // of them is NULL, since no row can be true for that condition, so none need to

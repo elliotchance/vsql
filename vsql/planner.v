@@ -116,7 +116,7 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 
 			// The WHERE clause applies to the joined rows, so it can't be used to
 			// filter either side before the join.
-			add_where_plan(mut &plan, body, params, conn, tables)!
+			add_where_plan(mut &plan, body, params, conn, tables, [])!
 		}
 	}
 
@@ -399,19 +399,21 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				// The primary key can only be found once the columns have their
 				// new names, then the table is read again with the lookup.
 				if filter {
+					mut covered := []bool{}
 					if operation := key_operation(body, base_table, table, params, mut conn) {
 						plan = Plan{}
 						table = add_correlation_plan(mut &plan, from_clause.correlation.name,
 							Plan{
 								operations: [operation]
 							}, from_clause.correlation, params, mut conn)!
+						covered = operation.covered
 					}
 
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): &Table{
 							...table
 						}
-					})!
+					}, covered)!
 				}
 
 				return plan, table
@@ -437,16 +439,18 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 						table.name.id(): &Table{
 							...table
 						}
-					})!
+					}, [])!
 				}
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.table(table_name_id)
 				conn.flag_subquery_table(table_name)
 
 				mut operation := PlanOperation(TableOperation{table_name, false, table, params, conn, plan.subplans})
+				mut covered := []bool{}
 				if filter {
 					if key := key_operation(body, table, table, params, mut conn) {
 						operation = key
+						covered = key.covered
 					}
 				}
 				plan.operations << operation
@@ -456,7 +460,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 						table.name.id(): &Table{
 							...table
 						}
-					})!
+					}, covered)!
 				}
 			} else {
 				return sqlstate_42p01('table', table_name.str())
@@ -498,7 +502,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					table.name.id(): &Table{
 						...table
 					}
-				})!
+				}, [])!
 			}
 		}
 	}
@@ -579,7 +583,11 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 // add_where_plan filters the rows of the last operation with the WHERE clause,
 // if there is one. The condition is only evaluated for each row, so it's
 // compiled here to catch errors even when there are no rows.
-fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]&Table) ! {
+//
+// covered is true for each part of the AND (see and_factors) that the rows of
+// the last operation (a KeyOperation) are already known to be true for, which
+// are left out of the filter. There's no filter when they all are.
+fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]&Table, covered []bool) ! {
 	if where := body.table_expression.where_clause {
 		mut c := Compiler{
 			conn:                   conn
@@ -598,10 +606,30 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 		}
 
 		// The condition that was just compiled is used for the rows, rather than
-		// compiling it again.
+		// compiling it again, unless parts of it are covered.
+		mut condition := where
+		mut compiled_condition := [compiled]
+		if covered.any(it) {
+			factors := and_factors(where)
+			mut term := ?&BooleanTerm(none)
+			for i, factor in factors {
+				if !covered[i] {
+					term = &BooleanTerm{
+						term:   term
+						factor: factor
+					}
+				}
+			}
+			uncovered := term or { return }
+			condition = BooleanValueExpression{
+				term: *uncovered
+			}
+			compiled_condition = [condition.compile(mut c)!]
+		}
+
 		last_operation := plan.operations[plan.operations.len - 1]
-		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
-			tables, [compiled])
+		plan.operations << new_where_operation(condition, params, conn, last_operation.columns(),
+			tables, compiled_condition)
 	}
 }
 

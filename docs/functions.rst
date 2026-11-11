@@ -29,7 +29,7 @@ Each function also has a **Compatibility** section:
 - **SQL standard** is the feature of ISO/IEC 9075-2:2016 (SQL:2016) that the
   function belongs to. Core SQL is the part of the standard that every
   conforming database has to support, the others are optional features. See
-  :doc:`sql-compliance` for all of the features, and :doc:`sql-flagging` to
+  :doc:`sql-compliance-9075-2` for all of the features, and :doc:`sql-flagging` to
   find SQL that isn't standard.
 
 - **Other databases** is how to get the same result in PostgreSQL, MySQL,

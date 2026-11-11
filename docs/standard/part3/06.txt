@@ -1451,8 +1451,8 @@
 6.36/GR/11.b             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/12               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c there are no packages
 6.36/GR/13               definition   - -
-6.36/GR/14               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance.rst is used
-6.36/GR/15               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance.rst is used
+6.36/GR/14               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance-9075-3.rst is used
+6.36/GR/15               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance-9075-3.rst is used
 6.36/GR/16               n/a          - - there's no implicit ExecDirect
 6.36/GR/16.a             n/a          - - there's no implicit ExecDirect
 6.36/GR/16.b             n/a          - - there's no implicit ExecDirect

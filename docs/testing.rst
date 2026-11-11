@@ -204,7 +204,7 @@ libvsql
 ^^^^^^^
 
 The unit tests for libvsql, the SQL/CLI (Part 3) shared library for C programs
-(see :doc:`sql-compliance`), are next to the V file that they test: the tests
+(see :doc:`sql-compliance-9075-3`), are next to the V file that they test: the tests
 for ``libvsql/std_3_6_30_get_data.v`` are in
 ``libvsql/std_3_6_30_get_data_test.c``. ``libvsql/test.h`` has the helpers and
 fixtures that they share (implemented in ``libvsql/test.c``). The tests are

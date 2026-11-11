@@ -4,8 +4,9 @@ module vsql
 //
 // Specify transaction characteristics.
 //
-// Only <diagnostics size> is supported, which is the most conditions that are
-// kept in Connection.warnings during the SQL-transaction.
+// <transaction access mode> isn't supported yet (#554). The <diagnostics size> is
+// the most conditions that are kept in Connection.warnings during the
+// SQL-transaction.
 
 // max_conditions is the most conditions that can be kept in Connection.warnings,
 // and the number when there isn't a <diagnostics size>.
@@ -13,27 +14,130 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 7
 const max_conditions = 100
 
-// A TransactionMode is a <diagnostics size>.
-struct TransactionMode {
+type TransactionMode = DiagnosticsSize | IsolationLevel
+
+struct DiagnosticsSize {
 	number_of_conditions ValueSpecification
 }
 
-// condition_area_limit is the <number of conditions> of modes, or 0 if there
-// isn't one.
-fn condition_area_limit(mut conn Connection, params map[string]Value, modes []TransactionMode) !int {
-	// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 2
-	if modes.len > 1 {
-		return sqlstate_42601('DIAGNOSTICS SIZE can only be used once')
+// IsolationLevel is the <level of isolation>. An SQL-implementation may use a
+// stricter level than the one that is asked for, so READ UNCOMMITTED runs as READ
+// COMMITTED, and REPEATABLE READ runs as SERIALIZABLE. See isolation.v.
+//
+// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 6
+pub enum IsolationLevel {
+	read_uncommitted
+	read_committed
+	repeatable_read
+	serializable
+}
+
+// locks_transaction is true if the SQL-transaction must hold the isolation lock
+// until it ends, so that no other transaction can commit in the meantime.
+fn (level IsolationLevel) locks_transaction() bool {
+	return level in [.repeatable_read, .serializable]
+}
+
+fn (level IsolationLevel) str() string {
+	return match level {
+		.read_uncommitted { 'READ UNCOMMITTED' }
+		.read_committed { 'READ COMMITTED' }
+		.repeatable_read { 'REPEATABLE READ' }
+		.serializable { 'SERIALIZABLE' }
 	}
-	if modes.len == 0 {
-		return 0
+}
+
+// transaction_isolation_level returns the isolation level of the current
+// SQL-transaction (or the previous one, if there isn't a current one), such as
+// "SERIALIZABLE". It's the level that was asked for, which isn't always how the
+// SQL-transaction runs (see the "Transactions" documentation).
+pub fn (conn Connection) transaction_isolation_level() string {
+	return conn.isolation_level.str()
+}
+
+// next_transaction_characteristics returns the <transaction characteristics>
+// that a SET TRANSACTION set for the next SQL-transaction, such as
+// "ISOLATION LEVEL READ COMMITTED, DIAGNOSTICS SIZE 1", or an empty string if
+// there wasn't one. A client that starts each SQL-transaction itself (such as
+// libvsql) uses this, so that its START TRANSACTION has them.
+pub fn (conn Connection) next_transaction_characteristics() string {
+	next := conn.next_transaction or { return '' }
+	mut modes := ['ISOLATION LEVEL ${next.isolation_level}']
+	if next.condition_area_limit > 0 {
+		modes << 'DIAGNOSTICS SIZE ${next.condition_area_limit}'
 	}
 
+	return modes.join(', ')
+}
+
+struct TransactionCharacteristics {
+	// isolation_level is SERIALIZABLE when there isn't an <isolation level> (see
+	// Connection.enduring_characteristics).
+	//
+	// ISO/IEC 9075-2:2016(E), 4.41.4, Isolation levels of SQL-transactions
+	// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 3
+	isolation_level IsolationLevel = .serializable
+	// condition_area_limit is the <number of conditions>, or 0 if there isn't a
+	// <diagnostics size> (which is max_conditions).
+	condition_area_limit int
+}
+
+// check_transaction_modes checks that there's at most one of each kind of mode.
+//
+// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 2
+fn check_transaction_modes(modes []TransactionMode) ! {
+	if modes.filter(it is IsolationLevel).len > 1 {
+		return sqlstate_42601('isolation level is specified more than once')
+	}
+	if modes.filter(it is DiagnosticsSize).len > 1 {
+		return sqlstate_42601('DIAGNOSTICS SIZE can only be used once')
+	}
+}
+
+// new_transaction_characteristics returns the characteristics of modes, which
+// have been checked by check_transaction_modes.
+fn new_transaction_characteristics(mut conn Connection, params map[string]Value, modes []TransactionMode) !TransactionCharacteristics {
+	mut isolation_level := conn.default_isolation_level
+	mut limit := 0
+	for mode in modes {
+		match mode {
+			IsolationLevel {
+				isolation_level = mode
+				conn.check_held_cursors(mode)!
+			}
+			DiagnosticsSize {
+				limit = condition_area_limit(mut conn, params, mode)!
+			}
+		}
+	}
+
+	return TransactionCharacteristics{
+		isolation_level:      isolation_level
+		condition_area_limit: limit
+	}
+}
+
+// check_held_cursors checks that a holdable cursor that's still open from the
+// previous SQL-transaction has the isolation level that's being set.
+//
+// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.ii
+fn (conn Connection) check_held_cursors(level IsolationLevel) ! {
+	if level != conn.isolation_level {
+		for _, cursor in conn.cursors {
+			if cursor.hold && cursor.is_open {
+				return sqlstate_25008()
+			}
+		}
+	}
+}
+
+// condition_area_limit is the <number of conditions> of a <diagnostics size>.
+fn condition_area_limit(mut conn Connection, params map[string]Value, size DiagnosticsSize) !int {
 	mut c := Compiler{
 		conn:   conn
 		params: params
 	}
-	v := modes[0].number_of_conditions.compile(mut c)!.run(mut conn, Row{}, params)!
+	v := size.number_of_conditions.compile(mut c)!.run(mut conn, Row{}, params)!
 
 	// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 6
 	if !v.typ.uses_int() && !(v.typ.typ in [.is_numeric, .is_decimal] && v.typ.scale == 0) {
@@ -56,18 +160,52 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, modes []Tr
 	return int(n)
 }
 
-// initiate_transaction sets the condition area limit of an SQL-transaction
-// that is being initiated, which is the <number of conditions> limit, or
-// max_conditions if it's 0. The characteristics of a SET TRANSACTION are only
-// for the next SQL-transaction. A new SQL-session, and the SQL-transaction
-// after a COMMIT or ROLLBACK, have the limit of the enduring transaction
-// characteristics, which is max_conditions.
+// initiate_transaction sets the isolation level and condition area limit of an
+// SQL-transaction that is being initiated. The limit is max_conditions if it's
+// 0. The characteristics of a SET TRANSACTION are only for the next
+// SQL-transaction. A new SQL-session, and the SQL-transaction after a COMMIT or
+// ROLLBACK, have the enduring transaction characteristics (see
+// enduring_characteristics).
 //
 // ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 7
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 10.b.i
 // ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.h.ii.1
 // ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 9.c, 13.b and 13.e
-fn (mut conn Connection) initiate_transaction(limit int) {
-	conn.condition_area_limit = if limit > 0 { limit } else { max_conditions }
-	conn.next_condition_area_limit = 0
+// enduring_characteristics are the characteristics of an SQL-transaction that
+// doesn't have its own. The isolation level is SERIALIZABLE, unless the
+// connection was opened with another ConnectionOptions.isolation_level, and the
+// condition area limit is max_conditions.
+//
+// ISO/IEC 9075-2:2016(E), 4.41.4, Isolation levels of SQL-transactions
+fn (conn Connection) enduring_characteristics() TransactionCharacteristics {
+	return TransactionCharacteristics{
+		isolation_level: conn.default_isolation_level
+	}
+}
+
+fn (mut conn Connection) initiate_transaction(characteristics TransactionCharacteristics) {
+	conn.isolation_level = characteristics.isolation_level
+	conn.condition_area_limit = if characteristics.condition_area_limit > 0 {
+		characteristics.condition_area_limit
+	} else {
+		max_conditions
+	}
+	conn.next_transaction = none
+}
+
+// changes_database is true for a statement that always changes the database. On
+// its own, it's a transaction that must wait for other REPEATABLE READ and
+// SERIALIZABLE transactions, see isolation.v.
+fn (p PreparedStmt) changes_database() bool {
+	return match p.stmt {
+		AlterSequenceGeneratorStatement, AlterTableStatement, DeleteStatementPositioned,
+		DeleteStatementSearched, DropSchemaStatement, DropSequenceGeneratorStatement,
+		DropTableStatement, InsertStatement, SchemaDefinition, SequenceGeneratorDefinition,
+		TableDefinition, UpdateStatementPositioned, UpdateStatementSearched {
+			true
+		}
+		else {
+			false
+		}
+	}
 }

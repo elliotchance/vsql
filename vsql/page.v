@@ -267,6 +267,21 @@ fn (p Page) expired_objects(xid u64) []PageObject {
 	return expired
 }
 
+// has_object_of is true if the page has an object that was created or expired
+// by the transaction.
+fn (p Page) has_object_of(transaction_id u64) bool {
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	for offset < end {
+		if p.object_tid(offset) == transaction_id || p.object_xid(offset) == transaction_id {
+			return true
+		}
+		offset += p.object_len(offset)
+	}
+
+	return false
+}
+
 // has_schema_object_of is true if the page has an object of the schema (a
 // table, sequence or name, see Storage.load_schema) that was created or expired
 // by the transaction.

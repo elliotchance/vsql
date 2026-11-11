@@ -43,3 +43,4 @@ libvsql/embed/test.c
 .venv/
 __pycache__/
 .pytest_cache/
+*.isolation

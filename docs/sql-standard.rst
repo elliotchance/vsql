@@ -14,8 +14,10 @@ vsql works against **SQL:2016** (ISO/IEC 9075-2:2016), as well as
 `Part 3: Call-Level Interface (SQL/CLI) <https://www.iso.org/standard/63557.html>`_
 for :doc:`language-c`, and
 `Part 11: Information and Definition Schemas (SQL/Schemata) <https://www.iso.org/standard/63565.html>`_
-for the ``INFORMATION_SCHEMA``. Not every part is available at the latest
-edition, so the code cites the latest edition that we have of each part (see
+for the ``INFORMATION_SCHEMA``. Each part is pinned to one edition (Part 2 is
+ISO/IEC 9075-2:2016, Part 1 and Part 3 are the SQL:2003 working drafts and
+Part 11 is the SQL:2008 committee draft), and vsql follows only that edition,
+even where a newer one is available (see the editions in
 :doc:`standard-index`). The source files are named after the part and section
 of the standard that they implement (such as
 ``std_2_14_14_update_statement_searched.v`` for Part 2, section 14.14),

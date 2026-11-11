@@ -84,18 +84,24 @@ def read_editions():
     for line in open(EDITIONS):
         if line.startswith('#') or not line.strip():
             continue
-        part, citation, sha256, source = line.rstrip('\n').split('\t')
+        part, citation, sha256, document = line.rstrip('\n').split('\t')
         editions[part] = {'citation': citation, 'sha256': sha256,
-                          'source': source}
+                          'document': document}
     return editions
 
 
 def standard_text(edition):
     """The text of a part, extracted from its PDF (and cached)."""
-    path = os.path.join(ROOT, 'standard_docs', edition['source'])
-    digest = hashlib.sha256(open(path, 'rb').read()).hexdigest()
-    if digest != edition['sha256']:
-        sys.exit(f'{path} is not the edition in {EDITIONS}')
+    # The PDF can have any file name, but it must be in the folder of the
+    # document and be exactly the pinned edition.
+    folder = os.path.join(ROOT, 'standard_docs', edition['document'])
+    path = None
+    for pdf in sorted(glob.glob(os.path.join(folder, '*.pdf'))):
+        if hashlib.sha256(open(pdf, 'rb').read()).hexdigest() == edition['sha256']:
+            path = pdf
+    if path is None:
+        sys.exit(f'{folder}/ has no PDF of {edition["citation"]} (see {EDITIONS})')
+    digest = edition['sha256']
 
     # The layout mode keeps the indentation, which is the only way to tell
     # which rule a label like "7)" belongs to.

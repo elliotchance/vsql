@@ -48,6 +48,7 @@ fn register_in_command(mut cmd cli.Command) {
 		name:        'single-transaction'
 		description: 'Run a sql file in one transaction, it must not have its own transactions'
 	})
+	add_isolation_flag(mut in_cmd, 'serializable')
 	in_cmd.add_flag(cli.Flag{
 		flag:        .string
 		name:        'compat'
@@ -101,6 +102,7 @@ fn in_command(cmd cli.Command) ! {
 		}
 		mapping << [pair.all_before_last('='), pair.all_after_last('=')]
 	}
+	isolation_level := isolation_flag(cmd, 'serializable')!
 	compat := cmd.flags.get_string('compat') or { '' }
 	if compat !in ['', 'vsql', 'sqlite3'] {
 		return error('-compat must be vsql or sqlite3')
@@ -132,6 +134,7 @@ fn in_command(cmd cli.Command) ! {
 		mapping:            mapping
 		continue_on_error:  cmd.flags.get_bool('continue-on-error') or { false }
 		single_transaction: single_transaction
+		isolation_level:    isolation_level
 		compat:             if compat == 'vsql' { '' } else { compat }
 		ignore_unsupported: cmd.flags.get_bool('ignore-unsupported') or { false }
 		verbose:            cmd.flags.get_bool('verbose') or { false }

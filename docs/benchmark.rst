@@ -74,3 +74,10 @@ file, or ``-file ':memory:'`` to run it in memory.
 3. ``-accounts`` changes the number of rows in the ``ACCOUNTS`` table and
 ``-duration`` changes how many seconds the transactions are run for, such as
 ``vsql bench -accounts 1000 -duration 5`` for a quick test.
+
+4. ``-isolation`` sets the isolation level of each transaction:
+``read-uncommitted``, ``read-committed``, ``repeatable-read`` or
+``serializable`` (the default), such as
+``vsql bench -isolation read-committed``. Since there's only one connection,
+this measures the cost of the isolation level itself (see :doc:`transactions`).
+``read-uncommitted`` currently runs the same way as ``read-committed``.

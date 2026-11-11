@@ -40,6 +40,11 @@ Options are:
 
 - ``-host``: Address to listen on (default 127.0.0.1). Use ``0.0.0.0`` or
   ``::`` to accept connections from other machines.
+- ``-isolation``: The isolation level of a transaction that doesn't have one
+  (see :doc:`transactions`): ``read-uncommitted``, ``read-committed``,
+  ``repeatable-read`` or ``serializable``. The default is ``read-committed``, so
+  that the app can still be used while a file is being imported, which is in
+  one transaction. Imports are run at the same level.
 - ``-port`` or ``-p``: Port number (default 3211).
 
 bench
@@ -52,6 +57,7 @@ bench
    vsql bench                                 # on disk, in bench.vsql
    vsql bench -file ':memory:'                # in memory
    vsql bench -accounts 1000 -duration 5      # a quick test
+   vsql bench -isolation read-committed       # with READ COMMITTED transactions
 
 Options are:
 
@@ -59,6 +65,9 @@ Options are:
   test (default ``bench.vsql``). Use ``:memory:`` for an in-memory database.
 - ``-accounts``: The number of rows in the ``ACCOUNTS`` table (default 100000).
 - ``-duration``: The number of seconds to run transactions for (default 60).
+- ``-isolation``: The isolation level of the transactions:
+  ``read-uncommitted``, ``read-committed``, ``repeatable-read`` or
+  ``serializable`` (default ``serializable``). See :doc:`transactions`.
 
 cli
 ^^^
@@ -207,6 +216,11 @@ Options must be before the file. These can be used with each ``-format``:
      -
      -
      -
+   * - ``-isolation``
+     - ✅
+     - ✅
+     - ✅
+     - ✅
    * - ``-map``
      -
      - ✅
@@ -249,6 +263,11 @@ The options are:
   is supported (see :doc:`create-index`), but some forms of it aren't, such as an
   index with a ``WHERE``. The import can then finish without them, so anything
   that relies on them (such as a ``UNIQUE`` index) isn't there.
+- ``-isolation``: The isolation level of each transaction (see
+  :doc:`transactions`): ``read-uncommitted``, ``read-committed``,
+  ``repeatable-read`` or ``serializable`` (the default). Other connections can't
+  commit during a ``serializable`` transaction, such as an import with
+  ``-single-transaction``.
 - ``-map``: ``field=column`` puts a field of the file into a column, and can be
   used more than once. Fields that aren't mapped aren't imported. The default is
   that each field goes to the column with its name.

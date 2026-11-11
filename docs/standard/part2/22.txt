@@ -38,7 +38,7 @@
 22.1/GR/5.c.iii.2.A      definition   - -
 22.1/GR/5.c.iii.2.B      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/5.c.iii.2.C      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
-22.1/GR/5.c.iii.2.C.I    implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+22.1/GR/5.c.iii.2.C.I    implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v access modes are E152-02 (#554)
 22.1/GR/5.c.iii.2.C.II   unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, so an INITIALLY DEFERRED constraint is deferred; the isolation level is READ COMMITTED (#664)
 22.1/GR/5.c.iii.2.D      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/5.c.iv           n/a          - - access modes (E152-02, #554)

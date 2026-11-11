@@ -217,7 +217,7 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 		// - 10.c. Regular identifiers are stored in upper case, and a
 		// transaction can include DDL.
 		sql_default_transaction_isolation {
-			InfoValue(int(sql_transaction_read_committed))
+			InfoValue(int(sql_transaction_serializable))
 		}
 		sql_identifier_case {
 			InfoValue(i16(sql_ic_upper))
@@ -248,7 +248,7 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 			InfoValue(sql_scco_read_only)
 		}
 		sql_transaction_isolation_option {
-			InfoValue(sql_transaction_read_uncommitted | sql_transaction_read_committed)
+			InfoValue(sql_transaction_read_uncommitted | sql_transaction_read_committed | sql_transaction_repeatable_read | sql_transaction_serializable)
 		}
 		sql_user_name {
 			InfoValue('')

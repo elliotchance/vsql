@@ -5,7 +5,7 @@
  * header files". The codes are also in the tables of ISO/IEC 9075-3:2003(E),
  * 5.14, Other tables associated with CLI. The routines that aren't implemented
  * yet are listed in
- * https://vsql.readthedocs.io/en/latest/sql-compliance.html#cli-routines
+ * https://vsql.readthedocs.io/en/latest/sql-compliance-9075-3.html#cli-routines
  *
  * This header is C99, and also works with C++11.
  *
@@ -272,8 +272,8 @@ typedef SQLINTEGER SQLHDESC;
 /* SQLStartTran IsolationLevels. */
 #define SQL_TRANSACTION_READ_UNCOMMITTED 0x00000001L /* READ COMMITTED */
 #define SQL_TRANSACTION_READ_COMMITTED   0x00000002L /* READ COMMITTED */
-#define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
-#define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
+#define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* SERIALIZABLE */
+#define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* SERIALIZABLE */
 
 /* SQLGetSessionInfo InfoTypes. */
 #define SQL_CURRENT_USER                    47    /* CURRENT_USER */

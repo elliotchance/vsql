@@ -10,45 +10,47 @@ module vsql
 // fault_names are the faults that can be armed. Each one is a fault_point() or
 // fault_reached() call with that name:
 //
-//   open:              opening the database file.
-//   lock:              locking the database file to write to it.
-//   lock_shared:       locking the database file to read it.
-//   read_header:       reading the header of the database file.
-//   read_page:         reading a page from the database file.
-//   write_version:     the file needs a newer version of vsql to be changed.
-//   wal_write:         writing a statement to the write-ahead log, before it's
-//                      committed.
-//   wal_torn_frame:    only half of the commit frame is written to the
-//                      write-ahead log, like a process that stopped while
-//                      writing it.
-//   wal_corrupt_frame: the commit frame in the write-ahead log has the wrong
-//                      checksum, like a write that didn't reach the disk
-//                      correctly.
-//   wal_bad_magic:     the write-ahead log doesn't start with its magic number.
-//   wal_bad_header:    the header of the write-ahead log has the wrong
-//                      checksum.
-//   wal_unknown_frame: the write-ahead log has a frame of an unknown kind.
+//   accept:            a server accepting a client, see Server.accept.
 //   checkpoint:        copying a committed statement from the write-ahead log
 //                      into the database file (including when it's
 //                      recovered).
+//   constraint_index:  a new table doesn't get the indexes of its constraints,
+//                      like a table from before indexes (see
+//                      build_constraint_indexes). This isn't an error.
+//   isolation_end:     ending the isolation block of an operation on the file,
+//                      which removes the rows that were deleted outside of a
+//                      transaction, see Storage.isolation_end.
+//   isolation_lock:    locking the isolation file, for a REPEATABLE READ or
+//                      SERIALIZABLE transaction or to commit, see isolation.v.
+//   isolation_start:   starting the isolation block of an operation on the
+//                      file, see Storage.isolation_start.
+//   lock:              locking the database file to write to it.
+//   lock_shared:       locking the database file to read it.
+//   open:              opening the database file.
+//   read_header:       reading the header of the database file.
+//   read_page:         reading a page from the database file.
 //   recover:           copying a statement that was left in the write-ahead log
 //                      into the database file.
 //   session_shared:    changing the session lock back to shared, after
 //                      recovering the transactions of a connection that
 //                      stopped, see Storage.recover.
-//   isolation_start:   starting the isolation block of an operation on the
-//                      file, see Storage.isolation_start.
-//   isolation_end:     ending the isolation block of an operation on the file,
-//                      which removes the rows that were deleted outside of a
-//                      transaction, see Storage.isolation_end.
-//   accept:            a server accepting a client, see Server.accept.
-//   constraint_index:  a new table doesn't get the indexes of its constraints,
-//                      like a table from before indexes (see
-//                      build_constraint_indexes). This isn't an error.
-const fault_names = ['open', 'lock', 'lock_shared', 'read_header', 'read_page', 'write_version',
-	'wal_write', 'wal_torn_frame', 'wal_corrupt_frame', 'wal_bad_magic', 'wal_bad_header',
-	'wal_unknown_frame', 'checkpoint', 'recover', 'session_shared', 'isolation_start', 'isolation_end',
-	'accept', 'constraint_index']
+//   wal_bad_header:    the header of the write-ahead log has the wrong
+//                      checksum.
+//   wal_bad_magic:     the write-ahead log doesn't start with its magic number.
+//   wal_corrupt_frame: the commit frame in the write-ahead log has the wrong
+//                      checksum, like a write that didn't reach the disk
+//                      correctly.
+//   wal_torn_frame:    only half of the commit frame is written to the
+//                      write-ahead log, like a process that stopped while
+//                      writing it.
+//   wal_unknown_frame: the write-ahead log has a frame of an unknown kind.
+//   wal_write:         writing a statement to the write-ahead log, before it's
+//                      committed.
+//   write_version:     the file needs a newer version of vsql to be changed.
+const fault_names = ['accept', 'checkpoint', 'constraint_index', 'isolation_end', 'isolation_lock',
+	'isolation_start', 'lock', 'lock_shared', 'open', 'read_header', 'read_page', 'recover',
+	'session_shared', 'wal_bad_header', 'wal_bad_magic', 'wal_corrupt_frame', 'wal_torn_frame',
+	'wal_unknown_frame', 'wal_write', 'write_version']
 
 struct FaultPoints {
 mut:

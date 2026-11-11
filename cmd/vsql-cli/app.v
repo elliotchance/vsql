@@ -21,6 +21,7 @@ fn register_app_command(mut cmd cli.Command) {
 		abbrev:      'p'
 		description: 'Port number (default 3211)'
 	})
+	add_isolation_flag(mut app_cmd, 'read-committed')
 	cmd.add_command(app_cmd)
 }
 
@@ -41,5 +42,7 @@ fn app_command(cmd cli.Command) ! {
 		port = 3211
 	}
 
-	app.serve(paths, host, port)!
+	isolation_level := isolation_flag(cmd, 'read-committed')!
+
+	app.serve(paths, host, port, isolation_level)!
 }

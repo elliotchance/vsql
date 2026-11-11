@@ -46,15 +46,18 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 }
 
 // commit_error is the error for anything that prevents a COMMIT, which is always
-// a transaction rollback, see PreparedStmt.fail. Conflicts are found when a row
-// is written, so a COMMIT can't fail with a serialization failure.
+// a transaction rollback, see PreparedStmt.fail. A serialization failure (such as
+// when another connection has a SERIALIZABLE transaction, see isolation.v) is
+// already a transaction rollback, so it's kept as it is.
 //
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.a and 6.b
 // ISO/IEC 9075-3:2003(E), 6.17, EndTran, General Rules, 12.d.i and 12.d.iii
 fn commit_error(err IError) IError {
-	is_violation := sqlstate_from_int(err.code()).starts_with('23')
-	return if is_violation {
+	sqlstate := sqlstate_from_int(err.code())
+	return if sqlstate.starts_with('23') {
 		sqlstate_40002(err.msg(), violated_constraint(err) or { Identifier{} })
+	} else if sqlstate.starts_with('40') {
+		err
 	} else {
 		sqlstate_40v01(err.msg())
 	}
@@ -68,6 +71,10 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 		// A page is only copied and stored again when it has an object to
 		// remove, see Pager.read_page.
 		page_in_place := catalog.storage.btree.pager.read_page(page_number)!
+		if !catalog.storage.commit_locked
+			&& page_in_place.has_object_of(catalog.storage.transaction_id) {
+			catalog.storage.lock_commit()!
+		}
 		schema_changed = schema_changed
 			|| page_in_place.has_schema_object_of(catalog.storage.transaction_id)
 

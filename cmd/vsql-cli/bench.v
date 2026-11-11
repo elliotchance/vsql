@@ -27,10 +27,20 @@ fn register_bench_command(mut cmd cli.Command) {
 		name:        'duration'
 		description: 'Seconds to run transactions for (default 60)'
 	})
+	bench_cmd.add_flag(cli.Flag{
+		flag:        .string
+		name:        'isolation'
+		description: 'Isolation level of the transactions: read-uncommitted, read-committed, repeatable-read or serializable (default serializable)'
+	})
 	cmd.add_command(bench_cmd)
 }
 
 fn bench_command(cmd cli.Command) ! {
+	isolation := cmd.flags.get_string('isolation') or { '' }
+	if isolation !in ['', 'read-uncommitted', 'read-committed', 'repeatable-read', 'serializable'] {
+		return error('unknown isolation level: ${isolation} (expected read-uncommitted, read-committed, repeatable-read or serializable)')
+	}
+
 	print_version()
 
 	mut file := cmd.flags.get_string('file') or { '' }
@@ -39,7 +49,7 @@ fn bench_command(cmd cli.Command) ! {
 	}
 
 	if file != ':memory:' {
-		for path in [file, '${file}.wal', '${file}.session'] {
+		for path in [file, '${file}.wal', '${file}.session', '${file}.isolation'] {
 			if os.exists(path) {
 				os.rm(path)!
 			}
@@ -57,5 +67,6 @@ fn bench_command(cmd cli.Command) ! {
 	if duration > 0 {
 		benchmark.run_for = duration * time.second
 	}
+	benchmark.isolation_level = isolation.to_upper().replace('-', ' ')
 	benchmark.start()!
 }

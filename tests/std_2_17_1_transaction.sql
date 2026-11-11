@@ -109,11 +109,19 @@ SELECT * FROM t;
 -- # back. A table dropped by a transaction is only gone for that transaction
 -- # until it's committed.
 /* connection 1 */
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+/* connection 2 */
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+-- 1: msg: START TRANSACTION
+-- 2: msg: START TRANSACTION
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
 START TRANSACTION;
 /* connection 2 */
 START TRANSACTION;
 -- 1: msg: START TRANSACTION
--- 2: msg: START TRANSACTION
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 
 /* connection 1 */
 START TRANSACTION;

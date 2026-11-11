@@ -126,14 +126,19 @@ mut:
 	// set_statement_timestamp.
 	statement_timestamp time.Time
 	statement_time_zone i16
+	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
+	// whether it's started by START TRANSACTION or implicitly by a statement.
+	next_transaction ?TransactionCharacteristics
+	// isolation_level is the isolation level of the current SQL-transaction.
+	isolation_level IsolationLevel = .serializable
+	// default_isolation_level is ConnectionOptions.isolation_level, see
+	// enduring_characteristics.
+	default_isolation_level IsolationLevel = .serializable
 pub mut:
 	// condition_area_limit is the most warnings that are kept during the current
 	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
 	// initiate_transaction).
 	condition_area_limit int = max_conditions
-	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
-	// the next SQL-transaction, or 0.
-	next_condition_area_limit int
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).
@@ -224,9 +229,11 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	catalog_name := catalog_name_from_path(path)
 
 	mut conn := &Connection{
-		current_catalog: catalog_name
-		current_schema:  default_schema_name
-		now:             default_now
+		current_catalog:         catalog_name
+		current_schema:          default_schema_name
+		now:                     default_now
+		isolation_level:         options.isolation_level
+		default_isolation_level: options.isolation_level
 	}
 
 	conn.lifetime = closure.new_lifetime()
@@ -253,6 +260,7 @@ pub fn (mut conn Connection) close() {
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
+			catalog.storage.isolation.release()
 		}
 	}
 }
@@ -283,6 +291,9 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
 		catalog.storage.cache_size = options.cache_size
+		catalog.storage.isolation = IsolationLock{
+			path: isolation_path(path)
+		}
 		catalog.recover_log() or {
 			catalog.storage.session.close()
 			return err
@@ -292,6 +303,15 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	register_information_schema(mut catalog)!
 
 	in_transaction := conn.in_transaction()
+
+	// A catalog added during a transaction joins it, so it must be locked
+	// first, see isolation.v.
+	if in_transaction && conn.isolation_level.locks_transaction() {
+		catalog.lock_transaction() or {
+			catalog.storage.session.close()
+			return err
+		}
+	}
 	conn.catalogs[catalog_name] = catalog
 
 	if path == ':memory:' {
@@ -300,7 +320,6 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		conn.query("SET CATALOG '${conn.current_catalog}'")!
 	}
 
-	// A catalog added during a transaction joins it.
 	if in_transaction {
 		catalog.start_transaction()!
 		catalog.finish_write(true)!
@@ -1088,6 +1107,20 @@ pub mut:
 	// Pages are only kept for one statement, since another connection may
 	// change the file between statements.
 	cache_size int
+	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
+	// (including a statement that changes the database outside of a
+	// transaction) waits for another connection's transaction to finish, before
+	// it fails with a 40001 serialization failure. The default is 5 seconds.
+	lock_timeout time.Duration
+	// isolation_level is the isolation level of an SQL-transaction that doesn't
+	// have one from START TRANSACTION or SET TRANSACTION, including a statement
+	// outside of a transaction. The default is SERIALIZABLE, like the standard.
+	// A READ COMMITTED transaction doesn't stop other connections from
+	// committing while it runs (see isolation.v), but it fails with 40001 if it
+	// commits while another connection has a REPEATABLE READ or SERIALIZABLE
+	// transaction. Only the options that the connection is opened with are
+	// used, not the ones given to add_catalog.
+	isolation_level IsolationLevel = .serializable
 }
 
 // default_connection_options returns the sensible defaults used by open() and
@@ -1098,6 +1131,7 @@ pub fn default_connection_options() ConnectionOptions {
 		mutex:                sync.new_rwmutex()
 		create_index_timeout: 60 * time.second
 		cache_size:           2000
+		lock_timeout:         5 * time.second
 	}
 }
 

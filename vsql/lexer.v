@@ -54,6 +54,8 @@ type YYSym = AddColumnDefinition
 	| Identifier
 	| IdentifierChain
 	| IndexColumn
+	| DiagnosticsSize
+	| IsolationLevel
 	| JoinSpecification
 	| JoinType
 	| ListaggOverflow

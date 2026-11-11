@@ -302,7 +302,7 @@ SELECT * FROM foo;
 /* connection 1 */
 CREATE TABLE foo (x INT, y INT);
 INSERT INTO foo (x, y) VALUES (NULL, 1);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 UPDATE foo SET x = NULL;
 /* connection 2 */
 UPDATE foo SET y = 2;
@@ -316,3 +316,22 @@ SELECT * FROM foo;
 -- 2: msg: UPDATE 1
 -- 1: msg: COMMIT
 -- 1: X: NULL Y: 2
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE TABLE foo (x INT, y INT);
+INSERT INTO foo (x, y) VALUES (NULL, 1);
+START TRANSACTION;
+UPDATE foo SET x = NULL;
+/* connection 2 */
+UPDATE foo SET y = 2;
+/* connection 1 */
+COMMIT;
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: UPDATE 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: msg: COMMIT
+-- 1: X: NULL Y: 1

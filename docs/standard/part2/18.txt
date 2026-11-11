@@ -18,13 +18,13 @@
 18.1/GR/9                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
 18.1/GR/9.a              implemented  vsql/agent.v vsql/sql_test.v
 18.1/GR/9.b              implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
-18.1/GR/9.c              untested     vsql/std_2_17_3_transaction_characteristics.v - only the condition area limit (100); access modes and isolation levels are E152 (#554, #664)
+18.1/GR/9.c              untested     vsql/std_2_17_3_transaction_characteristics.v - access modes are E152-02 (#554)
 18.1/GR/10               implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
 18.1/GR/11               n/a          - - the SQL-server can't reject an SQL-connection
 18.1/GR/12               implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
 18.1/GR/13               implemented  vsql/connection.v vsql/sql_test.v
 18.1/GR/13.a             n/a          - - authorization identifiers (E081)
-18.1/GR/13.b             untested     vsql/std_2_17_3_transaction_characteristics.v - only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+18.1/GR/13.b             untested     vsql/std_2_17_3_transaction_characteristics.v - access modes are E152-02 (#554)
 18.1/GR/13.c             n/a          - - there's no SQL-session identifier
 18.1/GR/13.d             n/a          - - authorization identifiers (E081)
 18.1/GR/13.e             untested     vsql/std_2_17_3_transaction_characteristics.v - it's 100

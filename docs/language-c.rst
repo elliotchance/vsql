@@ -31,7 +31,7 @@ Routines
 Each routine is documented in
 `libvsql.h <https://github.com/elliotchance/vsql/blob/main/libvsql/libvsql.h>`_,
 which is C99 and also works with C++. The routines that are supported so far
-are listed in :doc:`sql-compliance`.
+are listed in :doc:`sql-compliance-9075-3`.
 
 The integer types have the same width on every platform: ``SQLSMALLINT`` is
 16 bits (``int16_t``), ``SQLINTEGER`` (and the handle types) is 32 bits

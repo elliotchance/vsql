@@ -19,39 +19,50 @@ the Subclauses, never the text of the rules. Notes are in our own words.
 Editions
 --------
 
-Not every part is available at the same (or the latest) edition, so each part
-uses the latest edition that we have. They are listed in
-``docs/standard/editions.txt``, with the SHA-256 of the PDF that the index was
-generated from:
+vsql is pinned to one edition of each part of the SQL standard. The index, every
+citation in the code and the behavior of vsql all follow the pinned edition, even
+when a newer edition (or another draft) of the same part is available:
 
 .. list-table::
    :header-rows: 1
 
    * - Part
-     - Citation
-     - Source
+     - Pinned edition
+     - Document
+     - Folder in ``standard_docs/``
 
    * - 1 (Framework)
      - ISO/IEC 9075-1:2003(E)
      - SQL:2003 working draft (2003-09)
+     - ``ISO_IEC 9075-1 2003 WD Framework``
 
    * - 2 (Foundation)
      - ISO/IEC 9075-2:2016(E)
      - SQL:2016
+     - ``ISO_IEC 9075-2 2016 Foundation``
 
    * - 3 (Call-Level Interface)
      - ISO/IEC 9075-3:2003(E)
      - SQL:2003 working draft (2003-09)
+     - ``ISO_IEC 9075-3 2003 WD Call-Level Interface (CLI)``
 
    * - 11 (Information and Definition Schemas)
      - ISO/IEC 9075-11:2008(E)
      - SQL:2008 committee draft (2006-02)
+     - ``ISO_IEC 9075-11 2006 CD Information and Definition Schemas (Schemata)``
 
-Every citation in the code must be for the edition of its part. When a newer
-edition is available:
+The editions are listed in ``docs/standard/editions.txt``, with the folder and
+the SHA-256 of the PDF that the index is generated from. The PDF in the folder
+can have any file name, but it must have that SHA-256.
 
-1. Put its PDF in ``standard_docs/`` and update the part in ``editions.txt``
-   (its citation, SHA-256 and source).
+Every other document in ``standard_docs/`` is for reference only, such as
+ISO/IEC 9075-2:2023, the other SQL:2003 drafts and SQL/MM (ISO/IEC 13249). They
+can explain the background of a rule, but they are never cited, and vsql doesn't
+follow them where they differ from the pinned edition. Moving a part to another
+edition is a change of its own:
+
+1. Put its PDF in its own folder in ``standard_docs/`` and update the part in
+   ``editions.txt`` (its citation, SHA-256 and folder) and in the table above.
 2. Run ``scripts/standard-index.py generate``. It keeps the status, code, tests
    and note of every row that still exists, and prints the reviewed rows that
    don't (because the edition renumbered them), so they can be moved by hand.

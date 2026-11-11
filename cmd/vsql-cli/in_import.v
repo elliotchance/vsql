@@ -1167,6 +1167,8 @@ struct ImportOptions {
 	mapping            [][]string
 	continue_on_error  bool
 	single_transaction bool
+	// isolation_level is the level of each transaction (-isolation).
+	isolation_level vsql.IsolationLevel = .serializable
 	// compat is the dialect of a SQL file: empty for vsql, or sqlite3 (see
 	// in_compat.v).
 	compat string
@@ -1181,7 +1183,9 @@ struct ImportOptions {
 // file, or less than zero if it's not known. It returns false if a statement failed.
 // An error means that nothing could be imported.
 fn import_database(path string, mut reader io.Reader, total i64, options ImportOptions) !bool {
-	mut conn := vsql.open_database(path, vsql.default_connection_options())!
+	mut connection_options := vsql.default_connection_options()
+	connection_options.isolation_level = options.isolation_level
+	mut conn := vsql.open_database(path, connection_options)!
 	defer {
 		conn.close()
 	}

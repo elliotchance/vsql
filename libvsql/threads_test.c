@@ -16,6 +16,7 @@
  * in-memory database, committing each row. */
 #define THREADS 8
 #define ROWS 50
+#define RETRIES 20
 #define THREADS_FILE "libvsql_threads_test.vsql"
 
 struct worker {
@@ -29,12 +30,52 @@ static void fail(struct worker *w, SQLSMALLINT type, SQLINTEGER handle) {
   SQLGetDiagRec(type, handle, 1, (SQLCHAR *)w->sqlstate, NULL, NULL, 0, NULL);
 }
 
+/* retry is true if the transaction was rolled back by a serialization failure
+ * (40001), which a client tries again. At the default isolation level
+ * (SERIALIZABLE) the other threads can hold the database for longer than the
+ * lock timeout on a slow machine. Anything else is a failure. */
+static int retry(struct worker *w, SQLSMALLINT type, SQLINTEGER handle) {
+  char sqlstate[6] = "";
+  SQLGetDiagRec(type, handle, 1, (SQLCHAR *)sqlstate, NULL, NULL, 0, NULL);
+  if (strcmp(sqlstate, "40001") == 0) {
+    return 1;
+  }
+  w->failures++;
+  strcpy(w->sqlstate, sqlstate);
+  return 0;
+}
+
+/* insert_row inserts row i and commits it, which is done once it succeeds or
+ * fails for a reason other than 40001. */
+static int insert_row(struct worker *w, SQLHDBC dbc, int i) {
+  /* Each row has its own statement, so the handles are allocated and freed
+   * while the other threads use theirs. */
+  SQLHSTMT insert;
+  char sql[100];
+  int again;
+  if (SQLAllocStmt(dbc, &insert) != SQL_SUCCESS) {
+    fail(w, SQL_HANDLE_DBC, dbc);
+    return 1;
+  }
+  sprintf(sql, "INSERT INTO t%d (x) VALUES (%d)", w->n, i);
+  if (run_sql(insert, sql) != SQL_SUCCESS) {
+    again = retry(w, SQL_HANDLE_STMT, insert);
+    SQLFreeStmt(insert, SQL_DROP);
+    return !again;
+  }
+  SQLFreeStmt(insert, SQL_DROP);
+  if (SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT) != SQL_SUCCESS) {
+    return !retry(w, SQL_HANDLE_DBC, dbc);
+  }
+  return 1;
+}
+
 static void insert_rows(struct worker *w, const char *server) {
   SQLHENV env;
   SQLHDBC dbc;
   SQLHSTMT stmt;
   char sql[100];
-  int i;
+  int i, attempts;
 
   if (SQLAllocEnv(&env) != SQL_SUCCESS ||
       SQLAllocConnect(env, &dbc) != SQL_SUCCESS) {
@@ -55,20 +96,12 @@ static void insert_rows(struct worker *w, const char *server) {
     }
   }
   for (i = 0; i < ROWS; i++) {
-    /* Each row has its own statement, so the handles are allocated and freed
-     * while the other threads use theirs. */
-    SQLHSTMT insert;
-    if (SQLAllocStmt(dbc, &insert) != SQL_SUCCESS) {
-      fail(w, SQL_HANDLE_DBC, dbc);
-      continue;
-    }
-    sprintf(sql, "INSERT INTO t%d (x) VALUES (%d)", w->n, i);
-    if (run_sql(insert, sql) != SQL_SUCCESS) {
-      fail(w, SQL_HANDLE_STMT, insert);
-    }
-    SQLFreeStmt(insert, SQL_DROP);
-    if (SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT) != SQL_SUCCESS) {
-      fail(w, SQL_HANDLE_DBC, dbc);
+    for (attempts = 1; !insert_row(w, dbc, i); attempts++) {
+      if (attempts == RETRIES) {
+        w->failures++;
+        strcpy(w->sqlstate, "40001");
+        break;
+      }
     }
   }
 

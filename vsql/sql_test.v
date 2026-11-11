@@ -4265,6 +4265,37 @@ fn test_isolation_lock() ! {
 	a.release()
 	assert waiter.wait()! >= 40 * time.millisecond
 
+	// A connection that releases the lock and needs it again has to wait for
+	// the connection that was already waiting.
+	a.acquire(.exclusive, 0, 'busy')!
+	next := spawn fn [path] () !time.Time {
+		mut l := IsolationLock{
+			path: path
+		}
+		l.acquire(.exclusive, 5 * time.second, 'busy')!
+		got := time.now()
+		time.sleep(20 * time.millisecond)
+		l.release()
+		return got
+	}()
+	time.sleep(50 * time.millisecond)
+	a.release()
+	a.acquire(.exclusive, 5 * time.second, 'busy')!
+	again := time.now()
+	a.release()
+	assert next.wait()! < again
+
+	// The timeout includes the time spent waiting for a turn, which isn't
+	// needed without a timeout.
+	mut turn := IsolationLock{
+		path: isolation_queue_path(path)
+	}
+	turn.acquire(.exclusive, 0, 'busy')!
+	assert isolation_lock_error(mut a, .exclusive, 20 * time.millisecond) == '40001 serialization failure: busy'
+	a.acquire(.exclusive, 0, 'busy')!
+	a.release()
+	turn.release()
+
 	// A database in memory is never locked.
 	mut m := IsolationLock{}
 	m.acquire(.exclusive, 0, 'busy')!

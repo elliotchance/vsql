@@ -300,6 +300,8 @@ fn (mut f Storage) create_index(definition Index, t Table, check_unique bool) ! 
 		f.header.write_version = index_file_format_version
 	}
 
+	f.check_concurrent_name(`N`, definition.name)!
+
 	f.header.index_id++
 	index := Index{
 		...definition

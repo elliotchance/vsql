@@ -452,6 +452,7 @@ fn (mut f Storage) create_table(definition Table) ! {
 	}
 
 	f.check_concurrent_referenced_tables(definition, [])!
+	f.check_concurrent_name(`T`, definition.name)!
 
 	f.header.table_id++
 	table := Table{
@@ -535,12 +536,17 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 		f.end_isolation()
 	}
 
+	key := 'S${schema_name}'.bytes()
+	if f.has_concurrent_objects(key, key)! {
+		return sqlstate_40001('avoiding concurrent write on schema ${schema_name}')
+	}
+
 	schema := Schema{
 		tid:  f.transaction_id
 		name: schema_name
 	}
 
-	obj := new_page_object('S${schema_name}'.bytes(), f.transaction_id, 0, schema.bytes())
+	obj := new_page_object(key, f.transaction_id, 0, schema.bytes())
 	f.btree.add(obj)!
 
 	f.save_schema()
@@ -554,9 +560,15 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 		f.end_isolation()
 	}
 
+	// A sequence that another transaction is creating or dropping isn't visible,
+	// see check_concurrent_name.
+	key := 'Q${sequence.name.storage_id()}'.bytes()
+	if f.has_concurrent_objects(key, key)! {
+		return sqlstate_40001('avoiding concurrent write on sequence ${sequence.name}')
+	}
+
 	// The sequence defintion.
-	obj1 := new_page_object('Q${sequence.name.storage_id()}'.bytes(), f.transaction_id, 0,
-		sequence.definition_bytes())
+	obj1 := new_page_object(key, f.transaction_id, 0, sequence.definition_bytes())
 	f.btree.add(obj1)!
 
 	// The value for the sequence is stored as a separate object so that NEXT
@@ -936,6 +948,47 @@ fn (mut f Storage) check_concurrent_references(t Table) ! {
 			if key.referenced_table.storage_id() == t.name.storage_id() {
 				return sqlstate_40001('avoiding concurrent write on referencing table definition')
 			}
+		}
+	}
+	if err := iter.err {
+		return err
+	}
+}
+
+// check_concurrent_name returns a SQLSTATE 40001 if another active transaction
+// has created or dropped a table (when kind is `T`) or an index (`N`) with the
+// same name. It isn't visible, so the name would otherwise be used twice once
+// both transactions are committed. Whether it will exist depends on how that
+// transaction ends, so it's a serialization failure rather than a duplicate
+// name, the same as a PRIMARY KEY (see check_primary_key). It must be called
+// from inside an isolation block.
+fn (mut f Storage) check_concurrent_name(kind u8, name Identifier) ! {
+	// Only another active transaction can have written a concurrent object, so
+	// there's no need to read them.
+	if !f.header.active_transaction_ids.has_other(f.transaction_id) {
+		return
+	}
+
+	mut iter := f.btree.new_range_iterator([kind], [kind + 1])
+	for {
+		object := iter.next() or { break }
+		if !f.is_concurrent_write(object) {
+			continue
+		}
+
+		stmt := parse_definition(object.value)!
+		mut other := Identifier{}
+		if stmt is TableDefinition {
+			other = stmt.table_name
+		} else if stmt is CreateIndexStatement {
+			other = Identifier{
+				schema_name: stmt.table_name.schema_name
+				entity_name: stmt.index_name.entity_name
+			}
+		}
+		if other.schema_name == name.schema_name && other.entity_name == name.entity_name {
+			kind_name := if kind == `T` { 'table' } else { 'index' }
+			return sqlstate_40001('avoiding concurrent write on ${kind_name} ${name}')
 		}
 	}
 	if err := iter.err {

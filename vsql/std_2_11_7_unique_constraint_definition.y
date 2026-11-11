@@ -2,10 +2,10 @@
 
 unique_constraint_definition:
   unique_specification left_paren unique_column_list right_paren {
-    $$.v = UniqueConstraintDefinition{
+    $$.v = yy_box(UniqueConstraintDefinition{
       columns:        $3.v as []Identifier
       is_primary_key: $1.v as bool
-    }
+    })
   }
 
 unique_specification:

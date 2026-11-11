@@ -46,9 +46,9 @@ schema_elements:
 
 // The other elements aren't statements that are supported yet.
 schema_element:
-  table_definition { $$.v = SchemaElement($1.v as TableDefinition) }
+  table_definition { $$.v = yy_box(SchemaElement($1.v as TableDefinition)) }
 | sequence_generator_definition {
-    $$.v = SchemaElement($1.v as SequenceGeneratorDefinition)
+    $$.v = yy_box(SchemaElement($1.v as SequenceGeneratorDefinition))
   }
 
 %%

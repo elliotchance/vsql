@@ -43172,7 +43172,7 @@ fn yy_action_107(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1201
 	{
-		yy_val.v = yy_box(AlterTableAction(yy_as[AlterColumnDefinition](yy_dollar[1].v)))
+		yy_val.v = yy_box(AlterTableAction(yy_unbox[AlterColumnDefinition](yy_dollar[1].v)))
 	}
 }
 
@@ -43215,7 +43215,7 @@ fn yy_action_114(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	// line vsql/y.y:1228
 	{
 		flag(mut yylex, 'F381')
-		yy_val.v = AlterColumnDefinition{yy_as[Identifier](yy_dollar[2].v), yy_as[AlterColumnAction](yy_dollar[3].v)}
+		yy_val.v = yy_box(AlterColumnDefinition{yy_as[Identifier](yy_dollar[2].v), yy_as[AlterColumnAction](yy_dollar[3].v)})
 	}
 }
 
@@ -43223,7 +43223,7 @@ fn yy_action_115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	// line vsql/y.y:1232
 	{
 		flag(mut yylex, 'F381')
-		yy_val.v = AlterColumnDefinition{yy_as[Identifier](yy_dollar[3].v), yy_as[AlterColumnAction](yy_dollar[4].v)}
+		yy_val.v = yy_box(AlterColumnDefinition{yy_as[Identifier](yy_dollar[3].v), yy_as[AlterColumnAction](yy_dollar[4].v)})
 	}
 }
 
@@ -43320,28 +43320,28 @@ fn yy_action_125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1307
 	{
-		yy_val.v = [yy_as[SchemaElement](yy_dollar[1].v)]
+		yy_val.v = [yy_unbox[SchemaElement](yy_dollar[1].v)]
 	}
 }
 
 fn yy_action_127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1308
 	{
-		yy_val.v = concat_lists(yy_as[[]SchemaElement](yy_dollar[1].v), [yy_as[SchemaElement](yy_dollar[2].v)])
+		yy_val.v = concat_lists(yy_as[[]SchemaElement](yy_dollar[1].v), [yy_unbox[SchemaElement](yy_dollar[2].v)])
 	}
 }
 
 fn yy_action_128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1314
 	{
-		yy_val.v = SchemaElement(yy_as[TableDefinition](yy_dollar[1].v))
+		yy_val.v = yy_box(SchemaElement(yy_as[TableDefinition](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_129(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1315
 	{
-		yy_val.v = SchemaElement(yy_as[SequenceGeneratorDefinition](yy_dollar[1].v))
+		yy_val.v = yy_box(SchemaElement(yy_as[SequenceGeneratorDefinition](yy_dollar[1].v)))
 	}
 }
 
@@ -43625,7 +43625,7 @@ fn yy_action_162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 			TableElement(Column{
 				name:     yy_as[Identifier](yy_dollar[1].v)
 				typ:      yy_as[Type](yy_dollar[2].v)
-				identity: new_ref(yy_as[IdentityColumn](yy_dollar[3].v))
+				identity: new_ref(yy_unbox[IdentityColumn](yy_dollar[3].v))
 			}),
 		]
 	}
@@ -43720,7 +43720,7 @@ fn yy_action_172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	// line vsql/y.y:1602
 	{
 		yy_val.v = yy_box(ColumnConstraint(CheckConstraintDefinition{
-			...yy_as[CheckConstraintDefinition](yy_dollar[2].v)
+			...yy_unbox[CheckConstraintDefinition](yy_dollar[2].v)
 			name: yy_as[Identifier](yy_dollar[1].v)
 		}))
 	}
@@ -43750,40 +43750,40 @@ fn yy_action_175(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_176(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1617
 	{
-		yy_val.v = yy_box(ColumnConstraint(yy_as[CheckConstraintDefinition](yy_dollar[1].v)))
+		yy_val.v = yy_box(ColumnConstraint(yy_unbox[CheckConstraintDefinition](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_177(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1622
 	{
-		yy_val.v = IdentityColumn{ always: true }
+		yy_val.v = yy_box(IdentityColumn{ always: true })
 	}
 }
 
 fn yy_action_178(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1624
 	{
-		yy_val.v = IdentityColumn{
+		yy_val.v = yy_box(IdentityColumn{
 			always:  true
 			options: yy_as[[]SequenceGeneratorOption](yy_dollar[6].v)
-		}
+		})
 	}
 }
 
 fn yy_action_179(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1630
 	{
-		yy_val.v = IdentityColumn{}
+		yy_val.v = yy_box(IdentityColumn{})
 	}
 }
 
 fn yy_action_180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1632
 	{
-		yy_val.v = IdentityColumn{
+		yy_val.v = yy_box(IdentityColumn{
 			options: yy_as[[]SequenceGeneratorOption](yy_dollar[7].v)
-		}
+		})
 	}
 }
 
@@ -43856,7 +43856,7 @@ fn yy_action_190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	// line vsql/y.y:1682
 	{
 		yy_val.v = yy_box(TableElement(UniqueConstraintDefinition{
-			...yy_as[UniqueConstraintDefinition](yy_dollar[2].v)
+			...yy_unbox[UniqueConstraintDefinition](yy_dollar[2].v)
 			name: yy_as[Identifier](yy_dollar[1].v)
 		}))
 	}
@@ -43876,7 +43876,7 @@ fn yy_action_192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	// line vsql/y.y:1694
 	{
 		yy_val.v = yy_box(TableElement(CheckConstraintDefinition{
-			...yy_as[CheckConstraintDefinition](yy_dollar[2].v)
+			...yy_unbox[CheckConstraintDefinition](yy_dollar[2].v)
 			name: yy_as[Identifier](yy_dollar[1].v)
 		}))
 	}
@@ -43893,7 +43893,7 @@ fn yy_action_193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1706
 	{
-		yy_val.v = yy_box(TableElement(yy_as[UniqueConstraintDefinition](yy_dollar[1].v)))
+		yy_val.v = yy_box(TableElement(yy_unbox[UniqueConstraintDefinition](yy_dollar[1].v)))
 	}
 }
 
@@ -43907,7 +43907,7 @@ fn yy_action_195(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1712
 	{
-		yy_val.v = yy_box(TableElement(yy_as[CheckConstraintDefinition](yy_dollar[1].v)))
+		yy_val.v = yy_box(TableElement(yy_unbox[CheckConstraintDefinition](yy_dollar[1].v)))
 	}
 }
 
@@ -44262,10 +44262,10 @@ fn yy_action_237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1928
 	{
-		yy_val.v = UniqueConstraintDefinition{
+		yy_val.v = yy_box(UniqueConstraintDefinition{
 			columns:        yy_as[[]Identifier](yy_dollar[3].v)
 			is_primary_key: yy_as[bool](yy_dollar[1].v)
-		}
+		})
 	}
 }
 
@@ -44438,9 +44438,9 @@ fn yy_action_258(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_259(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2037
 	{
-		yy_val.v = CheckConstraintDefinition{
+		yy_val.v = yy_box(CheckConstraintDefinition{
 			search_condition: yy_as[BooleanValueExpression](yy_dollar[3].v)
-		}
+		})
 	}
 }
 

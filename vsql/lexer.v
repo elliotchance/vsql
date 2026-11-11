@@ -10,7 +10,6 @@ type YYSym = AddColumnDefinition
 	| AggregateFunction
 	| AggregateFunctionCount
 	| AlterColumnAction
-	| AlterColumnDefinition
 	| AlterIdentityColumnSpecification
 	| AlterSequenceGeneratorStatement
 	| BooleanPredicand
@@ -28,7 +27,6 @@ type YYSym = AddColumnDefinition
 	| CharacterSubstringFunction
 	| CharacterValueExpression
 	| CharacterValueFunction
-	| CheckConstraintDefinition
 	| CommonValueExpression
 	| ComparisonOperator
 	| ComparisonPredicatePart2
@@ -54,7 +52,6 @@ type YYSym = AddColumnDefinition
 	| GeneralValueSpecification
 	| GenerationClause
 	| Identifier
-	| IdentityColumn
 	| IdentifierChain
 	| IndexColumn
 	| JoinSpecification
@@ -78,7 +75,6 @@ type YYSym = AddColumnDefinition
 	| RoutineInvocation
 	| RowValueConstructor
 	| RowValueConstructorPredicand
-	| SchemaElement
 	| SelectList
 	| SequenceGeneratorDefinition
 	| SequenceGeneratorIncrementByOption
@@ -97,7 +93,6 @@ type YYSym = AddColumnDefinition
 	| Term
 	| TrimFunction
 	| Type
-	| UniqueConstraintDefinition
 	| UpdatabilityClause
 	| UpdateSource
 	| Value

@@ -178,8 +178,8 @@ static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
 /*
  * vsql_m_describe_column sets the item descriptor area to the description of
  * a column, from the IRD of the prepared statement. A datetime is the concise
- * data type (such as SQL_TYPE_DATE) in the IRD. LEVEL and KEY_MEMBER are 0
- * (zero) (#801), and a collation that isn't set is the zero-length string.
+ * data type (such as SQL_TYPE_DATE) in the IRD. LEVEL is 0 (zero), and a
+ * collation that isn't set is the zero-length string.
  *
  * ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 7
  */
@@ -193,7 +193,8 @@ static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
       {SQL_DESC_PRECISION, VSQL_M_PRECISION},
       {SQL_DESC_SCALE, VSQL_M_SCALE},
       {SQL_DESC_NULLABLE, VSQL_M_NULLABLE},
-      {SQL_DESC_UNNAMED, VSQL_M_UNNAMED}};
+      {SQL_DESC_UNNAMED, VSQL_M_UNNAMED},
+      {SQL_DESC_KEY_MEMBER, VSQL_M_KEY_MEMBER}};
   static const int strings[][2] = {
       {SQL_DESC_NAME, VSQL_M_NAME},
       {SQL_DESC_CHARACTER_SET_CATALOG, VSQL_M_CHARACTER_SET_CATALOG},
@@ -239,7 +240,8 @@ static void vsql_m_describe(char *sqlstate, const char *statement,
                             const char *name, const void *module) {
   struct vsql_m_prepared *p = vsql_m_prepared_statement(sqlstate, statement);
   struct vsql_m_descriptor *d;
-  SQLSMALLINT columns = 0, i;
+  SQLSMALLINT columns = 0, i, key_type = 0;
+  SQLHDESC ird = 0;
 
   if (p == NULL) {
     return;
@@ -255,6 +257,11 @@ static void vsql_m_describe(char *sqlstate, const char *statement,
   d->top_level_count = columns;
   strcpy(d->dynamic_function, p->dynamic_function);
   d->dynamic_function_code = p->dynamic_function_code;
+
+  /* ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.d */
+  SQLGetStmtAttr(p->stmt, SQL_ATTR_IMP_ROW_DESC, &ird, 0, NULL);
+  SQLGetDescField(ird, 0, SQL_DESC_KEY_TYPE, &key_type, 0, NULL);
+  d->key_type = key_type;
 
   /* ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.e and 6.f */
   if (columns > d->max) {

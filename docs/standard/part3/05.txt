@@ -135,7 +135,7 @@
 5.4/GR/10                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_59_set_stmt_attr_test.c
 5.4/GR/11                impl-defined libvsql/std_3_6_19_exec_direct.v - every cursor is a copy, so significant changes are never visible
 # 5.5, Implicit DESCRIBE USING clause
-5.5                      implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c except KEY_TYPE and KEY_MEMBER (#743)
+5.5                      implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
 5.5/GR/1                 definition   - -
 5.5/GR/2                 definition   - -
 5.5/GR/3                 definition   - -
@@ -149,8 +149,8 @@
 5.5/GR/5.a.i.2           implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
 5.5/GR/5.a.i.3           definition   - -
 5.5/GR/5.a.i.4           container    - -
-5.5/GR/5.a.i.4.A         missing      libvsql/std_3_4_4_7_cli_descriptor_areas.v - KEY_TYPE is always 0 (#743)
-5.5/GR/5.a.i.4.B         missing      libvsql/std_3_4_4_7_cli_descriptor_areas.v - KEY_TYPE is always 0 (#743)
+5.5/GR/5.a.i.4.A         implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_5_5_implicit_describe_using_clause_test.c,vsql/api_test.v only known for a query of one base table that isn't grouped (vsql.Column.key_type)
+5.5/GR/5.a.i.4.B         implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_5_5_implicit_describe_using_clause_test.c,vsql/api_test.v a UNIQUE whose columns are known not null, of a query of one base table that isn't grouped
 5.5/GR/5.a.i.4.C         implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_31_get_desc_field_test.c
 5.5/GR/5.a.ii            container    - -
 5.5/GR/5.a.ii.1          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_48_num_result_cols_test.c
@@ -167,7 +167,7 @@
 5.5/GR/5.c.iii.1.A       implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c a column is nullable unless it's NOT NULL
 5.5/GR/5.c.iii.1.B       implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c COL1 and so on for an expression without an AS
 5.5/GR/5.c.iii.1.C       container    - -
-5.5/GR/5.c.iii.1.C.I     missing      libvsql/std_3_4_4_7_cli_descriptor_areas.v - KEY_MEMBER is always 0 (#743)
+5.5/GR/5.c.iii.1.C.I     implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_5_5_implicit_describe_using_clause_test.c,vsql/api_test.v
 5.5/GR/5.c.iii.1.C.II    implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c
 5.5/GR/5.c.iii.2         n/a          - - every descriptor is at LEVEL 0
 5.5/GR/5.c.iii.2.A       n/a          - - every descriptor is at LEVEL 0

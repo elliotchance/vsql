@@ -201,16 +201,8 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 				sections << 'put'
 				gets += t.get_string(p, a.parameter, 'vsql_m_d->dynamic_function', a.item)!
 			} else {
-				// vsql doesn't know if a column is part of a key, so KEY_TYPE
-				// is always 0 (zero) (#801).
-				//
-				// ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.d
-				field := match a.item {
-					'COUNT' { 'vsql_m_d->count' }
-					'KEY_TYPE' { '0' }
-					else { 'vsql_m_d->${a.item.to_lower()}' }
-				}
-				gets += t.get_number(p, a.parameter, field, a.item)!
+				gets += t.get_number(p, a.parameter, 'vsql_m_d->${a.item.to_lower()}',
+					a.item)!
 			}
 		}
 

@@ -263,7 +263,7 @@
 # 4.24.2, General rules and definitions
 4.24.2                   n/a          - - functional dependencies (T301)
 # 4.24.3, Known functional dependencies in a base table
-4.24.3                   n/a          - - functional dependencies (T301)
+4.24.3                   partial      vsql/std_2_4_25_candidate_keys.v vsql/api_test.v only BPK-sets and BUC-sets, for the key of a result (functional dependencies, T301)
 # 4.24.4, Known functional dependencies in a viewed table
 4.24.4                   n/a          - - functional dependencies (T301)
 # 4.24.5, Known functional dependencies in a transition table
@@ -291,7 +291,7 @@
 # 4.24.16, Known functional dependencies in a <query expression>
 4.24.16                  n/a          - - functional dependencies (T301)
 # 4.25, Candidate keys
-4.25                     n/a          - - functional dependencies (T301)
+4.25                     partial      vsql/std_2_4_25_candidate_keys.v vsql/api_test.v only for a query of one base table that isn't grouped (functional dependencies, T301)
 # 4.26, SQL-schemas
 4.26                     implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_11_1_create_schema.sql
 # 4.27, Sequence generators

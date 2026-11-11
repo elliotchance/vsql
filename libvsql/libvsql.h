@@ -509,7 +509,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DESC_ARRAY_STATUS_POINTER   21   /* SQLINTEGER[] row statuses */
 #define SQL_DESC_ROWS_PROCESSED_POINTER 34   /* SQLINTEGER * rows fetched */
 #define SQL_DESC_COUNT                  1001 /* the number of records */
-#define SQL_DESC_KEY_TYPE               1029 /* always 0 */
+#define SQL_DESC_KEY_TYPE               1029
 #define SQL_DESC_DYNAMIC_FUNCTION       1031 /* the statement */
 #define SQL_DESC_DYNAMIC_FUNCTION_CODE  1032 /* the code of the statement */
 #define SQL_DESC_TOP_LEVEL_COUNT        1044 /* the number of columns */
@@ -543,7 +543,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DESC_UDT_CATALOG                  1026 /* not used */
 #define SQL_DESC_UDT_SCHEMA                   1027 /* not used */
 #define SQL_DESC_UDT_NAME                     1028 /* not used */
-#define SQL_DESC_KEY_MEMBER                   1030 /* always 0 */
+#define SQL_DESC_KEY_MEMBER                   1030
 #define SQL_DESC_SCOPE_CATALOG                1033 /* not used */
 #define SQL_DESC_SCOPE_SCHEMA                 1034 /* not used */
 #define SQL_DESC_SCOPE_NAME                   1035 /* not used */

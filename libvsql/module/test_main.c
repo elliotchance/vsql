@@ -705,6 +705,24 @@ int main(void) {
                   &returned),
          "07009");
 
+  /* 20.10 GR 6.d and 7.c.i.3: KEY_TYPE is 1 (one) when the result has a
+   * primary key, and KEY_MEMBER is 1 (one) for each column of it. */
+  strcpy(sql, "CREATE TABLE keyed (k INTEGER PRIMARY KEY, v INTEGER)");
+  EXPECT(execute_immediate(sqlstate, sql), "00000");
+  strcpy(sql, "SELECT v, k FROM keyed");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(describe_s1(sqlstate), "00000");
+  EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
+  CHECK(count == 2 && key == 1);
+  n = 1;
+  EXPECT(get_key_member(sqlstate, &n, &x), "00000");
+  CHECK(x == 0);
+  n = 2;
+  EXPECT(get_key_member(sqlstate, &n, &x), "00000");
+  CHECK(x == 1);
+  strcpy(sql, "SELECT x, y FROM dyn WHERE x > ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+
   /* 20.15 <dynamic declare cursor>, with an SQL descriptor area. */
   EXPECT(open_dc_descriptor(sqlstate), "26000");
   EXPECT(prepare_s2(sqlstate), "00000");

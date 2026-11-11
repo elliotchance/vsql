@@ -338,6 +338,9 @@ PROCEDURE get_item (SQLSTATE, :n INTEGER, :type INTEGER, :length INTEGER,
     :nullable = NULLABLE, :indicator = INDICATOR,
     :returned = RETURNED_LENGTH;
 
+PROCEDURE get_key_member (SQLSTATE, :n INTEGER, :member INTEGER);
+  GET DESCRIPTOR d VALUE :n :member = KEY_MEMBER;
+
 PROCEDURE get_int (SQLSTATE, :n INTEGER, :x INTEGER, :ind INTEGER);
   GET DESCRIPTOR d VALUE :n :x = DATA, :ind = INDICATOR;
 

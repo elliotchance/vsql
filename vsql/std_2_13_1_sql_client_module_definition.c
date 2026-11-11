@@ -111,7 +111,7 @@ struct vsql_m_item {
 struct vsql_m_descriptor {
   const void *module;
   const char *name;
-  SQLINTEGER count, max, top_level_count, dynamic_function_code;
+  SQLINTEGER count, max, top_level_count, dynamic_function_code, key_type;
   char dynamic_function[32];
   struct vsql_m_item *items;
   struct vsql_m_descriptor *next;

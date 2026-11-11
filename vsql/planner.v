@@ -839,7 +839,11 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	}
 
 	if stmt.body is QuerySpecification {
-		plan.operations << new_expr_operation(mut conn, params, stmt.body.exprs, tables)!
+		mut operation := new_expr_operation(mut conn, params, stmt.body.exprs, tables)!
+		if !plan.operations.any(it is GroupOperation) {
+			set_result_key(mut operation.columns, stmt.body, tables, mut conn)
+		}
+		plan.operations << operation
 	}
 
 	return plan

@@ -64,8 +64,8 @@ boolean_test:
   }
 
 boolean_primary:
-  predicate { $$.v = BooleanPrimary($1.v as Predicate) }
-| boolean_predicand { $$.v = BooleanPrimary($1.v as BooleanPredicand) }
+  predicate { $$.v = yy_box(BooleanPrimary($1.v as Predicate)) }
+| boolean_predicand { $$.v = yy_box(BooleanPrimary($1.v as BooleanPredicand)) }
 
 boolean_predicand:
   parenthesized_boolean_value_expression {

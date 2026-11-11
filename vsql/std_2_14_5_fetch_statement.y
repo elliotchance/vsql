@@ -10,16 +10,16 @@
 fetch_statement:
   FETCH cursor_name {
     flag(mut yylex, vsql_fetch_without_into)
-    $$.v = Stmt(FetchStatement{name: $2.v as string})
+    $$.v = yy_box(Stmt(FetchStatement{name: $2.v as string}))
   }
 | FETCH FROM cursor_name {
     flag(mut yylex, vsql_fetch_without_into)
-    $$.v = Stmt(FetchStatement{name: $3.v as string})
+    $$.v = yy_box(Stmt(FetchStatement{name: $3.v as string}))
   }
 | FETCH fetch_orientation FROM cursor_name {
     flag(mut yylex, vsql_fetch_without_into)
     flag(mut yylex, 'F431')
-    $$.v = Stmt(FetchStatement{$4.v as string, $2.v as FetchOrientation})
+    $$.v = yy_box(Stmt(FetchStatement{$4.v as string, $2.v as FetchOrientation}))
   }
 
 fetch_orientation:

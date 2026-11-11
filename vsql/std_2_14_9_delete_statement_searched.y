@@ -12,16 +12,16 @@
 
 delete_statement_searched:
   DELETE FROM target_table target_correlation_name {
-    $$.v = Stmt(DeleteStatementSearched{$3.v as Identifier, $4.v as Identifier,
-      none, none})
+    $$.v = yy_box(Stmt(DeleteStatementSearched{$3.v as Identifier, $4.v as Identifier,
+      none, none}))
   }
 | DELETE FROM target_table target_correlation_name WHERE search_condition {
-    $$.v = Stmt(DeleteStatementSearched{
+    $$.v = yy_box(Stmt(DeleteStatementSearched{
       $3.v as Identifier
       $4.v as Identifier
       $6.v as BooleanValueExpression
       none
-    })
+    }))
   }
 
 %%

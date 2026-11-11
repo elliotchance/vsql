@@ -7,39 +7,29 @@ module vsql
 // the grammar. If V ever supports some kind of "any" type this would be a
 // little easier.
 type YYSym = AddColumnDefinition
-	| AddTableConstraintDefinition
 	| AggregateFunction
 	| AggregateFunctionCount
 	| AlterColumnAction
 	| AlterColumnDefinition
 	| AlterIdentityColumnSpecification
 	| AlterSequenceGeneratorStatement
-	| AlterTableAction
-	| BetweenPredicate
 	| BooleanPredicand
-	| BooleanPrimary
 	| BooleanTerm
 	| BooleanTest
 	| BooleanValueExpression
 	| CaseExpression
 	| CaseExpressionSearched
-	| CaseExpressionSearchedWhen
 	| CaseExpressionSimple
-	| CaseExpressionSimpleWhen
 	| CaseResult
 	| CastOperand
 	| CastSpecification
-	| CharacterLikePredicate
 	| CharacterLikePredicatePart2
 	| CharacterPrimary
 	| CharacterSubstringFunction
 	| CharacterValueExpression
 	| CharacterValueFunction
 	| CheckConstraintDefinition
-	| Column
-	| ColumnConstraint
 	| CommonValueExpression
-	| ComparisonPredicate
 	| ComparisonOperator
 	| ComparisonPredicatePart2
 	| Concatenation
@@ -55,7 +45,6 @@ type YYSym = AddColumnDefinition
 	| DatetimeValueFunction
 	| DefaultOption
 	| DefaultSpecification
-	| DerivedColumn
 	| DropColumnDefaultClause
 	| DropColumnDefinition
 	| DropTableConstraintDefinition
@@ -68,8 +57,6 @@ type YYSym = AddColumnDefinition
 	| IdentityColumn
 	| IdentifierChain
 	| IndexColumn
-	| InPredicate
-	| InsertStatement
 	| JoinSpecification
 	| JoinType
 	| ListaggOverflow
@@ -78,28 +65,21 @@ type YYSym = AddColumnDefinition
 	| LocalTimestamp
 	| NextValueExpression
 	| NonparenthesizedValueExpressionPrimary
-	| NullPredicate
 	| NullSpecification
 	| NumericPrimary
 	| NumericValueExpression
 	| OrderedSetFunction
 	| OverlayFunction
 	| ParenthesizedValueExpression
-	| Predicate
 	| QualifiedAsteriskExpr
-	| QuantifiedComparisonPredicate
 	| QualifiedJoin
-	| QueryExpression
 	| QuerySetOperator
-	| QuerySpecification
-	| ReferentialConstraintDefinition
 	| RegularExpressionSubstringFunction
 	| RoutineInvocation
 	| RowValueConstructor
 	| RowValueConstructorPredicand
 	| SchemaElement
 	| SelectList
-	| SelectSublist
 	| SequenceGeneratorDefinition
 	| SequenceGeneratorIncrementByOption
 	| SequenceGeneratorMaxvalueOption
@@ -107,22 +87,13 @@ type YYSym = AddColumnDefinition
 	| SequenceGeneratorOption
 	| SequenceGeneratorRestartOption
 	| SequenceGeneratorStartWithOption
-	| SetClause
 	| SetColumnDefaultClause
 	| SetSchemaStatement
-	| SimilarPredicate
 	| SimilarPredicatePart2
-	| SimpleTable
 	| SortSpecification
 	| Subquery
-	| Stmt
-	| Table
 	| TableDefinition
-	| TableElement
-	| TableExpression
-	| TablePrimary
 	| TransactionMode
-	| TableReference
 	| Term
 	| TrimFunction
 	| Type
@@ -133,6 +104,7 @@ type YYSym = AddColumnDefinition
 	| ValueExpression
 	| ValueExpressionPrimary
 	| ValueSpecification
+	| YYBox
 	| []CaseExpressionSearchedWhen
 	| []CaseExpressionSimpleWhen
 	| []ContextuallyTypedRowValueConstructor
@@ -166,6 +138,42 @@ fn yy_as[T](sym YYSym) T {
 	}
 
 	panic('expected ${T.name}')
+}
+
+// YYBox holds a node of the syntax tree that is too big to be in YYSym. A sum
+// type is as big as its biggest type, and the parser copies a YYSymType for
+// every token and every rule it reduces, so the big nodes (like a
+// TableExpression, which is more than 1 KB) are kept on the heap instead. The
+// grammar actions use yy_box to make one, and yy_unbox (generated for any type
+// that is not in YYSym, see scripts/generate-grammar.vsh) to get it back.
+struct YYBox {
+	typ int
+	ptr voidptr
+}
+
+fn yy_box[T](v T) YYBox {
+	mut ptr := unsafe { &T(voidptr(malloc(int(sizeof(T))))) }
+	unsafe {
+		*ptr = v
+	}
+	return YYBox{typeof[T]().idx, voidptr(ptr)}
+}
+
+fn yy_unbox[T](sym YYSym) T {
+	if sym is YYBox {
+		if sym.typ == typeof[T]().idx {
+			return unsafe { *(&T(sym.ptr)) }
+		}
+	}
+
+	panic('expected ${T.name}')
+}
+
+// yy_stmt returns the statement that was parsed. It isn't generic so that the
+// result is known to be a Stmt (V doesn't always know that the result of
+// yy_unbox[Stmt] is a sum type).
+fn yy_stmt(sym YYSym) Stmt {
+	return yy_unbox[Stmt](sym)
 }
 
 struct YYSymType {

@@ -6,20 +6,20 @@
 // (T021).
 
 like_predicate:
-  character_like_predicate { $$.v = $1.v as CharacterLikePredicate }
+  character_like_predicate { $$.v = $1.v }
 
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Conformance Rules, 2
 character_like_predicate:
   row_value_predicand character_like_predicate_part_2 {
     flag_if(mut yylex, !is_column_reference($1.v as RowValueConstructorPredicand), 'F281')
     like := $2.v as CharacterLikePredicatePart2
-    $$.v = CharacterLikePredicate{
+    $$.v = yy_box(CharacterLikePredicate{
       $1.v as RowValueConstructorPredicand
       like.right
       like.escape
       like.not
       like.insensitive
-    }
+    })
   }
 
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Conformance Rules, 3 and 4

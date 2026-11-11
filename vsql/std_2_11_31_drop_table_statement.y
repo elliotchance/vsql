@@ -6,35 +6,35 @@
 drop_table_statement:
   DROP TABLE table_name {
     flag(mut yylex, vsql_drop_table_behavior)
-    $$.v = Stmt(DropTableStatement{
+    $$.v = yy_box(Stmt(DropTableStatement{
       table_name: $3.v as Identifier
       behavior:   'RESTRICT'
-    })
+    }))
   }
 | DROP TABLE table_name drop_behavior {
     flag_if(mut yylex, $4.v as string == 'CASCADE', 'F032')
-    $$.v = Stmt(DropTableStatement{
+    $$.v = yy_box(Stmt(DropTableStatement{
       table_name: $3.v as Identifier
       behavior:   $4.v as string
-    })
+    }))
   }
 | DROP TABLE if_exists table_name {
     flag(mut yylex, vsql_drop_table_behavior)
     flag(mut yylex, vsql_drop_table_if_exists)
-    $$.v = Stmt(DropTableStatement{
+    $$.v = yy_box(Stmt(DropTableStatement{
       table_name: $4.v as Identifier
       behavior:   'RESTRICT'
       if_exists:  true
-    })
+    }))
   }
 | DROP TABLE if_exists table_name drop_behavior {
     flag_if(mut yylex, $5.v as string == 'CASCADE', 'F032')
     flag(mut yylex, vsql_drop_table_if_exists)
-    $$.v = Stmt(DropTableStatement{
+    $$.v = yy_box(Stmt(DropTableStatement{
       table_name: $4.v as Identifier
       behavior:   $5.v as string
       if_exists:  true
-    })
+    }))
   }
 
 // IF EXISTS isn't part of the standard (see the V011 features of the SQL

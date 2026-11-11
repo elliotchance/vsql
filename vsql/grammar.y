@@ -704,9 +704,9 @@ module vsql
 // This is a special case that uses `yyrcvr.lval` to make sure the parser
 // captures the final result.
 start:
-  preparable_statement { yyrcvr.lval.v = $1.v as Stmt }
-| sql_connection_statement { yyrcvr.lval.v = $1.v as Stmt }
-| declare_cursor { yyrcvr.lval.v = $1.v as Stmt }
-| sql_data_statement { yyrcvr.lval.v = $1.v as Stmt }
+  preparable_statement { yyrcvr.lval.v = $1.v }
+| sql_connection_statement { yyrcvr.lval.v = $1.v }
+| declare_cursor { yyrcvr.lval.v = $1.v }
+| sql_data_statement { yyrcvr.lval.v = $1.v }
 
 %%

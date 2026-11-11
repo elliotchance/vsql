@@ -7,20 +7,20 @@
 referential_constraint_definition:
   FOREIGN KEY left_paren referencing_column_list right_paren
   references_specification {
-    $$.v = new_referential_constraint_definition($4.v as []Identifier,
-      $6.v as ReferentialConstraintDefinition)
+    $$.v = yy_box(new_referential_constraint_definition($4.v as []Identifier,
+      $6.v as ReferentialConstraintDefinition))
   }
 
 references_specification:
   REFERENCES referenced_table_and_columns {
-    $$.v = $2.v as ReferentialConstraintDefinition
+    $$.v = $2.v
   }
 | REFERENCES referenced_table_and_columns referential_triggered_action {
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       ...$2.v as ReferentialConstraintDefinition
       update_rule: ($3.v as ReferentialConstraintDefinition).update_rule
       delete_rule: ($3.v as ReferentialConstraintDefinition).delete_rule
-    }
+    })
   }
 
 referencing_column_list:
@@ -28,15 +28,15 @@ referencing_column_list:
 
 referenced_table_and_columns:
   table_name {
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       referenced_table: $1.v as Identifier
-    }
+    })
   }
 | table_name left_paren referenced_column_list right_paren {
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       referenced_table:   $1.v as Identifier
       referenced_columns: $3.v as []Identifier
-    }
+    })
   }
 
 referenced_column_list:
@@ -46,31 +46,31 @@ referenced_column_list:
 referential_triggered_action:
   update_rule {
     flag(mut yylex, 'F701')
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       update_rule: $1.v as string
-    }
+    })
   }
 | update_rule delete_rule {
     flag(mut yylex, 'F701')
     flag(mut yylex, 'F191')
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       update_rule: $1.v as string
       delete_rule: $2.v as string
-    }
+    })
   }
 | delete_rule {
     flag(mut yylex, 'F191')
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       delete_rule: $1.v as string
-    }
+    })
   }
 | delete_rule update_rule {
     flag(mut yylex, 'F701')
     flag(mut yylex, 'F191')
-    $$.v = ReferentialConstraintDefinition{
+    $$.v = yy_box(ReferentialConstraintDefinition{
       update_rule: $2.v as string
       delete_rule: $1.v as string
-    }
+    })
   }
 
 update_rule:

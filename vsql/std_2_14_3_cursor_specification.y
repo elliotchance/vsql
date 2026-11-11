@@ -7,7 +7,7 @@
 cursor_specification:
   query_expression {
     flag_query_expression(mut yylex, $1.v as QueryExpression, .cursor)
-    $$.v = Stmt($1.v as QueryExpression)
+    $$.v = yy_box(Stmt($1.v as QueryExpression))
   }
 
 // An <updatability clause> is only supported in a <declare cursor>, see

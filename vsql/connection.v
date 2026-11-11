@@ -628,7 +628,7 @@ fn parse_statement(tokens []Token, source string, mut stack []YYSymType) !(Stmt,
 	parser.parse(mut lexer)!
 	lexer.features << token_features(tokens)
 
-	return parser.lval.v as Stmt, lexer.features
+	return yy_stmt(parser.lval.v), lexer.features
 }
 
 // query executes a statement. If there is a result set it will be returned.
@@ -826,7 +826,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 	}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!
-	stmt := (parser as YYParserImpl).lval.v as Stmt
+	stmt := yy_stmt((parser as YYParserImpl).lval.v)
 
 	if stmt is TableDefinition {
 		stmt.check_limits(stmt.table_name)!

@@ -7,7 +7,7 @@
 add_table_constraint_definition:
   ADD table_constraint_definition {
     flag(mut yylex, 'F381')
-    $$.v = AddTableConstraintDefinition{$2.v as TableElement}
+    $$.v = yy_box(AddTableConstraintDefinition{$2.v as TableElement})
   }
 
 %%

@@ -3,10 +3,10 @@
 quantified_comparison_predicate:
   row_value_predicand quantified_comparison_predicate_part_2 {
     part := $2.v as QuantifiedComparisonPredicate
-    $$.v = QuantifiedComparisonPredicate{
+    $$.v = yy_box(QuantifiedComparisonPredicate{
       ...part
       expr: $1.v as RowValueConstructorPredicand
-    }
+    })
   }
 
 // The <quantifier> is written out (all is true for ALL, and false for SOME or
@@ -16,25 +16,25 @@ quantified_comparison_predicate:
 // ISO/IEC 9075-2:2016(E), 8.9, <quantified comparison predicate>, Format
 quantified_comparison_predicate_part_2:
   comp_op ALL table_subquery {
-    $$.v = QuantifiedComparisonPredicate{
+    $$.v = yy_box(QuantifiedComparisonPredicate{
       op:       $1.v as ComparisonOperator
       all:      true
       subquery: new_subquery(($3.v as TablePrimary).body as QueryExpression)
-    }
+    })
   }
 | comp_op SOME table_subquery {
-    $$.v = QuantifiedComparisonPredicate{
+    $$.v = yy_box(QuantifiedComparisonPredicate{
       op:       $1.v as ComparisonOperator
       all:      false
       subquery: new_subquery(($3.v as TablePrimary).body as QueryExpression)
-    }
+    })
   }
 | comp_op ANY table_subquery {
-    $$.v = QuantifiedComparisonPredicate{
+    $$.v = yy_box(QuantifiedComparisonPredicate{
       op:       $1.v as ComparisonOperator
       all:      false
       subquery: new_subquery(($3.v as TablePrimary).body as QueryExpression)
-    }
+    })
   }
 
 %%

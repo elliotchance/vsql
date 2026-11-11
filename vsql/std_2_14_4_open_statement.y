@@ -7,7 +7,7 @@
 open_statement:
   OPEN cursor_name {
     flag(mut yylex, vsql_open_cursor)
-    $$.v = Stmt(OpenStatement{$2.v as string})
+    $$.v = yy_box(Stmt(OpenStatement{$2.v as string}))
   }
 
 %%

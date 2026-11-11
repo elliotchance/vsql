@@ -6,7 +6,7 @@ scalar_subquery:
   subquery { $$.v = new_subquery(($1.v as TablePrimary).body as QueryExpression) }
 
 table_subquery:
-  subquery { $$.v = $1.v as TablePrimary }
+  subquery { $$.v = $1.v }
 
 // ((SELECT 1)) is a subquery of the parenthesized query (SELECT 1), or the
 // scalar subquery (SELECT 1) in parentheses. Both are the same, but the parser
@@ -18,9 +18,9 @@ subquery:
   parenthesized_query_expression %prec SUBQUERY {
     parsed_sort_key_part(mut yylex, .query_expression)
     flag_query_expression(mut yylex, $1.v as QueryExpression, .subquery)
-    $$.v = TablePrimary{
+    $$.v = yy_box(TablePrimary{
       body: $1.v as QueryExpression
-    }
+    })
   }
 
 %%

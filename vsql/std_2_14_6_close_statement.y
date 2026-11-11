@@ -7,7 +7,7 @@
 close_statement:
   CLOSE cursor_name {
     flag(mut yylex, vsql_close_cursor)
-    $$.v = Stmt(CloseStatement{$2.v as string})
+    $$.v = yy_box(Stmt(CloseStatement{$2.v as string}))
   }
 
 %%

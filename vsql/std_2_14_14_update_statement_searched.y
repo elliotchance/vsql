@@ -12,12 +12,12 @@
 
 update_statement_searched:
   UPDATE target_table target_correlation_name SET set_clause_list {
-	  $$.v = Stmt(UpdateStatementSearched{$2.v as Identifier, $3.v as Identifier,
-      $5.v as []SetClause, none, none})
+	  $$.v = yy_box(Stmt(UpdateStatementSearched{$2.v as Identifier, $3.v as Identifier,
+      $5.v as []SetClause, none, none}))
   }
 | UPDATE target_table target_correlation_name SET set_clause_list WHERE search_condition {
-    $$.v = Stmt(UpdateStatementSearched{$2.v as Identifier, $3.v as Identifier,
-      $5.v as []SetClause, $7.v as BooleanValueExpression, none})
+    $$.v = yy_box(Stmt(UpdateStatementSearched{$2.v as Identifier, $3.v as Identifier,
+      $5.v as []SetClause, $7.v as BooleanValueExpression, none}))
   }
 
 %%

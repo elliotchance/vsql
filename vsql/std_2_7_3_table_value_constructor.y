@@ -8,7 +8,7 @@ table_value_constructor:
   VALUES row_value_expression_list {
     // ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Conformance Rules, 2
     flag(mut yylex, 'F641')
-    $$.v = SimpleTable($2.v as []RowValueConstructor)
+    $$.v = yy_box(SimpleTable($2.v as []RowValueConstructor))
   }
 
 row_value_expression_list:

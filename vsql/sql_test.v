@@ -2024,6 +2024,12 @@ fn test_panics() ! {
 	assert stderr.contains('V panic: expected vsql.Identifier')
 
 	code, stderr = run_in_child(fn () {
+		_ := yy_unbox[Stmt](YYSym(yy_box(Table{})))
+	})!
+	assert code in panic_exit_codes
+	assert stderr.contains('V panic: expected vsql.Stmt')
+
+	code, stderr = run_in_child(fn () {
 		mut page := new_page(kind_leaf, 64)
 		page.add(new_page_object('k'.bytes(), 1, 0, []u8{len: 100})) or {}
 	})!

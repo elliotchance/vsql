@@ -59,6 +59,10 @@ The options are:
   measures the cost of the isolation level itself (see :doc:`transactions`).
   ``read-uncommitted`` currently runs the same way as ``read-committed``.
 
+- ``-full-fsync``: Use ``F_FULLFSYNC`` to sync the file on macOS (see
+  ``full_fsync`` in :doc:`v-client-library-docs`). It makes no difference on
+  other systems, or with ``-memory``.
+
 Suites
 ------
 

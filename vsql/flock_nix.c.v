@@ -117,14 +117,31 @@ fn (mut l IsolationLock) release() {
 fn C.fsync(int) int
 
 // fsync waits for the file to be written to the disk. It must be flushed first.
-fn fsync(file os.File, path string) ! {
+//
+// On macOS, fsync() only hands the data to the drive, which may keep it in its
+// cache for a while, so it can still be lost if the power fails. If full is
+// true, F_FULLFSYNC also asks the drive to write its cache to permanent storage
+// (see ConnectionOptions.full_fsync). On other systems fsync() already does
+// that, so full makes no difference.
+fn fsync(file os.File, path string, full bool) ! {
+	$if macos {
+		if full {
+			if C.fcntl(file.fd, C.F_FULLFSYNC) == -1 {
+				return sqlstate_58030('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
+			}
+			return
+		}
+	}
+
 	if C.fsync(file.fd) != 0 {
 		return sqlstate_58030('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
 // fsync_dir waits for a change to the entries of a directory (such as creating
-// a file) to be written to the disk.
+// a file) to be written to the disk. It doesn't use F_FULLFSYNC (see fsync)
+// because the log is always synced after it, which also writes the cache of the
+// drive.
 fn fsync_dir(path string) ! {
 	fd := C.open(&char(path.str), C.O_RDONLY)
 	if fd < 0 {

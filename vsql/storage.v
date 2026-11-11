@@ -24,6 +24,8 @@ mut:
 	// cache_size is the number of pages the pager of each operation keeps in
 	// memory, see ConnectionOptions.cache_size.
 	cache_size int
+	// full_fsync is ConnectionOptions.full_fsync.
+	full_fsync bool
 	// btree is replaced for each operation (because it needs a new pager for
 	// each operation).
 	btree Btree
@@ -400,7 +402,7 @@ fn (mut f Storage) schema_changed() {
 fn (mut f Storage) commit(path string) ! {
 	f.header.root_page = f.btree.pager.root_page()
 
-	wal_commit(mut f.file, path, f.header, f.file_pager) or { return io_error(err) }
+	wal_commit(mut f.file, path, f.header, f.file_pager, f.full_fsync) or { return io_error(err) }
 }
 
 fn (mut f Storage) close_file() {

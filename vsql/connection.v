@@ -291,6 +291,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
 		catalog.storage.cache_size = options.cache_size
+		catalog.storage.full_fsync = options.full_fsync
 		catalog.storage.isolation = IsolationLock{
 			path: isolation_path(path)
 		}
@@ -361,7 +362,7 @@ fn (mut conn CatalogConnection) replay_log() ! {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 	}
 
-	wal_replay(mut conn.storage.file, conn.path) or { return io_error(err) }
+	wal_replay(mut conn.storage.file, conn.path, conn.options.full_fsync) or { return io_error(err) }
 }
 
 fn (mut conn Connection) open_read_connection() ! {
@@ -398,7 +399,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 			conn.options.mutex.runlock()
 			return err
 		}
-		wal_recover(mut conn.storage.file, conn.path) or {
+		wal_recover(mut conn.storage.file, conn.path, conn.options.full_fsync) or {
 			flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 			conn.storage.close_file()
 			conn.options.mutex.runlock()
@@ -442,7 +443,7 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
-	wal_recover(mut conn.storage.file, conn.path) or {
+	wal_recover(mut conn.storage.file, conn.path, conn.options.full_fsync) or {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
@@ -1121,6 +1122,18 @@ pub mut:
 	// transaction. Only the options that the connection is opened with are
 	// used, not the ones given to add_catalog.
 	isolation_level IsolationLevel = .serializable
+	// full_fsync only makes a difference on macOS, where it's off by default.
+	// A file is synced (with fsync) when a statement is committed, but on
+	// macOS that only hands the changes to the drive, which may keep them in
+	// its cache for a while, and may write it in a different order. If the
+	// power fails (or the operating system stops), statements that were
+	// committed may be lost, and the database file may even be left corrupt.
+	// Stopping the process is always safe. full_fsync uses F_FULLFSYNC instead,
+	// which also waits for the drive to write its cache. It is much slower
+	// (7 to 15 times slower for "vsql bench" on a Mac). On Linux and
+	// Windows, syncing a file already writes the cache of the drive, so
+	// full_fsync is accepted but does nothing.
+	full_fsync bool
 }
 
 // default_connection_options returns the sensible defaults used by open() and

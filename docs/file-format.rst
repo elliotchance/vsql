@@ -913,6 +913,24 @@ may contain many statements) are still made atomic with MVCC (see :doc:`mvcc`),
 and a transaction that was left behind by a process that stopped is rolled back
 by the next connection.
 
+On Linux and Windows, syncing a file waits for the drive to write it to
+permanent storage. On macOS, ``fsync`` only hands the data to the drive, which
+may keep it in its cache for a while and write it in a different order. So, on
+macOS by default:
+
+- A statement that has been committed is never lost if the process stops (or
+  crashes), because the operating system still has the changes.
+
+- A statement that has been committed may be lost if the power fails or the
+  operating system stops, and the database file may even be left corrupt,
+  because the steps above may reach the disk in a different order.
+
+The ``full_fsync`` connection option (``vsql bench -full-fsync``) syncs with
+``fcntl(F_FULLFSYNC)`` instead, which also waits for the drive to write its
+cache. It's off by default because it's much slower: ``vsql bench`` on a file
+runs 7 to 15 times fewer TPC-B transactions per second on a Mac. It's accepted
+on other systems, but doesn't change anything.
+
 The log starts with a 32 byte header:
 
 .. list-table::

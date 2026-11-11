@@ -63,6 +63,13 @@ Then, with the virtual environment active, to run all of the app tests:
 
    make app-test
 
+Instead of ``playwright install chromium``, they can use a Google Chrome that's
+already installed, which is what CI does:
+
+.. code-block:: sh
+
+   make app-test PYTEST="--browser-channel chrome"
+
 pytest options can be passed with ``PYTEST``, such as to run one test and see
 the browser:
 

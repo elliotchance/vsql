@@ -31,14 +31,18 @@ fn (e BetweenPredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.iv
 fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !CompileResult {
-	compiled_expr := e.expr.compile_fields(mut c)!
-	compiled_left := e.left.compile_fields(mut c)!
-	compiled_right := if retrospective && !e.not && !e.symmetric
+	untyped_expr := e.expr.compile_fields(mut c)!
+	untyped_left := e.left.compile_fields(mut c)!
+	untyped_right := if retrospective && !e.not && !e.symmetric
 		&& e.right !is ExplicitRowValueConstructor {
 		[c.compile_retrospective(e.right)!]
 	} else {
 		e.right.compile_fields(mut c)!
 	}
+
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
+	typed := c.with_row_types([untyped_expr, untyped_left, untyped_right])
+	compiled_expr, compiled_left, compiled_right := typed[0], typed[1], typed[2]
 	c.check_row_comparison(compiled_expr.map(it.typ), compiled_left.map(it.typ), null_parameters(compiled_expr,
 		compiled_left))!
 	c.check_row_comparison(compiled_expr.map(it.typ), compiled_right.map(it.typ), null_parameters(compiled_expr,

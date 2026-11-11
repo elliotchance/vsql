@@ -154,7 +154,7 @@ UTEST_F(db, 6_19_exec_direct_bracketed_comment) {
 UTEST_F(db, 6_19_exec_direct_parameters) {
   SQLINTEGER x = 7, y = 0;
 
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
@@ -200,12 +200,12 @@ UTEST_F(db, 6_19_exec_direct_invalid_ipd) {
                              SQL_INTEGER, SQL_VARCHAR, 0, 0, &x, sizeof(x),
                              NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10))"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 
   ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_LENGTH, INTEGER_VALUE(10), 0),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10))"), SQL_SUCCESS);
 }
 
 /* The PRECISION of a datetime in the IPD must be valid. */
@@ -219,14 +219,14 @@ UTEST_F(db, 6_19_exec_direct_invalid_ipd_datetime_precision) {
                                SQL_CHAR, SQL_TYPE_TIME, 8, invalid[i], s,
                                sizeof(s), NULL),
               SQL_SUCCESS);
-    EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+    EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS TIME)"), SQL_ERROR);
     EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
   }
 
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
                              SQL_CHAR, SQL_TYPE_TIME, 8, 6, s, sizeof(s), NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS TIME)"), SQL_SUCCESS);
 }
 
 /* The length of a character parameter must be greater than 0 (zero) or NULL
@@ -242,19 +242,19 @@ UTEST_F(db, 6_19_exec_direct_character_length) {
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
                              SQL_CHAR, SQL_VARCHAR, 5, 0, s, sizeof(s), &len),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 
   /* A negative length that doesn't have a meaning isn't valid either. */
   len = -100;
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 
   /* The length doesn't matter when the value is NULL. */
   len = 0;
   ASSERT_EQ(SQLSetDescField(apd, 1, SQL_DESC_INDICATOR_POINTER, &ind, 0),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_SUCCESS);
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
   ASSERT_EQ(SQLSetDescField(apd, 1, SQL_DESC_INDICATOR_POINTER, NULL, 0),
             SQL_SUCCESS);
@@ -274,7 +274,7 @@ UTEST_F(db, 6_19_exec_direct_character_length) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &len),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_SUCCESS);
 }
 
 /* A failed statement doesn't replace the executed statement. */

@@ -5,7 +5,7 @@ module main
 // Set the value of an SQL-connection attribute.
 //
 // The concept is described by ISO/IEC 9075-3:2003(E), 4.4.5, Connection
-// attributes. POPULATE IPD is always False.
+// attributes. POPULATE IPD is always True, and can't be set.
 
 @[export: 'SQLSetConnectAttr']
 fn sql_set_connect_attr(connection_handle SQLInteger, attribute SQLInteger, value voidptr, string_length SQLInteger) i16 {

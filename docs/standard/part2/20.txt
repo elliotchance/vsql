@@ -218,7 +218,7 @@
 20.6/GR/7.h.iii.2.B.IV   n/a          - - polymorphic table functions (B200)
 20.6/CR/1                n/a          - - polymorphic table functions (B200)
 # 20.7, <prepare statement>
-20.7                     partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649)
+20.7                     implemented  vsql/std_2_20_7_prepare_statement.v,vsql/std_2_20_7_dynamic_parameter_types.v libvsql/module/test_main.c,tests/std_2_20_7_dynamic_parameter_types.sql only a query, INSERT, UPDATE or DELETE is compiled to find the types of its dynamic parameters, otherwise they have the types of their values
 20.7/SR/1                implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c a literal is also allowed, and is flagged with V117-01
 20.7/SR/2                implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.7/SR/3                n/a          - - there are no implementation-defined preparable statements
@@ -226,17 +226,17 @@
 20.7/GR/1                n/a          - - SQL-invoked routines (T321)
 20.7/GR/2                n/a          - - row types (T051)
 20.7/GR/3                n/a          - - transforms (S241)
-20.7/GR/4                missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5                missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a              missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/4                implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5                implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql ML is 10485760 and MP is 1000
+20.7/GR/5.a              container    - -
 20.7/GR/5.a.i            n/a          - - intervals (F052)
 20.7/GR/5.a.ii           n/a          - - arrays (S091)
-20.7/GR/5.a.iii          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.iv           missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.v            missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.v.1          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.v.2          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.vi           missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.iii          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.iv           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.v            implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.v.1          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.v.2          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vi           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.vii          n/a          - - SUBSTRING SIMILAR (T581)
 20.7/GR/5.a.vii.1        container    - -
 20.7/GR/5.a.vii.1.A      n/a          - - SUBSTRING SIMILAR (T581)
@@ -246,96 +246,96 @@
 20.7/GR/5.a.vii.2        n/a          - - SUBSTRING SIMILAR (T581)
 20.7/GR/5.a.vii.2.A      n/a          - - SUBSTRING SIMILAR (T581)
 20.7/GR/5.a.vii.2.B      n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.viii         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.viii         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.viii.1       container    - -
-20.7/GR/5.a.viii.1.A     missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.viii.1.B     missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.viii.2       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.ix           missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.ix.1         missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.ix.2         missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.x            missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.x.1          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.x.2          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.viii.1.A     implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.viii.1.B     implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.viii.2       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.ix           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.ix.1         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.ix.2         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.x            implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.x.1          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.x.2          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.x.2.A        n/a          - - intervals (F052)
-20.7/GR/5.a.x.2.B        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xi           missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xi.1         missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xi.2         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.x.2.B        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xi           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xi.1         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xi.2         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xi.2.A       n/a          - - intervals (F052)
 20.7/GR/5.a.xi.2.B       n/a          - - intervals (F052)
-20.7/GR/5.a.xi.2.C       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xii          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xi.2.C       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xii          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql only an operand of AND, OR, NOT or IS, or a search condition, since a value on its own is also parsed as a <boolean primary>
 20.7/GR/5.a.xiii         n/a          - - arrays (S091)
 20.7/GR/5.a.xiii.1       n/a          - - arrays (S091)
 20.7/GR/5.a.xiii.2       n/a          - - arrays (S091)
 20.7/GR/5.a.xiv          n/a          - - multisets (S271)
 20.7/GR/5.a.xiv.1        n/a          - - multisets (S271)
 20.7/GR/5.a.xiv.2        n/a          - - multisets (S271)
-20.7/GR/5.a.xv           missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xv.1         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xv.1         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xv.1.A       n/a          - - arrays (S091) and multisets (S271)
-20.7/GR/5.a.xv.1.B       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv.1.B       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xv.1.C       n/a          - - domains (F251)
 20.7/GR/5.a.xv.2         container    - -
-20.7/GR/5.a.xv.2.A       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xv.2.B       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xvi          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xvi.1        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xvi.2        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xvii         missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xvii.1       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xvii.2       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.1      missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.1.A    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.1.B    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.1.C    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.1.D    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.1.E    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.2      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv.2.A       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xv.2.B       n/a          - - row types (T051)
+20.7/GR/5.a.xvi          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xvi.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xvi.2        n/a          - - row types (T051)
+20.7/GR/5.a.xvii         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xvii.1       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xvii.2       n/a          - - row types (T051)
+20.7/GR/5.a.xviii        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xviii.1      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xviii.1.A    implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xviii.1.B    implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xviii.1.C    n/a          - - a <when operand> is a value, the other forms are an extended CASE expression (F262)
+20.7/GR/5.a.xviii.1.D    n/a          - - a <when operand> is a value, the other forms are an extended CASE expression (F262)
+20.7/GR/5.a.xviii.1.E    n/a          - - a <when operand> is a value, the other forms are an extended CASE expression (F262)
+20.7/GR/5.a.xviii.2      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xviii.3      container    - -
-20.7/GR/5.a.xviii.3.A    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xviii.3.B    missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xix          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xix.1        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xix.1.A      missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xix.1.B      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.3.A    implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xviii.3.B    n/a          - - row types (T051)
+20.7/GR/5.a.xix          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xix.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xix.1.A      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xix.1.B      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xix.2        container    - -
-20.7/GR/5.a.xix.2.A      missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xix.2.B      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix.2.A      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xix.2.B      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xx           n/a          - - MERGE (F312)
 20.7/GR/5.a.xx.1         n/a          - - MERGE (F312)
 20.7/GR/5.a.xx.2         n/a          - - MERGE (F312)
-20.7/GR/5.a.xxi          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxi.1        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxi.2        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxii         missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxii.1       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxii.2       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxiii        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxiii.1      missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxiii.2      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxi          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxi.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxi.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxii         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxii.1       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxii.2       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxiii        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxiii.1      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxiii.2      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xxiv         n/a          - - OVERLAPS (F053)
 20.7/GR/5.a.xxiv.1       n/a          - - OVERLAPS (F053)
 20.7/GR/5.a.xxiv.2       n/a          - - OVERLAPS (F053)
-20.7/GR/5.a.xxv          missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxv.1        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxv.2        missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxv.2.A      missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxv.2.B      missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxvi         missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxvi.1       missing      - - the type of a dynamic parameter isn't determined (#649)
-20.7/GR/5.a.xxvi.2       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxv          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxv.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxv.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxv.2.A      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxv.2.B      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxvi         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxvi.1       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxvi.2       n/a          - - row types (T051)
 20.7/GR/5.a.xxvii        n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxvii.1      n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxvii.2      n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxviii       n/a          - - SET TIME ZONE (F411)
 20.7/GR/5.a.xxix         n/a          - - SQL-invoked routines (T321)
-20.7/GR/5.a.xxx          n/a          - - SQL-invoked routines (T321)
-20.7/GR/5.a.xxxi         n/a          - - window functions (T611)
-20.7/GR/5.a.xxxi.1       n/a          - - window functions (T611)
-20.7/GR/5.a.xxxi.2       n/a          - - window functions (T611)
+20.7/GR/5.a.xxx          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
+20.7/GR/5.a.xxxi         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
+20.7/GR/5.a.xxxi.1       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxxi.2       n/a          - - row types (T051)
 20.7/GR/5.a.xxxii        n/a          - - window functions (T611)
 20.7/GR/5.a.xxxii.1      n/a          - - window functions (T611)
 20.7/GR/5.a.xxxii.2      n/a          - - window functions (T611)
@@ -348,7 +348,7 @@
 20.7/GR/5.a.xxxiv        n/a          - - nested window functions (T619) and locators (T561)
 20.7/GR/5.a.xxxv         n/a          - - regular expressions (F841)
 20.7/GR/5.a.xxxvi        n/a          - - regular expressions (F841) and row pattern recognition (R010)
-20.7/GR/5.b              missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.b              implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/6                implemented  vsql/std_2_20_7_prepare_statement.c,vsql/prepare.v libvsql/module/test_main.c,vsql/api_test.v
 20.7/GR/6.a              n/a          - - extended dynamic cursors (B032)
 20.7/GR/6.b              n/a          - - extended dynamic cursors (B032)
@@ -477,7 +477,7 @@
 20.10/CR/3               n/a          - - DESCRIBE CURSOR (T472)
 20.10/CR/4               n/a          - - polymorphic table functions (B200)
 # 20.11, <input using clause>
-20.11                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649), so a value isn't cast
+20.11                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
 20.11/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.11/SR/2               n/a          - - polymorphic table functions (B200)
 20.11/GR/1               implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -491,8 +491,8 @@
 20.11/GR/5.d             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.11/GR/5.d.i           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.11/GR/5.d.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c DATA must be set
-20.11/GR/6               partial      vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649)
-20.11/GR/6.a             missing      - - the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,tests/std_2_20_7_dynamic_parameter_types.sql
+20.11/GR/6.a             implemented  vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql the type determined when the statement is prepared, or the type of the value if it isn't known
 20.11/GR/6.b             container    - -
 20.11/GR/6.b.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.11/GR/6.b.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
@@ -507,11 +507,11 @@
 20.11/GR/6.c.i           n/a          - - locators (T561)
 20.11/GR/6.c.i.1         n/a          - - locators (T561)
 20.11/GR/6.c.i.2         n/a          - - locators (T561)
-20.11/GR/6.c.ii          missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
-20.11/GR/6.c.ii.1        missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.c.ii          implemented  vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.11/GR/6.c.ii.1        n/a          - - there are no implementation-defined conversions
 20.11/GR/6.c.ii.2        container    - -
-20.11/GR/6.c.ii.2.A      missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
-20.11/GR/6.c.ii.2.B      missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.c.ii.2.A      partial      vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql the error is the one of the CAST (such as 42846), libvsql raises 07006 instead
+20.11/GR/6.c.ii.2.B      implemented  vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.11/GR/6.c.iii         n/a          - - user-defined types (S023)
 20.11/GR/6.c.iii.1       n/a          - - user-defined types (S023)
 20.11/GR/6.c.iii.2       n/a          - - user-defined types (S023)

@@ -19,7 +19,7 @@ UTEST_F(db, 6_49_param_data) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &n, sizeof(n),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ROW(?, ? + ?)"),
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ROW(CAST(? AS VARCHAR(20)), CAST(? AS INTEGER) + ?)"),
             SQL_NEED_DATA);
 
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
@@ -63,7 +63,7 @@ UTEST_F(db, 6_49_param_data_sequence) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
   EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, &n), SQL_ERROR);
@@ -99,7 +99,7 @@ UTEST_F(db, 6_49_param_data_cancel) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
@@ -118,7 +118,7 @@ UTEST_F(db, 6_49_param_data_partial_character) {
                              SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10))"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a\xe2\x82", 3),
             SQL_SUCCESS);
@@ -141,7 +141,7 @@ UTEST_F(db, 6_49_param_data_cast) {
                              SQL_INTEGER, SQL_TYPE_DATE, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS DATE)"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_SUCCESS);
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
@@ -153,7 +153,7 @@ UTEST_F(db, 6_49_param_data_cast) {
                              SQL_CHAR, SQL_INTEGER, 0, 0, s, sizeof(s),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "abc", SQL_NTS),
             SQL_SUCCESS);
@@ -174,7 +174,7 @@ UTEST_F(db, 6_49_param_data_cast_failure_stays_deferred) {
                              SQL_CHAR, SQL_INTEGER, 0, 0, s, sizeof(s),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(p, (SQLPOINTER) s);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "abc", SQL_NTS),
@@ -243,7 +243,7 @@ UTEST_F(db, 5_11_deferred_parameter_check_other_connection) {
   ASSERT_EQ(SQLBindParameter(stmt2, 1, SQL_PARAM_MODE_IN, SQL_INTEGER,
                              SQL_INTEGER, 0, 0, &x, sizeof(x), &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(stmt2, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(stmt2, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
 
   EXPECT_EQ(SQLGetDescField(desc, 0, SQL_DESC_COUNT, &n, 0, NULL),
             SQL_SUCCESS);

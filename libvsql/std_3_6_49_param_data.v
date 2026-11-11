@@ -75,7 +75,9 @@ fn param_data(mut stmt Stmt, value &voidptr) !i16 {
 	}
 
 	// - 11 to 14. The value is CAST ( V AS TDT ).
-	stmt.deferred_params['?${dpn}'] = cast_parameter(stmt, v, ipd_type(ipd, dpn))!
+	deferred := stmt.deferred_stmt or { return cli_error('HY010', 'function sequence error') }
+	stmt.deferred_params['?${dpn}'] = parameter_value(stmt, deferred, dpn, v, ipd_type(ipd,
+		dpn))!
 
 	// - 16. If there's another deferred parameter, it becomes the deferred
 	// parameter number, and its DATA_POINTER is returned in Value.

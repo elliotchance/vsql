@@ -36,15 +36,15 @@ fn get_connect_attr(mut dbc Dbc, attribute SQLInteger, value voidptr, buffer_len
 	}
 
 	// ISO/IEC 9075-3:2003(E), 6.28, GetConnectAttr, General Rules, 4: for
-	// POPULATE IPD, the connection must be established. The data type of a
-	// dynamic parameter isn't known until it's given a value, so the IPD is
-	// never populated.
+	// POPULATE IPD, the connection must be established. Prepare always
+	// populates the IPD with the data type of each dynamic parameter (see
+	// describe_parameters).
 	if attribute == sql_attr_auto_ipd {
 		if dbc.conn == none {
 			return cli_error('08003', 'connection does not exist')
 		}
 		unsafe {
-			*&SQLInteger(value) = sql_false
+			*&SQLInteger(value) = sql_true
 		}
 		return sql_success
 	}

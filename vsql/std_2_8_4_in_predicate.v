@@ -33,20 +33,25 @@ fn (e InPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e InPredicate) compile(mut c Compiler) !CompileResult {
-	compiled_expr := e.expr.compile_fields(mut c)!
-	mut contains_agg := compiled_expr.any(it.contains_agg)
-	mut compiled_values := [][]CompileResult{}
+	mut rows := [e.expr.compile_fields(mut c)!]
 	for value in e.values {
-		compiled := value.compile_fields(mut c)!
+		rows << value.compile_fields(mut c)!
+	}
+
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xxiii
+	rows = c.with_row_types(rows)
+	mut compiled_expr := rows[0]
+	mut contains_agg := compiled_expr.any(it.contains_agg)
+	compiled_values := rows[1..]
+	for compiled in compiled_values {
 		c.check_row_comparison(compiled_expr.map(it.typ), compiled.map(it.typ), null_parameters(compiled_expr,
 			compiled))!
 		contains_agg = contains_agg || compiled.any(it.contains_agg)
-		compiled_values << compiled
 	}
 
 	mut plan := ?SubqueryPlan(none)
 	if subquery := e.subquery {
-		subquery_plan := plan_compared_subquery(mut c, subquery, compiled_expr)!
+		subquery_plan := plan_compared_subquery(mut c, subquery, mut compiled_expr)!
 		contains_agg = contains_agg || subquery_plan.contains_agg
 		plan = subquery_plan
 	}

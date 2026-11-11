@@ -389,14 +389,58 @@ fn test_set_session_names_null() ! {
 
 fn test_prepared_stmt_dynamic_parameters() {
 	mut db := open(':memory:')!
-	mut stmt := db.prepare("VALUES ROW(?, '?', ?)")!
+	mut stmt := db.prepare("VALUES ROW(CAST(? AS INTEGER), '?', CAST(? AS VARCHAR(1)))")!
 	assert stmt.dynamic_parameter_count() == 2
+	assert stmt.dynamic_parameter_type(1)?.str() == 'INTEGER'
+	assert stmt.dynamic_parameter_type(2)?.str() == 'CHARACTER VARYING(1)'
+	assert stmt.dynamic_parameter_type(3) == none
 
+	// Each value is cast to the type of its parameter.
 	columns := stmt.columns({
-		'?1': new_integer_value(1)
+		'?1': new_varchar_value('1')
 		'?2': new_varchar_value('a')
 	})!
 	assert columns.map(it.typ.str()) == ['INTEGER', 'CHARACTER(1)', 'CHARACTER VARYING(1)']
+	if _ := stmt.columns({
+		'?1': new_varchar_value('x')
+		'?2': new_varchar_value('a')
+	})
+	{
+		assert false
+	}
+
+	// A statement that can't be compiled when it's parsed (because the table
+	// doesn't exist yet, which prepare would raise) doesn't know the types of
+	// its parameters, so they have the types of their values.
+	mut insert := db.parse('INSERT INTO later (x) VALUES (?)')!
+	assert insert.dynamic_parameter_type(1) == none
+	db.query('CREATE TABLE later (x DOUBLE PRECISION)')!
+	insert.query({
+		'?1': new_integer_value(3)
+	})!
+	assert db.query('SELECT x FROM later')!.rows[0].get_f64('X')! == 3
+
+	// So a dynamic parameter that is the start position of a SUBSTRING only has
+	// to be a whole number.
+	mut substring := db.parse('SELECT SUBSTRING(s FROM ?) AS s FROM later2')!
+	db.query('CREATE TABLE later2 (s VARCHAR(10))')!
+	db.query("INSERT INTO later2 (s) VALUES ('hello')")!
+	assert substring.query({
+		'?1': new_double_precision_value(2)
+	})!.rows[0].get_string('S')! == 'ello'
+
+	// A statement that's prepared while another statement is executing keeps
+	// the closures that are made to find the types of its parameters.
+	db.frame_active = true
+	nested := db.prepare('VALUES CAST(? AS INTEGER)')!
+	missing := db.parse('SELECT x FROM missing WHERE x = ?')!
+	db.frame_active = false
+	assert nested.dynamic_parameter_type(1)?.str() == 'INTEGER'
+	assert missing.dynamic_parameter_type(1) == none
+
+	// The value of a dynamic parameter that's compiled to find its type is
+	// never needed, but it would be the null value.
+	assert parameter_result('', new_type('INTEGER', 0, 0)).run(mut db, Row{}, map[string]Value{})!.is_null
 
 	// A statement that doesn't return rows has no columns.
 	mut create := db.prepare('CREATE TABLE t (x INT)')!
@@ -433,9 +477,9 @@ fn test_prepare_resolves_names() ! {
 	assert prepare_error(mut db, 'UPDATE t SET x = DEFAULT') == ''
 	assert prepare_error(mut db, 'DROP TABLE nope') == ''
 
-	// The type of a "?" isn't known yet (it would be "function does not exist:
-	// ABS(CHARACTER VARYING)"), so other errors are found when it's executed.
-	mut stmt := db.prepare('SELECT ABS(?) AS y FROM t')!
+	// The value of a "?" isn't known yet, so an error that depends on it can only
+	// be found when it's executed.
+	mut stmt := db.prepare('SELECT ABS(CAST(? AS INTEGER)) AS y FROM t')!
 	db.query('INSERT INTO t (x) VALUES (1)')!
 	assert stmt.query({
 		'?1': new_integer_value(-2)

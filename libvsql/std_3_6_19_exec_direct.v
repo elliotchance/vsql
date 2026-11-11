@@ -13,10 +13,11 @@ import vsql
 // opened, so its fetched row isn't changed (General Rules 12.b.iii.1.C and
 // 12.b.iii.2.C, which are implementation-defined).
 //
-// The data type of a dynamic parameter isn't determined (General Rules 7.c and
-// 8), which is #649. There are no user-defined types, so there's no transform
-// group (General Rules 9), and no <call statement> (General Rules 12.b.iv),
-// which is #733.
+// The data type of each dynamic parameter is determined when the statement is
+// prepared, and one that can't be determined is a syntax error (General Rules
+// 7.c and 8, see vsql.PreparedStmt.dynamic_parameter_type). There are no
+// user-defined types, so there's no transform group (General Rules 9), and no
+// <call statement> (General Rules 12.b.iv), which is #733.
 
 @[export: 'SQLExecDirect']
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {

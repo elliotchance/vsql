@@ -44,16 +44,18 @@ mut:
 	// V never frees a closure on its own, and every expression that's compiled
 	// makes some (see CompileResult). So each statement runs in a frame of
 	// lifetime, and the closures it made are released when it ends, see
-	// PreparedStmt.query. frame_work runs frame_stmt, it's made once so that it
-	// isn't a closure that's leaked for each statement.
-	lifetime     closure.Lifetime
-	frame_work   fn () = unsafe { nil }
-	frame_active bool
-	frame_ran    bool
-	frame_stmt   &PreparedStmt = unsafe { nil }
-	frame_params map[string]Value
-	frame_result Result
-	frame_err    IError = none
+	// PreparedStmt.query. frame_work runs frame_stmt (or describes
+	// frame_describe, see describe_parameters), it's made once so that it isn't
+	// a closure that's leaked for each statement.
+	lifetime       closure.Lifetime
+	frame_work     fn () = unsafe { nil }
+	frame_active   bool
+	frame_ran      bool
+	frame_stmt     &PreparedStmt = unsafe { nil }
+	frame_describe ?Stmt
+	frame_params   map[string]Value
+	frame_result   Result
+	frame_err      IError = none
 	// parser_stack is kept between statements, see parse_statement.
 	parser_stack []YYSymType
 	// statement_cache has the statements that have been parsed, by their text,
@@ -81,6 +83,13 @@ mut:
 	// errors (such as an UPDATE that matched no rows). Expressions must not have
 	// side effects, like advancing a sequence.
 	dry_run bool
+	// describing is set while a prepared statement is compiled to find the data
+	// type of each dynamic parameter, which are collected in parameter_types (see
+	// describe_parameters). compiled_parameters are the dynamic parameters that
+	// have been compiled, whether or not their type could be determined.
+	describing          bool
+	parameter_types     map[string]Type
+	compiled_parameters map[string]bool
 	// subquery_scopes has one scope for each subquery (in an expression, such as
 	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
 	// can refer to the columns of the queries that contain it, see SubqueryScope.
@@ -264,6 +273,10 @@ fn open_connection(path string, catalog_name string, options ConnectionOptions) 
 	conn.lifetime = closure.new_lifetime()
 	conn.frame_work = fn [mut conn] () {
 		conn.frame_ran = true
+		if stmt := conn.frame_describe {
+			conn.describe_statement(stmt, conn.frame_params) or { conn.frame_err = err }
+			return
+		}
 		mut p := conn.frame_stmt
 		conn.frame_result = p.query_statement(conn.frame_params) or {
 			conn.frame_err = err
@@ -681,12 +694,20 @@ pub fn (mut conn Connection) parse(sql_stmt string) !PreparedStmt {
 	t := start_timer()
 	parsed := conn.parse_cached(sql_stmt)!
 	elapsed_parse := t.elapsed()
+	// The data types of the dynamic parameters depend on the tables that the
+	// statement uses, so they aren't cached.
+	parameter_types := if parsed.dynamic_parameters > 0 {
+		conn.describe_parameters(parsed.stmt, map[string]Value{})!
+	} else {
+		map[string]Type{}
+	}
 
 	return PreparedStmt{
 		stmt:               parsed.stmt
 		explain:            parsed.explain
 		writes:             parsed.writes
 		dynamic_parameters: parsed.dynamic_parameters
+		parameter_types:    parameter_types
 		features:           parsed.features.clone()
 		c:                  &conn
 		elapsed_parse:      elapsed_parse

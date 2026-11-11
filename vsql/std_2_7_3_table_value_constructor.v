@@ -76,9 +76,16 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 	//
 	// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Syntax Rules, 1
 	// and 4
+	mut compiled_rows := [][]CompileResult{}
+	for row in rows {
+		compiled_rows << row.compile_elements(mut c)!
+	}
+
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xix.1.B
+	compiled_rows = c.with_row_types(compiled_rows)
+
 	mut types := []Type{}
-	for i, row in rows {
-		compiled := row.compile_elements(mut c)!
+	for i, compiled in compiled_rows {
 
 		// An aggregate function of an outer query (which is a value here) is allowed.
 		//

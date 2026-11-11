@@ -178,16 +178,19 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 		return e.compile_row_comparison(mut c)!
 	}
 
-	compiled_left := if retrospective && e.op in [.greater_than, .greater_than_or_equal] {
+	mut compiled_left := if retrospective && e.op in [.greater_than, .greater_than_or_equal] {
 		c.compile_retrospective(e.left)!
 	} else {
 		e.left.compile(mut c)!
 	}
-	compiled_right := if retrospective && e.op in [.less_than, .less_than_or_equal] {
+	mut compiled_right := if retrospective && e.op in [.less_than, .less_than_or_equal] {
 		c.compile_retrospective(e.right)!
 	} else {
 		e.right.compile(mut c)!
 	}
+
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
+	compiled_left, compiled_right = c.with_pair_types(compiled_left, compiled_right, same_type)
 	c.check_comparison(compiled_left.typ, compiled_right.typ, compiled_left.null_parameter
 		|| compiled_right.null_parameter)!
 
@@ -205,8 +208,9 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 
 // compile_row_comparison compiles a comparison where either side is a row.
 fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult {
-	left := e.left.compile_fields(mut c)!
-	right := e.right.compile_fields(mut c)!
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
+	typed := c.with_row_types([e.left.compile_fields(mut c)!, e.right.compile_fields(mut c)!])
+	left, right := typed[0], typed[1]
 	c.check_row_comparison(left.map(it.typ), right.map(it.typ), null_parameters(left, right))!
 
 	return CompileResult{

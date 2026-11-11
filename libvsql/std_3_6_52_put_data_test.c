@@ -11,7 +11,7 @@ UTEST_F(db, 6_52_put_data_pieces) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_SUCCESS);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_ERROR);
@@ -28,7 +28,7 @@ UTEST_F(db, 6_52_put_data_null) {
                              SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? IS NULL"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10)) IS NULL"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, NULL, SQL_NULL_DATA), SQL_SUCCESS);
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_SUCCESS);
@@ -38,7 +38,7 @@ UTEST_F(db, 6_52_put_data_null) {
   EXPECT_STREQ(s, "TRUE");
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
 
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? IS NULL"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10)) IS NULL"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a", SQL_NTS),
             SQL_SUCCESS);
@@ -66,7 +66,7 @@ UTEST_F(db, 6_52_put_data_partial_character) {
                              SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10))"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a\xc3", 2),
             SQL_SUCCESS);
@@ -81,7 +81,7 @@ UTEST_F(db, 6_52_put_data_partial_character) {
   EXPECT_STREQ(s, "a\xc3\xa9");
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
 
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10))"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "\xff", 1), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
@@ -98,7 +98,7 @@ UTEST_F(db, 6_52_put_data_after_null) {
                              SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(10))"), SQL_NEED_DATA);
   ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a", -5), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");

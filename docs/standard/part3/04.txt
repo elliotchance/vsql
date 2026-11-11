@@ -21,7 +21,7 @@
 # 4.4.4, Environment attributes
 4.4.4                    implemented  libvsql/std_3_6_58_set_env_attr.v libvsql/std_3_6_58_set_env_attr_test.c
 # 4.4.5, Connection attributes
-4.4.5                    implemented  libvsql/std_3_6_54_set_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
+4.4.5                    implemented  libvsql/std_3_6_54_set_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
 # 4.4.6, Statement attributes
 4.4.6                    implemented  libvsql/std_3_4_4_1_handles.v libvsql/std_3_6_43_get_stmt_attr_test.c CURSOR HOLDABLE is HOLDABLE, since CURSOR COMMIT BEHAVIOR is PRESERVE
 # 4.4.7, CLI descriptor areas

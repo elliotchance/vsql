@@ -254,7 +254,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_ATTR_OUTPUT_NTS 10001 /* null terminate strings */
 
 /* Connection attributes. */
-#define SQL_ATTR_AUTO_IPD       10001 /* always SQL_FALSE */
+#define SQL_ATTR_AUTO_IPD       10001 /* always SQL_TRUE */
 #define SQL_ATTR_SAVEPOINT_NAME 10027 /* a savepoint for SQLEndTran */
 #define SQL_ATTR_AUTOCOMMIT     102   /* see SQLSetConnectAttr */
 
@@ -649,7 +649,8 @@ SQLRETURN SQLBindCol(
  * data type, with ColumnSize as the length of a string, or the precision of a
  * number (and DecimalDigits as its scale), or the fractional seconds of a
  * datetime (0 to 6). When the statement is executed, ParameterValue (of
- * ValueType, see SQLGetData) is cast to that type.
+ * ValueType, see SQLGetData) is cast to that type, and then to the type of the
+ * dynamic parameter (see SQLPrepare).
  *
  * StrLen_or_Ind is the length in octets of a string, which must be greater
  * than zero (or SQL_NTS, which also allows an empty string), and it may be
@@ -1065,7 +1066,7 @@ SQLRETURN SQLFreeStmt(
 /*
  * SQLGetConnectAttr reads an attribute of a connection:
  *
- *   SQL_ATTR_AUTO_IPD        SQLINTEGER, always SQL_FALSE
+ *   SQL_ATTR_AUTO_IPD        SQLINTEGER, always SQL_TRUE
  *   SQL_ATTR_SAVEPOINT_NAME  string, see SQLGetData for SQL_CHAR
  *   SQL_ATTR_AUTOCOMMIT      SQLINTEGER, SQL_AUTOCOMMIT_OFF or _ON
  *
@@ -1532,6 +1533,14 @@ SQLRETURN SQLParamData(
  * syntax error is returned by SQLPrepare, but other errors (such as a table
  * that doesn't exist) are only returned by SQLExecute. The same statements are
  * allowed as SQLExecDirect.
+ *
+ * The type of each dynamic parameter is determined from where it's used, such
+ * as the type of x in "x = ?" (see "Prepared Statements" in the docs), and one
+ * whose type can't be determined (such as in "? + ?") is a syntax error. The
+ * IPD (SQL_ATTR_IMP_PARAM_DESC) has a record for each dynamic parameter, with
+ * its type, so SQL_DESC_COUNT is the number of parameters. SQLBindParameter
+ * replaces the record. A parameter whose type isn't known until the statement
+ * is executed (such as when its table doesn't exist yet) keeps its record.
  */
 SQLRETURN SQLPrepare(
     SQLHSTMT    StatementHandle,

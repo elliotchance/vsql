@@ -257,6 +257,11 @@ struct CompileResult {
 	// type is the type of that value, which isn't always the type it's used as
 	// (see check_comparison).
 	null_parameter bool
+	// untyped_parameter is the name of the dynamic parameter (such as "?1") that
+	// the expression is, when it's compiled to find its type and that type isn't
+	// known yet (see describe_parameters). A dynamic parameter in parentheses is
+	// the same CompileResult, so it's still the dynamic parameter.
+	untyped_parameter string
 	// constant is set when the expression always has the same value for a
 	// statement, because it's only made of literals, parameters (which are known
 	// when it's compiled) and operations on them that only depend on their
@@ -266,11 +271,12 @@ struct CompileResult {
 
 fn (c CompileResult) with_agg(contains_agg bool) CompileResult {
 	return CompileResult{
-		run:            c.run
-		typ:            c.typ
-		contains_agg:   contains_agg
-		constant:       c.constant
-		null_parameter: c.null_parameter
+		run:               c.run
+		typ:               c.typ
+		contains_agg:      contains_agg
+		constant:          c.constant
+		null_parameter:    c.null_parameter
+		untyped_parameter: c.untyped_parameter
 	}
 }
 
@@ -298,7 +304,7 @@ fn (c CompileResult) fold() CompileResult {
 	run := c.run
 	mut folded := &FoldedValue{}
 	return CompileResult{
-		run:            fn [run, mut folded] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:               fn [run, mut folded] (mut conn Connection, data Row, params map[string]Value) !Value {
 			if value := folded.value {
 				return value
 			}
@@ -307,9 +313,10 @@ fn (c CompileResult) fold() CompileResult {
 			folded.value = value
 			return value
 		}
-		typ:            c.typ
-		contains_agg:   c.contains_agg
-		constant:       true
-		null_parameter: c.null_parameter
+		typ:               c.typ
+		contains_agg:      c.contains_agg
+		constant:          true
+		null_parameter:    c.null_parameter
+		untyped_parameter: c.untyped_parameter
 	}
 }

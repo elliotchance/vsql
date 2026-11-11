@@ -83,8 +83,8 @@ fn check_boolean_operand(op string, operand CompileResult) ! {
 
 fn (e BooleanValueExpression) compile(mut c Compiler) !CompileResult {
 	if expr := e.expr {
-		compiled_a := expr.compile(mut c)!
-		compiled_b := e.term.compile(mut c)!
+		compiled_a := c.with_boolean_type(expr.compile(mut c)!)
+		compiled_b := c.with_boolean_type(e.term.compile(mut c)!)
 		check_boolean_operand('OR', compiled_a)!
 		check_boolean_operand('OR', compiled_b)!
 
@@ -134,8 +134,8 @@ fn (e BooleanTerm) pstr(params map[string]Value) string {
 
 fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
 	if term := e.term {
-		compiled_a := term.compile(mut c)!
-		compiled_b := e.factor.compile(mut c)!
+		compiled_a := c.with_boolean_type(term.compile(mut c)!)
+		compiled_b := c.with_boolean_type(e.factor.compile(mut c)!)
 		check_boolean_operand('AND', compiled_a)!
 		check_boolean_operand('AND', compiled_b)!
 
@@ -233,8 +233,11 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.e.ii
 	retrospective := c.retrospective
 	c.retrospective = retrospective && !e.is_negative()
-	compiled := e.expr.compile(mut c)!
+	mut compiled := e.expr.compile(mut c)!
 	c.retrospective = retrospective
+	if e.value != none || e.inverse {
+		compiled = c.with_boolean_type(compiled)
+	}
 
 	if v := e.value {
 		check_boolean_operand('IS', compiled)!

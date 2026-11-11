@@ -7,7 +7,7 @@
 // Each function is flagged with its feature.
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Conformance Rules, 7-9
-// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Conformance Rules, 11-17
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Conformance Rules, 11-18
 
 numeric_value_function:
   position_expression { $$.v = $1.v as RoutineInvocation }
@@ -54,6 +54,10 @@ numeric_value_function:
   }
 | ceiling_function {
     flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
+| width_bucket_function {
+    flag(mut yylex, 'T612')
     $$.v = $1.v as RoutineInvocation
   }
 
@@ -214,6 +218,18 @@ ceiling_function:
 | CEILING left_paren numeric_value_expression right_paren   { 
     $$.v = RoutineInvocation{function_name: 'CEILING', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
+    ]}
+  }
+
+width_bucket_function:
+  WIDTH_BUCKET left_paren numeric_value_expression comma
+  numeric_value_expression comma numeric_value_expression comma
+  numeric_value_expression right_paren {
+    $$.v = RoutineInvocation{function_name: 'WIDTH_BUCKET', args: [
+      ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
+      ValueExpression(CommonValueExpression($5.v as NumericValueExpression))
+      ValueExpression(CommonValueExpression($7.v as NumericValueExpression))
+      ValueExpression(CommonValueExpression($9.v as NumericValueExpression))
     ]}
   }
 

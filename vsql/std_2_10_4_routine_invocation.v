@@ -85,6 +85,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			arg_types[0]), in_aggregate)!
 	}
 
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 21
+	if func_name == 'WIDTH_BUCKET' && arg_types[3].scale != 0 {
+		return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
+	}
+
 	if e.args.len != found_func.arg_types.len {
 		return sqlstate_42883('${func_name} has ${e.args.len} ${pluralize(e.args.len, 'argument')} but needs ${found_func.arg_types.len} ${pluralize(found_func.arg_types.len, 'argument')}')
 	}
@@ -133,6 +138,13 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			}
 
 			result := found_func.func(FunctionContext{ conn: conn }, args)!
+			// The bucket after the range (count + 1) may not fit in the type of
+			// the count, which is a 22003 error.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 17.d.ii and 17.e.ii
+			if func_name == 'WIDTH_BUCKET' {
+				return cast(mut conn, 'WIDTH_BUCKET', result, return_type)!
+			}
 			if is_fold {
 				return fold_result(mut conn, result, return_type)
 			}

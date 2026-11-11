@@ -369,6 +369,52 @@ fn func_floor_numeric(_ FunctionContext, args []Value) !Value {
 	return new_numeric_value_from_numeric(t)
 }
 
+// WIDTH_BUCKET(NUMERIC, NUMERIC, NUMERIC, COUNT) COUNT
+// WIDTH_BUCKET(DOUBLE PRECISION, DOUBLE PRECISION, DOUBLE PRECISION, COUNT) COUNT
+//
+// The range between the bounds is split into count buckets of the same width,
+// numbered from 1, and the result is the bucket that the operand is in. The
+// range includes the first bound but not the second. An operand before the
+// range is in bucket 0, and one after it is in bucket count + 1. The bounds can
+// be in either order, so the buckets can go down instead.
+//
+// The result is calculated exactly, even for approximate numbers, so an
+// operand is never put in the wrong bucket by rounding. It's cast to the type
+// of the count afterwards, which can be out of range for count + 1 (see
+// RoutineInvocation.compile).
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 17
+fn func_width_bucket(_ FunctionContext, args []Value) !Value {
+	operand := args[0].as_numeric()!
+	bound1 := args[1].as_numeric()!
+	bound2 := args[2].as_numeric()!
+	count := args[3].as_numeric()!
+	if count.is_negative() || count.is_zero() || bound1.equals(bound2) {
+		return sqlstate_2201g()
+	}
+
+	// The distance from the start of the range, and the width of the range, are
+	// both positive when the operand is in the range.
+	mut distance := operand.subtract(bound1)
+	mut width := bound2.subtract(bound1)
+	if bound1.greater_than(bound2) {
+		distance = distance.neg()
+		width = width.neg()
+	}
+
+	if distance.is_negative() {
+		return new_numeric_value('0')
+	}
+	if !distance.less_than(width) {
+		return new_numeric_value_from_numeric(count.add(new_numeric_from_string('1')))
+	}
+
+	// The quotient isn't negative, so truncating it is the same as its floor.
+	bucket := count.multiply(distance).divide(width)!.trunc()
+
+	return new_numeric_value_from_numeric(bucket.add(new_numeric_from_string('1')))
+}
+
 // CEIL(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_ceil(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.ceil(args[0].f64_value()))
@@ -418,6 +464,13 @@ fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
 			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 20.a
 			size := if p1 == 0 || s1 == 0 { p1 } else { p1 - s1 + 1 }
 			return Type{return_type.typ, size, 0, false}
+		}
+		'WIDTH_BUCKET' {
+			// The declared type is that of the count, which must have a scale of 0.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 21
+			count := arg_types[3]
+			return Type{count.typ, count.exact_precision(), 0, false}
 		}
 		else {
 			return return_type

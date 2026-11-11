@@ -165,6 +165,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			}
 			t.done()
 		})!
+	catalog.register_sql_features_view()!
 
 	// ISO/IEC 9075-11:2008(E), 5.58, TABLE_CONSTRAINTS view. ENFORCED is whether
 	// the table constraint is enforced (ISO/IEC 9075-2:2016(E), 4.23.3.1).

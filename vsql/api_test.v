@@ -509,6 +509,28 @@ fn test_prepared_statement_timestamp() ! {
 	}
 }
 
+// A connection keeps each statement that it parses (up to statement_cache_size
+// of them), so the same text isn't parsed again. The statements that keep
+// running stay cached when many others only run once.
+fn test_statement_cache() ! {
+	mut db := open(':memory:')!
+	db.query('VALUES 0')!
+	for i in 1 .. statement_cache_size * 3 {
+		db.query('VALUES ${i}')!
+		db.query('VALUES 0')!
+	}
+	assert db.statement_cache.slots.len == statement_cache_size
+	assert db.statement_cache.slot_of.len == statement_cache_size
+	assert 'VALUES 0' in db.statement_cache.slot_of
+	assert 'VALUES 1' !in db.statement_cache.slot_of
+	assert 'VALUES ${statement_cache_size * 3 - 1}' in db.statement_cache.slot_of
+
+	// A statement that's too long isn't kept.
+	long := 'VALUES 0' + ' '.repeat(statement_cache_max_length)
+	assert db.query(long)!.rows[0].get_int('COL1')! == 0
+	assert long !in db.statement_cache.slot_of
+}
+
 fn test_cast() {
 	mut db := open(':memory:')!
 	assert db.cast(new_varchar_value('12'), new_type('INTEGER', 0, 0))!.int_value() == 12

@@ -652,7 +652,10 @@ struct Connection
    	frame_err    IError = none
    	// parser_stack is kept between statements, see parse_statement.
    	parser_stack []YYSymType
-   	catalogs     map[string]&CatalogConnection
+   	// statement_cache has the statements that have been parsed, by their text,
+   	// see prepare.
+   	statement_cache StatementCache
+   	catalogs        map[string]&CatalogConnection
    	// funcs only needs to be initialized once on open()
    	funcs []Func
    	// cast_rules are use for CAST() (see cast.v)

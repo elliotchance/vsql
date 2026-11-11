@@ -56,7 +56,10 @@ mut:
 	frame_err    IError = none
 	// parser_stack is kept between statements, see parse_statement.
 	parser_stack []YYSymType
-	catalogs     map[string]&CatalogConnection
+	// statement_cache has the statements that have been parsed, by their text,
+	// see prepare.
+	statement_cache StatementCache
+	catalogs        map[string]&CatalogConnection
 	// funcs only needs to be initialized once on open()
 	funcs []Func
 	// cast_rules are use for CAST() (see cast.v)
@@ -598,18 +601,39 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 // that's executed straight away (such as by query) doesn't need to do it first.
 pub fn (mut conn Connection) parse(sql_stmt string) !PreparedStmt {
 	t := start_timer()
-	stmt, explain, tokens, features := parse_sql(sql_stmt, mut conn.parser_stack)!
+	parsed := conn.parse_cached(sql_stmt)!
 	elapsed_parse := t.elapsed()
 
 	return PreparedStmt{
+		stmt:               parsed.stmt
+		explain:            parsed.explain
+		writes:             parsed.writes
+		dynamic_parameters: parsed.dynamic_parameters
+		features:           parsed.features.clone()
+		c:                  &conn
+		elapsed_parse:      elapsed_parse
+	}
+}
+
+// parse_cached parses a statement, unless the same text has already been
+// parsed by the connection, see StatementCache. A statement with a syntax error
+// isn't cached.
+fn (mut conn Connection) parse_cached(sql_stmt string) !ParsedStmt {
+	if parsed := conn.statement_cache.find(sql_stmt) {
+		return parsed
+	}
+
+	stmt, explain, tokens, features := parse_sql(sql_stmt, mut conn.parser_stack)!
+	parsed := ParsedStmt{
 		stmt:               stmt
 		explain:            explain
 		writes:             has_next_value(tokens)
 		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
 		features:           features
-		c:                  &conn
-		elapsed_parse:      elapsed_parse
 	}
+	conn.statement_cache.add(sql_stmt, parsed)
+
+	return parsed
 }
 
 // parse_sql parses a statement. It returns the statement, whether it's

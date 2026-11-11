@@ -26,6 +26,13 @@ returns is executed with ``query()``:
    	}
    }
 
+A connection also keeps up to 256 of the statements that it has parsed (each up
+to 4096 bytes, and preferring the ones that run again), so ``prepare()`` and
+``query()`` don't parse the same text again. Only the parsing is kept: a statement is still planned each time it's
+executed, so it always uses the current tables and indexes. That's why a
+statement that runs many times is faster with dynamic parameters than with
+literal values, which make each text different.
+
 A prepared statement can also say which features outside of Core SQL it uses,
 see :doc:`sql-flagging`.
 

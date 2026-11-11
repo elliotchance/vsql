@@ -163,8 +163,10 @@ def test_import_unsupported_without_option(ui):
     expect(failures(ui)).to_contain_text('Line 1')
 
 
-def big_sql(rows=4000):
-    """big_sql takes long enough to do things while it's being imported."""
+def big_sql(rows=40000):
+    """big_sql takes long enough to do things while it's being imported. 4000
+    rows took less than a second on a fast machine, which was over before a
+    test could check it."""
     inserts = ''.join(f"INSERT INTO foo.big (x, y) VALUES ({i}, 'row {i}');\n" for i in range(rows))
     return 'CREATE TABLE foo.big (x INT, y VARCHAR(20));\n' + inserts
 
@@ -225,9 +227,9 @@ def test_import_in_background(ui, db_file):
     expect(ui.page.locator('textarea[name="sql"]')).to_be_visible()
     expect(ui.sidebar_table('BIG', schema='FOO')).to_have_count(0)
     ui.page.locator('.tabs .tab').filter(has_text='Import big.sql').locator('button').first.click()
-    expect(notice(ui)).to_have_text('big.sql: 4001 statements executed', timeout=120000)
+    expect(notice(ui)).to_have_text('big.sql: 40001 statements executed', timeout=120000)
     expect(ui.sidebar_table('BIG', schema='FOO')).to_be_visible()
-    assert count(db_file, 'SELECT COUNT(*) FROM foo.big;') == 4000
+    assert count(db_file, 'SELECT COUNT(*) FROM foo.big;') == 40000
     expect(ui.page.locator('.import-file')).to_be_visible()
 
 

@@ -49,6 +49,11 @@ mut:
 	// during this transaction. This is important for COMMIT and ROLLBACK to
 	// revisit pages that need to be cleaned up or frozen.
 	transaction_pages map[int]bool
+	// transaction_keys contains the key of every object that has been created
+	// or expired during an explicit transaction. Another connection can split
+	// a page while the transaction is active, which moves its objects to a
+	// page that isn't in transaction_pages, see transaction_page_numbers.
+	transaction_keys map[string]bool
 	// Like the tables we keep the schemas in memory.
 	schemas map[string]Schema
 	// The indexes are also kept in memory, because every write to a table must
@@ -106,6 +111,7 @@ mut:
 	transaction_state TransactionState
 	transaction_id    u64
 	transaction_pages map[int]bool
+	transaction_keys  map[string]bool
 	isolation_depth   int
 	// in_statement is true between begin_statement and the end of the
 	// statement.
@@ -133,6 +139,7 @@ fn (mut f Storage) begin_statement() {
 		in_statement:      true
 	}
 	f.btree.written_pages = map[int]bool{}
+	f.btree.written_keys = map[string]bool{}
 	f.sequence_values = map[string]PageObject{}
 }
 
@@ -147,13 +154,34 @@ fn (mut f Storage) save_schema() {
 	}
 }
 
-// save_transaction_pages must be called before transaction_pages is changed,
-// so that it can be put back if the statement fails.
+// save_transaction_pages must be called before transaction_pages (or
+// transaction_keys) is changed, so that it can be put back if the statement
+// fails.
 fn (mut f Storage) save_transaction_pages() {
 	if f.snapshot.in_statement && !f.snapshot.pages_saved {
 		f.snapshot.transaction_pages = f.transaction_pages.clone()
+		f.snapshot.transaction_keys = f.transaction_keys.clone()
 		f.snapshot.pages_saved = true
 	}
+}
+
+// transaction_page_numbers returns the pages that can have objects created or
+// expired by the explicit transaction: the pages that it changed, and the page
+// that each key it wrote is on now. Another connection can split a page while
+// the transaction is active (it doesn't hold the file between statements),
+// which moves objects into a new page that this connection never wrote. COMMIT
+// and ROLLBACK would otherwise miss them, leaving a rolled back change visible,
+// or an expired version that stops the row from being changed again. A split
+// keeps the versions of a key together (see split_objects), so they're all on
+// the page that the key is found on.
+fn (mut f Storage) transaction_page_numbers() ![]int {
+	mut pages := f.transaction_pages.clone()
+	for key, _ in f.transaction_keys {
+		path, _ := f.btree.search_page(key.bytes())!
+		pages[path.last()] = true
+	}
+
+	return pages.keys()
 }
 
 // commit_statement keeps the changes made by the current statement. For a file,
@@ -190,10 +218,12 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.isolation_depth = f.snapshot.isolation_depth
 	if f.snapshot.pages_saved {
 		f.transaction_pages = f.snapshot.transaction_pages.clone()
+		f.transaction_keys = f.snapshot.transaction_keys.clone()
 	}
 	f.snapshot.in_statement = false
 	f.btree.pager.discard()
 	f.btree.written_pages = map[int]bool{}
+	f.btree.written_keys = map[string]bool{}
 	f.sequence_values = map[string]PageObject{}
 
 	if sequence_values.len > 0 {
@@ -1102,6 +1132,15 @@ fn (mut f Storage) isolation_end() ! {
 		f.transaction_pages[page_number] = true
 	}
 	f.btree.written_pages = map[int]bool{}
+
+	// An implicit transaction ends in the same statement, while the file is
+	// locked, so its pages can't be split by another connection.
+	if f.transaction_state == .active {
+		for key, _ in f.btree.written_keys {
+			f.transaction_keys[key] = true
+		}
+	}
+	f.btree.written_keys = map[string]bool{}
 
 	match f.transaction_state {
 		.not_active {

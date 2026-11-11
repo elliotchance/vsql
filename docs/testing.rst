@@ -642,6 +642,26 @@ timestamp), so the next statement has a later time:
 
 A test with ``clock`` doesn't run through the server.
 
+Page Size
+^^^^^^^^^
+
+Every database in a test has 256-byte pages, so that even a few rows are split
+across several pages (see ``sql_test_options`` in ``vsql/sql_test.v``). A test
+that relies on how its rows are laid out in the pages, such as one that needs a
+page to be split at a certain point, should say what page size it needs with a
+``page_size`` directive. Then it still tests the same thing if the default
+changes:
+
+.. code-block:: sql
+
+   /* page_size 256 */
+   /* connection 1 */
+   CREATE TABLE t (id INT, x INT);
+   INSERT INTO t (id, x) VALUES (1, 0), (2, 0);
+
+It's used for every database the test opens (a file keeps the page size it was
+created with), in memory and on disk, and through the server.
+
 Virtual Tables
 ^^^^^^^^^^^^^^
 

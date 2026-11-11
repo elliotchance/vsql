@@ -21,6 +21,9 @@ struct SQLTest {
 	// extensions are the vsql extensions (such as "V001-01") that the test
 	// uses, see the "extensions" directive.
 	extensions []string
+	// page_size is the page size of the test's databases from its
+	// "page_size" directive, or 0 for the one in sql_test_options.
+	page_size int
 }
 
 fn get_test_filter() (string, int) {
@@ -57,12 +60,13 @@ fn get_tests() ![]SQLTest {
 		mut show_types := false
 		mut show_flags := false
 		mut extensions := []string{}
+		mut page_size := 0
 		for line in lines {
 			if line == '' {
 				// A block with only a setup or comments isn't a test. A block
 				// with only an expected output is kept, so that it fails.
 				if stmts.len > 0 || expected.len > 0 {
-					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions}
+					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size}
 				}
 				stmts = []
 				expected = []
@@ -70,6 +74,7 @@ fn get_tests() ![]SQLTest {
 				show_types = false
 				show_flags = false
 				extensions = []
+				page_size = 0
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
@@ -91,6 +96,11 @@ fn get_tests() ![]SQLTest {
 					show_flags = true
 				} else if contents.starts_with('extensions ') {
 					extensions = parse_extensions(contents[11..])
+				} else if contents.starts_with('page_size ') {
+					page_size = contents[10..].int()
+					if page_size <= 0 {
+						panic('bad page_size directive: "${contents}"')
+					}
 				} else if contents == 'params' || contents.starts_with('params ') {
 					stmts << '${contents} '
 				} else {
@@ -123,7 +133,7 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions}
+			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size}
 		}
 	}
 
@@ -609,7 +619,15 @@ fn start_sql_test_server() !&Server {
 	options := sql_test_options()
 	mut server := new_server(ServerOptions{
 		connect: fn [options] (database string) !&Connection {
-			mut db := open_database(database, options)!
+			// A test with a "page_size" directive asks for it after the name of
+			// the database, see new_sql_test_conn.
+			mut db_options := options
+			mut path := database
+			if i := database.index(sql_test_page_size_suffix) {
+				path = database[..i]
+				db_options.page_size = database[i + sql_test_page_size_suffix.len..].int()
+			}
+			mut db := open_database(path, db_options)!
 			db.now = sql_test_now
 
 			return db
@@ -641,7 +659,10 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 		}
 	}
 
-	options := sql_test_options()
+	mut options := sql_test_options()
+	if test.page_size > 0 {
+		options.page_size = test.page_size
+	}
 
 	// Connections are never closed (and so keep their locks), so each test
 	// needs its own files. The main file is named so that its catalog is still
@@ -985,10 +1006,19 @@ mut:
 	client &PGTestClient = unsafe { nil }
 }
 
+// sql_test_page_size_suffix is added to the name of the database that the
+// test server opens, for the page size of a "page_size" directive.
+const sql_test_page_size_suffix = '?page_size='
+
 fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions, port int) !&SQLTestConn {
 	if through_server {
+		database := if options.page_size == sql_test_options().page_size {
+			path
+		} else {
+			'${path}${sql_test_page_size_suffix}${options.page_size}'
+		}
 		return &SQLTestConn{
-			client: new_pg_test_client(port, path)!
+			client: new_pg_test_client(port, database)!
 		}
 	}
 

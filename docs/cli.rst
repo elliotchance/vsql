@@ -54,16 +54,29 @@ bench
 
 .. code-block:: sh
 
-   vsql bench                                 # on disk, in bench.vsql
-   vsql bench -file ':memory:'                # in memory
-   vsql bench -accounts 1000 -duration 5      # a quick test
-   vsql bench -isolation read-committed       # with READ COMMITTED transactions
+   vsql bench                                       # in memory
+   vsql bench -file bench.vsql                      # on disk, in bench.vsql
+   vsql bench -size 10 -duration 5                  # 10 times the rows, for 5 seconds
+   vsql bench -file bench.vsql -suite tpc-b-setup   # only insert the rows
+   vsql bench -file bench.vsql -suite tpc-b-oltp    # only run the transactions
+   vsql bench -file bench.vsql -suite tpc-b-check   # only check the rows and totals
 
 Options are:
 
-- ``-file`` or ``-f``: The database file, which is deleted and created for the
-  test (default ``bench.vsql``). Use ``:memory:`` for an in-memory database.
-- ``-accounts``: The number of rows in the ``ACCOUNTS`` table (default 100000).
+- ``-memory``: Run the benchmark in memory. This is the default, unless
+  ``-file`` is used.
+- ``-file``: Run the benchmark on disk, in this file. It can be an existing
+  database, since the tables are created in their own ``TPC_B`` schema.
+- ``-suite``: What to run (see :doc:`benchmark`):
+
+  - ``tpc-b``: All three of the suites below, in order (the default).
+  - ``tpc-b-setup``: Create the tables and insert the rows.
+  - ``tpc-b-oltp``: Run the transactions on a ``-file`` that ``tpc-b-setup``
+    created.
+  - ``tpc-b-check``: Check the rows and totals of a ``-file`` that
+    ``tpc-b-setup`` created.
+- ``-size``: Multiplies the number of rows of each table, such as ``10`` for
+  1,000,000 accounts (default 1).
 - ``-duration``: The number of seconds to run transactions for (default 60).
 - ``-isolation``: The isolation level of the transactions:
   ``read-uncommitted``, ``read-committed``, ``repeatable-read`` or

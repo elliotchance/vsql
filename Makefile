@@ -336,7 +336,8 @@ examples/%: vsql/y.v
 bench: bench-on-disk bench-memory
 
 bench-on-disk: bin/vsql
-	./bin/vsql bench
+	rm -f bench.vsql bench.vsql.wal bench.vsql.session bench.vsql.isolation
+	./bin/vsql bench -file bench.vsql
 
 bench-memory: bin/vsql
-	./bin/vsql bench -file ':memory:'
+	./bin/vsql bench -memory

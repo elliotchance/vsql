@@ -24,7 +24,7 @@ const page_object_tid_at = 4
 
 const page_object_xid_at = 12
 
-pub struct PageObject {
+struct PageObject {
 	// The key is not required to be unique in the page. It becomes unique when
 	// combined with tid. However, no more than two version of the same key can
 	// exist in a page. See the caveats at the top of btree.v.

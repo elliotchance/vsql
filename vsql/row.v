@@ -238,7 +238,7 @@ fn new_empty_row(columns Columns, table_name string) Row {
 }
 
 fn new_empty_value(typ Type) Value {
-	mut value := match typ.typ {
+	value := match typ.typ {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			new_null_value(typ.typ)
@@ -272,9 +272,13 @@ fn new_empty_value(typ Type) Value {
 		}
 	}
 
-	value.typ.not_null = typ.not_null
-
-	return value
+	return Value{
+		...value
+		typ: Type{
+			...value.typ
+			not_null: typ.not_null
+		}
+	}
 }
 
 // max_row_size is the most bytes that a row can be written in. The page object
@@ -440,9 +444,8 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 		}
 
 		// Some types do not need a NULL flag because it's built into the value.
-		mut v := Value{
-			typ: col.typ
-		}
+		mut is_null := false
+		mut iv := InternalValue{}
 
 		// If the column is allows for NULL we need to read the prepended a NULL
 		// indicator. However, there are certain types that we do not need to
@@ -454,7 +457,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
 				.is_real, .is_smallint, .is_numeric, .is_decimal {
-					v.is_null = buf.read_bool()
+					is_null = buf.read_bool()
 				}
 				.is_boolean {
 					// BOOLEAN: NULL is encoded as one of the values.
@@ -465,7 +468,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 		// A column that isn't needed still takes its place in values, so that
 		// each value stays at the position of its key.
 		if needed.len > 0 && !needed[i] {
-			if !v.is_null || v.typ.typ == .is_boolean {
+			if !is_null || col.typ.typ == .is_boolean {
 				skip_value(mut buf, col.typ.typ)
 			}
 			values << Value{
@@ -477,68 +480,72 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 
 		// The value is only written if it's not null (or NULL is encoded into
 		// the value).
-		if !v.is_null || v.typ.typ == .is_boolean {
+		if !is_null || col.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
 					unsafe {
 						b := buf.read_u8()
 						if b == 0 {
-							v.is_null = true
+							is_null = true
 						} else {
-							v.v.bool_value = Boolean(b)
+							iv.bool_value = Boolean(b)
 						}
 					}
 				}
 				.is_bigint {
-					v.v.int_value = buf.read_i64()
+					iv.int_value = buf.read_i64()
 				}
 				.is_double_precision {
-					v.v.f64_value = buf.read_f64()
+					iv.f64_value = buf.read_f64()
 				}
 				.is_integer {
-					v.v.int_value = buf.read_i32()
+					iv.int_value = buf.read_i32()
 				}
 				.is_real {
-					v.v.f64_value = buf.read_f32()
+					iv.f64_value = buf.read_f32()
 				}
 				.is_smallint {
-					v.v.int_value = buf.read_i16()
+					iv.int_value = buf.read_i16()
 				}
 				.is_varchar, .is_character {
-					v.v.string_value = buf.read_string4()
+					iv.string_value = buf.read_string4()
 				}
 				.is_date {
 					typ := Type{.is_date, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
+					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_time_with_time_zone {
 					typ := Type{.is_time_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
+					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
 				}
 				.is_time_without_time_zone {
 					typ :=
 						Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
+					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_timestamp_with_time_zone {
 					typ :=
 						Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
+					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
 				}
 				.is_timestamp_without_time_zone {
 					typ :=
 						Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
+					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_numeric, .is_decimal {
 					typ := Type{col.typ.typ, col.typ.size, col.typ.scale, col.not_null}
 					len := buf.read_i16()
-					v.v.numeric_value = box_numeric(new_numeric_from_bytes(typ, buf.read_u8s(len)))
+					iv.numeric_value = box_numeric(new_numeric_from_bytes(typ, buf.read_u8s(len)))
 				}
 			}
 		}
 
-		values << v
+		values << Value{
+			typ:     col.typ
+			is_null: is_null
+			v:       iv
+		}
 	}
 
 	return Row{row_id, tid, RowData{ids, values}}

@@ -35,6 +35,15 @@ aggregate_function:
     $$.v = with_filter(AggregateFunction($1.v as ListaggSetFunction),
       $2.v as BooleanValueExpression)
   }
+| ordered_set_function {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = AggregateFunction($1.v as OrderedSetFunction)
+  }
+| ordered_set_function filter_clause {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = with_filter(AggregateFunction($1.v as OrderedSetFunction),
+      $2.v as BooleanValueExpression)
+  }
 
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 13
 filter_clause:
@@ -127,8 +136,7 @@ set_quantifier:
 set_function_type:
   computational_operation { $$.v = $1.v as string }
 
-// <ordered set function> is only a <listagg set function>, there are no
-// hypothetical set functions or inverse distribution functions (T612).
+// The other <ordered set function>s are an OrderedSetFunction.
 //
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.c
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 23
@@ -158,6 +166,48 @@ listagg_set_function:
     $$.v = new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
       $6.v as Value, $7.v as ListaggOverflow, $9.v as []SortSpecification)
   }
+
+// A <hypothetical set function> or an <inverse distribution function>. A
+// <listagg set function> is also an <ordered set function>, but it's a
+// ListaggSetFunction.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 12
+ordered_set_function:
+  rank_function_type left_paren
+  hypothetical_set_function_value_expression_list right_paren
+  within_group_specification {
+    flag(mut yylex, 'T612')
+    $$.v = OrderedSetFunction{
+      name:  $1.v as string
+      args:  $3.v as []ValueExpression
+      order: $5.v as []SortSpecification
+    }
+  }
+| inverse_distribution_function_type left_paren numeric_value_expression
+  right_paren within_group_specification {
+    flag(mut yylex, 'T612')
+    $$.v = OrderedSetFunction{
+      name:  $1.v as string
+      args:  [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]
+      order: $5.v as []SortSpecification
+    }
+  }
+
+rank_function_type:
+  RANK { $$.v = $1.v as string }
+| DENSE_RANK { $$.v = $1.v as string }
+| PERCENT_RANK { $$.v = $1.v as string }
+| CUME_DIST { $$.v = $1.v as string }
+
+hypothetical_set_function_value_expression_list:
+  value_expression { $$.v = [$1.v as ValueExpression] }
+| hypothetical_set_function_value_expression_list comma value_expression {
+    $$.v = append_list($1.v as []ValueExpression, $3.v as ValueExpression)
+  }
+
+inverse_distribution_function_type:
+  PERCENTILE_CONT { $$.v = $1.v as string }
+| PERCENTILE_DISC { $$.v = $1.v as string }
 
 // The sort keys aren't the <sort key>s of an ORDER BY of a query, so they
 // aren't flagged (see flag_sort_key).

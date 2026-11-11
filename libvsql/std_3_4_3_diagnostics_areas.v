@@ -20,6 +20,9 @@ struct DiagnosticRecord {
 	// constraint is the constraint that was violated, for an integrity
 	// constraint violation (see vsql.violated_constraint).
 	constraint vsql.Identifier
+	// table is the table (and, as its sub_entity_name, the column) that the
+	// condition identifies (see vsql.condition_table).
+	table vsql.Identifier
 	// cursor_name is the cursor that caused a warning: cursor operation conflict.
 	cursor_name string
 	// cursor is the name of the cursor (as the engine keeps it) that is in the
@@ -184,6 +187,7 @@ fn (mut d Diagnostics) row_condition(err IError, row_number int, column_number i
 		sqlstate:      sqlstate
 		msg:           err.msg()
 		constraint:    vsql.violated_constraint(err) or { vsql.Identifier{} }
+		table:         vsql.condition_table(err) or { vsql.Identifier{} }
 		row_number:    row_number
 		column_number: column_number
 	})
@@ -226,6 +230,7 @@ fn (mut d Diagnostics) error(err IError) i16 {
 		sqlstate:   sqlstate
 		msg:        err.msg()
 		constraint: vsql.violated_constraint(err) or { vsql.Identifier{} }
+		table:      vsql.condition_table(err) or { vsql.Identifier{} }
 		cursor:     vsql.invalid_cursor(err) or { '' }
 	})
 	d.returncode = sql_error

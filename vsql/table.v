@@ -153,7 +153,7 @@ pub fn (t Table) column(name string) !Column {
 		}
 	}
 
-	return sqlstate_42703(name) // column does not exist
+	return sqlstate_42703(t.name, name) // column does not exist
 }
 
 // bytes is how the table is stored in the file: its CREATE TABLE statement,

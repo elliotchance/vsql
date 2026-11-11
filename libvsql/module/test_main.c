@@ -108,6 +108,8 @@ int main(void) {
   struct statement st;
   struct condition co;
   char sql[CHARS(100)], function[CHARS(30)];
+  char catalog[CHARS(10)], schema[CHARS(10)], table[CHARS(10)],
+      column[CHARS(10)];
   long min, max, count, n, type, length, nullable, indicator, returned, code;
   short top;
   long long key;
@@ -274,6 +276,9 @@ int main(void) {
         co.message[co.length - 1] != ' ' && co.message[co.length] == ' ');
   CHECK(padded(co.class_origin, "ISO 9075", 10));
   CHECK(padded(co.subclass_origin, "vsql", 10));
+
+  /* 23.1 GR 4.h.i.1.A: The table that doesn't exist. */
+  CHECK(padded(co.table, "MISSING", 10));
 
   /* GR 3: invalid condition number. GET DIAGNOSTICS doesn't empty the
    * diagnostics area. */
@@ -488,6 +493,19 @@ int main(void) {
   EXPECT(open_all(sqlstate), "00000");
   EXPECT(fetch_all(sqlstate, &x), "07002");
   EXPECT(rollback_work(sqlstate), "00000");
+
+  /*
+   * 23.1 GR 4.f.ii.1.B and 4.h.i.1.A: The table that contains the violated
+   * constraint, and the table and column that doesn't exist.
+   */
+  EXPECT(create_checked(sqlstate), "00000");
+  EXPECT(insert_checked(sqlstate), "23514");
+  EXPECT(get_table(sqlstate, catalog, schema, table, column), "00000");
+  CHECK(padded(catalog, ":memory:", 10) && padded(schema, "PUBLIC", 10));
+  CHECK(padded(table, "CHECKED", 10) && padded(column, "", 10));
+  EXPECT(insert_checked_column(sqlstate), "42703");
+  EXPECT(get_table(sqlstate, catalog, schema, table, column), "00000");
+  CHECK(padded(table, "CHECKED", 10) && padded(column, "Y", 10));
 
   /*
    * An INTEGER host parameter is a long, which can be wider than an SQLINTEGER.

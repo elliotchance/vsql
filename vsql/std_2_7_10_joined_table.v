@@ -269,7 +269,7 @@ fn join_column(columns Columns, name string) !Column {
 		return sqlstate_42702(name)
 	}
 	if matching.len == 0 {
-		return sqlstate_42703(name)
+		return sqlstate_42703(Identifier{}, name)
 	}
 
 	return matching[0]

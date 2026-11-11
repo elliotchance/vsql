@@ -203,10 +203,10 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DIAG_CONSTRAINT_CATALOG         15      /* the violated constraint */
 #define SQL_DIAG_CONSTRAINT_SCHEMA          16      /* its schema */
 #define SQL_DIAG_CONSTRAINT_NAME            17      /* its name */
-#define SQL_DIAG_CATALOG_NAME               18      /* always "" */
-#define SQL_DIAG_SCHEMA_NAME                19      /* always "" */
-#define SQL_DIAG_TABLE_NAME                 20      /* always "" */
-#define SQL_DIAG_COLUMN_NAME                21      /* always "" */
+#define SQL_DIAG_CATALOG_NAME               18      /* the table's catalog */
+#define SQL_DIAG_SCHEMA_NAME                19      /* its schema */
+#define SQL_DIAG_TABLE_NAME                 20      /* the table */
+#define SQL_DIAG_COLUMN_NAME                21      /* for 42703 */
 #define SQL_DIAG_CURSOR_NAME                22      /* for 24000 */
 #define SQL_DIAG_MESSAGE_LENGTH             23      /* in characters */
 #define SQL_DIAG_MESSAGE_OCTET_LENGTH       24      /* in octets */

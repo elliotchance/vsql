@@ -396,3 +396,18 @@ DECLARE dc1 CURSOR FOR s1;
 
 PROCEDURE open_dc1 (SQLSTATE);
   OPEN dc1;
+
+-- The table (and column) of a condition.
+PROCEDURE create_checked (SQLSTATE);
+  CREATE TABLE checked (x INTEGER CONSTRAINT positive CHECK (x > 0));
+
+PROCEDURE insert_checked (SQLSTATE);
+  INSERT INTO checked (x) VALUES (0);
+
+PROCEDURE insert_checked_column (SQLSTATE);
+  INSERT INTO checked (y) VALUES (1);
+
+PROCEDURE get_table (SQLSTATE, :catalog VARCHAR(10), :schema VARCHAR(10),
+    :table VARCHAR(10), :column VARCHAR(10));
+  GET DIAGNOSTICS CONDITION 1 :catalog = CATALOG_NAME, :schema = SCHEMA_NAME,
+    :table = TABLE_NAME, :column = COLUMN_NAME;

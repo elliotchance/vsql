@@ -1306,12 +1306,12 @@
 6.33/GR/12.i.ii          container    - -
 6.33/GR/12.i.ii.1        implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.i.ii.2        container    - -
-6.33/GR/12.i.ii.2.A      missing      - - the table isn't identified (#756)
+6.33/GR/12.i.ii.2.A      implemented  libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/api_test.v
 6.33/GR/12.i.ii.2.B      n/a          - - there are no assertions
 6.33/GR/12.i.ii.2.C      n/a          - - a constraint is always a table constraint
-6.33/GR/12.i.iii         missing      - - the table isn't identified (#756)
-6.33/GR/12.i.iii.1       missing      - - the table isn't identified (#756)
-6.33/GR/12.i.iii.2       missing      - - the column isn't identified (#756)
+6.33/GR/12.i.iii         partial      libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/api_test.v only no such table (42P01), no such column (42703) and an unknown column (42601) that's qualified with a table in the FROM clause identify a table; other errors about a table (such as a duplicate table) don't
+6.33/GR/12.i.iii.1       partial      libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/api_test.v only no such table (42P01), no such column (42703) and an unknown column (42601) that's qualified with a table in the FROM clause identify a table; other errors about a table (such as a duplicate table) don't
+6.33/GR/12.i.iii.2       implemented  libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/api_test.v the column that doesn't exist, for no such column (42703) or an unknown column (42601), since there are no privileges (E081)
 6.33/GR/12.i.iv          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_positioned_cursor_test.c
 6.33/GR/12.i.v           n/a          - - there are no views
 6.33/GR/12.i.vi          n/a          - - there are no privileges (#732)

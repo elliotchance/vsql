@@ -58,7 +58,8 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 		// Otherwise, the row exists unless it was deleted (by this or a
 		// committed transaction).
 		if object.xid == 0 {
-			return sqlstate_23505('PRIMARY KEY on ${t.name}', t.constraint_identifier(t.primary_key_name))
+			return sqlstate_23505('PRIMARY KEY on ${t.name}', t.constraint_identifier(t.primary_key_name),
+				t.name)
 		}
 	}
 	if err := iter.err {
@@ -94,7 +95,7 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 		for row in rows {
 			if f.has_duplicate_entry(index, t, row)! {
 				return sqlstate_23505('UNIQUE (${constraint.columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
-					t.constraint_identifier(constraint.name))
+					t.constraint_identifier(constraint.name), t.name)
 			}
 		}
 	}

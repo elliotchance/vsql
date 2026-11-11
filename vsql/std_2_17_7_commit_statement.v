@@ -55,7 +55,8 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 fn commit_error(err IError) IError {
 	sqlstate := sqlstate_from_int(err.code())
 	return if sqlstate.starts_with('23') {
-		sqlstate_40002(err.msg(), violated_constraint(err) or { Identifier{} })
+		sqlstate_40002(err.msg(), violated_constraint(err) or { Identifier{} },
+			condition_table(err) or { Identifier{} })
 	} else if sqlstate.starts_with('40') {
 		err
 	} else {

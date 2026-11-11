@@ -269,6 +269,76 @@ UTEST_F(db, 6_33_get_diag_field_constraint) {
                "POSITIVE");
 }
 
+/* 12.i.ii.2.A: The table that contains the violated table constraint. */
+UTEST_F(db, 6_33_get_diag_field_constraint_table) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE SCHEMA s"), SQL_SUCCESS);
+  EXPECT_EQ(
+      run_sql(utest_fixture->stmt,
+              "CREATE TABLE s.qux (x INT CONSTRAINT positive CHECK (x > 0))"),
+      SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO s.qux (x) VALUES (-1)"),
+            SQL_ERROR);
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SQLSTATE),
+      "23514");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_CATALOG_NAME),
+      ":memory:");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SCHEMA_NAME),
+      "S");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_TABLE_NAME),
+      "QUX");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_COLUMN_NAME),
+      "");
+}
+
+/* 12.i.iii: The table (and column) that caused a syntax error or access rule
+ * violation. */
+UTEST_F(db, 6_33_get_diag_field_syntax_error_table) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_CATALOG_NAME),
+      ":memory:");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SCHEMA_NAME),
+      "PUBLIC");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_TABLE_NAME),
+      "BAR");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_COLUMN_NAME),
+      "");
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE qux (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO qux (y) VALUES (1)"),
+            SQL_ERROR);
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SQLSTATE),
+      "42703");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_TABLE_NAME),
+      "QUX");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_COLUMN_NAME),
+      "Y");
+
+  /* An unknown column that isn't qualified with a table. */
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT y FROM qux"), SQL_ERROR);
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SQLSTATE),
+      "42601");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_TABLE_NAME),
+      "");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_COLUMN_NAME),
+      "Y");
+}
+
 /* The CLI-specific SQLSTATEs are from the standard. */
 UTEST_F(db, 6_33_get_diag_field_origin) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, ""), SQL_ERROR);

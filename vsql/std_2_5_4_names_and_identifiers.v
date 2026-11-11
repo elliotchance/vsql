@@ -489,7 +489,8 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// A column must be in one of the tables in the FROM clause.
 	if c.tables.len > 0 && c.context.entity_name == ''
 		&& !e.is_column_of(c.conn, c.tables, c.context) {
-		return sqlstate_42601('unknown column: ${c.conn.resolve_identifier(e)}')
+		return sqlstate_42601_column('unknown column: ${c.conn.resolve_identifier(e)}',
+			e.qualifying_table(c), e.sub_entity_name)
 	}
 
 	// 2. A qualified field in a subquery table.
@@ -522,7 +523,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		if qualifier.catalog_name != c.context.catalog_name
 			|| qualifier.schema_name != c.context.schema_name
 			|| qualifier.entity_name != c.context.entity_name {
-			return sqlstate_42p01('table', qualifier.str())
+			return sqlstate_42p01_table(qualifier)
 		}
 
 		// The table of a CHECK constraint doesn't exist yet when the CREATE TABLE
@@ -652,6 +653,28 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	}
 
 	return sqlstate_42601('unknown column: ${ident}')
+}
+
+// qualifying_table is the table in the FROM clause that a qualified column
+// reference is qualified with, or empty if there isn't one.
+fn (e Identifier) qualifying_table(c &Compiler) Identifier {
+	if e.entity_name == '' {
+		return Identifier{}
+	}
+
+	qualifier := c.conn.resolve_identifier(Identifier{
+		catalog_name: e.catalog_name
+		schema_name:  e.schema_name
+		entity_name:  e.entity_name
+	})
+	for _, table in c.tables {
+		if table.name.schema_name == qualifier.schema_name
+			&& table.name.entity_name == qualifier.entity_name {
+			return table.name
+		}
+	}
+
+	return Identifier{}
 }
 
 // is_column_of is true if the column reference is a column of one of the

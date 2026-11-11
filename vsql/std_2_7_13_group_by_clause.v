@@ -99,7 +99,7 @@ fn group_column(expr Identifier, tables map[string]&Table) !Column {
 		}
 	}
 
-	return sqlstate_42703(expr.sub_entity_name) // column does not exist
+	return sqlstate_42703(Identifier{}, expr.sub_entity_name) // column does not exist
 }
 
 fn (o &GroupOperation) str() string {

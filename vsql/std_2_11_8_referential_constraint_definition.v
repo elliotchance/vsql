@@ -73,7 +73,7 @@ fn (k ForeignKey) delete_action() string {
 // reference a row of the referenced table.
 fn (k ForeignKey) violation(t Table) IError {
 	return sqlstate_23503('FOREIGN KEY (${k.columns.map(requote_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table} (${k.referenced_columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
-		t.constraint_identifier(k.name))
+		t.constraint_identifier(k.name), t.name)
 }
 
 // resolve_foreign_keys finds the table and columns that each FOREIGN KEY of a

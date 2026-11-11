@@ -171,6 +171,11 @@ struct vsql_m_condition {
   char *constraint_catalog;
   char *constraint_schema;
   char *constraint_name;
+  /* The table (and column) that the condition identifies, or NULL. */
+  char *catalog_name;
+  char *schema_name;
+  char *table_name;
+  char *column_name;
   /* The cursor that caused a cursor operation conflict, or NULL. */
   char *cursor_name;
 };
@@ -208,7 +213,7 @@ struct vsql_m_da {
  * called keeps it, and the others find it with vsql_module_agent. A module that
  * was compiled with a different version of this struct has its own.
  */
-#define VSQL_M_AGENT_VERSION 3
+#define VSQL_M_AGENT_VERSION 4
 
 struct vsql_m_agent {
   int version;
@@ -264,6 +269,10 @@ static void vsql_m_clear(void) {
     free(vsql_m_da.conditions[i].constraint_catalog);
     free(vsql_m_da.conditions[i].constraint_schema);
     free(vsql_m_da.conditions[i].constraint_name);
+    free(vsql_m_da.conditions[i].catalog_name);
+    free(vsql_m_da.conditions[i].schema_name);
+    free(vsql_m_da.conditions[i].table_name);
+    free(vsql_m_da.conditions[i].column_name);
     free(vsql_m_da.conditions[i].cursor_name);
   }
   free(vsql_m_da.conditions);
@@ -311,6 +320,10 @@ static void vsql_m_raise(const char *sqlstate, const char *message) {
   conditions[vsql_m_da.number].constraint_catalog = NULL;
   conditions[vsql_m_da.number].constraint_schema = NULL;
   conditions[vsql_m_da.number].constraint_name = NULL;
+  conditions[vsql_m_da.number].catalog_name = NULL;
+  conditions[vsql_m_da.number].schema_name = NULL;
+  conditions[vsql_m_da.number].table_name = NULL;
+  conditions[vsql_m_da.number].column_name = NULL;
   conditions[vsql_m_da.number].cursor_name = NULL;
   vsql_m_copy(&conditions[vsql_m_da.number].message, message);
   vsql_m_da.number++;
@@ -458,6 +471,14 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
                        SQL_DIAG_CONSTRAINT_SCHEMA);
       vsql_m_diag_text(&c->constraint_name, type, handle, (SQLSMALLINT)i,
                        SQL_DIAG_CONSTRAINT_NAME);
+      vsql_m_diag_text(&c->catalog_name, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_CATALOG_NAME);
+      vsql_m_diag_text(&c->schema_name, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_SCHEMA_NAME);
+      vsql_m_diag_text(&c->table_name, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_TABLE_NAME);
+      vsql_m_diag_text(&c->column_name, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_COLUMN_NAME);
       vsql_m_diag_text(&c->cursor_name, type, handle, (SQLSMALLINT)i,
                        SQL_DIAG_CURSOR_NAME);
     }

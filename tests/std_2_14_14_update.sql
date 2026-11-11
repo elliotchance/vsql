@@ -156,6 +156,15 @@ SELECT * FROM foo.bar;
 -- msg: UPDATE 1
 -- BAZ: -516.6e0
 
+-- # A column of a table in another schema can be used when no rows match.
+CREATE SCHEMA foo;
+CREATE TABLE foo.bar (baz FLOAT);
+UPDATE foo.bar SET baz = baz * 4.2e0;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- warning 02000: no data
+-- msg: UPDATE 0
+
 -- # NULL can't be set in a NOT NULL column, even when the table has no rows,
 -- # which is a bug (#1101).
 CREATE TABLE foo (baz FLOAT NOT NULL);

@@ -98,7 +98,9 @@ fn (mut b Benchmark) read_size() ! {
 }
 
 // oltp is the tpc-b-oltp suite. It reads every row of ACCOUNTS, then runs as
-// many transactions as it can in run_for.
+// many transactions as it can in run_for. A transaction that fails with a 40001
+// serialization failure (because of another connection) has been rolled back,
+// so it's counted and the next one is run, like a client would retry it.
 fn (mut b Benchmark) oltp() ! {
 	mut t := vsql.start_timer()
 
@@ -110,11 +112,23 @@ fn (mut b Benchmark) oltp() ! {
 
 	t = vsql.start_timer()
 	mut txn_count := 0
+	mut failures := 0
 	for {
-		b.run_transaction()!
-		txn_count++
-		if txn_count % 10 == 0 {
-			b.sample_memory()
+		mut committed := true
+		b.run_transaction() or {
+			if vsql.sqlstate_from_int(err.code()) != '40001' {
+				return err
+			}
+			b.conn.query('ROLLBACK') or {}
+			committed = false
+		}
+		if committed {
+			txn_count++
+			if txn_count % 10 == 0 {
+				b.sample_memory()
+			}
+		} else {
+			failures++
 		}
 
 		if t.elapsed() > b.run_for {
@@ -125,6 +139,7 @@ fn (mut b Benchmark) oltp() ! {
 	print_value('transactions', txn_count.str())
 	print_value('transactions_seconds', '${t.elapsed().seconds():.3f}')
 	print_value('transactions_per_second', '${txn_count / t.elapsed().seconds():.3f}')
+	print_value('serialization_failures', failures.str())
 }
 
 // check is the tpc-b-check suite. It checks that each table has the number of

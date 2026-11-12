@@ -5,4 +5,4 @@
 # 4.1, Introduction to the Definition Schema
 4.1                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql simulated by the views, each catalog only describes itself (implementation-defined)
 # 4.2, Introduction to the Information Schema
-4.2                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql read-only, self-describing; no privileges or short name views (#732, #739)
+4.2                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql,tests/std_11_5_77_short_name_views.sql read-only, self-describing, with the short name views of the views that exist; no privileges (#732)

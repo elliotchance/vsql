@@ -25,9 +25,31 @@ UTEST_F(db, 6_38_get_info_string) {
   EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_DBMS_VERSION, value,
                        sizeof(value), NULL),
             SQL_SUCCESS);
-  EXPECT_GE(strlen((char *)value), (size_t)10);
+  EXPECT_EQ(strlen((char *)value), (size_t)10);
   EXPECT_EQ(value[2], '.');
   EXPECT_EQ(value[5], '.');
+}
+
+/* vsql's own items (IDs from 11000) are read the same way. An item without a
+ * value is an empty string, such as the BUILD VERSION of a build that isn't a
+ * release, or 0 for a SMALLINT. */
+UTEST_F(db, 6_38_get_info_vsql) {
+  SQLCHAR value[100];
+  SQLSMALLINT version = -1;
+
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_VSQL_BUILD_VERSION, value,
+                       sizeof(value), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)value, "");
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_VSQL_BUILD_DATE, value,
+                       sizeof(value), NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(strlen((char *)value), (size_t)10);
+  /* :memory: has no file, so it has no file versions. */
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_VSQL_FILE_READ_VERSION, &version,
+                       0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(version, 0);
 }
 
 UTEST_F(db, 6_38_get_info_truncated) {

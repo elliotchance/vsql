@@ -437,9 +437,9 @@ fn sql_implementation_info
 
 .. code-block:: v
 
-   pub fn sql_implementation_info(server_name string) []ImplementationInfo
+   pub fn sql_implementation_info(server_name string, catalog &CatalogConnection) []ImplementationInfo
 
-sql_implementation_info returns the rows of INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO, ordered by their ID. server_name is the name of the SQL-server that was connected to (the path of the database file, or ":memory:"), which is the DATA SOURCE NAME and SERVER NAME.
+sql_implementation_info returns the rows of INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO, ordered by their ID. server_name is the name of the SQL-server that was connected to (the path of the database file, or ":memory:"), which is the DATA SOURCE NAME and SERVER NAME. The FILE READ VERSION and FILE WRITE VERSION are of the file of the catalog, which are NULL for ":memory:" (it has no file).
 
 fn sql_sizing
 -------------

@@ -149,7 +149,9 @@ fn (mut l IsolationLock) release() {
 fn C._commit(int) int
 
 // fsync waits for the file to be written to the disk. It must be flushed first.
-fn fsync(file os.File, path string) ! {
+// _commit() already asks the drive to write its cache, so ConnectionOptions.
+// full_fsync makes no difference.
+fn fsync(file os.File, path string, _ bool) ! {
 	if C._commit(file.fd) != 0 {
 		return sqlstate_58030('cannot fsync ${path}')
 	}

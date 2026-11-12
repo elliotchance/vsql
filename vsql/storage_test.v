@@ -134,6 +134,34 @@ fn test_page_cache_off() ! {
 	assert result.next()?.get_int('C')! == 50
 }
 
+// full_fsync uses F_FULLFSYNC on macOS. The first statement starts a new log,
+// which syncs both files, and the first connection to a file copies the log
+// into it, which syncs it again.
+fn test_full_fsync() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-sql-test-full-fsync-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(wal_path(path)) or {}
+		os.rm(session_path(path)) or {}
+		os.rm(isolation_path(path)) or {}
+	}
+	mut options := sql_test_options()
+	options.full_fsync = true
+	mut db := open_database(path, options)!
+	db.query('CREATE TABLE t (x INT)')!
+	for i in 0 .. 3 {
+		db.query('INSERT INTO t (x) VALUES (${i})')!
+	}
+	db.close()
+
+	db = open_database(path, options)!
+	defer {
+		db.close()
+	}
+	mut result := db.query('SELECT COUNT(*) AS c FROM t')!
+	assert result.next()?.get_int('C')! == 3
+}
+
 fn test_panics() ! {
 	$if windows {
 		return

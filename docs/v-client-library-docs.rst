@@ -809,6 +809,18 @@ struct ConnectionOptions
    	// transaction. Only the options that the connection is opened with are
    	// used, not the ones given to add_catalog.
    	isolation_level IsolationLevel = .serializable
+   	// full_fsync only makes a difference on macOS, where it's off by default.
+   	// A file is synced (with fsync) when a statement is committed, but on
+   	// macOS that only hands the changes to the drive, which may keep them in
+   	// its cache for a while, and may write it in a different order. If the
+   	// power fails (or the operating system stops), statements that were
+   	// committed may be lost, and the database file may even be left corrupt.
+   	// Stopping the process is always safe. full_fsync uses F_FULLFSYNC instead,
+   	// which also waits for the drive to write its cache. It is much slower
+   	// (7 to 15 times slower for "vsql bench" on a Mac). On Linux and
+   	// Windows, syncing a file already writes the cache of the drive, so
+   	// full_fsync is accepted but does nothing.
+   	full_fsync bool
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.

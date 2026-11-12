@@ -40,6 +40,11 @@ fn register_bench_command(mut cmd cli.Command) {
 		name:        'isolation'
 		description: 'Isolation level of the transactions: read-committed, repeatable-read or serializable (default serializable)'
 	})
+	bench_cmd.add_flag(cli.Flag{
+		flag:        .bool
+		name:        'full-fsync'
+		description: 'Use F_FULLFSYNC to sync the file on macOS, see ConnectionOptions.full_fsync (default false)'
+	})
 	cmd.add_command(bench_cmd)
 }
 
@@ -84,7 +89,9 @@ fn bench_command(cmd cli.Command) ! {
 		return error('-size can not be used with -suite ${suite}, which uses the size of the -file')
 	}
 
-	mut conn := vsql.open(file)!
+	mut options := vsql.default_connection_options()
+	options.full_fsync = cmd.flags.get_bool('full-fsync') or { false }
+	mut conn := vsql.open_database(file, options)!
 
 	mut benchmark := new_benchmark(conn, if size > 0 { size } else { 1 })
 	duration := cmd.flags.get_int('duration') or { 0 }

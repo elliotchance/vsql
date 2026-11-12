@@ -52,7 +52,7 @@ fn wal_path(path string) string {
 //
 // It must only be called with the database file locked exclusively, and after
 // wal_recover.
-fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! {
+fn wal_commit(mut file os.File, path string, header Header, pager &FilePager, full_fsync bool) ! {
 	mut page_numbers := pager.dirty.keys().filter(it < pager.total_pages)
 	page_numbers.sort()
 
@@ -87,14 +87,14 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 		// be found after the power fails, and they would be copied over newer
 		// pages.
 		file.flush()
-		fsync(file, path)!
+		fsync(file, path, full_fsync)!
 		salt = rand.u32()
 		tail = wal_header_size
 		checksum = salt
 		log.seek(0, .start)!
 		log.write(wal_header(salt, pager.page_size, wal_state_committed, tail, checksum))!
 		log.flush()
-		fsync(log, log_path)!
+		fsync(log, log_path, full_fsync)!
 
 		// A new file must also be synced in its directory, otherwise it may not
 		// exist after a crash.
@@ -138,7 +138,7 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 	}
 	log.write(commit_frame)!
 	log.flush()
-	fsync(log, log_path)!
+	fsync(log, log_path, full_fsync)!
 
 	// This is the point where the statement is committed, so the statement must
 	// not fail after this. If the log can't be copied into the database file,
@@ -259,9 +259,9 @@ fn wal_has_statements(path string) bool {
 
 // wal_recover copies the log into the database file if a process stopped before
 // doing it. It must only be called with the database file locked exclusively.
-fn wal_recover(mut file os.File, path string) ! {
+fn wal_recover(mut file os.File, path string, full_fsync bool) ! {
 	if wal_needs_recovery(path) {
-		wal_replay(mut file, path)!
+		wal_replay(mut file, path, full_fsync)!
 	}
 }
 
@@ -272,7 +272,7 @@ fn wal_recover(mut file os.File, path string) ! {
 // it.
 //
 // It must only be called with the database file locked exclusively.
-fn wal_replay(mut file os.File, path string) ! {
+fn wal_replay(mut file os.File, path string, full_fsync bool) ! {
 	fault_point('recover')!
 
 	log_path := wal_path(path)
@@ -288,7 +288,7 @@ fn wal_replay(mut file os.File, path string) ! {
 	if commit := wal_read(data) {
 		wal_checkpoint(mut file, path, commit.page_size, commit.pages, commit.header_bytes,
 			commit.total_pages)!
-		fsync(file, path)!
+		fsync(file, path, full_fsync)!
 	}
 
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.

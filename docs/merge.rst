@@ -14,6 +14,7 @@ Syntax
 
   <when_clause> ::=
       WHEN MATCHED [ AND <condition> ] THEN UPDATE SET <column_name> = <value> , ...
+    | WHEN MATCHED [ AND <condition> ] THEN DELETE
     | WHEN NOT MATCHED [ AND <condition> ] THEN INSERT [ ( <column_name> , ... ) ]
         [ OVERRIDING { USER | SYSTEM } VALUE ]
         VALUES ( <value> , ... )
@@ -22,9 +23,9 @@ Syntax
 query (the *source*). Each row of the source is compared with the rows of the
 target with the ``ON`` condition:
 
-- A row of the source that matches a row of the target updates it with the
-  ``WHEN MATCHED`` clause. The values can reference the columns of the source
-  and of the target.
+- A row of the source that matches a row of the target updates it (or deletes
+  it) with the ``WHEN MATCHED`` clause. The values can reference the columns of
+  the source and of the target.
 - A row of the source that doesn't match any row of the target is inserted with
   the ``WHEN NOT MATCHED`` clause. The values can only reference the columns of
   the source.
@@ -46,11 +47,11 @@ for its clause, otherwise it's an error ``21000`` (cardinality violation) and
 nothing is changed.
 
 The rules of each change, such as ``DEFAULT``, generated and identity columns,
-``OVERRIDING``, and the constraints of the table, are the same as an
-:doc:`update` or an :doc:`insert`.
+``OVERRIDING``, the constraints of the table and their referential actions, are
+the same as an :doc:`update`, a :doc:`delete` or an :doc:`insert`.
 
 The result (such as ``MERGE 3``) contains the number of rows that were updated
-(including rows that already had the new values) and inserted. If the source
+(including rows that already had the new values), deleted and inserted. If the source
 has no rows, the result is ``MERGE 0`` with the completion condition ``02000``
 (no data), see :doc:`sqlstate`.
 
@@ -92,5 +93,6 @@ see :doc:`transactions`.
 See Also
 --------
 
+- :doc:`delete`
 - :doc:`insert`
 - :doc:`update`

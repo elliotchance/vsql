@@ -53,4 +53,5 @@ See Also
 --------
 
 - :doc:`insert`
+- :doc:`merge`
 - :doc:`update`

@@ -115,6 +115,33 @@ SELECT * FROM t;
 -- ID: 1 NAME: a N: 1
 -- ID: 2 NAME: b N: 1
 
+-- # WHEN MATCHED THEN DELETE deletes the row of the target (Feature F314).
+-- # Another row can get the key of a row that's deleted, and the deleted rows
+-- # are counted.
+/* flags */
+MERGE INTO t USING (VALUES (1, 'del'), (2, 'up')) AS v (id, op) ON t.id = v.id
+WHEN MATCHED AND v.op = 'del' THEN DELETE
+WHEN MATCHED THEN UPDATE SET id = 1;
+SELECT * FROM t;
+-- flags: F312, F313, F314, F591, F641, F661
+-- msg: MERGE 2
+-- flags:
+-- ID: 1 NAME: b N: 20
+
+-- # The referential actions of a deleted row are applied, like a DELETE.
+CREATE TABLE r (id INT PRIMARY KEY, p INT REFERENCES t (id) ON DELETE CASCADE);
+INSERT INTO r (id, p) VALUES (10, 1);
+INSERT INTO r (id, p) VALUES (20, 2);
+MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN DELETE;
+SELECT * FROM t;
+SELECT * FROM r;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: MERGE 1
+-- ID: 1 NAME: a N: 10
+-- ID: 10 P: 1
+
 -- # An empty source is no data (General Rules, 7).
 MERGE INTO t USING (SELECT * FROM s WHERE id > 99) AS v ON t.id = v.id
 WHEN MATCHED THEN UPDATE SET n = 0;

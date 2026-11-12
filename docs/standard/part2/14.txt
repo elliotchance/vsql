@@ -366,7 +366,7 @@
 14.12/SR/1               definition   - -
 14.12/SR/2               n/a          - - every table is a base table, and there are no views (F031-02)
 14.12/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
-14.12/SR/4               n/a          - - MERGE with a DELETE branch (F314)
+14.12/SR/4               n/a          - - every table is a base table, and there are no views (F031-02)
 14.12/SR/5               n/a          - - triggers (T211)
 14.12/SR/6               n/a          - - user-defined types (S023)
 14.12/SR/7               n/a          - - views (F031-02)
@@ -443,15 +443,15 @@
 14.12/GR/6.a.i.5.C.I.2   implemented  vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql
 14.12/GR/6.a.i.5.C.II    n/a          - - views (F031-02)
 14.12/GR/6.a.i.6         definition   - -
-14.12/GR/6.a.i.7         n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.A       n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B       n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B.I     n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B.I.1   n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B.I.1.a n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B.I.1.b n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B.I.2   n/a          - - MERGE with a DELETE branch (F314)
-14.12/GR/6.a.i.7.B.II    n/a          - - MERGE with a DELETE branch (F314)
+14.12/GR/6.a.i.7         implemented  vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql
+14.12/GR/6.a.i.7.A       implemented  vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql
+14.12/GR/6.a.i.7.B       container    - -
+14.12/GR/6.a.i.7.B.I     implemented  vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql
+14.12/GR/6.a.i.7.B.I.1   container    - -
+14.12/GR/6.a.i.7.B.I.1.a n/a          - - ONLY (S111)
+14.12/GR/6.a.i.7.B.I.1.b implemented  vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql
+14.12/GR/6.a.i.7.B.I.2   implemented  vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql
+14.12/GR/6.a.i.7.B.II    n/a          - - views (F031-02)
 14.12/GR/6.a.ii          container    - -
 14.12/GR/6.a.ii.1        unclear      vsql/std_2_14_12_merge_statement.v tests/std_2_14_12_merge.sql S1 has no rows when the target has none, which would ignore the search condition; vsql evaluates it for every row, like other databases
 14.12/GR/6.a.ii.2        definition   - -
@@ -490,7 +490,7 @@
 14.12/CR/4               implemented  vsql/std_2_14_12_merge_statement.y tests/std_2_14_12_merge.sql
 14.12/CR/5               implemented  vsql/std_2_14_12_merge_statement.y tests/std_2_14_12_merge.sql
 14.12/CR/6               implemented  vsql/std_2_14_12_merge_statement.y tests/std_2_14_12_merge.sql
-14.12/CR/7               n/a          - - MERGE with a DELETE branch (F314)
+14.12/CR/7               implemented  vsql/std_2_14_12_merge_statement.y tests/std_2_14_12_merge.sql
 # 14.13, <update statement: positioned>
 14.13                    implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors_sort_keys.sql
 14.13/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql

@@ -758,7 +758,7 @@ Optional Features
    * - ✅ **F313**
      - **Enhanced MERGE statement**
 
-   * - ❌ **F314**
+   * - ✅ **F314**
      - **MERGE statement with DELETE branch**
 
    * - ❌ **F321**

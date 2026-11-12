@@ -16,11 +16,14 @@ struct MergeStatement {
 }
 
 // A MergeWhenClause is a <merge when matched clause> (when matched is true),
-// which updates the target row with set, or a <merge when not matched clause>,
+// which updates the target row with set (or deletes it), or a <merge when not matched clause>,
 // which inserts a row of values into columns (all of the columns when it's
 // empty), with an <override clause> like an INSERT (see InsertStatement).
 struct MergeWhenClause {
 	matched bool
+	// delete is true for a <merge delete specification>, which deletes the
+	// target row instead of updating it.
+	delete bool
 	// condition is the <search condition> after AND, if any.
 	condition  ?BooleanValueExpression
 	set        []SetClause
@@ -299,20 +302,39 @@ fn (stmt MergeStatement) execute(mut conn Connection, params map[string]Value, e
 			return sqlstate_21000('more than one row of the source matches the same row of ${table.name}')
 		}
 		subject_rows << subject.row
-		change, did_modify := ctx.update(mut conn, subject.row, subject.clause, stmt.clauses[subject.clause])!
+		clause := stmt.clauses[subject.clause]
+		if clause.delete {
+			changes << RowChange{
+				old:       ctx.target_row(subject.row)
+				is_delete: true
+			}
+			continue
+		}
+		change, did_modify := ctx.update(mut conn, subject.row, subject.clause, clause)!
 		if did_modify {
 			changes << change
 		}
 	}
 
-	// Each subject row is replaced by its new row, like an UPDATE (a row that
-	// gets a new key is deleted first, and added back once the other rows have
-	// been replaced), and then the new rows are inserted. The constraints are
-	// checked once every row has been written.
+	// The subject rows of a DELETE are deleted first, so another row can get
+	// the key of a row that's deleted. Then each other subject row is replaced
+	// by its new row, like an UPDATE (a row that gets a new key is deleted
+	// first, and added back once the other rows have been replaced), and then
+	// the new rows are inserted. The constraints are checked once every row
+	// has been written.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.5, 6.a.ii.8
+	// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.5, 6.a.i.7 and 6.a.ii.8
+	for change in changes {
+		if change.is_delete {
+			mut before := change.old
+			catalog.storage.delete_row(table_name.storage_id(), mut before)!
+		}
+	}
 	mut moved := []Row{}
 	for change in changes {
+		if change.is_delete {
+			continue
+		}
 		mut before := change.old
 		mut after := change.new
 		if before.object_key(table)! != after.object_key(table)! {
@@ -340,10 +362,24 @@ fn (stmt MergeStatement) execute(mut conn Connection, params map[string]Value, e
 	}
 
 	// The count is every row that was updated (even if its values didn't
-	// change) or inserted.
+	// change), deleted or inserted.
 	//
 	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.f.iii
 	return new_result_msg('MERGE ${subject_rows.len + inserts.len}', elapsed_parse, t.elapsed())
+}
+
+// target_row is the row of the target that row (a row of the source and the
+// row of the target that it matched) matched, as it's stored.
+fn (ctx MergeContext) target_row(row Row) Row {
+	mut target := Row{
+		id:  row.id
+		tid: row.tid
+	}
+	for column in ctx.table.columns {
+		target.data.set(column.name.sub_entity_name, row.data.value('${ctx.target_id}.${column.name.sub_entity_name}'))
+	}
+
+	return target
 }
 
 // update returns the target row of row (a row of the source and the target
@@ -354,13 +390,7 @@ fn (stmt MergeStatement) execute(mut conn Connection, params map[string]Value, e
 // ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.1.B.III
 // ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, General Rules, 2.b
 fn (mut ctx MergeContext) update(mut conn Connection, row Row, n int, clause MergeWhenClause) !(RowChange, bool) {
-	mut before := Row{
-		id:  row.id
-		tid: row.tid
-	}
-	for column in ctx.table.columns {
-		before.data.set(column.name.sub_entity_name, row.data.value('${ctx.target_id}.${column.name.sub_entity_name}'))
-	}
+	before := ctx.target_row(row)
 	mut after := Row{
 		id:   row.id
 		tid:  row.tid

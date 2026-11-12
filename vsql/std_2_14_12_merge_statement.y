@@ -39,8 +39,8 @@ merge_when_clause:
 //
 // ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, Conformance Rules, 6
 merge_when_matched_clause:
-  WHEN MATCHED THEN merge_update_specification { $$.v = $4.v }
-| WHEN MATCHED AND search_condition THEN merge_update_specification {
+  WHEN MATCHED THEN merge_update_or_delete_specification { $$.v = $4.v }
+| WHEN MATCHED AND search_condition THEN merge_update_or_delete_specification {
     flag(mut yylex, 'F313')
     $$.v = yy_box(MergeWhenClause{
       ...$6.v as MergeWhenClause
@@ -55,6 +55,22 @@ merge_when_not_matched_clause:
     $$.v = yy_box(MergeWhenClause{
       ...$7.v as MergeWhenClause
       condition: $5.v as BooleanValueExpression
+    })
+  }
+
+merge_update_or_delete_specification:
+  merge_update_specification { $$.v = $1.v }
+| merge_delete_specification { $$.v = $1.v }
+
+// DELETE needs Feature F314.
+//
+// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, Conformance Rules, 7
+merge_delete_specification:
+  DELETE {
+    flag(mut yylex, 'F314')
+    $$.v = yy_box(MergeWhenClause{
+      matched: true
+      delete:  true
     })
   }
 

@@ -41,6 +41,11 @@ mut:
 	// mutex is locked while a routine is invoked with a handle of this
 	// SQL-environment (see threads.v).
 	mutex &sync.Mutex = sync.new_mutex()
+	// running_type and running_handle are the handle of the routine that holds
+	// mutex, or 0 when there isn't one. Cancel uses them to find a routine
+	// that's running on a statement (see cancel_running).
+	running_type   i16
+	running_handle i64
 }
 
 // An allocated SQL-connection. conn is the established SQL-connection, if any.

@@ -1155,6 +1155,17 @@ An object wasn't in a state that allowed the statement to run.
 for other transactions with changes to the table to finish (see
 :doc:`create-index`). Nothing was changed, so it can be tried again.
 
+Class ``57``: Operator Intervention
+-----------------------------------
+
+``57014`` query canceled
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The statement was stopped by ``Connection.cancel()`` from another thread. Like
+any other exception, the statement has no effect, and the transaction it's in
+continues. libvsql raises ``HY008`` (operation canceled) instead, see
+``SQLCancel``.
+
 Class ``58``: System Error
 --------------------------
 

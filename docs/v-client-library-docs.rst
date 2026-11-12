@@ -737,6 +737,10 @@ struct Connection
    	// default_isolation_level is ConnectionOptions.isolation_level, see
    	// enduring_characteristics.
    	default_isolation_level IsolationLevel = .serializable
+   	// cancel_state is whether a statement is executing (statement_running) and
+   	// whether it's been asked to stop (statement_canceled), see cancel. It's
+   	// changed by other threads, so it's only used atomically.
+   	cancel_state &stdatomic.AtomicVal[u32] = stdatomic.new_atomic[u32](statement_idle)
    pub mut:
    	// condition_area_limit is the most warnings that are kept during the current
    	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see

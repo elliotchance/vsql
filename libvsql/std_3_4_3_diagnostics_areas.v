@@ -219,16 +219,26 @@ fn (mut d Diagnostics) error(err IError) i16 {
 		return d.no_data()
 	}
 
-	sqlstate := if err is CLIError {
+	mut sqlstate := if err is CLIError {
 		err.sqlstate
 	} else if err.code() == 0 {
 		'HY000'
 	} else {
 		vsql.sqlstate_from_int(err.code())
 	}
+	mut msg := err.msg()
+
+	// A statement can only be canceled by Cancel, which raises a CLI-specific
+	// condition: operation canceled for the routine that was executing it.
+	//
+	// ISO/IEC 9075-3:2003(E), 6.7, Cancel, General Rules, 2.a.vii
+	if sqlstate == '57014' {
+		sqlstate = 'HY008'
+		msg = 'operation canceled'
+	}
 	d.add(DiagnosticRecord{
 		sqlstate:   sqlstate
-		msg:        err.msg()
+		msg:        msg
 		constraint: vsql.violated_constraint(err) or { vsql.Identifier{} }
 		table:      vsql.condition_table(err) or { vsql.Identifier{} }
 		cursor:     vsql.invalid_cursor(err) or { '' }

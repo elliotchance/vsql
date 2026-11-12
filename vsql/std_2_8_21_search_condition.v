@@ -52,6 +52,7 @@ fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 // eval_as_bool compiles e on the first row (compiled is empty) and keeps it in
 // compiled for the rows after it.
 fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value, tables map[string]&Table, mut compiled []CompileResult) !bool {
+	conn.check_canceled()!
 	if compiled.len == 0 {
 		mut c := Compiler{
 			conn:   conn

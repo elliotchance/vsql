@@ -4,12 +4,21 @@ module main
 //
 // Attempt to cancel execution of a CLI routine.
 //
-// libvsql isn't thread safe, so another CLI routine can't be operating on the
-// statement at the same time (- 2.a). Cancel stops a statement that's waiting
-// for the values of its deferred parameters (- 2.b).
+// Cancel stops a routine that's running on the statement on another thread
+// (- 2.a), or a statement that's waiting for the values of its deferred
+// parameters (- 2.b).
 
 @[export: 'SQLCancel']
 fn sql_cancel(statement_handle SQLInteger) i16 {
+	// - 2.a. A routine RN is running on S. The SQL-server (vsql) always accepts
+	// the request (- 2.a.iv to 2.a.vi), which cancels the SQL-statement that
+	// RN is executing, if any. RN then raises HY008 operation canceled (see
+	// Diagnostics.error) (- 2.a.vii). This doesn't wait for RN, and doesn't
+	// change the diagnostics area of S, which belongs to RN.
+	if cancel_running(i64(statement_handle)) {
+		return sql_success
+	}
+
 	entry := enter(sql_handle_stmt, i64(statement_handle))
 	defer {
 		entry.leave()
@@ -24,8 +33,6 @@ fn sql_cancel(statement_handle SQLInteger) i16 {
 	// diagnostics area is emptied, and any deferred parameter number and
 	// statement source are removed.
 	//
-	// Routines on an SQL-environment are run one at a time, so there's never
-	// a routine running on S at the same time to cancel (General Rules, 2.a).
 	stmt.diag.clear()
 	stmt.cancel_deferred()
 

@@ -18,6 +18,10 @@ import vsql
 // A routine that's called by another routine (such as SQLAllocEnv calling
 // SQLAllocHandle) already holds the mutexes, so it doesn't lock them again.
 //
+// Cancel is the only routine that doesn't wait for the mutex of the
+// SQL-environment, since it has to stop a routine that's running on another
+// thread (see cancel_running).
+//
 // The GC must know about every thread that has V memory on its stack, so a
 // thread that isn't registered with the GC is registered for the duration of
 // the routine.
@@ -62,6 +66,10 @@ fn enter(handle_type i16, h i64) Entry {
 	}
 	registry.lock()
 	registry_owner = sync.thread_id()
+	if env != unsafe { nil } {
+		env.running_type = handle_type
+		env.running_handle = h
+	}
 
 	return Entry{
 		env:        if env == unsafe { nil } { none } else { env }
@@ -103,6 +111,10 @@ fn error_handle(environment_handle SQLInteger, connection_handle SQLInteger, sta
 
 fn (e Entry) leave() {
 	if e.outer {
+		if mut env := e.env {
+			env.running_type = 0
+			env.running_handle = 0
+		}
 		registry_owner = 0
 		registry.unlock()
 		if env := e.env {
@@ -110,6 +122,38 @@ fn (e Entry) leave() {
 		}
 	}
 	unregister_thread(e.registered)
+}
+
+// cancel_running asks the SQL-statement that's being executed by a routine on
+// statement_handle (on another thread) to stop, and returns true if a routine
+// is running on it. It only locks the registry, which the routine doesn't hold
+// while it waits for the database (see release). So the routine has either not
+// started executing the statement, is executing it, or has finished it. Only a
+// statement that's executing is canceled (see vsql.Connection.cancel).
+fn cancel_running(statement_handle i64) bool {
+	registered := register_thread()
+	defer {
+		unregister_thread(registered)
+	}
+	if registry_owner == sync.thread_id() {
+		return false
+	}
+
+	registry.lock()
+	defer {
+		registry.unlock()
+	}
+	stmt := stmts[statement_handle] or { return false }
+	dbc := dbcs[stmt.dbc] or { return false }
+	env := envs[dbc.env] or { return false }
+	if env.running_type != sql_handle_stmt || env.running_handle != statement_handle {
+		return false
+	}
+	if conn := dbc.conn {
+		conn.cancel()
+	}
+
+	return true
 }
 
 // register_thread registers the current thread with the GC, if it isn't

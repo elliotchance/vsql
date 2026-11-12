@@ -76,6 +76,16 @@ mut:
 // Execute the prepared statement.
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	mut c := p.c
+
+	// The outermost statement can be canceled (see Connection.cancel) until it
+	// ends. A statement that's run by another one is part of it.
+	mut cancel_state := c.cancel_state
+	outermost := cancel_state.compare_and_swap(statement_idle, statement_running)
+	defer {
+		if outermost {
+			cancel_state.store(statement_idle)
+		}
+	}
 	// A statement run by another statement (or from a thread the lifetime
 	// doesn't belong to) keeps its closures.
 	if c.frame_active || isnil(c.frame_work) {

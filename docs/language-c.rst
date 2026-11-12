@@ -53,6 +53,12 @@ environment is used, and a routine that waits for a lock doesn't stop the other
 environments from committing. Use an environment for each thread (or each
 connection) that's used at the same time as the others.
 
+``SQLCancel`` is the exception: it doesn't wait for the routine that's running
+on the statement. If that routine is executing a statement (such as with
+``SQLExecDirect``), the statement stops soon after, and the routine returns
+``SQL_ERROR`` with ``HY008`` (operation canceled). The statement has no effect,
+and the transaction it's in continues.
+
 Connections to the same file share a lock, so they can be used at the same
 time.
 

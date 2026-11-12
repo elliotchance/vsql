@@ -161,14 +161,14 @@
 6.7                      implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
 6.7/GR/1                 definition   - -
 6.7/GR/2                 container    - -
-6.7/GR/2.a               unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.i             unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.ii            unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.iii           unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.iv            unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.v             unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.vi            unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
-6.7/GR/2.a.vii           unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a               implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
+6.7/GR/2.a.i             definition   - -
+6.7/GR/2.a.ii            definition   - -
+6.7/GR/2.a.iii           definition   - -
+6.7/GR/2.a.iv            implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
+6.7/GR/2.a.v             n/a          libvsql/std_3_6_7_cancel.v - vsql always accepts the request
+6.7/GR/2.a.vi            implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
+6.7/GR/2.a.vii           implemented  libvsql/std_3_6_7_cancel.v,libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_7_cancel_test.c
 6.7/GR/2.b               implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c
 6.7/GR/2.b.i             implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c
 6.7/GR/2.b.ii            implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c

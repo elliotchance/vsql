@@ -44,7 +44,8 @@ def run(ui):
 
 
 def test_guess(ui):
-    # The type is guessed from the value, as it's typed.
+    # The type is guessed from the value, as it's typed. The "?" gets its type
+    # from the SQL, and the value is cast to it.
     ui.new_tab()
     ui.editor.fill('VALUES ?')
     expect(ui.param_type(1).locator('option:checked')).to_have_text('Auto (Text)')
@@ -54,7 +55,8 @@ def test_guess(ui):
             ('true', 'Boolean', 'BOOLEAN', 'TRUE'), ('2020-01-02', 'Date', 'DATE', '2020-01-02'),
             ('2020-01-02 03:04:05', 'Timestamp', 'TIMESTAMP', '2020-01-02T03:04:05'),
             ('03:04:05', 'Time', 'TIME', '03:04:05')]:
-        ui.editor.fill('VALUES ?')
+        cast = {'NUMERIC': 'NUMERIC(10, 1)', 'CHARACTER VARYING': 'VARCHAR(10)'}.get(type_name, type_name)
+        ui.editor.fill(f'VALUES CAST(? AS {cast})')
         ui.param(1).fill(value)
         expect(ui.param_type(1).locator('option:checked')).to_have_text(f'Auto ({name})')
         run(ui)
@@ -67,7 +69,7 @@ def test_choose_type(ui, db_file):
     # A type that's chosen stays when the value changes, and is restored. It can
     # be chosen before there's a value.
     ui.new_tab()
-    ui.editor.fill('VALUES ?')
+    ui.editor.fill('VALUES CAST(? AS VARCHAR(10))')
     ui.param_type(1).select_option('Text')
     ui.param(1).fill('false')
     expect(ui.param_type(1)).to_have_value('text')
@@ -77,11 +79,13 @@ def test_choose_type(ui, db_file):
     expect(ui.param_type(1)).to_have_value('text')
     assert '"param_types":["text"]' in cli(db_file, 'SELECT payload FROM vsql_app.tabs;')
 
-    # Auto goes back to guessing.
+    # Auto goes back to guessing. The value is a BOOLEAN, which is cast to the
+    # type of the "?".
     ui.param_type(1).select_option(index=0)
     expect(ui.param_type(1).locator('option:checked')).to_have_text('Auto (Boolean)')
     run(ui)
-    expect(ui.headers).to_have_text(re.compile('BOOLEAN'))
+    expect(ui.headers).to_have_text(re.compile('CHARACTER VARYING'))
+    expect(ui.cells.first).to_have_text('FALSE')
     assert '"param_types":["auto:boolean"]' in cli(db_file, 'SELECT payload FROM vsql_app.tabs;')
 
     # Text can be empty.
@@ -95,6 +99,8 @@ def test_choose_type(ui, db_file):
     ui.param(1).fill('abc')
     for name, type_name, shown in [('TRUE', 'BOOLEAN', 'TRUE'), ('FALSE', 'BOOLEAN', 'FALSE'),
                                    ('UNKNOWN', 'BOOLEAN', 'UNKNOWN'), ('NULL', 'CHARACTER VARYING', 'NULL')]:
+        cast = 'VARCHAR(10)' if type_name == 'CHARACTER VARYING' else type_name
+        ui.editor.fill(f'VALUES CAST(? AS {cast})')
         ui.param_type(1).select_option(name)
         expect(ui.param(1)).to_be_hidden()
         run(ui)
@@ -112,7 +118,7 @@ def test_choose_type(ui, db_file):
 def test_hidden_keeps_numbers(ui):
     # A "?" without an input doesn't change the number of the others.
     ui.new_tab()
-    ui.editor.fill('VALUES ROW(?, ?)')
+    ui.editor.fill('VALUES ROW(CAST(? AS INTEGER), CAST(? AS INTEGER))')
     ui.param_type(1).select_option('NULL')
     ui.param(2).fill('5')
     ui.param(2).press('Enter')
@@ -129,7 +135,7 @@ def test_type_before_input(ui):
 def test_wrong_type(ui):
     # A value that isn't its type is an error.
     ui.new_tab()
-    ui.editor.fill('VALUES ?')
+    ui.editor.fill('VALUES CAST(? AS INTEGER)')
     ui.param_type(1).select_option('Number')
     ui.param(1).fill('abc')
     run(ui)
@@ -152,7 +158,7 @@ def test_typed_columns(ui, db_file):
 
 def test_missing_value(ui):
     ui.new_tab()
-    ui.editor.fill('VALUES ?, ?')
+    ui.editor.fill('VALUES CAST(? AS INTEGER), CAST(? AS INTEGER)')
     ui.param(1).fill('1')
     run(ui)
     expect(ui.error).to_have_text('?2: no value')
@@ -162,7 +168,7 @@ def test_missing_value(ui):
 def test_multiple_statements(ui):
     # The "?"s are numbered through all of the statements.
     ui.new_tab()
-    ui.editor.fill('VALUES ?; VALUES ?')
+    ui.editor.fill('VALUES CAST(? AS INTEGER); VALUES CAST(? AS INTEGER)')
     ui.param(1).fill('1')
     ui.param(2).fill('2')
     ui.param(2).press('Enter')

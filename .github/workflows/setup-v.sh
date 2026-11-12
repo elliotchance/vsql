@@ -61,7 +61,13 @@ for vc in $(git -C "$dir/vc" rev-list --max-count=$tries "$first"); do
       if [ "$vc" != "$first" ]; then
         echo "::warning::V from vc $first doesn't build here, so this job uses V $v (vc $vc)."
       fi
-      echo "$dir" >> "$GITHUB_PATH"
+      # On Windows, the PATH needs C:\... rather than Git Bash's /c/...,
+      # since make runs simple commands (such as "v fmt") without a shell.
+      if [ "$RUNNER_OS" = Windows ]; then
+        cygpath -w "$dir" >> "$GITHUB_PATH"
+      else
+        echo "$dir" >> "$GITHUB_PATH"
+      fi
       exit 0
     fi
   fi

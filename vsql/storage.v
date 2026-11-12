@@ -24,8 +24,6 @@ mut:
 	// cache_size is the number of pages the pager of each operation keeps in
 	// memory, see ConnectionOptions.cache_size.
 	cache_size int
-	// full_fsync is ConnectionOptions.full_fsync.
-	full_fsync bool
 	// btree is replaced for each operation (because it needs a new pager for
 	// each operation).
 	btree Btree
@@ -33,8 +31,15 @@ mut:
 	// operations (including read and writing rows). All tables must be loaded
 	// when the database is opened.
 	tables map[string]Table
-	// file is opened, flushed and closed with each operation against the file.
-	file os.File
+	// file is opened by the first statement and stays open (but is only locked
+	// during each statement) until the connection is closed, because opening
+	// and closing it takes longer than the statement. It's unbuffered, so
+	// nothing read before the lock is used. file_identity is used to open it
+	// again if the file at the path is replaced, see lock_file.
+	file          os.File
+	file_identity FileIdentity
+	// log is the write-ahead log, which also stays open.
+	log WalLog
 	// data_lock is held while file is open. See DataFileLock.
 	data_lock DataFileLock
 	// See TransactionState for docs.
@@ -215,7 +220,7 @@ fn (mut f Storage) prepare_commit(path string) ! {
 	}
 
 	f.header.root_page = f.btree.pager.root_page()
-	f.wal_prepared = wal_prepare(mut f.file, path, f.header, f.file_pager, f.full_fsync) or {
+	f.wal_prepared = wal_prepare(mut f.file, path, mut f.log, f.header, f.file_pager) or {
 		return io_error(err)
 	}
 }
@@ -244,12 +249,9 @@ fn (mut f Storage) finish_commit(path string) ! {
 fn (mut f Storage) discard_statement(path string) ! {
 	sequence_values := f.sequence_values.clone()
 
-	// The frames already in the log are ignored without a commit frame.
-	if prepared := f.wal_prepared {
-		mut log := prepared.log
-		log.close()
-		f.wal_prepared = none
-	}
+	// The frames already in the log are ignored without a commit frame, and
+	// the log stays open for the next statement.
+	f.wal_prepared = none
 
 	f.header = f.snapshot.header
 	if f.snapshot.schema_saved {
@@ -288,11 +290,24 @@ fn new_storage(btree Btree) Storage {
 }
 
 // open_file must be called before the file is locked, since the lock is placed
-// on the file that is opened.
+// on the file that is opened. It does nothing if the file is already open.
 fn (mut f Storage) open_file(path string) ! {
 	fault_point('open')!
+	if f.file.is_opened {
+		return
+	}
+
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.
 	f.file = os.open_file(path, 'rb+') or { return sqlstate_58030('unable to open ${path}: ${err}') }
+	f.file.set_unbuffered()
+	f.file_identity = open_file_identity(f.file)
+}
+
+// file_replaced returns true if the open file is no longer the file at path.
+fn (f Storage) file_replaced(path string) bool {
+	identity := path_file_identity(path) or { return true }
+
+	return identity != f.file_identity
 }
 
 // open must be called after open_file and the file being locked. exclusive
@@ -453,8 +468,11 @@ fn (mut f Storage) schema_changed() ! {
 	f.header.schema_version++
 }
 
-fn (mut f Storage) close_file() {
+// close_files closes the database file and the log, when the connection is
+// closed, or when the file is replaced.
+fn (mut f Storage) close_files() {
 	f.file.close()
+	f.log.file.close()
 }
 
 // table returns the definition of a table, which the caller has already found

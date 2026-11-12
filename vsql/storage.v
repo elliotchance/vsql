@@ -98,6 +98,9 @@ mut:
 	// commit_locked is true when the current statement has checked that it can
 	// commit, see lock_commit.
 	commit_locked bool
+	// wal_prepared is the current statement once it has been added to the
+	// write-ahead log, but not committed yet, see prepare_commit.
+	wal_prepared ?WalPrepared
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
@@ -187,8 +190,28 @@ fn (mut f Storage) transaction_page_numbers() ![]int {
 }
 
 // commit_statement keeps the changes made by the current statement. For a file,
-// they are written through the write-ahead log, see commit.
+// they are written through the write-ahead log, see wal_prepare and wal_finish.
 fn (mut f Storage) commit_statement(path string) ! {
+	f.prepare_commit(path)!
+	f.finish_commit(path)!
+}
+
+// prepare_commit is the first half of commit_statement, which does everything
+// that's likely to fail without committing anything, see wal_prepare. It must
+// be followed by finish_commit, or by discard_statement to give up.
+fn (mut f Storage) prepare_commit(path string) ! {
+	if path == ':memory:' {
+		return
+	}
+
+	f.header.root_page = f.btree.pager.root_page()
+	f.wal_prepared = wal_prepare(mut f.file, path, f.header, f.file_pager, f.full_fsync) or {
+		return io_error(err)
+	}
+}
+
+// finish_commit is the second half of commit_statement, after prepare_commit.
+fn (mut f Storage) finish_commit(path string) ! {
 	f.snapshot.in_statement = false
 	if path == ':memory:' {
 		mut pager := f.btree.pager
@@ -199,7 +222,9 @@ fn (mut f Storage) commit_statement(path string) ! {
 		return
 	}
 
-	f.commit(path)!
+	mut prepared := f.wal_prepared or { WalPrepared{} }
+	f.wal_prepared = none
+	wal_finish(mut f.file, path, mut prepared) or { return io_error(err) }
 }
 
 // discard_statement forgets the changes made by the current statement, because
@@ -208,6 +233,13 @@ fn (mut f Storage) commit_statement(path string) ! {
 // SQL-transactions" (ISO/IEC 9075-2:2016(E), 4.27.2).
 fn (mut f Storage) discard_statement(path string) ! {
 	sequence_values := f.sequence_values.clone()
+
+	// The frames already in the log are ignored without a commit frame.
+	if prepared := f.wal_prepared {
+		mut log := prepared.log
+		log.close()
+		f.wal_prepared = none
+	}
 
 	f.header = f.snapshot.header
 	if f.snapshot.schema_saved {
@@ -394,15 +426,6 @@ fn (mut f Storage) schema_changed() {
 	// are exclusive so the version (and the header itself) we already have can
 	// be incremented.
 	f.header.schema_version++
-}
-
-// commit must be called before a file that was locked exclusively is unlocked
-// and closed. The pages changed by the statement and the header are written to
-// the file through the write-ahead log, see wal_commit.
-fn (mut f Storage) commit(path string) ! {
-	f.header.root_page = f.btree.pager.root_page()
-
-	wal_commit(mut f.file, path, f.header, f.file_pager, f.full_fsync) or { return io_error(err) }
 }
 
 fn (mut f Storage) close_file() {

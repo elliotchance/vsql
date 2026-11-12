@@ -335,7 +335,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 
 	if in_transaction {
 		catalog.start_transaction()!
-		catalog.finish_write(true)!
+		conn.finish_write(true)!
 	}
 }
 
@@ -494,12 +494,40 @@ fn (mut conn CatalogConnection) release_write_connection() {
 // write connection, the changes it made are kept if it succeeded, or discarded
 // if it failed, and the file is unlocked.
 fn (mut conn Connection) finish_write(success bool) ! {
-	mut first_err := ?IError(none)
+	// The catalogs in files come first, see commit_catalogs.
+	mut catalogs := []&CatalogConnection{}
+	mut memory_catalogs := []&CatalogConnection{}
 	for _, mut catalog in conn.catalogs {
-		catalog.finish_write(success) or {
-			if first_err == none {
-				first_err = err
+		if catalog.write_pending {
+			catalog.write_pending = false
+			if catalog.path == ':memory:' {
+				memory_catalogs << catalog
+			} else {
+				catalogs << catalog
 			}
+		}
+	}
+	catalogs << memory_catalogs
+
+	mut first_err := ?IError(none)
+	if success {
+		commit_catalogs(mut catalogs) or { first_err = err }
+	} else {
+		for mut catalog in catalogs {
+			catalog.storage.discard_statement(catalog.path) or {
+				if first_err == none {
+					first_err = err
+				}
+			}
+		}
+	}
+
+	for mut catalog in catalogs {
+		if catalog.path != ':memory:' {
+			flock_unlock_exclusive(mut catalog.storage.data_lock, catalog.storage.file,
+				catalog.path)
+			catalog.storage.close_file()
+			catalog.options.mutex.unlock()
 		}
 	}
 
@@ -508,29 +536,48 @@ fn (mut conn Connection) finish_write(success bool) ! {
 	}
 }
 
-fn (mut conn CatalogConnection) finish_write(success bool) ! {
-	if !conn.write_pending {
-		return
-	}
-	conn.write_pending = false
-
+// commit_catalogs keeps the changes of a statement in every catalog that it
+// changed, or none of them if it can. This matters for a COMMIT, which must
+// cancel every change of the SQL-transaction if it can't complete (ISO/IEC
+// 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.b).
+//
+// Each catalog in a file has its own write-ahead log, so each is committed
+// separately. To get as close as possible to one commit, everything that's
+// likely to fail (writing the pages to each log) is done for every catalog
+// first, see wal_prepare. Only then is each one committed by adding its commit
+// frame, which is a small write and a sync. A catalog in memory can't fail to
+// commit, so they're last (catalogs must have the files first).
+//
+// That still leaves a gap, which can only be closed by a commit protocol across
+// the logs (and a change to the file format): if adding the commit frame to one
+// log fails, or the process stops, after another catalog has been committed,
+// then that catalog keeps its changes. The rest are discarded (or rolled back
+// by the next connection, when the process stopped).
+fn commit_catalogs(mut catalogs []&CatalogConnection) ! {
 	mut commit_err := ?IError(none)
-	if success {
-		conn.storage.commit_statement(conn.path) or {
-			conn.storage.discard_statement(conn.path) or {}
+	for mut catalog in catalogs {
+		catalog.storage.prepare_commit(catalog.path) or {
 			commit_err = err
+			break
 		}
-	} else {
-		conn.storage.discard_statement(conn.path) or { commit_err = err }
 	}
 
-	if conn.path != ':memory:' {
-		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
-		conn.storage.close_file()
-		conn.options.mutex.unlock()
+	mut committed := 0
+	if commit_err == none {
+		for mut catalog in catalogs {
+			catalog.storage.finish_commit(catalog.path) or {
+				commit_err = err
+				break
+			}
+			committed++
+		}
 	}
 
 	if err := commit_err {
+		for mut catalog in catalogs[committed..] {
+			catalog.storage.discard_statement(catalog.path) or {}
+		}
+
 		return err
 	}
 }

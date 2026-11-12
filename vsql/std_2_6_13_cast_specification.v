@@ -125,12 +125,15 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 		return cast_boolean_to_character(mut conn, value, target)!
 	}
 
-	mut result := cast(mut conn, 'for CAST', value, target)!
+	result := cast(mut conn, 'for CAST', value, target)!
 
 	// The declared type of a CAST is the target type (Syntax Rule 2), even if
 	// the value is shorter.
 	if target.typ.is_string() {
-		result.typ = target
+		return Value{
+			...result
+			typ: target
+		}
 	}
 
 	return result

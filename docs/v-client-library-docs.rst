@@ -960,34 +960,6 @@ struct IndexColumn
 
 An IndexColumn is a column of an Index.
 
-struct PageObject
------------------
-
-
-.. code-block:: v
-
-   pub struct PageObject {
-   	// The key is not required to be unique in the page. It becomes unique when
-   	// combined with tid. However, no more than two version of the same key can
-   	// exist in a page. See the caveats at the top of btree.v.
-   	key []u8
-   	// The value contains the serialized data for the object. The first byte of
-   	// key is used to both identify what type of object this is and also keep
-   	// objects within the same collection also within the same range.
-   	value []u8
-   	// When is_blob_ref is true, the value will be always be 5 bytes. See
-   	// blob_info().
-   	is_blob_ref bool
-   mut:
-   	// The tid is the transaction that created the object.
-   	tid u64
-   	// The xid is the transaciton that deleted the object, or zero if it has
-   	// never been deleted.
-   	xid u64
-   }
-
-
-
 struct PrecompiledProgram
 -------------------------
 
@@ -1321,7 +1293,7 @@ struct Value
 .. code-block:: v
 
    pub struct Value {
-   pub mut:
+   pub:
    	// The type of this Value.
    	typ Type
    	// Used by all types (including those that have NULL built in like BOOLEAN).

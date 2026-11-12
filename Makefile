@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test unit-test-uncovered coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -165,7 +165,7 @@ check-standard-index:
 
 # test runs every test suite. Each one can also be run on its own. coverage
 # checks that sql-test and unit-test cover every line of vsql/ between them.
-test: sql-test unit-test coverage vorm-test btree-test examples-test cli-test concurrency-test libvsql-test module-test embed-test
+test: sql-test unit-test coverage vorm-test btree-test big-test examples-test cli-test concurrency-test libvsql-test module-test embed-test
 
 # VSQL_TEST_OPTIONS build the SQL tests and the V tests in vsql/ with the
 # helpers that they share (vsql/testing_d_vsqltest.v).
@@ -204,6 +204,28 @@ unit-test-uncovered:
 # without it.
 btree-test: oldv
 	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
+
+# big-test runs the big suite of "vsql bench" (see docs/benchmark.rst) in memory
+# and in a file, with 1,000 MiB of values of 1 to 10 MiB. It fails unless every
+# value is read back exactly as it was inserted. It prints how long it took to
+# write and read the values. With MAX_RUN_TIME (in seconds), such as
+# "MAX_RUN_TIME=60 make big-test", it also fails unless each run takes less than
+# that.
+big-test: bin/vsql
+	$(call big_test_run,)
+	rm -f big-test.vsql big-test.vsql.*
+	$(call big_test_run,-file big-test.vsql)
+	rm -f big-test.vsql big-test.vsql.*
+
+# big_test_run runs the big suite with the options $(1), and prints how long the
+# whole run took. With MAX_RUN_TIME, it fails unless that's less than
+# MAX_RUN_TIME seconds.
+big_test_run = start=$$(date +%s) \
+	&& ./bin/vsql bench -suite big -size 1000 $(1) \
+	&& seconds=$$(($$(date +%s) - start)) \
+	&& echo "big-test took $$seconds seconds" \
+	&& if [ -n "$(MAX_RUN_TIME)" ] && [ $$seconds -ge $(MAX_RUN_TIME) ]; then \
+		echo "big-test must take less than $(MAX_RUN_TIME) seconds (MAX_RUN_TIME)"; exit 1; fi
 
 # sql-test runs the SQL tests in tests/, and prints how much of vsql/ they
 # cover, unless COVERAGE=0. The LCOV file can be used for a line by line report.

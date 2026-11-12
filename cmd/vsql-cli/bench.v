@@ -18,17 +18,17 @@ fn register_bench_command(mut cmd cli.Command) {
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .string
 		name:        'file'
-		description: 'Run the benchmark on disk, in this file. The tpc-b and tpc-b-setup suites create the tables, so the file must not already have them'
+		description: 'Run the benchmark on disk, in this file. The tpc-b, tpc-b-setup and big suites create the tables, so the file must not already have them'
 	})
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .int
 		name:        'size'
-		description: 'Multiplies the number of rows (and other actions) of the benchmark, such as 10 for 1,000,000 accounts (default 1)'
+		description: 'Multiplies the number of rows (and other actions) of the benchmark, such as 10 for 1,000,000 accounts (default 1). For big, the MiB of values to insert, at least 10 (default 100)'
 	})
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .string
 		name:        'suite'
-		description: 'The suite to run:\ntpc-b-setup: create the tables and insert the rows\ntpc-b-oltp: run transactions on a -file from tpc-b-setup\ntpc-b-check: check the rows of a -file from tpc-b-setup\ntpc-b: all three (the default)'
+		description: 'The suite to run:\ntpc-b-setup: create the tables and insert the rows\ntpc-b-oltp: run transactions on a -file from tpc-b-setup\ntpc-b-check: check the rows of a -file from tpc-b-setup\ntpc-b: all three (the default)\nbig: insert values of 1 to 10 MiB until they add up to -size MiB, and read them back'
 	})
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .int
@@ -59,9 +59,10 @@ fn bench_command(cmd cli.Command) ! {
 	}
 
 	suite := cmd.flags.get_string('suite') or { '' }
-	if suite !in ['', 'tpc-b', 'tpc-b-setup', 'tpc-b-oltp', 'tpc-b-check'] {
-		return error('unknown suite: ${suite} (expected tpc-b, tpc-b-setup, tpc-b-oltp or tpc-b-check)')
+	if suite !in ['', 'tpc-b', 'tpc-b-setup', 'tpc-b-oltp', 'tpc-b-check', 'big'] {
+		return error('unknown suite: ${suite} (expected tpc-b, tpc-b-setup, tpc-b-oltp, tpc-b-check or big)')
 	}
+	big := suite == 'big'
 	all := suite in ['', 'tpc-b']
 	setup := all || suite == 'tpc-b-setup'
 	oltp := all || suite == 'tpc-b-oltp'
@@ -69,7 +70,7 @@ fn bench_command(cmd cli.Command) ! {
 
 	// tpc-b-oltp and tpc-b-check need the rows that tpc-b-setup inserted, which
 	// a new in-memory database wouldn't have.
-	if !setup && file == ':memory:' {
+	if !setup && !big && file == ':memory:' {
 		return error('-suite ${suite} needs a -file that -suite tpc-b-setup created')
 	}
 
@@ -85,7 +86,12 @@ fn bench_command(cmd cli.Command) ! {
 	if size < 0 {
 		return error('-size must be at least 1')
 	}
-	if !setup && size > 0 {
+	// The largest value of the big suite is 10 MiB, so at least 10 MiB means at
+	// least one whole value is always inserted.
+	if big && size > 0 && size < 10 {
+		return error('-size must be at least 10 (MiB) for -suite big')
+	}
+	if !setup && !big && size > 0 {
 		return error('-size can not be used with -suite ${suite}, which uses the size of the -file')
 	}
 
@@ -99,7 +105,7 @@ fn bench_command(cmd cli.Command) ! {
 		benchmark.run_for = duration * time.second
 	}
 	benchmark.isolation_level = isolation.to_upper().replace('-', ' ')
-	if !setup {
+	if !setup && !big {
 		benchmark.read_size()!
 	}
 
@@ -111,7 +117,8 @@ fn bench_command(cmd cli.Command) ! {
 	print_value('version_date', vsql.version_date())
 	print_value('suite', if suite == '' { 'tpc-b' } else { suite })
 	print_value('file', file)
-	print_value('size', benchmark.branch_rows.str())
+	big_mib := if size > 0 { size } else { big_default_mib }
+	print_value('size', if big { big_mib.str() } else { benchmark.branch_rows.str() })
 	if oltp {
 		print_value('duration_seconds', int(benchmark.run_for.seconds()).str())
 		print_value('isolation', if isolation == '' { 'serializable' } else { isolation })
@@ -125,6 +132,9 @@ fn bench_command(cmd cli.Command) ! {
 	}
 	if check {
 		benchmark.check()!
+	}
+	if big {
+		benchmark.big(big_mib)!
 	}
 	benchmark.print_peak_memory()
 }

@@ -25,9 +25,11 @@ expression aren't checked.
 
 The rules that depend on what a name refers to are found with the tables in the
 catalog when ``features()`` is called (the "Catalog Lookup" extent of checking),
-such as the same table in the subquery of a ``DELETE`` (F781), or a ``FOREIGN
+such as the same table in the subquery of a ``DELETE`` (F781), a ``FOREIGN
 KEY`` whose columns have different data types than the columns it references
-(T201). These names are only resolved in a query, a cursor, a ``DELETE``, an
+(T201), or a view of the ``INFORMATION_SCHEMA`` (or one of its columns) that
+needs a feature, such as ``KEY_COLUMN_USAGE`` (F341) or ``COLUMNS.IS_UPDATABLE``
+(T111). These names are only resolved in a query, a cursor, a ``DELETE``, an
 ``INSERT`` from a query, an ``UPDATE``, a ``CREATE TABLE`` or an ``ALTER
 TABLE``. Nothing is flagged for a
 name that can't be resolved yet, such as for a table that doesn't exist, or

@@ -97,7 +97,7 @@ here.
    * - ⭕ **F341**
      - **Usage tables**
 
-   * - ❌ **F391**
+   * - ⭕ **F391**
      - **Long identifiers**
 
    * - ❌ **F502**
@@ -145,7 +145,7 @@ here.
    * - ❌ **T051**
      - **Row types**
 
-   * - ❌ **T175**
+   * - ⭕ **T175**
      - **Generated columns**
 
    * - ❌ **T176**

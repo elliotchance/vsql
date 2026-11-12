@@ -53,12 +53,13 @@ pub fn (v VirtualTable) table() Table {
 	for column in v.create_table_stmt.columns() {
 		columns << Column{
 			...column
-			name: Identifier{
+			name:     Identifier{
 				catalog_name:    table_name.catalog_name
 				schema_name:     table_name.schema_name
 				entity_name:     table_name.entity_name
 				sub_entity_name: column.name.sub_entity_name
 			}
+			features: information_schema_column_features(table_name, column.name.sub_entity_name)
 		}
 	}
 

@@ -225,9 +225,6 @@ fn test_crash_point() ! {
 	assert stderr == 'first crash point passed\n'
 }
 
-// The database file isn't synced for each statement, so when the power fails it
-// may have lost statements that are in the log. This puts the file back to how it
-// was on the disk to simulate that.
 // crc32_update reads 8 bytes at a time, so it's checked against hash.crc32 for
 // every length that leaves a different number of bytes after the last 8, and
 // for a checksum that's continued.
@@ -242,6 +239,9 @@ fn test_crc32_update() {
 	}
 }
 
+// The database file isn't synced for each statement, so when the power fails it
+// may have lost statements that are in the log. This puts the file back to how it
+// was on the disk to simulate that.
 fn test_wal_recovers_statements_lost_from_the_file() ! {
 	path := os.join_path(os.temp_dir(), 'vsql-wal-${os.getpid()}.vsql')
 	defer {

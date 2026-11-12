@@ -277,6 +277,65 @@ fn isolation_lock_error(mut l IsolationLock, state IsolationLockState, timeout t
 	return ''
 }
 
+// Connections that keep coming back for the isolation lock take turns with the
+// ones that are already waiting for it (#559). Without that, the connection
+// that released the lock would take it straight back, and keep it until all of
+// its work was done.
+fn test_isolation_lock_turns() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-turns-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := isolation_path(os.join_path(dir, 'test.vsql'))
+
+	mut a := IsolationLock{
+		path: path
+	}
+	a.acquire(.exclusive, 0, 'busy')!
+	shared turns := []int{}
+	mut threads := []thread !{}
+	for id in 0 .. 3 {
+		threads << spawn isolation_lock_take_turns(path, id, shared turns)
+	}
+	time.sleep(50 * time.millisecond)
+	a.release()
+	threads.wait()
+
+	// Each one takes 15 turns. They can't take two in a row while another one is
+	// waiting, but one may get a second turn when the machine is slow, so only
+	// three in a row is a failure. Once one of them has finished, the others
+	// aren't always waiting.
+	rlock turns {
+		assert turns.len == 45
+		mut taken := [0, 0, 0]
+		mut run := 0
+		for i, id in turns {
+			if 15 in taken {
+				break
+			}
+			taken[id]++
+			run = if i > 0 && id == turns[i - 1] { run + 1 } else { 1 }
+			assert run <= 2, 'turns: ${turns}'
+		}
+	}
+}
+
+fn isolation_lock_take_turns(path string, id int, shared turns []int) ! {
+	mut l := IsolationLock{
+		path: path
+	}
+	for _ in 0 .. 15 {
+		l.acquire(.exclusive, 5 * time.second, 'busy')!
+		lock turns {
+			turns << id
+		}
+		time.sleep(10 * time.millisecond)
+		l.release()
+	}
+}
+
 fn isolation_test_options(lock_timeout time.Duration) ConnectionOptions {
 	mut options := default_connection_options()
 	options.lock_timeout = lock_timeout

@@ -4,33 +4,15 @@ Testing
 .. contents::
 
 vsql is tested in a variety of ways, but most functional tests are SQL files
-(see `SQL Tests`_).
+(see `sql-test`_). Each section below is a test suite, named after the
+``make`` target that runs it.
 
-This page explains what each test suite does and describes how to write tests
-and optional functionality you might need.
+``make test`` runs all of them except ``app-test``, since the app isn't needed
+for the database itself (and its tests need Python and a browser). CI runs
+``make test``, and ``app-test`` on Linux x86-64.
 
-Test Suites
------------
-
-``make test`` runs all of the test suites, which can also be run on their own:
-
-- ``make sql-test``: the SQL tests, see `SQL Tests`_.
-- ``make vorm-test``: the tests for the ORM driver.
-- ``make unit-test``: the other V tests in ``vsql/``.
-- ``make btree-test``: the B-Tree stress tests.
-- ``make examples-test``: runs each example.
-- ``make cli-test``: the CLI tests.
-- ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
-- ``make module-test``: the tests for SQL-client modules, see `Modules`_.
-- ``make embed-test``: the tests for embedded SQL, see `Modules`_.
-
-CI runs ``make test``. ``make app-test`` (the tests for ``vsql app``, see
-`App`_) isn't part of ``make test``, since the app isn't needed for the
-database itself (and its tests need Python and a browser). CI runs it on Linux
-x86-64.
-
-App
-^^^
+app-test
+--------
 
 The tests for ``vsql app`` (see :doc:`cli`, the app is the ``app/`` module)
 use the page in a headless Chromium like a user would, with
@@ -77,8 +59,8 @@ the browser:
 
    make app-test PYTEST="-k test_run --headed"
 
-B-Tree
-^^^^^^
+btree-test
+----------
 
 The ``btree_test.v`` stress tests the B-Tree (on-disk and in-memory)
 implementation by creating a variety of sized trees/files with randomly ordered
@@ -109,8 +91,8 @@ or even ideally:
 
    TIMES=100 make btree-test
 
-CLI
-^^^
+cli-test
+--------
 
 CLI tests are a collection of shell scripts that are executed. The vast majority
 of these are used to test the ``vsql`` executable itself, however, since they
@@ -147,13 +129,13 @@ executable, you should not hardcode the binary location. This also makes it easy
 to test the same scripts against different versions of vsql in the future.
 
 Debugging
-*********
+^^^^^^^^^
 
 Modify the ``set -e`` at the start of the file to be ``set -ex``. This will
 print out each of the commands before they run.
 
 Temporary Files
-***************
+^^^^^^^^^^^^^^^
 
 Your test files should make temporary files as needed. This will prevent race
 conditions and other errors with inconsistent state. Create a temporary file
@@ -164,7 +146,7 @@ with (replace the ``.vsql`` extension, if needed):
    VSQL_FILE="$(mktemp).vsql" || exit 1
 
 Assertions
-**********
+^^^^^^^^^^
 
 You can use the following to verify that a file contains a string (it will not
 match the whole line):
@@ -184,8 +166,25 @@ To verify that a command failed (specifically did not succeed), you can use:
 Where ``echo 'CREATE foo (bar INT);' | $VSQL in $VSQL_FILE`` is the command to
 be tested.
 
-Examples
-^^^^^^^^
+embed-test
+----------
+
+``make embed-test`` tests the C that ``vsql precompile`` generates for embedded
+SQL (see :doc:`language-c`). It's run as part of ``make test``, or on its own
+with:
+
+.. code-block:: sh
+
+   make embed-test
+
+This precompiles ``libvsql/embed/test.sqc`` into ``libvsql/embed/test.c``
+(which isn't committed), compiles it against libvsql and runs it. Like
+`module-test`_, it's compiled as C99 and as C++11, with ``-pedantic-errors
+-Wall -Wextra -Werror``, and run both ways. ``CHECK()`` prints the line of each
+check that fails and keeps going, and the program exits with 1 if any failed.
+
+examples-test
+-------------
 
 The ``examples/`` directory contains simple programs that are both aimed at
 demonstrating concepts and features but are also a test suite in their own
@@ -207,8 +206,8 @@ the path):
 ``make examples-test`` also runs the C examples in :doc:`language-c`, with
 ``make libvsql-example`` and ``make module-example``.
 
-libvsql
-^^^^^^^
+libvsql-test
+------------
 
 The unit tests for libvsql, the SQL/CLI (Part 3) shared library for C programs
 (see :doc:`sql-compliance-9075-3`), are next to the V file that they test: the tests
@@ -261,8 +260,8 @@ they're compiled with ``-std=c99 -pedantic-errors -Wall -Wextra -Werror``.
 ``make examples-test`` runs the example in :doc:`language-c`, and also compiles
 ``libvsql/example.c`` as C++ (``-std=c++11``).
 
-Modules
-^^^^^^^
+module-test
+-----------
 
 ``make module-test`` tests the C that ``vsql module`` generates for an
 SQL-client module (see "SQL-Client Modules" in :doc:`language-c`). It's run as
@@ -278,11 +277,8 @@ This compiles ``libvsql/module/test.mod`` into ``libvsql/module/test.h`` and
 libvsql tests, it's compiled as C99 and as C++11, with ``-pedantic-errors -Wall
 -Wextra -Werror``, and run both ways.
 
-``make embed-test`` does the same for embedded SQL, with the C that ``vsql
-precompile`` generates from ``libvsql/embed/test.sqc``.
-
-``test.mod`` has a procedure for each statement that the tests call.
-``test_main.c`` calls them in order, and uses ``EXPECT()`` to check the
+``libvsql/module/test.mod`` has a procedure for each statement that the tests call.
+``libvsql/module/test_main.c`` calls them in order, and uses ``EXPECT()`` to check the
 SQLSTATE that each one returns:
 
 .. code-block:: c
@@ -296,36 +292,14 @@ already in the state that it needs. The comments give the rule of ISO/IEC
 9075-2 that each part tests.
 
 The V code of the compiler (``vsql/std_2_13_*.v``) is tested by
-``test_module_compile()`` and ``test_module_errors()`` in ``vsql/sql_test.v``,
-so it's covered by ``make sql-test``.
+``test_module_compile()`` and ``test_module_errors()`` in
+``vsql/module_test.v``, so it's covered by `unit-test`_.
 
-ORM
-^^^
-
-``vorm/vorm_test.v`` tests the ORM driver (see :doc:`language-v`) with V's
-``sql db { ... }`` syntax. It's run as part of ``make test``, or on its own
-with:
-
-.. code-block:: sh
-
-   make vorm-test
-
-Like ``make sql-test``, it also prints how many lines of ``vorm/`` are covered
-(see Coverage below). ``make vorm-test-uncovered`` prints each line that wasn't
-covered.
-
-The tests must cover every line of ``vorm/``, so ``make vorm-test`` fails if
-they don't (unless ``$COVERAGE`` is ``0``).
-
-SQL
-^^^
+sql-test
+--------
 
 The SQL test suite contains most of the functional tests. This is likely the
 only test suite you will use when adding functionality or fixing bugs in vsql.
-More description below.
-
-SQL Tests
----------
 
 Run all SQL tests with:
 
@@ -561,7 +535,7 @@ The faults are:
    * - Fault
      - What fails
    * - ``accept``
-     - A server accepting a client. A test with a ``fault`` doesn't run through the server, so this is only used by the server tests in ``vsql/sql_test.v``.
+     - A server accepting a client. A test with a ``fault`` doesn't run through the server, so this is only used by the server tests in ``vsql/server_test.v``.
    * - ``checkpoint``
      - Copying a committed statement from the write-ahead log into the database file (including when it's recovered).
    * - ``constraint_index``
@@ -653,7 +627,7 @@ Page Size
 ^^^^^^^^^
 
 Every database in a test has 256-byte pages, so that even a few rows are split
-across several pages (see ``sql_test_options`` in ``vsql/sql_test.v``). A test
+across several pages (see ``sql_test_options`` in ``vsql/testing_d_vsqltest.v``). A test
 that relies on how its rows are laid out in the pages, such as one that needs a
 page to be split at a certain point, should say what page size it needs with a
 ``page_size`` directive. Then it still tests the same thing if the default
@@ -801,10 +775,10 @@ the flags of at least one test with ``/* flags */``, otherwise the SQL tests
 fail. A feature that a test only happens to use doesn't count.
 
 Debugging Tests
----------------
+^^^^^^^^^^^^^^^
 
 Verbose Output
-^^^^^^^^^^^^^^
+**************
 
 By default tests will be silent, only outputting contextual information on
 failure. A summary of the SQL tests is printed at the end, including the
@@ -830,7 +804,7 @@ such as:
    VERBOSE=1 make sql-test
 
 Running Tests at the Same Time
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+******************************
 
 The SQL tests are split between several processes that run at the same time,
 one for each CPU. ``$SQL_TEST_JOBS`` sets how many there are, and ``1`` runs
@@ -846,7 +820,7 @@ or ``$TEST``, the tests always run in one process, in order, so that the output
 isn't mixed up.
 
 Running In Memory, On Disk or Without the Server
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+************************************************
 
 Each test runs in memory and on disk. To only run one of them, set ``$MEMORY``
 or ``$FILE`` to ``0``. ``SERVER=0`` uses the database directly for every test
@@ -867,7 +841,7 @@ Tests that use the ``connection`` or ``fault`` directive only run on disk, so
 they are skipped with ``FILE=0``. These can be combined with ``$TEST`` below.
 
 Running Specific Test Files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+***************************
 
 If you need to debug a specific sql test file, or just want quicker iterations,
 you can use the ``$TEST`` environment variable:
@@ -878,7 +852,7 @@ you can use the ``$TEST`` environment variable:
    TEST=std_2_17_1_transaction make sql-test
 
 Running Specific Tests
-^^^^^^^^^^^^^^^^^^^^^^
+**********************
 
 Even more specific than test files, you can run a single test by including the
 line referenced in the output. This is the same as the last line of the expected
@@ -904,40 +878,52 @@ Running the specific test again can be done with:
 Coverage
 ^^^^^^^^
 
-``make sql-test`` also prints how many lines in ``vsql/`` are run by the SQL
-tests:
+``make sql-test`` and ``make unit-test`` each print how many lines in
+``vsql/`` they run:
 
 .. code-block:: text
 
    SQL test coverage: 87.22% (3379 of 3874 lines, run "make sql-test-uncovered" to see the rest)
+   Unit test coverage: 64.59% (4811 of 7449 lines, run "make unit-test-uncovered" to see the rest)
 
-When all of the tests are run, ``make sql-test`` fails unless every line is
-covered. This is every line that V measures: V's coverage doesn't measure some
+Between them, they must cover every line. ``make coverage`` runs both, and
+fails unless every line is covered by one or the other (``make test`` runs it).
+This is every line that V measures: V's coverage doesn't measure some
 statements, such as a function call on its own line (including one ending in
-``!``), an ``if`` condition or assigning to a map key. ``make sql-test-uncovered`` prints each line that wasn't covered by the
-last ``make sql-test``:
+``!``), an ``if`` condition or assigning to a map key. ``make
+coverage-uncovered`` prints each line that wasn't covered by the last ``make
+coverage`` (``make sql-test-uncovered`` and ``make unit-test-uncovered`` do the
+same for one suite):
 
 .. code-block:: text
 
    vsql/table.v:73: mut names := []string{}
    vsql/table.v:78: return names
 
-The same results are in ``coverage/sql.lcov``, which can be opened with any LCOV
-viewer (such as the "Coverage Gutters" extension for VS Code). When only some of
-the tests are run (such as with ``$TEST``, ``$MEMORY`` or ``$FILE``) the
-coverage is only for those tests.
+The same results are in ``coverage/vsql.lcov`` (and ``coverage/sql.lcov`` and
+``coverage/unit.lcov`` for each suite), which can be opened with any LCOV viewer
+(such as the "Coverage Gutters" extension for VS Code). When only some of the
+SQL tests are run (such as with ``$TEST``, ``$MEMORY`` or ``$FILE``), ``make
+coverage`` doesn't require every line to be covered.
 
 Code that can't be reached with SQL (such as the V API, the server, or a check
-for something that can't happen) is tested by the V tests at the end of
-``vsql/sql_test.v``, so it's also counted. A panic stops the process, so
-``run_in_child()`` runs it in a child process and checks the message. The
-child's coverage is still counted because it's written when the process exits.
-The coverage build is compiled with ``-d coverage`` so that the code can tell
-(see ``crash_point()``, which would otherwise exit without writing it).
+for something that can't happen) is tested by the unit tests (see
+`unit-test`_). A panic stops the process, so ``run_in_child()`` runs it in a
+child process and checks the message. The child's coverage is still counted
+because it's written when the process exits. The coverage build is compiled
+with ``-d coverage`` so that the code can tell (see ``crash_point()``, which
+would otherwise exit without writing it).
 
-``make test`` runs the SQL tests with ``make sql-test`` and the ORM tests with
-``make vorm-test``, so CI also shows the coverage (in the log and the summary of
-the run).
+The helpers that the SQL tests and the unit tests share (such as
+``run_in_child()`` and the PostgreSQL client that the tests use) are in
+``vsql/testing_d_vsqltest.v``. V compiles each ``_test.v`` file on its own, so
+the helpers can't be in one of them. That file is only compiled with ``-d
+vsqltest`` (see ``VSQL_TEST_OPTIONS`` in the Makefile), and it isn't counted in
+the coverage.
+
+``make test`` runs ``make coverage``, and the ORM tests with ``make
+vorm-test``, so CI also shows the coverage (in the log and the summary of the
+run).
 
 Coverage makes the tests a few seconds slower. Set ``$COVERAGE`` to ``0`` to
 turn it off:
@@ -945,13 +931,14 @@ turn it off:
 .. code-block:: sh
 
    COVERAGE=0 make sql-test
+   COVERAGE=0 make unit-test
    COVERAGE=0 make vorm-test
 
 ``make vorm-test`` doesn't require 100% coverage of ``vorm/`` when it's turned
 off.
 
 Using Different V Versions
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes there are V language changes which might break tests, or otherwise
 cause issues on newer versions. Fortunately there is an ``oldv`` tool which can
@@ -964,3 +951,43 @@ simply by supplying a different version of V:
 
 You can use any commit or tag for ``OLDV``. All tags can be
 `found here <https://github.com/vlang/v/tags>`_.
+
+``OLDV`` also works with the other suites that are V tests: ``btree-test``,
+``unit-test`` and ``vorm-test``.
+
+unit-test
+---------
+
+``make unit-test`` runs the V tests in ``vsql/`` (the ``vsql/*_test.v`` files),
+except ``vsql/btree_test.v`` (see `btree-test`_) and ``vsql/sql_test.v`` (see
+`sql-test`_), which have their own targets. They test what the SQL tests can't
+reach, with a file for each area, such as the server (``server_test.v``),
+modules and embedded SQL (``module_test.v``), dumps (``dump_test.v``) and the
+isolation levels (``isolation_test.v``). ``api_test.v`` has the rest of the V
+API. They're run as part of ``make test``, or on their own with:
+
+.. code-block:: sh
+
+   make unit-test
+
+Like ``make sql-test``, it prints how many lines of ``vsql/`` the unit tests
+cover. Every line must be covered by the SQL tests or the unit tests, see
+Coverage in `sql-test`_.
+
+vorm-test
+---------
+
+``vorm/vorm_test.v`` tests the ORM driver (see :doc:`language-v`) with V's
+``sql db { ... }`` syntax. It's run as part of ``make test``, or on its own
+with:
+
+.. code-block:: sh
+
+   make vorm-test
+
+Like ``make sql-test``, it also prints how many lines of ``vorm/`` are covered
+(see Coverage in `sql-test`_). ``make vorm-test-uncovered`` prints each line that wasn't
+covered.
+
+The tests must cover every line of ``vorm/``, so ``make vorm-test`` fails if
+they don't (unless ``$COVERAGE`` is ``0``).

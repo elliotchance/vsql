@@ -3,9 +3,9 @@
 # 13, SQL-client modules
 13                       container    - -
 # 13.1, <SQL-client module definition>
-13.1                     partial      vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v only LANGUAGE C (B112), and there's no <module path specification>, <module transform group specification>, <module collations>, <temporary table declaration> or FOR STATIC
-13.1/SR/1                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
-13.1/SR/2                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
+13.1                     partial      vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v only LANGUAGE C (B112), and there's no <module path specification>, <module transform group specification>, <module collations>, <temporary table declaration> or FOR STATIC
+13.1/SR/1                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
+13.1/SR/2                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
 13.1/SR/3                n/a          - - there are no catalogs (F651)
 13.1/SR/4                n/a          - - there are no catalogs (F651)
 13.1/SR/5                n/a          - - there's no SQL-path, since there are no SQL-invoked routines (T321)
@@ -19,10 +19,10 @@
 13.1/SR/10               n/a          - - <module collation specification> (F693)
 13.1/SR/10.a             n/a          - - <module collation specification> (F693)
 13.1/SR/10.b             n/a          - - <module collation specification> (F693)
-13.1/SR/11               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
-13.1/SR/12               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
+13.1/SR/11               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
+13.1/SR/12               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
 13.1/SR/13               n/a          - - FOR STATIC (B051)
-13.1/SR/14               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
+13.1/SR/14               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
 13.1/SR/15               n/a          - - there are no locators (T041, S231)
 13.1/SR/15.a             n/a          - - there are no BLOB locators (T041)
 13.1/SR/15.b             n/a          - - there are no CLOB locators (T041)
@@ -39,25 +39,25 @@
 13.1/CR/3                n/a          - - <module collation specification> (F693)
 13.1/CR/4                n/a          - - FOR STATIC (B051)
 13.1/CR/5                n/a          - - Ada (B111)
-13.1/CR/6                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
+13.1/CR/6                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
 13.1/CR/7                n/a          - - COBOL (B113)
 13.1/CR/8                n/a          - - Fortran (B114)
 13.1/CR/9                n/a          - - MUMPS (B115)
 13.1/CR/10               n/a          - - Pascal (B116)
 13.1/CR/11               n/a          - - PL/I (B117)
 # 13.2, <module name clause>
-13.2                     implemented  vsql/std_2_13_2_module_name_clause.v vsql/sql_test.v
-13.2/SR/1                implemented  vsql/std_2_13_2_module_name_clause.v vsql/sql_test.v the name isn't used
+13.2                     implemented  vsql/std_2_13_2_module_name_clause.v vsql/module_test.v
+13.2/SR/1                implemented  vsql/std_2_13_2_module_name_clause.v vsql/module_test.v the name isn't used
 13.2/SR/2                untestable   vsql/std_2_13_2_module_name_clause.v - each module is compiled on its own, and the name isn't used
 13.2/SR/3                n/a          - - Ada (B111)
-13.2/SR/4                impl-defined vsql/std_2_13_2_module_name_clause.v vsql/sql_test.v Unicode (UTF-8)
+13.2/SR/4                impl-defined vsql/std_2_13_2_module_name_clause.v vsql/module_test.v Unicode (UTF-8)
 13.2/GR/1                untestable   vsql/std_2_13_2_module_name_clause.v - the name isn't used
 13.2/CR/1                n/a          - - <module character set specification> (F461)
 # 13.3, <externally-invoked procedure>
-13.3                     implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/sql_test.v
-13.3/SR/1                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
-13.3/SR/2                implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/sql_test.v
-13.3/SR/3                implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v
+13.3                     implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
+13.3/SR/1                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
+13.3/SR/2                implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
+13.3/SR/3                implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/module_test.v
 13.3/SR/4                n/a          - - there are no locators (T041, S231, S232, S233)
 13.3/SR/4.a              n/a          - - there are no locators (T041, S231, S232, S233)
 13.3/SR/4.b              n/a          - - there are no BLOB locators (T041)
@@ -67,8 +67,8 @@
 13.3/SR/4.f              n/a          - - there are no user-defined type locators (S231)
 13.3/SR/5                definition   - -
 13.3/SR/6                implemented  vsql/std_2_13_3_externally_invoked_procedure.v libvsql/module/test_main.c the C compiler checks the arguments against the prototype in the header
-13.3/SR/7                implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/sql_test.v
-13.3/SR/8                implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v
+13.3/SR/7                implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
+13.3/SR/8                implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/module_test.v
 13.3/SR/9                definition   - -
 13.3/SR/10               n/a          - - Ada (B111)
 13.3/SR/10.a             n/a          - - Ada (B111)
@@ -108,13 +108,13 @@
 13.3/SR/10.u.iii         n/a          - - Ada (B111)
 13.3/SR/10.u.iv          n/a          - - Ada (B111)
 13.3/SR/10.v             n/a          - - Ada (B111)
-13.3/SR/11               implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/sql_test.v
-13.3/SR/11.a             implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/sql_test.v
-13.3/SR/11.b             implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v
+13.3/SR/11               implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
+13.3/SR/11.a             implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
+13.3/SR/11.b             implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
 13.3/SR/11.b.i           n/a          - - there are no locators (T041, S231, S232, S233)
 13.3/SR/11.b.ii          container    - -
-13.3/SR/11.b.ii.1        implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v
-13.3/SR/11.b.ii.2        implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v
+13.3/SR/11.b.ii.1        implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
+13.3/SR/11.b.ii.2        implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
 13.3/SR/12               n/a          - - COBOL (B113)
 13.3/SR/12.a             n/a          - - COBOL (B113)
 13.3/SR/12.b             n/a          - - COBOL (B113)
@@ -182,7 +182,7 @@
 13.4/GR/1.b              definition   - -
 13.4/GR/2                definition   - -
 13.4/GR/3                definition   - -
-13.4/GR/4                implemented  vsql/time.v vsql/sql_test.v,tests/std_2_6_36_date_time_value_function.sql there are no triggers or SQL-invoked routines
+13.4/GR/4                implemented  vsql/time.v vsql/api_test.v,tests/std_2_6_36_date_time_value_function.sql there are no triggers or SQL-invoked routines
 13.4/GR/5                definition   - -
 13.4/GR/5.a              definition   - -
 13.4/GR/5.b              definition   - -
@@ -193,7 +193,7 @@
 13.4/GR/7.c              implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
 13.4/GR/8                container    - -
 13.4/GR/8.a              implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
-13.4/GR/8.b              implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v the statement is checked when the module is compiled
+13.4/GR/8.b              implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/api_test.v the statement is checked when the module is compiled
 13.4/GR/9                implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
 13.4/GR/10               impl-defined - - schema and data statements can be in the same transaction
 13.4/GR/11               n/a          - - there are no read-only transactions (#554)
@@ -226,4 +226,4 @@
 13.4/GR/22               definition   - -
 13.4/GR/23               definition   - -
 # 13.5, Data type correspondences
-13.5                     implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v only Table 20, for C
+13.5                     implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v only Table 20, for C

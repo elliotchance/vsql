@@ -254,11 +254,11 @@
 5.4/CR/15                n/a          - - named character sets (F461)
 5.4/CR/16                n/a          - - local cursor references (T601)
 5.4/CR/17                n/a          - - extended statement and cursor names (B032)
-5.4/CR/18                implemented  vsql/std_1_8_5_sql_flagger.v vsql/sql_test.v
-5.4/CR/19                implemented  vsql/std_1_8_5_sql_flagger.v vsql/sql_test.v
-5.4/CR/20                implemented  vsql/std_1_8_5_sql_flagger.v vsql/sql_test.v
+5.4/CR/18                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+5.4/CR/19                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+5.4/CR/20                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 5.4/CR/21                n/a          - - window functions (T611)
 5.4/CR/22                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_8_5_flagging.sql
 5.4/CR/23                n/a          - - extended dynamic SQL (B032)
-5.4/CR/24                implemented  vsql/std_1_8_5_sql_flagger.v vsql/sql_test.v
+5.4/CR/24                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 5.4/CR/25                n/a          - - polymorphic table functions (B200)

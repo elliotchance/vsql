@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test unit-test-uncovered coverage coverage-uncovered btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -156,13 +156,41 @@ check-standard-index:
 
 # Tests
 
-# test runs every test suite. Each one can also be run on its own.
-test: sql-test vorm-test unit-test btree-test examples-test cli-test libvsql-test module-test embed-test
+# test runs every test suite. Each one can also be run on its own. coverage
+# checks that sql-test and unit-test cover every line of vsql/ between them.
+test: sql-test unit-test coverage vorm-test btree-test examples-test cli-test libvsql-test module-test embed-test
 
-# unit-test runs the V tests in vsql/, except for the SQL and B-tree tests that
+# VSQL_TEST_OPTIONS build the SQL tests and the V tests in vsql/ with the
+# helpers that they share (vsql/testing_d_vsqltest.v).
+VSQL_TEST_OPTIONS = -d vsqltest
+
+# COVERAGE_OPTIONS build a test that records which lines it runs into the
+# folder $(1). -no-skip-unused keeps functions that are never called, otherwise
+# they wouldn't be counted at all. -d coverage lets the code know it's a
+# coverage build (see crash_point).
+COVERAGE_OPTIONS = -no-skip-unused -coverage $(1) -d coverage
+
+# UNIT_TESTS are the V tests in vsql/, except for the SQL and B-tree tests that
 # have their own targets.
+UNIT_TESTS = $(filter-out vsql/btree_test.v vsql/sql_test.v,$(wildcard vsql/*_test.v))
+
+# unit-test runs the V tests in vsql/ (UNIT_TESTS). They test what the SQL tests
+# can't reach, such as the V API, the server and the module compiler. It also
+# prints how much of vsql/ they cover, unless COVERAGE=0.
 unit-test: oldv
-	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) test $(filter-out vsql/btree_test.v vsql/sql_test.v,$(wildcard vsql/*_test.v))
+ifeq ($(COVERAGE),0)
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) test $(UNIT_TESTS)
+else
+	rm -rf coverage/unit-data
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/unit-data) $(BUILD_OPTIONS) test $(UNIT_TESTS)
+	$(call vsql_lcov,coverage/unit-data,coverage/unit.lcov)
+	$(call coverage_summary,coverage/unit.lcov,Unit test,unit-test-uncovered)
+endif
+
+# unit-test-uncovered prints each line that the last "make unit-test" didn't
+# cover.
+unit-test-uncovered:
+	$(call coverage_uncovered,coverage/unit.lcov,unit-test)
 
 # Only the B-tree tests are built with -prod. They take 5 minutes without it
 # (rather than 70 seconds), but the other tests are much quicker to build
@@ -170,29 +198,47 @@ unit-test: oldv
 btree-test: oldv
 	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
 
-# sql-test also prints how much of vsql/ the SQL tests cover, unless COVERAGE=0.
-# When all of the tests are run, every line must be covered.
-# -no-skip-unused keeps functions that are never called, otherwise they wouldn't
-# be counted at all. -d coverage lets the code know it's a coverage build (see
-# crash_point). The LCOV file can be used for a line by line report. On
-# GitHub Actions the coverage is also added to the job summary.
+# sql-test runs the SQL tests in tests/, and prints how much of vsql/ they
+# cover, unless COVERAGE=0. The LCOV file can be used for a line by line report.
+# On GitHub Actions the coverage is also added to the job summary.
 sql-test: oldv
 ifeq ($(COVERAGE),0)
-	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) vsql/sql_test.v
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) vsql/sql_test.v
 else
-	rm -rf coverage/data
-	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/data -d coverage $(BUILD_OPTIONS) vsql/sql_test.v
-	$(V) cover coverage/data --filter "$(CURDIR)/vsql/" --lcov coverage/sql.lcov > /dev/null
+	rm -rf coverage/sql-data
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/sql-data) $(BUILD_OPTIONS) vsql/sql_test.v
+	$(call vsql_lcov,coverage/sql-data,coverage/sql.lcov)
 	$(call coverage_summary,coverage/sql.lcov,SQL test,sql-test-uncovered)
-ifeq ($(TEST)$(filter 0,$(MEMORY) $(FILE) $(SERVER)),)
-	$(call verify_full_coverage,coverage/sql.lcov)
-endif
 endif
 
 # sql-test-uncovered prints each line that the last "make sql-test" didn't
 # cover, such as "vsql/table.v:218: return error(...)".
 sql-test-uncovered:
 	$(call coverage_uncovered,coverage/sql.lcov,sql-test)
+
+# coverage runs sql-test and unit-test, and fails unless they cover every line
+# of vsql/ between them. It's skipped with COVERAGE=0, or when only some of the
+# SQL tests run ($$TEST, or $$MEMORY, $$FILE or $$SERVER set to 0).
+coverage: sql-test unit-test
+ifneq ($(COVERAGE),0)
+	$(call vsql_lcov,coverage/sql-data coverage/unit-data,coverage/vsql.lcov)
+	$(call coverage_summary,coverage/vsql.lcov,SQL and unit test,coverage-uncovered)
+ifeq ($(TEST)$(filter 0,$(MEMORY) $(FILE) $(SERVER)),)
+	$(call verify_full_coverage,coverage/vsql.lcov)
+endif
+endif
+
+# coverage-uncovered prints each line that the last "make coverage" didn't
+# cover.
+coverage-uncovered:
+	$(call coverage_uncovered,coverage/vsql.lcov,coverage)
+
+# vsql_lcov makes the LCOV file $(2) for vsql/ from the coverage in the folders
+# $(1). The helpers that only the tests use (vsql/testing_d_vsqltest.v) aren't
+# counted.
+vsql_lcov = $(V) cover $(1) --filter "$(CURDIR)/vsql/" --lcov $(2).tmp > /dev/null \
+	&& awk '/^SF:.*_d_vsqltest\.v$$/ { skip = 1 } !skip { print } /^end_of_record/ { skip = 0 }' $(2).tmp > $(2) \
+	&& rm $(2).tmp
 
 # vorm-test runs the unit tests of the ORM driver (vorm/), and prints how much of
 # vorm/ they cover, unless COVERAGE=0. See sql-test. It fails unless they cover

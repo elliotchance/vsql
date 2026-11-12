@@ -23,6 +23,12 @@ transaction can't write to that table, or delete or update rows of a table that
 a new ``FOREIGN KEY`` references, until it's committed or rolled back. Either
 transaction (whichever is second) gets a ``40001``.
 
+A table, index, schema or sequence that another transaction has created isn't
+visible until it's committed, but whether it will exist depends on how that
+transaction ends. So creating another one with the same name (including with
+``IF NOT EXISTS``) also gets a ``40001``, rather than a duplicate name error,
+until it's committed or rolled back.
+
 A statement that isn't inside a ``START TRANSACTION`` runs in a transaction of
 its own, which is committed when the statement finishes. With
 ``vsql cli -autocommit=false`` (which follows the SQL standard), a statement

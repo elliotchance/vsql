@@ -155,8 +155,9 @@ SELECT * FROM t;
 -- 2: msg: INSERT 1
 -- 2: X: 1
 
--- # A table that another connection hasn't committed isn't visible, so it's the
--- # same as CREATE TABLE. The next test is the same without IF NOT EXISTS.
+-- # A table that another connection hasn't committed isn't visible, but it may
+-- # exist once it's committed, so it's a serialization failure, the same as
+-- # CREATE TABLE. The next test is the same without IF NOT EXISTS.
 /* connection 1 */
 START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 CREATE TABLE t (x INT);
@@ -165,7 +166,7 @@ CREATE TABLE t (x INT);
 CREATE TABLE IF NOT EXISTS t (y INT);
 -- 1: msg: START TRANSACTION
 -- 1: msg: CREATE TABLE 1
--- 2: msg: CREATE TABLE 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on table "test".PUBLIC.T
 
 -- # The same test with the default isolation level (SERIALIZABLE).
 /* connection 1 */
@@ -185,7 +186,7 @@ CREATE TABLE t (x INT);
 CREATE TABLE t (y INT);
 -- 1: msg: START TRANSACTION
 -- 1: msg: CREATE TABLE 1
--- 2: msg: CREATE TABLE 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on table "test".PUBLIC.T
 
 -- # The same test with the default isolation level (SERIALIZABLE).
 /* connection 1 */

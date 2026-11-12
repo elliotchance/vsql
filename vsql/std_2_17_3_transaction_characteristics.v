@@ -255,6 +255,7 @@ fn (p PreparedStmt) changes_database_name() string {
 		DropSchemaStatement { 'DROP SCHEMA' }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE' }
 		DropTableStatement { 'DROP TABLE' }
+		DropViewStatement { 'DROP VIEW' }
 		InsertStatement { 'INSERT' }
 		MergeStatement { 'MERGE' }
 		OpenStatement { p.c.cursor_data_change_name(p.stmt.name) }
@@ -263,6 +264,7 @@ fn (p PreparedStmt) changes_database_name() string {
 		SequenceGeneratorDefinition { 'CREATE SEQUENCE' }
 		TableDefinition { 'CREATE TABLE' }
 		UpdateStatementPositioned, UpdateStatementSearched { 'UPDATE' }
+		ViewDefinition { 'CREATE VIEW' }
 		else { '' }
 	}
 }

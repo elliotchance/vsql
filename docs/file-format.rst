@@ -146,7 +146,7 @@ remaining space is reserved (see `Compatibility`_).
 Compatibility
 -------------
 
-The version of the file format that vsql reads and writes is 2. Every version
+The version of the file format that vsql reads and writes is 3. Every version
 of vsql can open a file created by an older version, and most features don't
 need to change the file format at all. The *Read Version* and *Write Version*
 in the `Header`_ work the same way as the read and write versions of SQLite:
@@ -178,6 +178,13 @@ the feature is no longer used.
       index of a ``UNIQUE`` or ``FOREIGN KEY`` constraint) raises the
       *Write Version* to 2. The *Read Version* stays at 1, because version 1
       ignores the new objects.
+
+  * - 3
+    - Views (see `View Object`_). The first ``CREATE VIEW`` raises the
+      *Write Version* to 3. The *Read Version* isn't raised, because an older
+      version ignores the new objects (so it doesn't have the views), but it
+      couldn't keep them correct: it would let a table that a view reads be
+      dropped, or a table be created with the name of a view.
 
 These rules keep changes compatible:
 
@@ -438,6 +445,9 @@ are ignored, so that new types of objects can be added (see
   * - ``V``
     - `Sequence Value Object`_
 
+  * - ``W``
+    - `View Object`_
+
   * - ``X``
     - `Index Entry Object`_
 
@@ -677,7 +687,7 @@ than one column can be put one after another and still be in order.
 Schema Objects
 --------------
 
-The definition of each schema, sequence and table is stored as the SQL
+The definition of each schema, sequence, table, index and view is stored as the SQL
 statement that would create it, like SQLite does. When the file is opened, the
 statements are parsed to rebuild the schema in memory.
 
@@ -826,6 +836,24 @@ A ``UNIQUE`` constraint has its own index, and a ``FOREIGN KEY`` uses one (see
 :doc:`create-index`). These are stored like any other index. A table from
 version 1 gets them the first time they're needed, when another transaction
 can't have changes to the table (otherwise it's a ``40001`` error).
+
+View Object
+-----------
+
+A View Object (has the ``W`` prefix, followed by the schema and name of the
+view as ``SCHEMA.NAME``, where a name that contains a ``.`` or ``"`` is a
+delimited identifier) contains the definition of a view (see
+:doc:`create-view`), as a ``SET SCHEMA`` and a ``CREATE VIEW`` statement:
+
+.. code-block:: sql
+
+  SET SCHEMA 'PUBLIC'; CREATE VIEW "PUBLIC"."V" ("A", "B") AS SELECT T.A AS A, T.B AS B FROM T WHERE A > 1
+
+The ``SET SCHEMA`` is the schema of the names in the query that don't have
+one, which was the current schema when the view was created. The column list is
+always written. The query is written without any asterisks (they're replaced by
+the columns that they were when the view was created). The query is planned
+each time the view is read, so nothing else is stored for a view.
 
 Index Entry Object
 ------------------

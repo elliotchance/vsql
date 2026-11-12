@@ -62,6 +62,8 @@ mut:
 	// change its indexes. They're keyed by the storage_id of their name (which
 	// is in the schema of their table).
 	indexes map[string]Index
+	// The views are also kept in memory, keyed by the storage_id of their name.
+	views map[string]View
 	// read_only is true when the file is only locked for reading. A read only
 	// statement (outside of an explicit transaction) uses a transaction ID of 0
 	// because it must not modify the header, see isolation_start.
@@ -113,6 +115,7 @@ mut:
 	tables            map[string]Table
 	schemas           map[string]Schema
 	indexes           map[string]Index
+	views             map[string]View
 	transaction_state TransactionState
 	transaction_id    u64
 	transaction_pages map[int]bool
@@ -121,10 +124,10 @@ mut:
 	// in_statement is true between begin_statement and the end of the
 	// statement.
 	in_statement bool
-	// schema_saved is true once tables, schemas and indexes have been copied
-	// (see save_schema), and pages_saved once transaction_pages has been (see
-	// save_transaction_pages). They aren't copied by begin_statement because
-	// most statements don't change them.
+	// schema_saved is true once tables, schemas, indexes and views have been
+	// copied (see save_schema), and pages_saved once transaction_pages has been
+	// (see save_transaction_pages). They aren't copied by begin_statement
+	// because most statements don't change them.
 	schema_saved bool
 	pages_saved  bool
 }
@@ -148,13 +151,14 @@ fn (mut f Storage) begin_statement() {
 	f.sequence_values = map[string]PageObject{}
 }
 
-// save_schema must be called before tables, schemas or indexes are changed, so
-// that they can be put back if the statement fails.
+// save_schema must be called before tables, schemas, indexes or views are
+// changed, so that they can be put back if the statement fails.
 fn (mut f Storage) save_schema() {
 	if f.snapshot.in_statement && !f.snapshot.schema_saved {
 		f.snapshot.tables = f.tables.clone()
 		f.snapshot.schemas = f.schemas.clone()
 		f.snapshot.indexes = f.indexes.clone()
+		f.snapshot.views = f.views.clone()
 		f.snapshot.schema_saved = true
 	}
 }
@@ -246,6 +250,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 		f.tables = f.snapshot.tables.clone()
 		f.schemas = f.snapshot.schemas.clone()
 		f.indexes = f.snapshot.indexes.clone()
+		f.views = f.snapshot.views.clone()
 	}
 	f.transaction_state = f.snapshot.transaction_state
 	f.transaction_id = f.snapshot.transaction_id
@@ -316,8 +321,8 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	f.load_schema(catalog_name)!
 }
 
-// load_schema reads the tables, schemas and indexes that are visible to the current
-// transaction from the file.
+// load_schema reads the tables, schemas, indexes and views that are visible to
+// the current transaction from the file.
 fn (mut f Storage) load_schema(catalog_name string) ! {
 	// The schema must be read in an isolation block, which may or may not
 	// belong to an active transaction.
@@ -358,6 +363,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	}
 
 	f.load_indexes()!
+	f.load_views(catalog_name)!
 }
 
 // parse_definition parses the definition of a schema object (such as a table),
@@ -478,6 +484,8 @@ fn (mut f Storage) create_table(definition Table) ! {
 
 	f.check_concurrent_referenced_tables(definition, [])!
 	f.check_concurrent_name(`T`, definition.name)!
+	// A view is a table too.
+	f.check_concurrent_objects(view_object_key(definition.name), view_object_key(definition.name))!
 
 	f.header.table_id++
 	table := Table{
@@ -541,6 +549,7 @@ fn (mut f Storage) update_table(definition Table) ! {
 	old := f.table(definition.name.storage_id())
 	f.check_concurrent_rows(definition)!
 	f.check_concurrent_referenced_tables(definition, old.foreign_keys)!
+	f.check_concurrent_objects('W'.bytes(), 'X'.bytes())!
 
 	table := Table{
 		...definition
@@ -802,6 +811,8 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 
 	f.check_concurrent_rows(f.table(table_name))!
 	f.check_concurrent_references(f.table(table_name))!
+	// Another transaction can't be creating a view that reads the table.
+	f.check_concurrent_objects('W'.bytes(), 'X'.bytes())!
 
 	table_id := f.table(table_name).id
 	for index in f.table_indexes(table_id) {

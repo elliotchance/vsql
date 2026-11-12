@@ -16,8 +16,9 @@ const header_magic = 'vsql\r\n\x1a\n'.bytes()
 // file_format_version is the newest version of the file format that this
 // version of vsql can read and write. See "Compatibility" in the "File Format"
 // docs for how it relates to the read and write versions in the header.
-// Version 2 added indexes (see index_file_format_version).
-const file_format_version = u16(2)
+// Version 2 added indexes (see index_file_format_version), and version 3 added
+// views (see view_file_format_version).
+const file_format_version = u16(3)
 
 // oldest_file_format_version is the oldest version of the file format that
 // can still be opened. A new file starts with this version, see new_header.

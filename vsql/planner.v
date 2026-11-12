@@ -437,11 +437,32 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				return sqlstate_3d000(table_name.catalog_name)
 			}
 
+			conn.view_catalog_check(table_name)!
+
 			if conn.collect_subquery_tables && conn.subquery_scopes.len > 0 {
 				conn.subquery_tables << table_name.id()
 			}
 
-			if allow_virtual && table_name_id in catalog.virtual_tables {
+			if view := catalog.storage.views[table_name_id] {
+				// A view is read like a derived table with the name of the view,
+				// whose columns are named like the columns of a table.
+				//
+				// ISO/IEC 9075-2:2016(E), 11.32, <view definition>, General Rules, 2.b.iii
+				conn.flag_subquery_table(table_name)
+				table = add_correlation_plan(mut &plan, table_name, conn.view_plan(view)!,
+					Correlation{
+						columns: view.columns.map(Identifier{
+							sub_entity_name: it
+						})
+					}, params, mut conn)!
+				if filter {
+					add_where_plan(mut &plan, body, params, conn, {
+						table.name.id(): &Table{
+							...table
+						}
+					}, [])!
+				}
+			} else if allow_virtual && table_name_id in catalog.virtual_tables {
 				// The table is known to be there.
 				virtual_table := unsafe { catalog.virtual_tables[table_name_id] }
 				plan.operations << VirtualTableOperation{table_name_id, virtual_table, conn}
@@ -601,13 +622,23 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 
 	mut columns := []Column{}
 	for i, col in subplan.columns() {
+		column_name := if correlation_columns.len > 0 {
+			correlation_columns[i].sub_entity_name
+		} else {
+			col.name.sub_entity_name
+		}
 		columns << Column{
-			name:           Identifier{
-				entity_name:     table_name.id()
-				sub_entity_name: if correlation_columns.len > 0 {
-					correlation_columns[i].sub_entity_name
-				} else {
-					col.name.sub_entity_name
+			// The columns of a view are qualified by the name of the view, like
+			// the columns of a table, rather than a correlation name.
+			name:           if table_name.entity_name != '' {
+				Identifier{
+					...table_name
+					sub_entity_name: column_name
+				}
+			} else {
+				Identifier{
+					entity_name:     table_name.id()
+					sub_entity_name: column_name
 				}
 			}
 			typ:            col.typ
@@ -1070,6 +1101,14 @@ fn (p Plan) explain_lines() []string {
 
 	for operation in p.operations {
 		lines << operation.str()
+
+		// The query of a view is planned when it's read, so it's part of the
+		// plan of the query that reads it.
+		if operation is ViewScopeOperation {
+			for line in operation.plan.explain_lines() {
+				lines << '  ' + line
+			}
+		}
 	}
 
 	return lines

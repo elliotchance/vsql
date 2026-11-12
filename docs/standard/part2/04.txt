@@ -171,7 +171,7 @@
 # 4.15.5, Unique identification of tables
 4.15.5                   implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_5_4_catalog_qualified_names.sql
 # 4.15.6, Table updatability
-4.15.6                   implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_14_update.sql only base tables can be changed, since there are no views (F031-02)
+4.15.6                   implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_14_update.sql only base tables can be changed, views can't be yet (updatable views (#1448))
 # 4.15.7, Table descriptors
 4.15.7                   implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 # 4.15.8, Syntactic analysis of derived tables and cursors

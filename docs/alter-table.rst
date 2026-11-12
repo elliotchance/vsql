@@ -107,7 +107,9 @@ only be dropped with ``CASCADE``, which drops it too. Otherwise, it's an error
   the same column of the same table is dropped with the column.
 
 An index (see :doc:`create-index`) that has the column can also only be dropped
-with ``CASCADE``, which drops the index.
+with ``CASCADE``, which drops the index. So can a column that a view reads
+(see :doc:`create-view`), including with an asterisk, and ``CASCADE`` drops the
+view.
 
 Every row of the table is written again, because the values of a row are
 stored in the order of its columns. The rows are also moved when the

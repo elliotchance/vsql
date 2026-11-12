@@ -128,6 +128,9 @@ mut:
 	// is being run. Nothing else in the statement can change it, see
 	// apply_referential_actions.
 	restricted_tables []string
+	// view_catalog is the catalog of the view whose query is being planned or
+	// run, which is the only catalog it can read, see Connection.view_plan.
+	view_catalog string
 	// direct_query_transaction is true when an SQL-transaction was started by
 	// a query in direct (see Connection.direct) that hasn't changed anything.
 	direct_query_transaction bool
@@ -1001,6 +1004,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 		mut catalog := conn.catalog_for(table_name)
 		id := table_name.storage_id()
 		exists := id in catalog.storage.tables || id in catalog.virtual_tables
+			|| id in catalog.storage.views
 		conn.release_read_connection()
 		if exists {
 			return sqlstate_42p07('table', table_name.str()) // duplicate table
@@ -1192,6 +1196,20 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 
 	if allow_virtual && id in catalog.virtual_tables {
 		return ident
+	}
+
+	// A view can be read, but it can't be changed (or be the table of a
+	// statement that needs a base table). No view is updatable yet (#1448).
+	//
+	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rules, 3
+	if id in catalog.storage.views {
+		if allow_virtual {
+			return ident
+		}
+
+		return sqlstate_42601('${ident} is a view, not a base table')
 	}
 
 	// A table that's going to be changed can't be in the INFORMATION_SCHEMA.

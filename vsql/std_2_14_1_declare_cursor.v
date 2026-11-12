@@ -211,6 +211,11 @@ fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut
 		return false
 	}
 
+	// A view isn't updatable yet.
+	if conn.is_view((from_clause as TablePrimary).body as Identifier) {
+		return false
+	}
+
 	for operation in plan.operations {
 		if operation is GroupOperation || operation is DistinctOperation
 			|| operation is VirtualTableOperation || operation is SingleRowOperation {

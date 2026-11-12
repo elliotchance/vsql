@@ -119,7 +119,7 @@
 # 4.6.6.4, Triggers
 4.6.6.4                  n/a          - - triggers (T211)
 # 4.6.7, View definitions
-4.6.7                    missing      - - views aren't supported (F031-02, #731)
+4.6.7                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_create_view.sql a view can be read but not changed yet (#1448)
 # 4.6.8, Assertions
 4.6.8                    n/a          - - assertions (F521)
 # 4.6.9, SQL-server modules (defined in ISO/IEC 9075-4, SQL/PSM)

@@ -12,6 +12,7 @@ SQL Reference
    create-schema.rst
    create-sequence.rst
    create-table.rst
+   create-view.rst
    cursors.rst
    delete.rst
    disconnect.rst
@@ -19,6 +20,7 @@ SQL Reference
    drop-schema.rst
    drop-sequence.rst
    drop-table.rst
+   drop-view.rst
    explain.rst
    insert.rst
    merge.rst

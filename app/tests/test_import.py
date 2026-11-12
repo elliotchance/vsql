@@ -194,7 +194,7 @@ INSERT INTO foo.t (x) VALUES (1);
     expect(messages).to_have_count(3)
     expect(messages.nth(0)).to_have_text('Line 2 NOTICE 02000 no data')
     expect(messages.nth(0)).to_have_class('import-notice')
-    expect(messages.nth(1)).to_have_text('Line 3 WARNING 01000 CREATE VIEW is not supported, so it was ignored')
+    expect(messages.nth(1)).to_have_text('Line 3 WARNING 01000 CREATE VIEW failed, so it was ignored: syntax error: view "db".PUBLIC.V needs a column list because column 1 of its query has no name')
     expect(messages.nth(1)).to_have_class('import-warning')
     expect(messages.nth(2)).to_contain_text('Line 4 ERROR 42P01 no such table')
     expect(messages.nth(2)).to_have_class('import-error')

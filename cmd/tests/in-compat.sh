@@ -56,12 +56,13 @@ INSERT INTO [Artist] ([ArtistId], [Name]) VALUES (1, 'Björk');
 COMMIT;
 SQL
 
-# Without -ignore-unsupported they are errors (other than CREATE INDEX and
-# CREATE UNIQUE INDEX, which are supported, but not a partial index). What's in
+# Without -ignore-unsupported they are errors (other than CREATE INDEX, CREATE
+# UNIQUE INDEX and CREATE VIEW, which are supported, but not a partial index). What's in
 # the body of the trigger isn't run by itself.
 $VSQL in -file sqlite.sql -compat sqlite3 -continue-on-error $VSQL_FILE > out.txt && exit 1
-test "$(grep -c ' ERROR ' out.txt)" = 3
+test "$(grep -c ' ERROR ' out.txt)" = 2
 query 'SELECT name FROM artist;' | grep -x 'Björk'
+query 'SELECT name FROM v;' | grep -x 'Björk'
 rm -f $VSQL_FILE $VSQL_FILE.wal
 
 $VSQL in -file sqlite.sql -compat sqlite3 -ignore-unsupported -verbose $VSQL_FILE > out.txt
@@ -71,7 +72,7 @@ grep ' START TRANSACTION$' out.txt
 grep ' COMMIT$' out.txt
 if grep -q ' ERROR ' out.txt; then exit 1; fi
 grep '^23 .* WARNING 01000 CREATE INDEX failed, so it was ignored: syntax error' out.txt
-grep 'CREATE VIEW is not supported' out.txt
+grep -E '^24 [0-9]+/[0-9]+ CREATE VIEW 1$' out.txt
 grep 'CREATE TRIGGER is not supported' out.txt
 
 # The indexes are created at the end (before the FOREIGN KEYs), with their

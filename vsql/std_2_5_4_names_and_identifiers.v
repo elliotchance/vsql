@@ -576,6 +576,15 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		found = table
 	} else if virtual_table := catalog.virtual_tables[table_id] {
 		found = virtual_table.table()
+	} else if table_id in catalog.storage.views {
+		// The columns of a view are only known by the query that reads it.
+		for _, table in c.tables {
+			if table.name.schema_name == ident.schema_name
+				&& table.name.entity_name == ident.entity_name {
+				found = *table
+				break
+			}
+		}
 	}
 	if table := found {
 		column := table.column(ident.sub_entity_name) or { Column{} }

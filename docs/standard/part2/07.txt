@@ -268,15 +268,15 @@
 7.6/SR/20                container    - -
 7.6/SR/20.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_7_6_data_change_delta_table.sql table functions (T326), collection derived tables (S301), JSON (T811) and row pattern recognition (R010) are n/a
 7.6/SR/20.b              container    - -
-7.6/SR/20.b.i            n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/20.b.ii           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/20.b.iii          n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/20.b.iv           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
+7.6/SR/20.b.i            missing      - - updatable views (#1448)
+7.6/SR/20.b.ii           missing      - - updatable views (#1448)
+7.6/SR/20.b.iii          missing      - - updatable views (#1448)
+7.6/SR/20.b.iv           missing      - - updatable views (#1448)
 7.6/SR/21                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
 7.6/SR/21.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
-7.6/SR/21.b              n/a          - - views (F031-02, #731)
-7.6/SR/21.c              n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/22                n/a          - - views (F031-02, #731)
+7.6/SR/21.b              missing      - - updatable views (#1448)
+7.6/SR/21.c              missing      - - updatable views (#1448)
+7.6/SR/22                n/a          - - only used for WITH CHECK OPTION (F311-04, #1258)
 7.6/SR/23                n/a          - - WITH (T121)
 7.6/SR/24                definition   - -
 7.6/SR/25                definition   - -
@@ -1244,7 +1244,7 @@
 7.16/SR/29               definition   - -
 7.16/SR/29.a             definition   - -
 7.16/SR/29.b             n/a          - - updatable joins (T111)
-7.16/SR/30               n/a          - - INSERT through a cursor or view (F031-02, #731)
+7.16/SR/30               missing      - - updatable views (#1448)
 7.16/SR/31               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/31.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/31.b             n/a          - - updatable joins (T111)
@@ -1344,10 +1344,10 @@
 7.17/SR/8.e              n/a          - - updatable unions (T111)
 7.17/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable unions (T111)
 7.17/SR/10               n/a          - - WITH (T121)
-7.17/SR/11               n/a          - - INSERT through a cursor or view (F031-02, #731)
-7.17/SR/11.a             n/a          - - INSERT through a cursor or view (F031-02, #731)
-7.17/SR/11.b             n/a          - - INSERT through a cursor or view (F031-02, #731)
-7.17/SR/11.c             n/a          - - INSERT through a cursor or view (F031-02, #731)
+7.17/SR/11               missing      - - updatable views (#1448)
+7.17/SR/11.a             missing      - - updatable views (#1448)
+7.17/SR/11.b             missing      - - updatable views (#1448)
+7.17/SR/11.c             missing      - - updatable views (#1448)
 7.17/SR/12               n/a          - - WITH (T121)
 7.17/SR/13               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
@@ -1394,8 +1394,8 @@
 7.17/SR/20               definition   - -
 7.17/SR/21               definition   - -
 7.17/SR/22               definition   - -
-7.17/SR/23               n/a          - - views (F031-02, #731) and WITH (T121)
-7.17/SR/23.a             n/a          - - views (F031-02, #731)
+7.17/SR/23               n/a          - - only used for WITH CHECK OPTION (F311-04, #1258), and WITH (T121)
+7.17/SR/23.a             n/a          - - only used for WITH CHECK OPTION (F311-04, #1258)
 7.17/SR/23.b             n/a          - - WITH (T121)
 7.17/SR/24               definition   - -
 7.17/SR/24.a             definition   - -

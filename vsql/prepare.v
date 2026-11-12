@@ -235,6 +235,121 @@ pub fn (mut p PreparedStmt) columns(params map[string]Value) ![]Column {
 	return plan.columns()
 }
 
+// name_resolution_errors are the SQLSTATEs of a catalog, schema, table or
+// column that doesn't exist, or a column reference that's ambiguous.
+const name_resolution_errors = ['3D000', '3F000', '42P01', '42702', '42703']
+
+// is_name_resolution_error is true for an error that's raised for a name that
+// can't be resolved. A column reference that can't be resolved is a syntax
+// error, which is also raised for other things (some of which depend on the
+// type of a dynamic parameter).
+fn is_name_resolution_error(err IError) bool {
+	sqlstate := sqlstate_from_int(err.code())
+
+	return sqlstate in name_resolution_errors
+		|| (sqlstate == '42601' && err.msg().contains('unknown column: '))
+}
+
+// resolve_names raises an error for a table or column that a query, DECLARE
+// CURSOR, INSERT, UPDATE or DELETE uses but doesn't exist, since it doesn't
+// conform to the Syntax Rules. The statement isn't executed, and nothing that it
+// finds is kept. Each time it's executed, its names are resolved again, so it's
+// still valid if a table is dropped and created again (or raises the same
+// error, if it's gone).
+//
+// The type of a dynamic parameter is only known once it has a value, so each
+// one is a NULL here. Any other error (such as for a type) may depend on that
+// value, so it's left for when the statement is executed. A schema statement
+// (such as CREATE TABLE or DROP TABLE) is only checked when it's executed. A
+// positioned UPDATE or DELETE also uses a cursor, which may not be open yet.
+//
+// prepare does this, but not parse.
+//
+// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 6.c
+pub fn (mut p PreparedStmt) resolve_names() ! {
+	mut params := map[string]Value{}
+	for i in 1 .. p.dynamic_parameters + 1 {
+		params['?${i}'] = new_null_value(.is_varchar)
+	}
+
+	mut c := p.c
+	c.open_read_connection()!
+	warnings := c.warnings.clone()
+	defer {
+		c.release_read_connection()
+		c.warnings = warnings
+	}
+
+	resolve_statement_names(p.stmt, params, mut c) or {
+		if is_name_resolution_error(err) {
+			return err
+		}
+	}
+}
+
+fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connection) ! {
+	match stmt {
+		DeclareCursor {
+			create_query_expression_plan(stmt.query, params, mut conn, Correlation{})!
+		}
+		DeleteStatementSearched, QueryExpression {
+			create_plan(stmt, params, mut conn)!
+		}
+		InsertStatement {
+			table := conn.resolved_table(stmt.table_name)!
+			for column in stmt.columns {
+				table.column(column.sub_entity_name)!
+			}
+			if query := stmt.query {
+				create_plan(query, params, mut conn)!
+			}
+		}
+		UpdateStatementPositioned {
+			table := conn.resolved_table(stmt.table_name)!
+			for clause in stmt.set {
+				table.column(clause.column_name)!
+			}
+		}
+		UpdateStatementSearched {
+			table := conn.resolved_table(stmt.table_name)!
+			for clause in stmt.set {
+				table.column(clause.column_name)!
+			}
+			mut plan := create_plan(stmt, params, mut conn)!
+
+			// The value of each <set clause> is compiled like it is for each row
+			// (see UpdateStatementSearched.execute), which might not have any.
+			has_correlation := stmt.correlation_name.sub_entity_name != ''
+			mut tables := map[string]&Table{}
+			if has_correlation {
+				tables[stmt.correlation_name.id()] = &Table{
+					name:    stmt.correlation_name
+					columns: plan.columns()
+				}
+			}
+			mut c := Compiler{
+				conn:    conn
+				params:  params
+				tables:  tables
+				context: if has_correlation { Identifier{} } else { table.name }
+			}
+			for clause in stmt.set {
+				if clause.source is ValueExpression {
+					clause.source.compile(mut c)!
+				}
+			}
+		}
+		else {}
+	}
+}
+
+// resolved_table is the table that a statement changes.
+fn (mut conn Connection) resolved_table(name Identifier) !Table {
+	table_name := conn.resolve_table_identifier(name, false)!
+
+	return conn.catalog_for(table_name).storage.table(table_name.storage_id())
+}
+
 // fail ends a statement that failed with err.
 fn (mut p PreparedStmt) fail(err IError) IError {
 	// A statement that fails must not change anything, but the transaction it's

@@ -38,11 +38,17 @@ UTEST_F(db, 6_20_execute_diagnostics) {
             2);
 }
 
-/* An error that isn't a syntax error is returned by Execute. */
+/* A table is found again when the statement is executed, so one that's been
+ * dropped since it was prepared is an error from Execute. */
 UTEST_F(db, 6_20_execute_error) {
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "CREATE TABLE bar (x INT)"), SQL_SUCCESS);
   ASSERT_EQ(
       SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"SELECT * FROM bar", SQL_NTS),
       SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "DROP TABLE bar"), SQL_SUCCESS);
   EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42P01");
 }

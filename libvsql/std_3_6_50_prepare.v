@@ -6,9 +6,11 @@ import vsql
 //
 // Prepare a statement.
 //
-// The statement is parsed, so a syntax error is raised by Prepare, but other
-// errors (such as a table that doesn't exist) are only raised by Execute. The
-// IRD describes the result columns of a query if they can be known before
+// The statement is parsed, and the tables and columns that it uses are found
+// (see vsql.PreparedStmt.resolve_names), so a syntax error or a table that
+// doesn't exist is raised by Prepare. Other errors are only raised by Execute
+// (and ExecDirect raises them all when it's executed, like a statement that's
+// executed directly). The IRD describes the result columns of a query if they can be known before
 // it's executed (the data type of a dynamic parameter isn't known until it has
 // a value, so the IPD type is used if it's set, and otherwise it may only be
 // known after the statement is executed).
@@ -36,6 +38,7 @@ fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 	// statement and cursor of S as they were.
 	p := preparable_statement(mut stmt, statement_text, text_length)!
 	mut prepared := prepare_statement(mut stmt, p)!
+	db_resolve_names(mut prepared)!
 
 	// - 10. Any prepared statement, cursor, select source and executed
 	// statement associated with S are destroyed.

@@ -232,13 +232,13 @@ fn db_query(mut conn vsql.Connection, text string) !vsql.Result {
 	return conn.query(text)
 }
 
-fn db_prepare(mut conn vsql.Connection, text string) !vsql.PreparedStmt {
+fn db_resolve_names(mut prepared vsql.PreparedStmt) ! {
 	released := release()
 	defer {
 		reacquire(released)
 	}
 
-	return conn.prepare(text)
+	prepared.resolve_names()!
 }
 
 fn db_run(mut prepared vsql.PreparedStmt, params map[string]vsql.Value) !vsql.Result {

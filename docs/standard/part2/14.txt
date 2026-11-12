@@ -77,7 +77,7 @@
 14.3/SR/6                container    - -
 14.3/SR/6.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/6.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-14.3/SR/6.c              n/a          - - a prepared query has no <updatability clause>
+14.3/SR/6.c              implemented  vsql/std_2_14_1_declare_cursor.v vsql/api_test.v,libvsql/cursor_updatability_test.c a prepared query without an <updatability clause> is updatable or not when its cursor is opened
 14.3/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/8                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql

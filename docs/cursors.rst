@@ -139,8 +139,15 @@ given). Another statement of the connection can change the cursor's current row
   SQLExecDirect(stmt2, (SQLCHAR *)"DELETE FROM products WHERE CURRENT OF c",
                 SQL_NTS);
 
+The query can end with ``FOR READ ONLY`` or ``FOR UPDATE [ OF <column_name> ,
+... ]``, which is used like it is in a ``DECLARE CURSOR``. Without one, the
+cursor is updatable if its query is (``SQL_ATTR_CURSOR_SCROLLABLE`` doesn't
+change that). A query that isn't executed by the SQL/CLI (or an SQL-client
+module) can't have one (``42601``).
+
 The cursor must have been opened before the positioned statement is prepared
-or executed. A prepared positioned statement stays prepared if the cursor is
+or executed. A closed cursor still exists, so a positioned statement is
+``24000`` (invalid cursor state) until the cursor is destroyed. A prepared positioned statement stays prepared if the cursor is
 closed and opened again, but it's destroyed with the cursor (by preparing or
 executing another statement on ``stmt``, or freeing it), after which
 ``SQLExecute`` is a function sequence error.

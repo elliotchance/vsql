@@ -50,6 +50,17 @@ struct UpdatabilityClause {
 	columns    []Identifier
 }
 
+// new_cursor_specification is a query with an <updatability clause>, which is a
+// <dynamic select statement>.
+//
+// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Format
+fn new_cursor_specification(query QueryExpression, updatability UpdatabilityClause) QueryExpression {
+	return QueryExpression{
+		...query
+		updatability: updatability
+	}
+}
+
 // Cursor is both the cursor declaration descriptor and the cursor instance
 // descriptor of a standing cursor (ISO/IEC 9075-2:2016(E), 4.38.2). The rows
 // of an open cursor are a copy, so a change by another statement isn't visible
@@ -409,16 +420,22 @@ fn (mut conn Connection) open_cursor(name string) !&Cursor {
 //
 // The cursor is closed when the transaction ends (a holdable cursor stays open
 // after a commit), so it must be opened in a transaction. The statement must
-// be a query.
+// be a query, which can end with an <updatability clause> (FOR READ ONLY, or
+// FOR UPDATE with an optional list of the columns that a positioned UPDATE can
+// set). Without one, the cursor is updatable if the query is simply updatable
+// and has no ORDER BY.
+//
+// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 4 and 6
 pub fn (mut p PreparedStmt) open_cursor(name string, hold bool, params map[string]Value) !Result {
 	t := start_timer()
 	query := p.stmt as QueryExpression
 	mut declare_stmt := PreparedStmt{
 		...p
 		stmt: DeclareCursor{
-			name:  name
-			hold:  hold
-			query: query
+			name:         name
+			hold:         hold
+			query:        query
+			updatability: query.updatability
 		}
 	}
 	declare_stmt.query(params)!
@@ -450,6 +467,17 @@ pub fn (mut conn Connection) position_cursor(name string, row int) ! {
 	cursor.position = row
 	cursor.on_row = row >= 0 && row < cursor.rows.len
 	cursor.fetched = true
+}
+
+// close_cursor closes a cursor, if there is one with the name, but it's still
+// declared. A positioned DELETE or UPDATE of it is then an invalid cursor state
+// (rather than an invalid cursor name), until it's removed by remove_cursor.
+// This is for a cursor opened by PreparedStmt.open_cursor.
+//
+// ISO/IEC 9075-2:2016(E), 15.4, Effect of closing a cursor, General Rules, 4-6
+pub fn (mut conn Connection) close_cursor(name string) {
+	mut cursor := conn.cursors[name] or { return }
+	cursor.close()
 }
 
 // remove_cursor closes and removes a cursor, if there is one with the name.
@@ -714,10 +742,6 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 	if statement != '' {
 		features << 'B031'
 	}
-	if declaration.updatability != none {
-		return sqlstate_42601('cursor ${declaration.name}: FOR READ ONLY and FOR UPDATE are not supported in a module')
-	}
-
 	body := declaration.query.body
 	degree := if body is QuerySpecification && statement == '' {
 		select_list_degree(body.exprs)
@@ -739,7 +763,8 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 
 // cursor_specification is the text after the first FOR (that isn't in a
 // delimited identifier or a comment) of a <declare cursor>, which is the
-// query. There can't be a literal before it.
+// query, including any <updatability clause> (the SQL/CLI opens a cursor with
+// one, see PreparedStmt.open_cursor). There can't be a literal before it.
 fn cursor_specification(text string) !string {
 	cs := text.runes()
 	mut i := 0

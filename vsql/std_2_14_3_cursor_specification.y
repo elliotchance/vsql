@@ -9,9 +9,18 @@ cursor_specification:
     flag_query_expression(mut yylex, $1.v as QueryExpression, .cursor)
     $$.v = yy_box(Stmt($1.v as QueryExpression))
   }
+| query_expression updatability_clause {
+    flag_query_expression(mut yylex, $1.v as QueryExpression, .cursor)
+    flag_updatability_clause(mut yylex, $1.v as QueryExpression,
+      CursorProperties{}, $2.v as UpdatabilityClause)
+    $$.v = yy_box(Stmt(new_cursor_specification($1.v as QueryExpression,
+      $2.v as UpdatabilityClause)))
+  }
 
-// An <updatability clause> is only supported in a <declare cursor>, see
-// declare_cursor.
+// An <updatability clause> of a <dynamic select statement> is used when the
+// query is opened as a cursor by the SQL/CLI (or by an SQL-client module), see
+// PreparedStmt.open_cursor. A query that's executed without a cursor can't
+// have one (see PreparedStmt.query_internal).
 updatability_clause:
   FOR READ ONLY { $$.v = UpdatabilityClause{} }
 | FOR UPDATE { $$.v = UpdatabilityClause{for_update: true} }

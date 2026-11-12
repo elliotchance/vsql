@@ -105,10 +105,11 @@ UTEST_F(db, 6_55_set_cursor_name_positioned) {
   EXPECT_EQ(run_sql(stmt2, "DELETE FROM t WHERE CURRENT OF c1"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "24000");
 
-  /* A closed cursor can't be used, and the query can be executed again. */
+  /* A closed cursor can't be used, but it still exists, and the query can be
+   * executed again. */
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(run_sql(stmt2, "DELETE FROM t WHERE CURRENT OF c1"), SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "34000");
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "24000");
   ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT x FROM t"), SQL_SUCCESS);
   EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 1), "10,3");
 }

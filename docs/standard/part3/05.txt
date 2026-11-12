@@ -62,8 +62,8 @@
 5.2/GR/3.b.i.1           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_26_free_handle_test.c every routine looks up the handle first
 5.2/GR/3.b.i.2           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c Cancel's own rules empty it after the checks
 5.2/GR/3.b.i.3           definition   - -
-5.2/GR/3.b.i.4           unclear      libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c not by the routines that always raise HYC00 (#725)
-5.2/GR/3.b.i.5           unclear      libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_5_3_implicit_set_connection_test.c not by the routines that always raise HYC00 (#725)
+5.2/GR/3.b.i.4           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/3.b.i.5           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_5_3_implicit_set_connection_test.c
 5.2/GR/3.b.i.6           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_49_param_data_test.c
 5.2/GR/3.b.i.7           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
 5.2/GR/3.b.ii            implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_31_get_desc_field_test.c

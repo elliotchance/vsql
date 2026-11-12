@@ -123,6 +123,26 @@ const char *fetch_strings(SQLHSTMT stmt, SQLSMALLINT column) {
   return result;
 }
 
+SQLHSTMT inactive_stmt(SQLHENV env, SQLHSTMT stmt, SQLHDBC *other_dbc) {
+  SQLHSTMT other_stmt;
+
+  if (SQLAllocConnect(env, other_dbc) != SQL_SUCCESS ||
+      connect_memory(*other_dbc) != SQL_SUCCESS ||
+      SQLAllocStmt(*other_dbc, &other_stmt) != SQL_SUCCESS ||
+      run_sql(stmt, "VALUES 1") != SQL_SUCCESS) {
+    return SQL_NULL_HANDLE;
+  }
+
+  return other_stmt;
+}
+
+void free_inactive_stmt(SQLHDBC dbc, SQLHDBC other_dbc, SQLHSTMT other_stmt) {
+  SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_ROLLBACK);
+  SQLFreeHandle(SQL_HANDLE_STMT, other_stmt);
+  SQLDisconnect(other_dbc);
+  SQLFreeHandle(SQL_HANDLE_DBC, other_dbc);
+}
+
 /* The handles are freed even if the test already freed some of them, so the
  * return values are ignored. */
 void free_handles(SQLHENV env, SQLHDBC dbc, SQLHSTMT stmt) {

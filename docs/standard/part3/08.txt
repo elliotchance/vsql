@@ -5,6 +5,6 @@
 # 8.1, Claims of conformance to SQL/CLI
 8.1                      untestable   - - a rule for claims; C002 is claimed in docs/sql-compliance-9075-3.rst
 # 8.2, Additional conformance requirements for SQL/CLI
-8.2                      untestable   - - a rule for claims; the routines for features that aren't supported raise HYC00 (#725)
+8.2                      untestable   - - a rule for claims; GetFunctions reports the routines for features that aren't supported as not supported
 # 8.3, Implied feature relationships of SQL/CLI
 8.3                      definition   - - there are none

@@ -42,6 +42,10 @@ fn test_next_transaction_characteristics() ! {
 	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL READ COMMITTED'
 	db.query('SET TRANSACTION DIAGNOSTICS SIZE 1')!
 	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL SERIALIZABLE, DIAGNOSTICS SIZE 1'
+	db.query('SET TRANSACTION READ ONLY')!
+	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL SERIALIZABLE, READ ONLY'
+	db.query('SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED')!
+	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL READ UNCOMMITTED'
 
 	// They're used up by the next SQL-transaction.
 	db.query('START TRANSACTION')!
@@ -307,6 +311,21 @@ fn test_isolation_waits() ! {
 	assert seen in [2, 3]
 	assert total >= 3
 	assert statement.wait()! == 1
+
+	// READ ONLY transactions don't wait for each other.
+	db.query('START TRANSACTION READ ONLY')!
+	reader := spawn fn [path] () !int {
+		mut db := open_database(path, isolation_test_options(0))!
+		defer {
+			db.close()
+		}
+		db.query('START TRANSACTION READ ONLY')!
+		count := db.query('SELECT * FROM t')!.rows.len
+		db.query('COMMIT')!
+		return count
+	}()
+	assert reader.wait()! == 4
+	db.query('COMMIT')!
 
 	// It gives up after the timeout.
 	db.query('START TRANSACTION')!

@@ -4,8 +4,8 @@ module main
 //
 // Explicitly start an SQL-transaction and set its characteristics.
 //
-// vsql transactions are always READ WRITE, so a READ ONLY transaction can't be
-// started (General Rule 8), which is #554.
+// READ WRITE with READ UNCOMMITTED is 42601, as it is for START TRANSACTION
+// (ISO/IEC 9075-2:2016(E), 17.3, Syntax Rules, 4).
 
 // Codes from Table 36, "Values for TRANSACTION ACCESS MODE with StartTran".
 const sql_transaction_read_only = 0x00000001
@@ -66,9 +66,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	}
 
 	// - 8, 9. The access mode and isolation level of TXN are set.
-	if access_mode == sql_transaction_read_only {
-		return cli_error('HYC00', 'optional feature not implemented: READ ONLY transactions')
-	}
+	access := if access_mode == sql_transaction_read_only { 'READ ONLY' } else { 'READ WRITE' }
 	level := match isolation_level {
 		i64(sql_transaction_read_uncommitted) { 'READ UNCOMMITTED' }
 		i64(sql_transaction_read_committed) { 'READ COMMITTED' }
@@ -91,7 +89,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	for dh in l1 {
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
-		db_query(mut conn, 'START TRANSACTION ISOLATION LEVEL ${level}')!
+		db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}')!
 		dbc.autocommit_transaction = false
 	}
 

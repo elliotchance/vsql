@@ -20,7 +20,9 @@ Syntax
   START TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
 
   <transaction_mode> ::=
-      ISOLATION LEVEL <level_of_isolation>
+      READ ONLY
+    | READ WRITE
+    | ISOLATION LEVEL <level_of_isolation>
     | DIAGNOSTICS SIZE <number>
 
   <level_of_isolation> ::=
@@ -31,6 +33,11 @@ Syntax
 
 Characteristics
 ---------------
+
+A ``READ ONLY`` transaction can query the database, but any statement that
+changes it fails with ``25006``. Without an access mode, it's ``READ WRITE``
+(except for ``READ UNCOMMITTED``, which is always ``READ ONLY``), even after a
+:doc:`set-transaction`.
 
 The isolation level decides which changes from other transactions it can see
 (see *Isolation Levels* in :doc:`transactions`). Without one, it's

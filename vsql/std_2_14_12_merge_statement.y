@@ -35,11 +35,28 @@ merge_when_clause:
   merge_when_matched_clause { $$.v = $1.v }
 | merge_when_not_matched_clause { $$.v = $1.v }
 
+// A search condition after AND needs Feature F313.
+//
+// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, Conformance Rules, 6
 merge_when_matched_clause:
   WHEN MATCHED THEN merge_update_specification { $$.v = $4.v }
+| WHEN MATCHED AND search_condition THEN merge_update_specification {
+    flag(mut yylex, 'F313')
+    $$.v = yy_box(MergeWhenClause{
+      ...$6.v as MergeWhenClause
+      condition: $4.v as BooleanValueExpression
+    })
+  }
 
 merge_when_not_matched_clause:
   WHEN NOT MATCHED THEN merge_insert_specification { $$.v = $5.v }
+| WHEN NOT MATCHED AND search_condition THEN merge_insert_specification {
+    flag(mut yylex, 'F313')
+    $$.v = yy_box(MergeWhenClause{
+      ...$7.v as MergeWhenClause
+      condition: $5.v as BooleanValueExpression
+    })
+  }
 
 merge_update_specification:
   UPDATE SET set_clause_list {

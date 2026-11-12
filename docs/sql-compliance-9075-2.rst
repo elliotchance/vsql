@@ -755,7 +755,7 @@ Optional Features
    * - ✅ **F312**
      - **MERGE statement**
 
-   * - ❌ **F313**
+   * - ✅ **F313**
      - **Enhanced MERGE statement**
 
    * - ❌ **F314**

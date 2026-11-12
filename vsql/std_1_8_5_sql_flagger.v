@@ -987,8 +987,16 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 				create_plan(stmt.source.body, params, mut conn) or {}
 				conn.flag_query_tables = false
 			}
-			stmt.plan(params, mut conn) or {}
+			_, tables := stmt.plan(params, mut conn) or { Plan{}, map[string]&Table{} }
+			mut c := Compiler{
+				conn:   conn
+				params: params
+				tables: tables
+			}
 			for clause in stmt.clauses {
+				if condition := clause.condition {
+					condition.compile(mut c) or {}
+				}
 				conn.flag_set_clauses(stmt.table_name, clause.set, params)
 			}
 			conn.flag_self_reference(stmt.table_name)

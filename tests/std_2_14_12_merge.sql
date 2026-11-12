@@ -58,8 +58,8 @@ SELECT * FROM t;
 -- ID: 2 NAME: b N: 20
 -- ID: 13 NAME: NULL N: 30
 
--- # Only the first clause of each kind is used (several of either kind need
--- # Feature F313).
+-- # Without a search condition, only the first clause of each kind is used
+-- # (several of either kind need Feature F313).
 /* flags */
 MERGE INTO t USING s ON t.id = s.id
 WHEN MATCHED THEN UPDATE SET n = 1
@@ -73,6 +73,47 @@ SELECT * FROM t;
 -- ID: 1 NAME: a N: 10
 -- ID: 2 NAME: b N: 1
 -- ID: 3 NAME: NULL N: NULL
+
+-- # Each clause can have a search condition after AND (Feature F313), which
+-- # can reference the source and the target (Syntax Rules, 9). The first clause
+-- # whose condition is true is used, and a row without one is left out. A row
+-- # of the source that doesn't match has NULLs for the target.
+/* flags */
+MERGE INTO t USING s ON t.id = s.id
+WHEN MATCHED AND s.n > 100 THEN UPDATE SET n = 0
+WHEN MATCHED AND t.n = 20 THEN UPDATE SET name = 'twenty'
+WHEN NOT MATCHED AND s.n > 100 THEN INSERT (id) VALUES (99)
+WHEN NOT MATCHED AND t.id IS NULL THEN INSERT (id, name) VALUES (s.id, s.name);
+SELECT * FROM t;
+MERGE INTO t USING s ON t.id = s.id
+WHEN MATCHED AND s.n > 100 THEN UPDATE SET n = 0
+WHEN NOT MATCHED AND s.n > 100 THEN INSERT (id) VALUES (99);
+MERGE INTO t USING s ON t.id = s.id
+WHEN MATCHED AND nope = 1 THEN UPDATE SET n = 0;
+-- flags: F312, F313
+-- msg: MERGE 2
+-- flags:
+-- ID: 1 NAME: a N: 10
+-- ID: 2 NAME: twenty N: 20
+-- ID: 3 NAME: c N: NULL
+-- flags: F312, F313
+-- msg: MERGE 0
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE
+
+-- # A row of the target is only changed by the first clause that any of its
+-- # matching rows is for, so a row of the source for a later clause doesn't
+-- # make it match more than once (General Rules, 6.a.i.1).
+MERGE INTO t USING (VALUES (2, 1), (2, 2)) AS v (id, k) ON t.id = v.id
+WHEN MATCHED AND v.k = 1 THEN UPDATE SET n = 1
+WHEN MATCHED THEN UPDATE SET n = 2;
+MERGE INTO t USING (VALUES (1, 2), (1, 1)) AS v (id, k) ON t.id = v.id
+WHEN MATCHED AND v.k = 1 THEN UPDATE SET n = 1
+WHEN MATCHED THEN UPDATE SET n = 2;
+SELECT * FROM t;
+-- msg: MERGE 1
+-- msg: MERGE 1
+-- ID: 1 NAME: a N: 1
+-- ID: 2 NAME: b N: 1
 
 -- # An empty source is no data (General Rules, 7).
 MERGE INTO t USING (SELECT * FROM s WHERE id > 99) AS v ON t.id = v.id
@@ -251,7 +292,7 @@ SELECT * FROM d;
 -- ID: 1 X: 5
 -- ID: 2 X: 30
 
--- # A source that's a query that reads the target, or a subquery of the
+-- # A source that's a query that reads the target, or a subquery of a
 -- # condition that does, needs Feature F781, but the target itself as the
 -- # source doesn't (Conformance Rules, 1.a and 2.a).
 /* flags */
@@ -261,9 +302,16 @@ MERGE INTO t USING t AS v ON t.id = v.id
 WHEN MATCHED THEN UPDATE SET n = 2;
 MERGE INTO t USING s ON t.id = (SELECT MAX(id) FROM t) AND s.id = 2
 WHEN MATCHED THEN UPDATE SET n = 3;
+MERGE INTO t USING s ON t.id = s.id
+WHEN MATCHED AND s.n < (SELECT MAX(n) FROM t) THEN UPDATE SET n = 4;
+MERGE INTO nope USING s ON nope.id = s.id
+WHEN MATCHED AND s.n < 5 THEN UPDATE SET n = 4;
 -- flags: F312, F591, F781
 -- msg: MERGE 2
 -- flags: F312
 -- msg: MERGE 2
 -- flags: F312, F781
 -- msg: MERGE 1
+-- flags: F312, F313, F781
+-- msg: MERGE 0
+-- error 42P01: no such table: ":memory:".PUBLIC.NOPE

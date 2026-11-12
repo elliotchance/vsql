@@ -292,6 +292,16 @@ fn mark_stored_parameters(stmt Stmt, mut references []HostParameterReference) {
 				}
 			}
 		}
+		MergeStatement {
+			for clause in stmt.clauses {
+				sources << update_sources(clause.set)
+				for element in clause.values {
+					if element is ValueExpression {
+						sources << element
+					}
+				}
+			}
+		}
 		UpdateStatementSearched {
 			sources << update_sources(stmt.set)
 		}

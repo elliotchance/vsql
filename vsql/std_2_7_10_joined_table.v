@@ -135,7 +135,13 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 		inner_rows := o.inner_rows(outer_row, all_inner_rows)!
 		mut matched := false
 		for inner_row in inner_rows {
-			mut row := new_row(map[string]Value{})
+			// The row keeps the id of the row of the inner side, so a MERGE can
+			// change the row of its target table that it matched (see
+			// MergeStatement). A row that didn't match has no id.
+			mut row := Row{
+				id:  inner_row.id
+				tid: inner_row.tid
+			}
 			row.data = row.data.merged(outer_row.data)
 			row.data = row.data.merged(inner_row.data)
 

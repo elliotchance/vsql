@@ -555,6 +555,52 @@ fn test_column_unnamed() {
 	assert values.columns.map(it.unnamed) == [true, true]
 }
 
+// The primary key or preferred candidate key of a result is only known for a
+// query of one base table that isn't grouped (Column.key_type).
+fn test_column_key_type() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (a INT, b INT NOT NULL, c INT NOT NULL, d INT, e INT NOT NULL, PRIMARY KEY (d, a), UNIQUE (b, c), UNIQUE (c), UNIQUE (e), UNIQUE (a), UNIQUE (b) DEFERRABLE)')!
+	db.query('CREATE TABLE u (x INT NOT NULL, y INT NOT NULL, z INT NOT NULL, UNIQUE (y, z), UNIQUE (x, z))')!
+	db.query('CREATE TABLE v (x INT NOT NULL, y INT NOT NULL, UNIQUE (x), UNIQUE (y))')!
+	db.query('CREATE TABLE w (x INT NOT NULL, y INT NOT NULL, UNIQUE (y), UNIQUE (x))')!
+	db.query('CREATE TABLE n (x INT)')!
+	db.query('CREATE TABLE s (x INT NOT NULL, y INT NOT NULL, UNIQUE (y), UNIQUE (x, y))')!
+	for sql, want in {
+		'SELECT * FROM t':                                   [1, 0, 0, 1, 0]
+		'SELECT d, a, d, a FROM t WHERE a > 0 ORDER BY b':   [1, 1, 0, 0]
+		'SELECT DISTINCT t.* FROM t FETCH FIRST 1 ROW ONLY': [1, 0, 0, 1, 0]
+		'SELECT x.d, a + 0, x.a AS z FROM t AS x':           [1, 0, 1]
+		'SELECT q, p FROM t AS x (p, b, c, q, e)':           [1, 1]
+		'SELECT a, b, c, e FROM t':                          [2, 0, 0, 0]
+		'SELECT b, c FROM t':                                [0, 2]
+		'SELECT e, b FROM t':                                [2, 0]
+		'SELECT b, a, d FROM t AS d':                        [0, 1, 1]
+		'SELECT z, y, x FROM u':                             [2, 2, 0]
+		'SELECT y, x FROM v':                                [2, 0]
+		'SELECT y, x FROM w':                                [2, 0]
+		'SELECT x, y FROM s':                                [0, 2]
+		'SELECT x FROM n':                                   [0]
+		'SELECT d, a FROM t GROUP BY d, a':                  [0, 0]
+		'SELECT COUNT(*) FROM t':                            [0]
+		'SELECT * FROM t AS x JOIN n ON TRUE':               [0, 0, 0, 0, 0, 0]
+		'SELECT * FROM (SELECT * FROM t) AS x':              [0, 0, 0, 0, 0]
+		'SELECT 1':                                          [0]
+		'VALUES 1':                                          [0]
+		'SELECT d, a FROM t UNION SELECT d, a FROM t':       [0, 0]
+	} {
+		mut stmt := db.prepare(sql)!
+		assert stmt.columns(map[string]Value{})!.map(it.key_type) == want, sql
+	}
+
+	// A table of the INFORMATION_SCHEMA is a view, which has no known keys.
+	mut tables := db.query('SELECT * FROM information_schema.table_constraints')!
+	assert tables.columns.all(it.key_type == 0)
+
+	// A reference to a column of the outer query isn't a counterpart.
+	result := db.query('SELECT (SELECT t.d FROM t AS x) FROM t')!
+	assert result.columns.map(it.key_type) == [0]
+}
+
 // A prepared positioned UPDATE is checked like any other. A cursor opened by
 // PreparedStmt.open_cursor (a dynamic cursor, for the SQL/CLI and a module) has
 // no <updatability clause>, so it isn't updatable if it's ordered, and a sort

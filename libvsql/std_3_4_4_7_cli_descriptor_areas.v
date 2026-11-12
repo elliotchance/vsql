@@ -442,9 +442,11 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	ipd.header[sql_desc_dynamic_function] = stmt.diag.dynamic_function
 	ipd.header[sql_desc_dynamic_function_code] = i64(stmt.diag.dynamic_function_code)
 
-	// - 5. The IRD describes the result columns, if any. vsql doesn't know if a
-	// result column is part of a key, so KEY_TYPE and KEY_MEMBER are 0 (zero),
-	// which is #743.
+	// - 5. The IRD describes the result columns, if any. A key of the result is
+	// only known for some queries (see vsql.Column.key_type). KEY_TYPE is 1
+	// (one) if the result has a primary key, 2 if it only has a preferred key,
+	// and 0 (zero) otherwise (5.a.i.4). Each column of the key has a KEY_MEMBER
+	// of 1 (one) (5.c.iii.1.C).
 	// The application's ARRAY_STATUS_POINTER and ROWS_PROCESSED_POINTER are
 	// kept.
 	status_pointer := ird.header_int(sql_desc_array_status_pointer)
@@ -455,6 +457,11 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	ird.header[sql_desc_dynamic_function] = stmt.diag.dynamic_function
 	ird.header[sql_desc_dynamic_function_code] = i64(stmt.diag.dynamic_function_code)
 	ird.header[sql_desc_key_type] = i64(0)
+	for column in columns {
+		if column.key_type > 0 {
+			ird.header[sql_desc_key_type] = i64(column.key_type)
+		}
+	}
 	ird.set_count(columns.len)
 	for i, column in columns {
 		ird.records[i] = describe_column(column, conn.current_catalog_name())
@@ -481,7 +488,7 @@ fn describe_column(column vsql.Column, catalog string) map[int]DescValue {
 	record[sql_desc_nullable] = i64(if column.not_null { sql_no_nulls } else { sql_nullable })
 	record[sql_desc_name] = column.name.sub_entity_name
 	record[sql_desc_unnamed] = i64(if column.unnamed { sql_unnamed } else { sql_named })
-	record[sql_desc_key_member] = i64(0)
+	record[sql_desc_key_member] = i64(if column.key_type > 0 { 1 } else { 0 })
 
 	// - 5.c.iv. Other fields depend on the TYPE.
 	match typ.typ {

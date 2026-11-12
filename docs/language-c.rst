@@ -522,8 +522,12 @@ It has up to ``<occurrences>`` items (``100`` by default, and at most
 (``0`` for any other statement) and describes each column in an item: its
 ``TYPE`` (a code, such as ``4`` for ``INTEGER``), ``LENGTH``, ``PRECISION``,
 ``SCALE``, ``NAME``, ``NULLABLE``, etc. ``DYNAMIC_FUNCTION`` and
-``DYNAMIC_FUNCTION_CODE`` are the statement, and ``KEY_TYPE`` is always ``0``.
-If there are more columns than items, the ``SQLSTATE`` is ``01005``, and only
+``DYNAMIC_FUNCTION_CODE`` are the statement. ``KEY_TYPE`` is ``1`` when the
+columns include the ``PRIMARY KEY`` of the table, ``2`` when they only include a
+``UNIQUE`` whose columns are ``NOT NULL``, or ``0`` otherwise, and the
+``KEY_MEMBER`` of each column of that key is ``1``. A key is only known for a
+query of one table that isn't grouped (so not for a join, a derived table,
+``GROUP BY``, an aggregate function or ``UNION``). If there are more columns than items, the ``SQLSTATE`` is ``01005``, and only
 ``COUNT`` is set.
 
 ``USING SQL DESCRIPTOR`` gives the value of each ``?`` from the ``DATA`` (or

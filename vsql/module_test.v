@@ -443,7 +443,7 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 		'm')!
 	assert m.source.contains('static const char *const vsql_m_cursor_statements[] = {NULL, "S", NULL};\n')
 	assert m.source.contains('  int vsql_m_w = 0;\n  vsql_m_begin("GET DESCRIPTOR", 47);\n  struct vsql_m_descriptor *vsql_m_d = vsql_m_descriptor(SQLSTATE, "D", &vsql_m_own);\n')
-	assert m.source.contains('  *n = (long)vsql_m_d->count;\n  *n = (long)vsql_m_d->top_level_count;\n  *n = (long)0;\n  vsql_m_w |= vsql_m_put(s, 5, vsql_m_d->dynamic_function);\n  *n = (long)vsql_m_d->dynamic_function_code;\n')
+	assert m.source.contains('  *n = (long)vsql_m_d->count;\n  *n = (long)vsql_m_d->top_level_count;\n  *n = (long)vsql_m_d->key_type;\n  vsql_m_w |= vsql_m_put(s, 5, vsql_m_d->dynamic_function);\n  *n = (long)vsql_m_d->dynamic_function_code;\n')
 	assert m.source.contains('  struct vsql_m_item *vsql_m_i = vsql_m_get_item(SQLSTATE, "G", NULL, (long long)*n, SQL_VARCHAR, 5, 1);\n')
 	assert m.source.contains('  vsql_m_w |= vsql_m_get_data(vsql_m_i, s, SQL_VARCHAR, 5);\n  *n = (long)vsql_m_i->number[VSQL_M_INDICATOR];\n  vsql_m_w |= vsql_m_put(c, 3, vsql_m_i->string[VSQL_M_NAME] == NULL ? "" : vsql_m_i->string[VSQL_M_NAME]);\n')
 	assert m.source.contains('vsql_m_get_item(SQLSTATE, "G", &vsql_m_own, 2LL, SQL_INTEGER, 0, 0);\n')

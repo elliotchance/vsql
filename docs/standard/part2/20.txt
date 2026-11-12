@@ -99,7 +99,7 @@
 20.3/GR/1.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.3/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 # 20.4, <get descriptor statement>
-20.4                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c KEY_TYPE and KEY_MEMBER are always 0 (zero) (#801)
+20.4                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
 20.4/SR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/module_test.v
 20.4/SR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/module_test.v
 20.4/SR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/module_test.v
@@ -391,7 +391,7 @@
 20.9/GR/3                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no extended dynamic cursors (B032)
 20.9/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 # 20.10, <describe statement>
-20.10                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only DESCRIBE OUTPUT, and KEY_TYPE and KEY_MEMBER are always 0 (zero) (#801)
+20.10                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only DESCRIBE OUTPUT
 20.10/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.10/SR/1.a             n/a          - - SQL-invoked routines (T321)
 20.10/SR/1.b             implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
@@ -412,10 +412,10 @@
 20.10/GR/6.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.c             impl-defined vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the dynamic select statement (SELECT CURSOR, 85) is used
-20.10/GR/6.d             missing      vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c KEY_TYPE is always 0 (zero) (#801)
-20.10/GR/6.d.i           missing      - - #801
-20.10/GR/6.d.ii          missing      - - #801
-20.10/GR/6.d.iii         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.10/GR/6.d             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.d.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,vsql/api_test.v only known for a query of one base table that isn't grouped (Column.key_type)
+20.10/GR/6.d.ii          implemented  vsql/std_2_20_7_prepare_statement.c vsql/api_test.v a UNIQUE whose columns are known not null, of a query of one base table that isn't grouped
+20.10/GR/6.d.iii         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.e             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
@@ -433,7 +433,7 @@
 20.10/GR/7.c.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.10/GR/7.c.i.3         missing      vsql/std_2_20_7_prepare_statement.c - KEY_MEMBER is always 0 (zero) (#801)
+20.10/GR/7.c.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,vsql/api_test.v
 20.10/GR/7.c.ii          n/a          - - DESCRIBE INPUT (B032-01)
 20.10/GR/7.c.ii.1        n/a          - - DESCRIBE INPUT (B032-01)
 20.10/GR/7.c.ii.2        n/a          - - DESCRIBE INPUT (B032-01)

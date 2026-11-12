@@ -38,6 +38,12 @@ pub:
 	// features of its table, such as T111 for INFORMATION_SCHEMA.COLUMNS.IS_UPDATABLE
 	// (see information_schema_features). It's only used by the SQL Flagger.
 	features []string
+	// key_type is 1 for a column of a result that is a member of the primary key
+	// of the result, or 2 for a member of its preferred candidate key when it
+	// has no primary key. Otherwise, it's 0 (zero). These are only known for a
+	// query of one table that isn't grouped, and are the KEY_TYPE and
+	// KEY_MEMBER of a descriptor of the result.
+	key_type int
 }
 
 // is_generated_always is true if a value can't be assigned to the column, other

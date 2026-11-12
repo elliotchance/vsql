@@ -462,7 +462,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					})!
 				}
 			} else {
-				return sqlstate_42p01('table', table_name.str())
+				return sqlstate_42p01_table(table_name)
 			}
 		}
 		QueryExpression {
@@ -1145,7 +1145,7 @@ fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables
 		}
 	}
 
-	return sqlstate_42p01('table', table_name.str())
+	return sqlstate_42p01_table(table_name)
 }
 
 // column_derived_column is the select list item for one column of "t.*".

@@ -390,7 +390,8 @@ fn (i Index) has_null(row Row) bool {
 // unique_violation is the error for a row that has the same values as another
 // row of t in a UNIQUE index.
 fn (i Index) unique_violation(t Table) IError {
-	return sqlstate_23505('UNIQUE INDEX ${i.name.entity_name} on ${t.name}', i.name)
+	return sqlstate_23505('UNIQUE INDEX ${i.name.entity_name} on ${t.name}', i.name,
+		t.name)
 }
 
 // check_unique_indexes returns an error if a row in rows has the same values

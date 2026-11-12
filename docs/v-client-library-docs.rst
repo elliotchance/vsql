@@ -35,6 +35,18 @@ compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C sou
 
 ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Conformance Rules, 6
 
+fn condition_table
+------------------
+
+
+.. code-block:: v
+
+   pub fn condition_table(err IError) ?Identifier
+
+condition_table is the table that a condition identifies, for the CATALOG_NAME, SCHEMA_NAME and TABLE_NAME of a diagnostics area, with the column (for its COLUMN_NAME) as the sub_entity_name. It's the table that contains the violated constraint, for an integrity constraint violation (class 23) or a transaction rollback because of one (40002). It's the table that doesn't exist, for no such table (42P01), or the table (if there's one) and the column, for no such column (42703) or a syntax error (42601) of an unknown column. It's none for any other error, and its parts are empty if the condition doesn't know them.
+
+ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii ISO/IEC 9075-3:2003(E), 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
+
 fn conflicting_cursor
 ---------------------
 

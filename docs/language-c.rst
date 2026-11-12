@@ -394,14 +394,21 @@ Item                         Value
 ``CONSTRAINT_SCHEMA``        Its schema.
 ``CONSTRAINT_CATALOG``       Its catalog.
 ``CURSOR_NAME``              The cursor (for an SQLSTATE of ``01001`` or ``24000``).
+``TABLE_NAME``               The table that contains the constraint that was
+                             violated (for an SQLSTATE that starts with ``23``,
+                             or ``40002``), the table that doesn't exist (for
+                             ``42P01``), or the table that doesn't have the
+                             column (for ``42703``, if the column was looked
+                             for in one table). Otherwise it's empty.
+``SCHEMA_NAME``              Its schema.
+``CATALOG_NAME``             Its catalog.
+``COLUMN_NAME``              The column that doesn't exist (for ``42703``).
 ============================ ==================================================
 
-The other condition items (``CATALOG_NAME``, ``COLUMN_NAME``,
-``PARAMETER_MODE``, ``PARAMETER_NAME``,
+The other condition items (``PARAMETER_MODE``, ``PARAMETER_NAME``,
 ``PARAMETER_ORDINAL_POSITION``, ``ROUTINE_CATALOG``, ``ROUTINE_NAME``,
-``ROUTINE_SCHEMA``, ``SCHEMA_NAME``, ``SPECIFIC_NAME``, ``TABLE_NAME``,
-``TRIGGER_CATALOG``, ``TRIGGER_NAME`` and ``TRIGGER_SCHEMA``) are always empty
-(or ``0``).
+``ROUTINE_SCHEMA``, ``SPECIFIC_NAME``, ``TRIGGER_CATALOG``, ``TRIGGER_NAME``
+and ``TRIGGER_SCHEMA``) are always empty (or ``0``).
 
 A number must be put in a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` parameter, and
 a string in a ``CHARACTER`` or ``CHARACTER VARYING`` parameter (a string that

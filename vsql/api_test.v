@@ -624,6 +624,62 @@ fn test_violated_constraint() ! {
 	assert constraint_violated(mut db, 'SELECT * FROM q') == 'none'
 }
 
+// table_of_condition is the table (and column) that the condition raised by a
+// statement identifies.
+fn table_of_condition(mut db Connection, stmt string) string {
+	db.query(stmt) or {
+		t := condition_table(err) or { return 'none' }
+		return '${t.catalog_name}.${t.schema_name}.${t.entity_name}.${t.sub_entity_name}'
+	}
+	return 'ok'
+}
+
+// The table that contains a violated constraint, and the table (and column)
+// that caused a syntax error or access rule violation, see condition_table.
+fn test_condition_table() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE SCHEMA s')!
+	db.query('CREATE TABLE s.p (id INT PRIMARY KEY, x INT NOT NULL CONSTRAINT x_positive CHECK (x > 0), u INT UNIQUE)')!
+	db.query('CREATE TABLE c (id INT CONSTRAINT fk REFERENCES s.p (id), y INT CONSTRAINT y_positive CHECK (y > 0) DEFERRABLE INITIALLY DEFERRED)')!
+	db.query('CREATE UNIQUE INDEX ci ON c (id)')!
+	db.query('INSERT INTO s.p (id, x, u) VALUES (1, 1, 1)')!
+	db.query('INSERT INTO c (id, y) VALUES (1, 1)')!
+
+	// Integrity constraint violations are of the table that contains the
+	// constraint (or the UNIQUE index).
+	assert table_of_condition(mut db, 'INSERT INTO s.p (id, x) VALUES (2, NULL)') == ':memory:.S.P.'
+	assert table_of_condition(mut db, 'INSERT INTO c (id, y) VALUES (2, 1)') == ':memory:.PUBLIC.C.'
+	assert table_of_condition(mut db, 'INSERT INTO s.p (id, x) VALUES (1, 1)') == ':memory:.S.P.'
+	assert table_of_condition(mut db, 'INSERT INTO s.p (id, x, u) VALUES (2, 1, 1)') == ':memory:.S.P.'
+	assert table_of_condition(mut db, 'INSERT INTO s.p (id, x) VALUES (2, 0)') == ':memory:.S.P.'
+	assert table_of_condition(mut db, 'INSERT INTO c (id, y) VALUES (1, 1)') == ':memory:.PUBLIC.C.'
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO c (id, y) VALUES (NULL, 0)')!
+	assert table_of_condition(mut db, 'COMMIT') == ':memory:.PUBLIC.C.'
+
+	// No such table.
+	assert table_of_condition(mut db, 'SELECT * FROM q') == ':memory:.PUBLIC.Q.'
+	assert table_of_condition(mut db, 'DELETE FROM s.q') == ':memory:.S.Q.'
+	assert table_of_condition(mut db, 'SELECT q.* FROM c') == ':memory:.PUBLIC.Q.'
+	assert table_of_condition(mut db, 'UPDATE c SET y = q.y') == ':memory:.PUBLIC.Q.'
+
+	// No such column (or an unknown column, which is a syntax error) is only
+	// of a table if it was looked for in one table.
+	assert table_of_condition(mut db, 'INSERT INTO s.p (id, z) VALUES (3, 1)') == ':memory:.S.P.Z'
+	assert table_of_condition(mut db, 'UPDATE c SET z = 1') == ':memory:.PUBLIC.C.Z'
+	assert table_of_condition(mut db, 'SELECT c.z FROM s.p, c') == ':memory:.PUBLIC.C.Z'
+	assert table_of_condition(mut db, 'SELECT z FROM c') == '...Z'
+	assert table_of_condition(mut db, 'SELECT q.z FROM c') == '...Z'
+	assert table_of_condition(mut db, 'SELECT d.z FROM (SELECT id FROM c) AS d') == '...Z'
+	assert table_of_condition(mut db, 'SELECT * FROM c JOIN s.p USING (z)') == '...Z'
+	assert table_of_condition(mut db, 'SELECT id FROM c GROUP BY z') == '...Z'
+
+	// Any other condition doesn't identify a table.
+	assert table_of_condition(mut db, 'SELECT NEXT VALUE FOR q FROM c') == '...'
+	assert table_of_condition(mut db, 'VALUES NEXT VALUE FOR q') == 'none'
+	assert table_of_condition(mut db, 'SELECT 1 / 0 FROM c') == 'none'
+}
+
 fn test_invalid_cursor() ! {
 	mut db := open(':memory:')!
 	db.query('CREATE TABLE t (x INT)')!

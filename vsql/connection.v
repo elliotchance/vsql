@@ -1070,7 +1070,7 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 		check_writable_schema(ident)!
 	}
 
-	return sqlstate_42p01('table', ident.str()) // table does not exist
+	return sqlstate_42p01_table(ident) // table does not exist
 }
 
 // ConnectionOptions can modify the behavior of a connection when it is opened.

@@ -75,6 +75,34 @@ pub fn violated_constraint(err IError) ?Identifier {
 	}
 }
 
+// condition_table is the table that a condition identifies, for the
+// CATALOG_NAME, SCHEMA_NAME and TABLE_NAME of a diagnostics area, with the
+// column (for its COLUMN_NAME) as the sub_entity_name. It's the table that
+// contains the violated constraint, for an integrity constraint violation
+// (class 23) or a transaction rollback because of one (40002). It's the table
+// that doesn't exist, for no such table (42P01), or the table (if there's one)
+// and the column, for no such column (42703) or a syntax error (42601) of an
+// unknown column. It's none for any other error, and its parts are empty if
+// the condition doesn't know them.
+//
+// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii
+// ISO/IEC 9075-3:2003(E), 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
+pub fn condition_table(err IError) ?Identifier {
+	return match err {
+		SQLState23502 { err.table }
+		SQLState23503 { err.table }
+		SQLState23505 { err.table }
+		SQLState23514 { err.table }
+		SQLState40002 { err.table }
+		SQLState42601 {
+			if err.table.sub_entity_name == '' { none } else { err.table }
+		}
+		SQLState42703 { err.table }
+		SQLState42P01 { err.table }
+		else { none }
+	}
+}
+
 // invalid_cursor is the name of the cursor that is in the invalid state, for an
 // invalid cursor state (24000). It's none for any other error.
 pub fn invalid_cursor(err IError) ?string {
@@ -438,6 +466,7 @@ fn sqlstate_22029() IError {
 struct SQLState23502 {
 	SQLState
 	constraint Identifier
+	table      Identifier
 }
 
 fn sqlstate_23502(t Table, column_name string) IError {
@@ -445,6 +474,7 @@ fn sqlstate_23502(t Table, column_name string) IError {
 		code:       sqlstate_to_int('23502')
 		msg:        'violates non-null constraint: column ${column_name}'
 		constraint: t.constraint_identifier(t.not_null_names[column_name])
+		table:      t.name
 	}
 }
 
@@ -452,13 +482,15 @@ fn sqlstate_23502(t Table, column_name string) IError {
 struct SQLState23503 {
 	SQLState
 	constraint Identifier
+	table      Identifier
 }
 
-fn sqlstate_23503(msg string, constraint Identifier) IError {
+fn sqlstate_23503(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23503{
 		code:       sqlstate_to_int('23503')
 		msg:        'violates foreign key constraint: ${msg}'
 		constraint: constraint
+		table:      table
 	}
 }
 
@@ -466,13 +498,15 @@ fn sqlstate_23503(msg string, constraint Identifier) IError {
 struct SQLState23505 {
 	SQLState
 	constraint Identifier
+	table      Identifier
 }
 
-fn sqlstate_23505(msg string, constraint Identifier) IError {
+fn sqlstate_23505(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23505{
 		code:       sqlstate_to_int('23505')
 		msg:        'violates unique constraint: ${msg}'
 		constraint: constraint
+		table:      table
 	}
 }
 
@@ -480,13 +514,15 @@ fn sqlstate_23505(msg string, constraint Identifier) IError {
 struct SQLState23514 {
 	SQLState
 	constraint Identifier
+	table      Identifier
 }
 
-fn sqlstate_23514(msg string, constraint Identifier) IError {
+fn sqlstate_23514(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23514{
 		code:       sqlstate_to_int('23514')
 		msg:        'violates check constraint: ${msg}'
 		constraint: constraint
+		table:      table
 	}
 }
 
@@ -535,15 +571,28 @@ fn sqlstate_3f000(schema_name string) IError {
 	}
 }
 
-// syntax error
+// syntax error. table is the table and column of an unknown column (see
+// condition_table).
 struct SQLState42601 {
 	SQLState
+	table Identifier
 }
 
 fn sqlstate_42601(message string) IError {
 	return SQLState42601{
 		code: sqlstate_to_int('42601')
 		msg:  'syntax error: ${message}'
+	}
+}
+
+// sqlstate_42601_column is a syntax error for a column reference that isn't a
+// column of any table in scope. table is the table that the column was
+// qualified with, if there's one.
+fn sqlstate_42601_column(message string, table Identifier, column_name string) IError {
+	return SQLState42601{
+		code:  sqlstate_to_int('42601')
+		msg:   'syntax error: ${message}'
+		table: column_of(table, column_name)
 	}
 }
 
@@ -577,18 +626,39 @@ fn sqlstate_42702(column_name string) IError {
 	}
 }
 
-// column does not exist
+// column does not exist. table is the table (if it's a table in a schema) that
+// doesn't have the column, with the column as its sub_entity_name (see
+// condition_table).
 struct SQLState42703 {
 	SQLState
+	table Identifier
 pub:
 	column_name string
 }
 
-fn sqlstate_42703(column_name string) IError {
+fn sqlstate_42703(table Identifier, column_name string) IError {
 	return SQLState42703{
 		code:        sqlstate_to_int('42703')
 		msg:         'no such column: ${column_name}'
+		table:       column_of(table, column_name)
 		column_name: column_name
+	}
+}
+
+// column_of is the column of a table, for condition_table. The table is left
+// out if it's not a table in a schema (such as a derived table).
+fn column_of(table Identifier, column_name string) Identifier {
+	if table.schema_name == '' || table.custom_id != '' {
+		return Identifier{
+			sub_entity_name: column_name
+		}
+	}
+
+	return Identifier{
+		catalog_name:    table.catalog_name
+		schema_name:     table.schema_name
+		entity_name:     table.entity_name
+		sub_entity_name: column_name
 	}
 }
 
@@ -708,6 +778,9 @@ fn sqlstate_428c9(column_name string) IError {
 // no such table
 struct SQLState42P01 {
 	SQLState
+	// table is the table that doesn't exist, or empty for another type of
+	// object (see condition_table).
+	table Identifier
 pub:
 	// entity_type is 'table' or 'sequence'
 	entity_type string
@@ -721,6 +794,22 @@ fn sqlstate_42p01(entity_type string, entity_name string) IError {
 		msg:         'no such ${entity_type}: ${entity_name}'
 		entity_type: entity_type
 		entity_name: entity_name
+	}
+}
+
+// sqlstate_42p01_table is no such table, for the table name (see
+// condition_table).
+fn sqlstate_42p01_table(name Identifier) IError {
+	return SQLState42P01{
+		code:        sqlstate_to_int('42P01')
+		msg:         'no such table: ${name}'
+		entity_type: 'table'
+		entity_name: name.str()
+		table:       Identifier{
+			catalog_name: name.catalog_name
+			schema_name:  name.schema_name
+			entity_name:  name.entity_name
+		}
 	}
 }
 
@@ -998,13 +1087,15 @@ fn sqlstate_40001(message string) IError {
 struct SQLState40002 {
 	SQLState
 	constraint Identifier
+	table      Identifier
 }
 
-fn sqlstate_40002(message string, constraint Identifier) IError {
+fn sqlstate_40002(message string, constraint Identifier, table Identifier) IError {
 	return SQLState40002{
 		code:       sqlstate_to_int('40002')
 		msg:        'integrity constraint violation: ${message}'
 		constraint: constraint
+		table:      table
 	}
 }
 

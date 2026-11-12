@@ -15,9 +15,12 @@ static const char *vsql_m_origin(char c) {
  * information item. The MESSAGE_TEXT is the message of the condition, and the
  * CONNECTION_NAME and SERVER_NAME are of the SQL-connection that raised it.
  * The constraint is only identified for an integrity constraint violation, and
- * the cursor for an invalid cursor state.
+ * the cursor for an invalid cursor state. The table is the one that contains
+ * the violated constraint, or the one that caused a syntax error or access
+ * rule violation (such as no such table or no such column), and the column is
+ * the one that doesn't exist (see vsql.condition_table).
  *
- * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.i, 4.m and 4.p
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.f.ii.1.B, 4.h.i.1.A, 4.i, 4.m and 4.p
  */
 static const char *vsql_m_item_text(int item, long long n) {
   const char *s = NULL;
@@ -48,6 +51,18 @@ static const char *vsql_m_item_text(int item, long long n) {
     break;
   case SQL_DIAG_CONSTRAINT_NAME:
     s = vsql_m_da.conditions[n - 1].constraint_name;
+    break;
+  case SQL_DIAG_CATALOG_NAME:
+    s = vsql_m_da.conditions[n - 1].catalog_name;
+    break;
+  case SQL_DIAG_SCHEMA_NAME:
+    s = vsql_m_da.conditions[n - 1].schema_name;
+    break;
+  case SQL_DIAG_TABLE_NAME:
+    s = vsql_m_da.conditions[n - 1].table_name;
+    break;
+  case SQL_DIAG_COLUMN_NAME:
+    s = vsql_m_da.conditions[n - 1].column_name;
     break;
   case SQL_DIAG_CURSOR_NAME:
     /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules,

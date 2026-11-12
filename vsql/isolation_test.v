@@ -167,7 +167,8 @@ fn test_direct_query_isolation() ! {
 	assert a.direct('SELECT * FROM t;')!.rows.len == 8
 	a.direct('COMMIT;')!
 
-	// REPEATABLE READ runs as SERIALIZABLE.
+	// So is REPEATABLE READ, which doesn't take its snapshot until it's started
+	// in storage.
 	a.direct('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;')!
 	a.direct('SELECT * FROM t;')!
 	b.query('INSERT INTO t (x) VALUES (10)')!
@@ -379,9 +380,10 @@ fn isolation_test_options(lock_timeout time.Duration) ConnectionOptions {
 	return options
 }
 
-// A transaction includes every catalog, so a REPEATABLE READ or SERIALIZABLE
-// transaction locks every database file, and committing changes needs every
-// file that was changed to be unlocked.
+// A transaction includes every catalog, so a SERIALIZABLE transaction locks
+// every database file (and a REPEATABLE READ transaction has a snapshot of
+// each), and committing changes needs every file that was changed to be
+// unlocked.
 fn test_isolation_with_catalogs() ! {
 	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-catalogs-${os.getpid()}')
 	os.rmdir_all(dir) or {}
@@ -419,7 +421,7 @@ fn test_isolation_with_catalogs() ! {
 	both.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
 	both.query('INSERT INTO "a".public.t (x) VALUES (1)')!
 	both.query('INSERT INTO "b".public.t (x) VALUES (2)')!
-	assert query_error(mut both, 'COMMIT') == '40001 serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction'
+	assert query_error(mut both, 'COMMIT') == '40001 serialization failure: cannot commit while another connection has a SERIALIZABLE transaction'
 	assert !both.in_transaction()
 	assert a.query('SELECT * FROM t')!.rows.len == 0
 
@@ -445,13 +447,26 @@ fn test_isolation_with_catalogs() ! {
 	defer {
 		c.close()
 	}
-	c.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	c.query('START TRANSACTION ISOLATION LEVEL SERIALIZABLE')!
 	b.query('INSERT INTO t (x) VALUES (5)')!
 	c.add_catalog('b', path_b, options_b)!
 	assert query_error(mut b, 'INSERT INTO t (x) VALUES (6)') != ''
 	c.query('COMMIT')!
 	b.query('INSERT INTO t (x) VALUES (6)')!
 	assert b.query('SELECT * FROM t')!.rows.len == 3
+
+	// A REPEATABLE READ transaction takes a snapshot of a catalog when it joins.
+	mut e := open_database(path_a, options)!
+	defer {
+		e.close()
+	}
+	e.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	b.query('INSERT INTO t (x) VALUES (7)')!
+	e.add_catalog('b', path_b, options_b)!
+	b.query('INSERT INTO t (x) VALUES (8)')!
+	assert e.query('SELECT * FROM "b".public.t')!.rows.len == 4
+	e.query('COMMIT')!
+	assert e.query('SELECT * FROM "b".public.t')!.rows.len == 5
 
 	// A catalog can't join a transaction if it's locked.
 	mut d := open_database(path_a, isolation_test_options(0))!

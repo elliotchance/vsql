@@ -58,7 +58,7 @@ UTEST_F(db, 6_61_start_tran_read_only) {
             SQL_SUCCESS);
 }
 
-/* REPEATABLE READ runs as SERIALIZABLE. */
+/* SERIALIZABLE and REPEATABLE READ can both be started. */
 UTEST_F(db, 6_61_start_tran_serializable) {
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
                          SQL_TRANSACTION_READ_WRITE,

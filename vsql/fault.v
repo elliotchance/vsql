@@ -20,8 +20,8 @@ module vsql
 //   isolation_end:     ending the isolation block of an operation on the file,
 //                      which removes the rows that were deleted outside of a
 //                      transaction, see Storage.isolation_end.
-//   isolation_lock:    locking the isolation file, for a REPEATABLE READ or
-//                      SERIALIZABLE transaction or to commit, see isolation.v.
+//   isolation_lock:    locking the isolation file, for a SERIALIZABLE
+//                      transaction or to commit, see isolation.v.
 //   isolation_start:   starting the isolation block of an operation on the
 //                      file, see Storage.isolation_start.
 //   lock:              locking the database file to write to it.

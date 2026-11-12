@@ -318,7 +318,7 @@ fn (mut f Storage) create_index(definition Index, t Table, check_unique bool) ! 
 
 	f.save_schema()
 	f.indexes[index.name.storage_id()] = index
-	f.schema_changed()
+	f.schema_changed()!
 }
 
 // delete_index expires the definition and every entry of the index, like
@@ -334,7 +334,7 @@ fn (mut f Storage) delete_index(index Index) ! {
 
 	f.save_schema()
 	f.indexes.delete(index.name.storage_id())
-	f.schema_changed()
+	f.schema_changed()!
 }
 
 // expire_objects expires every object from start to end (inclusive) that's

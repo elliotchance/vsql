@@ -337,7 +337,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	}
 
 	if in_transaction {
-		catalog.start_transaction()!
+		catalog.start_transaction(conn.isolation_level)!
 		conn.finish_write(true)!
 	}
 }
@@ -1231,17 +1231,17 @@ pub mut:
 	// Pages are only kept for one statement, since another connection may
 	// change the file between statements.
 	cache_size int
-	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
-	// (including a statement that changes the database outside of a
-	// transaction) waits for another connection's transaction to finish, before
-	// it fails with a 40001 serialization failure. The default is 5 seconds.
+	// lock_timeout is how long a SERIALIZABLE transaction (including a statement
+	// that changes the database outside of a transaction) waits for another
+	// connection's SERIALIZABLE transaction to finish, before it fails with a
+	// 40001 serialization failure. The default is 5 seconds.
 	lock_timeout time.Duration
 	// isolation_level is the isolation level of an SQL-transaction that doesn't
 	// have one from START TRANSACTION or SET TRANSACTION, including a statement
 	// outside of a transaction. The default is SERIALIZABLE, like the standard.
-	// A READ COMMITTED transaction doesn't stop other connections from
-	// committing while it runs (see isolation.v), but it fails with 40001 if it
-	// commits while another connection has a REPEATABLE READ or SERIALIZABLE
+	// A READ COMMITTED or REPEATABLE READ transaction doesn't stop other
+	// connections from committing while it runs (see isolation.v), but it fails
+	// with 40001 if it commits while another connection has a SERIALIZABLE
 	// transaction. Only the options that the connection is opened with are
 	// used, not the ones given to add_catalog.
 	isolation_level IsolationLevel = .serializable

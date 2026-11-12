@@ -57,6 +57,8 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 		catalog.storage.btree.pager.store_page(page_number, page)!
 	}
 
+	reload := catalog.storage.end_snapshot()!
+
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
 	catalog.storage.transaction_state = .not_active
@@ -69,9 +71,13 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	catalog.storage.end_constraint_modes()
 
 	// Tables, schemas and indexes that were created or dropped in this
-	// transaction must be reloaded, here and in other connections.
+	// transaction must be reloaded, here and in other connections. A
+	// REPEATABLE READ transaction may also have loaded the schema it could see,
+	// which isn't the latest one.
 	if schema_changed {
-		catalog.storage.schema_changed()
+		catalog.storage.schema_changed()!
+	}
+	if schema_changed || reload {
 		catalog.storage.load_schema(catalog.catalog_name)!
 	}
 }

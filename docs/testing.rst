@@ -595,7 +595,7 @@ The faults are:
    * - ``isolation_end``
      - Ending the isolation block of an operation on the file, which removes the rows that were deleted outside of a transaction.
    * - ``isolation_lock``
-     - Locking the isolation file, for a ``REPEATABLE READ`` or ``SERIALIZABLE`` transaction or to commit changes.
+     - Locking the isolation file, for a ``SERIALIZABLE`` transaction or to commit changes.
    * - ``isolation_start``
      - Starting the isolation block of an operation on the file.
    * - ``lock``

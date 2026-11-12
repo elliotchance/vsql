@@ -40,7 +40,7 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 	if characteristics.isolation_level.locks_transaction() {
 		conn.lock_transaction(characteristics.read_only)!
 	}
-	conn.start_transaction()!
+	conn.start_transaction(characteristics.isolation_level)!
 	conn.initiate_transaction(characteristics)
 
 	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
@@ -48,13 +48,15 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 
 // start_transaction starts the SQL-transaction in storage. The SQL-transaction
 // includes every catalog, since a statement can use any of them.
-fn (mut conn Connection) start_transaction() ! {
+fn (mut conn Connection) start_transaction(level IsolationLevel) ! {
 	for _, mut catalog in conn.catalogs {
-		catalog.start_transaction()!
+		catalog.start_transaction(level)!
 	}
 }
 
-fn (mut catalog CatalogConnection) start_transaction() ! {
+// start_transaction starts the SQL-transaction in the catalog. A REPEATABLE READ
+// transaction takes its snapshot now, see Storage.take_snapshot.
+fn (mut catalog CatalogConnection) start_transaction(level IsolationLevel) ! {
 	catalog.open_write_connection()!
 	defer {
 		catalog.release_write_connection()
@@ -72,6 +74,10 @@ fn (mut catalog CatalogConnection) start_transaction() ! {
 	assert catalog.storage.transaction_keys.len == 0
 
 	catalog.storage.transaction_pages = map[int]bool{}
+
+	if level == .repeatable_read {
+		catalog.storage.take_snapshot()!
+	}
 }
 
 fn (stmt StartTransactionStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

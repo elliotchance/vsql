@@ -66,56 +66,36 @@ fn commit_error(err IError) IError {
 
 // commit_transaction must be called with the write connection open.
 fn (mut catalog CatalogConnection) commit_transaction() ! {
-	mut blob_refs := []PageObject{}
-	mut schema_changed := false
-	for page_number in catalog.storage.transaction_page_numbers()! {
-		// A page is only copied and stored again when it has an object to
-		// remove, see Pager.read_page.
-		page_in_place := catalog.storage.btree.pager.read_page(page_number)!
-		if !catalog.storage.commit_locked
-			&& page_in_place.has_object_of(catalog.storage.transaction_id) {
-			catalog.storage.lock_commit()!
-		}
-		schema_changed = schema_changed
-			|| page_in_place.has_schema_object_of(catalog.storage.transaction_id)
+	// Only remove the now expired records.
+	schema_changed := catalog.storage.remove_expired(catalog.storage.transaction_page_numbers()!,
+		true)!
+	reload := catalog.storage.end_snapshot()!
 
-		// Only remove the now expired records.
-		expired := page_in_place.expired_objects(catalog.storage.transaction_id)
-		if expired.len == 0 {
-			continue
-		}
-
-		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
-		for obj in expired {
-			page.delete(obj.key, obj.tid)
-			if obj.is_blob_ref {
-				blob_refs << obj
-			}
-		}
-
-		catalog.storage.btree.pager.store_page(page_number, page)!
-	}
-
-	for obj in blob_refs {
-		catalog.storage.btree.remove_blob(obj)!
-	}
+	// We can erase these now. The pages have already been visited, so
+	// isolation_end doesn't need to visit them (or the pages that were changed
+	// since) again.
+	catalog.storage.save_transaction_pages()
+	catalog.storage.transaction_pages = map[int]bool{}
+	catalog.storage.transaction_keys = map[string]bool{}
+	catalog.storage.btree.written_pages = map[int]bool{}
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
 	catalog.storage.transaction_state = .not_active
 	catalog.storage.isolation_end()!
-
-	// We can erase these now.
-	catalog.storage.save_transaction_pages()
-	catalog.storage.transaction_pages = map[int]bool{}
-	catalog.storage.transaction_keys = map[string]bool{}
 	catalog.storage.end_constraint_modes()
 
 	// Other connections may have loaded the schema while this transaction was
 	// active, so they could not see the tables, schemas and indexes it created
 	// or dropped. They must reload it now that the changes are committed.
 	if schema_changed {
-		catalog.storage.schema_changed()
+		catalog.storage.schema_changed()!
+	}
+
+	// The schema that a REPEATABLE READ transaction loaded is the one it could
+	// see, which isn't the latest one.
+	if reload {
+		catalog.storage.load_schema(catalog.catalog_name)!
 	}
 }
 

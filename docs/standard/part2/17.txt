@@ -31,7 +31,7 @@
 17.2/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql the most is 100
 17.2/GR/4                definition   - -
 17.2/GR/5                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
-17.2/GR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql READ UNCOMMITTED runs as READ COMMITTED and REPEATABLE READ as SERIALIZABLE
+17.2/GR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql,tests/std_2_17_3_isolation_repeatable_read.sql READ UNCOMMITTED runs as READ COMMITTED; REPEATABLE READ uses snapshot isolation
 17.2/GR/7                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/CR/1                n/a          - - LOCAL (T251)
 # 17.3, <transaction characteristics>

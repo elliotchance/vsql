@@ -1,5 +1,5 @@
--- # REPEATABLE READ and SERIALIZABLE transactions stop other connections from
--- # committing until they end, so a row that has been read can't change. A
+-- # SERIALIZABLE transactions stop other connections from committing until
+-- # they end, so a row that has been read can't change. A
 -- # statement on its own is a SERIALIZABLE transaction too, so it waits for
 -- # the transaction to end. The tests don't wait (the timeout is 0), so it fails
 -- # straight away.
@@ -25,29 +25,6 @@ SELECT * FROM t;
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: X: 1
--- 1: X: 1
--- 1: msg: COMMIT
--- 2: msg: UPDATE 1
--- 2: X: 2
-
-/* connection 1 */
-CREATE TABLE t (x INT);
-INSERT INTO t (x) VALUES (1);
-START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SELECT * FROM t;
-/* connection 2 */
-UPDATE t SET x = 2;
-/* connection 1 */
-SELECT * FROM t;
-COMMIT;
-/* connection 2 */
-UPDATE t SET x = 2;
-SELECT * FROM t;
--- 1: msg: CREATE TABLE 1
--- 1: msg: INSERT 1
--- 1: msg: START TRANSACTION
--- 1: X: 1
--- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: X: 1
 -- 1: msg: COMMIT
 -- 2: msg: UPDATE 1
@@ -197,10 +174,10 @@ COMMIT;
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1
 -- 2: X: 1
--- 2: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
+-- 2: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
 -- 2: error 2D000: invalid transaction termination
 -- 2: msg: SET TRANSACTION
--- 2: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
+-- 2: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
 -- 1: msg: COMMIT
 
 -- # A READ COMMITTED transaction that started first, and changed a row, can't
@@ -230,7 +207,7 @@ SELECT * FROM t;
 -- 1: msg: UPDATE 1
 -- 2: msg: START TRANSACTION
 -- 2: X: 1
--- 1: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
+-- 1: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
 -- 2: msg: UPDATE 1
 -- 2: msg: COMMIT
 -- 1: msg: START TRANSACTION
@@ -347,14 +324,15 @@ INSERT INTO t (x) VALUES (2);
 -- 3: msg: COMMIT
 -- 4: msg: INSERT 1
 
--- # But only one READ WRITE transaction can be active at a time, and not at the
--- # same time as a READ ONLY one.
+-- # But only one READ WRITE SERIALIZABLE transaction can be active at a time,
+-- # and not at the same time as a READ ONLY one. A REPEATABLE READ transaction
+-- # doesn't wait (see std_2_17_3_isolation_repeatable_read.sql).
 /* connection 1 */
 CREATE TABLE t (x INT);
 START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 INSERT INTO t (x) VALUES (1);
 /* connection 2 */
-START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 COMMIT;
 START TRANSACTION READ ONLY;
 /* connection 1 */
@@ -430,7 +408,7 @@ ROLLBACK;
 /* connection 2 */
 INSERT INTO t (x) VALUES (1);
 /* connection 1 */
-START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 /* connection 2 */
 INSERT INTO t (x) VALUES (2);
 /* disconnect 1 */

@@ -12,6 +12,36 @@ At most 256 transactions can be active at the same time, because their IDs are
 kept in the header of the database file (see :doc:`file-format`). Starting
 another one is an error ``0B000``.
 
+Snapshots
+---------
+
+A ``READ COMMITTED`` or ``SERIALIZABLE`` statement uses the *Active
+Transactions* in the header, which is read again for every statement, so it
+sees the rows that were committed before the statement started.
+
+A ``REPEATABLE READ`` transaction takes a snapshot when it starts instead:
+its own transaction ID and the other active transactions. A version of a row
+is visible if the transaction that created it had committed by then (it has a
+lower ID and wasn't active) and the transaction that expired it (if any)
+hadn't. The snapshot is kept in memory, so other connections can commit, and
+change the header, while the transaction is active.
+
+The first committer wins: updating or deleting a version of a row that another
+transaction has expired, or creating a row that another transaction has
+created, since the snapshot was taken fails with a ``40001``. A ``FOREIGN KEY``,
+a ``UNIQUE`` or ``PRIMARY KEY`` constraint, and a change to the schema are
+checked the same way. The schema itself is loaded for the snapshot while the
+transaction is active, so a table that was created later isn't seen.
+
+Transaction IDs give the order transactions started, not the order they
+committed, so a snapshot can still see a version that was expired by any
+transaction that commits after it started. The snapshot is published in the
+file as a Snapshot Object (see :doc:`file-format`), so that a ``COMMIT`` in
+any process can find the versions that it must keep. Each kept version gets a
+Retained Version Object, and is removed when the last snapshot that can see it
+ends. Since a row can only have two versions, another transaction can't change
+a kept row again until then (it gets a ``40001``).
+
 Recovering Expired Rows
 -----------------------
 
@@ -23,7 +53,9 @@ revisited so they will remain invisible to all other future transactions.
 This makes the ``COMMIT`` basically zero cost but it requires another process
 to clean up expired rows. Since this isn't easily possible or ideal for a
 single-process database, vsql performs cleanup on ``COMMIT`` and ``ROLLBACK``
-which on any pages that were modified during the transaction.
+which on any pages that were modified during the transaction. The exception is
+a version that a ``REPEATABLE READ`` transaction can still see, which is
+removed when that transaction ends (see `Snapshots`_).
 
 The cost of a ``COMMIT`` or ``ROLLBACK`` should be approximately equal to each
 other. However, the cost of an individual ``COMMIT`` or ``ROLLBACK`` is
@@ -45,7 +77,8 @@ other active transaction must belong to a connection that no longer exists, so
 those transactions are rolled back.
 
 This means that a crashed transaction will not be rolled back while any other
-connection to the database is open.
+connection to the database is open. A crashed ``REPEATABLE READ`` transaction
+also keeps the versions of rows that its snapshot can see until then.
 
 Wraparound Transaction IDs
 --------------------------

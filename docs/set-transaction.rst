@@ -47,14 +47,15 @@ transaction anyway (they are not undone by ``ROLLBACK``).
 Isolation Level
 ---------------
 
-``SERIALIZABLE`` is the default. ``REPEATABLE READ`` runs the same way as
-``SERIALIZABLE``, which stops other connections from committing until the
-transaction ends, and ``READ UNCOMMITTED`` runs the same way as
+``SERIALIZABLE`` is the default, which stops other connections from committing
+until the transaction ends. ``REPEATABLE READ`` sees a snapshot from when the
+transaction started instead, and ``READ UNCOMMITTED`` runs the same way as
 ``READ COMMITTED``. See *Isolation Levels* in :doc:`transactions`.
 
-For a statement that runs on its own, ``READ COMMITTED`` means it doesn't wait
-for other connections' ``SERIALIZABLE`` transactions to finish (but it fails if
-it needs to commit changes while one is active).
+For a statement that runs on its own, ``READ COMMITTED`` or
+``REPEATABLE READ`` means it doesn't wait for other connections'
+``SERIALIZABLE`` transactions to finish (but it fails if it needs to commit
+changes while one is active).
 
 If a holdable cursor is still open from the previous transaction, the isolation
 level can't be changed (``25008``).

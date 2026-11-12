@@ -509,7 +509,7 @@ enum IsolationLevel
    	serializable
    }
 
-IsolationLevel is the <level of isolation>. An SQL-implementation may use a stricter level than the one that is asked for, so READ UNCOMMITTED runs as READ COMMITTED, and REPEATABLE READ runs as SERIALIZABLE. See isolation.v.
+IsolationLevel is the <level of isolation>. An SQL-implementation may use a stricter level than the one that is asked for, so READ UNCOMMITTED runs as READ COMMITTED. REPEATABLE READ uses snapshot isolation (see Storage.take_snapshot). See isolation.v.
 
 ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 6
 
@@ -814,17 +814,17 @@ struct ConnectionOptions
    	// Pages are only kept for one statement, since another connection may
    	// change the file between statements.
    	cache_size int
-   	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
-   	// (including a statement that changes the database outside of a
-   	// transaction) waits for another connection's transaction to finish, before
-   	// it fails with a 40001 serialization failure. The default is 5 seconds.
+   	// lock_timeout is how long a SERIALIZABLE transaction (including a statement
+   	// that changes the database outside of a transaction) waits for another
+   	// connection's SERIALIZABLE transaction to finish, before it fails with a
+   	// 40001 serialization failure. The default is 5 seconds.
    	lock_timeout time.Duration
    	// isolation_level is the isolation level of an SQL-transaction that doesn't
    	// have one from START TRANSACTION or SET TRANSACTION, including a statement
    	// outside of a transaction. The default is SERIALIZABLE, like the standard.
-   	// A READ COMMITTED transaction doesn't stop other connections from
-   	// committing while it runs (see isolation.v), but it fails with 40001 if it
-   	// commits while another connection has a REPEATABLE READ or SERIALIZABLE
+   	// A READ COMMITTED or REPEATABLE READ transaction doesn't stop other
+   	// connections from committing while it runs (see isolation.v), but it fails
+   	// with 40001 if it commits while another connection has a SERIALIZABLE
    	// transaction. Only the options that the connection is opened with are
    	// used, not the ones given to add_catalog.
    	isolation_level IsolationLevel = .serializable

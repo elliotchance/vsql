@@ -43,10 +43,10 @@ fn sql_row_count(statement_handle SQLInteger, row_count &SQLInteger) i16 {
 	return sql_success
 }
 
-// row_count_of is the number of rows affected by an INSERT, UPDATE or DELETE,
-// which is the number at the end of its message (such as "INSERT 3").
+// row_count_of is the number of rows affected by an INSERT, UPDATE, DELETE or
+// MERGE, which is the number at the end of its message (such as "INSERT 3").
 fn row_count_of(result vsql.Result) int {
-	for prefix in ['INSERT ', 'UPDATE ', 'DELETE '] {
+	for prefix in ['INSERT ', 'UPDATE ', 'DELETE ', 'MERGE '] {
 		if result.msg.starts_with(prefix) {
 			return result.msg.all_after(prefix).int()
 		}

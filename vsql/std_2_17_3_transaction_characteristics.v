@@ -256,6 +256,7 @@ fn (p PreparedStmt) changes_database_name() string {
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE' }
 		DropTableStatement { 'DROP TABLE' }
 		InsertStatement { 'INSERT' }
+		MergeStatement { 'MERGE' }
 		SchemaDefinition { 'CREATE SCHEMA' }
 		SequenceGeneratorDefinition { 'CREATE SEQUENCE' }
 		TableDefinition { 'CREATE TABLE' }

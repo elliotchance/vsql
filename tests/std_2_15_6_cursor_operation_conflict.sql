@@ -448,3 +448,24 @@ COMMIT;
 -- warning 01001: cursor operation conflict: C
 -- 1: msg: DELETE 0
 -- 1: msg: COMMIT
+
+-- # A MERGE that updates the current row of a cursor is a conflict when it's
+-- # then updated through the cursor.
+/* extensions V108-01 V109-01 V110-01 V113-01 */
+START TRANSACTION;
+DECLARE c CURSOR FOR SELECT * FROM t;
+OPEN c;
+FETCH c;
+MERGE INTO t USING (VALUES 1) AS v (x) ON t.x = v.x
+WHEN MATCHED THEN UPDATE SET y = 6;
+UPDATE t SET y = 7 WHERE CURRENT OF c;
+SELECT * FROM t;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 1 Y: 10
+-- msg: MERGE 1
+-- warning 01001: cursor operation conflict: C
+-- msg: UPDATE 1
+-- X: 1 Y: 7
+-- X: 2 Y: 20

@@ -1,8 +1,8 @@
 EXPLAIN
 =======
 
-``EXPLAIN`` can be placed before a ``SELECT``, ``VALUES``, ``UPDATE`` or
-``DELETE`` to return the plan that the query planner chose, without running
+``EXPLAIN`` can be placed before a ``SELECT``, ``VALUES``, ``UPDATE``,
+``DELETE`` or ``MERGE`` to return the plan that the query planner chose, without running
 the statement. This is useful for debugging query performance.
 
 .. contents::

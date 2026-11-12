@@ -81,4 +81,5 @@ See Also
 --------
 
 - :doc:`delete`
+- :doc:`merge`
 - :doc:`update`

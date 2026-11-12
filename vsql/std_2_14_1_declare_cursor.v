@@ -598,6 +598,7 @@ fn (conn &Connection) has_open_cursor() bool {
 // it's a change by another statement all the same.
 //
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 9
+// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.4
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 8
 // ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 12
 // ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 9

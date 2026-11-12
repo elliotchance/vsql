@@ -30,6 +30,7 @@ import arrays
 // V001-01: EXPLAIN before a query (such as SELECT or VALUES).
 // V001-02: EXPLAIN before a searched DELETE.
 // V001-03: EXPLAIN before a searched UPDATE.
+// V001-04: EXPLAIN before a MERGE.
 //
 // V002: CREATE INDEX.
 // V002-01: CREATE INDEX.
@@ -130,6 +131,7 @@ import arrays
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
+const vsql_explain_merge = 'V001-04'
 const vsql_create_index = 'V002-01'
 const vsql_create_unique_index = 'V002-02'
 const vsql_create_index_if_not_exists = 'V002-03'
@@ -977,6 +979,20 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 				conn.flag_self_reference(stmt.table_name)
 			}
 		}
+		MergeStatement {
+			// The target can only be read by the source when the source is
+			// itself the table, not a query.
+			if stmt.source.body is QueryExpression {
+				conn.flag_query_tables = true
+				create_plan(stmt.source.body, params, mut conn) or {}
+				conn.flag_query_tables = false
+			}
+			stmt.plan(params, mut conn) or {}
+			for clause in stmt.clauses {
+				conn.flag_set_clauses(stmt.table_name, clause.set, params)
+			}
+			conn.flag_self_reference(stmt.table_name)
+		}
 		QueryExpression {
 			create_plan(stmt, params, mut conn) or {}
 		}
@@ -1062,6 +1078,7 @@ fn (mut conn Connection) flag_asterisk(table Table) {
 //
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, Conformance Rules, 1.a and 2.a
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Conformance Rules, 1.a
 fn (mut conn Connection) flag_self_reference(table_name Identifier) {

@@ -586,7 +586,7 @@
 6.17/GR/3.d.ii.3         implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c every established connection; one without an active SQL-transaction only has its cursors closed
 6.17/GR/4                definition   - -
 6.17/GR/5                implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
-6.17/GR/6                implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
+6.17/GR/6                implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c,libvsql/std_3_6_61_start_tran_test.c a transaction StartTran started for the environment that no connection has taken stays active
 6.17/GR/7                n/a          - - there's no encompassing transaction
 6.17/GR/8                definition   - -
 6.17/GR/9                implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_49_param_data_test.c
@@ -2505,14 +2505,14 @@
 6.61/GR/3.d.ii           container    - -
 6.61/GR/3.d.ii.1         definition   - -
 6.61/GR/3.d.ii.2         implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
-6.61/GR/3.d.ii.3         implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
-6.61/GR/4                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
+6.61/GR/3.d.ii.3         implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c only connections with an active SQL-transaction are active (Part 2, 4.42)
+6.61/GR/4                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c a transaction StartTran started for the environment that no connection has taken isn't in L1, so it's replaced
 6.61/GR/5                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/6                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/7                definition   - -
 6.61/GR/8                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c READ WRITE with READ UNCOMMITTED is 42601
 6.61/GR/9                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
-6.61/GR/10               deviates     libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c more than one connection is 0A001 (#747)
+6.61/GR/10               implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c for an environment, L1 is always empty, so TXN is started in the first connection that executes a statement (#747)
 # 6.62, TablePrivileges
 6.62                     n/a          - - privileges (E081) aren't supported: HYC00 once the arguments are checked
 6.62/GR/1                definition   - -

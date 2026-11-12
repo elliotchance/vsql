@@ -38,6 +38,11 @@ mut:
 	// current_connection is the handle of the current SQL-connection, or 0 if
 	// there isn't one (see 5.3, "Implicit set connection").
 	current_connection i64
+	// start_tran is the characteristics of the SQL-transaction that StartTran
+	// started for the SQL-environment while none of its SQL-connections was
+	// active, or '' if there isn't one. It's started in the first connection
+	// that executes a statement (see 6.61, "StartTran").
+	start_tran string
 	// mutex is locked while a routine is invoked with a handle of this
 	// SQL-environment (see threads.v).
 	mutex &sync.Mutex = sync.new_mutex()

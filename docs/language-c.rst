@@ -62,6 +62,22 @@ and the transaction it's in continues.
 Connections to the same file share a lock, so they can be used at the same
 time.
 
+Transactions
+------------
+
+Each connection has its own transaction, and a transaction can't span more than
+one connection, so while the current connection has a transaction, using
+another connection is ``0A001``.
+
+``SQLStartTran`` with a connection (``SQL_HANDLE_DBC``) starts its transaction
+straight away. With an environment (``SQL_HANDLE_ENV``), it starts a transaction
+that isn't in any connection yet (it's ``25001`` if one of them already has a
+transaction). The first connection that executes a statement takes it, and the
+other connections can't be used until it's ended with ``SQLEndTran``. Until
+then, any connection can be used, ``SQLEndTran`` doesn't end it (none of the
+connections has a transaction to end), and another ``SQLStartTran`` (for the
+environment or one of its connections) replaces it.
+
 Autocommit
 ----------
 

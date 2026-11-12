@@ -36,7 +36,7 @@ fn implicit_set_connection(dc i64) ! {
 	// ISO/IEC 9075-3:2003(E), 5.3, Implicit set connection, General Rules, 2:
 	// the current SQL-connection can't have an active SQL-transaction, since
 	// vsql doesn't support transactions over more than one SQL-server.
-	if current != 0 && transaction_active(sql_handle_dbc, current) {
+	if current != 0 && connection_active(current) {
 		return cli_error('0A001', 'multiple server transactions')
 	}
 

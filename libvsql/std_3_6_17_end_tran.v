@@ -60,6 +60,9 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 	}
 
 	// - 6. If L1 is empty, then no further rules of this Subclause are applied.
+	// L1 only has the active connections (General Rules, 3.d.ii.3), so an
+	// SQL-transaction that StartTran started for the SQL-environment, but that
+	// isn't in any of its connections yet, isn't ended and stays active.
 	if l1.len == 0 {
 		return sql_success
 	}

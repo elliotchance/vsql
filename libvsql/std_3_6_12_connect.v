@@ -36,7 +36,7 @@ fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &c
 	// one SQL-server, then an exception condition is raised: feature not
 	// supported — multiple server transactions.
 	current := current_connection(dbc.env)
-	if current != 0 && transaction_active(sql_handle_dbc, current) {
+	if current != 0 && connection_active(current) {
 		return cli_error('0A001', 'multiple server transactions')
 	}
 

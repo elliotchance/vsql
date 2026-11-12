@@ -1747,12 +1747,13 @@ SQLRETURN SQLSpecialColumns(
 );
 
 /*
- * SQLStartTran starts a transaction for a connection (SQL_HANDLE_DBC), or the
- * connection of an environment (SQL_HANDLE_ENV, which is 0A001 if it has more
- * than one). The connection becomes the current connection (see SQLConnect).
- * A transaction is also started by SQLExecDirect when there isn't one.
- * SQL_TRANSACTION_READ_UNCOMMITTED must be SQL_TRANSACTION_READ_ONLY, otherwise
- * it's 42601.
+ * SQLStartTran starts a transaction for a connection (SQL_HANDLE_DBC), which
+ * becomes the current connection (see SQLConnect). For an environment
+ * (SQL_HANDLE_ENV), the transaction is started in the first of its connections
+ * that executes a statement (it's 25001 if one of them already has a
+ * transaction). A transaction is also started by SQLExecDirect when there
+ * isn't one. SQL_TRANSACTION_READ_UNCOMMITTED must be SQL_TRANSACTION_READ_ONLY,
+ * otherwise it's 42601.
  *
  *   SQLStartTran(SQL_HANDLE_DBC, dbc, SQL_TRANSACTION_READ_WRITE,
  *                SQL_TRANSACTION_READ_COMMITTED);

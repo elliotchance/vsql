@@ -151,8 +151,10 @@ jobs:
       - name: Install psql
         run: command -v psql || (.github/workflows/retry.sh sudo apt-get update && .github/workflows/retry.sh sudo apt-get install -y postgresql-client)
 
+      # MAX_RUN_TIME fails big-test if a run takes 100 seconds or more (see
+      # docs/testing.rst).
       - name: Run tests
-        run: make test
+        run: make test MAX_RUN_TIME=100
 
       # The tests for "vsql app" drive it in a headless Chromium (see
       # docs/testing.rst). The page is the same everywhere, so they only run
@@ -191,10 +193,13 @@ jobs:
             name: x86-64
             v_arch: amd64
             runner: macos-15-intel
+            # The Intel runner is about three times slower than the others.
+            max_run_time: 250
           - arch: arm64
             name: ARM64
             v_arch: arm64
             runner: macos-latest
+            max_run_time: 100
     runs-on: ${{ matrix.runner }}
     # About twice the longest run on macOS, so that a test that hangs fails the
     # job instead of holding a runner for GitHub's limit of 6 hours.
@@ -236,8 +241,10 @@ jobs:
           .github/workflows/retry.sh brew install libpq
           echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
 
+      # MAX_RUN_TIME fails big-test if a run takes max_run_time seconds or more
+      # (see docs/testing.rst).
       - name: Run tests
-        run: make test
+        run: make test MAX_RUN_TIME=${{ matrix.max_run_time }}
 
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7

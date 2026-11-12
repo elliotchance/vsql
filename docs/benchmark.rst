@@ -28,6 +28,8 @@ Usage
    vsql bench -file bench.vsql -suite tpc-b-setup   # only insert the rows
    vsql bench -file bench.vsql -suite tpc-b-oltp    # only run the transactions
    vsql bench -file bench.vsql -suite tpc-b-check   # only check the rows and totals
+   vsql bench -suite big                            # 100 MiB of large values
+   vsql bench -suite big -size 1000                 # 1,000 MiB of large values
 
 The options are:
 
@@ -44,12 +46,14 @@ The options are:
   - ``tpc-b-setup``: Create the tables and insert the rows.
   - ``tpc-b-oltp``: Run the transactions.
   - ``tpc-b-check``: Check the rows and totals.
+  - ``big``: Insert large values, and read them back.
 
 - ``-size``: Multiplies the number of rows of each table (see *Process*), like
   the scale factor of pgbench. The default is 1, and ``-size 10`` creates
   1,000,000 accounts, 100 tellers and 10 branches. It can't be used with the
   ``tpc-b-oltp`` or ``tpc-b-check`` suites, which use the size of the tables in
-  the file.
+  the file. For the ``big`` suite, it's the total size of the values in MiB
+  instead, which must be at least 10 (the default is 100).
 
 - ``-duration``: The number of seconds to run transactions for (default 60).
 
@@ -87,6 +91,12 @@ Suites
 - ``tpc-b`` (the default) runs ``tpc-b-setup``, ``tpc-b-oltp`` and then
   ``tpc-b-check``.
 
+- ``big`` creates the ``BIG`` schema and its ``OBJECTS`` table, and inserts
+  values of 1 to 10 MiB, one at a time, until they add up to ``-size`` MiB.
+  Then it reads each value back by its ``ID``, and fails unless every byte, and
+  its ``CHAR_LENGTH``, is the same as the value that was inserted. See *Big
+  Values*.
+
 Running the suites separately means the rows only need to be inserted once, and
 the transactions can then be run (and measured) as many times as needed:
 
@@ -117,6 +127,9 @@ rather than adding to (or replacing) tables that are already there. To run the
 setup again on the same file, drop the schema first. ``make bench`` deletes its
 ``bench.vsql`` file before each run.
 
+``big`` does the same with its ``BIG`` schema, which can be dropped with
+``DROP SCHEMA big CASCADE``.
+
 Process
 -------
 
@@ -144,6 +157,44 @@ A transaction consists of 7 statements (in order):
 
 Where ``<aid>``, ``<tid>`` and ``<bid>`` are random integers that are within
 their respective ranges and ``<delta>`` is a random value between -5000 and 5000.
+
+Big Values
+----------
+
+A value that's larger than half a page is split into blob and fragment objects
+(see :doc:`file-format`), so with the default page size of 4096 bytes, each
+value of the ``big`` suite is split into 512 to 5,120 of them. This measures
+how quickly large values are stored and put back together.
+
+The size of each value is random, from 1 MiB to 10 MiB, except that the last one
+is cut to what's left of ``-size``. The sizes come from a fixed seed, so they
+are the same on every run, and runs can be compared. ``-size`` must be at least
+10, so that at least one value is never cut.
+
+Each value is pseudo-random, and is different from every other value. Most of
+its characters are ASCII letters, but there are also characters of 2, 3 and 4
+bytes in UTF-8, so the length in characters is less than the length in bytes,
+and some characters are split between blob objects. A value that's put back
+together from the wrong blob objects, in the wrong order, or with a byte that
+changed, doesn't match, and the error says where the first different byte is.
+
+``vsql bench -suite big`` reports something like:
+
+.. code-block:: text
+
+   # big
+   values=20
+   insert_mib=100
+   insert_seconds=1.249
+   insert_mib_per_second=80.038
+   select_mib=100
+   select_seconds=0.930
+   select_mib_per_second=107.518
+
+``values`` is the number of values, and ``insert_*`` and ``select_*`` are how
+long it took to write and read them. Only the time of the ``INSERT`` and
+``SELECT`` statements is counted, not the time to make each value or to check
+it.
 
 Output
 ------
@@ -200,6 +251,8 @@ Where:
   ``40001`` serialization failure, because of a transaction on another
   connection (see :doc:`transactions`). Each one was rolled back, and the
   benchmark carried on with the next one.
+- ``values``, ``insert_mib*`` and ``select_mib*`` are from the ``big`` suite
+  (see *Big Values*).
 - ``check_history_rows`` is the number of rows in ``HISTORY`` (every
   transaction that has ever run on the file) and ``check_total`` is the total
   of their deltas, which all the balances added up to.

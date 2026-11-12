@@ -59,6 +59,29 @@ the browser:
 
    make app-test PYTEST="-k test_run --headed"
 
+big-test
+--------
+
+``make big-test`` runs the ``big`` suite of ``vsql bench`` (see
+:doc:`benchmark`) with ``-size 1000``, in memory and then in a file. It inserts
+about 1 GiB of values of 1 to 10 MiB, which are split into blob and fragment
+objects, fails unless every value is read back exactly as it was inserted, and
+prints how long it took to write and read them. It's run as part of ``make
+test``, or on its own with:
+
+.. code-block:: sh
+
+   make big-test
+
+``$MAX_RUN_TIME`` also checks how long it takes: each run (in memory, and in a
+file) must take less than that many seconds. Each one takes about 30 to 55
+seconds on the CI runners, so CI runs it with 100 seconds, except on the Intel
+macOS runner, which is about three times slower and gets 250 seconds:
+
+.. code-block:: sh
+
+   MAX_RUN_TIME=100 make big-test
+
 btree-test
 ----------
 

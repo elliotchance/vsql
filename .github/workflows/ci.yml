@@ -1,15 +1,17 @@
 name: CI
 
-# Every pull request into main and every tag tests every OS and architecture. A
-# tag then publishes the release. It can also be run by hand with
+# Every pull request into main or herb, and every tag, tests every OS and
+# architecture. herb is a long-lived branch that's main plus the features for one
+# user, rebased onto main from time to time, so its pull requests are tested the
+# same way. A tag then publishes the release. It can also be run by hand with
 # workflow_dispatch, which tests everything without publishing.
 #
 # A pull request that's stacked on another one isn't tested until it's changed
-# to go into main (which happens when the one below it is merged), since it's
-# tested then anyway, and each run uses a lot of the limited macOS runners. That
-# change is an "edited" event, which is also sent when the title or description
-# changes, so the v job (that every other job needs) only runs for an edit that
-# changed the base branch.
+# to go into main or herb (which happens when the one below it is merged),
+# since it's tested then anyway, and each run uses a lot of the limited macOS
+# runners. That change is an "edited" event, which is also sent when the title
+# or description changes, so the v job (that every other job needs) only runs
+# for an edit that changed the base branch.
 on:
   workflow_dispatch:
   push:
@@ -18,6 +20,7 @@ on:
   pull_request:
     branches:
       - main
+      - herb
     types: [opened, synchronize, reopened, edited]
     paths-ignore:
       - "**.md"

@@ -393,3 +393,32 @@ fn test_btree_versions_exactly_fill_page() ! {
 	assert btree.get(key, 2)!.tid == 2
 	assert btree.expire(key, 1, 2)! >= 0
 }
+
+// A third version of a key is a serialization failure, even when the page is
+// full and would be split (which could put the versions on different pages).
+fn test_btree_third_version_in_full_page() ! {
+	page_size := 256
+	mut btree := new_btree(new_memory_pager(), page_size)
+	key := 'z'.bytes()
+	mut remaining := page_size - page_header_size
+	for object in [
+		new_page_object('a'.bytes(), 1, 0, []u8{len: 30}),
+		new_page_object('b'.bytes(), 1, 0, []u8{len: 30}),
+		new_page_object(key, 1, 2, []u8{len: 20}),
+		new_page_object(key, 2, 0, []u8{len: 20}),
+	] {
+		btree.add(object)!
+		remaining -= object.length()
+	}
+
+	// The rest of the page is filled.
+	filler := new_page_object('c'.bytes(), 1, 0, []u8{len: remaining - page_object_prefix_length - 1})
+	assert filler.length() == remaining
+	btree.add(filler)!
+
+	btree.add(new_page_object(key, 3, 0, []u8{len: 20})) or {
+		assert sqlstate_from_int(err.code()) == '40001'
+		return
+	}
+	assert false, 'a third version was added'
+}

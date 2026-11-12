@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test unit-test-uncovered coverage coverage-uncovered btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test unit-test-uncovered coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -165,7 +165,7 @@ check-standard-index:
 
 # test runs every test suite. Each one can also be run on its own. coverage
 # checks that sql-test and unit-test cover every line of vsql/ between them.
-test: sql-test unit-test coverage vorm-test btree-test examples-test cli-test libvsql-test module-test embed-test
+test: sql-test unit-test coverage vorm-test btree-test examples-test cli-test concurrency-test libvsql-test module-test embed-test
 
 # VSQL_TEST_OPTIONS build the SQL tests and the V tests in vsql/ with the
 # helpers that they share (vsql/testing_d_vsqltest.v).
@@ -298,6 +298,9 @@ cli-test: bin/vsql
 	for f in `ls cmd/tests/*.sh`; do \
 		echo $$f; VSQL=bin/vsql ./$$f || exit 1; \
 	done
+
+concurrency-test: bin/vsql
+	VSQL=bin/vsql CONNECTIONS=$(CONNECTIONS) DURATION=$(DURATION) MAX_FAILURE_PERCENT=$(MAX_FAILURE_PERCENT) scripts/concurrency-test.sh
 
 cmd/tests/%: bin/vsql
 	VSQL=bin/vsql ./cmd/tests/$*.sh

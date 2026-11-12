@@ -175,6 +175,7 @@ something like:
    transactions=42341
    transactions_seconds=60.001
    transactions_per_second=705.672
+   serialization_failures=0
 
    # tpc-b-check
    check_history_rows=42341
@@ -193,7 +194,12 @@ Where:
 - ``insert_*`` is the raw INSERT rate into the largest table, ``ACCOUNTS``.
 - ``select_*`` is the raw SELECT read rate with a simple filter
   (``abalance = 0``), which reads the entire table.
-- ``transactions*`` is the result from the transactions explained above.
+- ``transactions*`` is the result from the transactions explained above, only
+  counting the ones that were committed.
+- ``serialization_failures`` is the number of transactions that failed with a
+  ``40001`` serialization failure, because of a transaction on another
+  connection (see :doc:`transactions`). Each one was rolled back, and the
+  benchmark carried on with the next one.
 - ``check_history_rows`` is the number of rows in ``HISTORY`` (every
   transaction that has ever run on the file) and ``check_total`` is the total
   of their deltas, which all the balances added up to.
@@ -227,7 +233,9 @@ Notes
 rows with a single statement).
 
 2. The benchmark only uses one connection. Benchmarks with several connections
-at the same time will be run from separate processes.
+at the same time are run from separate processes, each with its own
+``tpc-b-oltp`` on the same ``-file``. ``make concurrency-test`` does that (see
+:doc:`testing`).
 
 3. As the pgbench documentation says, don't trust a benchmark that only runs for
 a few seconds. Run it for at least a minute (the default), and run it more than

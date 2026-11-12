@@ -628,30 +628,6 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// 4. A bare table field. A qualified name that didn't match a table above
-	// isn't one (its qualifier mustn't be ignored). Neither is a column of
-	// another table when only the context is in scope.
-	for _, table in catalog.storage.tables {
-		if e.entity_name == '' && c.context.entity_name == ''
-			&& table.name.schema_name == ident.schema_name {
-			column := table.column(ident.sub_entity_name) or { Column{} }
-			if column.name.sub_entity_name == ident.sub_entity_name {
-				ident = column.name
-
-				ident_id := ident.id()
-				return CompileResult{
-					run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data.get(ident_id) or {
-							return sqlstate_42601('unknown column: ${ident}')
-						}
-					}
-					typ:          column.typ
-					contains_agg: false
-				}
-			}
-		}
-	}
-
 	return sqlstate_42601('unknown column: ${ident}')
 }
 

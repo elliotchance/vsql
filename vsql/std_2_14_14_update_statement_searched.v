@@ -247,6 +247,13 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			if table_column.generated != none {
 				continue
 			}
+			if !has_correlation {
+				c.context = Identifier{
+					catalog_name: table_column.name.catalog_name
+					schema_name:  table_column.name.schema_name
+					entity_name:  table.name.entity_name
+				}
+			}
 			c.null_type = table_column.typ
 			c.default_value = table_column.default_value
 			c.identity = identity_of(table, table_column)

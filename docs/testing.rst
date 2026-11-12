@@ -166,6 +166,35 @@ To verify that a command failed (specifically did not succeed), you can use:
 Where ``echo 'CREATE foo (bar INT);' | $VSQL in $VSQL_FILE`` is the command to
 be tested.
 
+concurrency-test
+----------------
+
+``make concurrency-test`` runs the TPC-B benchmark (see :doc:`benchmark`) on
+one file from 10 processes at the same time, to find transactions that are
+lost, applied twice or only partly applied when connections change the same
+rows (see :doc:`transactions`):
+
+1. ``vsql bench -suite tpc-b-setup`` creates the tables.
+2. 10 ``vsql bench -suite tpc-b-oltp -isolation serializable`` run their
+   transactions for 5 seconds at the same time.
+3. ``vsql bench -suite tpc-b-check`` checks the balances. None of the
+   transactions may have failed, since ``SERIALIZABLE`` transactions take turns.
+4. 10 ``vsql bench -suite tpc-b-oltp -isolation read-committed`` run for 5
+   seconds at the same time.
+5. ``vsql bench -suite tpc-b-check`` checks the balances again. Transactions
+   that fail with a ``40001`` serialization failure (because another one is
+   changing the same row) are rolled back, which is allowed for up to 90% of
+   them.
+
+Each check also checks that ``HISTORY`` has exactly one row for each
+transaction that was committed. It fails if any of them fail. The number of
+connections, seconds and the most failures allowed can be changed with
+``CONNECTIONS``, ``DURATION`` and ``MAX_FAILURE_PERCENT``, such as:
+
+.. code-block:: sh
+
+   make concurrency-test CONNECTIONS=20 DURATION=60
+
 embed-test
 ----------
 

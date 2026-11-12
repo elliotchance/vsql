@@ -113,8 +113,12 @@ fn bench_command(cmd cli.Command) ! {
 	// can be read by people, and by a shell (with source). The "#" lines are
 	// headings (and comments to a shell).
 	println('# vsql bench')
-	print_value('version', vsql.version())
-	print_value('version_date', vsql.version_date())
+	print_value('build_version', vsql.build_version())
+	print_value('build_commit', vsql.build_commit())
+	print_value('build_date', vsql.build_date())
+	print_value('build_v_version', vsql.build_v_version())
+	print_value('build_v_commit', vsql.build_v_commit())
+	print_value('build_c_compiler', vsql.build_c_compiler())
 	print_value('suite', if suite == '' { 'tpc-b' } else { suite })
 	print_value('file', file)
 	big_mib := if size > 0 { size } else { big_default_mib }

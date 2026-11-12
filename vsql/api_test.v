@@ -580,8 +580,13 @@ fn test_cast() {
 
 fn test_version() {
 	// Tests don't run on a release build.
-	assert version() == ''
-	assert version_date() == ''
+	assert build_version() == ''
+	assert build_commit() == ''
+	assert build_v_version().starts_with('0.')
+	assert !build_v_version().contains(' ')
+	assert build_v_commit() != ''
+	assert build_date().len == 10
+	assert build_c_compiler() != ''
 	assert release_value('v0.34.0') == 'v0.34.0'
 }
 

@@ -7,5 +7,5 @@ esac
 
 # The backup suffix is required by BSD sed (macOS), which otherwise takes "-e"
 # as the suffix and leaves a version.v-e file behind.
-sed -i.bak -e "s/MISSING_VERSION/${GITHUB_REF##*/}/g" -e "s/MISSING_DATE/`date +'%F'`/g" vsql/version.v
+sed -i.bak -e "s/MISSING_VERSION/${GITHUB_REF##*/}/g" -e "s/MISSING_COMMIT/${GITHUB_SHA}/g" vsql/version.v
 rm vsql/version.v.bak

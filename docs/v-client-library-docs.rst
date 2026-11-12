@@ -13,6 +13,66 @@ Constants
 
 
 
+fn build_c_compiler
+-------------------
+
+
+.. code-block:: v
+
+   pub fn build_c_compiler() string
+
+build_c_compiler returns the C compiler that compiled vsql, such as "clang".
+
+fn build_commit
+---------------
+
+
+.. code-block:: v
+
+   pub fn build_commit() string
+
+build_commit returns the git commit of vsql that was released (such as "6b3d76f0a1..."), or an empty string if it wasn't built for a release.
+
+fn build_date
+-------------
+
+
+.. code-block:: v
+
+   pub fn build_date() string
+
+build_date returns the date (in UTC) that vsql was compiled, such as "2026-11-12". Every build has one. For a release, it's the date of the release.
+
+fn build_v_commit
+-----------------
+
+
+.. code-block:: v
+
+   pub fn build_v_commit() string
+
+build_v_commit returns the commit of the V compiler that built vsql (such as "5634a1f"), the same as "v version" shows.
+
+fn build_v_version
+------------------
+
+
+.. code-block:: v
+
+   pub fn build_v_version() string
+
+build_v_version returns the version of the V compiler that built vsql (such as "0.5.2").
+
+fn build_version
+----------------
+
+
+.. code-block:: v
+
+   pub fn build_version() string
+
+build_version returns the version of vsql (such as "v0.34.0"), or an empty string if it wasn't built for a release.
+
 fn catalog_name_from_path
 -------------------------
 
@@ -432,26 +492,6 @@ fn statement_ranges
    pub fn statement_ranges(script string) ([]StatementRange, StatementRange)
 
 statement_ranges finds the statements of a script that end with a semicolon, leaving out empty ones (including ones that are only comments). The range of the text after the last semicolon is returned separately. Its first is less than zero if there's nothing but white space and comments, which might be because more of the script is still to come.
-
-fn version
-----------
-
-
-.. code-block:: v
-
-   pub fn version() string
-
-version returns the version of vsql (such as "v0.34.0"), or an empty string if it wasn't built for a release.
-
-fn version_date
----------------
-
-
-.. code-block:: v
-
-   pub fn version_date() string
-
-version_date returns the date that vsql was released (such as "2026-10-28"), or an empty string if it wasn't built for a release.
 
 fn violated_constraint
 ----------------------

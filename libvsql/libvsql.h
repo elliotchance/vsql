@@ -1702,11 +1702,13 @@ SQLRETURN SQLSetStmtAttr(
 
 /*
  * SQLSpecialColumns returns a result set that describes the columns that
- * identify a row of a table (SQL_BEST_ROWID), which are its PRIMARY KEY. Its
- * columns are SCOPE (always SQL_SCOPE_SESSION), COLUMN_NAME, DATA_TYPE,
- * TYPE_NAME, COLUMN_SIZE, BUFFER_LENGTH, DECIMAL_DIGITS and PSEUDO_COLUMN
- * (always SQL_PC_NOT_PSEUDO). Scope is the minimum SCOPE, and Nullable is
- * SQL_NO_NULLS or SQL_NULLABLE (the columns of a PRIMARY KEY are never NULL).
+ * identify a row of a table (SQL_BEST_ROWID). They are its PRIMARY KEY or,
+ * without one, the UNIQUE constraint whose columns are all NOT NULL with the
+ * fewest columns (then the first by constraint name). Its columns are SCOPE
+ * (always SQL_SCOPE_SESSION), COLUMN_NAME, DATA_TYPE, TYPE_NAME, COLUMN_SIZE,
+ * BUFFER_LENGTH, DECIMAL_DIGITS and PSEUDO_COLUMN (always SQL_PC_NOT_PSEUDO).
+ * Scope is the minimum SCOPE, and Nullable is SQL_NO_NULLS or SQL_NULLABLE
+ * (the columns are never NULL).
  */
 SQLRETURN SQLSpecialColumns(
     SQLHSTMT     StatementHandle,

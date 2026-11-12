@@ -310,6 +310,42 @@ One row for each column of each ``PRIMARY KEY``, ``UNIQUE`` and ``FOREIGN KEY``
       ``PRIMARY KEY`` or ``UNIQUE`` that it references (see
       ``REFERENTIAL_CONSTRAINTS``). Otherwise, ``NULL``.
 
+``SQL_FEATURES``
+----------------
+
+One row for each feature and subfeature of the SQL standard, and whether vsql
+supports it. The rows are the same as the :doc:`sql-compliance` pages (they're
+built from them), with each feature in one row even when it's on the page of
+more than one part. A feature is only supported (✅ on every page that it's
+on) when it's fully supported. Rows are ordered by feature and subfeature.
+
+.. code-block:: sql
+
+  SELECT feature_id, sub_feature_id, sub_feature_name, is_supported
+  FROM information_schema.sql_features
+  WHERE feature_id = 'E011' AND sub_feature_id IN (' ', '01');
+  -- FEATURE_ID: E011 SUB_FEATURE_ID:   SUB_FEATURE_NAME:   IS_SUPPORTED: YES
+  -- FEATURE_ID: E011 SUB_FEATURE_ID: 01 SUB_FEATURE_NAME: INTEGER and SMALLINT data types (including all spellings) IS_SUPPORTED: YES
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``FEATURE_ID``, ``FEATURE_NAME``
+    - The feature, such as ``E011`` and ``Numeric data types``.
+
+  * - ``SUB_FEATURE_ID``, ``SUB_FEATURE_NAME``
+    - The subfeature, such as ``01`` (for ``E011-01``). For a feature, they're
+      a single space.
+
+  * - ``IS_SUPPORTED``
+    - ``YES`` or ``NO``.
+
+  * - ``IS_VERIFIED_BY``, ``COMMENTS``
+    - Always ``NULL``.
+
 Short Name Views
 ----------------
 

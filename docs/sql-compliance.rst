@@ -27,7 +27,7 @@ vsql follows three of them. Each has its own page:
 
    * - :doc:`sql-compliance-9075-11`
      - The tables that describe a database
-     - 5 of 15
+     - 6 of 15
      - 0 of 24
 
 The counts include subfeatures, and only count the ones that are fully

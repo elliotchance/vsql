@@ -350,15 +350,15 @@
 6.42/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 6.42/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 # 6.43, SQL_CONFORMANCE base table
-6.43                     missing      - - SQL_FEATURES (#654)
-6.43/DE/1                missing      - - SQL_FEATURES (#654)
-6.43/DE/2                missing      - - SQL_FEATURES (#654)
-6.43/DE/3                missing      - - SQL_FEATURES (#654)
-6.43/DE/4                missing      - - SQL_FEATURES (#654)
-6.43/DE/5                missing      - - SQL_FEATURES (#654)
-6.43/DE/6                missing      - - SQL_FEATURES (#654)
-6.43/DE/7                missing      - - SQL_FEATURES (#654)
-6.43/DE/8                missing      - - SQL_FEATURES (#654)
+6.43                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/1                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/2                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/3                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/4                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/5                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/6                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/7                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43/DE/8                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
 # 6.44, SQL_IMPLEMENTATION_INFO base table
 6.44                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
 6.44/DE/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)

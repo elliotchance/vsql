@@ -1297,7 +1297,8 @@ SQLRETURN SQLGetEnvAttr(
 /*
  * SQLGetFeatureInfo sets Supported to 1 if vsql supports a feature ("FEATURE"
  * with an id such as "E011") or a subfeature ("SUBFEATURE" with "E011" and
- * "01"), otherwise 0. An unknown feature, or a "PACKAGE", is HY024. See
+ * "01"), otherwise 0. An unknown feature, or a "PACKAGE", is HY024. It's read
+ * from the INFORMATION_SCHEMA.SQL_FEATURES view. See
  * https://vsql.readthedocs.io/en/latest/sql-compliance.html
  *
  *   SQLSMALLINT supported;

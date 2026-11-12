@@ -202,7 +202,7 @@
 5.51/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 5.51/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 # 5.52, SQL_FEATURES view
-5.52                     missing      - - SQL_FEATURES (#654)
+5.52                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql
 # 5.53, SQL_IMPLEMENTATION_INFO view
 5.53                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
 5.53/CR/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)

@@ -1449,13 +1449,13 @@
 6.36/GR/11.a.iii.1       implemented     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11.a.iii.2       implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11.b             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
-6.36/GR/12               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c there are no packages
+6.36/GR/12               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c there are no packages, and the type is the SUB_FEATURE_ID
 6.36/GR/13               definition   - -
-6.36/GR/14               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance-9075-3.rst is used
-6.36/GR/15               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance-9075-3.rst is used
-6.36/GR/16               n/a          - - there's no implicit ExecDirect
-6.36/GR/16.a             n/a          - - there's no implicit ExecDirect
-6.36/GR/16.b             n/a          - - there's no implicit ExecDirect
+6.36/GR/14               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c the view has no FEATURE_SUBFEATURE_PACKAGE_CODE, so a feature is a SUB_FEATURE_ID of a space
+6.36/GR/15               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
+6.36/GR/16               untested     libvsql/std_3_6_36_get_feature_info.v - the query never raises a status condition
+6.36/GR/16.a             untested     libvsql/std_3_6_36_get_feature_info.v - the query never raises a status condition
+6.36/GR/16.b             untested     libvsql/std_3_6_36_get_feature_info.v - the query never raises a status condition
 6.36/GR/17               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 # 6.37, GetFunctions
 6.37                     implemented  libvsql/std_3_6_37_get_functions.v libvsql/std_3_6_37_get_functions_test.c

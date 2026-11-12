@@ -20,11 +20,22 @@ struct MergeStatement {
 // which inserts a row of values into columns (all of the columns when it's
 // empty), with an <override clause> like an INSERT (see InsertStatement).
 struct MergeWhenClause {
-	matched    bool
+	matched bool
+	// condition is the <search condition> after AND, if any.
+	condition  ?BooleanValueExpression
 	set        []SetClause
 	columns    []Identifier
 	overriding string
 	values     []ContextuallyTypedRowValueConstructorElement
+}
+
+// A MergeSubject is a row of the target that a <merge when matched clause>
+// (by its position) applies to, and how many rows of the source match it for
+// that clause.
+struct MergeSubject {
+	clause  int
+	row     Row
+	matches int
 }
 
 // A MergeContext is what each row of a MERGE needs to work out its change.
@@ -41,8 +52,33 @@ struct MergeContext {
 mut:
 	// compiled is the value of each <set clause>, compiled for the first row
 	// and then kept for the rows after it, by the position of the clause and of
-	// the <set clause>.
-	compiled map[string]CompileResult
+	// the <set clause>. conditions is the search condition of each clause, the
+	// same way.
+	compiled   map[string]CompileResult
+	conditions map[int][]CompileResult
+}
+
+// first_clause is the position of the first clause for row whose search
+// condition (if any) is true, only looking at the <merge when matched clause>s
+// when row matched a row of the target, otherwise the <merge when not matched
+// clause>s. It's -1 when there isn't one.
+//
+// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.1.A and 6.a.ii.5
+fn (mut ctx MergeContext) first_clause(mut conn Connection, clauses []MergeWhenClause, row Row) !int {
+	for i, clause in clauses {
+		if clause.matched != (row.id.len > 0) {
+			continue
+		}
+		condition := clause.condition or { return i }
+		mut compiled := ctx.conditions[i] or { []CompileResult{cap: 1} }
+		is_true := eval_as_bool(mut conn, row, condition, ctx.params, ctx.tables, mut compiled)!
+		ctx.conditions[i] = compiled
+		if is_true {
+			return i
+		}
+	}
+
+	return -1
 }
 
 // check returns an error when a <set clause> sets a column more than once, or
@@ -97,8 +133,9 @@ fn (stmt MergeStatement) plan(params map[string]Value, mut conn Connection) !(Pl
 	}, params, mut conn, false)
 }
 
-// resolve finds the target table and its columns, and the source, so that a
-// name that doesn't exist is an error when it's prepared.
+// resolve finds the target table and its columns, the source, and the names in
+// the search condition of each clause, so that a name that doesn't exist is an
+// error when it's prepared.
 fn (stmt MergeStatement) resolve(params map[string]Value, mut conn Connection) ! {
 	table := conn.resolved_table(stmt.table_name)!
 	for clause in stmt.clauses {
@@ -109,7 +146,17 @@ fn (stmt MergeStatement) resolve(params map[string]Value, mut conn Connection) !
 			table.column(column.sub_entity_name)!
 		}
 	}
-	stmt.plan(params, mut conn)!
+	_, tables := stmt.plan(params, mut conn)!
+	mut c := Compiler{
+		conn:   conn
+		params: params
+		tables: tables
+	}
+	for clause in stmt.clauses {
+		if condition := clause.condition {
+			condition.compile(mut c)!
+		}
+	}
 }
 
 // check_columns returns an error when a generated column, or a GENERATED ALWAYS
@@ -198,41 +245,63 @@ fn (stmt MergeStatement) execute(mut conn Connection, params map[string]Value, e
 
 	// Each change is worked out before any of them are made, so the rows that
 	// are inserted can't be matched, and every value sees the table as it was.
-	// A row of the source that matches a row of the target is a matching row
-	// for the first <merge when matched clause>, and a row that doesn't match
-	// any is inserted by the first <merge when not matched clause>.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.1, 6.a.ii.5 and 6.a.ii.6
-	mut subjects := map[string]bool{}
-	mut subject_rows := []Row{}
-	mut changes := []RowChange{}
+	// A row of the target is the subject row of the first <merge when matched
+	// clause> whose search condition is true for a row of the source that it
+	// matches. That row of the source is its matching row, and there can only
+	// be one for that clause.
+	//
+	// A row of the source that doesn't match any row of the target is inserted by
+	// the first <merge when not matched clause> whose search condition is true.
+	// It can reference the target, which is all NULLs. (The rows of S3 are found
+	// by joining with the target, which seems to mean the search condition
+	// isn't used when the target has no rows, but it is here, as it is in other
+	// databases.)
+	//
+	// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.1, 6.a.ii.1-6
+	mut subjects := map[string]MergeSubject{}
+	mut order := []string{}
 	mut inserts := []Row{}
 	for row in rows {
 		conn.begin_row()
-		for i, clause in stmt.clauses {
-			if clause.matched != (row.id.len > 0) {
-				continue
-			}
+		n := ctx.first_clause(mut conn, stmt.clauses, row)!
+		if n < 0 {
+			continue
+		}
+		clause := stmt.clauses[n]
+		if !clause.matched {
+			inserts << ctx.insert(mut conn, row, stmt.table_name, clause)!
+			continue
+		}
 
-			if clause.matched {
-				// A row of the target can only be changed by one row of the
-				// source.
-				//
-				// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.1.B.II
-				key := row.id.bytestr()
-				if key in subjects {
-					return sqlstate_21000('more than one row of the source matches the same row of ${table.name}')
+		key := row.id.bytestr()
+		if subject := subjects[key] {
+			if n == subject.clause {
+				subjects[key] = MergeSubject{
+					...subject
+					matches: subject.matches + 1
 				}
-				subjects[key] = true
-				subject_rows << row
-				change, did_modify := ctx.update(mut conn, row, i, clause)!
-				if did_modify {
-					changes << change
-				}
-			} else {
-				inserts << ctx.insert(mut conn, row, stmt.table_name, clause)!
+			} else if n < subject.clause {
+				subjects[key] = MergeSubject{n, row, 1}
 			}
-			break
+		} else {
+			subjects[key] = MergeSubject{n, row, 1}
+			order << key
+		}
+	}
+
+	// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 6.a.i.1.B.II
+	mut subject_rows := []Row{}
+	mut changes := []RowChange{}
+	for key in order {
+		subject := subjects[key] or { return error('no subject') }
+		if subject.matches > 1 {
+			return sqlstate_21000('more than one row of the source matches the same row of ${table.name}')
+		}
+		subject_rows << subject.row
+		change, did_modify := ctx.update(mut conn, subject.row, subject.clause, stmt.clauses[subject.clause])!
+		if did_modify {
+			changes << change
 		}
 	}
 

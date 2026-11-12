@@ -13,8 +13,8 @@ Syntax
   <when_clause> ...
 
   <when_clause> ::=
-      WHEN MATCHED THEN UPDATE SET <column_name> = <value> , ...
-    | WHEN NOT MATCHED THEN INSERT [ ( <column_name> , ... ) ]
+      WHEN MATCHED [ AND <condition> ] THEN UPDATE SET <column_name> = <value> , ...
+    | WHEN NOT MATCHED [ AND <condition> ] THEN INSERT [ ( <column_name> , ... ) ]
         [ OVERRIDING { USER | SYSTEM } VALUE ]
         VALUES ( <value> , ... )
 
@@ -29,8 +29,11 @@ target with the ``ON`` condition:
   the ``WHEN NOT MATCHED`` clause. The values can only reference the columns of
   the source.
 
-A row of the source that has no clause for it is left out. Only the first
-clause of each kind is used.
+Each clause can have a condition after ``AND``, which can reference the source
+and the target (the target is all ``NULL`` for a row that didn't match). The
+first clause whose condition is true is used, and a row of the source without
+one is left out. A row of the target that's matched by more than one row of the
+source only uses the first clause that any of them is for.
 
 The source can be a table, or a query in parentheses with a correlation name
 (such as ``(VALUES (1, 'a')) AS s (id, name)``). It can't be a join, and it
@@ -38,9 +41,9 @@ can't have the same name as the target.
 
 Every change is worked out before any of them are made, so a row that's
 inserted is never matched, and every value sees the table as it was before the
-``MERGE``. A row of the target can only be matched by one row of the source,
-otherwise it's an error ``21000`` (cardinality violation) and nothing is
-changed.
+``MERGE``. A row of the target can only be matched by one row of the source
+for its clause, otherwise it's an error ``21000`` (cardinality violation) and
+nothing is changed.
 
 The rules of each change, such as ``DEFAULT``, generated and identity columns,
 ``OVERRIDING``, and the constraints of the table, are the same as an

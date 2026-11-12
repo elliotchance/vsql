@@ -371,6 +371,26 @@ fn split_terminated_statements
 
 split_terminated_statements is split_statements for statements that must end with a semicolon, such as a <direct SQL statement>. The text after the last semicolon is returned separately (as it is, so that more text can be appended to it), or an empty string if it's only white space and comments.
 
+fn sql_implementation_info
+--------------------------
+
+
+.. code-block:: v
+
+   pub fn sql_implementation_info(server_name string) []ImplementationInfo
+
+sql_implementation_info returns the rows of INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO, ordered by their ID. server_name is the name of the SQL-server that was connected to (the path of the database file, or ":memory:"), which is the DATA SOURCE NAME and SERVER NAME.
+
+fn sql_sizing
+-------------
+
+
+.. code-block:: v
+
+   pub fn sql_sizing() []SizingItem
+
+sql_sizing returns the rows of INFORMATION_SCHEMA.SQL_SIZING, ordered by their ID.
+
 fn sqlstate_from_int
 --------------------
 
@@ -944,6 +964,31 @@ Identifier is used to describe a object within a schema (such as a table name) o
 
 If you need the fully qualified (canonical) form of an identified you can use Connection.resolve_schema_identifier().
 
+struct ImplementationInfo
+-------------------------
+
+
+.. code-block:: v
+
+   pub struct ImplementationInfo {
+   pub:
+   	// id is the IMPLEMENTATION_INFO_ID, which is also the code of the
+   	// information type for SQLGetInfo. The column is a character string.
+   	id int
+   	// name is the IMPLEMENTATION_INFO_NAME, such as "DBMS NAME".
+   	name string
+   	// integer_value is the INTEGER_VALUE, or none if the value is a character
+   	// string.
+   	integer_value ?int
+   	// character_value is the CHARACTER_VALUE, or none if the value is an
+   	// integer.
+   	character_value ?string
+   	// comments is the COMMENTS, which explains the value.
+   	comments string
+   }
+
+ImplementationInfo is an SQL-implementation information item, which is a row of INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO.
+
 struct Index
 ------------
 
@@ -1207,6 +1252,28 @@ struct ServerOptions
    }
 
 
+
+struct SizingItem
+-----------------
+
+
+.. code-block:: v
+
+   pub struct SizingItem {
+   pub:
+   	// id is the SIZING_ID, which is also the code of the information type for
+   	// SQLGetInfo.
+   	id int
+   	// name is the SIZING_NAME, such as "MAXIMUM COLUMN NAME LENGTH".
+   	name string
+   	// supported_value is the SUPPORTED_VALUE: the maximum, 0 (zero) if there
+   	// isn't one, or none if it doesn't apply.
+   	supported_value ?int
+   	// comments is the COMMENTS, which explains the value.
+   	comments string
+   }
+
+SizingItem is a sizing item, which is a row of INFORMATION_SCHEMA.SQL_SIZING.
 
 struct StatementRange
 ---------------------

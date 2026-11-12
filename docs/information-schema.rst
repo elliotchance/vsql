@@ -346,6 +346,70 @@ on) when it's fully supported. Rows are ordered by feature and subfeature.
   * - ``IS_VERIFIED_BY``, ``COMMENTS``
     - Always ``NULL``.
 
+``SQL_IMPLEMENTATION_INFO``
+---------------------------
+
+One row for each piece of information about vsql itself. It's the same
+information that ``SQLGetInfo`` of the C API returns (see
+:doc:`sql-compliance-9075-3`).
+
+.. code-block:: sql
+
+  SELECT implementation_info_name, integer_value, character_value
+  FROM information_schema.sql_implementation_info
+  WHERE implementation_info_id IN ('17', '28');
+  -- IMPLEMENTATION_INFO_NAME: DBMS NAME INTEGER_VALUE: NULL CHARACTER_VALUE: vsql
+  -- IMPLEMENTATION_INFO_NAME: IDENTIFIER CASE INTEGER_VALUE: 1 CHARACTER_VALUE: NULL
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``IMPLEMENTATION_INFO_ID``, ``IMPLEMENTATION_INFO_NAME``
+    - The code (as text) and name of the item, which are the ones from the SQL
+      standard, such as ``17`` for ``DBMS NAME``.
+
+  * - ``INTEGER_VALUE``, ``CHARACTER_VALUE``
+    - The value, which is in one of them (the other one is ``NULL``). The
+      ``DBMS VERSION`` is ``00.00.0000`` unless vsql was built for a release,
+      when it's followed by the version and its date. The ``DATA SOURCE NAME``
+      and ``SERVER NAME`` are the path of the database file (or ``:memory:``).
+
+  * - ``COMMENTS``
+    - What the value means.
+
+``SQL_SIZING``
+--------------
+
+One row for each limit, such as the longest name or the most columns in a
+table. ``SQLGetInfo`` returns the same limits.
+
+.. code-block:: sql
+
+  SELECT sizing_name, supported_value
+  FROM information_schema.sql_sizing
+  WHERE sizing_id IN (30, 101);
+  -- SIZING_NAME: MAXIMUM COLUMN NAME LENGTH SUPPORTED_VALUE: 128
+  -- SIZING_NAME: MAXIMUM COLUMNS IN TABLE SUPPORTED_VALUE: 1600
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``SIZING_ID``, ``SIZING_NAME``
+    - The code and name of the limit, which are the ones from the SQL standard.
+
+  * - ``SUPPORTED_VALUE``
+    - The limit, ``0`` if there isn't one, or ``NULL`` if vsql doesn't support
+      anything that it applies to (such as ``MAXIMUM CURRENT ROLE LENGTH``).
+
+  * - ``COMMENTS``
+    - What the limit is.
+
 Short Name Views
 ----------------
 

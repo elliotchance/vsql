@@ -13,9 +13,9 @@ table_reference:
 
 parenthesized_joined_table:
   left_paren parenthesized_joined_table right_paren {
-    $$.v = $2.v as QualifiedJoin
+    $$.v = $2.v
   }
-| left_paren joined_table right_paren { $$.v = $2.v as QualifiedJoin }
+| left_paren joined_table right_paren { $$.v = $2.v }
 
 // Without a join type, it's INNER.
 //
@@ -23,12 +23,12 @@ parenthesized_joined_table:
 
 qualified_join:
   table_reference JOIN table_reference join_specification {
-    $$.v = new_qualified_join($1.v as TableReference, JoinType.inner,
-      $3.v as TableReference, $4.v as JoinSpecification)
+    $$.v = yy_box(new_qualified_join($1.v as TableReference, JoinType.inner,
+      $3.v as TableReference, $4.v as JoinSpecification))
   }
 | table_reference join_type JOIN table_reference join_specification {
-    $$.v = new_qualified_join($1.v as TableReference, $2.v as JoinType,
-      $4.v as TableReference, $5.v as JoinSpecification)
+    $$.v = yy_box(new_qualified_join($1.v as TableReference, $2.v as JoinType,
+      $4.v as TableReference, $5.v as JoinSpecification))
   }
 
 table_factor:
@@ -60,34 +60,34 @@ table_primary:
 
 correlation_or_recognition:
   correlation_name {
-    $$.v = Correlation{
+    $$.v = yy_box(Correlation{
       name: $1.v as Identifier
-    }
+    })
   }
 | AS correlation_name {
-    $$.v = Correlation{
+    $$.v = yy_box(Correlation{
       name: $2.v as Identifier
-    }
+    })
   }
 | correlation_name parenthesized_derived_column_list {
-    $$.v = Correlation{
+    $$.v = yy_box(Correlation{
       name:    $1.v as Identifier
       columns: $2.v as []Identifier
-    }
+    })
   }
 | AS correlation_name parenthesized_derived_column_list {
-    $$.v = Correlation{
+    $$.v = yy_box(Correlation{
       name:    $2.v as Identifier
       columns: $3.v as []Identifier
-    }
+    })
   }
 // The lexer can't tell that this ILIKE is a name, since it's between a value and
 // a left parenthesis (see is_ilike_operator). It can't be an operator here.
 | OPERATOR_ILIKE parenthesized_derived_column_list {
-    $$.v = Correlation{
+    $$.v = yy_box(Correlation{
       name:    new_column_identifier('ILIKE')!
       columns: $2.v as []Identifier
-    }
+    })
   }
 
 derived_table:
@@ -98,15 +98,15 @@ derived_table:
   }
 
 table_or_query_name:
-  table_name { $$.v = $1.v as Identifier }
+  table_name { $$.v = $1.v }
 
 derived_column_list:
-  column_name_list { $$.v = $1.v as []Identifier }
+  column_name_list { $$.v = $1.v }
 
 column_name_list:
-  column_name { $$.v = [$1.v as Identifier] }
+  column_name { $$.v = yy_box([$1.v as Identifier]) }
 | column_name_list comma column_name {
-    $$.v = append_list($1.v as []Identifier, $3.v as Identifier)
+    $$.v = yy_box(append_list($1.v as []Identifier, $3.v as Identifier))
   }
 
 parenthesized_derived_column_list:

@@ -12,7 +12,7 @@ delete_statement_positioned:
   }
 
 target_table:
-  table_name { $$.v = $1.v as Identifier }
+  table_name { $$.v = $1.v }
 
 // The optional [ [ AS ] <correlation name> ] of the target table of a DELETE or
 // UPDATE. Unlike a <table primary> it can't have a derived column list.
@@ -23,8 +23,8 @@ target_table:
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Format
 
 target_correlation_name:
-  { $$.v = Identifier{} }
-| correlation_name { $$.v = $1.v as Identifier }
-| AS correlation_name { $$.v = $2.v as Identifier }
+  { $$.v = yy_box(Identifier{}) }
+| correlation_name { $$.v = $1.v }
+| AS correlation_name { $$.v = $2.v }
 
 %%

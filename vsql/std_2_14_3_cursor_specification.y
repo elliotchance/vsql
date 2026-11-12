@@ -22,10 +22,10 @@ cursor_specification:
 // PreparedStmt.open_cursor. A query that's executed without a cursor can't
 // have one (see PreparedStmt.query_internal).
 updatability_clause:
-  FOR READ ONLY { $$.v = UpdatabilityClause{} }
-| FOR UPDATE { $$.v = UpdatabilityClause{for_update: true} }
+  FOR READ ONLY { $$.v = yy_box(UpdatabilityClause{}) }
+| FOR UPDATE { $$.v = yy_box(UpdatabilityClause{for_update: true}) }
 | FOR UPDATE OF column_name_list {
-    $$.v = UpdatabilityClause{true, $4.v as []Identifier}
+    $$.v = yy_box(UpdatabilityClause{true, $4.v as []Identifier})
   }
 
 %%

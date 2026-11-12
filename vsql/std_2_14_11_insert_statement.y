@@ -18,7 +18,7 @@ insert_statement:
   }
 
 insertion_target:
-  table_name { $$.v = $1.v as Identifier }
+  table_name { $$.v = $1.v }
 
 insert_columns_and_source:
   from_subquery { $$.v = $1.v }
@@ -161,6 +161,6 @@ override_clause:
   }
 
 insert_column_list:
-  column_name_list { $$.v = $1.v as []Identifier }
+  column_name_list { $$.v = $1.v }
 
 %%

@@ -183,10 +183,10 @@ fn test_panics() ! {
 	assert stderr.contains('unknown catalog: NOPE')
 
 	code, stderr = run_in_child(fn () {
-		_ := yy_as[Identifier](YYSym(true))
+		_ := yy_as[string](YYSym(true))
 	})!
 	assert code in panic_exit_codes
-	assert stderr.contains('V panic: expected vsql.Identifier')
+	assert stderr.contains('V panic: expected string')
 
 	code, stderr = run_in_child(fn () {
 		_ := yy_unbox[Stmt](YYSym(yy_box(Table{})))

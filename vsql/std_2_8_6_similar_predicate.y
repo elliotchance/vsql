@@ -13,21 +13,21 @@ similar_predicate:
 
 similar_predicate_part_2:
   SIMILAR TO similar_pattern {
-    $$.v = SimilarPredicatePart2{$3.v as CharacterValueExpression, none, false}
+    $$.v = yy_box(SimilarPredicatePart2{$3.v as CharacterValueExpression, none, false})
   }
 | NOT SIMILAR TO similar_pattern {
-    $$.v = SimilarPredicatePart2{$4.v as CharacterValueExpression, none, true}
+    $$.v = yy_box(SimilarPredicatePart2{$4.v as CharacterValueExpression, none, true})
   }
 | SIMILAR TO similar_pattern ESCAPE escape_character {
-    $$.v = SimilarPredicatePart2{$3.v as CharacterValueExpression,
-      ref_character_value_expression($5.v as CharacterValueExpression), false}
+    $$.v = yy_box(SimilarPredicatePart2{$3.v as CharacterValueExpression,
+      ref_character_value_expression($5.v as CharacterValueExpression), false})
   }
 | NOT SIMILAR TO similar_pattern ESCAPE escape_character {
-    $$.v = SimilarPredicatePart2{$4.v as CharacterValueExpression,
-      ref_character_value_expression($6.v as CharacterValueExpression), true}
+    $$.v = yy_box(SimilarPredicatePart2{$4.v as CharacterValueExpression,
+      ref_character_value_expression($6.v as CharacterValueExpression), true})
   }
 
 similar_pattern:
-  character_value_expression { $$.v = $1.v as CharacterValueExpression }
+  character_value_expression { $$.v = $1.v }
 
 %%

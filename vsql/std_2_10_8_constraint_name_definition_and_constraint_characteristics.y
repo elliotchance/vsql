@@ -6,7 +6,7 @@
 // Specify the name of a constraint and its characteristics.
 
 constraint_name_definition:
-  CONSTRAINT constraint_name { $$.v = $2.v as Identifier }
+  CONSTRAINT constraint_name { $$.v = $2.v }
 
 // Each <constraint characteristic> is added to the constraint before it (see
 // with_constraint_characteristic), so that a NOT DEFERRABLE after a column

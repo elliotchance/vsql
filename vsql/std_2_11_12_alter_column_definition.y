@@ -13,13 +13,13 @@ alter_column_definition:
 
 alter_column_action:
   set_column_default_clause {
-    $$.v = AlterColumnAction($1.v as SetColumnDefaultClause)
+    $$.v = yy_box(AlterColumnAction($1.v as SetColumnDefaultClause))
   }
 | drop_column_default_clause {
-    $$.v = AlterColumnAction($1.v as DropColumnDefaultClause)
+    $$.v = yy_box(AlterColumnAction($1.v as DropColumnDefaultClause))
   }
 | alter_identity_column_specification {
-    $$.v = AlterColumnAction($1.v as AlterIdentityColumnSpecification)
+    $$.v = yy_box(AlterColumnAction($1.v as AlterIdentityColumnSpecification))
   }
 
 %%

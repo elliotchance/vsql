@@ -24,7 +24,7 @@ references_specification:
   }
 
 referencing_column_list:
-  column_name_list { $$.v = $1.v as []Identifier }
+  column_name_list { $$.v = $1.v }
 
 referenced_table_and_columns:
   table_name {
@@ -40,7 +40,7 @@ referenced_table_and_columns:
   }
 
 referenced_column_list:
-  column_name_list { $$.v = $1.v as []Identifier }
+  column_name_list { $$.v = $1.v }
 
 // ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Conformance Rules, 3 and 4
 referential_triggered_action:

@@ -19,13 +19,13 @@ set_constraints_mode_statement:
 
 // ALL is an empty list.
 constraint_name_list:
-  ALL { $$.v = []Identifier{} }
-| constraint_names { $$.v = $1.v as []Identifier }
+  ALL { $$.v = yy_box([]Identifier{}) }
+| constraint_names { $$.v = $1.v }
 
 constraint_names:
-  constraint_name { $$.v = [$1.v as Identifier] }
+  constraint_name { $$.v = yy_box([$1.v as Identifier]) }
 | constraint_names comma constraint_name {
-    $$.v = append_list($1.v as []Identifier, $3.v as Identifier)
+    $$.v = yy_box(append_list($1.v as []Identifier, $3.v as Identifier))
   }
 
 %%

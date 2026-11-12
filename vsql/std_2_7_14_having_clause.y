@@ -6,6 +6,6 @@
 // satisfy a <search condition>.
 
 having_clause:
-  HAVING search_condition { $$.v = $2.v as BooleanValueExpression }
+  HAVING search_condition { $$.v = $2.v }
 
 %%

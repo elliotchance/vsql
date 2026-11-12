@@ -2,13 +2,13 @@
 
 value_expression_primary:
   parenthesized_value_expression {
-    $$.v = ValueExpressionPrimary($1.v as ParenthesizedValueExpression)
+    $$.v = yy_box(ValueExpressionPrimary($1.v as ParenthesizedValueExpression))
   }
 | parenthesized_boolean_value_expression {
-    $$.v = ValueExpressionPrimary(new_parenthesized_value_expression(ValueExpression($1.v as BooleanValueExpression)))
+    $$.v = yy_box(ValueExpressionPrimary(new_parenthesized_value_expression(ValueExpression($1.v as BooleanValueExpression))))
   }
 | nonparenthesized_value_expression_primary {
-    $$.v = ValueExpressionPrimary($1.v as NonparenthesizedValueExpressionPrimary)
+    $$.v = yy_box(ValueExpressionPrimary($1.v as NonparenthesizedValueExpressionPrimary))
   }
 
 // A value_expression in parentheses is either a common_value_expression or a
@@ -16,33 +16,33 @@ value_expression_primary:
 // parenthesized_boolean_value_expression so there's only one way to parse it.
 parenthesized_value_expression:
   left_paren common_value_expression right_paren {
-    $$.v = new_parenthesized_value_expression(ValueExpression($2.v as CommonValueExpression))
+    $$.v = yy_box(new_parenthesized_value_expression(ValueExpression($2.v as CommonValueExpression)))
   }
 
 nonparenthesized_value_expression_primary:
   unsigned_value_specification {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as ValueSpecification)
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as ValueSpecification))
   }
 | column_reference {
-    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as Identifier))
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as Identifier)))
   }
 | set_function_specification {
-    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as AggregateFunction))
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as AggregateFunction)))
   }
 | routine_invocation {
-    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as RoutineInvocation))
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as RoutineInvocation)))
   }
 | case_expression {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as CaseExpression)
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as CaseExpression))
   }
 | cast_specification {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as CastSpecification)
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as CastSpecification))
   }
 | next_value_expression {
-    $$.v = NonparenthesizedValueExpressionPrimary(new_ref($1.v as NextValueExpression))
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as NextValueExpression)))
   }
 | scalar_subquery {
-    $$.v = NonparenthesizedValueExpressionPrimary($1.v as Subquery)
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as Subquery))
   }
 
 %%

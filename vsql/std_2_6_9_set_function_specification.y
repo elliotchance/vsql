@@ -5,6 +5,6 @@
 // Specify a value derived by the application of a function to an argument.
 
 set_function_specification:
-  aggregate_function { $$.v = $1.v as AggregateFunction }
+  aggregate_function { $$.v = $1.v }
 
 %%

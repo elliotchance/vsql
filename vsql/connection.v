@@ -117,6 +117,9 @@ mut:
 	// direct_query_transaction is true when an SQL-transaction was started by
 	// a query in direct (see Connection.direct) that hasn't changed anything.
 	direct_query_transaction bool
+	// direct_query_headers has the header of each catalog (by name) that was
+	// read by the first query of that SQL-transaction, see check_direct_query.
+	direct_query_headers map[string]Header
 	// cursors are the standing cursors that have been declared, by name (see
 	// DeclareCursor).
 	cursors map[string]&Cursor

@@ -40,6 +40,13 @@
 // COMMITTED transactions can still read and write while the lock is held. They
 // just can't commit. If the isolation file doesn't exist, no transaction can be
 // holding a lock on it, so it isn't created just to commit.
+//
+// A query through Connection.direct that starts an SQL-transaction doesn't take
+// the lock, since that isn't possible for a database that can only be read. It
+// also means that readers don't wait for each other, or stop anything from
+// committing. It's still isolated, because a query that would see something that
+// was committed since the first query of the transaction fails instead, see
+// check_direct_query.
 
 module vsql
 
@@ -122,6 +129,58 @@ fn (mut catalog CatalogConnection) lock_transaction(read_only bool) ! {
 		} else {
 			'another connection has a transaction that must finish first'
 		})!
+}
+
+// check_direct_query must be called after each query of an SQL-transaction that
+// hasn't been started in storage (see Connection.direct), and after it has been
+// started by the statement that follows them. The header is what that statement
+// read, while the database file was locked, so nothing can be committed between
+// them. A REPEATABLE READ or SERIALIZABLE transaction that can't be isolated any
+// more is rolled back with a serialization failure, which has nothing to undo.
+//
+// ISO/IEC 9075-2:2016(E), 4.41.5, Implicit rollbacks
+fn (mut conn Connection) check_direct_query() ! {
+	if !conn.isolation_level.locks_transaction() {
+		return
+	}
+
+	for name, catalog in conn.catalogs {
+		// Only one connection can use a database in memory.
+		if catalog.path == ':memory:' {
+			continue
+		}
+
+		before := conn.direct_query_headers[name] or {
+			conn.direct_query_headers[name] = catalog.storage.header
+			continue
+		}
+		if catalog.storage.header.has_ended_since(before) {
+			conn.direct_query_transaction = false
+			return sqlstate_40001('another connection has committed since this transaction started reading')
+		}
+	}
+}
+
+// has_ended_since is true if a transaction that was active at the time of the
+// before header, or has started since, is no longer active. The file doesn't
+// show whether it was committed or rolled back, so a rollback counts too.
+fn (h Header) has_ended_since(before Header) bool {
+	mut active := h.active_transaction_ids
+	for tid in before.active_transaction_ids.tids {
+		if tid != 0 && !active.exists(tid) {
+			return true
+		}
+	}
+
+	// Each ID is checked until the first that isn't active, and at most 256 can
+	// be active, so this doesn't take long even if a lot has happened.
+	for tid := before.transaction_id + 1; tid <= h.transaction_id; tid++ {
+		if !active.exists(tid) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // unlock_transactions must be called at the end of every statement. The lock is

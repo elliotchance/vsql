@@ -1,6 +1,7 @@
 -- # An index is used to find rows in the same way as the PRIMARY KEY (see
 -- # impl_planner_primary_key_range.sql). Rows are read in the order of the
--- # index. The WHERE clause is still applied to them.
+-- # index. The WHERE clause is still applied to them, except for what the range
+-- # covers (see impl_planner_covered_filter.sql).
 
 /* setup */
 CREATE TABLE t (id INT PRIMARY KEY, x VARCHAR(10), y INT);
@@ -121,7 +122,7 @@ EXPLAIN SELECT id FROM t WHERE x > 'b' AND y > 1;
 -- msg: CREATE INDEX 1
 -- msg: CREATE INDEX 1
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, X CHARACTER VARYING(10), Y INTEGER) RANGE ID = 1
--- EXPLAIN: WHERE ID = 1 AND X = 'b'
+-- EXPLAIN: WHERE X = 'b'
 -- EXPLAIN: EXPR (ID INTEGER NOT NULL)
 -- EXPLAIN: INDEX ":memory:".PUBLIC.T_X ON ":memory:".PUBLIC.T (ID INTEGER NOT NULL, X CHARACTER VARYING(10), Y INTEGER) RANGE X = 'b'
 -- EXPLAIN: WHERE ID > 1 AND X = 'b'
@@ -133,7 +134,7 @@ EXPLAIN SELECT id FROM t WHERE x > 'b' AND y > 1;
 -- EXPLAIN: WHERE X = 'b' AND Y = 1
 -- EXPLAIN: EXPR (ID INTEGER NOT NULL)
 -- EXPLAIN: INDEX ":memory:".PUBLIC.T_Y ON ":memory:".PUBLIC.T (ID INTEGER NOT NULL, X CHARACTER VARYING(10), Y INTEGER) RANGE Y = 1
--- EXPLAIN: WHERE X > 'b' AND Y = 1
+-- EXPLAIN: WHERE X > 'b'
 -- EXPLAIN: EXPR (ID INTEGER NOT NULL)
 -- EXPLAIN: INDEX ":memory:".PUBLIC.T_X ON ":memory:".PUBLIC.T (ID INTEGER NOT NULL, X CHARACTER VARYING(10), Y INTEGER) RANGE X > 'b'
 -- EXPLAIN: WHERE X > 'b' AND Y > 1

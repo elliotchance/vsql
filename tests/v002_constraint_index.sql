@@ -8,7 +8,6 @@ SELECT * FROM t WHERE u = 20;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 2
 -- EXPLAIN: INDEX ":memory:".PUBLIC.T_UNIQUE_1 ON ":memory:".PUBLIC.T (ID INTEGER NOT NULL, U INTEGER) RANGE U = 20
--- EXPLAIN: WHERE U = 20
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.U INTEGER)
 -- ID: 2 U: 20
 
@@ -110,7 +109,6 @@ DROP INDEX child_p;
 -- msg: INSERT 2
 -- msg: INSERT 2
 -- EXPLAIN: INDEX ":memory:".PUBLIC.CHILD_P ON ":memory:".PUBLIC.CHILD (ID INTEGER NOT NULL, P INTEGER) RANGE P = 1
--- EXPLAIN: WHERE P = 1
 -- EXPLAIN: EXPR (":memory:".PUBLIC.CHILD.ID INTEGER NOT NULL, ":memory:".PUBLIC.CHILD.P INTEGER)
 -- error 2BP01: dependent objects still exist on constraint CHILD_P on ":memory:".PUBLIC.CHILD
 -- error 23503: violates foreign key constraint: FOREIGN KEY (P) REFERENCES ":memory:".PUBLIC.PARENT (ID) on ":memory:".PUBLIC.CHILD

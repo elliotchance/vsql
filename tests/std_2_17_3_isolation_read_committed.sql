@@ -393,3 +393,30 @@ SELECT x FROM t WHERE id = 2;
 -- 1: X: 999
 -- 1: msg: UPDATE 1
 -- 1: X: 1000
+
+-- # A change to a row that another active transaction has changed fails with
+-- # 40001, even when its page is full and has to be split for the new version.
+-- # Otherwise, the split puts the new version on a different page to the other
+-- # two, and the row is seen twice. With these pages, the second UPDATE splits
+-- # the page.
+/* page_size 256 */
+/* connection 1 */
+CREATE TABLE t (id INT, x INT);
+INSERT INTO t (id, x) VALUES (1, 0), (2, 0);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+UPDATE t SET x = 1 WHERE id = 2;
+/* connection 2 */
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+UPDATE t SET x = 2 WHERE id = 2;
+/* connection 1 */
+COMMIT;
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 2
+-- 1: msg: START TRANSACTION
+-- 1: msg: UPDATE 1
+-- 2: msg: START TRANSACTION
+-- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 1: msg: COMMIT
+-- 1: ID: 1 X: 0
+-- 1: ID: 2 X: 1

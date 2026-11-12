@@ -270,6 +270,26 @@ SELECT * FROM PrimaryProduct;
 -- ID: 1 X: 10
 -- ID: 2 X: 20
 
+-- # A row that a transaction wrote and then deleted itself is replaced when the
+-- # same transaction writes its key again, including a value that's too long
+-- # for a page. Here the second UPDATE deletes the row with id 2 (that the first
+-- # UPDATE wrote), then moves the row with id 3 to 2.
+CREATE TABLE t (id INT PRIMARY KEY, s VARCHAR(400));
+INSERT INTO t (id, s) VALUES (1, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'), (2, 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+START TRANSACTION;
+UPDATE t SET id = id + 1;
+UPDATE t SET id = id - 1;
+COMMIT;
+SELECT id, CHARACTER_LENGTH(s), SUBSTRING(s FROM 1 FOR 1) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: START TRANSACTION
+-- msg: UPDATE 2
+-- msg: UPDATE 2
+-- msg: COMMIT
+-- ID: 1 COL2: 300 COL3: a
+-- ID: 2 COL2: 300 COL3: b
+
 -- # A column can't be set more than once (14.15, Syntax Rules, 8), but several
 -- # columns can be set at once, including ones with delimited names.
 CREATE TABLE foo (a INT, c VARCHAR(5));

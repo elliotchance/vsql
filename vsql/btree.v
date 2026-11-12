@@ -208,6 +208,27 @@ fn (mut p Btree) remove_blob(ref PageObject) ! {
 	}
 }
 
+// remove_dead_version removes the version of key that the transaction tid
+// created and then deleted itself (its xid is also tid), and its blob objects.
+// No other transaction can see it, and COMMIT and ROLLBACK would both remove
+// it. If it was kept, adding another version of the key could make three (see
+// the caveats at the top of the file), which a page doesn't allow.
+fn (mut p Btree) remove_dead_version(key []u8, tid u64) ! {
+	path, _ := p.search_page(key)!
+	page_number := path[path.len - 1]
+	mut page := p.pager.fetch_page(page_number)!
+	dead := page.get(key, tid)
+	if dead.key.len == 0 || dead.xid != tid {
+		return
+	}
+
+	page.delete(key, tid)
+	p.store_page(page_number, page)!
+	if dead.is_blob_ref {
+		p.remove_blob(dead)!
+	}
+}
+
 // add returns the page number that the object was added to.
 fn (mut p Btree) add(object PageObject) !int {
 	p.written_keys[object.key.bytestr()] = true
@@ -220,6 +241,13 @@ fn (mut p Btree) add(object PageObject) !int {
 	maximum_size := p.max_allowed_in_page() / 2
 	obj_len := obj.length()
 	if obj_len > maximum_size {
+		// The blob objects of a dead version (see remove_dead_version) would
+		// have the same keys and tid as the new ones, so it's removed first. An
+		// empty tree has no versions.
+		if p.pager.total_pages() > 0 {
+			p.remove_dead_version(obj.key, obj.tid)!
+		}
+
 		// One important consideration is that the actual bytes of the page
 		// object contains the key and the value. Since we're going to be
 		// splitting it up into smaller peices each with their own key we cannot
@@ -287,12 +315,31 @@ fn (mut p Btree) add(object PageObject) !int {
 	// still appear in the left (same page).
 	mut page := p.pager.fetch_page(left_page_number)!
 
+	// A version of the key that this transaction created and then deleted is
+	// removed first (see remove_dead_version), such as when UPDATEs of a
+	// PRIMARY KEY move one row onto a key and then another row onto it.
+	dead := page.get_in_place(obj.key, obj.tid)
+	if dead.key.len > 0 && dead.xid == obj.tid {
+		p.remove_dead_version(obj.key, obj.tid)!
+		return p.add(object)
+	}
+
 	// Does it fit into the desired page? A page is only split when it doesn't,
 	// because a split must divide the objects into at least two pages.
 	if page.used + obj.length() <= p.page_size {
 		page.add(obj)!
 		p.store_page(left_page_number, page)!
 	} else {
+		// Page.add refuses a third version of a key (see the caveats at the top
+		// of the file), but a split doesn't use it. split_objects only keeps two
+		// versions together, so a third would go on another page, where it
+		// isn't found with the others. Then the key would have two current
+		// versions, such as when another active transaction has already
+		// updated the row.
+		if page.versions(obj.key).len >= 2 {
+			return sqlstate_40001('avoiding concurrent write on individual row')
+		}
+
 		p.split_page(path, page, obj, kind_leaf)!
 
 		// The key may not be inserted into the existing page. So be careful to

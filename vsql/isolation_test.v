@@ -204,6 +204,11 @@ fn test_isolation_lock() ! {
 	assert isolation_lock_error(mut b, .exclusive, 0) == '40001 serialization failure: busy'
 	a.release()
 
+	// The file stays open, so it doesn't have to be opened again.
+	assert a.file.is_opened && a.state == .unlocked
+	b.acquire(.exclusive, 0, 'busy')!
+	b.release()
+
 	// Shared locks don't conflict with each other, and a lock that is already
 	// held is kept as it is.
 	a.acquire(.shared, 0, 'busy')!
@@ -227,7 +232,7 @@ fn test_isolation_lock() ! {
 		}
 		t := time.now()
 		l.acquire(.exclusive, 5 * time.second, 'busy')!
-		l.release()
+		l.close()
 		return time.since(t)
 	}()
 	time.sleep(50 * time.millisecond)
@@ -244,7 +249,7 @@ fn test_isolation_lock() ! {
 		l.acquire(.exclusive, 5 * time.second, 'busy')!
 		got := time.now()
 		time.sleep(20 * time.millisecond)
-		l.release()
+		l.close()
 		return got
 	}()
 	time.sleep(50 * time.millisecond)
@@ -262,13 +267,45 @@ fn test_isolation_lock() ! {
 	turn.acquire(.exclusive, 0, 'busy')!
 	assert isolation_lock_error(mut a, .exclusive, 20 * time.millisecond) == '40001 serialization failure: busy'
 	a.acquire(.exclusive, 0, 'busy')!
-	a.release()
 	turn.release()
 
-	// A database in memory is never locked.
+	// Closing it releases the lock and closes both files.
+	a.close()
+	assert !a.file.is_opened && !a.queue.file.is_opened && a.state == .unlocked
+	b.acquire(.exclusive, 0, 'busy')!
+	b.close()
+	assert !b.file.is_opened && !b.queue.file.is_opened
+	turn.close()
+
+	// A database in memory is never locked, and has no queue.
 	mut m := IsolationLock{}
 	m.acquire(.exclusive, 0, 'busy')!
 	assert m.state == .unlocked
+	m.close()
+	assert isnil(m.queue)
+}
+
+// The isolation files of a connection are kept open between statements, and
+// are closed with the connection.
+fn test_isolation_files_closed_with_connection() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-files-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	mut catalog := db.catalogs[catalog_name_from_path(path)] or { panic('no catalog') }
+	assert catalog.storage.isolation.file.is_opened
+	assert catalog.storage.isolation.state == .unlocked
+	assert catalog.storage.isolation.queue.file.is_opened
+	db.close()
+	assert !catalog.storage.isolation.file.is_opened
+	assert !catalog.storage.isolation.queue.file.is_opened
 }
 
 fn isolation_lock_error(mut l IsolationLock, state IsolationLockState, timeout time.Duration) string {

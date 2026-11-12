@@ -89,14 +89,27 @@ fn (mut l IsolationLock) acquire(state IsolationLockState, timeout time.Duration
 	}
 
 	deadline := time.now().add(timeout)
-	mut queue := IsolationLock{
-		path: isolation_queue_path(l.path)
+	if isnil(l.queue) {
+		l.queue = &IsolationLock{
+			path: isolation_queue_path(l.path)
+		}
 	}
-	queue.wait(.exclusive, deadline, message)!
+	l.queue.wait(.exclusive, deadline, message)!
 	defer {
-		queue.release()
+		l.queue.release()
 	}
 	l.wait(state, deadline, message)!
+}
+
+// close releases the lock and closes its files, which are otherwise kept open
+// for as long as the connection, so that they don't have to be opened for each
+// statement. It must be called when the connection is closed.
+fn (mut l IsolationLock) close() {
+	l.release()
+	l.close_file()
+	if !isnil(l.queue) {
+		l.queue.close()
+	}
 }
 
 // wait polls for the lock until the deadline.
@@ -202,7 +215,7 @@ fn (mut conn Connection) unlock_transactions() {
 fn (mut f Storage) lock_commit() ! {
 	f.commit_locked = true
 
-	if os.exists(f.isolation.path) {
+	if f.isolation.file.is_opened || os.exists(f.isolation.path) {
 		f.isolation.acquire(.exclusive, 0, 'cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction')!
 	}
 }

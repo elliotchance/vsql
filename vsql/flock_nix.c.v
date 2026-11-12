@@ -82,25 +82,30 @@ fn (mut l SessionLock) close() {
 
 // IsolationLock is held on the isolation file by REPEATABLE READ and
 // SERIALIZABLE transactions, and by a statement that commits changes. See
-// isolation.v. The file is only open while the lock is held.
+// isolation.v. The file is opened the first time it's locked, and is kept open
+// until close() so that each statement doesn't have to open it again.
 struct IsolationLock {
 	path string
 mut:
 	file  os.File
 	state IsolationLockState
+	// queue is the lock that's taken in turns to wait for this one, see
+	// acquire.
+	queue &IsolationLock = unsafe { nil }
 }
 
 // try_lock gets the lock, which must not be held yet. It returns false if
 // another connection holds a lock that conflicts.
 fn (mut l IsolationLock) try_lock(state IsolationLockState) !bool {
 	fault_point('isolation_lock')!
-	l.file = os.open_file(l.path, 'a') or {
-		return sqlstate_58030('unable to open ${l.path}: ${err}')
+	if !l.file.is_opened {
+		l.file = os.open_file(l.path, 'a') or {
+			return sqlstate_58030('unable to open ${l.path}: ${err}')
+		}
 	}
 
 	operation := if state == .shared { C.LOCK_SH } else { C.LOCK_EX }
 	if C.flock(l.file.fd, operation | C.LOCK_NB) != 0 {
-		l.release()
 		return false
 	}
 	l.state = state
@@ -108,10 +113,17 @@ fn (mut l IsolationLock) try_lock(state IsolationLockState) !bool {
 	return true
 }
 
-// release unlocks the lock (if it's held) by closing the file.
+// release unlocks the lock, if it's held. The file stays open.
 fn (mut l IsolationLock) release() {
-	l.file.close()
+	if l.state != .unlocked {
+		C.flock(l.file.fd, C.LOCK_UN)
+	}
 	l.state = .unlocked
+}
+
+// close_file closes the file, if it's open. The lock must be released first.
+fn (mut l IsolationLock) close_file() {
+	l.file.close()
 }
 
 fn C.fsync(int) int

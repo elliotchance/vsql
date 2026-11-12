@@ -138,6 +138,14 @@ fn (mut l IsolationLock) release() {
 
 #include <io.h>
 
+// V's C for clang on Windows (such as llvm-mingw, which is used on ARM64)
+// doesn't include stdio.h, and defines _IONBF and _IOLBF itself, with values
+// that the Universal C Runtime rejects. V's runtime calls setvbuf with
+// _IONBF when it starts, which ends the program, or the program that loads
+// libvsql.dll. These are the values from stdio.h, which V's C only replaces if
+// they aren't defined.
+#flag -D_IONBF=4 -D_IOLBF=64
+
 fn C._commit(int) int
 
 // fsync waits for the file to be written to the disk. It must be flushed first.

@@ -48,7 +48,10 @@ bin/vsql.exe: $(SOURCES)
 # find it by rpath. Windows has no rpath (a program finds the DLL in its own
 # folder or on the PATH), and it's built with MinGW, since that's what CI has.
 # libgcc is linked statically so that the DLL doesn't need the MinGW runtime,
-# and libvsql.def gives the DLL its name.
+# and libvsql.def gives the DLL its name. lld (used by llvm-mingw) ignores the
+# name in libvsql.def, and names the DLL after V's temporary file, so programs
+# link against an import library instead (bin/libvsql.dll.a, which -lvsql
+# finds before the DLL). It has the functions in libvsql.h and test.h.
 ifeq ($(OS),Windows_NT)
 LIBVSQL = bin/libvsql.dll
 LIBVSQL_OPTIONS = -cc gcc -ldflags '-static-libgcc -Wl,--export-all-symbols $(CURDIR)/libvsql/libvsql.def'
@@ -74,6 +77,10 @@ libvsql: $(LIBVSQL)
 $(LIBVSQL): $(SOURCES) $(wildcard libvsql/*.v)
 	mkdir -p bin
 	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) -enable-globals -shared $(LIBVSQL_OPTIONS) libvsql -o bin/libvsql
+ifeq ($(OS),Windows_NT)
+	(echo 'LIBRARY libvsql.dll'; echo 'EXPORTS'; sed -nE 's/^[A-Za-z_][A-Za-z_0-9 *]*[ *](SQL[A-Za-z]+|vsql_[a-z_]+)\(.*/\1/p' libvsql/libvsql.h libvsql/test.h) > bin/libvsql-exports.def
+	dlltool -d bin/libvsql-exports.def -l bin/libvsql.dll.a
+endif
 
 # The release is a zip of a folder named after the release (VERSION, such as
 # v0.34.0), OS and architecture, so that versions can be unzipped side by side:

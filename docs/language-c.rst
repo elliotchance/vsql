@@ -104,9 +104,9 @@ it out if the library is installed somewhere the system already looks, such as
 ``/usr/local/lib``.
 
 On Windows, compile it with MinGW (``gcc``, or ``g++ -x c++``), which links
-directly against ``libvsql.dll``, and leave out the ``-rpath``. Windows has no
-rpath, so the program finds ``libvsql.dll`` in its own folder or on the
-``PATH``:
+against the import library ``libvsql.dll.a`` (next to ``libvsql.dll``), and
+leave out the ``-rpath``. Windows has no rpath, so the program finds
+``libvsql.dll`` in its own folder or on the ``PATH``:
 
 .. code-block:: sh
 

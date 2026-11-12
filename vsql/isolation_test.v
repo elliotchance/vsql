@@ -1,0 +1,325 @@
+module vsql
+
+// isolation_test.v tests the isolation levels and the isolation lock.
+
+import os
+import time
+
+fn test_transaction_isolation_level() ! {
+	mut db := open(':memory:')!
+	for level in ['READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'] {
+		db.query('START TRANSACTION ISOLATION LEVEL ${level}')!
+		assert db.transaction_isolation_level() == level
+		db.query('COMMIT')!
+	}
+	db.query('START TRANSACTION')!
+	assert db.transaction_isolation_level() == 'SERIALIZABLE'
+	db.query('COMMIT')!
+}
+
+fn test_default_isolation_level() ! {
+	mut options := default_connection_options()
+	options.isolation_level = .read_committed
+	mut db := open_database(':memory:', options)!
+	assert db.transaction_isolation_level() == 'READ COMMITTED'
+	db.query('START TRANSACTION')!
+	assert db.transaction_isolation_level() == 'READ COMMITTED'
+	db.query('COMMIT')!
+	db.query('START TRANSACTION ISOLATION LEVEL SERIALIZABLE')!
+	assert db.transaction_isolation_level() == 'SERIALIZABLE'
+	db.query('COMMIT')!
+	// A statement on its own, and the next SQL-transaction, are back to it.
+	db.query('CREATE TABLE t (x INT)')!
+	assert db.transaction_isolation_level() == 'READ COMMITTED'
+	db.query('SET TRANSACTION DIAGNOSTICS SIZE 1')!
+	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL READ COMMITTED, DIAGNOSTICS SIZE 1'
+}
+
+fn test_next_transaction_characteristics() ! {
+	mut db := open(':memory:')!
+	assert db.next_transaction_characteristics() == ''
+	db.query('SET TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL READ COMMITTED'
+	db.query('SET TRANSACTION DIAGNOSTICS SIZE 1')!
+	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL SERIALIZABLE, DIAGNOSTICS SIZE 1'
+
+	// They're used up by the next SQL-transaction.
+	db.query('START TRANSACTION')!
+	assert db.next_transaction_characteristics() == ''
+	db.query('COMMIT')!
+}
+
+// A direct SQL statement that starts a transaction uses the isolation level of
+// a SET TRANSACTION, and of the transaction that a query started.
+fn test_direct_isolation_level() ! {
+	mut db := open(':memory:')!
+	db.direct('CREATE TABLE t (x INT);')!
+	assert db.transaction_isolation_level() == 'SERIALIZABLE'
+	db.direct('COMMIT;')!
+	db.direct('SET TRANSACTION ISOLATION LEVEL READ COMMITTED;')!
+	db.direct('INSERT INTO t (x) VALUES (1);')!
+	assert db.transaction_isolation_level() == 'READ COMMITTED'
+	db.direct('COMMIT;')!
+	db.direct('SET TRANSACTION ISOLATION LEVEL READ COMMITTED;')!
+	db.direct('SELECT * FROM t;')!
+	db.direct('INSERT INTO t (x) VALUES (2);')!
+	assert db.in_transaction() && db.transaction_isolation_level() == 'READ COMMITTED'
+	db.direct('COMMIT;')!
+}
+
+fn test_isolation_lock() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-lock-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := isolation_path(os.join_path(dir, 'test.vsql'))
+
+	mut a := IsolationLock{
+		path: path
+	}
+	mut b := IsolationLock{
+		path: path
+	}
+
+	// An exclusive lock conflicts with every other lock.
+	a.acquire(.exclusive, 0, 'busy')!
+	assert os.exists(path)
+	assert isolation_lock_error(mut b, .shared, 0) == '40001 serialization failure: busy'
+	assert b.state == .unlocked
+	assert isolation_lock_error(mut b, .exclusive, 0) == '40001 serialization failure: busy'
+	a.release()
+
+	// Shared locks don't conflict with each other, and a lock that is already
+	// held is kept as it is.
+	a.acquire(.shared, 0, 'busy')!
+	b.acquire(.shared, 0, 'busy')!
+	a.acquire(.exclusive, 0, 'busy')!
+	assert a.state == .shared
+	b.release()
+	b.release()
+	a.release()
+
+	// It waits for up to the timeout.
+	a.acquire(.exclusive, 0, 'busy')!
+	t := time.now()
+	assert isolation_lock_error(mut b, .exclusive, 20 * time.millisecond) == '40001 serialization failure: busy'
+	assert time.since(t) >= 20 * time.millisecond
+
+	// Another thread releases it while it's waiting.
+	waiter := spawn fn [path] () !time.Duration {
+		mut l := IsolationLock{
+			path: path
+		}
+		t := time.now()
+		l.acquire(.exclusive, 5 * time.second, 'busy')!
+		l.release()
+		return time.since(t)
+	}()
+	time.sleep(50 * time.millisecond)
+	a.release()
+	assert waiter.wait()! >= 40 * time.millisecond
+
+	// A connection that releases the lock and needs it again has to wait for
+	// the connection that was already waiting.
+	a.acquire(.exclusive, 0, 'busy')!
+	next := spawn fn [path] () !time.Time {
+		mut l := IsolationLock{
+			path: path
+		}
+		l.acquire(.exclusive, 5 * time.second, 'busy')!
+		got := time.now()
+		time.sleep(20 * time.millisecond)
+		l.release()
+		return got
+	}()
+	time.sleep(50 * time.millisecond)
+	a.release()
+	a.acquire(.exclusive, 5 * time.second, 'busy')!
+	again := time.now()
+	a.release()
+	assert next.wait()! < again
+
+	// The timeout includes the time spent waiting for a turn, which isn't
+	// needed without a timeout.
+	mut turn := IsolationLock{
+		path: isolation_queue_path(path)
+	}
+	turn.acquire(.exclusive, 0, 'busy')!
+	assert isolation_lock_error(mut a, .exclusive, 20 * time.millisecond) == '40001 serialization failure: busy'
+	a.acquire(.exclusive, 0, 'busy')!
+	a.release()
+	turn.release()
+
+	// A database in memory is never locked.
+	mut m := IsolationLock{}
+	m.acquire(.exclusive, 0, 'busy')!
+	assert m.state == .unlocked
+}
+
+fn isolation_lock_error(mut l IsolationLock, state IsolationLockState, timeout time.Duration) string {
+	l.acquire(state, timeout, 'busy') or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
+
+	return ''
+}
+
+fn isolation_test_options(lock_timeout time.Duration) ConnectionOptions {
+	mut options := default_connection_options()
+	options.lock_timeout = lock_timeout
+	return options
+}
+
+// A transaction includes every catalog, so a REPEATABLE READ or SERIALIZABLE
+// transaction locks every database file, and committing changes needs every
+// file that was changed to be unlocked.
+fn test_isolation_with_catalogs() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-catalogs-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path_a := os.join_path(dir, 'a.vsql')
+	path_b := os.join_path(dir, 'b.vsql')
+	// Each catalog of a connection needs its own mutex.
+	options := isolation_test_options(0)
+	options_b := isolation_test_options(0)
+
+	mut a := open_database(path_a, options)!
+	defer {
+		a.close()
+	}
+	a.query('CREATE TABLE t (x INT)')!
+
+	mut b := open_database(path_b, options)!
+	defer {
+		b.close()
+	}
+	b.query('CREATE TABLE t (x INT)')!
+
+	mut both := open_database(path_a, options)!
+	defer {
+		both.close()
+	}
+	both.add_catalog('b', path_b, options_b)!
+
+	// A READ COMMITTED transaction that changes both files can't commit while
+	// b is locked, so the change to a is rolled back too.
+	b.query('START TRANSACTION ISOLATION LEVEL SERIALIZABLE')!
+	both.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	both.query('INSERT INTO "a".public.t (x) VALUES (1)')!
+	both.query('INSERT INTO "b".public.t (x) VALUES (2)')!
+	assert query_error(mut both, 'COMMIT') == '40001 serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction'
+	assert !both.in_transaction()
+	assert a.query('SELECT * FROM t')!.rows.len == 0
+
+	// Changing only a can still be committed, but a SERIALIZABLE statement on
+	// its own waits for every file.
+	both.query('SET TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	both.query('INSERT INTO "a".public.t (x) VALUES (3)')!
+	assert a.query('SELECT * FROM t')!.rows.len == 1
+	assert query_error(mut both, 'INSERT INTO "a".public.t (x) VALUES (3)') == '40001 serialization failure: another connection has a transaction that must finish first'
+	b.query('COMMIT')!
+
+	// A SERIALIZABLE transaction locks both files.
+	both.query('START TRANSACTION')!
+	assert query_error(mut a, 'INSERT INTO t (x) VALUES (4)') != ''
+	assert query_error(mut b, 'INSERT INTO t (x) VALUES (4)') != ''
+	both.query('ROLLBACK')!
+	a.query('INSERT INTO t (x) VALUES (4)')!
+	b.query('INSERT INTO t (x) VALUES (4)')!
+
+	// A catalog that is added during the transaction joins it, so it's locked
+	// too.
+	mut c := open_database(path_a, options)!
+	defer {
+		c.close()
+	}
+	c.query('START TRANSACTION ISOLATION LEVEL REPEATABLE READ')!
+	b.query('INSERT INTO t (x) VALUES (5)')!
+	c.add_catalog('b', path_b, options_b)!
+	assert query_error(mut b, 'INSERT INTO t (x) VALUES (6)') != ''
+	c.query('COMMIT')!
+	b.query('INSERT INTO t (x) VALUES (6)')!
+	assert b.query('SELECT * FROM t')!.rows.len == 3
+
+	// A catalog can't join a transaction if it's locked.
+	mut d := open_database(path_a, isolation_test_options(0))!
+	defer {
+		d.close()
+	}
+	b.query('START TRANSACTION')!
+	d.query('START TRANSACTION')!
+	mut got := ''
+	d.add_catalog('b', path_b, isolation_test_options(0)) or { got = err.msg() }
+	assert got == 'serialization failure: another connection has a transaction that must finish first'
+	assert 'b' !in d.catalogs
+	d.query('COMMIT')!
+	b.query('COMMIT')!
+}
+
+// A SERIALIZABLE transaction waits for another connection's transaction to
+// finish, rather than failing straight away.
+fn test_isolation_waits() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-waits-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+	options := isolation_test_options(5 * time.second)
+
+	mut db := open_database(path, options)!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+
+	// The other transaction starts once this one commits, so it sees its
+	// changes. So does a statement on its own.
+	other := spawn fn [path, options] () !(int, int) {
+		mut db := open_database(path, options)!
+		defer {
+			db.close()
+		}
+		db.query('START TRANSACTION')!
+		count := db.query('SELECT * FROM t')!.rows.len
+		db.query('COMMIT')!
+		db.query('INSERT INTO t (x) VALUES (2)')!
+		return count, db.query('SELECT * FROM t')!.rows.len
+	}()
+	statement := spawn fn [path, options] () !int {
+		mut db := open_database(path, options)!
+		defer {
+			db.close()
+		}
+		db.query('INSERT INTO t (x) VALUES (3)')!
+		return db.query('SELECT * FROM t WHERE x = 1')!.rows.len
+	}()
+	time.sleep(50 * time.millisecond)
+	db.query('INSERT INTO t (x) VALUES (4)')!
+	db.query('COMMIT')!
+	seen, total := other.wait()!
+	assert seen in [2, 3]
+	assert total >= 3
+	assert statement.wait()! == 1
+
+	// It gives up after the timeout.
+	db.query('START TRANSACTION')!
+	t := time.now()
+	timeout := 30 * time.millisecond
+	mut quick := open_database(path, isolation_test_options(timeout))!
+	defer {
+		quick.close()
+	}
+	assert query_error(mut quick, 'START TRANSACTION') == '40001 serialization failure: timed out after 30.000ms waiting for another connection to finish its transaction'
+	assert time.since(t) >= timeout
+	assert !quick.in_transaction()
+	db.query('COMMIT')!
+	quick.query('START TRANSACTION')!
+	quick.query('COMMIT')!
+}

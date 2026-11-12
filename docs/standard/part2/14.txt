@@ -4,10 +4,10 @@
 14                       container    - -
 # 14.1, <declare cursor>
 14.1                     implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-14.1/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
-14.1/SR/1.a              implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
-14.1/SR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
-14.1/SR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
+14.1/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v vsql/module_test.v
+14.1/SR/1.a              implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
+14.1/SR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v vsql/module_test.v
+14.1/SR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v vsql/module_test.v
 14.1/GR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
@@ -92,7 +92,7 @@
 14.4/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/std_2_14_1_cursors.sql
 # 14.5, <fetch statement>
 14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql a module can only FETCH NEXT; outside of a module there's no <fetch target list> (V110-01)
-14.5/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v every target is a host parameter
+14.5/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/module_test.v every target is a host parameter
 14.5/SR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_2_14_1_cursors.sql
 14.5/SR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.5/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
@@ -105,7 +105,7 @@
 14.5/SR/9.a.i            n/a          - - SQL parameters (T321)
 14.5/SR/9.a.ii           n/a          - - a host parameter can't be a row type
 14.5/SR/9.b              container    - -
-14.5/SR/9.b.i            implemented  vsql/std_2_14_5_fetch_statement.v vsql/sql_test.v
+14.5/SR/9.b.i            implemented  vsql/std_2_14_5_fetch_statement.v vsql/module_test.v
 14.5/SR/9.b.ii           definition   - -
 14.5/SR/9.b.iii          n/a          - - SQL parameters (T321) and arrays (S091)
 14.5/SR/9.b.iii.1        n/a          - - arrays (S091)
@@ -152,20 +152,20 @@
 14.6/GR/2                implemented  vsql/std_2_14_6_close_statement.v tests/std_2_14_1_cursors.sql
 # 14.7, <select statement: single row>
 14.7                     implemented  vsql/std_2_14_7_select_statement_single_row.v libvsql/module/test_main.c
-14.7/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
+14.7/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/module_test.v
 14.7/SR/2                definition   - -
 14.7/SR/3                container    - -
-14.7/SR/3.a              implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v a host parameter can't be a row type
+14.7/SR/3.a              implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/module_test.v a host parameter can't be a row type
 14.7/SR/3.a.i            n/a          - - SQL parameters (T321)
 14.7/SR/3.a.ii           n/a          - - a host parameter can't be a row type
 14.7/SR/3.b              container    - -
-14.7/SR/3.b.i            implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
+14.7/SR/3.b.i            implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/module_test.v
 14.7/SR/3.b.ii           n/a          - - SQL parameters (T321) and arrays (S091)
 14.7/SR/3.b.ii.1         n/a          - - arrays (S091)
 14.7/SR/3.b.ii.2         n/a          - - SQL parameters (T321)
 14.7/SR/3.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 14.7/SR/3.b.iv           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
-14.7/SR/4                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
+14.7/SR/4                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/module_test.v
 14.7/SR/5                untestable   - - nullability isn't visible through a module
 14.7/SR/6                definition   - -
 14.7/GR/1                definition   - -

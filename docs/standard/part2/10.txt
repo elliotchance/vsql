@@ -692,9 +692,9 @@
 10.9/SR/11.b             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
 10.9/SR/11.c             implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_listagg.sql
 10.9/SR/11.d             impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql CHARACTER VARYING(10485760), the longest VARCHAR
-10.9/SR/11.e             implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
+10.9/SR/11.e             implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
 10.9/SR/11.f             implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_listagg.sql
-10.9/SR/11.g             implemented  vsql/std_2_10_9_aggregate_function.y,vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql,vsql/sql_test.v
+10.9/SR/11.g             implemented  vsql/std_2_10_9_aggregate_function.y,vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql,vsql/api_test.v
 10.9/SR/12               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
 10.9/SR/12.a             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
 10.9/SR/12.b             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
@@ -726,7 +726,7 @@
 10.9/GR/3.a              n/a          - - intervals (F052)
 10.9/GR/3.b              n/a          - - multisets (S271)
 10.9/GR/3.c              n/a          - - ARRAY_AGG (S098)
-10.9/GR/3.d              implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
+10.9/GR/3.d              implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
 10.9/GR/3.e              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
 10.9/GR/4                container    - -
 10.9/GR/4.a              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_aggregate_filter.sql
@@ -831,19 +831,19 @@
 10.9/GR/11.f.ii.3        implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
 10.9/GR/11.g             container    - -
 10.9/GR/11.g.i           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
-10.9/GR/11.g.ii          implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
+10.9/GR/11.g.ii          implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
 10.9/GR/11.g.iii         container    - -
 10.9/GR/11.g.iii.1       definition   - -
 10.9/GR/11.g.iii.2       container    - -
-10.9/GR/11.g.iii.2.A     implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
-10.9/GR/11.g.iii.2.A.I   implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
-10.9/GR/11.g.iii.2.A.II  implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
-10.9/GR/11.g.iii.2.B     implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
+10.9/GR/11.g.iii.2.A     implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
+10.9/GR/11.g.iii.2.A.I   implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
+10.9/GR/11.g.iii.2.A.II  implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
+10.9/GR/11.g.iii.2.B     implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
 10.9/GR/11.g.iii.2.B.I   container    - -
-10.9/GR/11.g.iii.2.B.I.1 implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
-10.9/GR/11.g.iii.2.B.I.2 implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
-10.9/GR/11.g.iii.2.B.II  implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
-10.9/GR/11.g.iii.3       implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
+10.9/GR/11.g.iii.2.B.I.1 implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
+10.9/GR/11.g.iii.2.B.I.2 implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
+10.9/GR/11.g.iii.2.B.II  implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
+10.9/GR/11.g.iii.3       implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v
 10.9/GR/12               n/a          - - ARRAY_AGG (S098)
 10.9/GR/12.a             n/a          - - ARRAY_AGG (S098)
 10.9/GR/12.b             n/a          - - ARRAY_AGG (S098)

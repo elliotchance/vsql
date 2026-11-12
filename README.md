@@ -3,11 +3,15 @@
 
 [![Release](https://img.shields.io/github/v/release/elliotchance/vsql)](https://github.com/elliotchance/vsql/releases)
 [![Docs](https://readthedocs.org/projects/vsql/badge/?version=latest)](https://vsql.readthedocs.io/)
+[![Discord](https://img.shields.io/badge/Discord-%23vsql-5865F2?logo=discord&logoColor=white)](https://discord.com/channels/592103645835821068/1168743197619531856)
 
-**vsql is a small SQL database that follows the SQL standard.** It keeps a whole
-database in a single file (or in memory), and you can use it from a terminal,
-from a browser, from any PostgreSQL client, or embedded in your own
-[V](https://vlang.io) program. It's written in pure V with no dependencies.
+**vsql is an embedded SQL database that follows the SQL standard.** A whole
+database lives in a single file (or in memory), with real transactions, strict
+types and standard SQL. Embed it in your program from [V](https://vsql.readthedocs.io/en/latest/language-v.html),
+[C](https://vsql.readthedocs.io/en/latest/language-c.html), [Go](https://github.com/elliotchance/vsql-go), [Python](https://github.com/elliotchance/vsql-python),
+[Java](https://github.com/elliotchance/vsql-java), [Rust](https://github.com/elliotchance/vsql-rust) or [Node.js](https://github.com/elliotchance/vsql-node),
+connect to it with any [PostgreSQL client](https://vsql.readthedocs.io/en/latest/server.html), or browse it in
+your browser. It's a single binary written in pure V, with nothing else to install.
 
 ```text
 $ vsql cli shop.vsql
@@ -28,22 +32,70 @@ Coffee |  4.50
 Why vsql?
 ---------
 
-- **Standard SQL.** vsql follows the SQL:2016 standard rather than any one
-  database's dialect, so what you learn here works elsewhere. Errors use the
-  standard SQLSTATE codes, and the
-  [compliance table](https://vsql.readthedocs.io/en/latest/sql-compliance.html)
-  shows what's supported so far.
-- **One file, no setup.** A database is a single file you can copy around, like
-  SQLite. Use `:memory:` for a database that only lives in memory.
-- **Real transactions.** `START TRANSACTION`, `COMMIT` and `ROLLBACK` work
-  across connections and processes using
-  [MVCC](https://vsql.readthedocs.io/en/latest/mvcc.html), and a write-ahead log
-  keeps the file safe if the process or the power stops.
-- **Talks to PostgreSQL clients.** `vsql server` speaks the PostgreSQL wire
-  protocol, so you can connect with `psql` or a GUI such as TablePlus.
-- **Made for V.** Embed it in a V program as a library, use it with V's
-  built-in ORM, add your own SQL functions, or expose your data as virtual
-  tables.
+- **Standard SQL.** vsql follows the SQL:2016 standard rather than one
+  database's dialect, so your queries, your skills and your schema carry over
+  to other databases. Errors have the standard SQLSTATE codes, and the
+  [compliance tables](https://vsql.readthedocs.io/en/latest/sql-compliance.html)
+  list exactly what's supported.
+- **A complete SQL database.** Joins, subqueries, aggregates, indexes,
+  `PRIMARY KEY`, `UNIQUE`, `FOREIGN KEY` and `CHECK` constraints, sequences
+  and identity columns, cursors, `ALTER TABLE`, and the standard
+  `INFORMATION_SCHEMA` views.
+- **Transactions you can rely on.** `SERIALIZABLE` by default, with all four
+  standard isolation levels, built on
+  [MVCC](https://vsql.readthedocs.io/en/latest/mvcc.html). Connections in
+  different processes can share a file, and a write-ahead log keeps it safe if
+  the process crashes or the power fails.
+- **One file, no server.** Copy, back up or email a database like any other
+  file, or use `:memory:` for one that only lives in memory.
+- **Every way you need it.** A library for
+  [seven languages](#use-it-from-your-language), a CLI, a
+  [PostgreSQL-compatible server](https://vsql.readthedocs.io/en/latest/server.html),
+  and a [browser app](#vsql-app) for exploring your data.
+
+vsql or SQLite?
+---------------
+
+SQLite is a great database, and vsql is just as easy to use: one file, no
+server and no setup. The difference is that vsql behaves like a "real" SQL
+database, so you won't find problems for the first time in production:
+
+| | vsql | SQLite |
+|---|---|---|
+| **Types** | Strict. Putting text in an `INTEGER` column is an error. | Any column can hold any value (unless the table is `STRICT`). |
+| **Exact numbers** | [`NUMERIC` and `DECIMAL`](https://vsql.readthedocs.io/en/latest/numbers.html) are exact, so money adds up to the cent. | Fractions are stored as floating point. |
+| **Dates and times** | [`DATE`, `TIME` and `TIMESTAMP`](https://vsql.readthedocs.io/en/latest/dates-times.html), with or without a time zone. | Stored as text or numbers. |
+| **SQL dialect** | The [SQL standard](https://vsql.readthedocs.io/en/latest/sql-compliance.html), the same as PostgreSQL and most other databases follow. | SQLite's own dialect. |
+| **Many connections** | Many connections, in the same process or in different processes, can use a file at once. A transaction only locks the file while each of its statements runs ([MVCC](https://vsql.readthedocs.io/en/latest/mvcc.html)), so readers and writers don't hold each other up. | A write transaction locks the whole file until it ends, so other connections are blocked or fail with "database is locked". |
+| **Transactions** | All four standard [isolation levels](https://vsql.readthedocs.io/en/latest/transactions.html#isolation-levels), with `SERIALIZABLE` by default. | Only serializable. |
+| **Changing tables** | [`ALTER TABLE`](https://vsql.readthedocs.io/en/latest/alter-table.html) adds and drops columns and constraints, and changes defaults. | Many changes need the table to be rebuilt. |
+| **Errors** | Standard [SQLSTATE](https://vsql.readthedocs.io/en/latest/sqlstate.html) codes, such as `23505` for a duplicate key. | SQLite's own result codes. |
+| **Describing the database** | The standard [`INFORMATION_SCHEMA`](https://vsql.readthedocs.io/en/latest/information-schema.html) views. | `sqlite_schema` and `PRAGMA`s. |
+
+That makes vsql a good fit for:
+
+- **Testing applications that use PostgreSQL (or another SQL database) in
+  production.** Get the speed and simplicity of an embedded database in your
+  tests, without the surprises of a database that accepts things yours won't.
+- **Applications with many connections**, such as a web server with a
+  connection pool, or several processes and background workers that share one
+  database file.
+- **Applications that care about correctness**, such as anything that handles
+  money, stock levels or bookings.
+- **Learning and teaching SQL**, since everything you learn works elsewhere.
+
+**Performance on disk is on par with SQLite.** With a database file of 100,000
+accounts on an Apple M-series Mac, vsql runs about 1,350 TPC-B transactions per
+second, and inserts about 9,000 rows per second while it sets the file up. Run
+`vsql bench` to measure it on your own machine (see
+[Benchmark](https://vsql.readthedocs.io/en/latest/benchmark.html)).
+
+**It's very well tested.** Thousands of SQL test cases cover every part of
+the language, and every line of the database has to be covered by a test
+before a change is merged. The tests run on Linux, macOS and Windows (x86-64
+and ARM64) for every change, along with tests of the CLI, the server, the
+library for each language, crash recovery and the browser app (see
+[Testing](https://vsql.readthedocs.io/en/latest/testing.html)).
 
 Try It
 ------
@@ -132,8 +184,26 @@ setting of your system. See the
   </tr>
 </table>
 
-Use It From V
--------------
+Use It From Your Language
+-------------------------
+
+vsql is embedded in your program, so there's no server to run. Each library
+includes the whole database, so there's nothing else to install:
+
+| Language | Library | Interface |
+|---|---|---|
+| V | [elliotchance/vsql](https://vsql.readthedocs.io/en/latest/language-v.html) | Native, plus a driver for V's ORM |
+| C and C++ | [libvsql](https://vsql.readthedocs.io/en/latest/language-c.html) | The standard SQL/CLI (the API that ODBC is based on) |
+| Go | [elliotchance/vsql-go](https://github.com/elliotchance/vsql-go) | `database/sql` driver |
+| Python | [elliotchance/vsql-python](https://github.com/elliotchance/vsql-python) | DB-API 2.0 (PEP 249) |
+| Java | [elliotchance/vsql-java](https://github.com/elliotchance/vsql-java) | JDBC driver |
+| Rust | [elliotchance/vsql-rust](https://github.com/elliotchance/vsql-rust) | An API like rusqlite |
+| Node.js | [elliotchance/vsql-node](https://github.com/elliotchance/vsql-node) | An API like better-sqlite3 |
+
+Any other language that can connect to PostgreSQL can use
+[`vsql server`](https://vsql.readthedocs.io/en/latest/server.html) instead.
+
+### V
 
 ```sh
 v install elliotchance.vsql
@@ -180,20 +250,6 @@ See the [V docs](https://vsql.readthedocs.io/en/latest/language-v.html) (for
 the client library and the ORM), and the
 [examples](https://github.com/elliotchance/vsql/tree/main/examples).
 
-Good to Know
-------------
-
-- **It follows the standard closely.** Unquoted names are upper case
-  (`products` is `PRODUCTS`), there's no `LIMIT` (use
-  `FETCH FIRST 10 ROWS ONLY`) and no `NOW()` (use `CURRENT_TIMESTAMP`). Use
-  `VALUES 1 + 2` to try an expression, since a `SELECT` needs a `FROM`. The
-  [FAQ](https://vsql.readthedocs.io/en/latest/faq.html) has more.
-- **Not everything is there yet.** For example, `DISTINCT`, `HAVING`, `IN`,
-  `CASE`, subqueries in `WHERE`, `UNIQUE` and `FOREIGN KEY` constraints, and
-  column defaults aren't supported yet. The
-  [compliance table](https://vsql.readthedocs.io/en/latest/sql-compliance.html)
-  has the full list.
-
 Documentation
 -------------
 
@@ -207,11 +263,15 @@ The full documentation is at [vsql.readthedocs.io](https://vsql.readthedocs.io/)
   [SQLSTATE errors](https://vsql.readthedocs.io/en/latest/sqlstate.html)
 - [Transactions](https://vsql.readthedocs.io/en/latest/transactions.html) and
   [how the file format works](https://vsql.readthedocs.io/en/latest/file-format.html)
+- [FAQ](https://vsql.readthedocs.io/en/latest/faq.html)
 
-Contributing
-------------
+Community and Contributing
+--------------------------
 
-Bug reports, ideas and pull requests are all welcome. Start with the
+Questions and ideas are welcome on
+[Discord](https://discord.com/channels/592103645835821068/1168743197619531856)
+or in [GitHub issues](https://github.com/elliotchance/vsql/issues). Bug reports
+and pull requests are welcome too. Start with the
 [contributing guide](https://vsql.readthedocs.io/en/latest/contributing.html)
 and [how the tests work](https://vsql.readthedocs.io/en/latest/testing.html).
 vsql is MIT licensed.

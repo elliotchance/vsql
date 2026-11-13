@@ -671,7 +671,7 @@ Optional Features
    * - ❌ **F052**
      - **Intervals and datetime arithmetic**
 
-   * - ❌ **F053**
+   * - ✅ **F053**
      - **OVERLAPS predicate**
 
    * - ❌ **F054**

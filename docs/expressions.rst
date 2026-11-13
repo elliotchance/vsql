@@ -91,6 +91,44 @@ comparison is ``TRUE`` for any row, and ``FALSE`` if it's ``FALSE`` for every ro
   1 = ANY (VALUES 2, CAST(NULL AS INT))        -- UNKNOWN
   1 = ALL (SELECT x FROM t WHERE x > 100)      -- TRUE (no rows)
 
+OVERLAPS
+--------
+
+.. code-block:: text
+
+  ( START1 , END1 ) OVERLAPS ( START2 , END2 )
+
+Returns ``TRUE`` if two periods of time share any instant. Every value must be a
+``DATE``, ``TIME`` or ``TIMESTAMP`` that can be compared with the others (see
+:doc:`dates-times`). The end of a period can't be an interval, since intervals
+aren't supported.
+
+A period includes its start, but not its end. So periods that only meet, where
+one ends when the other starts, don't overlap. A period that's a single instant
+(its start and end are the same) overlaps a period that starts at that instant.
+If the end of a period is before its start, they're swapped.
+
+If both values of either period are ``NULL``, the result is ``UNKNOWN``. If one
+of them is ``NULL``, the other one is the start of the period and its end is
+unknown. That can still be ``TRUE``, such as when the start is inside the other
+period, otherwise it's ``UNKNOWN``.
+
+``OVERLAPS`` is Feature F053, it's not part of Core SQL.
+
+*Examples*
+
+.. code-block:: sql
+
+  (DATE '2020-01-01', DATE '2020-01-10') OVERLAPS
+    (DATE '2020-01-05', DATE '2020-01-20')       -- TRUE
+  (DATE '2020-01-01', DATE '2020-01-10') OVERLAPS
+    (DATE '2020-01-10', DATE '2020-01-20')       -- FALSE
+  (TIME '12:00:00', TIME '10:00:00') OVERLAPS
+    (TIME '11:00:00', TIME '13:00:00')           -- TRUE
+  (DATE '2020-01-05', CAST(NULL AS DATE)) OVERLAPS
+    (DATE '2020-01-01', DATE '2020-01-10')       -- TRUE
+  (starts, ends) OVERLAPS (DATE '2020-01-04', DATE '2020-01-06')
+
 Comparing Rows
 --------------
 

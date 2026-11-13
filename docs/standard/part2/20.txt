@@ -316,9 +316,9 @@
 20.7/GR/5.a.xxiii        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xxiii.1      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xxiii.2      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.xxiv         n/a          - - OVERLAPS (F053)
-20.7/GR/5.a.xxiv.1       n/a          - - OVERLAPS (F053)
-20.7/GR/5.a.xxiv.2       n/a          - - OVERLAPS (F053)
+20.7/GR/5.a.xxiv         implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+20.7/GR/5.a.xxiv.1       implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+20.7/GR/5.a.xxiv.2       implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 20.7/GR/5.a.xxv          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xxv.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xxv.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql

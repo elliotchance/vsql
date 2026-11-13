@@ -552,7 +552,7 @@
 6.12/SR/2                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/2.a              n/a          - - SQL-invoked routines (T321, #733); a custom function registered from V isn't rejected
 6.12/SR/2.b              n/a          - - data change delta tables (T495)
-6.12/SR/2.c              n/a          - - OVERLAPS (F053)
+6.12/SR/2.c              n/a          - - extended CASE (F262)
 6.12/SR/2.d              definition   - -
 6.12/SR/2.e              definition   - -
 6.12/SR/2.f              definition   - -

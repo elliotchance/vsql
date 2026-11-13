@@ -297,6 +297,71 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 	db.close()
 }
 
+// A statement in an explicit transaction doesn't sync the log when every page
+// it changes already has a synced frame in the log, or is a new page (see
+// WalLog.can_skip_sync). This simulates the power failing during the
+// transaction, in a bad case: none of the log after the last sync reached the
+// disk, and the pages that were changed in the database file did, but not the
+// new pages.
+fn test_wal_power_fails_during_transaction() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-wal-power-${os.getpid()}.vsql')
+	copy := os.join_path(os.temp_dir(), 'vsql-wal-power-copy-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path), copy, wal_path(copy),
+			session_path(copy)] {
+			os.rm(file) or {}
+		}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT, s VARCHAR(40), PRIMARY KEY (x))')!
+	for x in 1 .. 101 {
+		db.query("INSERT INTO t (x, s) VALUES (${x * 10}, '${'a'.repeat(40)}')")!
+	}
+	db.close()
+
+	// Opening the file empties the log, so the transaction changes pages that
+	// aren't in the log yet. Each of them has to be synced before a statement
+	// that doesn't sync can change it.
+	db = open(path)!
+	on_disk_len := os.file_size(path)
+	db.query('START TRANSACTION')!
+	mut synced_tail := 0
+	mut skipped := 0
+	for x in 1 .. 101 {
+		db.query("INSERT INTO t (x, s) VALUES (${x * 10 + 5}, '${'b'.repeat(40)}')")!
+		log := db.catalog().storage.log
+		if log.unsynced_pages.len == 0 {
+			synced_tail = log.tail
+		} else {
+			skipped++
+		}
+	}
+	assert skipped > 50
+
+	os.write_file_array(copy, os.read_bytes(path)![..on_disk_len])!
+	os.write_file_array(wal_path(copy), os.read_bytes(wal_path(path))![..synced_tail])!
+
+	// The transaction is rolled back, and the rows can be inserted again.
+	mut other := open(copy)!
+	mut rows := other.query('SELECT x FROM t')!.rows
+	assert rows.len == 100
+	for i, row in rows {
+		assert row.get_int('X')! == (i + 1) * 10
+	}
+	for x in 1 .. 101 {
+		other.query("INSERT INTO t (x, s) VALUES (${x * 10 + 5}, '${'c'.repeat(40)}')")!
+	}
+	assert other.query('SELECT * FROM t')!.rows.len == 200
+	other.close()
+
+	// COMMIT syncs the log.
+	db.query('COMMIT')!
+	assert db.catalog().storage.log.unsynced_pages.len == 0
+	assert db.query('SELECT * FROM t')!.rows.len == 200
+	db.close()
+}
+
 // The database file and the log stay open between statements, so a file that's
 // replaced or deleted (by something other than vsql) while the connection is
 // open has to be opened again. Windows doesn't let a file that's open be

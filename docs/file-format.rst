@@ -933,6 +933,19 @@ When it finishes (still holding the exclusive lock on the database file):
 3. The *State* in the log header is changed to *Checkpointed*, and the *Tail* is
    moved to the end of the statement. This doesn't need to be synced, see below.
 
+A statement in an explicit transaction (after ``START TRANSACTION``) doesn't need
+to survive the power failing, because the transaction would be rolled back
+anyway. So the log isn't synced in step 1 if every page that the statement
+changes is either:
+
+- in a frame of the log that the connection has already synced, or
+- a page that was added to the file since the connection last synced the log.
+
+If the power fails, copying the log puts each of those pages back (or truncates
+the file to remove them), so the database file is the same as it was after the
+last statement that was synced. Any other statement (including the ``COMMIT``)
+syncs the log, which also syncs the statements before it.
+
 A new log is started (with a new *Salt*) when the statement wouldn't fit in the
 4 MiB limit, unless the log is empty. The database file is synced first, because
 the statements in the log are about to be lost. Then the new log header is

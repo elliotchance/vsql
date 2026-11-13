@@ -162,6 +162,41 @@ fn test_full_fsync() ! {
 	assert result.next()?.get_int('C')! == 3
 }
 
+// A statement that fails in a transaction removes what it added to the pages and
+// keys of the transaction, without copying them for each statement.
+fn test_failed_statement_keeps_transaction_pages() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-transaction-pages-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path)] {
+			os.rm(file) or {}
+		}
+	}
+
+	mut db := open(path)!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE t (x INT, PRIMARY KEY (x))')!
+	db.query('START TRANSACTION')!
+	for x in 1 .. 21 {
+		db.query('INSERT INTO t (x) VALUES (${x})')!
+	}
+	pages := db.catalog().storage.transaction_pages.clone()
+	keys := db.catalog().storage.transaction_keys.clone()
+
+	// The first row is written before the second one fails.
+	db.query('INSERT INTO t (x) VALUES (100), (1)') or {
+		assert sqlstate_from_int(err.code()) == '23505'
+	}
+	assert db.catalog().storage.transaction_pages == pages
+	assert db.catalog().storage.transaction_keys == keys
+
+	db.query('INSERT INTO t (x) VALUES (100)')!
+	assert db.catalog().storage.transaction_keys.len == keys.len + 1
+	db.query('COMMIT')!
+	assert db.query('SELECT * FROM t')!.rows.len == 21
+}
+
 // testsuite_begin runs the child function, and nothing else, in a child process
 // on Windows (see run_in_child).
 fn testsuite_begin() {

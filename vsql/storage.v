@@ -140,6 +140,12 @@ mut:
 	// most statements don't change them.
 	schema_saved bool
 	pages_saved  bool
+	// added_pages and added_keys are what the statement added to
+	// transaction_pages and transaction_keys (see add_transaction_pages), so
+	// that they can be removed if it fails. They're used instead of copying
+	// them, because they get bigger with every statement of a transaction.
+	added_pages []int
+	added_keys  []string
 }
 
 // begin_statement must be called at the start of a statement that changes the
@@ -175,13 +181,38 @@ fn (mut f Storage) save_schema() {
 }
 
 // save_transaction_pages must be called before transaction_pages (or
-// transaction_keys) is changed, so that it can be put back if the statement
-// fails.
+// transaction_keys) is replaced, so that it can be put back if the statement
+// fails. Adding to them is add_transaction_pages.
 fn (mut f Storage) save_transaction_pages() {
 	if f.snapshot.in_statement && !f.snapshot.pages_saved {
 		f.snapshot.transaction_pages = f.transaction_pages.clone()
 		f.snapshot.transaction_keys = f.transaction_keys.clone()
 		f.snapshot.pages_saved = true
+	}
+}
+
+// add_transaction_pages adds the pages and keys that the B-tree wrote to the
+// transaction. Only the ones that are new are remembered, so that they can be
+// removed if the statement fails (see discard_statement).
+fn (mut f Storage) add_transaction_pages(keys bool) {
+	for page_number, _ in f.btree.written_pages {
+		if page_number !in f.transaction_pages {
+			f.transaction_pages[page_number] = true
+			if f.snapshot.in_statement {
+				f.snapshot.added_pages << page_number
+			}
+		}
+	}
+
+	if keys {
+		for key, _ in f.btree.written_keys {
+			if key !in f.transaction_keys {
+				f.transaction_keys[key] = true
+				if f.snapshot.in_statement {
+					f.snapshot.added_keys << key
+				}
+			}
+		}
 	}
 }
 
@@ -269,6 +300,13 @@ fn (mut f Storage) discard_statement(path string) ! {
 	if f.snapshot.pages_saved {
 		f.transaction_pages = f.snapshot.transaction_pages.clone()
 		f.transaction_keys = f.snapshot.transaction_keys.clone()
+	}
+	// The copy may have been made after the statement added to them.
+	for page_number in f.snapshot.added_pages {
+		f.transaction_pages.delete(page_number)
+	}
+	for key in f.snapshot.added_keys {
+		f.transaction_keys.delete(key)
 	}
 	f.snapshot.in_statement = false
 	f.btree.pager.discard()
@@ -1260,22 +1298,11 @@ fn (mut f Storage) isolation_end() ! {
 	fault_point('isolation_end')!
 
 	// The B-tree is replaced for each operation, so the pages it changed must
-	// be kept with the transaction before then.
-	if f.btree.written_pages.len > 0 {
-		f.save_transaction_pages()
-	}
-	for page_number, _ in f.btree.written_pages {
-		f.transaction_pages[page_number] = true
-	}
+	// be kept with the transaction before then. An implicit transaction ends in
+	// the same statement, while the file is locked, so its pages can't be split
+	// by another connection, and it doesn't need the keys.
+	f.add_transaction_pages(f.transaction_state == .active)
 	f.btree.written_pages = map[int]bool{}
-
-	// An implicit transaction ends in the same statement, while the file is
-	// locked, so its pages can't be split by another connection.
-	if f.transaction_state == .active {
-		for key, _ in f.btree.written_keys {
-			f.transaction_keys[key] = true
-		}
-	}
 	f.btree.written_keys = map[string]bool{}
 
 	match f.transaction_state {

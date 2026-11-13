@@ -587,7 +587,7 @@ fn start_sql_test_server() !&Server {
 				path = database[..i]
 				db_options.page_size = database[i + sql_test_page_size_suffix.len..].int()
 			}
-			mut db := open_database(path, db_options)!
+			mut db := open_sql_test_database(path, db_options)!
 			db.now = sql_test_now
 
 			return db
@@ -625,14 +625,14 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	}
 
 	// Connections are never closed (and so keep their locks), so each test
-	// needs its own files. The main file is named so that its catalog is still
-	// called ":memory:".
+	// needs its own files. The main file's catalog is still called ":memory:"
+	// (see open_sql_test_database).
 	dir := os.join_path(sql_test_dir(), test.file_name.replace('/', '_') + '_${test.line_number}')
 	os.mkdir_all(dir)!
 	defer {
 		os.rmdir_all(dir) or {}
 	}
-	main_path := if mode == .on_disk { os.join_path(dir, ':memory:.vsql') } else { ':memory:' }
+	main_path := if mode == .on_disk { os.join_path(dir, sql_test_main_file) } else { ':memory:' }
 	file_name := os.join_path(dir, 'test.vsql')
 
 	mut db := new_sql_test_conn(through_server, main_path, options, port)!
@@ -755,7 +755,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			if mode == .on_disk {
 				restored_dir := os.join_path(dir, 'in_${restores}')
 				os.mkdir_all(restored_dir)!
-				path = os.join_path(restored_dir, ':memory:.vsql')
+				path = os.join_path(restored_dir, sql_test_main_file)
 			}
 			db = new_sql_test_conn(false, path, options, port)!
 			opened << db
@@ -939,6 +939,22 @@ mut:
 	client &PGTestClient = unsafe { nil }
 }
 
+// sql_test_main_file is the name of the file of a test that's run on disk.
+// Its catalog is called ":memory:", like the one in memory, so that the tests
+// have the same results either way. The file can't be named ":memory:.vsql",
+// because Windows doesn't allow a colon in a file name.
+const sql_test_main_file = 'memory.vsql'
+
+// open_sql_test_database opens the database at path for a test, which is
+// ":memory:" or a file. The catalog of sql_test_main_file is called ":memory:".
+fn open_sql_test_database(path string, options ConnectionOptions) !&Connection {
+	if os.base(path) == sql_test_main_file {
+		return open_database_named(path, ':memory:', options)
+	}
+
+	return open_database(path, options)
+}
+
 // sql_test_page_size_suffix is added to the name of the database that the
 // test server opens, for the page size of a "page_size" directive.
 const sql_test_page_size_suffix = '?page_size='
@@ -955,7 +971,7 @@ fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions
 		}
 	}
 
-	mut db := open_database(path, options)!
+	mut db := open_sql_test_database(path, options)!
 	db.now = sql_test_now
 	register_pg_functions(mut db) or {
 		db.close()

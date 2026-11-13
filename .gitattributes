@@ -1,1 +1,5 @@
+# Text files are checked out with \n line endings on every OS (Windows would
+# otherwise have \r\n), since the tests compare files and V's multiline strings
+# with output that has \n.
+* text=auto eol=lf
 vsql/y.v linguist-generated=true

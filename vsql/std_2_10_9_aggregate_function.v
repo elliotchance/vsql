@@ -547,6 +547,11 @@ fn eval_binary_set_function(name string, ys []Value, xs []Value) !Value {
 	}
 
 	slope := m.sxy / m.sxx
+
+	// The product is a statement of its own, so that a C compiler can't fuse it
+	// with the subtraction (into an fma). Clang does that on ARM64, which makes
+	// REGR_INTERCEPT a tiny non-zero number when it should be zero.
+	slope_x := slope * m.mean_x
 	return match name {
 		'REGR_SXX' { scaled_value(m.sxx, [m.sx, m.sx], false)! }
 		'REGR_SYY' { scaled_value(m.syy, [m.sy, m.sy], false)! }
@@ -563,7 +568,7 @@ fn eval_binary_set_function(name string, ys []Value, xs []Value) !Value {
 		}
 		'REGR_SLOPE' { scaled_value(slope, [m.sy, 1 / m.sx], true)! }
 		// REGR_INTERCEPT
-		else { scaled_value(m.mean_y - slope * m.mean_x, [m.sy], true)! }
+		else { scaled_value(m.mean_y - slope_x, [m.sy], true)! }
 	}
 }
 

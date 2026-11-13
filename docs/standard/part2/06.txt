@@ -556,13 +556,13 @@
 6.12/SR/2.d              definition   - -
 6.12/SR/2.e              definition   - -
 6.12/SR/2.f              definition   - -
-6.12/SR/2.f.i            n/a          - - extended CASE (F262)
+6.12/SR/2.f.i            implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression_when_operands.sql
 6.12/SR/2.f.ii           definition   - -
 6.12/SR/2.g              definition   - -
 6.12/SR/2.h              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
-6.12/SR/2.i              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
+6.12/SR/2.i              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql,tests/std_2_6_12_case_expression_when_operands.sql
 6.12/SR/2.j              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
-6.12/SR/2.k              n/a          - - the predicates can only be comparisons, which are Core (F262)
+6.12/SR/2.k              implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_6_12_case_expression_when_operands.sql
 6.12/SR/3                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/4                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression.sql
 6.12/SR/5                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql,tests/std_2_6_12_coalesce.sql
@@ -572,10 +572,10 @@
 6.12/GR/2                container    - -
 6.12/GR/2.a              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/GR/2.b              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
-6.12/CR/1                n/a          - - extended CASE (F262)
-6.12/CR/2                n/a          - - extended CASE (F262)
-6.12/CR/3                n/a          - - comma-separated predicates in simple CASE (F263)
-6.12/CR/4                n/a          - - extended CASE (F262); a <when operand> can't be a <similar predicate part 2>
+6.12/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_6_12_case_expression_when_operands.sql
+6.12/CR/2                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression_when_operands.sql
+6.12/CR/3                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression_when_operands.sql
+6.12/CR/4                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression_when_operands.sql
 # 6.13, <cast specification>
 6.13                     implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/SR/1                container    - -

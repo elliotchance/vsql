@@ -92,7 +92,7 @@ VALUES CASE WHEN TRUE THEN NULL ELSE NULL END;
 -- # a searched WHEN must be a BOOLEAN. The results must all be numbers or all
 -- # be strings (9.5, Syntax Rules, 3.a.i and 3.c.i).
 VALUES CASE 1 WHEN 'a' THEN 1 END;
--- error 42804: data type mismatch in CASE WHEN: expected SMALLINT but got CHARACTER(1)
+-- error 42883: cannot compare SMALLINT and CHARACTER(1)
 
 VALUES CASE WHEN 1 THEN 1 END;
 -- error 42804: data type mismatch in CASE WHEN: expected BOOLEAN but got SMALLINT

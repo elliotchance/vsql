@@ -29,10 +29,14 @@ case_specification:
 
 simple_case:
   CASE case_operand simple_when_clause_list END {
+    flag_simple_case(mut yylex, $2.v as RowValueConstructorPredicand,
+      $3.v as []CaseExpressionSimpleWhen)
     $$.v = yy_box(new_case_expression_simple($2.v as RowValueConstructorPredicand,
       $3.v as []CaseExpressionSimpleWhen, CaseResult(NullSpecification{})))
   }
 | CASE case_operand simple_when_clause_list else_clause END {
+    flag_simple_case(mut yylex, $2.v as RowValueConstructorPredicand,
+      $3.v as []CaseExpressionSimpleWhen)
     $$.v = yy_box(new_case_expression_simple($2.v as RowValueConstructorPredicand,
       $3.v as []CaseExpressionSimpleWhen, $4.v as CaseResult))
   }
@@ -50,7 +54,7 @@ searched_case:
 simple_when_clause:
   WHEN when_operand_list THEN result {
     $$.v = yy_box(CaseExpressionSimpleWhen{
-      $2.v as RowValueConstructorPredicand
+      $2.v as []CaseWhenOperand
       $4.v as CaseResult
     })
   }
@@ -66,14 +70,93 @@ searched_when_clause:
 else_clause:
   ELSE result { $$.v = $2.v }
 
+// There's no <overlaps predicate part 1> because there's no <overlaps
+// predicate> (F053).
 case_operand:
   row_value_predicand { $$.v = $1.v }
 
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Conformance Rules, 3
 when_operand_list:
-  when_operand { $$.v = $1.v }
+  when_operand { $$.v = yy_box([$1.v as CaseWhenOperand]) }
+| when_operand_list comma when_operand {
+    flag(mut yylex, 'F263')
+    $$.v = yy_box(append_list($1.v as []CaseWhenOperand, $3.v as CaseWhenOperand))
+  }
 
+// Each <when operand> is a predicate with the <case operand> on the left (see
+// CaseOperand). A <row value predicand> is compared with =.
+//
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2.f and 2.i
+//
+// The predicates that vsql doesn't have (such as <overlaps predicate part 2>)
+// can't be a <when operand>.
+//
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Conformance Rules, 2 and 4
 when_operand:
-  row_value_predicand { $$.v = $1.v }
+  row_value_predicand {
+    flag_if(mut yylex, ($1.v as RowValueConstructorPredicand) is ExplicitRowValueConstructor,
+      'F262')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: ComparisonPredicate{case_operand(), .equal, $1.v as RowValueConstructorPredicand}
+      is_value:  true
+    })
+  }
+| comparison_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    comp := $1.v as ComparisonPredicatePart2
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: ComparisonPredicate{case_operand(), comp.op, comp.expr}
+    })
+  }
+| between_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: BetweenPredicate{
+        ...$1.v as BetweenPredicate
+        expr: case_operand()
+      }
+    })
+  }
+| in_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: InPredicate{
+        ...$1.v as InPredicate
+        expr: case_operand()
+      }
+    })
+  }
+| character_like_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    like := $1.v as CharacterLikePredicatePart2
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: CharacterLikePredicate{case_operand(), like.right, like.escape, like.not,
+        like.insensitive}
+    })
+  }
+| similar_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    flag(mut yylex, 'T141')
+    like := $1.v as SimilarPredicatePart2
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: SimilarPredicate{case_operand(), like.right, like.escape, like.not}
+    })
+  }
+| null_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: NullPredicate{case_operand(), !($1.v as bool)}
+    })
+  }
+| quantified_comparison_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: QuantifiedComparisonPredicate{
+        ...$1.v as QuantifiedComparisonPredicate
+        expr: case_operand()
+      }
+    })
+  }
 
 result:
   result_expression { $$.v = yy_box(CaseResult($1.v as ValueExpression)) }

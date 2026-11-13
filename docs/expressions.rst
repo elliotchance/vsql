@@ -170,13 +170,21 @@ CASE
 
 .. code-block:: text
 
-  CASE X WHEN Y1 THEN R1 [ WHEN Y2 THEN R2 ... ] [ ELSE R ] END
+  CASE X WHEN Y1 [ , Y2 ... ] THEN R1 [ WHEN ... THEN R2 ... ] [ ELSE R ] END
 
   CASE WHEN C1 THEN R1 [ WHEN C2 THEN R2 ... ] [ ELSE R ] END
 
 The first form (a simple ``CASE``) returns the result for the first ``WHEN``
-value that is equal to ``X``. ``X`` is only evaluated once. ``NULL`` is never
-equal to anything, so ``CASE NULL WHEN NULL ...`` does not match.
+that matches ``X``. ``X`` is only evaluated once. Each ``Y`` is either:
+
+- A value (or a row), which matches if it's equal to ``X``. ``NULL`` is never
+  equal to anything, so ``CASE NULL WHEN NULL ...`` does not match.
+- The rest of a predicate, with ``X`` as the missing left side: a comparison
+  (such as ``> 5``), ``[ NOT ] BETWEEN``, ``[ NOT ] IN``, ``[ NOT ] LIKE``,
+  ``[ NOT ] SIMILAR TO``, ``IS [ NOT ] NULL`` or a quantified comparison (such
+  as ``= ANY (SELECT ...)``). It matches if the predicate is ``TRUE``.
+
+A ``WHEN`` with more than one ``Y`` matches if any of them do.
 
 The second form (a searched ``CASE``) returns the result for the first ``WHEN``
 condition that is ``TRUE``. Conditions that are ``FALSE`` or ``UNKNOWN`` are
@@ -196,6 +204,9 @@ since whether it's evaluated depends on the other values.
 
   CASE 2 WHEN 1 THEN 10 WHEN 2 THEN 20 ELSE 0 END               -- 20
   CASE 3 WHEN 1 THEN 'one' END                                 -- NULL
+  CASE 7 WHEN < 5 THEN 'low' WHEN BETWEEN 5 AND 9 THEN 'mid' END -- 'mid'
+  CASE 3 WHEN 1, 2, 3 THEN 'small' ELSE 'big' END              -- 'small'
+  CASE name WHEN IS NULL THEN 'unknown' WHEN LIKE 'A%' THEN 'A' END
   CASE WHEN 5 > 10 THEN 'big' ELSE 'small' END                 -- 'small'
 
 CAST

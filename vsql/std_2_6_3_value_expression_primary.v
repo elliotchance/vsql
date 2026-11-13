@@ -58,6 +58,7 @@ type NonparenthesizedValueExpressionPrimary = &AggregateFunction
 	| &NextValueExpression
 	| &RoutineInvocation
 	| CaseExpression
+	| CaseOperand
 	| CastSpecification
 	| Subquery
 	| ValueSpecification
@@ -65,7 +66,7 @@ type NonparenthesizedValueExpressionPrimary = &AggregateFunction
 fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) string {
 	return match e {
 		ValueSpecification, &Identifier, &AggregateFunction, &RoutineInvocation, CaseExpression,
-		CastSpecification, &NextValueExpression, Subquery {
+		CaseOperand, CastSpecification, &NextValueExpression, Subquery {
 			e.pstr(params)
 		}
 	}
@@ -73,8 +74,8 @@ fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) stri
 
 fn (e NonparenthesizedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueSpecification, &Identifier, &AggregateFunction, CaseExpression, CastSpecification,
-		&NextValueExpression, &RoutineInvocation, Subquery {
+		ValueSpecification, &Identifier, &AggregateFunction, CaseExpression, CaseOperand,
+		CastSpecification, &NextValueExpression, &RoutineInvocation, Subquery {
 			return e.compile(mut c)!
 		}
 	}

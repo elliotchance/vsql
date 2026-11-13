@@ -284,6 +284,51 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
+	// ISO/IEC 9075-11:2008(E), 5.54, SQL_PACKAGES view
+	catalog.add_information_schema_table('CREATE TABLE SQL_PACKAGES (
+		ID ${cd} NOT NULL,
+		NAME ${cd} NOT NULL,
+		IS_SUPPORTED ${yn} NOT NULL,
+		IS_VERIFIED_BY ${cd},
+		COMMENTS ${cd}
+	)',
+		fn (mut t VirtualTable) ! {
+			for row in sql_packages_view_rows(parse_sql_features(sql_compliance_rst)) {
+				t.next_values(row)
+			}
+			t.done()
+		})!
+
+	// ISO/IEC 9075-11:2008(E), 5.55, SQL_PARTS view
+	catalog.add_information_schema_table('CREATE TABLE SQL_PARTS (
+		PART ${cd} NOT NULL,
+		NAME ${cd} NOT NULL,
+		IS_SUPPORTED ${yn} NOT NULL,
+		IS_VERIFIED_BY ${cd},
+		COMMENTS ${cd}
+	)',
+		fn (mut t VirtualTable) ! {
+			for part in sql_parts {
+				t.next_values(sql_parts_view_row(part))
+			}
+			t.done()
+		})!
+
+	// ISO/IEC 9075-11:2008(E), 5.57, SQL_SIZING_PROFILES view. It's empty,
+	// because no profiles are defined (ISO/IEC 9075-11:2008(E), 6.46,
+	// Description, 1).
+	catalog.add_information_schema_table('CREATE TABLE SQL_SIZING_PROFILES (
+		SIZING_ID ${cn} NOT NULL,
+		SIZING_NAME ${cd} NOT NULL,
+		PROFILE_ID ${cd} NOT NULL,
+		PROFILE_NAME ${cd} NOT NULL,
+		REQUIRED_VALUE ${cn},
+		COMMENTS ${cd}
+	)',
+		fn (mut t VirtualTable) ! {
+			t.done()
+		})!
+
 	// ISO/IEC 9075-11:2008(E), 5.77, Short name views
 	catalog.add_short_name_view('COLUMNS_S', 'COLUMNS', {
 		'CHARACTER_MAXIMUM_LENGTH': 'CHAR_MAX_LENGTH'
@@ -304,6 +349,11 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 	catalog.add_short_name_view('KEY_COLUMN_USAGE_S', 'KEY_COLUMN_USAGE', {
 		'POSITION_IN_UNIQUE_CONSTRAINT': 'POSITION_IN_UC'
 	})!
+	catalog.add_short_name_view('SQL_IMPL_INFO', 'SQL_IMPLEMENTATION_INFO', {
+		'IMPLEMENTATION_INFO_ID':   'IMPL_INFO_ID'
+		'IMPLEMENTATION_INFO_NAME': 'IMPL_INFO_NAME'
+	})!
+	catalog.add_short_name_view('SQL_SIZING_PROFS', 'SQL_SIZING_PROFILES', map[string]string{})!
 	catalog.add_short_name_view('REF_CONSTRAINTS', 'REFERENTIAL_CONSTRAINTS', {
 		'UNIQUE_CONSTRAINT_CATALOG': 'UNIQUE_CONSTR_CAT'
 		'UNIQUE_CONSTRAINT_SCHEMA':  'UNIQUE_CONSTR_SCH'

@@ -350,15 +350,15 @@
 6.42/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 6.42/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 # 6.43, SQL_CONFORMANCE base table
-6.43                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/1                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/2                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/3                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/4                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/5                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/6                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/7                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
-6.43/DE/8                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES view, without parts or packages
+6.43                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/1                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/2                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/3                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/4                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/5                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/6                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/7                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
+6.43/DE/8                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
 # 6.44, SQL_IMPLEMENTATION_INFO base table
 6.44                     implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
 6.44/DE/1                implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql the items of SQL/CLI (ISO/IEC 9075-3, 7.1), and SEARCH PATTERN ESCAPE, which GetInfo reads from it
@@ -372,12 +372,12 @@
 6.45/DE/3                implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql
 6.45/DE/4                impl-defined vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql what the limit is
 # 6.46, SQL_SIZING_PROFILES base table
-6.46                     n/a          - - enhanced documentation tables (F502)
-6.46/DE/1                n/a          - - enhanced documentation tables (F502)
-6.46/DE/2                n/a          - - enhanced documentation tables (F502)
-6.46/DE/3                n/a          - - enhanced documentation tables (F502)
-6.46/DE/4                n/a          - - enhanced documentation tables (F502)
-6.46/DE/5                n/a          - - enhanced documentation tables (F502)
+6.46                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql only as the SQL_SIZING_PROFILES view, which is empty
+6.46/DE/1                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql no profiles are defined
+6.46/DE/2                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql
+6.46/DE/3                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql
+6.46/DE/4                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql
+6.46/DE/5                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql
 # 6.47, TABLE_CONSTRAINTS base table
 6.47                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_58_table_constraints.sql
 6.47/DE/1                impl-defined vsql/std_11_5_information_schema.v tests/std_11_5_58_table_constraints.sql T_PRIMARY_KEY, T_UNIQUE_1, T_FOREIGN_KEY_1, T_CHECK_1 or T_NOT_NULL_1 (for the column) when not named

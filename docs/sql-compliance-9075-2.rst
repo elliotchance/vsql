@@ -758,7 +758,7 @@ Optional Features
    * - ✅ **F305**
      - **INTERSECT ALL table operator**
 
-   * - ❌ **F312**
+   * - ✅ **F312**
      - **MERGE statement**
 
    * - ❌ **F313**

@@ -97,7 +97,7 @@ VALUES (1, NULL) IS NULL;
 -- error 42601: syntax error: unexpected NULL
 
 VALUES ROW(1, NULL) IS NULL;
--- error 42601: syntax error: unexpected NULL at line 1, column 15 near "(1, NULL)"
+-- error 42601: syntax error: unexpected ")" at line 1, column 19 near "1, NULL) IS", expecting "::"
 
 VALUES (1, DEFAULT) IS NULL;
 -- error 42601: syntax error: unexpected DEFAULT

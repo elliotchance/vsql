@@ -126,6 +126,7 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace('OPERATOR_ASTERISK', '"*"')
 	msg = msg.replace('OPERATOR_PERIOD', '"."')
 	msg = msg.replace('OPERATOR_SOLIDUS', '"/"')
+	msg = msg.replace('OPERATOR_DOUBLE_COLON', '"::"')
 	msg = msg.replace('OPERATOR_COLON', '":"')
 	msg = msg.replace('OPERATOR_QUESTION_MARK', '"?"')
 	msg = msg.replace('OPERATOR_LESS_THAN', '"<"')
@@ -869,6 +870,9 @@ fn multi_operator_token(a rune, b rune) int {
 	}
 	if a == `|` && b == `|` {
 		return token_operator_double_pipe
+	}
+	if a == `:` && b == `:` {
+		return token_operator_double_colon
 	}
 
 	return 0

@@ -264,11 +264,11 @@ fn is_pg_set(query string) bool {
 		&& tokens[i + 1].token in [token_to, token_operator_equals]
 }
 
-// rewrite_pg_syntax changes a PostgreSQL cast ("x::type") into a CAST, removes
-// "pg_catalog." before a name, because the system catalog is in the default
-// schema, and gives an untyped NULL column a type (see pg_is_untyped_null). The operand of a cast is a name, a string, a number or
-// anything in parentheses just before the "::". Text in quotes and comments
-// isn't changed.
+// rewrite_pg_syntax changes the PostgreSQL type of a cast ("x::int8") into an
+// SQL type ("x::BIGINT", see pg_type_name), removes "pg_catalog." before a name,
+// because the system catalog is in the default schema, and gives an untyped NULL
+// column a type (see pg_is_untyped_null). The "::" itself is a cast in vsql
+// (V303-01). Text in quotes and comments isn't changed.
 fn rewrite_pg_syntax(query string) string {
 	mut out := []u8{}
 	mut i := 0
@@ -315,22 +315,15 @@ fn rewrite_pg_syntax(query string) string {
 		}
 
 		if query[i..].starts_with('::') {
-			for out.len > 0 && out.last() == ` ` {
-				out.delete_last()
+			mut type_start := i + 2
+			for type_start < query.len && query[type_start] == ` ` {
+				type_start++
 			}
-			start := pg_operand_start(out)
-			mut type_end := i + 2
-			for type_end < query.len && query[type_end] == ` ` {
-				type_end++
-			}
-			type_start := type_end
+			mut type_end := type_start
 			for type_end < query.len && is_pg_name_byte(query[type_end]) {
 				type_end++
 			}
-			type_name := pg_type_name(query[type_start..type_end])
-			operand := out[start..].bytestr()
-			out = out[..start].clone()
-			out << 'CAST(${operand} AS ${type_name})'.bytes()
+			out << '::${pg_type_name(query[type_start..type_end])}'.bytes()
 			i = type_end
 			continue
 		}
@@ -364,52 +357,6 @@ fn pg_is_untyped_null(query string, i int, out []u8) bool {
 
 fn is_pg_name_byte(ch u8) bool {
 	return ch.is_letter() || ch.is_digit() || ch == `_` || ch == `.`
-}
-
-// pg_operand_start is where the operand of a cast starts at the end of out: a
-// name or number, a string or delimited identifier, or something in
-// parentheses (which may be a function call).
-fn pg_operand_start(out []u8) int {
-	mut i := out.len
-	if i > 0 && (out[i - 1] == `'` || out[i - 1] == `"`) {
-		quote := out[i - 1]
-		i--
-		for i > 0 {
-			i--
-			if out[i] == quote {
-				if i > 0 && out[i - 1] == quote {
-					i--
-					continue
-				}
-				break
-			}
-		}
-		return i
-	}
-	if i > 0 && out[i - 1] == `)` {
-		mut depth := 0
-		for i > 0 {
-			i--
-			if out[i] == `)` {
-				depth++
-			} else if out[i] == `(` {
-				depth--
-				if depth == 0 {
-					break
-				}
-			}
-		}
-		// A function call, such as count(*)::int.
-		for i > 0 && is_pg_name_byte(out[i - 1]) {
-			i--
-		}
-		return i
-	}
-	for i > 0 && is_pg_name_byte(out[i - 1]) {
-		i--
-	}
-
-	return i
 }
 
 // pg_type_name is the SQL type for a PostgreSQL type of a cast. A type that

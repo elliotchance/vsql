@@ -461,6 +461,12 @@ fn sql_literal(typ vsql.Type, value string) string {
 		.is_varchar, .is_character {
 			return quote_string(value)
 		}
+		// The value is the hexadecimal digits, like vsql shows a binary string.
+		.is_binary, .is_varbinary {
+			if value.bytes().all(it.is_hex_digit()) {
+				return "X'${value}'"
+			}
+		}
 		.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric, .is_real,
 		.is_double_precision {
 			if value != '' && value.bytes().all(it.is_digit() || it in [`.`, `e`, `E`, `+`, `-`]) {

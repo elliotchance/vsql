@@ -501,6 +501,10 @@ fn describe_column(column vsql.Column, catalog string) map[int]DescValue {
 			record[sql_desc_character_set_schema] = 'INFORMATION_SCHEMA'
 			record[sql_desc_character_set_name] = 'UTF8'
 		}
+		.is_binary, .is_varbinary {
+			record[sql_desc_length] = i64(typ.size)
+			record[sql_desc_octet_length] = i64(typ.size)
+		}
 		.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric, .is_real,
 		.is_double_precision {
 			record[sql_desc_precision] = i64(numeric_precision_of(typ))

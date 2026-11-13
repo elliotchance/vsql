@@ -119,6 +119,16 @@ fn new_bigint_value
 
 new_bigint_value creates a ``BIGINT`` value.
 
+fn new_binary_value
+-------------------
+
+
+.. code-block:: v
+
+   pub fn new_binary_value(x []u8) Value
+
+new_binary_value creates a ``BINARY`` value. The size is the number of octets.
+
 fn new_boolean_value
 --------------------
 
@@ -276,6 +286,16 @@ fn new_unknown_value
    pub fn new_unknown_value() Value
 
 new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL`` representation of ``BOOLEAN``.
+
+fn new_varbinary_value
+----------------------
+
+
+.. code-block:: v
+
+   pub fn new_varbinary_value(x []u8) Value
+
+new_varbinary_value creates a ``BINARY VARYING`` value.
 
 fn new_varchar_value
 --------------------
@@ -535,6 +555,8 @@ enum SQLType
    	is_timestamp_with_time_zone    // TIMESTAMP WITH TIME ZONE
    	is_decimal                     // DECIMAL
    	is_numeric                     // NUMERIC
+   	is_binary                      // BINARY(n) and BINARY
+   	is_varbinary                   // BINARY VARYING(n) and VARBINARY(n)
    }
 
 SQLType is the fundamental SQL type, without its size or precision.

@@ -75,6 +75,15 @@ fn test_dump_compat() {
 	assert DumpCompat.mysql.expression_sql('NOPE(X)', columns) == none
 	assert DumpCompat.mysql.expression_sql('"other" > 1', columns) == none
 
+	// X'...' is a bit string in PostgreSQL, so a binary string is a BYTEA.
+	binary := new_binary_value([u8(0x01), 0xab])
+	assert binary.bytes_value() == [u8(0x01), 0xab]
+	assert DumpCompat.postgresql.literal_sql(binary) == "'\\x01AB'::BYTEA"
+	assert DumpCompat.sqlite3.literal_sql(binary) == "X'01AB'"
+	assert DumpCompat.postgresql.type_sql(binary.typ) == 'BYTEA'
+	assert DumpCompat.sqlite3.type_sql(binary.typ) == 'BLOB'
+	assert DumpCompat.mysql.type_sql(new_type('BINARY VARYING', 3, 0)) == 'VARBINARY(3)'
+
 	// A comment can't end early because of the name in it.
 	assert compat_comment('a\nb\rc') == '-- a b c'
 	// A name that wasn't delimited is lower case, and one that was stays the same.

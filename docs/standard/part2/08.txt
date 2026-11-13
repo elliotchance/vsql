@@ -69,13 +69,13 @@
 8.2/GR/3.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/3.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/3.d               untestable   vsql/std_2_8_2_comparison_predicate.v - which of several equal strings is chosen is implementation-dependent
-8.2/GR/4                 n/a          - - binary strings (T021)
-8.2/GR/5                 n/a          - - binary strings (T021)
-8.2/GR/5.a               n/a          - - binary strings (T021)
-8.2/GR/5.b               n/a          - - binary strings (T021)
-8.2/GR/5.c               n/a          - - binary strings (T021)
-8.2/GR/5.d               n/a          - - binary strings (T021)
-8.2/GR/5.e               n/a          - - binary strings (T021)
+8.2/GR/4                 n/a          - - binary large objects (T041)
+8.2/GR/5                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_binary.sql
+8.2/GR/5.a               definition   - -
+8.2/GR/5.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_binary.sql
+8.2/GR/5.c               impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_binary.sql the shorter string is less
+8.2/GR/5.d               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_binary.sql
+8.2/GR/5.e               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_binary.sql
 8.2/GR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql

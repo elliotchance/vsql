@@ -183,6 +183,7 @@ fn key_type(typ SQLType) SQLType {
 		.is_real, .is_double_precision { .is_double_precision }
 		.is_numeric, .is_decimal { .is_numeric }
 		.is_character, .is_varchar { .is_varchar }
+		.is_binary, .is_varbinary { .is_varbinary }
 		else { typ }
 	}
 }

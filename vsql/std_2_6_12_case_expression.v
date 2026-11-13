@@ -313,4 +313,5 @@ fn new_case_expression_searched(whens []CaseExpressionSearchedWhen, else_result 
 fn comparable_types(t1 SQLType, t2 SQLType) bool {
 	return (t1.is_number() && t2.is_number()) || (t1.is_string() && t2.is_string())
 		|| (t1 == .is_boolean && t2 == .is_boolean) || (t1.is_datetime() && t2.is_datetime())
+		|| (t1.is_binary_string() && t2.is_binary_string())
 }

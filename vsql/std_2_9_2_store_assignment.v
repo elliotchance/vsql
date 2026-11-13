@@ -61,6 +61,11 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 		// (see bind_parameters).
 	}
 
+	// A binary string can only be assigned to a binary string (Syntax Rule 3).
+	if v.typ.typ.is_binary_string() && !t.typ.is_binary_string() {
+		return sqlstate_42846(v.typ, t)
+	}
+
 	// - GR 3.b. Otherwise, by the type of T:
 	match t.typ {
 		.is_character {
@@ -124,8 +129,13 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// - GR 3.b.v.2. Otherwise, it's 22001 (string data, right truncation).
 			return sqlstate_22001(t)
 		}
-		// - GR 3.b.vi-3.b.xiv. There are no CLOBs (T041), binary strings (T021) or
-		// BLOBs, so fallthrough.
+		// - GR 3.b.vi and 3.b.vii. There are no CLOBs (T041).
+		.is_binary, .is_varbinary {
+			if v.typ.typ.is_binary_string() {
+				return store_binary(v, t)
+			}
+		}
+		// - GR 3.b.xiii and 3.b.xiv. There are no BLOBs (T041).
 		.is_numeric, .is_decimal, .is_smallint, .is_integer, .is_bigint, .is_real,
 		.is_double_precision {
 			// - GR 3.b.xv. A number:
@@ -190,6 +200,43 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 	// (S023).
 
 	return sqlstate_42846(v.typ, t)
+}
+
+// store_binary assigns the binary string v to a BINARY(L) or BINARY
+// VARYING(L). A BINARY(L) is padded on the right with X'00's. A string that's
+// longer than L is truncated if the extra octets are all X'00's, otherwise it's
+// 22001 (string data, right truncation).
+//
+// The DEFAULT of a binary string column is assigned the same way.
+//
+// ISO/IEC 9075-2:2016(E), 6.1, <data type>, Syntax Rules, 19
+// ISO/IEC 9075-2:2016(E), 9.2, Store assignment, General Rules, 3.b.viii-3.b.xii
+// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, General Rules, 2.a.iv and 2.a.v
+fn store_binary(v Value, t Type) !Value {
+	mut s := v.string_value()
+	l := t.size
+
+	// - GR 3.b.ix and 3.b.xii. V is longer than L. A BINARY VARYING without a
+	// length (such as the declared type of an expression) has no maximum length.
+	if l > 0 && s.len > l {
+		if !s[l..].bytes().all(it == 0) {
+			return sqlstate_22001(t)
+		}
+		s = s[..l]
+	}
+
+	// - GR 3.b.x. V is shorter than L, so it's padded with X'00's.
+	if t.typ == .is_binary && s.len < l {
+		s += '\0'.repeat(l - s.len)
+	}
+
+	// - GR 3.b.viii and 3.b.xi. T is set to V.
+	return Value{
+		typ: Type{t.typ, s.len, 0, false}
+		v:   InternalValue{
+			string_value: s
+		}
+	}
 }
 
 // cast_character_source returns the string representation of v used when the
@@ -292,6 +339,10 @@ fn check_store_assignment(v Value, t Type) ! {
 // check_assignable returns an error if a value of type from can't be assigned
 // to t, regardless of the value.
 fn check_assignable(from Type, t Type) ! {
+	if from.typ.is_binary_string() != t.typ.is_binary_string() {
+		return sqlstate_42846(from, t)
+	}
+
 	if (from.typ.is_string() && t.typ.is_number()) || (from.typ.is_number() && t.typ.is_string()) {
 		return sqlstate_42846(from, t)
 	}

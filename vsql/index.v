@@ -210,6 +210,21 @@ fn key_value_length(key []u8, typ SQLType, flip u8) int {
 			}
 			n
 		}
+		.is_binary, .is_varbinary {
+			// Each X'00' is followed by X'FF', and the end is X'0000', see
+			// write_key_binary.
+			mut n := 0
+			for {
+				n++
+				if key[n - 1] ^ flip == 0 {
+					n++
+					if key[n - 1] ^ flip == 0 {
+						break
+					}
+				}
+			}
+			n
+		}
 	}
 }
 

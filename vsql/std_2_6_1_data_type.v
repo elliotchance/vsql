@@ -19,6 +19,10 @@ module vsql
 // VARYING (6.1 Syntax Rule 15).
 const max_character_length = 10485760
 
+// max_binary_length is the maximum <length> of a BINARY or BINARY VARYING
+// (6.1 Syntax Rule 15).
+const max_binary_length = 10485760
+
 // max_numeric_precision is the maximum <precision> of a NUMERIC or DECIMAL (6.1
 // Syntax Rule 25). It's also the precision of a NUMERIC or DECIMAL that doesn't
 // specify one (6.1 Syntax Rule 20), see Type.numeric_precision.
@@ -37,6 +41,11 @@ fn check_data_type(t Type) ! {
 		.is_character, .is_varchar {
 			if t.size > max_character_length {
 				return sqlstate_42601('${t.typ} length must not be greater than ${max_character_length}')
+			}
+		}
+		.is_binary, .is_varbinary {
+			if t.size > max_binary_length {
+				return sqlstate_42601('${t.typ} length must not be greater than ${max_binary_length}')
 			}
 		}
 		.is_numeric, .is_decimal {

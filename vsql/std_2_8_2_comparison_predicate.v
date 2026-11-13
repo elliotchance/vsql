@@ -265,8 +265,10 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 	}
 
 	// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 4
-	// and 5 compare binary strings octet by octet. Binary strings are not
-	// supported.
+	// and 5
+	if xv.typ.typ.is_binary_string() && yv.typ.typ.is_binary_string() {
+		return compare_binary_strings(xv, yv)
+	}
 
 	// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 6
 	//
@@ -380,6 +382,26 @@ fn compare_numbers(xv Value, yv Value) !CompareResult {
 
 	x := xv.as_f64()!
 	y := yv.as_f64()!
+
+	if x < y {
+		return .is_less
+	}
+
+	if x > y {
+		return .is_greater
+	}
+
+	return .is_equal
+}
+
+// compare_binary_strings compares the octets of two binary strings in order.
+// If one is a prefix of the other, the shorter one is less, even if the rest of
+// the longer one is all X'00's (that's implementation-defined).
+//
+// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 5
+fn compare_binary_strings(xv Value, yv Value) CompareResult {
+	x := unsafe { xv.v.string_value }
+	y := unsafe { yv.v.string_value }
 
 	if x < y {
 		return .is_less

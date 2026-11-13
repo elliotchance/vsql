@@ -59,8 +59,12 @@ fn (c DumpCompat) type_sql(t Type) string {
 				.is_date { 'DATE' }
 				.is_time_with_time_zone, .is_time_without_time_zone { 'TIME' }
 				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone { 'TIMESTAMP' }
+				.is_binary, .is_varbinary { 'BLOB' }
 				else { t.str() }
 			}
+		}
+		.postgresql {
+			if t.typ.is_binary_string() { 'BYTEA' } else { t.str() }
 		}
 		.mysql {
 			match t.typ {
@@ -74,6 +78,9 @@ fn (c DumpCompat) type_sql(t Type) string {
 					} else {
 						'VARCHAR(${t.size})'
 					}
+				}
+				.is_varbinary {
+					'VARBINARY(${t.size})'
 				}
 				// REAL is a DOUBLE in MySQL.
 				.is_real {
@@ -117,6 +124,12 @@ fn (c DumpCompat) string_sql(literal string) string {
 // a string.
 fn (c DumpCompat) literal_sql(v Value) string {
 	literal := v.literal()
+
+	// X'...' is a bit string in PostgreSQL.
+	if c == .postgresql && v.typ.uses_bytes() && !v.is_null {
+		return "'\\x${v.str()}'::BYTEA"
+	}
+
 	if v.is_null || !v.typ.typ.is_datetime() {
 		return c.string_sql(literal)
 	}

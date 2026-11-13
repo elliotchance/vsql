@@ -24,6 +24,11 @@ const sql_datetime = i16(9)
 const sql_varchar = i16(12)
 const sql_boolean = i16(16)
 const sql_bigint = i16(25)
+// The codes of BINARY and BINARY VARYING are the ones used for SQL data types
+// in dynamic SQL, see ISO/IEC 9075-2:2016(E), 20.1, Description of SQL
+// descriptor areas.
+const sql_binary = i16(60)
+const sql_varbinary = i16(61)
 const sql_blob_locator = i16(31)
 const sql_clob_locator = i16(41)
 const sql_type_date = i16(91)
@@ -58,6 +63,8 @@ fn data_type_code(typ vsql.Type) i16 {
 		.is_time_with_time_zone { sql_type_time_with_timezone }
 		.is_timestamp_without_time_zone { sql_type_timestamp }
 		.is_timestamp_with_time_zone { sql_type_timestamp_with_timezone }
+		.is_binary { sql_binary }
+		.is_varbinary { sql_varbinary }
 	}
 }
 
@@ -88,6 +95,19 @@ fn cast_value(stmt &Stmt, value vsql.Value, column vsql.Column, typ vsql.SQLType
 		.is_boolean] {
 		return cli_error('07006', 'restricted data type attribute violation')
 	}
+	if column.typ.uses_bytes() {
+		if typ != .is_varchar {
+			return cli_error('07006', 'restricted data type attribute violation')
+		}
+
+		// A binary string is retrieved as its hexadecimal digits.
+		return if value.is_null {
+			vsql.new_null_value(.is_varchar)
+		} else {
+			vsql.new_varchar_value(value.str())
+		}
+	}
+
 	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
 		return cli_error('08003', 'connection does not exist')
 	}

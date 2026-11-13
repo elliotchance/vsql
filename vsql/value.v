@@ -57,7 +57,7 @@ mut:
 	// BIGINT, INTEGER and SMALLINT
 	int_value i64
 	// CHARACTER VARYING(n) and CHARACTER(n)
-	// NUMERIC
+	// BINARY VARYING(n) and BINARY(n), as the octets of the string
 	string_value string
 	// DATE
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
@@ -227,6 +227,27 @@ pub fn new_character_value(x string) Value {
 		typ: Type{.is_character, x.len_utf8(), 0, false}
 		v:   InternalValue{
 			string_value: x
+		}
+	}
+}
+
+// new_binary_value creates a ``BINARY`` value. The size is the number of
+// octets.
+pub fn new_binary_value(x []u8) Value {
+	return Value{
+		typ: Type{.is_binary, x.len, 0, false}
+		v:   InternalValue{
+			string_value: x.bytestr()
+		}
+	}
+}
+
+// new_varbinary_value creates a ``BINARY VARYING`` value.
+pub fn new_varbinary_value(x []u8) Value {
+	return Value{
+		typ: Type{.is_varbinary, x.len, 0, false}
+		v:   InternalValue{
+			string_value: x.bytestr()
 		}
 	}
 }
@@ -405,6 +426,10 @@ fn (v Value) pstr(_ map[string]Value) string {
 		return v.time_value().str_literal()
 	}
 
+	if v.typ.uses_bytes() && !v.is_null {
+		return v.literal()
+	}
+
 	if v.typ.typ != .is_numeric && (v.typ.uses_string() || v.typ.uses_time()) {
 		return "'${v.str().replace("'", "''")}'"
 	}
@@ -430,6 +455,9 @@ pub fn (v Value) literal() string {
 		}
 		.is_varchar, .is_character {
 			"'${v.string_value().replace("'", "''")}'"
+		}
+		.is_binary, .is_varbinary {
+			"X'${v.str()}'"
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
@@ -470,6 +498,11 @@ pub fn (v Value) str() string {
 		.is_varchar, .is_character {
 			v.string_value()
 		}
+		// Each octet is two uppercase hexits, like a <binary string literal>
+		// without the X and quotes.
+		.is_binary, .is_varbinary {
+			v.string_value().bytes().hex().to_upper()
+		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			v.time_value().str()
@@ -505,6 +538,13 @@ pub fn (v Value) f64_value() f64 {
 pub fn (v Value) string_value() string {
 	unsafe {
 		return v.v.string_value
+	}
+}
+
+// bytes_value is the octets of a BINARY or BINARY VARYING.
+pub fn (v Value) bytes_value() []u8 {
+	unsafe {
+		return v.v.string_value.bytes()
 	}
 }
 

@@ -35,6 +35,18 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 
 			return Type{.is_varchar, size, 0, false}
 		}
+		// The longest binary string, which is only fixed-length if all of them
+		// are.
+		//
+		// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 3.b
+		t1.typ.is_binary_string() && t2.typ.is_binary_string() {
+			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
+			if t1.typ == .is_binary && t2.typ == .is_binary {
+				return Type{.is_binary, size, 0, false}
+			}
+
+			return Type{.is_varbinary, size, 0, false}
+		}
 		// Approximate numeric if any of them are. It's REAL if they're all REAL,
 		// otherwise DOUBLE PRECISION.
 		//

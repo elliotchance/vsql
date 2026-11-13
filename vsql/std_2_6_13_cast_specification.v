@@ -117,6 +117,10 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 		return cast_character_to_character(mut conn, value, target)
 	}
 
+	if value.typ.typ.is_binary_string() && target.typ.is_binary_string() {
+		return cast_binary_to_binary(mut conn, value, target)
+	}
+
 	if value.typ.typ.is_string() && target.typ == .is_boolean {
 		return cast_character_to_boolean(value)!
 	}
@@ -157,6 +161,30 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 
 	if to.typ == .is_character && chars.len < to.size {
 		s += strings.repeat(` `, to.size - chars.len)
+	}
+
+	return Value{
+		typ: to
+		v:   InternalValue{
+			string_value: s
+		}
+	}
+}
+
+// cast_binary_to_binary casts a binary string to BINARY(n) or BINARY
+// VARYING(n). A string that's too long is truncated with a warning (01004),
+// and a BINARY(n) is padded on the right with X'00's.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 13
+fn cast_binary_to_binary(mut conn Connection, v Value, to Type) Value {
+	mut s := v.string_value()
+	if to.size > 0 && s.len > to.size {
+		conn.add_warning(sqlstate_01004())
+		s = s[..to.size]
+	}
+
+	if to.typ == .is_binary && s.len < to.size {
+		s += '\0'.repeat(to.size - s.len)
 	}
 
 	return Value{

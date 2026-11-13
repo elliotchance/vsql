@@ -22,6 +22,22 @@ fn func_position(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(s[..index].len_utf8() + 1)
 }
 
+// POSITION(BINARY VARYING IN BINARY VARYING) INTEGER is the position of the
+// first octet, or 0 if it's not found. An empty string is at position 1.
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 3
+fn func_binary_position(_ FunctionContext, args []Value) !Value {
+	if args[0].string_value() == '' {
+		return new_integer_value(1)
+	}
+
+	index := args[1].string_value().index(args[0].string_value()) or {
+		return new_integer_value(0)
+	}
+
+	return new_integer_value(index + 1)
+}
+
 // CHAR_LENGTH(CHARACTER VARYING) INTEGER
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 5.b
@@ -29,7 +45,8 @@ fn func_char_length(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(args[0].string_value().runes().len)
 }
 
-// OCTET_LENGTH(CHARACTER VARYING) INTEGER
+// OCTET_LENGTH(CHARACTER VARYING) INTEGER and OCTET_LENGTH(BINARY VARYING)
+// INTEGER
 //
 // ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 6
 fn func_octet_length(_ FunctionContext, args []Value) !Value {

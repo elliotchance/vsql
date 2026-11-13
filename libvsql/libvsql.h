@@ -84,11 +84,16 @@
  *   CHARACTER                SQL_CHAR                         SQL_CHAR
  *   CHARACTER VARYING        SQL_VARCHAR                      SQL_CHAR
  *   BOOLEAN                  SQL_BOOLEAN                      SQL_CHAR
+ *   BINARY                   SQL_BINARY                       SQL_CHAR
+ *   BINARY VARYING           SQL_VARBINARY                    SQL_CHAR
  *   DATE                     SQL_TYPE_DATE                    SQL_CHAR
  *   TIME                     SQL_TYPE_TIME                    SQL_CHAR
  *   TIME WITH TIME ZONE      SQL_TYPE_TIME_WITH_TIMEZONE      SQL_CHAR
  *   TIMESTAMP                SQL_TYPE_TIMESTAMP               SQL_CHAR
  *   TIMESTAMP WITH TIME ZONE SQL_TYPE_TIMESTAMP_WITH_TIMEZONE SQL_CHAR
+ *
+ * A binary string retrieved as SQL_CHAR is two uppercase hexadecimal digits
+ * for each octet, such as "0AFF".
  *
  * "numbers" is SQL_SMALLINT, SQL_INTEGER, SQL_BIGINT, SQL_REAL or SQL_DOUBLE
  * (a value out of range is 22003). SQL_DEFAULT retrieves a column as its own
@@ -161,6 +166,8 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_VARCHAR  12 /* CHARACTER VARYING */
 #define SQL_BOOLEAN  16 /* BOOLEAN */
 #define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
+#define SQL_BINARY    60 /* BINARY */
+#define SQL_VARBINARY 61 /* BINARY VARYING */
 
 /* Large object locator types, for the LocatorType of SQLGetLength,
  * SQLGetPosition and SQLGetSubString. */

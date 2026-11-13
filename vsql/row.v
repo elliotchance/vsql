@@ -270,6 +270,12 @@ fn new_empty_value(typ Type) Value {
 		.is_numeric, .is_decimal {
 			new_numeric_value('0')
 		}
+		.is_binary {
+			new_binary_value([]u8{len: typ.size})
+		}
+		.is_varbinary {
+			new_varbinary_value([])
+		}
 	}
 
 	return Value{
@@ -293,7 +299,8 @@ fn (r Row) size_hint(t Table) i64 {
 	mut size := i64(4 + r.id.len)
 	for col in t.columns {
 		v := r.data.value(col.name.sub_entity_name)
-		size += 1 + if !v.is_null && col.typ.typ in [.is_varchar, .is_character] {
+		size += 1 + if !v.is_null && col.typ.typ in [.is_varchar, .is_character, .is_binary,
+			.is_varbinary] {
 			4 + v.string_value().len
 		} else {
 			16
@@ -334,7 +341,7 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
-				.is_real, .is_smallint, .is_numeric, .is_decimal {
+				.is_real, .is_smallint, .is_numeric, .is_decimal, .is_binary, .is_varbinary {
 					buf.write_bool(v.is_null)
 				}
 				.is_boolean {
@@ -365,7 +372,7 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 				.is_smallint {
 					buf.write_i16(i16(v.int_value()))
 				}
-				.is_varchar, .is_character {
+				.is_varchar, .is_character, .is_binary, .is_varbinary {
 					s := v.string_value()
 					if i64(buf.data.len) + 4 + s.len > limit {
 						return sqlstate_54000('row is bigger than the maximum of ${limit} bytes')
@@ -414,7 +421,7 @@ fn skip_value(mut buf Bytes, typ SQLType) {
 			8
 		}
 		.is_time_with_time_zone, .is_timestamp_with_time_zone { 10 }
-		.is_varchar, .is_character { int(buf.read_i32()) }
+		.is_varchar, .is_character, .is_binary, .is_varbinary { int(buf.read_i32()) }
 		.is_numeric, .is_decimal { int(buf.read_i16()) }
 	}
 }
@@ -456,7 +463,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
-				.is_real, .is_smallint, .is_numeric, .is_decimal {
+				.is_real, .is_smallint, .is_numeric, .is_decimal, .is_binary, .is_varbinary {
 					is_null = buf.read_bool()
 				}
 				.is_boolean {
@@ -507,7 +514,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 				.is_smallint {
 					iv.int_value = buf.read_i16()
 				}
-				.is_varchar, .is_character {
+				.is_varchar, .is_character, .is_binary, .is_varbinary {
 					iv.string_value = buf.read_string4()
 				}
 				.is_date {
@@ -658,6 +665,21 @@ fn write_key_string(mut buf Bytes, value string) {
 	buf.write_u8(1)
 }
 
+// write_key_binary writes a binary string so that the keys are in the same
+// order as the values (see compare_binary_strings). Each X'00' is followed by
+// X'FF', and the end is X'0000', so a string is before any longer string that
+// starts with it.
+fn write_key_binary(mut buf Bytes, value string) {
+	for b in value.bytes() {
+		buf.write_u8(b)
+		if b == 0 {
+			buf.write_u8(0xff)
+		}
+	}
+	buf.write_u8(0)
+	buf.write_u8(0)
+}
+
 // write_key_value writes one value of a PRIMARY KEY column of type typ. See
 // "Primary Key" in the file format docs.
 fn write_key_value(mut buf Bytes, value Value, typ SQLType) {
@@ -685,6 +707,9 @@ fn write_key_value(mut buf Bytes, value Value, typ SQLType) {
 		}
 		.is_character, .is_varchar {
 			write_key_string(mut buf, value.string_value())
+		}
+		.is_binary, .is_varbinary {
+			write_key_binary(mut buf, value.string_value())
 		}
 		// Datetimes with a time zone are compared in UTC, so 12:00:00+05:00 is
 		// the same key as 07:00:00+00:00.

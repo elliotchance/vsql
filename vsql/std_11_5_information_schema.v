@@ -723,6 +723,13 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 			character_octet_length = t.size * 4
 			character_set = true
 		}
+		// A binary string's lengths are both in octets.
+		//
+		// ISO/IEC 9075-2:2016(E), 6.1, <data type>, General Rules, 10
+		.is_binary, .is_varbinary {
+			character_maximum_length = t.size
+			character_octet_length = t.size
+		}
 		.is_smallint, .is_integer, .is_bigint {
 			// The precision of SMALLINT, INTEGER and BIGINT is in bits.
 			numeric_precision = match t.typ {

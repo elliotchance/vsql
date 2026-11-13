@@ -76,6 +76,21 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 					right.string_value())!).with_type(typ)
 			}
 
+			if left.typ.typ.is_binary_string() && right.typ.typ.is_binary_string() {
+				// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General Rules, 3
+				if left.is_null || right.is_null {
+					return new_null_value(.is_varbinary).with_type(typ)
+				}
+
+				return Value{
+					typ: typ
+					v:   InternalValue{
+						string_value: limit_binary_concatenation(left.string_value() +
+							right.string_value())!
+					}
+				}
+			}
+
 			return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
 		}
 		typ:          typ
@@ -89,6 +104,10 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 //
 // ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3
 fn concatenation_type(left Type, right Type) !Type {
+	if left.typ.is_binary_string() && right.typ.is_binary_string() {
+		return binary_concatenation_type(left, right)
+	}
+
 	if !left.typ.is_string() || !right.typ.is_string() {
 		return new_type('CHARACTER VARYING', 0, 0)
 	}
@@ -134,4 +153,42 @@ fn limit_concatenation(s string) !string {
 	}
 
 	return runes[..max_character_length].string()
+}
+
+// binary_concatenation_type is the declared type of a <binary concatenation>.
+// It's only fixed-length (BINARY) when both operands are.
+//
+// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 6.a
+fn binary_concatenation_type(left Type, right Type) !Type {
+	size := if left.size > 0 && right.size > 0 { left.size + right.size } else { 0 }
+	if left.typ == .is_binary && right.typ == .is_binary && size > 0 {
+		if size > max_binary_length {
+			return sqlstate_42601('BINARY(${size}) is longer than the maximum length of ${max_binary_length}')
+		}
+
+		return new_type('BINARY', size, 0)
+	}
+
+	return new_type('BINARY VARYING', if size > max_binary_length {
+		max_binary_length
+	} else {
+		size
+	}, 0)
+}
+
+// limit_binary_concatenation returns the result of a <binary concatenation>
+// that's no longer than the maximum length. Only X'00's can be removed from the
+// end of the result, otherwise it's an error.
+//
+// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General Rules, 3.b
+fn limit_binary_concatenation(s string) !string {
+	if s.len <= max_binary_length {
+		return s
+	}
+
+	if s[max_binary_length..].bytes().any(it != 0) {
+		return sqlstate_22001(new_type('BINARY VARYING', max_binary_length, 0))
+	}
+
+	return s[..max_binary_length]
 }

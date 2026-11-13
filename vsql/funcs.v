@@ -85,6 +85,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	double_precision := Type{SQLType.is_double_precision, 0, 0, false}
 	integer := Type{SQLType.is_integer, 0, 0, false}
 	varchar := Type{SQLType.is_varchar, 0, 0, false}
+	varbinary := Type{SQLType.is_varbinary, 0, 0, false}
 	numeric := Type{SQLType.is_numeric, 0, 0, false}
 	smallint := Type{SQLType.is_smallint, 0, 0, false}
 	bigint := Type{SQLType.is_bigint, 0, 0, false}
@@ -137,6 +138,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	}
 	conn.register_func(Func{'OCTET_LENGTH', [varchar], false, func_octet_length, integer, false, true})!
 	conn.register_func(Func{'POSITION', [varchar, varchar], false, func_position, integer, false, true})!
+	conn.register_func(Func{'OCTET_LENGTH', [varbinary], false, func_octet_length, integer, false, true})!
+	conn.register_func(Func{'POSITION', [varbinary, varbinary], false, func_binary_position, integer, false, true})!
 	conn.register_func(Func{'POWER', [double_precision, double_precision], false, func_power, double_precision, false, true})!
 	conn.register_func(Func{'SIN', [double_precision], false, func_sin, double_precision, false, true})!
 	conn.register_func(Func{'SINH', [double_precision], false, func_sinh, double_precision, false, true})!
@@ -169,14 +172,15 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// (SR 7.g.i), STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP also accept any
 	// number (SR 7.h), and EVERY, ANY and SOME accept a BOOLEAN (SR 7.e). Every
 	// SQLType is registered, so a new type is supported automatically. CHARACTER
-	// uses the CHARACTER VARYING one, see find_function. The result type depends
+	// uses the CHARACTER VARYING one, and BINARY uses the BINARY VARYING one, see
+	// find_function. The result type depends
 	// on the argument (see set_function_type) and the result is calculated by
 	// eval_set_function.
 	//
 	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e, 7.g.i and 7.h
 	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
-		if typ.value != SQLType.is_character {
+		if typ.value != SQLType.is_character && typ.value != SQLType.is_binary {
 			arg := Type{typ.value, 0, 0, false}
 			mut names := ['COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {

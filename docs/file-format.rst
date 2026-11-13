@@ -660,6 +660,12 @@ be read without reading the whole table.
       same way as comparing the strings, where the shorter one is padded with
       spaces. For example, 'a b' is ``61 20 02 62 20 01``.
 
+  * - ``BINARY``, ``BINARY VARYING``
+    - The octets of the string. Each ``00`` is followed by ``ff``, and the
+      string ends with ``00 00``. This sorts the same way as comparing the
+      strings, where a string comes before any longer string that starts with
+      it. For example, X'0100' is ``01 00 ff 00 00``.
+
   * - ``DATE``, ``TIME WITHOUT TIME ZONE``, ``TIMESTAMP WITHOUT TIME ZONE``
     - The value in the internal datetime format (the same number that is used to
       compare them) as an 8 byte integer (like ``BIGINT``).

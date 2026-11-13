@@ -578,6 +578,12 @@ Each database has its own types for these, and any other type doesn't change:
    * - ``CHARACTER VARYING``, without a length or over 768
      -
      - ``LONGTEXT``
+   * - ``BINARY(n)``
+     - ``BLOB``
+     -
+   * - ``BINARY VARYING(n)``
+     - ``BLOB``
+     - ``VARBINARY(n)``
    * - ``REAL``
      -
      - ``FLOAT``
@@ -601,7 +607,8 @@ Each database has its own types for these, and any other type doesn't change:
      - ``DATETIME(p)``, stored as UTC
 
 PostgreSQL has all of the types, except that an identity column can't be
-``DECIMAL`` or ``NUMERIC``, so it's a ``BIGINT``.
+``DECIMAL`` or ``NUMERIC``, so it's a ``BIGINT``, and ``BINARY`` and ``BINARY
+VARYING`` are ``BYTEA``.
 
 The output always has to load, so anything that the database doesn't have is left
 out with a ``--`` comment above the statement it would have been in:

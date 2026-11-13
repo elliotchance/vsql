@@ -116,15 +116,15 @@
 9.2/GR/3.b.vii           n/a          - - there are no CLOBs (T041)
 9.2/GR/3.b.vii.1         n/a          - - there are no CLOBs (T041)
 9.2/GR/3.b.vii.2         n/a          - - there are no CLOBs (T041)
-9.2/GR/3.b.viii          n/a          - - binary strings (T021)
-9.2/GR/3.b.ix            n/a          - - binary strings (T021)
-9.2/GR/3.b.ix.1          n/a          - - binary strings (T021)
-9.2/GR/3.b.ix.2          n/a          - - binary strings (T021)
-9.2/GR/3.b.x             n/a          - - binary strings (T021)
-9.2/GR/3.b.xi            n/a          - - binary strings (T021)
-9.2/GR/3.b.xii           n/a          - - binary strings (T021)
-9.2/GR/3.b.xii.1         n/a          - - binary strings (T021)
-9.2/GR/3.b.xii.2         n/a          - - binary strings (T021)
+9.2/GR/3.b.viii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.ix            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.ix.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.ix.2          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.x             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xi            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xii.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xii.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
 9.2/GR/3.b.xiii          n/a          - - there are no BLOBs (T041)
 9.2/GR/3.b.xiv           n/a          - - there are no BLOBs (T041)
 9.2/GR/3.b.xiv.1         n/a          - - there are no BLOBs (T041)
@@ -283,10 +283,10 @@
 9.5/SR/3.a.iii.1         n/a          - - there are no CLOBs (T041)
 9.5/SR/3.a.iii.2         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/3.a.iii.3         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
-9.5/SR/3.b               n/a          - - binary strings (T021)
-9.5/SR/3.b.i             n/a          - - binary strings (T021)
-9.5/SR/3.b.ii            n/a          - - binary strings (T021)
-9.5/SR/3.b.iii           n/a          - - binary strings (T021)
+9.5/SR/3.b               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_6_1_binary.sql
+9.5/SR/3.b.i             n/a          - - binary large objects (T041)
+9.5/SR/3.b.ii            implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_6_1_binary.sql
+9.5/SR/3.b.iii           implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_6_1_binary.sql
 9.5/SR/3.c               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/3.c.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
 9.5/SR/3.c.ii            implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql

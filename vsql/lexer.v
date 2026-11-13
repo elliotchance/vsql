@@ -139,6 +139,7 @@ fn cleanup_yacc_error(s string) string {
 
 	msg = msg.replace('LITERAL_IDENTIFIER', 'identifier')
 	msg = msg.replace('LITERAL_STRING', 'string')
+	msg = msg.replace('LITERAL_BINARY_STRING', 'binary string')
 	msg = msg.replace('LITERAL_NUMBER', 'number')
 
 	return msg['syntax error: '.len..]
@@ -250,6 +251,17 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				i++
 			}
 
+			unsafe {
+				goto next
+			}
+		}
+
+		// A <binary string literal> like X'0AFF'. The X may be lower case, but
+		// there must not be a space before the quote (5.3 Syntax Rule 6).
+		if i + 1 < cs.len && (cs[i] == `X` || cs[i] == `x`) && cs[i + 1] == `'` {
+			bytes, end := read_binary_string_literal(cs, i + 1)!
+			i = end
+			tokens << Token{token_literal_binary_string, new_varbinary_value(bytes), 0, 0}
 			unsafe {
 				goto next
 			}
@@ -547,7 +559,8 @@ fn is_limit_clause(tokens []Token, i int) bool {
 		return after == token_literal_number
 	}
 
-	return next in [token_literal_number, token_literal_string, token_true, token_false, token_unknown]
+	return next in [token_literal_number, token_literal_string, token_literal_binary_string,
+		token_true, token_false, token_unknown]
 }
 
 // read_string_literal returns the characters of the string that starts with
@@ -744,6 +757,38 @@ fn unescape_unicode(s string, escape rune) !string {
 	}
 
 	return result.string()
+}
+
+// read_binary_string_literal returns the octets of the <binary string literal>
+// that starts with the quote at cs[start], and the position after it. Each
+// octet is two <hexit>s. Spaces between the hexits (T024) and a literal of more
+// than one part (T023) are not supported.
+//
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>
+fn read_binary_string_literal(cs []rune, start int) !([]u8, int) {
+	end := cs[start + 1..].index(`'`)
+	if end < 0 {
+		return sqlstate_42601('unterminated binary string: X${cs[start..].string()}')
+	}
+
+	i := start + 1 + end
+	hexits := cs[start + 1..i]
+	for j, c in hexits {
+		if !is_hexit(c) {
+			return sqlstate_42601('invalid hexit in binary string: X${cs[start..start + j + 2].string()}')
+		}
+	}
+
+	if hexits.len % 2 != 0 {
+		return sqlstate_42601('binary string must have an even number of hexits: X${cs[start..i + 1].string()}')
+	}
+
+	mut bytes := []u8{cap: hexits.len / 2}
+	for j := 0; j < hexits.len; j += 2 {
+		bytes << u8(hexit_value(hexits[j]) * 16 + hexit_value(hexits[j + 1]))
+	}
+
+	return bytes, i + 1
 }
 
 fn is_hexit(c rune) bool {

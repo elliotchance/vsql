@@ -169,7 +169,8 @@ fn syntax_error_hint(cs []rune, tokens []Token, index int) string {
 
 	// Two values or names that are only separated by white space are usually a
 	// list that's missing a comma, if the statement is then correct.
-	if token.token in [token_literal_identifier, token_literal_number, token_literal_string]
+	if token.token in [token_literal_identifier, token_literal_number, token_literal_string,
+		token_literal_binary_string]
 		&& index > 0 && tokens[index - 1].end < token.start && is_missing_comma(tokens, index) {
 		return 'is a "," missing before ${text}?'
 	}

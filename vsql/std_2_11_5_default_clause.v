@@ -88,6 +88,9 @@ fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
 		.is_character, .is_varchar {
 			v.typ.typ.is_string() && (t.size == 0 || v.string_value().runes().len <= t.size)
 		}
+		.is_binary, .is_varbinary {
+			v.typ.typ.is_binary_string() && (t.size == 0 || v.string_value().len <= t.size)
+		}
 		.is_real, .is_double_precision {
 			v.typ.typ.is_number()
 		}

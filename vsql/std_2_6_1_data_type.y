@@ -5,6 +5,10 @@ data_type:
 
 predefined_type:
   character_string_type { $$.v = $1.v }
+| binary_string_type {
+    flag(mut yylex, 'T021')
+    $$.v = $1.v
+  }
 | numeric_type { $$.v = $1.v }
 | boolean_type { $$.v = $1.v }
 | datetime_type { $$.v = $1.v }
@@ -26,6 +30,18 @@ character_string_type:
   }
 | VARCHAR left_paren character_length right_paren {
     $$.v = yy_box(parse_type_with_length('CHARACTER VARYING', $3.v as string)!)
+  }
+
+binary_string_type:
+  BINARY { $$.v = yy_box(new_type('BINARY', 1, 0)) }
+| BINARY left_paren length right_paren {
+    $$.v = yy_box(parse_type_with_length('BINARY', $3.v as string)!)
+  }
+| BINARY VARYING left_paren maximum_length right_paren {
+    $$.v = yy_box(parse_type_with_length('BINARY VARYING', $4.v as string)!)
+  }
+| VARBINARY left_paren maximum_length right_paren {
+    $$.v = yy_box(parse_type_with_length('BINARY VARYING', $3.v as string)!)
   }
 
 numeric_type:
@@ -74,6 +90,9 @@ length:
   unsigned_integer { $$.v = $1.v as string }
 
 character_length:
+  length { $$.v = $1.v as string }
+
+maximum_length:
   length { $$.v = $1.v as string }
 
 char_length_units:

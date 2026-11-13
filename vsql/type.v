@@ -40,6 +40,8 @@ pub enum SQLType {
 	is_timestamp_with_time_zone    // TIMESTAMP WITH TIME ZONE
 	is_decimal                     // DECIMAL
 	is_numeric                     // NUMERIC
+	is_binary                      // BINARY(n) and BINARY
+	is_varbinary                   // BINARY VARYING(n) and VARBINARY(n)
 }
 
 // The SQL representation, such as ``TIME WITHOUT TIME ZONE``.
@@ -60,6 +62,8 @@ fn (t SQLType) str() string {
 		.is_timestamp_with_time_zone { 'TIMESTAMP WITH TIME ZONE' }
 		.is_numeric { 'NUMERIC' }
 		.is_decimal { 'DECIMAL' }
+		.is_binary { 'BINARY' }
+		.is_varbinary { 'BINARY VARYING' }
 	}
 }
 
@@ -80,6 +84,11 @@ fn (t SQLType) is_string() bool {
 		.is_character, .is_varchar { true }
 		else { false }
 	}
+}
+
+// is_binary_string is true for BINARY and BINARY VARYING.
+fn (t SQLType) is_binary_string() bool {
+	return t == .is_binary || t == .is_varbinary
 }
 
 fn (t SQLType) is_datetime() bool {
@@ -136,6 +145,10 @@ fn (t SQLType) supertype() (i16, i16) {
 		.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
 		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone {
 			4, 0
+		}
+		// Binary strings are only comparable with other binary strings.
+		.is_binary, .is_varbinary {
+			5, 0
 		}
 	}
 }
@@ -289,6 +302,12 @@ fn type_from_name(name string, size int, scale i16) !Type {
 		'NUMERIC' {
 			Type{.is_numeric, size, scale, false}
 		}
+		'BINARY' {
+			Type{.is_binary, size, scale, false}
+		}
+		'BINARY VARYING', 'VARBINARY' {
+			Type{.is_varbinary, size, scale, false}
+		}
 		else {
 			return sqlstate_42601('unknown type: ${name_without_size}')
 		}
@@ -351,6 +370,20 @@ pub fn (t Type) str() string {
 		.is_numeric {
 			numeric_type_str('NUMERIC', t.size, t.scale)
 		}
+		.is_binary {
+			if t.size > 0 {
+				'BINARY(${t.size})'
+			} else {
+				'BINARY'
+			}
+		}
+		.is_varbinary {
+			if t.size > 0 {
+				'BINARY VARYING(${t.size})'
+			} else {
+				'BINARY VARYING'
+			}
+		}
 	}
 
 	if t.not_null {
@@ -373,7 +406,7 @@ pub fn (t Type) uses_int() bool {
 		}
 		.is_varchar, .is_character, .is_double_precision, .is_real, .is_date,
 		.is_time_with_time_zone, .is_time_without_time_zone, .is_timestamp_with_time_zone,
-		.is_timestamp_without_time_zone, .is_numeric, .is_decimal {
+		.is_timestamp_without_time_zone, .is_numeric, .is_decimal, .is_binary, .is_varbinary {
 			false
 		}
 	}
@@ -387,7 +420,7 @@ pub fn (t Type) uses_f64() bool {
 			true
 		}
 		.is_boolean, .is_varchar, .is_character, .is_bigint, .is_smallint, .is_integer,
-		.is_numeric, .is_decimal {
+		.is_numeric, .is_decimal, .is_binary, .is_varbinary {
 			false
 		}
 	}
@@ -398,7 +431,8 @@ pub fn (t Type) uses_string() bool {
 	return match t.typ {
 		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
-		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_numeric, .is_decimal {
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_numeric, .is_decimal,
+		.is_binary, .is_varbinary {
 			false
 		}
 		.is_varchar, .is_character {
@@ -407,10 +441,15 @@ pub fn (t Type) uses_string() bool {
 	}
 }
 
+// uses_bytes is true if the value is stored as bytes, see Value.bytes_value().
+pub fn (t Type) uses_bytes() bool {
+	return t.typ.is_binary_string()
+}
+
 fn (t Type) uses_time() bool {
 	return match t.typ {
 		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
-		.is_varchar, .is_character, .is_numeric, .is_decimal {
+		.is_varchar, .is_character, .is_numeric, .is_decimal, .is_binary, .is_varbinary {
 			false
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,

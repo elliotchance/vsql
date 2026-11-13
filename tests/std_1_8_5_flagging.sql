@@ -253,6 +253,12 @@ SELECT CAST(x AS BIGINT), CAST(x AS BOOLEAN), CAST(d AS TIMESTAMP(3) WITH TIME Z
 -- flags: F411, F555, T031, T071
 -- error 42846: cannot coerce INTEGER to BOOLEAN
 
+-- # A binary string type or literal needs T021.
+/* flags */
+SELECT CAST(X'01' AS VARBINARY(2)), CAST(NULL AS BINARY(1)) FROM t;
+-- flags: T021
+-- COL1: 01 COL2: NULL
+
 -- # A derived table needs F591. ORDER BY, OFFSET and FETCH FIRST need features
 -- # that depend on where the query is: at the top (F861, F857), in a subquery
 -- # (F850, F851, F862, F858 as well) or in parentheses as a query primary

@@ -830,7 +830,11 @@ fn (mut conn Connection) register_func(func Func) ! {
 }
 
 fn function_arg_type(t Type) SQLType {
-	return if t.typ == .is_character { .is_varchar } else { t.typ }
+	return match t.typ {
+		.is_character { .is_varchar }
+		.is_binary { .is_varbinary }
+		else { t.typ }
+	}
 }
 
 pub fn (mut conn Connection) catalog() &CatalogConnection {
@@ -868,6 +872,11 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 			// All CHARACTER types are considered to be CHARACTER VARYING.
 			if t.typ == .is_character {
 				real_arg_type = Type{SQLType.is_varchar, t.scale, 0, false}
+			}
+
+			// All BINARY types are considered to be BINARY VARYING.
+			if t.typ == .is_binary {
+				real_arg_type = Type{SQLType.is_varbinary, t.scale, 0, false}
 			}
 
 			// Only compare the SQLType so that the precision/scale/null isn't

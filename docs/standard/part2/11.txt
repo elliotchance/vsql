@@ -324,7 +324,7 @@
 11.5/SR/4                container    - -
 11.5/SR/4.a              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
-11.5/SR/4.a.ii           n/a          - - binary strings (T021)
+11.5/SR/4.a.ii           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_6_1_binary.sql
 11.5/SR/4.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
@@ -340,8 +340,8 @@
 11.5/GR/2.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.ii           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
-11.5/GR/2.a.iv           n/a          - - binary strings (T021)
-11.5/GR/2.a.v            n/a          - - binary strings (T021)
+11.5/GR/2.a.iv           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+11.5/GR/2.a.v            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
 11.5/GR/2.a.vi           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.b              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql only CURRENT_CATALOG and CURRENT_SCHEMA

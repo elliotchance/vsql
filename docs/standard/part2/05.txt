@@ -50,13 +50,13 @@
 5.2/CR/5                 n/a          - - large objects (T041)
 5.2/CR/6                 n/a          - - large objects (T041)
 # 5.3, <literal>
-5.3                      partial      vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql no national (F421), binary (T021) or interval (F052) literals
+5.3                      partial      vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql no national (F421) or interval (F052) literals, or compound binary literals (T023) and spaces in binary literals (T024)
 5.3/SR/1                 implemented  vsql/lexer.v tests/std_2_5_3_literal.sql
 5.3/SR/2                 implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
 5.3/SR/3                 implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
-5.3/SR/4                 n/a          - - binary strings (T021)
-5.3/SR/5                 n/a          - - binary strings (T021)
-5.3/SR/6                 n/a          - - binary strings (T021)
+5.3/SR/4                 n/a          - - spaces in binary literals (T024)
+5.3/SR/5                 n/a          - - compound binary literals (T023)
+5.3/SR/6                 implemented  vsql/lexer.v tests/std_2_6_1_binary.sql
 5.3/SR/7                 implemented  vsql/lexer.v tests/std_2_5_3_literal.sql
 5.3/SR/8                 n/a          - - national character (F421)
 5.3/SR/9                 n/a          - - national character (F421)
@@ -76,7 +76,7 @@
 5.3/SR/18.a              n/a          - - named character sets (F461)
 5.3/SR/18.b              implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the character set is always UTF8
 5.3/SR/19                implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql
-5.3/SR/20                n/a          - - binary strings (T021)
+5.3/SR/20                impl-defined vsql/lexer.v tests/std_2_6_1_binary.sql a binary string literal is a BINARY VARYING
 5.3/SR/21                implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
 5.3/SR/22                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql the smallest of SMALLINT, INTEGER and BIGINT that holds an integer, otherwise NUMERIC (with at most 1000 digits)
 5.3/SR/23                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_approximate_literal_exact.sql DOUBLE PRECISION
@@ -117,9 +117,9 @@
 5.3/CR/5                 n/a          - - intervals (F052)
 5.3/CR/6                 implemented  vsql/lexer.v tests/std_1_8_5_flagging.sql
 5.3/CR/7                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-5.3/CR/8                 n/a          - - binary strings (T021)
-5.3/CR/9                 n/a          - - binary strings (T021)
-5.3/CR/10                n/a          - - binary strings (T021)
+5.3/CR/8                 implemented  vsql/std_2_5_3_literal.v tests/std_1_8_5_flagging.sql
+5.3/CR/9                 n/a          - - compound binary literals (T023)
+5.3/CR/10                n/a          - - spaces in binary literals (T024)
 5.3/CR/11                implemented  vsql/lexer.v tests/std_1_8_5_flagging.sql
 # 5.4, Names and identifiers
 5.4                      implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql

@@ -10,11 +10,18 @@ unsigned_literal:
 
 general_literal:
   character_string_literal { $$.v = $1.v }
+| binary_string_literal {
+    flag(mut yylex, 'T021')
+    $$.v = $1.v
+  }
 | datetime_literal { $$.v = $1.v }
 | boolean_literal { $$.v = $1.v }
 
 character_string_literal:
   LITERAL_STRING { $$.v = $1.v }
+
+binary_string_literal:
+  LITERAL_BINARY_STRING { $$.v = $1.v }
 
 signed_numeric_literal:
   unsigned_numeric_literal { $$.v = $1.v }

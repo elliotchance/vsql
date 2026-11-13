@@ -160,6 +160,32 @@ since whether it's evaluated depends on the other values.
   CASE 3 WHEN 1 THEN 'one' END                                 -- NULL
   CASE WHEN 5 > 10 THEN 'big' ELSE 'small' END                 -- 'small'
 
+CAST
+----
+
+.. code-block:: text
+
+  CAST(X AS type)
+
+  X::type
+
+``CAST`` converts ``X`` to another type, see :doc:`values` for which
+conversions are allowed. ``CAST(NULL AS type)`` is a ``NULL`` of that type.
+
+``X::type`` is the PostgreSQL shorthand for ``CAST(X AS type)``. It's a vsql
+extension and not standard SQL, flagged with the Feature ID ``V303-01`` (see
+:doc:`sql-flagging`). Like PostgreSQL, it only applies to the value just before
+it (such as a name, a literal, a function call or anything in parentheses), so
+``-1::INT`` is ``-CAST(1 AS INT)``, and ``(1 + 2)::BIGINT`` casts the sum.
+
+*Examples*
+
+.. code-block:: sql
+
+  CAST('12' AS INT)          -- 12
+  '12'::INT                  -- 12
+  '7.9'::NUMERIC(3, 1)::INT  -- 7
+
 EXISTS
 ------
 

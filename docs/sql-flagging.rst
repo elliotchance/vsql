@@ -293,6 +293,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V302-01``
      - ``ILIKE`` and ``NOT ILIKE`` (a case-insensitive ``LIKE``).
 
+   * - ``V303``
+     - ``CAST`` (see :doc:`expressions`).
+
+   * - ``V303-01``
+     - ``x::type`` instead of ``CAST(x AS type)``.
+
    * - ``V402``
      - Date and time functions (see :doc:`dates-times`).
 

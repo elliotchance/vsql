@@ -121,6 +121,9 @@ import arrays
 // V302: ILIKE.
 // V302-01: ILIKE and NOT ILIKE (a case-insensitive LIKE).
 //
+// V303: CAST.
+// V303-01: x::type instead of CAST(x AS type).
+//
 // V402: Date and time functions.
 // V402-01: NOW() instead of CURRENT_TIMESTAMP.
 //
@@ -189,6 +192,7 @@ const vsql_offset_without_rows = 'V203-02'
 const vsql_limit_offset_count = 'V203-03'
 const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
+const vsql_double_colon_cast = 'V303-01'
 const vsql_now = 'V402-01'
 const vsql_mod_not_integer = 'V403-01'
 const vsql_trim_only_from = 'V404-01'

@@ -190,7 +190,9 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 	// connection). An INTEGER_VALUE uses the codes of 7.1, which are different
 	// for two of them: DEFAULT TRANSACTION ISOLATION is a bit of Table 35 (1 to
 	// 4 are 1, 2, 4 and 8), and NULL COLLATION is one more (SQL_NC_HIGH is 1
-	// and SQL_NC_LOW is 2, see Annex A).
+	// and SQL_NC_LOW is 2, see Annex A). DEFAULT TRANSACTION ISOLATION is the
+	// level that SET SESSION CHARACTERISTICS chose, rather than the view's, see
+	// default_isolation_level.
 	for item in vsql.sql_implementation_info(dbc.server_name) {
 		if item.id == code {
 			if s := item.character_value {
@@ -198,7 +200,7 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 			}
 			v := item.integer_value or { 0 }
 			return match code {
-				sql_default_transaction_isolation { InfoValue(int(1 << (v - 1))) }
+				sql_default_transaction_isolation { InfoValue(default_isolation_level(dbc)) }
 				sql_null_collation { InfoValue(i16(v + 1)) }
 				else { InfoValue(i16(v)) }
 			}
@@ -240,5 +242,17 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 		else {
 			none
 		}
+	}
+}
+
+// default_isolation_level is the isolation level of a transaction that doesn't
+// set its own, which SET SESSION CHARACTERISTICS can change.
+fn default_isolation_level(dbc Dbc) int {
+	conn := dbc.conn or { return sql_transaction_serializable }
+	return match conn.enduring_isolation_level() {
+		'READ UNCOMMITTED' { sql_transaction_read_uncommitted }
+		'READ COMMITTED' { sql_transaction_read_committed }
+		'REPEATABLE READ' { sql_transaction_repeatable_read }
+		else { sql_transaction_serializable }
 	}
 }

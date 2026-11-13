@@ -27,6 +27,7 @@ SQL Reference
    set-connection.rst
    set-constraints.rst
    set-schema.rst
+   set-session-characteristics.rst
    set-transaction.rst
    start-transaction.rst
    update.rst

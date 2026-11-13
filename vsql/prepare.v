@@ -31,6 +31,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SetConnectionStatement
 	| SetConstraintsModeStatement
 	| SetSchemaStatement
+	| SetSessionCharacteristicsStatement
 	| SetTransactionStatement
 	| StartTransactionStatement
 	| TableDefinition
@@ -186,6 +187,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		SetConnectionStatement { 'SET CONNECTION', 67 }
 		SetConstraintsModeStatement { 'SET CONSTRAINT', 68 }
 		SetSchemaStatement { 'SET SCHEMA', 74 }
+		SetSessionCharacteristicsStatement { 'SET SESSION CHARACTERISTICS', 109 }
 		SetTransactionStatement { 'SET TRANSACTION', 75 }
 		StartTransactionStatement { 'START TRANSACTION', 111 }
 		TableDefinition { 'CREATE TABLE', 77 }
@@ -587,6 +589,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		SetSessionCharacteristicsStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetTransactionStatement {
 			if p.explain {

@@ -25,7 +25,8 @@ Syntax
 ``SET TRANSACTION`` sets the characteristics of the next transaction, which is
 the next :doc:`start-transaction` (without its own characteristics, that's the
 default), or the next statement that isn't in a transaction. After that
-transaction, the default is used again. If ``SET TRANSACTION`` is used more than
+transaction, the default is used again, which can be changed with
+:doc:`set-session-characteristics`. If ``SET TRANSACTION`` is used more than
 once, the last one wins. Each kind of mode can only be used once (``42601``).
 
 ``SET TRANSACTION`` can't be used in a transaction (``25001``), and doesn't

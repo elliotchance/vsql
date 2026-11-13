@@ -3,13 +3,13 @@
 # 19, Session management
 19                       container    - -
 # 19.1, <set session characteristics statement>
-19.1                     n/a          - - session characteristics (F761)
-19.1/SR/1                n/a          - - session characteristics (F761)
-19.1/GR/1                n/a          - - session characteristics (F761)
-19.1/GR/2                n/a          - - session characteristics (F761)
-19.1/GR/3                n/a          - - session characteristics (F761)
-19.1/GR/4                n/a          - - session characteristics (F761)
-19.1/CR/1                n/a          - - session characteristics (F761)
+19.1                     implemented  vsql/std_2_19_1_set_session_characteristics_statement.v tests/std_2_19_1_session_characteristics.sql
+19.1/SR/1                implemented  vsql/std_2_19_1_set_session_characteristics_statement.v tests/std_2_19_1_session_characteristics.sql across every <session characteristic> in the list
+19.1/GR/1                implemented  vsql/std_2_19_1_set_session_characteristics_statement.v tests/std_2_19_1_session_characteristics.sql
+19.1/GR/2                implemented  vsql/std_2_19_1_set_session_characteristics_statement.v tests/std_2_19_1_session_characteristics.sql
+19.1/GR/3                implemented  vsql/std_2_19_1_set_session_characteristics_statement.v tests/std_2_19_1_session_characteristics.sql
+19.1/GR/4                implemented  vsql/std_2_19_1_set_session_characteristics_statement.v tests/std_2_19_1_session_characteristics.sql
+19.1/CR/1                implemented  vsql/std_2_19_1_set_session_characteristics_statement.y tests/std_2_19_1_session_characteristics.sql
 # 19.2, <set session user identifier statement>
 19.2                     n/a          - - authorization identifiers (F321)
 19.2/SR/1                n/a          - - authorization identifiers (F321)

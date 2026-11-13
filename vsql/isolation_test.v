@@ -33,6 +33,14 @@ fn test_default_isolation_level() ! {
 	assert db.transaction_isolation_level() == 'READ COMMITTED'
 	db.query('SET TRANSACTION DIAGNOSTICS SIZE 1')!
 	assert db.next_transaction_characteristics() == 'ISOLATION LEVEL READ COMMITTED, DIAGNOSTICS SIZE 1'
+	assert db.enduring_isolation_level() == 'READ COMMITTED'
+}
+
+fn test_enduring_isolation_level() ! {
+	mut db := open(':memory:')!
+	assert db.enduring_isolation_level() == 'SERIALIZABLE'
+	db.query('SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert db.enduring_isolation_level() == 'READ COMMITTED'
 }
 
 fn test_next_transaction_characteristics() ! {

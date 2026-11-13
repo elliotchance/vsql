@@ -178,7 +178,8 @@ fn (p PreparedStmt) is_chain() bool {
 fn (p PreparedStmt) is_transaction_initiating() bool {
 	return p.stmt !is StartTransactionStatement && p.stmt !is SetCatalogStatement
 		&& p.stmt !is SetSchemaStatement && p.stmt !is SetConstraintsModeStatement
-		&& p.stmt !is SetTransactionStatement && p.stmt !is ConnectStatement
+		&& p.stmt !is SetTransactionStatement && p.stmt !is SetSessionCharacteristicsStatement
+		&& p.stmt !is ConnectStatement
 		&& p.stmt !is SetConnectionStatement && p.stmt !is DisconnectStatement
 }
 

@@ -4,11 +4,6 @@
 //
 // Create new rows in a table.
 
-// A <from default> isn't supported, it needs Feature F222, "INSERT statement:
-// DEFAULT VALUES clause".
-//
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 2
-
 insert_statement:
   INSERT INTO insertion_target insert_columns_and_source {
     $$.v = yy_box(Stmt(InsertStatement{
@@ -23,6 +18,7 @@ insertion_target:
 insert_columns_and_source:
   from_subquery { $$.v = $1.v }
 | from_constructor { $$.v = $1.v }
+| from_default { $$.v = $1.v }
 
 from_subquery:
   insert_query {
@@ -147,6 +143,16 @@ from_constructor:
       columns:    $2.v as []Identifier
       overriding: $4.v as string
       values:     $5.v as []ContextuallyTypedRowValueConstructor
+    })
+  }
+
+// A <from default> inserts one row where every column gets its default.
+from_default:
+  DEFAULT VALUES {
+    // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 2
+    flag(mut yylex, 'F222')
+    $$.v = yy_box(InsertStatement{
+      from_default: true
     })
   }
 

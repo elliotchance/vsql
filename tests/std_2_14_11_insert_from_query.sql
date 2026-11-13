@@ -562,7 +562,7 @@ EXPLAIN INSERT INTO t SELECT * FROM t;
 -- error 42601: syntax error: Cannot EXPLAIN INSERT
 
 INSERT INTO t;
--- error 42601: syntax error: unexpected $end at line 1, column 14 near "INSERT INTO t", expecting OVERRIDING or SELECT or VALUES or "("
+-- error 42601: syntax error: unexpected $end at line 1, column 14 near "INSERT INTO t"
 
 INSERT INTO t (x);
 -- error 42601: syntax error: unexpected $end at line 1, column 18 near "t (x)", expecting OVERRIDING or SELECT or VALUES or "("

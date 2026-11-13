@@ -23,7 +23,7 @@ Syntax
                  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference>
                    { ON <condition> | USING ( <column_name> , ... ) } ] ...
 
-  <table_reference> := { <table_name> | ( <query> ) }
+  <table_reference> := { <table_name> | ( <query> ) | <data_change_delta_table> }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
 
   TABLE <table_name>
@@ -164,6 +164,51 @@ correlation names to join a table to itself:
   SELECT child.name, parent.name
   FROM categories AS child
   JOIN categories AS parent ON child.parent_id = parent.id;
+
+FINAL TABLE, NEW TABLE and OLD TABLE
+------------------------------------
+
+A *data change delta table* runs an ``INSERT``, ``UPDATE`` or ``DELETE`` (see
+:doc:`insert`, :doc:`update` and :doc:`delete`) and returns the rows that it
+changed, so that a statement can change rows and return them at the same time:
+
+.. code-block:: text
+
+  <data_change_delta_table> :=
+    { FINAL | NEW | OLD } TABLE ( { <insert> | <update> | <delete> } )
+
+.. code-block:: sql
+
+  CREATE TABLE products (
+    id INT GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(50),
+    price INT DEFAULT 0
+  );
+
+  SELECT id, price FROM FINAL TABLE (INSERT INTO products (name) VALUES ('Bread'));
+  -- ID: 1 PRICE: 0
+
+  SELECT p.name FROM OLD TABLE (DELETE FROM products WHERE price = 0) AS p;
+  -- NAME: Bread
+
+The columns are the columns of the table that's changed. ``OLD TABLE`` is each
+row as it was before an ``UPDATE`` or ``DELETE``, and ``NEW TABLE`` is each row
+as it is after an ``INSERT`` or ``UPDATE``. A row that an ``UPDATE`` identifies
+is included even if none of its values change. So ``OLD TABLE`` can't be used
+with an ``INSERT``, and ``NEW TABLE`` can't be used with a ``DELETE``.
+
+``FINAL TABLE`` is the same as ``NEW TABLE``, except that nothing else can
+change the table while the statement runs. The only thing that could is a
+referential action of a ``FOREIGN KEY`` that references the same table (such
+as ``ON UPDATE CASCADE``, see :doc:`create-table`), which is then an error
+(``27001``).
+
+It must be the only item in the ``FROM`` of a query that's a whole statement,
+or the query of a cursor (see :doc:`cursors`). It can't be joined to another
+table, and it can't be in a subquery, a ``UNION`` (or ``EXCEPT`` or
+``INTERSECT``) or the query of an ``INSERT``. The query is a statement that
+changes the database, so it can't be used in a ``READ ONLY`` transaction, and a
+cursor runs the statement each time it's opened. ``MERGE`` isn't supported.
 
 WHERE
 -----

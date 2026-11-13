@@ -35,6 +35,14 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 		conn.release_write_connection()
 	}
 
+	change := stmt.change(mut conn, params)!
+
+	return new_result_msg('DELETE ${change.old.len}', elapsed_parse, t.elapsed())
+}
+
+// change deletes the rows, and returns them as old rows. The write connection
+// must already be open.
+fn (stmt DeleteStatementSearched) change(mut conn Connection, params map[string]Value) !DataChange {
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	mut plan := create_plan(stmt, params, mut conn)!
@@ -70,5 +78,7 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 		conn.add_warning(sqlstate_02000())
 	}
 
-	return new_result_msg('DELETE ${rows.len}', elapsed_parse, t.elapsed())
+	return DataChange{
+		old: deleted
+	}
 }

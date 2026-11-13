@@ -257,6 +257,8 @@ fn (p PreparedStmt) changes_database_name() string {
 		DropTableStatement { 'DROP TABLE' }
 		InsertStatement { 'INSERT' }
 		MergeStatement { 'MERGE' }
+		OpenStatement { p.c.cursor_data_change_name(p.stmt.name) }
+		QueryExpression { p.stmt.data_change_name() }
 		SchemaDefinition { 'CREATE SCHEMA' }
 		SequenceGeneratorDefinition { 'CREATE SEQUENCE' }
 		TableDefinition { 'CREATE TABLE' }

@@ -57,7 +57,7 @@
 7.5                      implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
 7.5/SR/1                 definition   - -
 7.5/SR/2                 implemented  vsql/planner.v tests/std_2_7_5_from_comma.sql
-7.5/SR/3                 n/a          - - data change delta tables (T495)
+7.5/SR/3                 implemented  vsql/planner.v tests/std_2_7_6_data_change_delta_table.sql
 7.5/SR/4                 container    - -
 7.5/SR/4.a               implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
 7.5/SR/4.a.i             implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
@@ -175,19 +175,19 @@
 7.6/SR/8.d.ii            n/a          - - system-versioned tables (T180)
 7.6/SR/8.d.iii           n/a          - - system-versioned tables (T180)
 7.6/SR/9                 n/a          - - LATERAL (T491)
-7.6/SR/10                n/a          - - data change delta tables (T495)
+7.6/SR/10                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
 7.6/SR/10.a              container    - -
-7.6/SR/10.a.i            n/a          - - data change delta tables (T495)
-7.6/SR/10.a.ii           n/a          - - data change delta tables (T495)
-7.6/SR/10.a.iii          n/a          - - data change delta tables (T495)
-7.6/SR/10.a.iv           n/a          - - data change delta tables (T495)
-7.6/SR/10.b              n/a          - - data change delta tables (T495)
-7.6/SR/10.b.i            n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii           n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii.1         n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii.2         n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii.3         n/a          - - data change delta tables (T495)
-7.6/SR/10.c              n/a          - - data change delta tables (T495)
+7.6/SR/10.a.i            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/SR/10.a.ii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/SR/10.a.iii          n/a          - - MERGE (F312)
+7.6/SR/10.a.iv           n/a          - - MERGE (F312)
+7.6/SR/10.b              n/a          - - views (F031-02, #731)
+7.6/SR/10.b.i            n/a          - - views (F031-02, #731)
+7.6/SR/10.b.ii           n/a          - - views (F031-02, #731)
+7.6/SR/10.b.ii.1         n/a          - - views (F031-02, #731)
+7.6/SR/10.b.ii.2         n/a          - - views (F031-02, #731)
+7.6/SR/10.b.ii.3         n/a          - - views (F031-02, #731)
+7.6/SR/10.c              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
 7.6/SR/11                implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/11.a              n/a          - - polymorphic table functions (B200)
 7.6/SR/11.a.i            n/a          - - polymorphic table functions (B200)
@@ -266,7 +266,7 @@
 7.6/SR/19.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
 7.6/SR/19.b              n/a          - - MERGE (F312)
 7.6/SR/20                container    - -
-7.6/SR/20.a              n/a          - - table functions (T326), collection derived tables (S301), JSON (T811), data change delta tables (T495) and row pattern recognition (R010)
+7.6/SR/20.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_7_6_data_change_delta_table.sql table functions (T326), collection derived tables (S301), JSON (T811) and row pattern recognition (R010) are n/a
 7.6/SR/20.b              container    - -
 7.6/SR/20.b.i            n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
 7.6/SR/20.b.ii           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
@@ -279,7 +279,7 @@
 7.6/SR/22                n/a          - - views (F031-02, #731)
 7.6/SR/23                n/a          - - WITH (T121)
 7.6/SR/24                definition   - -
-7.6/SR/25                n/a          - - data change delta tables (T495)
+7.6/SR/25                definition   - -
 7.6/SR/26                definition   - -
 7.6/SR/27                definition   - -
 7.6/AR/1                 n/a          - - privileges (E081, #732)
@@ -293,9 +293,9 @@
 7.6/AR/1.b.ii.2          n/a          - - privileges (E081, #732)
 7.6/AR/1.b.ii.2.A        n/a          - - privileges (E081, #732)
 7.6/AR/1.b.ii.2.B        n/a          - - privileges (E081, #732)
-7.6/AR/2                 n/a          - - data change delta tables (T495)
-7.6/AR/2.a               n/a          - - data change delta tables (T495)
-7.6/AR/2.b               n/a          - - data change delta tables (T495)
+7.6/AR/2                 n/a          - - privileges (E081, #732)
+7.6/AR/2.a               n/a          - - privileges (E081, #732)
+7.6/AR/2.b               n/a          - - privileges (E081, #732)
 7.6/GR/1                 n/a          - - row pattern recognition (R010)
 7.6/GR/1.a               n/a          - - row pattern recognition (R010)
 7.6/GR/1.b               n/a          - - row pattern recognition (R010)
@@ -324,22 +324,22 @@
 7.6/GR/4.a               n/a          - - polymorphic table functions (B200)
 7.6/GR/4.b               n/a          - - polymorphic table functions (B200)
 7.6/GR/4.c               n/a          - - polymorphic table functions (B200)
-7.6/GR/5                 n/a          - - data change delta tables (T495)
-7.6/GR/5.a               n/a          - - data change delta tables (T495)
-7.6/GR/5.a.i             n/a          - - data change delta tables (T495)
-7.6/GR/5.a.ii            n/a          - - data change delta tables (T495)
+7.6/GR/5                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.a               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.a.i             implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.a.ii            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
 7.6/GR/5.b               container    - -
-7.6/GR/5.b.i             n/a          - - data change delta tables (T495)
-7.6/GR/5.b.ii            n/a          - - data change delta tables (T495)
-7.6/GR/5.b.iii           n/a          - - data change delta tables (T495)
-7.6/GR/5.b.iii.1         n/a          - - data change delta tables (T495)
-7.6/GR/5.b.iii.2         n/a          - - data change delta tables (T495)
-7.6/GR/5.b.iv            n/a          - - data change delta tables (T495)
-7.6/GR/5.b.iv.1          n/a          - - data change delta tables (T495)
-7.6/GR/5.b.iv.2          n/a          - - data change delta tables (T495)
-7.6/GR/5.c               n/a          - - data change delta tables (T495)
-7.6/GR/5.c.i             n/a          - - data change delta tables (T495)
-7.6/GR/5.c.ii            n/a          - - data change delta tables (T495)
+7.6/GR/5.b.i             implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.b.ii            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.b.iii           n/a          - - MERGE (F312)
+7.6/GR/5.b.iii.1         n/a          - - MERGE (F312)
+7.6/GR/5.b.iii.2         n/a          - - MERGE (F312)
+7.6/GR/5.b.iv            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.b.iv.1          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.b.iv.2          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.c               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.c.i             implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
+7.6/GR/5.c.ii            implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_data_change_delta_table.sql
 7.6/GR/6                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
 7.6/GR/7                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/7.a               n/a          - - sampling (T613)
@@ -362,7 +362,7 @@
 7.6/CR/8                 n/a          - - sampling (T613)
 7.6/CR/9                 n/a          - - triggers (T211)
 7.6/CR/10                n/a          - - UNNEST (S301)
-7.6/CR/11                n/a          - - data change delta tables (T495)
+7.6/CR/11                implemented  vsql/std_2_7_6_table_reference.y tests/std_2_7_6_data_change_delta_table.sql
 7.6/CR/12                n/a          - - system-versioned tables (T180)
 7.6/CR/13                n/a          - - polymorphic table functions (B200)
 # 7.7, <row pattern recognition clause>
@@ -502,7 +502,7 @@
 # 7.10, <joined table>
 7.10                     partial      vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql no CROSS, NATURAL or FULL (F401)
 7.10/SR/1                definition   - -
-7.10/SR/2                n/a          - - data change delta tables (T495)
+7.10/SR/2                implemented  vsql/planner.v tests/std_2_7_6_data_change_delta_table.sql
 7.10/SR/3                definition   - -
 7.10/SR/4                n/a          - - LATERAL (T491)
 7.10/SR/5                implemented  vsql/std_2_7_6_table_reference.y tests/std_2_7_10_inner_join.sql
@@ -1230,7 +1230,7 @@
 7.16/SR/24.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/24.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/24.d             n/a          - - system-versioned tables (T180)
-7.16/SR/24.e             n/a          - - data change delta tables (T495)
+7.16/SR/24.e             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_7_6_data_change_delta_table.sql
 7.16/SR/25               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/25.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/25.b             n/a          - - updatable joins (T111)
@@ -1266,7 +1266,7 @@
 # 7.17, <query expression>
 7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH (T121), CORRESPONDING (F301) or FETCH NEXT (#331)
 7.17/SR/1                definition   - -
-7.17/SR/2                n/a          - - data change delta tables (T495)
+7.17/SR/2                implemented  vsql/planner.v tests/std_2_7_6_data_change_delta_table.sql
 7.17/SR/3                n/a          - - WITH (T121)
 7.17/SR/3.a              n/a          - - WITH (T121)
 7.17/SR/3.b              n/a          - - WITH (T121)
@@ -1584,7 +1584,7 @@
 7.18/SR/2.c              n/a          - - recursive queries (T131)
 # 7.19, <subquery>
 7.19                     implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
-7.19/SR/1                n/a          - - data change delta tables (T495)
+7.19/SR/1                implemented  vsql/planner.v tests/std_2_7_6_data_change_delta_table.sql
 7.19/SR/2                implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
 7.19/SR/3                n/a          - - row subqueries (F641)
 7.19/SR/4                definition   - -

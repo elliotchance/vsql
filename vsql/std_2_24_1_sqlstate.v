@@ -1047,6 +1047,19 @@ fn sqlstate_27000(msg string) IError {
 	}
 }
 
+// modify table modified by data change delta table: a referential action
+// changes the table of a FINAL TABLE.
+struct SQLState27001 {
+	SQLState
+}
+
+fn sqlstate_27001(table Identifier) IError {
+	return SQLState27001{
+		code: sqlstate_to_int('27001')
+		msg:  'triggered data change violation: modify table modified by data change delta table: ${table}'
+	}
+}
+
 // invalid transaction termination
 struct SQLState2D000 {
 	SQLState

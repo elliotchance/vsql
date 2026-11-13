@@ -24,7 +24,7 @@ fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 			return create_delete_plan(stmt, params, mut conn)
 		}
 		QueryExpression {
-			return create_query_expression_plan(stmt, params, mut conn, Correlation{})
+			return create_statement_query_plan(stmt, params, mut conn)
 		}
 		UpdateStatementSearched {
 			return create_update_plan(stmt, params, mut conn)
@@ -33,6 +33,16 @@ fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 			return sqlstate_xx000('cannot create plan for ${stmt}')
 		}
 	}
+}
+
+// create_statement_query_plan plans a query that's a whole statement (a <direct
+// select statement: multiple rows>), or the query of a cursor. Only it can
+// contain a data change delta table, not a query inside it or the query of an
+// INSERT, which are planned with create_query_expression_plan.
+fn create_statement_query_plan(stmt QueryExpression, params map[string]Value, mut conn Connection) !Plan {
+	conn.query_is_statement = true
+
+	return create_query_expression_plan(stmt, params, mut conn, Correlation{})
 }
 
 fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]&Table) {
@@ -281,7 +291,7 @@ fn join_lookup(inner_reference TableReference, inner_names []string, outer_names
 	}
 	name := match inner.body {
 		Identifier { inner.body }
-		QueryExpression { return none }
+		DataChangeDeltaTable, QueryExpression { return none }
 	}
 
 	inner_name := conn.resolve_table_identifier(name, allow_virtual) or { return none }
@@ -507,6 +517,44 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					}
 				}, [])!
 			}
+		}
+		DataChangeDeltaTable {
+			// A data change delta table must be the only table in the FROM of a
+			// query that's a whole statement or the query of a cursor (see
+			// create_statement_query_plan). It can't be in a join, a subquery
+			// (or derived table), a set operation or the query of an INSERT.
+			//
+			// ISO/IEC 9075-2:2016(E), 4.39.2.3, SQL-data change statements
+			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 1.b and 2.b
+			// ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 3
+			// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 2
+			// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 2
+			// ISO/IEC 9075-2:2016(E), 7.19, <subquery>, Syntax Rules, 1
+			if !filter || !conn.delta_table_allowed {
+				return sqlstate_42601('${from_clause.body.result_option} TABLE can only be the only table in the FROM of a query that is a statement or cursor')
+			}
+
+			// Without a correlation name, a column can only be referenced by
+			// its name.
+			mut table_name := Identifier{
+				custom_id: '\$1'
+			}
+			if from_clause.correlation.name.sub_entity_name != '' {
+				table_name = from_clause.correlation.name
+			}
+
+			subplan := Plan{
+				operations: [
+					PlanOperation(new_data_change_operation(from_clause.body, params, mut conn)!),
+				]
+			}
+			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,
+				params, mut conn)!
+			add_where_plan(mut &plan, body, params, conn, {
+				table.name.id(): &Table{
+					...table
+				}
+			}, [])!
 		}
 	}
 
@@ -755,6 +803,15 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
+	// A query inside this one (such as a subquery, a derived table or either
+	// side of a UNION) can't contain a data change delta table.
+	delta_table_allowed := conn.delta_table_allowed
+	conn.delta_table_allowed = conn.query_is_statement
+	conn.query_is_statement = false
+	defer {
+		conn.delta_table_allowed = delta_table_allowed
+	}
+
 	mut plan, mut tables := create_basic_plan(stmt.body, params, mut conn, true,
 		correlation)!
 

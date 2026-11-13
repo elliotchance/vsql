@@ -118,6 +118,16 @@ mut:
 	// in_derived_table is set while a derived table is being planned, but not a
 	// subquery in one, see values_aggregation_query.
 	in_derived_table bool
+	// query_is_statement is set just before the query that's a whole statement
+	// is planned, and delta_table_allowed is set while that query (but not a
+	// query inside it) is being planned. Only it can contain a data change
+	// delta table, see create_statement_query_plan.
+	query_is_statement  bool
+	delta_table_allowed bool
+	// restricted_tables has the storage id of the table of each FINAL TABLE that
+	// is being run. Nothing else in the statement can change it, see
+	// apply_referential_actions.
+	restricted_tables []string
 	// direct_query_transaction is true when an SQL-transaction was started by
 	// a query in direct (see Connection.direct) that hasn't changed anything.
 	direct_query_transaction bool
@@ -676,6 +686,7 @@ fn (mut conn Connection) parse_cached(sql_stmt string) !ParsedStmt {
 		stmt:               stmt
 		explain:            explain
 		writes:             has_next_value(tokens)
+			|| data_change_name(stmt) != ''
 		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
 		features:           features
 	}

@@ -79,9 +79,11 @@ import arrays
 //
 // V112: DELETE.
 // V112-01: DELETE WHERE CURRENT OF outside of an SQL-client module.
+// V112-02: DELETE with RETURNING.
 //
 // V113: UPDATE.
 // V113-01: UPDATE WHERE CURRENT OF outside of an SQL-client module.
+// V113-02: UPDATE with RETURNING.
 //
 // V114: START TRANSACTION.
 // V114-01: BEGIN instead of START TRANSACTION.
@@ -99,6 +101,9 @@ import arrays
 //
 // V118: EXECUTE IMMEDIATE.
 // V118-01: EXECUTE IMMEDIATE of a literal, rather than a host parameter.
+//
+// V119: INSERT.
+// V119-01: INSERT with RETURNING.
 //
 // V201: FROM.
 // V201-01: SELECT without a FROM clause.
@@ -152,7 +157,9 @@ const vsql_open_cursor = 'V109-01'
 const vsql_fetch_without_into = 'V110-01'
 const vsql_close_cursor = 'V111-01'
 const vsql_delete_positioned = 'V112-01'
+const vsql_delete_returning = 'V112-02'
 const vsql_update_positioned = 'V113-01'
+const vsql_update_returning = 'V113-02'
 const vsql_begin = 'V114-01'
 const vsql_commit_transaction = 'V115-01'
 const vsql_end = 'V115-02'
@@ -160,6 +167,7 @@ const vsql_rollback_transaction = 'V116-01'
 const vsql_abort = 'V116-02'
 const vsql_prepare_literal = 'V117-01'
 const vsql_execute_immediate_literal = 'V118-01'
+const vsql_insert_returning = 'V119-01'
 const vsql_select_without_from = 'V201-01'
 const vsql_derived_table_without_name = 'V201-02'
 const vsql_sort_key_without_column = 'V202-01'

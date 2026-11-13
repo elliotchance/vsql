@@ -10,6 +10,7 @@ Syntax
 
   DELETE FROM <table_name> [ [ AS ] <correlation_name> ]
   [ WHERE <condition> ]
+  [ RETURNING { * | <expression> [ AS <name> ] } , ... ]
 
 Deletes the rows of a table that match the ``WHERE`` condition. If ``WHERE`` is
 not provided, all rows will be deleted.
@@ -21,6 +22,12 @@ when a subquery reads the same table.
 The result (such as ``DELETE 3``) contains the number of rows deleted. If no
 rows are deleted, the result is ``DELETE 0`` with the completion condition
 ``02000`` (no data), see :doc:`sqlstate`.
+
+With ``RETURNING``, the result is each deleted row (as it was) instead, like
+``SELECT ... FROM OLD TABLE (DELETE ...)`` (see :doc:`select`). A column can be
+qualified with the correlation name, or the name of the table if there isn't
+one. It isn't standard SQL, so it's flagged as ``V112-02`` (see :doc:`insert`
+and :doc:`sql-flagging`).
 
 Examples
 --------

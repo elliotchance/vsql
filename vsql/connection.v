@@ -389,7 +389,9 @@ fn (mut conn CatalogConnection) replay_log() ! {
 
 // lock_file opens the database file (unless it's already open, see
 // Storage.file) and locks it. Another process may have replaced the file while
-// it wasn't locked, in which case it's opened and locked again.
+// it wasn't locked, in which case it's opened and locked again. Windows doesn't
+// let a file that's open be replaced (see FileIdentity), so it's never opened
+// again there.
 fn (mut conn CatalogConnection) lock_file(exclusive bool) ! {
 	for {
 		conn.storage.open_file(conn.path)!
@@ -399,12 +401,15 @@ fn (mut conn CatalogConnection) lock_file(exclusive bool) ! {
 			flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)!
 		}
 
-		if !conn.storage.file_replaced(conn.path) {
-			break
+		$if !windows {
+			if conn.storage.file_replaced(conn.path) {
+				conn.unlock_file(exclusive)
+				conn.storage.close_files()
+				continue
+			}
 		}
 
-		conn.unlock_file(exclusive)
-		conn.storage.close_files()
+		break
 	}
 
 	conn.storage.log.sync()

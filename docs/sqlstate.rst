@@ -220,7 +220,8 @@ isn't supported yet.
 
 ``0A001`` is returned by :doc:`connect` or :doc:`set-connection` when the
 current connection has an active transaction, since a transaction can't be
-across more than one database.
+across more than one database. It's also always returned by
+``SET LOCAL TRANSACTION`` (see :doc:`set-transaction`).
 
 Class ``0B``: Invalid Transaction Initiation
 --------------------------------------------

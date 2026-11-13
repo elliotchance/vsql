@@ -54,8 +54,7 @@ COMMIT;
 -- # size must be exact numeric with scale 0, so even 1.0 is 42804 (17.3, Syntax
 -- # Rules, 6), and it can only be given once (17.3, Syntax Rules, 2). More than
 -- # 100, the most that vsql allows, is a warning 01012 and 100 is used (General
--- # Rules, 3). SET TRANSACTION can't be explained, and LOCAL (T251) isn't
--- # supported.
+-- # Rules, 3). SET TRANSACTION can't be explained.
 SET TRANSACTION DIAGNOSTICS SIZE 0;
 SET TRANSACTION DIAGNOSTICS SIZE -1;
 START TRANSACTION DIAGNOSTICS SIZE 0;
@@ -65,7 +64,6 @@ SET TRANSACTION DIAGNOSTICS SIZE 1, DIAGNOSTICS SIZE 2;
 SET TRANSACTION DIAGNOSTICS SIZE 101;
 SET TRANSACTION DIAGNOSTICS SIZE 1.0;
 EXPLAIN SET TRANSACTION;
-SET LOCAL TRANSACTION DIAGNOSTICS SIZE 1;
 -- error 35000: invalid condition number
 -- error 35000: invalid condition number
 -- error 35000: invalid condition number
@@ -76,7 +74,6 @@ SET LOCAL TRANSACTION DIAGNOSTICS SIZE 1;
 -- msg: SET TRANSACTION
 -- error 42804: data type mismatch for DIAGNOSTICS SIZE: expected exact numeric with scale 0 but got NUMERIC(2, 1)
 -- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
--- error 42601: syntax error: unexpected LOCAL at line 1, column 5 near "SET LOCAL TRANSACTION"
 
 -- # SET TRANSACTION isn't allowed in an active transaction (General Rules,
 -- # 1.a.i).

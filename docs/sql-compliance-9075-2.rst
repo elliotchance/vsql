@@ -1358,7 +1358,7 @@ Optional Features
    * - ✅ **T241**
      - **START TRANSACTION statement**
 
-   * - ❌ **T251**
+   * - ✅ **T251**
      - **SET TRANSACTION statement: LOCAL option**
 
    * - ❌ **T261**

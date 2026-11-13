@@ -299,8 +299,13 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 
 // The database file and the log stay open between statements, so a file that's
 // replaced or deleted (by something other than vsql) while the connection is
-// open has to be opened again.
+// open has to be opened again. Windows doesn't let a file that's open be
+// replaced or deleted (see FileIdentity), so it can't happen there.
 fn test_kept_files_are_replaced() ! {
+	$if windows {
+		return
+	}
+
 	path := os.join_path(os.temp_dir(), 'vsql-kept-${os.getpid()}.vsql')
 	other_path := os.join_path(os.temp_dir(), 'vsql-kept-other-${os.getpid()}.vsql')
 	defer {

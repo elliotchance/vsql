@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  SET TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
+  SET [ LOCAL ] TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
 
   <transaction_mode> ::=
       READ ONLY
@@ -30,7 +30,11 @@ once, the last one wins. Each kind of mode can only be used once (``42601``).
 
 ``SET TRANSACTION`` can't be used in a transaction (``25001``), and doesn't
 start one. ``SET CATALOG``, ``SET SCHEMA`` and ``EXPLAIN`` don't start a
-transaction either, so they don't use it up. ``LOCAL`` isn't supported yet.
+transaction either, so they don't use it up.
+
+``SET LOCAL TRANSACTION`` is for a transaction that's on more than one SQL-server.
+vsql doesn't have those, so it always fails with ``0A001`` and changes nothing.
+It also can't have a ``DIAGNOSTICS SIZE`` (``42601``).
 
 Access Mode
 -----------

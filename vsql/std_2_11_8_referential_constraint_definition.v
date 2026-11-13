@@ -669,6 +669,14 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 					continue
 				}
 
+				// The table of a FINAL TABLE can't be changed by a referential
+				// action.
+				//
+				// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 15
+				if table_name in conn.restricted_tables {
+					return sqlstate_27001(referencing.name)
+				}
+
 				check_constraints := new_check_constraints(mut conn, referencing)!
 				generated_columns := new_generated_columns(mut conn, referencing)!
 				mut new_changes := []RowChange{}

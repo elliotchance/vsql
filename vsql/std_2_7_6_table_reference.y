@@ -57,6 +57,17 @@ table_primary:
       correlation: $2.v as Correlation
     })
   }
+| data_change_delta_table {
+    $$.v = yy_box(TablePrimary{
+      body: $1.v as DataChangeDeltaTable
+    })
+  }
+| data_change_delta_table correlation_or_recognition {
+    $$.v = yy_box(TablePrimary{
+      body:        $1.v as DataChangeDeltaTable
+      correlation: $2.v as Correlation
+    })
+  }
 
 correlation_or_recognition:
   correlation_name {
@@ -108,6 +119,26 @@ column_name_list:
 | column_name_list comma column_name {
     $$.v = yy_box(append_list($1.v as []Identifier, $3.v as Identifier))
   }
+
+// A data change delta table is the rows that an INSERT, UPDATE or DELETE
+// changes. A MERGE isn't supported.
+
+data_change_delta_table:
+  result_option TABLE left_paren data_change_statement right_paren {
+    // ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Conformance Rules, 11
+    flag(mut yylex, 'T495')
+    $$.v = yy_box(new_data_change_delta_table($1.v as string, $4.v as Stmt))
+  }
+
+data_change_statement:
+  delete_statement_searched { $$.v = $1.v }
+| insert_statement { $$.v = $1.v }
+| update_statement_searched { $$.v = $1.v }
+
+result_option:
+  FINAL { $$.v = 'FINAL' }
+| NEW { $$.v = 'NEW' }
+| OLD { $$.v = 'OLD' }
 
 parenthesized_derived_column_list:
   left_paren derived_column_list right_paren { $$.v = $2.v }

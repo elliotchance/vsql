@@ -331,9 +331,9 @@
 6.7/AR/2.b               n/a          - - privileges (E081, #732)
 6.7/AR/2.b.i             n/a          - - privileges (E081, #732)
 6.7/AR/2.b.ii            n/a          - - privileges (E081, #732)
-6.7/AR/3                 n/a          - - data change delta tables (T495)
-6.7/AR/3.a               n/a          - - data change delta tables (T495)
-6.7/AR/3.b               n/a          - - data change delta tables (T495)
+6.7/AR/3                 n/a          - - privileges (E081, #732)
+6.7/AR/3.a               n/a          - - privileges (E081, #732)
+6.7/AR/3.b               n/a          - - privileges (E081, #732)
 6.7/GR/1                 implemented  vsql/std_2_6_7_column_reference.y tests/std_2_7_13_group_by.sql
 6.7/GR/1.a               implemented  vsql/std_2_6_7_column_reference.y tests/std_2_6_6_column_qualifier.sql
 6.7/GR/1.b               n/a          - - row pattern recognition (R010)
@@ -545,13 +545,13 @@
 6.12                     implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/1                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_nullif.sql,tests/std_2_6_12_coalesce.sql
 6.12/SR/1.a              n/a          - - SQL-invoked routines (T321, #733); a custom function registered from V isn't rejected
-6.12/SR/1.b              n/a          - - data change delta tables (T495)
+6.12/SR/1.b              implemented  vsql/planner.v tests/std_2_7_6_data_change_delta_table.sql
 6.12/SR/1.c              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_nullif.sql
 6.12/SR/1.d              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_coalesce.sql
 6.12/SR/1.e              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_coalesce.sql
 6.12/SR/2                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/2.a              n/a          - - SQL-invoked routines (T321, #733); a custom function registered from V isn't rejected
-6.12/SR/2.b              n/a          - - data change delta tables (T495)
+6.12/SR/2.b              implemented  vsql/planner.v tests/std_2_7_6_data_change_delta_table.sql
 6.12/SR/2.c              n/a          - - OVERLAPS (F053)
 6.12/SR/2.d              definition   - -
 6.12/SR/2.e              definition   - -

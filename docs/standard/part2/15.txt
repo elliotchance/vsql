@@ -504,7 +504,7 @@
 15.17/GR/12              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_17_foreign_key_update_rules.sql
 15.17/GR/13              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_17_foreign_key_delete_rules.sql
 15.17/GR/14              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_15_6_cursor_operation_conflict.sql
-15.17/GR/15              n/a          - - data change delta tables (T495)
+15.17/GR/15              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_7_6_data_change_delta_table.sql
 15.17/GR/16              n/a          - - subtables (S081)
 15.17/GR/17              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_17_foreign_key_update_rules.sql
 # 15.18, Execution of AFTER triggers

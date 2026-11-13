@@ -667,6 +667,12 @@ The changes made by referential actions would conflict with each other.
 NULL``) of a statement would change a column of a row to two different values,
 or both change and delete a row. See :doc:`create-table`.
 
+``27001`` modify table modified by data change delta table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``27001`` is returned when a referential action (such as ``ON UPDATE
+CASCADE``) would change the table of a ``FINAL TABLE``. See :doc:`select`.
+
 Class ``28``: Invalid Authorization Specification
 -------------------------------------------------
 

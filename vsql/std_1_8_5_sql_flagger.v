@@ -963,7 +963,7 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 			conn.flag_alter_table(stmt)
 		}
 		DeclareCursor {
-			create_query_expression_plan(stmt.query, params, mut conn, Correlation{}) or {}
+			create_statement_query_plan(stmt.query, params, mut conn) or {}
 		}
 		DeleteStatementSearched {
 			create_plan(stmt, params, mut conn) or {}
@@ -974,7 +974,7 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 			// the VALUES of a <from constructor>.
 			if query := stmt.query {
 				conn.flag_query_tables = true
-				create_plan(query, params, mut conn) or {}
+				create_query_expression_plan(query, params, mut conn, Correlation{}) or {}
 				conn.flag_query_tables = false
 				conn.flag_self_reference(stmt.table_name)
 			}

@@ -691,6 +691,16 @@ uses the PostgreSQL code ``2BP01`` for this.
 still objects that exist in the schema, a table or constraint that's
 referenced by a ``FOREIGN KEY``, or a column that's in an index.
 
+Class ``2C``: Invalid Character Set Name
+----------------------------------------
+
+The name of a character set isn't valid.
+
+``2C000`` invalid character set name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``2C000`` is returned by :doc:`set-names` for anything other than ``UTF8``.
+
 Class ``2E``: Invalid Connection Name
 -------------------------------------
 

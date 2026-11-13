@@ -941,7 +941,7 @@ Optional Features
    * - ❌ **F751**
      - **View CHECK enhancements**
 
-   * - ⭕ **F761**
+   * - ✅ **F761**
      - **Session management**
 
    * - ✅ **F762**

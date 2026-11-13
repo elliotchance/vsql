@@ -28,6 +28,19 @@ struct InsertStatement {
 fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	conn.open_write_connection()!
+	defer {
+		conn.release_write_connection()
+	}
+
+	change := stmt.change(mut conn, params)!
+
+	return new_result_msg('INSERT ${change.new.len}', elapsed_parse, t.elapsed())
+}
+
+// change inserts the rows, and returns them as new rows. The write connection
+// must already be open.
+fn (stmt InsertStatement) change(mut conn Connection, params map[string]Value) !DataChange {
 	// No column can be listed more than once.
 	//
 	// ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 8
@@ -39,19 +52,6 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		insert_columns[column.sub_entity_name] = true
 	}
 
-	conn.open_write_connection()!
-	defer {
-		conn.release_write_connection()
-	}
-
-	count := stmt.insert(mut conn, params)!
-
-	return new_result_msg('INSERT ${count}', elapsed_parse, t.elapsed())
-}
-
-// insert inserts the rows and returns how many there are. The caller must have
-// the write connection open.
-fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !int {
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
@@ -108,7 +108,9 @@ fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !
 		conn.add_warning(sqlstate_02000())
 	}
 
-	return rows.len
+	return DataChange{
+		new: rows
+	}
 }
 
 // row_elements returns each value of one row of the VALUES. A row with more than
@@ -166,7 +168,7 @@ fn row_value_constructors(rows []ContextuallyTypedRowValueConstructor) ![]RowVal
 //
 // ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 13.d.i, 15 and 16
 fn (stmt InsertStatement) query_rows(mut conn Connection, params map[string]Value, table Table, columns []Identifier, query QueryExpression) ![][]ContextuallyTypedRowValueConstructorElement {
-	mut plan := create_plan(query, params, mut conn)!
+	mut plan := create_query_expression_plan(query, params, mut conn, Correlation{})!
 	query_columns := plan.columns()
 	check_insert_degree(columns.len, query_columns.len)!
 

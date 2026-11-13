@@ -102,6 +102,8 @@ PROCEDURE upd (SQLSTATE, :a INT, :b INT, :c INT, :d INT, :e INT, :i SMALLINT, :j
   UPDATE t SET a = :a :i, b = DEFAULT, c = (:b :j), d = :c :k * 2 WHERE e = :d :l AND f = (SELECT MAX(x) FROM u WHERE y = :e :m);
 PROCEDURE pos (SQLSTATE, :a INT, :i SMALLINT); UPDATE t SET a = :a :i WHERE CURRENT OF c;
 PROCEDURE del (SQLSTATE, :a INT, :i SMALLINT); DELETE FROM t WHERE a = :a :i;
+PROCEDURE mrg (SQLSTATE, :a INT, :b INT, :c INT, :i SMALLINT, :j SMALLINT, :k SMALLINT);
+  MERGE INTO t USING u ON t.a = u.x WHEN MATCHED THEN UPDATE SET a = :a :i WHEN NOT MATCHED THEN INSERT (a, b, c) VALUES (:b :j, :c :k + 1, DEFAULT);
 PROCEDURE sel (SQLSTATE, :a INT, :b INT, :i SMALLINT); SELECT x INTO :b FROM t WHERE a = :a :i;
 PROCEDURE opn (SQLSTATE, :o INT, :c SMALLINT); OPEN c;
 PROCEDURE ex (SQLSTATE, :a INT, :i SMALLINT, :s VARCHAR(10)); PREPARE s FROM :s;
@@ -120,6 +122,9 @@ PROCEDURE ex2 (SQLSTATE, :a INT, :i SMALLINT); EXECUTE s USING :a :i;
 	assert body('upd').contains(stored('i'))
 	assert body('upd').contains(stored('j'))
 	assert body('pos').contains(stored('i'))
+	assert body('mrg').contains(stored('i'))
+	assert body('mrg').contains(stored('j'))
+	assert !body('mrg').contains(stored('k'))
 
 	// The check comes before the value becomes the null value.
 	assert body('ins1').contains('${stored('i')}  if (*i < 0) {\n    vsql_m_p[0].indicator = SQL_NULL_DATA;\n  }\n')

@@ -13,6 +13,7 @@ preparable_statement:
 preparable_sql_data_statement:
   delete_statement_searched { $$.v = $1.v }
 | insert_statement { $$.v = $1.v }
+| merge_statement { $$.v = $1.v }
 | dynamic_select_statement { $$.v = $1.v }
 | update_statement_searched { $$.v = $1.v }
 

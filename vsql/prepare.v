@@ -22,6 +22,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| DropTableStatement
 	| FetchStatement
 	| InsertStatement
+	| MergeStatement
 	| OpenStatement
 	| QueryExpression
 	| RollbackStatement
@@ -177,6 +178,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		DropTableStatement { 'DROP TABLE', 32 }
 		FetchStatement { 'FETCH', 45 }
 		InsertStatement { 'INSERT', 50 }
+		MergeStatement { 'MERGE', 128 }
 		OpenStatement { 'OPEN', 53 }
 		QueryExpression { 'SELECT CURSOR', 85 }
 		RollbackStatement { 'ROLLBACK WORK', 62 }
@@ -304,6 +306,9 @@ fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connecti
 				create_plan(query, params, mut conn)!
 			}
 		}
+		MergeStatement {
+			stmt.resolve(params, mut conn)!
+		}
 		UpdateStatementPositioned {
 			table := conn.resolved_table(stmt.table_name)!
 			for clause in stmt.set {
@@ -405,6 +410,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 11
 	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 1
 	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 1
+	// ISO/IEC 9075-2:2016(E), 14.12, <merge statement>, General Rules, 1
 	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 1
 	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 2
 	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 2
@@ -544,6 +550,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		InsertStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		MergeStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

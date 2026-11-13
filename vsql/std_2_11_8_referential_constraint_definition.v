@@ -701,10 +701,10 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 								v
 							}
 							'SET NULL' {
-								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(NullSpecification{}))!
+								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(NullSpecification{}), map[string]&Table{}, Row{})!
 							}
 							else {
-								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(DefaultSpecification{}), map[string]&Table{}, Row{})!
 							}
 						}
 						after.data.set(column_name, new_value)

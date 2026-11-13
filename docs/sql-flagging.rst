@@ -97,6 +97,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V001-03``
      - ``EXPLAIN`` before a searched ``UPDATE`` (see :doc:`explain`).
 
+   * - ``V001-04``
+     - ``EXPLAIN`` before a ``MERGE`` (see :doc:`explain`).
+
    * - ``V002``
      - ``CREATE INDEX``.
 

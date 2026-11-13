@@ -253,7 +253,7 @@ fn (e Subquery) compile(mut c Compiler) !CompileResult {
 		run:          fn [plan, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			values := subquery_values(mut conn, plan, data)!
 			if values.len > 1 {
-				return sqlstate_21000()
+				return sqlstate_21000('more than one row returned by a subquery used as an expression')
 			}
 
 			if values.len == 0 {

@@ -218,7 +218,7 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 // a schema are after its tables.
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
-	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
+	version := if vsql.build_version() == '' { 'v0.0.0' } else { vsql.build_version() }
 	sb.write_string('<nav class="sidebar"><div class="brand"><a href="${repo_url}" target="_blank" rel="noopener">vsql</a> <span class="version">${html_escape(version)}</span></div>')
 	for catalog_name in a.catalog_names {
 		set_catalog(mut conn, catalog_name)!

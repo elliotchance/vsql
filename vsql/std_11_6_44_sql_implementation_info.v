@@ -71,7 +71,7 @@ pub fn sql_implementation_info(server_name string) []ImplementationInfo {
 		ImplementationInfo{
 			id:              18
 			name:            'DBMS VERSION'
-			character_value: dbms_version(version(), version_date())
+			character_value: dbms_version(build_version(), build_date())
 			comments:        'The version of the software, as NN.NN.NNNN followed by the release and its date.'
 		},
 		ImplementationInfo{

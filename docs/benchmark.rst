@@ -206,8 +206,12 @@ something like:
 .. code-block:: text
 
    # vsql bench
-   version=v1.5.0
-   version_date=2026-12-01
+   build_version=v1.5.0
+   build_commit=6b3d76f0a1c2e4d5b6a7f8091a2b3c4d5e6f7081
+   build_date=2026-12-01
+   build_v_version=0.5.2
+   build_v_commit=5634a1f
+   build_c_compiler=clang
    suite=tpc-b
    file=:memory:
    size=1
@@ -237,8 +241,8 @@ something like:
 
 Where:
 
-- ``version`` and ``version_date`` are the version of vsql (empty if it wasn't
-  built for a release), and ``suite``, ``file`` and ``size`` are the options
+- ``build_*`` are how vsql was built, the same as ``vsql version -v`` (see
+  :doc:`cli`), and ``suite``, ``file`` and ``size`` are the options
   (``size`` is read from the file for ``tpc-b-oltp`` and ``tpc-b-check``).
   ``duration_seconds`` and ``isolation`` are only shown when the transactions
   run.

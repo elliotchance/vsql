@@ -73,9 +73,9 @@ pub fn (ctx FunctionContext) current_schema() string {
 	return ctx.conn.current_schema
 }
 
-// version is the version of vsql, the same as version().
+// version is the version of vsql, the same as build_version().
 pub fn (ctx FunctionContext) version() string {
-	return version()
+	return build_version()
 }
 
 // in_transaction is true if the statement is in a transaction that was started

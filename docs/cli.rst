@@ -713,3 +713,30 @@ Is used to display the current version:
 .. code-block:: sh
 
    vsql version
+
+Options are:
+
+- ``-verbose`` or ``-v``: Show how vsql was built, as shell variables, sorted
+  by name:
+
+.. code-block:: text
+
+   VSQL_BUILD_COMMIT='6b3d76f0a1c2e4d5b6a7f8091a2b3c4d5e6f7081'
+   VSQL_BUILD_C_COMPILER='clang'
+   VSQL_BUILD_DATE='2026-11-12'
+   VSQL_BUILD_VERSION='v1.5.0'
+   VSQL_BUILD_V_COMMIT='5634a1f'
+   VSQL_BUILD_V_VERSION='0.5.2'
+
+The variable is empty when the item has no value, such as
+``VSQL_BUILD_COMMIT`` for a build that isn't a release. The output can be run
+by a shell:
+
+.. code-block:: sh
+
+   eval "$(vsql version -v)"
+   echo "$VSQL_BUILD_COMMIT"
+
+The same values are returned by ``vsql.build_commit()``,
+``vsql.build_c_compiler()``, ``vsql.build_date()``, ``vsql.build_version()``,
+``vsql.build_v_commit()`` and ``vsql.build_v_version()`` in V.

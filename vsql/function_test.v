@@ -185,7 +185,7 @@ fn test_function_context() ! {
 	db.now = sql_test_now
 	db.register_function('context_values() varchar', fn (ctx FunctionContext, _ []Value) !Value {
 		now, offset := ctx.statement_timestamp()
-		return new_varchar_value('${ctx.current_timestamp()!.str()} ${now.unix()} ${offset} ${ctx.current_catalog()} ${ctx.current_schema()} ${ctx.in_transaction()} ${ctx.version() == version()}')
+		return new_varchar_value('${ctx.current_timestamp()!.str()} ${now.unix()} ${offset} ${ctx.current_catalog()} ${ctx.current_schema()} ${ctx.in_transaction()} ${ctx.version() == build_version()}')
 	})!
 
 	now, offset := sql_test_now()

@@ -256,7 +256,7 @@ fn compile_scalar_subquery(plan SubqueryPlan) CompileResult {
 		run:          fn [plan, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			values := subquery_values(mut conn, plan, data)!
 			if values.len > 1 {
-				return sqlstate_21000()
+				return sqlstate_21000('more than one row returned by a subquery used as an expression')
 			}
 
 			if values.len == 0 {
@@ -329,7 +329,7 @@ mut:
 fn row_subquery_values(mut conn Connection, plan SubqueryPlan, data Row) ![]Value {
 	rows := subquery_rows(mut conn, plan, data)!
 	if rows.len > 1 {
-		return sqlstate_21000()
+		return sqlstate_21000('more than one row returned by a subquery used as an expression')
 	}
 
 	if rows.len == 0 {

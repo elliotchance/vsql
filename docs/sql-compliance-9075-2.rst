@@ -752,7 +752,7 @@ Optional Features
    * - ✅ **F304**
      - **EXCEPT ALL table operator**
 
-   * - ❌ **F312**
+   * - ✅ **F312**
      - **MERGE statement**
 
    * - ❌ **F313**

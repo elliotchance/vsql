@@ -57,7 +57,8 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 		...column
 		not_null: false
 		identity: none
-	}, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+	}, ContextuallyTypedValueSpecification(DefaultSpecification{}), map[string]&Table{},
+		Row{})!
 	mut identity_sequence := ?Sequence(none)
 	if identity := column.identity {
 		identity_sequence = identity.sequence

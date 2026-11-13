@@ -71,7 +71,8 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	mut rows := []Row{}
 	for values in row_values {
 		conn.begin_row()
-		mut row := new_row(stmt.insert_row(mut conn, params, table, columns, values)!)
+		mut row := new_row(stmt.insert_row(mut conn, params, table, columns, values, map[string]&Table{},
+			Row{})!)
 		generated_columns.apply(mut conn, mut row)!
 		check_constraints.verify(mut conn, row)!
 		rows << row
@@ -198,8 +199,10 @@ fn check_insert_degree(columns int, values int) ! {
 	}
 }
 
-// insert_row returns the values for a new row from one row of the source.
-fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Value, table Table, columns []Identifier, values []ContextuallyTypedRowValueConstructorElement) !map[string]Value {
+// insert_row returns the values for a new row from one row of the source. The
+// values can reference the columns of source, which has the tables (only a
+// MERGE has any, see MergeStatement).
+fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Value, table Table, columns []Identifier, values []ContextuallyTypedRowValueConstructorElement, tables map[string]&Table, source Row) !map[string]Value {
 	// Each row must have a value for each column, so they all have the same
 	// degree.
 	//
@@ -243,7 +246,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 		}
 
 		row[column.sub_entity_name] = insert_value(mut conn, params, table, table_column,
-			value)!
+			value, tables, source)!
 	}
 
 	// A column that isn't listed gets its default.
@@ -252,7 +255,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 	for col in table.columns {
 		if col.name.sub_entity_name !in row && col.generated == none {
 			row[col.name.sub_entity_name] = insert_value(mut conn, params, table, col,
-				ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+				ContextuallyTypedValueSpecification(DefaultSpecification{}), tables, source)!
 		}
 	}
 
@@ -288,11 +291,12 @@ fn (stmt InsertStatement) check_override_clause(table Table, columns []Identifie
 //
 // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 12 and 14
 // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 7.c
-fn insert_value(mut conn Connection, params map[string]Value, table Table, column Column, element ContextuallyTypedRowValueConstructorElement) !Value {
+fn insert_value(mut conn Connection, params map[string]Value, table Table, column Column, element ContextuallyTypedRowValueConstructorElement, tables map[string]&Table, source Row) !Value {
 	column_name := column.name.sub_entity_name
 	mut c := Compiler{
 		conn:          conn
 		params:        params
+		tables:        tables
 		null_type:     column.typ
 		default_value: column.default_value
 		identity:      identity_of(table, column)
@@ -306,7 +310,7 @@ fn insert_value(mut conn Connection, params map[string]Value, table Table, colum
 		return sqlstate_42601('an aggregate function cannot be used in VALUES')
 	}
 
-	raw_value := compiled.run(mut conn, Row{}, params)!
+	raw_value := compiled.run(mut conn, source, params)!
 
 	check_store_assignment(raw_value, column.typ)!
 	value := cast(mut conn, 'for column ${column_name}', raw_value, column.typ)!

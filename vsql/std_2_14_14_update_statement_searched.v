@@ -81,15 +81,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	//
 	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Syntax Rules, 5
 	for clause in stmt.set {
-		if table.column(clause.column_name)!.is_generated_always() {
-			is_default := if clause.source is ContextuallyTypedValueSpecification {
-				clause.source is DefaultSpecification
-			} else {
-				false
-			}
-			if !is_default {
-				return sqlstate_428c9(clause.column_name)
-			}
+		if table.column(clause.column_name)!.is_generated_always()
+			&& !is_default_update(clause.source) {
+			return sqlstate_428c9(clause.column_name)
 		}
 	}
 

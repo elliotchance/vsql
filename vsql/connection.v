@@ -732,13 +732,14 @@ fn parse_sql(sql_stmt string, mut stack []YYSymType) !(Stmt, bool, []Token, []st
 
 	stmt, mut features := parse_statement(tokens, sql_stmt, mut stack)!
 	features << lexical_features
-	// Only a query, searched DELETE or searched UPDATE can be explained, any
-	// other statement is an error when it's executed (so isn't flagged).
+	// Only a query, searched DELETE, searched UPDATE or MERGE can be explained,
+	// any other statement is an error when it's executed (so isn't flagged).
 	if explain {
 		match stmt {
 			QueryExpression { features << vsql_explain_query }
 			DeleteStatementSearched { features << vsql_explain_delete }
 			UpdateStatementSearched { features << vsql_explain_update }
+			MergeStatement { features << vsql_explain_merge }
 			else {}
 		}
 	}

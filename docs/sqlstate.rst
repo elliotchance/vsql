@@ -244,7 +244,8 @@ used.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A subquery used as a value (a scalar subquery) returned more than one row. A
-scalar subquery that returns no rows is ``NULL``.
+scalar subquery that returns no rows is ``NULL``. Also, more than one row of the
+source of a :doc:`merge` matched the same row of its target.
 
 **Examples**
 

@@ -21,6 +21,7 @@ SQL Reference
    drop-table.rst
    explain.rst
    insert.rst
+   merge.rst
    rollback.rst
    select.rst
    set-catalog.rst

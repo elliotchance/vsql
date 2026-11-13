@@ -191,10 +191,10 @@ struct SQLState21000 {
 	SQLState
 }
 
-fn sqlstate_21000() IError {
+fn sqlstate_21000(msg string) IError {
 	return SQLState21000{
 		code: sqlstate_to_int('21000')
-		msg:  'cardinality violation: more than one row returned by a subquery used as an expression'
+		msg:  'cardinality violation: ${msg}'
 	}
 }
 

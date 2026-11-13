@@ -53,7 +53,7 @@
 23.1/GR/4.h.i.2          implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
 23.1/GR/4.h.ii           implemented  vsql/std_2_23_1_get_diagnostics_statement.c,vsql/std_2_24_1_sqlstate.v libvsql/module/test_main.c,vsql/api_test.v the column that doesn't exist, for no such column (42703) or an unknown column (42601), since there are no privileges (E081)
 23.1/GR/4.i              implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
-23.1/GR/4.j              n/a          - - views (F031-02)
+23.1/GR/4.j              n/a          - - WITH CHECK OPTION (F311-04, #1258)
 23.1/GR/4.k              n/a          - - privileges (E081)
 23.1/GR/4.k.i            n/a          - - privileges (E081)
 23.1/GR/4.k.ii           n/a          - - privileges (E081)

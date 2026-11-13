@@ -39,7 +39,7 @@ Why vsql?
   list exactly what's supported.
 - **A complete SQL database.** Joins, subqueries, aggregates, indexes,
   `PRIMARY KEY`, `UNIQUE`, `FOREIGN KEY` and `CHECK` constraints, sequences
-  and identity columns, cursors, `ALTER TABLE`, and the standard
+  and identity columns, views, cursors, `ALTER TABLE`, and the standard
   `INFORMATION_SCHEMA` views.
 - **Transactions you can rely on.** `SERIALIZABLE` by default, with all four
   standard isolation levels, built on

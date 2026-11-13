@@ -130,7 +130,7 @@ CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 25006: read-only sql transaction: database needs file format 1 to be changed, but this version of vsql only supports up to 3
+-- error 25006: read-only sql transaction: database needs file format 1 to be changed, but this version of vsql only supports up to 4
 
 -- # A commit frame that wasn't completely written, or is corrupt, isn't
 -- # recovered, so the statement has no effect.

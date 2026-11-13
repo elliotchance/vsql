@@ -337,7 +337,7 @@ SELECT * FROM s."my;table";
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- out: CREATE SCHEMA "S";
--- out: SET SCHEMA 'S';
+-- out: SET SCHEMA '"S"';
 -- out: CREATE TABLE "S"."my;table" (
 -- out:   "a""b" INTEGER NOT NULL,
 -- out:   "C" CHARACTER VARYING(10) DEFAULT 'x',
@@ -351,7 +351,7 @@ SELECT * FROM s."my;table";
 -- out: SET SCHEMA 'PUBLIC';
 -- out: INSERT INTO "S"."my;table" ("a""b", "C", "D") VALUES (1, 'a', 2.0e0);
 -- out: CREATE SCHEMA "S";
--- out: SET SCHEMA 'S';
+-- out: SET SCHEMA '"S"';
 -- out: CREATE TABLE "S"."my;table" (
 -- out:   "a""b" INTEGER NOT NULL,
 -- out:   "C" CHARACTER VARYING(10) DEFAULT 'x',

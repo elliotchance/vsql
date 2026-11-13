@@ -13,7 +13,7 @@ COMMIT;
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- error 40V01: transaction rollback: lock failed (fault injected by test)
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 CREATE TABLE t (x INT);
 START TRANSACTION;
@@ -26,7 +26,7 @@ COMMIT;
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- error 40V01: transaction rollback: wal_write failed (fault injected by test)
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 CREATE TABLE t (x INT);
 START TRANSACTION;
@@ -39,7 +39,7 @@ COMMIT;
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- error 40V01: transaction rollback: read_page failed (fault injected by test)
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 CREATE TABLE t (x INT);
 START TRANSACTION;
@@ -52,7 +52,7 @@ COMMIT;
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- error 40V01: transaction rollback: isolation_end failed (fault injected by test)
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 -- # Changes to the schema are canceled too, and the connection can carry on.
 START TRANSACTION;

@@ -175,7 +175,7 @@ COMMIT;
 -- 2: msg: INSERT 1
 -- 2: X: 1
 -- 2: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 -- 2: msg: SET TRANSACTION
 -- 2: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
 -- 1: msg: COMMIT
@@ -351,7 +351,7 @@ SELECT * FROM t;
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 1: msg: START TRANSACTION
@@ -534,7 +534,7 @@ SELECT * FROM t;
 -- 1: msg: INSERT 1
 -- 1: error 40V01: transaction rollback: wal_write failed (fault injected by test)
 -- 2: msg: INSERT 1
--- 1: error 2D000: invalid transaction termination
+-- 1: msg: COMMIT
 -- 2: X: 2
 
 -- # The isolation file can't be locked.
@@ -558,7 +558,7 @@ SELECT * FROM t;
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
 -- 1: error 40V01: transaction rollback: isolation_lock failed (fault injected by test)
--- 1: error 2D000: invalid transaction termination
+-- 1: msg: COMMIT
 -- 1: X: 2
 
 -- # The same test as std_2_17_3_isolation_read_committed.sql with the default isolation level (SERIALIZABLE).
@@ -836,7 +836,7 @@ SELECT * FROM foo;
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: DELETE 1
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 
 -- # The same test as std_2_17_3_isolation_read_committed.sql with the default isolation level (SERIALIZABLE).
 /* connection 1 */

@@ -45,14 +45,14 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1
 
--- # Like COMMIT, they fail when there's no transaction to end.
+-- # Like COMMIT, they do nothing when there's no transaction to end.
 /* extensions V115-01 */
 COMMIT TRANSACTION;
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 /* extensions V115-02 */
 END;
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 -- # A whole transaction with only the aliases.
 /* extensions V114-01 V115-02 V116-02 */

@@ -93,12 +93,12 @@ DELETE FROM t WHERE x = 2;
 /* flags */
 COMMIT;
 -- flags:
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 /* flags */
 ROLLBACK WORK;
 -- flags:
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 -- # EXPLAIN is a vsql extension (V001), flagged by the kind of statement that's
 -- # explained, along with the features of that statement (VALUES needs F641 and
@@ -382,7 +382,7 @@ SET CONSTRAINTS ALL DEFERRED;
 /* flags */
 ROLLBACK;
 -- flags:
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 /* flags */
 SET SCHEMA 'PUBLIC';

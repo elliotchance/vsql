@@ -291,8 +291,8 @@ COMMIT;
 -- 3: COL1: 5
 -- 3: COL1: 6
 -- 1: msg: COMMIT
--- 2: error 2D000: invalid transaction termination
--- 3: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
+-- 3: msg: COMMIT
 
 -- # All NEXT VALUE FOR the same sequence return the same value within a row.
 CREATE SEQUENCE seq1;

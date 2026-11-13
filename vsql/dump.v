@@ -446,7 +446,10 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 					&& table.name.schema_name != default_schema_name
 					&& (table.check_constraints.len > 0 || table.columns.any(it.generated != none))
 				if is_schema_needed {
-					write_line(mut w, 'SET SCHEMA ${new_varchar_value(table.name.schema_name).literal()};')!
+					// The value of SET SCHEMA is an identifier, so it's delimited to
+					// keep its case.
+					delimited := '"' + table.name.schema_name.replace('"', '""') + '"'
+					write_line(mut w, 'SET SCHEMA ${new_varchar_value(delimited).literal()};')!
 				}
 				write_line(mut w, options.output_definition(without_catalog_qualifiers(Table{
 					...table

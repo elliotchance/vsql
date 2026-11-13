@@ -8,7 +8,7 @@ import time
 // affecting SQL-data and/or schemas since the establishment of a savepoint.
 //
 // AND CHAIN (T261) and TO SAVEPOINT (T271) aren't supported. Like COMMIT, a
-// ROLLBACK when there isn't an active SQL-transaction is 2D000 (#231).
+// ROLLBACK when there isn't an active SQL-transaction does nothing.
 
 struct RollbackStatement {
 }
@@ -16,8 +16,9 @@ struct RollbackStatement {
 fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// Like COMMIT, there's nothing to roll back outside of a transaction.
 	if !conn.in_transaction() {
-		return sqlstate_2d000()
+		return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 	}
 
 	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.b and 2.g

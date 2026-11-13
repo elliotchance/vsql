@@ -1,7 +1,7 @@
 -- # A transaction ends with COMMIT or ROLLBACK. START TRANSACTION while one is
 -- # active is 25001 (General Rules, 1). COMMIT or ROLLBACK without an active
--- # transaction is 2D000, because a statement outside of START TRANSACTION is
--- # committed on its own, so there's nothing left to end.
+-- # transaction does nothing, because a statement outside of START TRANSACTION
+-- # is committed on its own, so there's nothing left to end.
 START TRANSACTION;
 COMMIT;
 -- msg: START TRANSACTION
@@ -22,20 +22,23 @@ COMMIT;
 COMMIT;
 -- msg: START TRANSACTION
 -- msg: COMMIT
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
+-- # Outside of a transaction, COMMIT and ROLLBACK succeed and do nothing. The
+-- # standard only uses 2D000 (invalid transaction termination) for transactions
+-- # managed outside of the database.
 COMMIT;
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 START TRANSACTION;
 COMMIT;
 ROLLBACK;
 -- msg: START TRANSACTION
 -- msg: COMMIT
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 ROLLBACK;
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 -- # Changes made in a transaction are kept by COMMIT, with or without a primary
 -- # key, including a row that was inserted and then updated by the same

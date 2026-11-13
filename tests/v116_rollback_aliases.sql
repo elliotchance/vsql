@@ -41,14 +41,14 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- msg: ROLLBACK
 
--- # Like ROLLBACK, they fail when there's no transaction to end.
+-- # Like ROLLBACK, they do nothing when there's no transaction to end.
 /* extensions V116-01 */
 ROLLBACK TRANSACTION;
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 /* extensions V116-02 */
 ABORT;
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 -- # A whole transaction with only the aliases.
 /* extensions V114-01 V115-02 V116-02 */

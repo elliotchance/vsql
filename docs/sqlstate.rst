@@ -690,28 +690,6 @@ uses the PostgreSQL code ``2BP01`` for this.
 still objects that exist in the schema, a table or constraint that's
 referenced by a ``FOREIGN KEY``, or a column that's in an index.
 
-Class ``2D``: Invalid Transaction Termination
----------------------------------------------
-
-A transaction couldn't be committed or rolled back in the current state.
-
-``2D000`` invalid transaction termination
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``2D000`` is caused by a transaction state transition that is not legal when not
-in an active transaction.
-
-**Examples**
-
-.. code-block:: sql
-
-   START TRANSACTION;
-   COMMIT;
-   COMMIT;
-   -- msg: START TRANSACTION
-   -- msg: COMMIT
-   -- error 2D000: invalid transaction termination
-
 Class ``2E``: Invalid Connection Name
 -------------------------------------
 

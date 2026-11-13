@@ -27,11 +27,14 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 		conn:   conn
 		params: params
 	}
-	new_schema := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
+	value := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
 
-	// The value (of any type) is the name of a schema of the current catalog as
-	// it is. It isn't trimmed, or an identifier (so 'x' isn't the schema X), it
-	// can't have a catalog name, and the schema must exist (#231).
+	// The value is a <schema name> (General Rule 2), so 'foo' is the regular
+	// identifier FOO, and '"foo"' is needed for a lower case name.
+	new_schema := normalize_identifier(value) or { return sqlstate_3f000(value) }
+
+	// The value (of any type) isn't trimmed, it can't have a catalog name, and
+	// the schema must exist (#231).
 	//
 	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, Syntax Rules, 1
 	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, General Rules, 1, 2 and 3.a

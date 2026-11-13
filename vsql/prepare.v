@@ -215,9 +215,13 @@ pub fn (p PreparedStmt) positioned_cursor() string {
 // or none for a statement that doesn't return rows. Like query, params must
 // have a value for each parameter, which gives it a data type.
 pub fn (mut p PreparedStmt) columns(params map[string]Value) ![]Column {
-	stmt := p.stmt
-	if stmt !is QueryExpression {
-		return []Column{}
+	// An INSERT, UPDATE or DELETE with a RETURNING returns the rows of a query,
+	// see returning_query.
+	prepared_stmt := p.stmt
+	stmt := if prepared_stmt is QueryExpression {
+		prepared_stmt
+	} else {
+		returning_query(prepared_stmt) or { return []Column{} }
 	}
 
 	mut all_params := params.clone()
@@ -294,6 +298,11 @@ pub fn (mut p PreparedStmt) resolve_names() ! {
 }
 
 fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connection) ! {
+	// The names in a RETURNING are resolved like a query.
+	if query := returning_query(stmt) {
+		create_plan(query, params, mut conn)!
+	}
+
 	match stmt {
 		DeclareCursor {
 			create_statement_query_plan(stmt.query, params, mut conn)!

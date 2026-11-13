@@ -207,11 +207,17 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V112-01``
      - ``DELETE ... WHERE CURRENT OF`` outside of an SQL-client module.
 
+   * - ``V112-02``
+     - ``DELETE`` with ``RETURNING`` (see :doc:`delete`).
+
    * - ``V113``
      - ``UPDATE`` (see :doc:`cursors`).
 
    * - ``V113-01``
      - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.
+
+   * - ``V113-02``
+     - ``UPDATE`` with ``RETURNING`` (see :doc:`update`).
 
    * - ``V114``
      - ``START TRANSACTION`` (see :doc:`start-transaction`).
@@ -248,6 +254,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V118-01``
      - ``EXECUTE IMMEDIATE`` of a literal, rather than a host parameter.
+
+   * - ``V119``
+     - ``INSERT`` (see :doc:`insert`).
+
+   * - ``V119-01``
+     - ``INSERT`` with ``RETURNING``.
 
    * - ``V201``
      - ``FROM``.

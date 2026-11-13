@@ -11,5 +11,6 @@ predicate:
     $$.v = yy_box(Predicate($1.v as QuantifiedComparisonPredicate))
   }
 | exists_predicate { $$.v = yy_box(Predicate($1.v as ExistsPredicate)) }
+| unique_predicate { $$.v = yy_box(Predicate($1.v as UniquePredicate)) }
 
 %%

@@ -1,0 +1,10 @@
+%%
+
+// ISO/IEC 9075-2:2016(E), 8.11, <unique predicate>, Conformance Rules, 1
+unique_predicate:
+  UNIQUE table_subquery {
+    flag(mut yylex, 'F291')
+    $$.v = yy_box(UniquePredicate{new_subquery(($2.v as TablePrimary).body as QueryExpression)})
+  }
+
+%%

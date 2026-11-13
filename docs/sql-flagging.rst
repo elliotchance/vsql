@@ -77,6 +77,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 - ``V2XX``: A query, by its clause, such as ``ORDER BY``.
 - ``V3XX``: An operator or predicate.
 - ``V4XX``: A function, by its category in :doc:`functions`.
+- ``V5XX``: PostgreSQL compatibility, which only the clients of the server have
+  (see :doc:`server`), by what it is, such as a function or a table of the
+  system catalog.
 
 .. list-table::
    :header-rows: 1
@@ -310,3 +313,54 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-01``
      - ``TRIM`` with only ``FROM``, such as ``TRIM(FROM x)``.
+
+   * - ``V501``
+     - PostgreSQL functions (see :doc:`server`).
+
+   * - ``V501-01``
+     - ``version()``.
+
+   * - ``V501-02``
+     - ``current_setting()``.
+
+   * - ``V501-03``
+     - ``pg_get_userbyid()``.
+
+   * - ``V501-04``
+     - ``obj_description()``.
+
+   * - ``V501-05``
+     - ``pg_total_relation_size()``.
+
+   * - ``V501-06``
+     - ``pg_table_size()``.
+
+   * - ``V501-07``
+     - ``pg_indexes_size()``.
+
+   * - ``V501-08``
+     - ``pg_get_function_identity_arguments()``.
+
+   * - ``V502``
+     - PostgreSQL system catalog tables (see :doc:`server`).
+
+   * - ``V502-01``
+     - ``pg_database``.
+
+   * - ``V502-02``
+     - ``pg_namespace``.
+
+   * - ``V502-03``
+     - ``pg_class``.
+
+   * - ``V502-04``
+     - ``pg_statio_user_tables``.
+
+   * - ``V502-05``
+     - ``pg_type``.
+
+   * - ``V502-06``
+     - ``pg_enum``.
+
+   * - ``V502-07``
+     - ``pg_proc``.

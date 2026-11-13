@@ -536,6 +536,7 @@ SELECT x FROM t WHERE x = ?;
 -- flags: B031
 -- error 42P02: parameter does not exist: ?1
 
+/* postgresql */
 /* flags */
 /* params 'server_version_num' */
 VALUES current_setting(?);

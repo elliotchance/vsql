@@ -17,6 +17,9 @@ mut:
 	// in holds what has been received but not read yet, so that reading each
 	// field doesn't need its own read from the connection.
 	in []u8
+	// lower_case_names sends column names in lower case, see
+	// ServerOptions.lower_case_names.
+	lower_case_names bool
 }
 
 fn new_pg_conn(conn net.TcpConn) &PGConn {
@@ -215,16 +218,22 @@ fn (mut c PGConn) write_row_description(result Result) ! {
 
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
+	mut names := []string{}
 	for column in result.columns {
-		msg_len += column.name.sub_entity_name.len + 1 // NULL
+		mut name := column.name.sub_entity_name
+		if c.lower_case_names && name == name.to_upper() {
+			name = name.to_lower()
+		}
+		names << name
+		msg_len += name.len + 1 // NULL
 		msg_len += 18 // all the other fields
 	}
 
 	c.write_int32(msg_len)!
 	c.write_int16(i16(result.columns.len))!
 
-	for column in result.columns {
-		c.write_string(column.name.sub_entity_name)!
+	for name in names {
+		c.write_string(name)!
 		c.write_int32(0)!
 		c.write_int16(0)!
 		c.write_int32(0)! // object ID of type
@@ -310,17 +319,53 @@ fn (mut c PGConn) close() ! {
 
 // register_pg_functions registers the functions that PostgreSQL clients use,
 // unless the connection already has them (such as from ServerOptions.connect).
+// They're only registered for the clients of the server (and the SQL tests
+// with the "postgresql" directive), and are flagged as PostgreSQL functions
+// (see pg_functions).
 fn register_pg_functions(mut db Connection) ! {
-	db.register_function('version() varchar', pg_version) or {
-		if err !is SQLState42723 {
-			return err
+	for prototype, func in pg_functions {
+		db.register_flagged_function(prototype, func.func, [func.feature]) or {
+			if err !is SQLState42723 {
+				return err
+			}
 		}
 	}
-	db.register_function('current_setting(varchar) varchar', pg_current_setting) or {
-		if err !is SQLState42723 {
-			return err
-		}
-	}
+}
+
+struct PGFunction {
+	func    fn (FunctionContext, []Value) !Value @[required]
+	feature string
+}
+
+// pg_functions are the PostgreSQL functions, by prototype. Every object is
+// owned by the only user (see pg_get_userbyid), there are no comments, the
+// sizes aren't known, and pg_proc is empty, so there are no arguments to
+// describe.
+const pg_functions = {
+	'version() varchar':                                   PGFunction{pg_version, vsql_pg_version}
+	'current_setting(varchar) varchar':                    PGFunction{pg_current_setting, vsql_pg_current_setting}
+	'pg_get_userbyid(integer) varchar':                    PGFunction{pg_get_userbyid, vsql_pg_get_userbyid}
+	'obj_description(integer, varchar) varchar':           PGFunction{pg_obj_description, vsql_pg_obj_description}
+	'pg_total_relation_size(integer) bigint':              PGFunction{pg_size, vsql_pg_total_relation_size}
+	'pg_table_size(integer) bigint':                       PGFunction{pg_size, vsql_pg_table_size}
+	'pg_indexes_size(integer) bigint':                     PGFunction{pg_size, vsql_pg_indexes_size}
+	'pg_get_function_identity_arguments(integer) varchar': PGFunction{pg_get_function_identity_arguments, vsql_pg_get_function_identity_arguments}
+}
+
+fn pg_obj_description(_ FunctionContext, _ []Value) !Value {
+	return new_null_value(.is_varchar)
+}
+
+fn pg_size(_ FunctionContext, _ []Value) !Value {
+	return new_null_value(.is_bigint)
+}
+
+fn pg_get_userbyid(_ FunctionContext, _ []Value) !Value {
+	return new_varchar_value('vsql')
+}
+
+fn pg_get_function_identity_arguments(_ FunctionContext, _ []Value) !Value {
+	return new_varchar_value('')
 }
 
 fn pg_version(_ FunctionContext, _ []Value) !Value {
@@ -332,17 +377,116 @@ fn pg_current_setting(_ FunctionContext, _ []Value) !Value {
 }
 
 // register_pg_virtual_tables registers the tables that PostgreSQL clients
-// read, unless the connection already has a table with the same name.
+// read, unless the connection already has a table with the same name. Like
+// register_pg_functions, they're only registered for PostgreSQL clients, and
+// each is flagged (see pg_table_features).
 fn register_pg_virtual_tables(mut db Connection) ! {
-	db.register_virtual_table('CREATE TABLE pg_database ( datname VARCHAR(255) )', fn (mut t VirtualTable) ! {
+	db.register_flagged_virtual_table('CREATE TABLE pg_database ( datname VARCHAR(255) )', fn (mut t VirtualTable) ! {
 		t.next_values([
 			new_varchar_value('vsql'), // datname
 		])
 
 		t.done()
-	}) or {
+	}, [vsql_pg_database]) or {
 		if err !is SQLState42P07 {
 			return err
 		}
 	}
+
+	// The rest are the parts of PostgreSQL's system catalog that clients read
+	// to list the schemas and tables. Each object has an oid from its position
+	// (see pg_oids), so the tables can be joined.
+	c := db.catalog()
+	pg_tables := {
+		'CREATE TABLE pg_namespace (oid INTEGER, nspname VARCHAR(255), nspowner INTEGER)':                                                                                  fn [c] (mut t VirtualTable) ! {
+			namespaces, _ := pg_oids(c)
+			for name, oid in namespaces {
+				t.next_values([new_integer_value(oid), new_varchar_value(name),
+					new_integer_value(pg_user_oid)])
+			}
+			t.done()
+		}
+		// relkind is 'r' for a table, or 'v' for a view (of the
+		// INFORMATION_SCHEMA). The number of rows isn't known (-1).
+		'CREATE TABLE pg_class (oid INTEGER, relname VARCHAR(255), relnamespace INTEGER, relkind VARCHAR(1), relowner INTEGER, reltuples BIGINT)':                          fn [c] (mut t VirtualTable) ! {
+			namespaces, tables := pg_oids(c)
+			for table in c.information_schema_tables() {
+				t.next_values([new_integer_value(tables[table.name.storage_id()]),
+					new_varchar_value(table.name.entity_name),
+					new_integer_value(namespaces[table.name.schema_name]),
+					new_varchar_value(if table.is_virtual { 'v' } else { 'r' }),
+					new_integer_value(pg_user_oid), new_bigint_value(-1)])
+			}
+			t.done()
+		}
+		// The tables (but not the views) of each schema.
+		'CREATE TABLE pg_statio_user_tables (relid INTEGER, schemaname VARCHAR(255), relname VARCHAR(255))':                                                                fn [c] (mut t VirtualTable) ! {
+			_, tables := pg_oids(c)
+			for table in c.information_schema_tables() {
+				if !table.is_virtual {
+					t.next_values([new_integer_value(tables[table.name.storage_id()]),
+						new_varchar_value(table.name.schema_name),
+						new_varchar_value(table.name.entity_name)])
+				}
+			}
+			t.done()
+		}
+		// There are no user-defined types (pg_type), enums (pg_enum) or
+		// functions (pg_proc) to describe.
+		'CREATE TABLE pg_type (oid INTEGER, typname VARCHAR(255), typnamespace INTEGER)':                                                                                   pg_empty_table
+		'CREATE TABLE pg_enum (enumtypid INTEGER, enumlabel VARCHAR(255), enumsortorder DOUBLE PRECISION)':                                                                 pg_empty_table
+		'CREATE TABLE pg_proc (oid INTEGER, proname VARCHAR(255), pronamespace INTEGER, proowner INTEGER, proisagg BOOLEAN, proiswindow BOOLEAN, prorettype VARCHAR(255))': pg_empty_table
+	}
+	for create_table, data in pg_tables {
+		name := create_table.all_after('CREATE TABLE ').all_before(' ')
+		db.register_flagged_virtual_table(create_table, data, [
+			pg_table_features[name],
+		]) or {
+			if err !is SQLState42P07 {
+				return err
+			}
+		}
+	}
+}
+
+// pg_table_features are the features of the tables of register_pg_virtual_tables
+// other than pg_database, by name.
+const pg_table_features = {
+	'pg_namespace':          vsql_pg_namespace
+	'pg_class':              vsql_pg_class
+	'pg_statio_user_tables': vsql_pg_statio_user_tables
+	'pg_type':               vsql_pg_type
+	'pg_enum':               vsql_pg_enum
+	'pg_proc':               vsql_pg_proc
+}
+
+// pg_user_oid is the oid of the only user, see pg_get_userbyid.
+const pg_user_oid = 10
+
+// pg_oids returns the oids of the schemas (by name) and of the tables (by
+// storage_id) for the PostgreSQL system catalog. The schemas come first, then
+// the tables, in the order of information_schema_tables, starting at 16384 like
+// the objects that a PostgreSQL user creates.
+fn pg_oids(c &CatalogConnection) (map[string]int, map[string]int) {
+	mut names := c.storage.schemas.keys()
+	names << information_schema_name
+	names.sort()
+
+	mut oid := 16384
+	mut namespaces := map[string]int{}
+	for name in names {
+		namespaces[name] = oid
+		oid++
+	}
+	mut tables := map[string]int{}
+	for table in c.information_schema_tables() {
+		tables[table.name.storage_id()] = oid
+		oid++
+	}
+
+	return namespaces, tables
+}
+
+fn pg_empty_table(mut t VirtualTable) ! {
+	t.done()
 }

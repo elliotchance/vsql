@@ -49,6 +49,21 @@ PostgreSQL clients also set PostgreSQL's run-time parameters, such as
 ``SET [ SESSION | LOCAL ] <name> { TO | = } ...`` without running it. A ``SET``
 in the SQL standard, such as ``SET SCHEMA``, still runs.
 
+Clients also read PostgreSQL's system catalog to list the schemas and tables.
+Each connection of a client (but no other connection) has the parts of it that
+clients use, which are flagged as ``V5XX`` (see :doc:`sql-flagging`):
+``pg_namespace``, ``pg_class`` and ``pg_statio_user_tables`` (from the schemas and tables of the
+database), an empty ``pg_type``, ``pg_enum`` and ``pg_proc``, and the
+``pg_get_userbyid()``, ``pg_get_function_identity_arguments()``,
+``obj_description()``, ``pg_total_relation_size()``, ``pg_table_size()`` and
+``pg_indexes_size()`` functions (there are no comments, and the sizes are
+``NULL``). ``vsql server`` also accepts the PostgreSQL syntax that clients use
+in these queries: it removes ``pg_catalog.`` before a name (the catalog is in
+the default schema), runs a cast such as ``reltuples::int8`` as a ``CAST``, and
+runs a ``NULL`` column of a select list (such as ``SELECT NULL AS size``) as a
+``BIGINT``. Like PostgreSQL, it sends the name of a column in lower case if it
+has no lower case letters, so ``SELECT relname AS name`` has a ``name`` column.
+
 Any number of clients can be connected at the same time (although no more than
 256 can be in a transaction at once). Each client has its own
 connection, so a transaction started by one client is not visible to the others
@@ -85,7 +100,9 @@ The server can also be started from your own V application:
 Unlike ``vsql server``, the server doesn't add ``FROM singlerow`` to a ``SELECT``
 without a ``FROM`` (which many PostgreSQL clients send, but isn't valid SQL)
 unless ``select_without_from`` is set, and doesn't ignore PostgreSQL's ``SET``
-of a run-time parameter unless ``ignore_pg_set`` is set.
+of a run-time parameter unless ``ignore_pg_set`` is set. It doesn't accept the
+PostgreSQL syntax of catalog queries unless ``rewrite_pg_syntax`` is set, and
+doesn't send column names in lower case unless ``lower_case_names`` is set.
 
 See :doc:`install` to get the ``vsql`` command.
 

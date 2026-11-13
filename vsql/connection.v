@@ -969,6 +969,12 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 // register_function will register a function that can be used in SQL
 // expressions.
 pub fn (mut conn Connection) register_function(prototype string, func fn (FunctionContext, []Value) !Value) ! {
+	conn.register_flagged_function(prototype, func, [])!
+}
+
+// register_flagged_function is register_function for a function that the SQL
+// Flagger flags with features, such as the PostgreSQL functions (see pg.v).
+fn (mut conn Connection) register_flagged_function(prototype string, func fn (FunctionContext, []Value) !Value, features []string) ! {
 	// The prototype is "name(type, ...) type".
 	open_paren := prototype.index('(') or { -1 }
 	close_paren := prototype.last_index(')') or { -1 }
@@ -985,12 +991,26 @@ pub fn (mut conn Connection) register_function(prototype string, func fn (Functi
 	}
 
 	return_type := type_from_name(prototype[close_paren + 1..].trim_space().to_upper(), 0, 0)!
-	conn.register_func(Func{function_name, arg_types, false, func, return_type, true, false})!
+	conn.register_func(Func{
+		name:                 function_name
+		arg_types:            arg_types
+		func:                 func
+		return_type:          return_type
+		called_on_null_input: true
+		features:             features
+	})!
 }
 
 // register_virtual_table will register a function that can provide data at
 // runtime to a virtual table.
 pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
+	conn.register_flagged_virtual_table(create_table, data, [])!
+}
+
+// register_flagged_virtual_table is register_virtual_table for a table that the
+// SQL Flagger flags with features when it's read, such as the PostgreSQL system
+// catalog (see pg.v).
+fn (mut conn Connection) register_flagged_virtual_table(create_table string, data VirtualTableProviderFn, features []string) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)!
 	mut lexer := Lexer{
@@ -1031,6 +1051,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 				table_name: table_name
 			}
 			data:              data
+			features:          features
 		}
 
 		return

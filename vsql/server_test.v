@@ -371,3 +371,122 @@ fn test_server_ignore_pg_set() ! {
 	}
 	assert plain_client.query('SET LOCAL search_path TO public')!.error.starts_with('error 42601: ')
 }
+
+// rewrite_pg_syntax changes PostgreSQL casts into a CAST and removes
+// "pg_catalog." before a name, but not in quotes or comments.
+fn test_rewrite_pg_syntax() {
+	for query, expected in {
+		'SELECT reltuples::int8 FROM pg_class':                       'SELECT CAST(reltuples AS BIGINT) FROM pg_class'
+		'SELECT c.x :: pg_catalog.int2, 1::int, 2::int4, 3::oid':     'SELECT CAST(c.x AS SMALLINT), CAST(1 AS INTEGER), CAST(2 AS INTEGER), CAST(3 AS INTEGER)'
+		'VALUES 1.5::float4 + 2::float8, true::bool':                 'VALUES CAST(1.5 AS REAL) + CAST(2 AS DOUBLE PRECISION), CAST(true AS BOOLEAN)'
+		"VALUES 'it''s'::text, 'x'::name, (1 + (2))::numeric":        "VALUES CAST('it''s' AS VARCHAR(255)), CAST('x' AS VARCHAR(255)), CAST((1 + (2)) AS NUMERIC)"
+		"VALUES count(*)::regclass, 'a'::regproc, 'b'::regnamespace": "VALUES CAST(count(*) AS VARCHAR(255)), CAST('a' AS VARCHAR(255)), CAST('b' AS VARCHAR(255))"
+		"x = 'pg_catalog.trigger'::pg_catalog.regtype":               "x = CAST('pg_catalog.trigger' AS VARCHAR(255))"
+		'SELECT "a::b"::int8, "x""y"::int8 FROM PG_CATALOG.pg_class': 'SELECT CAST("a::b" AS BIGINT), CAST("x""y" AS BIGINT) FROM pg_class'
+		'SELECT pg_catalog.f(x), my_pg_catalog.t, "pg_catalog.x"':    'SELECT f(x), my_pg_catalog.t, "pg_catalog.x"'
+		"SELECT 'unterminated::int":                                  "SELECT 'unterminated::int"
+		'SELECT 1 -- pg_catalog.x::int\nFROM pg_catalog.t':           'SELECT 1 -- pg_catalog.x::int\nFROM t'
+		'SELECT 1 -- x::int':                                         'SELECT 1 -- x::int'
+		'SELECT /* pg_catalog.x::int */ 1::int8':                     'SELECT /* pg_catalog.x::int */ CAST(1 AS BIGINT)'
+		'SELECT /* x::int':                                           'SELECT /* x::int'
+		'SELECT NULL AS a, 1, null as b UNION SELECT 1,NULL\tAS c':   'SELECT CAST(NULL AS BIGINT) AS a, 1, CAST(NULL AS BIGINT) as b UNION SELECT 1,CAST(NULL AS BIGINT)\tAS c'
+		'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, NULL AS':       'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, CAST(NULL AS BIGINT) AS'
+		'NULL AS a, NULL':                                            'NULL AS a, NULL'
+		'XSELECT NULL AS a':                                          'XSELECT NULL AS a'
+		'::int':                                                      'CAST( AS INTEGER)'
+	} {
+		assert rewrite_pg_syntax(query) == expected, query
+	}
+}
+
+// With rewrite_pg_syntax, the server rewrites a query before it's run.
+fn test_server_rewrite_pg_syntax() ! {
+	connect := fn (database string) !&Connection {
+		return open(':memory:')
+	}
+	mut server := start_sql_test_server_with(ServerOptions{
+		rewrite_pg_syntax: true
+		connect:           connect
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	defer {
+		client.close()
+	}
+	assert client.query("SELECT pg_catalog.pg_get_userbyid(10) AS owner, reltuples::int8 AS n FROM pg_catalog.pg_class WHERE relname = 'X'")!.rows == []
+	assert client.query('VALUES 1.5::float8')!.rows == ['COL1: 1.5e0']
+	assert client.query('SELECT NULL AS x FROM pg_database UNION SELECT 1 FROM pg_database')!.rows == [
+		'X: NULL',
+		'X: 1',
+	]
+
+	// Without the option it's an error.
+	mut plain := start_sql_test_server_with(ServerOptions{
+		connect: connect
+	})!
+	defer {
+		plain.stop() or {}
+	}
+	mut plain_client := new_pg_test_client(plain.port()!, 'db')!
+	defer {
+		plain_client.close()
+	}
+	assert plain_client.query('VALUES 1::int8')!.error != ''
+}
+
+// With lower_case_names, a column name without lower case letters is sent in
+// lower case, like a name that isn't quoted in PostgreSQL.
+fn test_server_lower_case_names() ! {
+	mut server := start_sql_test_server_with(ServerOptions{
+		lower_case_names: true
+		connect:          fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	defer {
+		client.close()
+	}
+	assert client.query('SELECT * FROM (VALUES ROW(1, 2, 3)) AS t (a, "Bc", "d e")')!.rows == [
+		'a: 1 Bc: 2 d e: 3',
+	]
+}
+
+// The functions and tables of PostgreSQL clients are only registered for the
+// clients of the server, not for any other connection.
+fn test_pg_objects_only_for_server() ! {
+	mut db := open(':memory:')!
+	defer {
+		db.close()
+	}
+	if _ := db.query('SELECT * FROM pg_class') {
+		assert false, 'pg_class is registered'
+	} else {
+		assert err is SQLState42P01
+	}
+	if _ := db.query('VALUES version()') {
+		assert false, 'version() is registered'
+	} else {
+		assert err is SQLState42883
+	}
+
+	mut server := start_sql_test_server_with(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	defer {
+		client.close()
+	}
+	assert client.query('SELECT COUNT(*) FROM pg_class')!.rows.len == 1
+	assert client.query('VALUES version()')!.rows.len == 1
+}

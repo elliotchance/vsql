@@ -7,6 +7,9 @@ pub struct VirtualTable {
 	create_table_sql  string
 	create_table_stmt TableDefinition
 	data              VirtualTableProviderFn @[required]
+	// features are flagged when the table is read (see
+	// register_flagged_virtual_table). It's only used by the SQL Flagger.
+	features []string
 mut:
 	is_done bool
 	rows    []Row

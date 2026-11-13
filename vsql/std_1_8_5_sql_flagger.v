@@ -19,8 +19,10 @@ import arrays
 // Feature ID and Feature Name). It's VXXX-YY, where VXXX is what's extended and
 // YY is each extension of it. The first digit of VXXX is the kind of thing that's
 // extended: 0 for a statement that isn't in the standard, 1 for a statement of the
-// standard (with its aliases), 2 for a query, 3 for an operator or predicate, and
-// 4 for a function, by its category in the Functions docs.
+// standard (with its aliases), 2 for a query, 3 for an operator or predicate, 4
+// for a function, by its category in the Functions docs, and 5 for PostgreSQL
+// compatibility, which is only registered for the clients of the server (see
+// pg.v).
 
 // The implementation-defined features, which are also listed in the SQL
 // Flagging docs. They're flagged, which is implementation-defined (ISO/IEC
@@ -127,6 +129,25 @@ import arrays
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
+//
+// V501: PostgreSQL functions.
+// V501-01: version().
+// V501-02: current_setting().
+// V501-03: pg_get_userbyid().
+// V501-04: obj_description().
+// V501-05: pg_total_relation_size().
+// V501-06: pg_table_size().
+// V501-07: pg_indexes_size().
+// V501-08: pg_get_function_identity_arguments().
+//
+// V502: PostgreSQL system catalog tables.
+// V502-01: pg_database.
+// V502-02: pg_namespace.
+// V502-03: pg_class.
+// V502-04: pg_statio_user_tables.
+// V502-05: pg_type.
+// V502-06: pg_enum.
+// V502-07: pg_proc.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -171,6 +192,21 @@ const vsql_ilike = 'V302-01'
 const vsql_now = 'V402-01'
 const vsql_mod_not_integer = 'V403-01'
 const vsql_trim_only_from = 'V404-01'
+const vsql_pg_version = 'V501-01'
+const vsql_pg_current_setting = 'V501-02'
+const vsql_pg_get_userbyid = 'V501-03'
+const vsql_pg_obj_description = 'V501-04'
+const vsql_pg_total_relation_size = 'V501-05'
+const vsql_pg_table_size = 'V501-06'
+const vsql_pg_indexes_size = 'V501-07'
+const vsql_pg_get_function_identity_arguments = 'V501-08'
+const vsql_pg_database = 'V502-01'
+const vsql_pg_namespace = 'V502-02'
+const vsql_pg_class = 'V502-03'
+const vsql_pg_statio_user_tables = 'V502-04'
+const vsql_pg_type = 'V502-05'
+const vsql_pg_enum = 'V502-06'
+const vsql_pg_proc = 'V502-07'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.

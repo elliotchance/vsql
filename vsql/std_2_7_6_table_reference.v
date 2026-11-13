@@ -195,6 +195,92 @@ fn (conn &Connection) cursor_data_change_name(name string) string {
 	return cursor.query.data_change_name()
 }
 
+// with_returning adds a RETURNING to an INSERT, UPDATE or DELETE.
+fn with_returning(stmt Stmt, returning SelectList) Stmt {
+	return match stmt {
+		DeleteStatementSearched {
+			Stmt(DeleteStatementSearched{
+				...stmt
+				returning: returning
+			})
+		}
+		UpdateStatementSearched {
+			Stmt(UpdateStatementSearched{
+				...stmt
+				returning: returning
+			})
+		}
+		else {
+			Stmt(InsertStatement{
+				...stmt as InsertStatement
+				returning: returning
+			})
+		}
+	}
+}
+
+// returning_query is the query that an INSERT, UPDATE or DELETE with a RETURNING
+// (a vsql extension, like PostgreSQL) is the same as, or none if it doesn't have
+// one. "INSERT INTO t ... RETURNING x" is "SELECT x FROM NEW TABLE (INSERT INTO
+// t ...) AS t", and so is an UPDATE. A DELETE uses OLD TABLE. The correlation
+// name is the correlation name of the statement, otherwise the name of the
+// table, so that a column can be qualified the same way as in a WHERE.
+fn returning_query(stmt Stmt) ?QueryExpression {
+	mut result_option := 'NEW'
+	mut correlation_name := Identifier{}
+	mut returning := SelectList(AsteriskExpr(true))
+	mut change := DataChangeStatement(InsertStatement{})
+	match stmt {
+		DeleteStatementSearched {
+			returning = stmt.returning or { return none }
+			result_option = 'OLD'
+			correlation_name = stmt.correlation_name
+			change = DeleteStatementSearched{
+				...stmt
+				returning: none
+			}
+		}
+		InsertStatement {
+			returning = stmt.returning or { return none }
+			change = InsertStatement{
+				...stmt
+				returning: none
+			}
+		}
+		UpdateStatementSearched {
+			returning = stmt.returning or { return none }
+			correlation_name = stmt.correlation_name
+			change = UpdateStatementSearched{
+				...stmt
+				returning: none
+			}
+		}
+		else {
+			return none
+		}
+	}
+
+	if correlation_name.sub_entity_name == '' {
+		correlation_name = Identifier{
+			sub_entity_name: change.table_name().entity_name
+		}
+	}
+
+	return QueryExpression{
+		body: SimpleTable(QuerySpecification{
+			exprs:            returning
+			table_expression: &TableExpression{
+				from_clause: TablePrimary{
+					body:        DataChangeDeltaTable{result_option, change}
+					correlation: Correlation{
+						name: correlation_name
+					}
+				}
+			}
+		})
+	}
+}
+
 // A DataChange is the rows that an INSERT, UPDATE or DELETE changed, as they're
 // stored (see Row.for_storage), in the order that they were changed. old has
 // each row that an UPDATE or DELETE identified as it was before, and new has

@@ -13,11 +13,19 @@
 update_statement_searched:
   UPDATE target_table target_correlation_name SET set_clause_list {
 	  $$.v = yy_box(Stmt(UpdateStatementSearched{$2.v as Identifier, $3.v as Identifier,
-      $5.v as []SetClause, none, none}))
+      $5.v as []SetClause, none, none, none}))
   }
 | UPDATE target_table target_correlation_name SET set_clause_list WHERE search_condition {
     $$.v = yy_box(Stmt(UpdateStatementSearched{$2.v as Identifier, $3.v as Identifier,
-      $5.v as []SetClause, $7.v as BooleanValueExpression, none}))
+      $5.v as []SetClause, $7.v as BooleanValueExpression, none, none}))
+  }
+
+// RETURNING is a vsql extension (V113-02), see returning_query.
+
+update_statement_returning:
+  update_statement_searched OPERATOR_RETURNING select_list {
+    flag(mut yylex, vsql_update_returning)
+    $$.v = yy_box(with_returning($1.v as Stmt, $3.v as SelectList))
   }
 
 %%

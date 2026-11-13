@@ -14,6 +14,8 @@ struct DeleteStatementSearched {
 	// current_of is the cursor of a positioned DELETE, which only deletes its
 	// current row (see DeleteStatementPositioned).
 	current_of ?&Cursor
+	// returning is the select list of a RETURNING, see returning_query.
+	returning ?SelectList
 }
 
 fn (stmt DeleteStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
@@ -28,6 +30,10 @@ fn (stmt DeleteStatementSearched) explain(mut conn Connection, params map[string
 }
 
 fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+	if query := returning_query(stmt) {
+		return query.execute(mut conn, params, elapsed_parse, true)
+	}
+
 	t := start_timer()
 
 	conn.open_write_connection()!

@@ -681,6 +681,12 @@ module vsql
 // token alone.
 %token LIMIT;
 
+// The RETURNING of an INSERT, UPDATE or DELETE is OPERATOR_RETURNING (see
+// is_returning_clause in lexer.v). Otherwise, it's the non-reserved word
+// RETURNING, which can be a correlation name, so the parser couldn't tell them
+// apart from the next token alone.
+%token OPERATOR_RETURNING;
+
 // pseudo keywords
 %token IS_TRUE IS_FALSE IS_UNKNOWN IS_NOT_TRUE IS_NOT_FALSE IS_NOT_UNKNOWN;
 

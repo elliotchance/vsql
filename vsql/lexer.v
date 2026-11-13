@@ -136,6 +136,7 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace('OPERATOR_LESS_EQUALS', '"<="')
 	msg = msg.replace('OPERATOR_PERIOD_ASTERISK', '"." "*"')
 	msg = msg.replace('OPERATOR_LEFT_PAREN_ASTERISK', '"(" "*"')
+	msg = msg.replace('OPERATOR_RETURNING', 'RETURNING')
 
 	msg = msg.replace('LITERAL_IDENTIFIER', 'identifier')
 	msg = msg.replace('LITERAL_STRING', 'string')
@@ -393,9 +394,30 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		if is_limit_clause(tokens, pos) {
 			tokens[pos] = Token{token_limit, 'LIMIT', tokens[pos].start, tokens[pos].end}
 		}
+		if is_returning_clause(tokens, pos) {
+			tokens[pos] = Token{token_operator_returning, tokens[pos].value, tokens[pos].start, tokens[pos].end}
+		}
 	}
 
 	return tokens, features
+}
+
+// is_returning_clause reports whether the word RETURNING at tokens[i] starts the
+// RETURNING of an INSERT, UPDATE or DELETE (a vsql extension) rather than being
+// a name, such as a correlation name in "DELETE FROM t returning WHERE ...". Like
+// ILIKE, it's the RETURNING only if it's after the end of a value (which also
+// includes a name, NULL or DEFAULT) and before the start of one (or an
+// asterisk). A name is never followed by the start of a value.
+fn is_returning_clause(tokens []Token, i int) bool {
+	if tokens[i].token != token_returning || i == 0 || i + 1 == tokens.len
+		|| !tokens.any(it.token in [token_insert, token_update, token_delete]) {
+		return false
+	}
+
+	reserved := reserved_words()
+
+	return (ends_value(tokens[i - 1], reserved) || tokens[i - 1].token in [token_null, token_default])
+		&& (starts_value(tokens[i + 1], reserved) || tokens[i + 1].token == token_operator_asterisk)
 }
 
 // statement_runes is text.runes(), but an ASCII statement is copied straight

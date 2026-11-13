@@ -222,7 +222,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	stmt.executed = true
 
 	// - 13, 14. The ROW_COUNT becomes the row count associated with S.
-	stmt.row_count = row_count_of(result)
+	stmt.row_count = row_count_of(result, stmt.diag.dynamic_function)
 	stmt.diag.row_count = stmt.row_count
 
 	// - 12.a. A <dynamic select statement> opens a cursor (see 5.4, "Implicit

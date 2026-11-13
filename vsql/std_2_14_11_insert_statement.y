@@ -17,6 +17,14 @@ insert_statement:
     }))
   }
 
+// RETURNING is a vsql extension (V119-01), see returning_query.
+
+insert_statement_returning:
+  insert_statement OPERATOR_RETURNING select_list {
+    flag(mut yylex, vsql_insert_returning)
+    $$.v = yy_box(with_returning($1.v as Stmt, $3.v as SelectList))
+  }
+
 insertion_target:
   table_name { $$.v = $1.v }
 

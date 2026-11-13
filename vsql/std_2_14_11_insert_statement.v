@@ -21,9 +21,15 @@ struct InsertStatement {
 	overriding string
 	values     []ContextuallyTypedRowValueConstructor
 	query      ?QueryExpression
+	// returning is the select list of a RETURNING, see returning_query.
+	returning ?SelectList
 }
 
 fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+	if query := returning_query(stmt) {
+		return query.execute(mut conn, params, elapsed_parse, true)
+	}
+
 	t := start_timer()
 
 	conn.open_write_connection()!

@@ -45,7 +45,18 @@ fn sql_row_count(statement_handle SQLInteger, row_count &SQLInteger) i16 {
 
 // row_count_of is the number of rows affected by an INSERT, UPDATE, DELETE or
 // MERGE, which is the number at the end of its message (such as "INSERT 3").
-fn row_count_of(result vsql.Result) int {
+// With a RETURNING on an INSERT, UPDATE or DELETE (a vsql extension), there's a
+// row for each of them instead.
+fn row_count_of(result vsql.Result, dynamic_function string) int {
+	if result.msg == '' && dynamic_function in ['INSERT', 'UPDATE WHERE', 'DELETE WHERE'] {
+		mut rows := result
+		mut count := 0
+		for _ in rows {
+			count++
+		}
+		return count
+	}
+
 	for prefix in ['INSERT ', 'UPDATE ', 'DELETE ', 'MERGE '] {
 		if result.msg.starts_with(prefix) {
 			return result.msg.all_after(prefix).int()

@@ -11,6 +11,7 @@ Syntax
   INSERT INTO <table_name> [ ( <column_name> , ... ) ]
   [ OVERRIDING { SYSTEM | USER } VALUE ]
   { VALUES ( <value> , ... ) , ... | <query> }
+  [ RETURNING { * | <expression> [ AS <name> ] } , ... ]
 
 Without a list of columns, it's every column in the order of the table.
 
@@ -53,6 +54,27 @@ long is an error ``22001``.
 
 The result (such as ``INSERT 2``) contains the number of rows inserted. A query
 without any rows is ``INSERT 0`` with a warning ``02000`` (no data).
+
+RETURNING
+---------
+
+With ``RETURNING``, the result is a row for each row that's inserted (including
+the values of defaults and identity columns), like a query, rather than the
+number of rows. The list is the same as the list of a ``SELECT``, and a column
+can be qualified with the name of the table:
+
+.. code-block:: sql
+
+  CREATE TABLE products (id INT GENERATED ALWAYS AS IDENTITY, title VARCHAR(50));
+  INSERT INTO products (title) VALUES ('Kettle'), ('Toaster') RETURNING id, products.title;
+  -- msg: CREATE TABLE 1
+  -- ID: 1 TITLE: Kettle
+  -- ID: 2 TITLE: Toaster
+
+It's the same as ``SELECT ... FROM NEW TABLE (INSERT ...)`` (see
+:doc:`select`). ``UPDATE`` and ``DELETE`` can also have a ``RETURNING`` (see
+:doc:`update` and :doc:`delete`). ``RETURNING`` isn't standard SQL, so it's
+flagged as ``V119-01`` (see :doc:`sql-flagging`).
 
 Examples
 --------

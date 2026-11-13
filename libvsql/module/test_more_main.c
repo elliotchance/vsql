@@ -76,6 +76,61 @@ int main(void) {
   check_more(__LINE__, 2, "N");
   EXPECT(commit_work(sqlstate), "00000");
 
+  /* 17.1 GR 2.b and 4: START TRANSACTION has its own DIAGNOSTICS SIZE. */
+  EXPECT(start_size_1(sqlstate), "00000");
+  EXPECT(get_more(sqlstate, &number, more, &active), "00000");
+  CHECK(active == 1);
+  EXPECT(start_plain(sqlstate), "25001");
+  EXPECT(select_two_warnings(sqlstate, a, b), "01004");
+  check_more(__LINE__, 1, "Y");
+  EXPECT(rollback_work(sqlstate), "00000");
+
+  /* 17.1 GR 3: The size must be at least 1. */
+  EXPECT(start_size_0(sqlstate), "35000");
+  EXPECT(get_more(sqlstate, &number, more, &active), "00000");
+  CHECK(active == 0);
+
+  /* 17.2 GR 3: A size over the most conditions is a warning. */
+  EXPECT(start_size_200(sqlstate), "01012");
+  EXPECT(get_more(sqlstate, &number, more, &active), "00000");
+  CHECK(active == 1);
+  EXPECT(select_two_warnings(sqlstate, a, b), "01004");
+  check_more(__LINE__, 2, "N");
+  EXPECT(rollback_work(sqlstate), "00000");
+
+  /* NOTE 710: A SET TRANSACTION doesn't change a START TRANSACTION. */
+  EXPECT(set_size_1(sqlstate), "00000");
+  EXPECT(start_plain(sqlstate), "00000");
+  EXPECT(select_two_warnings(sqlstate, a, b), "01004");
+  check_more(__LINE__, 2, "N");
+  EXPECT(rollback_work(sqlstate), "00000");
+
+  /* 17.1 GR 2.a: The access mode is passed to SQLStartTran, and READ
+   * UNCOMMITTED is READ ONLY (17.3 SR 4). */
+  EXPECT(start_read_only(sqlstate), "00000");
+  EXPECT(create_table(sqlstate), "25006");
+  EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(start_read_uncommitted(sqlstate), "00000");
+  EXPECT(create_table(sqlstate), "25006");
+  EXPECT(rollback_work(sqlstate), "00000");
+
+  /* 13.4 GR 9: A dynamic SET TRANSACTION doesn't initiate an SQL-transaction
+   * either. */
+  EXPECT(execute_set_size_1(sqlstate), "00000");
+  EXPECT(get_more(sqlstate, &number, more, &active), "00000");
+  CHECK(active == 0);
+  EXPECT(select_two_warnings(sqlstate, a, b), "01004");
+  check_more(__LINE__, 1, "Y");
+  EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(prepare_set_size_1(sqlstate), "00000");
+  EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(execute_set(sqlstate), "00000");
+  EXPECT(get_more(sqlstate, &number, more, &active), "00000");
+  CHECK(active == 0);
+  EXPECT(select_two_warnings(sqlstate, a, b), "01004");
+  check_more(__LINE__, 1, "Y");
+  EXPECT(rollback_work(sqlstate), "00000");
+
   if (failures > 0) {
     return 1;
   }

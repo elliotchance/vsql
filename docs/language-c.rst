@@ -96,7 +96,9 @@ connection attribute to ``SQL_AUTOCOMMIT_ON`` commits each statement instead
 - A query is committed when its cursor is closed (by ``SQLCloseCursor``,
   ``SQLFreeStmt``, ``SQLFreeHandle`` or ``SQLMoreResults``), once no other
   cursor of the connection is open.
-- A transaction started by ``SQLStartTran`` lasts until ``SQLEndTran``.
+- A transaction started by ``SQLStartTran`` lasts until ``SQLEndTran``. Its
+  ``DIAGNOSTICS SIZE`` is the one of a ``SET TRANSACTION`` before it, if there
+  was one.
 - Turning it on commits the active transaction, if there is one.
 
 Example
@@ -442,9 +444,12 @@ ALL`` isn't supported.
 If the first statement isn't a connection statement, it connects to
 ``DEFAULT``, which is a new in-memory database. Each SQL-connection has its own
 transaction, which is started by the first statement (or ``START
-TRANSACTION``) and ended by ``COMMIT`` or ``ROLLBACK``. A connection statement
-can't be used while the current SQL-connection has a transaction (``0A001``,
-or ``25001`` for ``DISCONNECT``).
+TRANSACTION``) and ended by ``COMMIT`` or ``ROLLBACK``. ``SET TRANSACTION``
+(even in ``EXECUTE IMMEDIATE`` or a prepared statement) doesn't start one. The
+access mode, isolation level and ``DIAGNOSTICS SIZE`` of a ``START
+TRANSACTION`` are used. A connection statement can't be used while the
+current SQL-connection has a transaction (``0A001``, or ``25001`` for
+``DISCONNECT``).
 
 When the program exits, every SQL-connection is disconnected, and a transaction
 that wasn't committed is rolled back.

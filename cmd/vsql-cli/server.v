@@ -45,6 +45,7 @@ fn server_command(cmd cli.Command) ! {
 		port:                port
 		verbose:             cmd.flags.get_bool('verbose') or { false }
 		select_without_from: true
+		ignore_pg_set:       true
 	})
 
 	server.listen()!

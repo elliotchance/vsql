@@ -327,3 +327,47 @@ fn test_server_stop_then_listen() ! {
 		every.stop()!
 	}
 }
+
+// A PostgreSQL SET of a run-time parameter is ignored with ignore_pg_set, but a
+// SET in the SQL standard still runs.
+fn test_server_ignore_pg_set() ! {
+	connect := fn (database string) !&Connection {
+		return open(':memory:')
+	}
+	mut server := start_sql_test_server_with(ServerOptions{
+		ignore_pg_set: true
+		connect:       connect
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	defer {
+		client.close()
+	}
+
+	for query in ['SET LOCAL search_path TO public', 'SET SESSION datestyle = ISO',
+		"set application_name = 'x';"] {
+		output := client.query(query)!
+		assert output.error == '', query
+		assert output.msg == 'SET', query
+	}
+	assert client.query("SET SCHEMA 'NOPE'")!.error.starts_with('error 3F000: ')
+	assert client.query('SET search_path')!.error.starts_with('error 42601: ')
+
+	// Anything else still runs.
+	assert client.query('VALUES 1')!.error == ''
+
+	// Without the option it's a syntax error.
+	mut plain := start_sql_test_server_with(ServerOptions{
+		connect: connect
+	})!
+	defer {
+		plain.stop() or {}
+	}
+	mut plain_client := new_pg_test_client(plain.port()!, 'db')!
+	defer {
+		plain_client.close()
+	}
+	assert plain_client.query('SET LOCAL search_path TO public')!.error.starts_with('error 42601: ')
+}

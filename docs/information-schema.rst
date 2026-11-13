@@ -410,6 +410,96 @@ table. ``SQLGetInfo`` returns the same limits.
   * - ``COMMENTS``
     - What the limit is.
 
+``SQL_PACKAGES``
+----------------
+
+One row for each package of the SQL standard, which is a group of optional
+features. A package is only supported when Core SQL (the mandatory features)
+and all of its features are, so none of them are yet.
+
+.. code-block:: sql
+
+  SELECT id, name, is_supported FROM information_schema.sql_packages
+  WHERE id = 'PKG010';
+  -- ID: PKG010 NAME: OLAP IS_SUPPORTED: NO
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``ID``, ``NAME``
+    - The package, such as ``PKG010`` and ``OLAP``.
+
+  * - ``IS_SUPPORTED``
+    - ``YES`` or ``NO``.
+
+  * - ``IS_VERIFIED_BY``
+    - Always ``NULL``.
+
+  * - ``COMMENTS``
+    - How many of the features of the package are supported, such as ``0 of
+      the 4 features are supported.``
+
+``SQL_PARTS``
+-------------
+
+One row for each part of the SQL standard, and whether vsql supports it. A part
+is only supported when all of its mandatory features are. The parts that have a
+:doc:`sql-compliance` page have the number of mandatory features from that page.
+
+.. code-block:: sql
+
+  SELECT part, name, is_supported FROM information_schema.sql_parts
+  WHERE part = '2';
+  -- PART: 2 NAME: Foundation (SQL/Foundation) IS_SUPPORTED: NO
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``PART``, ``NAME``
+    - The number and name of the part, such as ``2`` and
+      ``Foundation (SQL/Foundation)``.
+
+  * - ``IS_SUPPORTED``
+    - ``YES`` or ``NO``.
+
+  * - ``IS_VERIFIED_BY``
+    - Always ``NULL``.
+
+  * - ``COMMENTS``
+    - How many of the mandatory features are supported, such as ``0 of the 1
+      mandatory features are supported.``, or ``NULL`` for a part without a
+      page.
+
+``SQL_SIZING_PROFILES``
+-----------------------
+
+One row for each limit that a profile of the SQL standard requires. It's always
+empty, because no profiles are defined.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``SIZING_ID``, ``SIZING_NAME``
+    - The limit, as in ``SQL_SIZING``.
+
+  * - ``PROFILE_ID``, ``PROFILE_NAME``
+    - The profile.
+
+  * - ``REQUIRED_VALUE``
+    - The limit that the profile requires.
+
+  * - ``COMMENTS``
+    - What the limit is.
+
 Short Name Views
 ----------------
 
@@ -438,6 +528,14 @@ used without Feature F391, "Long identifiers"):
   * - ``REFERENTIAL_CONSTRAINTS``
     - ``REF_CONSTRAINTS``
     - ``UNIQUE_CONSTR_CAT``, ``UNIQUE_CONSTR_SCH`` and ``UNIQUE_CONSTR_NAME``.
+
+  * - ``SQL_IMPLEMENTATION_INFO``
+    - ``SQL_IMPL_INFO``
+    - ``IMPL_INFO_ID`` and ``IMPL_INFO_NAME``.
+
+  * - ``SQL_SIZING_PROFILES``
+    - ``SQL_SIZING_PROFS``
+    - None.
 
   * - ``TABLES``
     - ``TABLES_S``

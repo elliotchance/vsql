@@ -28,7 +28,7 @@ vsql follows three of them. Each has its own page:
    * - :doc:`sql-compliance-9075-11`
      - The tables that describe a database
      - 8 of 15
-     - 0 of 24
+     - 1 of 24
 
 The counts include subfeatures, and only count the ones that are fully
 supported. Part 3 is the SQL:2003 working draft (2003-09) and Part 11 is the

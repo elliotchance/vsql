@@ -242,19 +242,22 @@ fn test_isolation_lock() ! {
 	assert isolation_lock_error(mut b, .exclusive, 20 * time.millisecond) == '40001 serialization failure: busy'
 	assert time.since(t) >= 20 * time.millisecond
 
-	// Another thread releases it while it's waiting.
-	waiter := spawn fn [path] () !time.Duration {
+	// Another thread releases it while it's waiting. The waiter only gets it
+	// after the release (a thread can start late, so how long it waited isn't
+	// checked).
+	waiter := spawn fn [path] () !time.Time {
 		mut l := IsolationLock{
 			path: path
 		}
-		t := time.now()
 		l.acquire(.exclusive, 5 * time.second, 'busy')!
+		got := time.now()
 		l.close()
-		return time.since(t)
+		return got
 	}()
 	time.sleep(50 * time.millisecond)
+	released := time.now()
 	a.release()
-	assert waiter.wait()! >= 40 * time.millisecond
+	assert waiter.wait()! >= released
 
 	// A connection that releases the lock and needs it again has to wait for
 	// the connection that was already waiting.

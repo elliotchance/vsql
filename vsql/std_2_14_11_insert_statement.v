@@ -14,13 +14,15 @@ import time
 // overriding is the <override clause>, which is 'USER' (OVERRIDING USER
 // VALUE), 'SYSTEM' (OVERRIDING SYSTEM VALUE), or empty when it's not given. The
 // rows are either values (a <from constructor>) or query (a <from subquery>).
-// columns is empty when there's no <insert column list>.
+// columns is empty when there's no <insert column list>. from_default is DEFAULT
+// VALUES (a <from default>), which has no columns or rows of its own.
 struct InsertStatement {
-	table_name Identifier
-	columns    []Identifier
-	overriding string
-	values     []ContextuallyTypedRowValueConstructor
-	query      ?QueryExpression
+	table_name   Identifier
+	columns      []Identifier
+	overriding   string
+	values       []ContextuallyTypedRowValueConstructor
+	query        ?QueryExpression
+	from_default bool
 }
 
 fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
@@ -63,8 +65,16 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	// ISO/IEC 9075-2:2016(E), 15.10, Effect of inserting tables into base tables, General Rules, 5.a and 5.c
 	check_constraints := new_check_constraints(mut conn, table)!
 	generated_columns := new_generated_columns(mut conn, table)!
+	// DEFAULT VALUES is the same as a VALUES of one row that's DEFAULT for
+	// every column of the table.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 6
 	row_values := if query := stmt.query {
 		stmt.query_rows(mut conn, params, table, columns, query)!
+	} else if stmt.from_default {
+		[
+			columns.map(ContextuallyTypedRowValueConstructorElement(ContextuallyTypedValueSpecification(DefaultSpecification{}))),
+		]
 	} else {
 		stmt.values.map(row_elements(it))
 	}

@@ -716,7 +716,7 @@ Optional Features
    * - ❌ **F202**
      - **TRUNCATE TABLE: identity column restart option**
 
-   * - ❌ **F222**
+   * - ✅ **F222**
      - **INSERT statement: DEFAULT VALUES clause**
 
    * - ❌ **F251**

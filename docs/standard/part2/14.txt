@@ -307,7 +307,7 @@
 14.11/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
 14.11/SR/4               n/a          - - triggers (T211)
 14.11/SR/5               n/a          - - user-defined types (S023)
-14.11/SR/6               n/a          - - DEFAULT VALUES (F222)
+14.11/SR/6               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_default_values.sql
 14.11/SR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_from_query.sql
 14.11/SR/8               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/SR/9               n/a          - - every column of a base table is updatable
@@ -358,7 +358,7 @@
 14.11/CR/1               container    - -
 14.11/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
 14.11/CR/1.b             n/a          - - external routines (T321)
-14.11/CR/2               n/a          - - DEFAULT VALUES (F222)
+14.11/CR/2               implemented  vsql/std_2_14_11_insert_statement.y tests/std_2_14_11_insert_default_values.sql
 14.11/CR/3               n/a          - - structured types (S024)
 14.11/CR/4               implemented  vsql/std_2_14_11_insert_statement.y tests/std_1_8_5_flagging.sql
 # 14.12, <merge statement>

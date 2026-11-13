@@ -15,6 +15,8 @@ struct UpdateStatementSearched {
 	// current_of is the cursor of a positioned UPDATE, which only updates its
 	// current row (see UpdateStatementPositioned).
 	current_of ?&Cursor
+	// returning is the select list of a RETURNING, see returning_query.
+	returning ?SelectList
 }
 
 // UPDATE under MVCC works by actually executing a DELETE and an INSERT on the
@@ -30,6 +32,10 @@ struct UpdateStatementSearched {
 // DELETE/INSERT and only update the specific version that belongs to this
 // transaction.
 fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+	if query := returning_query(stmt) {
+		return query.execute(mut conn, params, elapsed_parse, true)
+	}
+
 	t := start_timer()
 
 	conn.open_write_connection()!

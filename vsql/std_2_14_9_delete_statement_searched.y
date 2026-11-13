@@ -13,7 +13,7 @@
 delete_statement_searched:
   DELETE FROM target_table target_correlation_name {
     $$.v = yy_box(Stmt(DeleteStatementSearched{$3.v as Identifier, $4.v as Identifier,
-      none, none}))
+      none, none, none}))
   }
 | DELETE FROM target_table target_correlation_name WHERE search_condition {
     $$.v = yy_box(Stmt(DeleteStatementSearched{
@@ -21,7 +21,16 @@ delete_statement_searched:
       $4.v as Identifier
       $6.v as BooleanValueExpression
       none
+      none
     }))
+  }
+
+// RETURNING is a vsql extension (V112-02), see returning_query.
+
+delete_statement_returning:
+  delete_statement_searched OPERATOR_RETURNING select_list {
+    flag(mut yylex, vsql_delete_returning)
+    $$.v = yy_box(with_returning($1.v as Stmt, $3.v as SelectList))
   }
 
 %%

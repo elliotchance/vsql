@@ -16,6 +16,9 @@ preparable_sql_data_statement:
 | merge_statement { $$.v = $1.v }
 | dynamic_select_statement { $$.v = $1.v }
 | update_statement_searched { $$.v = $1.v }
+| delete_statement_returning { $$.v = $1.v }
+| insert_statement_returning { $$.v = $1.v }
+| update_statement_returning { $$.v = $1.v }
 
 preparable_sql_schema_statement:
   sql_schema_statement { $$.v = $1.v }

@@ -11,6 +11,7 @@ Syntax
   UPDATE <table_name> [ [ AS ] <correlation_name> ]
   SET <column_name> = <value> , ...
   [ WHERE <condition> ]
+  [ RETURNING { * | <expression> [ AS <name> ] } , ... ]
 
 If ``WHERE`` is not provided, all records will be updated.
 
@@ -28,6 +29,12 @@ The result (such as ``UPDATE 8``) contains the number of records matched,
 including records that already had the new values. If no records are matched,
 the result is ``UPDATE 0`` with the completion condition ``02000`` (no data),
 see :doc:`sqlstate`.
+
+With ``RETURNING``, the result is the new values of each matched row instead,
+like ``SELECT ... FROM NEW TABLE (UPDATE ...)`` (see :doc:`select`). A column
+can be qualified with the correlation name, or the name of the table if there
+isn't one. It isn't standard SQL, so it's flagged as ``V113-02`` (see
+:doc:`insert` and :doc:`sql-flagging`).
 
 Examples
 --------

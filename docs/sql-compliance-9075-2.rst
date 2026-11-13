@@ -1277,10 +1277,10 @@ Optional Features
    * - ✅ **T141**
      - **SIMILAR predicate**
 
-   * - ❌ **T151**
+   * - ✅ **T151**
      - **DISTINCT predicate**
 
-   * - ❌ **T152**
+   * - ✅ **T152**
      - **DISTINCT predicate with negation**
 
    * - ❌ **T171**

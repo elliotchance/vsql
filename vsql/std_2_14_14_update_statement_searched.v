@@ -32,6 +32,24 @@ struct UpdateStatementSearched {
 fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	conn.open_write_connection()!
+	defer {
+		conn.release_write_connection()
+	}
+
+	change := stmt.change(mut conn, params)!
+
+	// The count is every row identified by the UPDATE, even if its values didn't
+	// change.
+	//
+	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.f.iii
+	return new_result_msg('UPDATE ${change.old.len}', elapsed_parse, t.elapsed())
+}
+
+// change updates the rows. Each row that's identified is an old row, and also a
+// new row (even if none of its values change). The write connection must
+// already be open.
+fn (stmt UpdateStatementSearched) change(mut conn Connection, params map[string]Value) !DataChange {
 	// A column can't be set more than once.
 	//
 	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Syntax Rules, 8
@@ -41,11 +59,6 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			return sqlstate_42601('column ${clause.column_name} is set more than once')
 		}
 		set_columns[clause.column_name] = true
-	}
-
-	conn.open_write_connection()!
-	defer {
-		conn.release_write_connection()
 	}
 
 	mut plan := create_plan(stmt, params, mut conn)!
@@ -108,6 +121,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 10, 11 and 13
 	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, General Rules, 2.b
 	mut changes := [][]Row{}
+	mut old_rows := []Row{cap: rows.len}
+	mut new_rows := []Row{cap: rows.len}
 	// The value of each <set clause> is compiled for the first row, then kept
 	// (by its position) for the rows after it.
 	mut compiled_set := map[int]CompileResult{}
@@ -178,13 +193,17 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		}
 
 		// A row that doesn't change isn't written, but it's still counted.
+		// To be able to write the row back we need to clean the column names.
+		before := row.for_storage()
+		old_rows << before
 		if did_modify {
-			// To be able to write the row back we need to clean the column names.
-			before := row.for_storage()
 			mut after := row2.for_storage()
 			generated_columns.apply(mut conn, mut after)!
 			check_constraints.verify(mut conn, after)!
 			changes << [before, after]
+			new_rows << after
+		} else {
+			new_rows << before
 		}
 	}
 
@@ -263,11 +282,10 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 
 	conn.note_row_changes(table, rows, row_changes, stmt.current_of)!
 
-	// The count is every row identified by the UPDATE, even if its values didn't
-	// change.
-	//
-	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.f.iii
-	return new_result_msg('UPDATE ${rows.len}', elapsed_parse, t.elapsed())
+	return DataChange{
+		old: old_rows
+		new: new_rows
+	}
 }
 
 fn (stmt UpdateStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

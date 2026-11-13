@@ -139,7 +139,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 		conn.release_read_connection()
 	}
 
-	plan := create_plan(stmt.query, params, mut conn)!
+	plan := create_statement_query_plan(stmt.query, params, mut conn)!
 	simply_updatable := stmt.simply_updatable(plan, params, mut conn)!
 
 	// A cursor is updatable if it's FOR UPDATE, or if it has no <updatability
@@ -194,6 +194,9 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 // of the select list must be a different column of the table, and a subquery in
 // the WHERE can't read the table.
 //
+// A data change delta table can't be updated, like a derived table.
+//
+// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rules, 20.a
 // ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 24 to 27
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 7 and 9
 fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut conn Connection) !bool {

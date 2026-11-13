@@ -296,7 +296,7 @@ pub fn (mut p PreparedStmt) resolve_names() ! {
 fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connection) ! {
 	match stmt {
 		DeclareCursor {
-			create_query_expression_plan(stmt.query, params, mut conn, Correlation{})!
+			create_statement_query_plan(stmt.query, params, mut conn)!
 		}
 		DeleteStatementSearched, QueryExpression {
 			create_plan(stmt, params, mut conn)!
@@ -307,7 +307,7 @@ fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connecti
 				table.column(column.sub_entity_name)!
 			}
 			if query := stmt.query {
-				create_plan(query, params, mut conn)!
+				create_query_expression_plan(query, params, mut conn, Correlation{})!
 			}
 		}
 		MergeStatement {

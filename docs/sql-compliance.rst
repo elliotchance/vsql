@@ -18,7 +18,7 @@ vsql follows three of them. Each has its own page:
    * - :doc:`sql-compliance-9075-2`
      - The SQL language
      - 129 of 164
-     - 85 of 364
+     - 87 of 364
 
    * - :doc:`sql-compliance-9075-3`
      - The C API

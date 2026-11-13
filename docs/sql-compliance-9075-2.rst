@@ -347,7 +347,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F031-01
      - ``CREATE TABLE`` statement to create persistent base tables
 
-   * - ❌ F031-02
+   * - ✅ F031-02
      - ``CREATE VIEW`` statement
 
    * - ❌ F031-03
@@ -359,7 +359,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F031-13
      - ``DROP TABLE`` statement: ``RESTRICT`` clause
 
-   * - ❌ F031-16
+   * - ✅ F031-16
      - ``DROP VIEW`` statement: ``RESTRICT`` clause
 
    * - ❌ F031-19
@@ -416,7 +416,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F051-08
      - ``LOCALTIMESTAMP``
 
-   * - ❌ **F081**
+   * - ✅ **F081**
      - **UNION and EXCEPT in views**
 
    * - ❌ **F131**
@@ -1007,7 +1007,7 @@ Optional Features
    * - ✅ **F851**
      - **<order by clause> in subqueries**
 
-   * - ❌ **F852**
+   * - ✅ **F852**
      - **Top-level <order by clause> in views**
 
    * - ✅ **F855**
@@ -1022,7 +1022,7 @@ Optional Features
    * - ✅ **F858**
      - **<fetch first clause> in subqueries**
 
-   * - ❌ **F859**
+   * - ✅ **F859**
      - **Top-level <fetch first clause> in views**
 
    * - ❌ **F860**
@@ -1037,7 +1037,7 @@ Optional Features
    * - ✅ **F863**
      - **Nested <result offset clause> in <query expression>**
 
-   * - ❌ **F864**
+   * - ✅ **F864**
      - **Top-level <result offset clause> in views**
 
    * - ❌ **F865**

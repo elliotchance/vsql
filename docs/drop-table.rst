@@ -17,7 +17,10 @@ object depends on the table. ``CASCADE`` also drops the objects that depend on
 the table. The only objects that can depend on a table are the
 ``FOREIGN KEY`` constraints of other tables that reference it (see
 :doc:`create-table`), so ``CASCADE`` drops those constraints, but not the
-other tables or their rows.
+other tables or their rows, and the views that read it (see :doc:`create-view`),
+which ``CASCADE`` drops.
+
+A view can't be dropped with ``DROP TABLE``, see :doc:`drop-view`.
 
 The SQL standard requires one of ``CASCADE`` or ``RESTRICT``, but vsql also
 allows neither, which is the same as ``RESTRICT``.
@@ -48,3 +51,4 @@ See Also
 
 - :doc:`alter-table`
 - :doc:`create-table`
+- :doc:`drop-view`

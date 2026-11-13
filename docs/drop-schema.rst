@@ -17,7 +17,9 @@ returned and no action will be taken.
 
 If ``CASCADE`` is specified then the schema is dropped, including any objects
 within it. A ``FOREIGN KEY`` of a table in another schema that
-references one of its tables is also dropped (see :doc:`drop-table`).
+references one of its tables is also dropped (see :doc:`drop-table`), and so is
+a view in another schema that reads one of its tables or views (see
+:doc:`drop-view`).
 
 One of ``CASCADE`` or ``RESTRICT`` must be provided.
 

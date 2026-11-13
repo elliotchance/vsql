@@ -20,6 +20,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| DropSchemaStatement
 	| DropSequenceGeneratorStatement
 	| DropTableStatement
+	| DropViewStatement
 	| FetchStatement
 	| InsertStatement
 	| MergeStatement
@@ -43,6 +44,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| UpdateStatementPositioned
 	| UpdateStatementSearched
 	| VacuumStatement
+	| ViewDefinition
 
 // A prepared statement is compiled and validated, but not executed. It can then
 // be executed with a value for each dynamic parameter ("?") in the statement,
@@ -234,6 +236,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		DropSchemaStatement { 'DROP SCHEMA', 31 }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE', 135 }
 		DropTableStatement { 'DROP TABLE', 32 }
+		DropViewStatement { 'DROP VIEW', 36 }
 		FetchStatement { 'FETCH', 45 }
 		InsertStatement { 'INSERT', 50 }
 		MergeStatement { 'MERGE', 128 }
@@ -257,6 +260,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		UpdateStatementPositioned { 'UPDATE CURSOR', 81 }
 		UpdateStatementSearched { 'UPDATE WHERE', 82 }
 		VacuumStatement { 'VACUUM', -5 }
+		ViewDefinition { 'CREATE VIEW', 84 }
 	}
 }
 
@@ -569,6 +573,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
+		ViewDefinition {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
 		CloseStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
@@ -633,6 +644,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		DropTableStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		DropViewStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

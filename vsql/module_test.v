@@ -268,16 +268,16 @@ fn test_flagging_module() ! {
 
 	// The names of the module header.
 	for header, features in {
-		'MODULE module_name_17cha LANGUAGE C SCHEMA schema_name_17cha AUTHORIZATION a ': ['B112']
-		'MODULE module_name_18char LANGUAGE C SCHEMA s ':                                [
+		'MODULE module_name_18char LANGUAGE C SCHEMA schema_name_18char AUTHORIZATION authorization_18ch ': ['B112']
+		'MODULE module_name_19chars LANGUAGE C SCHEMA s ':                                                  [
 			'B112',
 			'F391',
 		]
-		'MODULE LANGUAGE C SCHEMA schema_name_18char ':                                  [
+		'MODULE LANGUAGE C SCHEMA schema_name_19chars ':                                                    [
 			'B112',
 			'F391',
 		]
-		'MODULE LANGUAGE C AUTHORIZATION authorization_18ch ':                           [
+		'MODULE LANGUAGE C AUTHORIZATION authorization_19cha ':                                             [
 			'B112',
 			'F391',
 		]
@@ -311,7 +311,7 @@ char SQLSTATE[6]; long host_variable_name_18c;
 EXEC SQL END DECLARE SECTION;
 EXEC SQL DELETE FROM t WHERE x = :host_variable_name_18c;',
 		'x.sqc')!.features == ['B012']
-	assert precompiled("EXEC SQL PREPARE statement_name_18c FROM 'VALUES 1';")! == [
+	assert precompiled("EXEC SQL PREPARE statement_name_19ch FROM 'VALUES 1';")! == [
 		'B012',
 		'B031',
 		'F391',

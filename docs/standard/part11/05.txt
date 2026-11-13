@@ -80,7 +80,7 @@
 5.20/CR/1                n/a          - - user-defined types (S023)
 # 5.21, COLUMNS view
 5.21                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql every column, since there are no privileges (#732)
-5.21/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
+5.21/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 5.21/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
 5.21/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
 5.21/CR/4                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
@@ -122,7 +122,7 @@
 # 5.32, KEY_COLUMN_USAGE view
 5.32                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_32_key_column_usage.sql every constraint, since there are no privileges (#732)
 5.32/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
-5.32/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
+5.32/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 # 5.33, METHOD_SPECIFICATION_PARAMETERS view
 5.33                     n/a          - - user-defined types (S023)
 5.33/CR/1                n/a          - - user-defined types (S023)
@@ -142,7 +142,7 @@
 5.36/CR/2                n/a          - - reference types (S041)
 # 5.37, REFERENTIAL_CONSTRAINTS view
 5.37                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql every constraint, since there are no privileges (#732)
-5.37/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
+5.37/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 # 5.38, ROLE_COLUMN_GRANTS view
 5.38                     n/a          - - roles (T331)
 5.38/CR/1                n/a          - - roles (T331)
@@ -230,7 +230,7 @@
 5.60/CR/1                n/a          - - privilege tables (F231)
 # 5.61, TABLES view
 5.61                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql every table, since there are no privileges (#732)
-5.61/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
+5.61/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 # 5.62, TRANSFORMS view
 5.62                     n/a          - - transforms (S241)
 5.62/CR/1                n/a          - - transforms (S241)

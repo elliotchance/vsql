@@ -1,7 +1,6 @@
 -- # The Conformance Rules of the INFORMATION_SCHEMA views: some views, and some
 -- # columns of a view, can't be referenced without a feature. The
--- # INFORMATION_SCHEMA name itself is also flagged with F391, since it has 18
--- # characters (#738).
+-- # INFORMATION_SCHEMA name itself has 18 characters, so it doesn't need F391.
 /* setup */
 CREATE TABLE t (x INT NOT NULL, y INT GENERATED ALWAYS AS (x + 1));
 CREATE TABLE columns (is_updatable INT, is_generated INT);
@@ -108,10 +107,10 @@ SELECT CHARACTER_VALUE FROM INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO WHERE IMP
 -- CHARACTER_VALUE: vsql
 
 -- # The other views, and a table with the same name as a view in another
--- # schema, can be referenced in Core SQL (other than the long schema name).
+-- # schema, can be referenced in Core SQL.
 /* flags */
 SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME = 'T';
--- flags: F391
+-- flags:
 -- COL1: 1
 
 /* flags */

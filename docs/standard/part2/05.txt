@@ -43,7 +43,7 @@
 5.2/SR/31                n/a          - - Unicode delimited identifiers (F392)
 5.2/SR/32                n/a          - - Unicode delimited identifiers (F392)
 5.2/SR/33                implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
-5.2/CR/1                 partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql an 18 character regular identifier is also flagged (#738)
+5.2/CR/1                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 5.2/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 5.2/CR/3                 implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
 5.2/CR/4                 n/a          - - Unicode delimited identifiers (F392)

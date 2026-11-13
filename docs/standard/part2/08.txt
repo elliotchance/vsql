@@ -306,24 +306,24 @@
 8.13/GR/4.b.iii          n/a          - - MATCH predicate (F741)
 8.13/CR/1                n/a          - - MATCH predicate (F741)
 # 8.14, <overlaps predicate>
-8.14                     n/a          - - OVERLAPS predicate (F053)
-8.14/SR/1                n/a          - - OVERLAPS predicate (F053)
-8.14/SR/2                n/a          - - OVERLAPS predicate (F053)
-8.14/SR/3                n/a          - - OVERLAPS predicate (F053)
-8.14/SR/3.a              n/a          - - OVERLAPS predicate (F053)
-8.14/SR/3.b              n/a          - - OVERLAPS predicate (F053)
-8.14/GR/1                n/a          - - OVERLAPS predicate (F053)
-8.14/GR/2                n/a          - - OVERLAPS predicate (F053)
+8.14                     implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/SR/1                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/SR/2                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/SR/3                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql the second field can only be a datetime
+8.14/SR/3.a              n/a          - - intervals (F052)
+8.14/SR/3.b              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/GR/1                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/GR/2                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/3                container    - -
-8.14/GR/3.a              n/a          - - OVERLAPS predicate (F053)
-8.14/GR/3.b              n/a          - - OVERLAPS predicate (F053)
-8.14/GR/4                n/a          - - OVERLAPS predicate (F053)
+8.14/GR/3.a              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/GR/3.b              n/a          - - intervals (F052)
+8.14/GR/4                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/5                container    - -
-8.14/GR/5.a              n/a          - - OVERLAPS predicate (F053)
-8.14/GR/5.b              n/a          - - OVERLAPS predicate (F053)
-8.14/GR/6                n/a          - - OVERLAPS predicate (F053)
-8.14/GR/7                n/a          - - OVERLAPS predicate (F053)
-8.14/CR/1                n/a          - - OVERLAPS predicate (F053)
+8.14/GR/5.a              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/GR/5.b              n/a          - - intervals (F052)
+8.14/GR/6                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/GR/7                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
+8.14/CR/1                implemented  vsql/std_2_8_14_overlaps_predicate.y tests/std_2_8_14_overlaps_predicate.sql
 # 8.15, <distinct predicate>
 8.15                     implemented  vsql/std_2_8_15_distinct_predicate.v tests/std_2_8_15_distinct_predicate.sql
 8.15/SR/1                implemented  vsql/std_2_8_15_distinct_predicate.v tests/std_2_8_15_distinct_predicate.sql

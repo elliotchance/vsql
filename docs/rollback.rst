@@ -11,6 +11,11 @@ Nested transactions are not supported. Outside of a transaction, ``COMMIT`` and
 ``ROLLBACK`` succeed and do nothing, since every statement is committed when it
 finishes.
 
+``AND CHAIN`` starts a new transaction straight away, with the same access mode,
+isolation level, ``DIAGNOSTICS SIZE`` and constraint modes. ``ROLLBACK AND CHAIN``
+outside of a transaction doesn't start one. ``AND NO CHAIN`` is the same as
+leaving it out.
+
 .. contents::
 
 Syntax
@@ -18,7 +23,7 @@ Syntax
 
 .. code-block:: text
 
-  ROLLBACK [ WORK ]
+  ROLLBACK [ WORK ] [ AND [ NO ] CHAIN ]
 
 These can be used instead. They are vsql extensions, not standard SQL, and they
 are flagged by ``V116-01`` and ``V116-02`` (see :doc:`sql-flagging`):

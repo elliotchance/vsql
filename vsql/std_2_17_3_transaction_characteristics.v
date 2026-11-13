@@ -95,6 +95,15 @@ pub fn (conn Connection) transaction_read_only() bool {
 	return conn.read_only
 }
 
+// current_characteristics are the characteristics of the current SQL-transaction.
+fn (conn Connection) current_characteristics() TransactionCharacteristics {
+	return TransactionCharacteristics{
+		read_only:            conn.read_only
+		isolation_level:      conn.isolation_level
+		condition_area_limit: conn.condition_area_limit
+	}
+}
+
 struct TransactionCharacteristics {
 	// read_only is the <transaction access mode>. READ WRITE is the default,
 	// except for READ UNCOMMITTED.

@@ -18,6 +18,12 @@ and the error is ``40002``.
 If anything else prevents the commit, such as an I/O error, the whole transaction
 is also rolled back and the error is ``40V01``.
 
+``AND CHAIN`` starts a new transaction straight away, with the same access mode,
+isolation level and ``DIAGNOSTICS SIZE``. Every constraint is immediate in it,
+because of the check above, until :doc:`set-constraints` is used. A
+``COMMIT`` that fails doesn't start one, and nor does ``COMMIT AND CHAIN`` outside
+of a transaction. ``AND NO CHAIN`` is the same as leaving it out.
+
 .. contents::
 
 Syntax
@@ -25,7 +31,7 @@ Syntax
 
 .. code-block:: text
 
-  COMMIT [ WORK ]
+  COMMIT [ WORK ] [ AND [ NO ] CHAIN ]
 
 These can be used instead. They are vsql extensions, not standard SQL, and they
 are flagged by ``V115-01`` and ``V115-02`` (see :doc:`sql-flagging`):

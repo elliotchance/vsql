@@ -74,7 +74,7 @@
 17.6/CR/1                n/a          - - savepoints (T271)
 # 17.7, <commit statement>
 17.7                     implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_1_transaction.sql
-17.7/SR/1                n/a          - - chained transactions (T261)
+17.7/SR/1                implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_7_chained_transactions.sql
 17.7/GR/1                n/a          - - there's no external transaction manager or encompassing transaction
 17.7/GR/2                n/a          - - there are no SQL-invoked routines (T321)
 17.7/GR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
@@ -88,16 +88,16 @@
 17.7/GR/8                n/a          - - there are no locators (T041)
 17.7/GR/9                implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_1_transaction.sql
 17.7/GR/10               container    - -
-17.7/GR/10.a             n/a          - - chained transactions (T261)
+17.7/GR/10.a             implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_7_chained_transactions.sql every constraint is immediate because of GR 5
 17.7/GR/10.b             container    - -
 17.7/GR/10.b.i           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.7/GR/10.b.ii          implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_17_4_set_constraints.sql
 17.7/GR/11               impl-defined vsql/prepare.v tests/std_2_14_1_cursors.sql no prepared statement is deallocated
-17.7/CR/1                n/a          - - chained transactions (T261)
+17.7/CR/1                implemented  vsql/std_2_17_7_commit_statement.y tests/std_2_17_7_chained_transactions.sql
 # 17.8, <rollback statement>
 17.8                     implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_1_transaction.sql
-17.8/SR/1                n/a          - - chained transactions (T261)
-17.8/SR/2                n/a          - - chained transactions (T261)
+17.8/SR/1                n/a          - - savepoints (T271)
+17.8/SR/2                implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_7_chained_transactions.sql
 17.8/GR/1                n/a          - - there's no external transaction manager or encompassing transaction
 17.8/GR/2                implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_1_transaction.sql
 17.8/GR/2.a              n/a          - - there are no SQL-invoked routines (T321)
@@ -108,7 +108,7 @@
 17.8/GR/2.f              impl-defined vsql/prepare.v tests/std_2_14_1_cursors.sql no prepared statement is deallocated
 17.8/GR/2.g              implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_1_transaction.sql
 17.8/GR/2.h              container    - -
-17.8/GR/2.h.i            n/a          - - chained transactions (T261)
+17.8/GR/2.h.i            implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_7_chained_transactions.sql
 17.8/GR/2.h.ii           container    - -
 17.8/GR/2.h.ii.1         implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.8/GR/2.h.ii.2         implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_17_4_set_constraints.sql
@@ -124,4 +124,4 @@
 17.8/GR/3.i              n/a          - - savepoints (T271)
 17.8/GR/3.j              n/a          - - savepoints (T271)
 17.8/CR/1                n/a          - - savepoints (T271)
-17.8/CR/2                n/a          - - chained transactions (T261)
+17.8/CR/2                implemented  vsql/std_2_17_7_commit_statement.y tests/std_2_17_7_chained_transactions.sql

@@ -104,16 +104,13 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 
 		// - 12, 14. The current SQL-transaction is terminated. If CT indicates
 		// COMMIT AND CHAIN or ROLLBACK AND CHAIN, then a new SQL-transaction is
-		// initiated, with the same access mode and isolation level.
-		end_transaction(mut diag, mut conn, dh, is_commit) or {
+		// initiated, with the same access mode, isolation level and condition area
+		// limit.
+		end_transaction(mut diag, mut conn, dh, is_commit, is_chain) or {
 			errors << err
 			continue
 		}
 		if is_chain {
-			access := if conn.transaction_read_only() { 'READ ONLY, ' } else { '' }
-			db_query(mut conn, 'START TRANSACTION ${access}ISOLATION LEVEL ${conn.transaction_isolation_level()}') or {
-				errors << err
-			}
 			dbc.autocommit_transaction = false
 		}
 	}
@@ -132,8 +129,9 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 // connection. A commit that fails rolls back the SQL-transaction instead (General
 // Rules 12.d.i and 12.d.iii), which also closes the holdable cursors, unless that
 // fails too.
-fn end_transaction(mut diag Diagnostics, mut conn vsql.Connection, dh i64, is_commit bool) ! {
-	db_query(mut conn, if is_commit { 'COMMIT' } else { 'ROLLBACK' }) or {
+fn end_transaction(mut diag Diagnostics, mut conn vsql.Connection, dh i64, is_commit bool, is_chain bool) ! {
+	statement := if is_commit { 'COMMIT' } else { 'ROLLBACK' }
+	db_query(mut conn, if is_chain { '${statement} AND CHAIN' } else { statement }) or {
 		if !conn.in_transaction() {
 			diag.transactions_rolled_back++
 			close_cursors(dh, false)

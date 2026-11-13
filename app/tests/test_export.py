@@ -269,9 +269,9 @@ def test_export_params(ui, db_file):
     cli(db_file, """CREATE TABLE foo.v (x INT, s VARCHAR(10));
 INSERT INTO foo.v (x, s) VALUES (1, 'it''s');""")
     ui.new_tab()
-    ui.page.locator('textarea[name="sql"]').fill('SELECT x, ? AS n FROM foo.v WHERE s = ?')
+    ui.page.locator('textarea[name="sql"]').fill('SELECT x, CAST(? AS INTEGER) AS n FROM foo.v WHERE s = ?')
     ui.page.locator('button.export-query-tab').click()
-    ui.export_set('Query', 'SELECT x, ? AS n FROM foo.v WHERE s = ?')
+    ui.export_set('Query', 'SELECT x, CAST(? AS INTEGER) AS n FROM foo.v WHERE s = ?')
     ui.update_export(lambda: ui.page.locator('[name="export_param:1"]').fill('\\N'))
     ui.update_export(lambda: ui.page.locator('[name="export_param:2"]').fill("it's"))
     expect(ui.export_command).to_contain_text("P1='\\N' P2='it'\\''s' vsql out")

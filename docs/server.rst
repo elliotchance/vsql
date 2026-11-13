@@ -44,6 +44,11 @@ Many PostgreSQL clients send a ``SELECT`` without a ``FROM`` (such as
 ``SELECT 1``), which isn't valid SQL. ``vsql server`` runs these as if they had
 ``FROM singlerow``, a table with a single row.
 
+PostgreSQL clients also set PostgreSQL's run-time parameters, such as
+``SET LOCAL search_path TO public``. ``vsql server`` replies ``SET`` to any
+``SET [ SESSION | LOCAL ] <name> { TO | = } ...`` without running it. A ``SET``
+in the SQL standard, such as ``SET SCHEMA``, still runs.
+
 Any number of clients can be connected at the same time (although no more than
 256 can be in a transaction at once). Each client has its own
 connection, so a transaction started by one client is not visible to the others
@@ -79,7 +84,8 @@ The server can also be started from your own V application:
 
 Unlike ``vsql server``, the server doesn't add ``FROM singlerow`` to a ``SELECT``
 without a ``FROM`` (which many PostgreSQL clients send, but isn't valid SQL)
-unless ``select_without_from`` is set.
+unless ``select_without_from`` is set, and doesn't ignore PostgreSQL's ``SET``
+of a run-time parameter unless ``ignore_pg_set`` is set.
 
 See :doc:`install` to get the ``vsql`` command.
 

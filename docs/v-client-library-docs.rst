@@ -1249,6 +1249,11 @@ struct ServerOptions
    	// but no FROM, which isn't valid SQL but is sent by many PostgreSQL clients.
    	// The singlerow table is created if it doesn't exist.
    	select_without_from bool
+   	// ignore_pg_set replies "SET" to a PostgreSQL SET of a run-time parameter,
+   	// such as "SET LOCAL search_path TO public", without running it. These
+   	// aren't valid SQL but are sent by many PostgreSQL clients. A SET of
+   	// anything in the SQL standard (such as SET SCHEMA) still runs.
+   	ignore_pg_set bool
    }
 
 

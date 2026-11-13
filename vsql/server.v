@@ -32,6 +32,11 @@ pub:
 	// but no FROM, which isn't valid SQL but is sent by many PostgreSQL clients.
 	// The singlerow table is created if it doesn't exist.
 	select_without_from bool
+	// ignore_pg_set replies "SET" to a PostgreSQL SET of a run-time parameter,
+	// such as "SET LOCAL search_path TO public", without running it. These
+	// aren't valid SQL but are sent by many PostgreSQL clients. A SET of
+	// anything in the SQL standard (such as SET SCHEMA) still runs.
+	ignore_pg_set bool
 }
 
 // Server accepts connections from PostgreSQL clients, see new_server.
@@ -232,6 +237,24 @@ fn is_empty_query(query string) bool {
 	return tokens.all(it.token == token_operator_semicolon)
 }
 
+// is_pg_set is true if a query is a PostgreSQL SET of a run-time parameter:
+// SET [ SESSION | LOCAL ] <name> { TO | = } ... The name is never a keyword, so
+// it's never a SET statement in the SQL standard.
+fn is_pg_set(query string) bool {
+	tokens := tokenize(query) or { return false }
+	mut i := 0
+	if tokens.len == 0 || tokens[i].token != token_set {
+		return false
+	}
+	i++
+	if i < tokens.len && tokens[i].token in [token_session, token_local] {
+		i++
+	}
+
+	return i + 1 < tokens.len && tokens[i].token == token_literal_identifier
+		&& tokens[i + 1].token in [token_to, token_operator_equals]
+}
+
 fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
@@ -259,6 +282,13 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 				if is_empty_query(query) {
 					s.log('query: ${query}')
 					conn.write_empty_query_response()!
+					conn.write_ready_for_query()!
+					continue
+				}
+
+				if s.options.ignore_pg_set && is_pg_set(query) {
+					s.log('ignored: ${query}')
+					conn.write_command_complete('SET')!
 					conn.write_ready_for_query()!
 					continue
 				}

@@ -784,6 +784,9 @@ struct Connection
    	// is being run. Nothing else in the statement can change it, see
    	// apply_referential_actions.
    	restricted_tables []string
+   	// view_catalog is the catalog of the view whose query is being planned or
+   	// run, which is the only catalog it can read, see Connection.view_plan.
+   	view_catalog string
    	// direct_query_transaction is true when an SQL-transaction was started by
    	// a query in direct (see Connection.direct) that hasn't changed anything.
    	direct_query_transaction bool

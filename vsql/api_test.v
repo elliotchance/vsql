@@ -973,7 +973,8 @@ fn test_invalid_cursor() ! {
 
 // CREATE INDEX waits up to create_index_timeout for another connection's
 // transaction with changes to the table, then gives up. A new file can be
-// changed by any version until it has an index, which raises its Write Version.
+// changed by any version until it has an index (or a view), which raises its
+// Write Version.
 fn test_create_index_waits() ! {
 	path := os.join_path(os.temp_dir(), 'vsql-sql-test-index-${os.getpid()}.vsql')
 	defer {
@@ -1033,6 +1034,19 @@ fn test_create_index_waits() ! {
 	header = read_header(mut file)!
 	file.close()
 	assert header.write_version == 2
+
+	// The first view raises the Write Version to 4, but not the Read Version
+	// (an older version ignores the views). It stays when the view is dropped.
+	db1.query('CREATE VIEW v AS SELECT a FROM t')!
+	file = os.open(path)!
+	header = read_header(mut file)!
+	file.close()
+	assert header.read_version == 1 && header.write_version == 4
+	db1.query('DROP VIEW v RESTRICT')!
+	file = os.open(path)!
+	header = read_header(mut file)!
+	file.close()
+	assert header.write_version == 4
 }
 
 // A connection that's used from a thread other than the one that opened it

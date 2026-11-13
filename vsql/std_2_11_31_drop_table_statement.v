@@ -7,9 +7,10 @@ import time
 // Destroy a table.
 
 // The behavior is RESTRICT when it's not provided (the standard requires it).
-// With RESTRICT, a table that's referenced by a FOREIGN KEY of another table
-// can't be dropped. CASCADE drops those FOREIGN KEYs instead, which is what
-// revoking the REFERENCES privilege on the table would do.
+// With RESTRICT, a table that's referenced by a FOREIGN KEY of another table, or
+// read by a view, can't be dropped. CASCADE drops those FOREIGN KEYs instead,
+// which is what revoking the REFERENCES privilege on the table would do, and
+// the views (see Connection.drop_dependent_views).
 //
 // ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, Syntax Rules, 7.d
 // ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, General Rules, 3
@@ -51,6 +52,7 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 	// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, General Rules, 6
 	catalog.storage.delete_table(table_name.storage_id(),
 		catalog.storage.table(table_name.storage_id()).tid)!
+	conn.drop_dependent_views(mut catalog, stmt.behavior, table_name.str(), map[string][]Column{})!
 
 	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }

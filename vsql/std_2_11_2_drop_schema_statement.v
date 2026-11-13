@@ -34,8 +34,8 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 		return sqlstate_3f000(schema_name) // schema does not exist
 	}
 
-	// Find all dependencies. A schema can only contain tables and sequences,
-	// which are the only objects that RESTRICT needs to check for.
+	// Find all dependencies. A schema can only contain tables, views and
+	// sequences, which are the only objects that RESTRICT needs to check for.
 	//
 	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, Syntax Rules, 4
 	mut table_names := []string{}
@@ -52,20 +52,39 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 		}
 	}
 
-	if stmt.behavior == 'RESTRICT' && (table_names.len > 0 || sequences.len > 0) {
+	mut views := []View{}
+	mut view_ids := catalog.storage.views.keys()
+	view_ids.sort()
+	for id in view_ids {
+		view := catalog.storage.views[id] or { continue }
+		if view.name.schema_name == schema_name {
+			views << view
+		}
+	}
+
+	if stmt.behavior == 'RESTRICT' && (table_names.len > 0 || sequences.len > 0 || views.len > 0) {
 		return sqlstate_2bp01(schema_name)
 	}
 
 	// Each table is dropped like a DROP TABLE CASCADE, so the FOREIGN KEYs of
-	// the tables in other schemas that reference the tables are dropped. Then
-	// each sequence and the schema itself are dropped.
+	// the tables in other schemas that reference the tables are dropped. Each
+	// view is dropped like a DROP VIEW CASCADE. Then each sequence and the schema
+	// itself are dropped.
 	//
-	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, General Rules, 1, 12 and 13
+	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, General Rules, 1, 2, 12 and 13
 	catalog.storage.drop_foreign_keys_referencing(table_names)!
+
+	// The views are dropped first, since a view in the schema can read a table
+	// of the schema. Then the views of other schemas that read anything that
+	// was dropped are dropped too.
+	for view in views {
+		catalog.storage.delete_view(view)!
+	}
 
 	for table_name in table_names {
 		catalog.storage.delete_table(table_name, catalog.storage.table(table_name).tid)!
 	}
+	conn.drop_dependent_views(mut catalog, 'CASCADE', schema_name, map[string][]Column{})!
 
 	for sequence in sequences {
 		catalog.storage.delete_sequence(sequence.name, sequence.tid)!

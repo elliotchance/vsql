@@ -226,7 +226,7 @@
 14.9                     partial      vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql no cursor operation conflict warning (#797)
 14.9/SR/1                definition   - -
 14.9/SR/2                definition   - -
-14.9/SR/3                n/a          - - every table is a base table, and there are no views (F031-02)
+14.9/SR/3                implemented  vsql/connection.v tests/std_2_11_32_create_view.sql a view isn't updatable yet (updatable views (#1448))
 14.9/SR/4                n/a          - - triggers (T211)
 14.9/SR/5                implemented  vsql/std_2_14_9_delete_statement_searched.y tests/std_2_14_9_delete.sql
 14.9/SR/6                n/a          - - SQL-invoked routines (T321)
@@ -268,7 +268,7 @@
 14.9/GR/8.a.i.1          n/a          - - ONLY (S111)
 14.9/GR/8.a.i.2          n/a          - - subtables (S081)
 14.9/GR/8.a.ii           implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
-14.9/GR/8.b              n/a          - - views (F031-02)
+14.9/GR/8.b              missing      - - updatable views (#1448)
 14.9/GR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_15_6_cursor_operation_conflict.sql
 14.9/GR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/CR/1                partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
@@ -304,7 +304,7 @@
 14.11                    implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/SR/1               definition   - -
 14.11/SR/2               definition   - -
-14.11/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
+14.11/SR/3               implemented  vsql/connection.v tests/std_2_11_32_create_view.sql a view isn't updatable yet (updatable views (#1448))
 14.11/SR/4               n/a          - - triggers (T211)
 14.11/SR/5               n/a          - - user-defined types (S023)
 14.11/SR/6               n/a          - - DEFAULT VALUES (F222)
@@ -353,7 +353,7 @@
 14.11/GR/8.a             implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
 14.11/GR/8.a.i           definition   - -
 14.11/GR/8.a.ii          implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
-14.11/GR/8.b             n/a          - - views (F031-02)
+14.11/GR/8.b             missing      - - updatable views (#1448)
 14.11/GR/9               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_from_query.sql
 14.11/CR/1               container    - -
 14.11/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
@@ -520,7 +520,7 @@
 14.14                    partial      vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql no cursor operation conflict warning (#797)
 14.14/SR/1               definition   - -
 14.14/SR/2               definition   - -
-14.14/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
+14.14/SR/3               implemented  vsql/connection.v tests/std_2_11_32_create_view.sql a view isn't updatable yet (updatable views (#1448))
 14.14/SR/4               n/a          - - triggers (T211)
 14.14/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.y tests/std_2_14_14_update.sql
 14.14/SR/6               n/a          - - SQL-invoked routines (T321)
@@ -570,7 +570,7 @@
 14.14/GR/14.a.i.1        n/a          - - ONLY (S111)
 14.14/GR/14.a.i.2        n/a          - - subtables (S081)
 14.14/GR/14.a.ii         implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
-14.14/GR/14.b            n/a          - - views (F031-02)
+14.14/GR/14.b            missing      - - updatable views (#1448)
 14.14/GR/15              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/CR/1               partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
 14.14/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter

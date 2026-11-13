@@ -24,7 +24,8 @@ struct DropColumnDefinition {
 //
 // A generated column whose generation expression uses the column can also only
 // be dropped with CASCADE, which drops it first. So can a column that's in an
-// index, and CASCADE drops the index.
+// index, and CASCADE drops the index. So can a column that's read by a view,
+// and CASCADE drops the view (see Connection.drop_dependent_views).
 //
 // ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, Syntax Rules, 4, 7.b and 7.f
 // ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, General Rules, 3 to 8
@@ -33,6 +34,7 @@ struct DropColumnDefinition {
 // order of the columns (see Row.bytes). The current value of the sequence of
 // an identity column is dropped with it.
 fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, original_table Table) ! {
+	view_columns := conn.view_columns(catalog)
 	mut table := original_table
 	column := table.column(d.column_name.sub_entity_name)!
 	name := column.name.sub_entity_name
@@ -162,4 +164,6 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 	if _ := column.identity {
 		catalog.storage.delete_identity(table.id)!
 	}
+	conn.drop_dependent_views(mut catalog, d.behavior, 'column ${requote_identifier(name)} on ${table.name}',
+		view_columns)!
 }

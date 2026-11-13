@@ -107,6 +107,9 @@ import arrays
 // V119: INSERT.
 // V119-01: INSERT with RETURNING.
 //
+// V120: DROP VIEW.
+// V120-01: DROP VIEW without a <drop behavior> (it's RESTRICT).
+//
 // V201: FROM.
 // V201-01: SELECT without a FROM clause.
 // V201-02: A derived table without a correlation name.
@@ -189,6 +192,7 @@ const vsql_abort = 'V116-02'
 const vsql_prepare_literal = 'V117-01'
 const vsql_execute_immediate_literal = 'V118-01'
 const vsql_insert_returning = 'V119-01'
+const vsql_drop_view_behavior = 'V120-01'
 const vsql_select_without_from = 'V201-01'
 const vsql_derived_table_without_name = 'V201-02'
 const vsql_sort_key_without_column = 'V202-01'
@@ -526,6 +530,23 @@ fn flag_exists(mut yylex YYLexer, e QueryExpression) {
 		exprs := e.body.exprs
 		flag_if(mut yylex, exprs is []SelectSublist && exprs.len != 1, 'T501')
 	}
+}
+
+// flag_view_query flags a top-level ORDER BY, OFFSET or FETCH FIRST in the
+// query of a view.
+//
+// ISO/IEC 9075-2:2016(E), 11.32, <view definition>, Conformance Rules, 5, 6 and 7
+fn flag_view_query(mut yylex YYLexer, query QueryExpression) {
+	flag_if(mut yylex, query.order.len > 0, 'F852')
+	flag_if(mut yylex, query.offset != none, 'F864')
+	flag_if(mut yylex, query.fetch != none, 'F859')
+}
+
+// has_dynamic_parameters is true if the statement being parsed contains a
+// <dynamic parameter specification> (a host parameter of a module is also one,
+// see parse_module_statement).
+fn has_dynamic_parameters(yylex YYLexer) bool {
+	return yylex is Lexer && yylex.tokens.any(it.token == token_operator_question_mark)
 }
 
 // flag_unique_columns flags a UNIQUE constraint (other than a PRIMARY KEY) on
@@ -1053,6 +1074,9 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 			create_plan(stmt, params, mut conn) or {}
 			conn.flag_set_clauses(stmt.table_name, stmt.set, params)
 		}
+		ViewDefinition {
+			create_query_expression_plan(stmt.query, params, mut conn, Correlation{}) or {}
+		}
 		else {}
 	}
 
@@ -1120,10 +1144,10 @@ fn (mut conn Connection) flag_asterisk(table Table) {
 }
 
 // flag_self_reference flags a DELETE or UPDATE with a subquery that reads the
-// table being changed, or an INSERT with a query that reads it anywhere. There
-// are no views, so the leaf generally underlying tables are the base tables
-// that are read. A table name that's only the qualifier of a column reference
-// isn't read.
+// table being changed, or an INSERT with a query that reads it anywhere. The
+// leaf generally underlying tables are the base tables that are read, including
+// by the query of a view (see Connection.view_plan). A table name that's only
+// the qualifier of a column reference isn't read.
 //
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 1.a

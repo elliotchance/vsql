@@ -132,7 +132,7 @@
 5.4/SR/4.c               implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
 5.4/SR/5                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql
 5.4/SR/5.a               n/a          - - declared local temporary tables (F531)
-5.4/SR/5.b               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql no views (F031-02)
+5.4/SR/5.b               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql,tests/std_2_11_32_create_view.sql
 5.4/SR/6                 n/a          - - local cursor references (T601)
 5.4/SR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod a cursor can also be declared outside of an SQL-client module (V108-01)
 5.4/SR/8                 n/a          - - user-defined types (S023)

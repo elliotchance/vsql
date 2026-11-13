@@ -261,6 +261,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V119-01``
      - ``INSERT`` with ``RETURNING``.
 
+   * - ``V120``
+     - ``DROP VIEW``.
+
+   * - ``V120-01``
+     - ``DROP VIEW`` without ``CASCADE`` or ``RESTRICT`` (see :doc:`drop-view`).
+
    * - ``V201``
      - ``FROM``.
 

@@ -274,8 +274,9 @@ The options are:
   extension of ``-file``, otherwise ``sql``.
 - ``-ignore-unsupported``: Show a warning for ``CREATE VIEW``, ``CREATE TRIGGER``
   and ``CREATE INDEX`` if they can't be run, instead of an error. ``CREATE INDEX``
-  is supported (see :doc:`create-index`), but some forms of it aren't, such as an
-  index with a ``WHERE``. The import can then finish without them, so anything
+  and ``CREATE VIEW`` are supported (see :doc:`create-index` and
+  :doc:`create-view`), but some forms of them aren't, such as an index with a
+  ``WHERE``, or a view with a query that vsql can't run. The import can then finish without them, so anything
   that relies on them (such as a ``UNIQUE`` index) isn't there.
 - ``-isolation``: The isolation level of each transaction (see
   :doc:`transactions`): ``read-uncommitted``, ``read-committed``,

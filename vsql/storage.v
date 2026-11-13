@@ -220,7 +220,8 @@ fn (mut f Storage) prepare_commit(path string) ! {
 	}
 
 	f.header.root_page = f.btree.pager.root_page()
-	f.wal_prepared = wal_prepare(mut f.file, path, mut f.log, f.header, f.file_pager) or {
+	f.wal_prepared = wal_prepare(mut f.file, path, mut f.log, f.header, f.file_pager,
+		f.transaction_state == .active) or {
 		return io_error(err)
 	}
 }
@@ -240,6 +241,7 @@ fn (mut f Storage) finish_commit(path string) ! {
 	mut prepared := f.wal_prepared or { WalPrepared{} }
 	f.wal_prepared = none
 	wal_finish(mut f.file, path, mut prepared) or { return io_error(err) }
+	f.log.finished(prepared)
 }
 
 // discard_statement forgets the changes made by the current statement, because

@@ -53,6 +53,21 @@ struct WalLog {
 mut:
 	file     os.File
 	identity FileIdentity
+	// The rest is what this connection knows about the frames in the log, which
+	// decides whether a statement in an explicit transaction can skip syncing
+	// it, see can_skip_sync. It's for the log with salt, while its tail is at
+	// least tail (another connection starts a new log with a new salt, and a
+	// smaller tail), and it's forgotten when known is false.
+	known bool
+	salt  u32
+	tail  int
+	// synced_pages are the pages that this connection wrote frames for and then
+	// synced, and synced_total_pages is the number of pages at the last sync.
+	// unsynced_pages are the pages that it wrote since, which are synced along
+	// with the next statement that syncs the log.
+	synced_pages       map[int]bool
+	unsynced_pages     map[int]bool
+	synced_total_pages int
 }
 
 // sync must be called each time the database file is locked, because another
@@ -69,6 +84,7 @@ fn (mut l WalLog) sync() {
 	}
 
 	l.file.close()
+	l.known = false
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.
 	l.file = os.open_file(l.path, 'rb+') or { return }
 	l.opened()
@@ -77,8 +93,65 @@ fn (mut l WalLog) sync() {
 // create starts a new log, which must not exist yet. It's opened for reading
 // too, because it stays open for the statements after this one.
 fn (mut l WalLog) create() ! {
+	l.known = false
 	l.file = os.open_file(l.path, 'wb+')!
 	l.opened()
+}
+
+// can_skip_sync returns true if the statement can be committed without syncing
+// the log, which is only allowed for a statement in an explicit transaction
+// (see wal_prepare). Its pages are copied into the database file straight
+// away, and some of them may reach the disk before the power fails while the
+// log doesn't. That's safe if replaying the log puts back every page that
+// changed since the database file was last synced (wal_replay copies the
+// statements up to the last one that was synced, and truncates the file to
+// its number of pages). So every page must already have a frame that has been
+// synced in this log, or be past the number of pages at the last sync. (The
+// file never gets smaller, so a page past that can only be a new one.)
+fn (l WalLog) can_skip_sync(prepared WalPrepared) bool {
+	if !l.knows(prepared) {
+		return false
+	}
+
+	for page_number, _ in prepared.pages {
+		if page_number < l.synced_total_pages && page_number !in l.synced_pages {
+			return false
+		}
+	}
+
+	return true
+}
+
+// knows returns true if what this connection knows about the log is still for
+// the log that the statement was added to.
+fn (l WalLog) knows(prepared WalPrepared) bool {
+	return l.known && !prepared.new_log && prepared.salt == l.salt && prepared.tail >= l.tail
+}
+
+// finished records a statement that wal_finish added to the log.
+fn (mut l WalLog) finished(prepared WalPrepared) {
+	if !l.knows(prepared) {
+		l.known = false
+		l.synced_pages = map[int]bool{}
+		l.unsynced_pages = map[int]bool{}
+		l.synced_total_pages = 0
+	}
+
+	for page_number, _ in prepared.pages {
+		l.unsynced_pages[page_number] = true
+	}
+	if prepared.sync {
+		// Syncing the log also syncs the frames before this statement.
+		for page_number, _ in l.unsynced_pages {
+			l.synced_pages[page_number] = true
+		}
+		l.unsynced_pages = map[int]bool{}
+		l.synced_total_pages = prepared.total_pages
+		l.known = true
+	}
+
+	l.salt = prepared.salt
+	l.tail = prepared.tail + prepared.size
 }
 
 fn (mut l WalLog) opened() {
@@ -102,6 +175,10 @@ mut:
 	header_bytes []u8
 	total_pages  int
 	full_fsync   bool
+	// new_log is true if the statement started a new log.
+	new_log bool
+	// sync is false if the log doesn't need to be synced, see can_skip_sync.
+	sync bool = true
 }
 
 // wal_prepare and wal_finish make the changes of a statement permanent. The
@@ -109,6 +186,11 @@ mut:
 // disk. Then they are copied into the database file, without syncing it,
 // because the log still has them. If the process stops or the power fails at
 // any point, the database file can be fixed by wal_recover or wal_replay.
+//
+// in_transaction is true for a statement in an explicit transaction, which
+// doesn't need to survive the power failing, because the transaction would be
+// rolled back anyway. The log isn't synced for it if that's safe, see
+// WalLog.can_skip_sync. The COMMIT syncs it.
 //
 // They must only be called with the database file locked exclusively, and
 // after wal_recover.
@@ -121,7 +203,7 @@ mut:
 //
 // It must be followed by wal_finish, or the WalPrepared can be dropped to give
 // up. Frames without a commit frame are ignored by wal_read.
-fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pager &FilePager) !WalPrepared {
+fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pager &FilePager, in_transaction bool) !WalPrepared {
 	mut page_numbers := pager.dirty.keys().filter(it < pager.total_pages)
 	page_numbers.sort()
 
@@ -149,6 +231,7 @@ fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pag
 	prepared.log = wal.file
 
 	wal_write_pages(mut file, path, is_new, page_numbers, mut prepared)!
+	prepared.sync = !in_transaction || !wal.can_skip_sync(prepared)
 
 	return prepared
 }
@@ -171,6 +254,7 @@ fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []in
 		salt = rand.u32()
 		tail = wal_header_size
 		checksum = salt
+		prepared.new_log = true
 		log.seek(0, .start)!
 		log.write(wal_header(salt, prepared.page_size, wal_state_committed, tail, checksum))!
 		log.flush()
@@ -209,8 +293,9 @@ fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []in
 }
 
 // wal_finish is the second half, see wal_prepare. It adds the commit frame, which
-// commits the statement once it's synced, and then copies the statement into
-// the database file. The log stays open.
+// commits the statement once it's synced (unless it doesn't need to be, see
+// WalLog.can_skip_sync), and then copies the statement into the database file.
+// The log stays open.
 fn wal_finish(mut file os.File, path string, mut prepared WalPrepared) ! {
 	// The copy is the same open file.
 	mut log := prepared.log
@@ -231,7 +316,9 @@ fn wal_finish(mut file os.File, path string, mut prepared WalPrepared) ! {
 	}
 	log.write(commit_frame)!
 	log.flush()
-	fsync(log, prepared.log_path, prepared.full_fsync)!
+	if prepared.sync {
+		fsync(log, prepared.log_path, prepared.full_fsync)!
+	}
 
 	// This is the point where the statement is committed, so the statement must
 	// not fail after this. If the log can't be copied into the database file,

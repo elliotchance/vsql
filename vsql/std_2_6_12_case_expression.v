@@ -29,7 +29,7 @@ fn (e CaseExpression) pstr(params map[string]Value) string {
 			'COALESCE(${e.exprs.map(it.pstr(params)).join(', ')})'
 		}
 		CaseExpressionSimple {
-			whens := e.whens.map('WHEN ${it.operand.pstr(params)} THEN ${it.result.pstr(params)}')
+			whens := e.whens.map('WHEN ${it.operands.map(it.pstr(params)).join(', ')} THEN ${it.result.pstr(params)}')
 			'CASE ${e.operand.pstr(params)} ${whens.join(' ')} ELSE ${e.else_result.pstr(params)} END'
 		}
 		CaseExpressionSearched {
@@ -119,38 +119,47 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			}
 		}
 		CaseExpressionSimple {
-			compiled_operand := e.operand.compile(mut c)!
-			mut contains_agg := compiled_operand.contains_agg
-			mut compiled_whens := []CompileResult{}
+			// The case operand is compiled (and evaluated) once, rather than once
+			// for each <when operand> of the equivalent searched CASE (Syntax
+			// Rules, 2.i). That's the same, since it must be deterministic and
+			// can't modify SQL-data (Syntax Rules, 2.a and 2.b).
+			compiled_operand := e.operand.compile_fields(mut c)!
+			mut operand := &CaseOperandValues{}
+			mut fields := []CompileResult{}
+			for i, compiled_field in compiled_operand {
+				fields << operand.field(compiled_field, i)
+			}
+			c.case_operands << fields
+			defer {
+				c.case_operands.pop()
+			}
+
+			mut contains_agg := compiled_operand.any(it.contains_agg)
+			mut compiled_whens := [][]CompileResult{}
 			for when in e.whens {
-				compiled_when := when.operand.compile(mut c)!
-
-				// A simple CASE is equivalent to a searched CASE with each WHEN as
-				// "operand = value", so they must be comparable.
-				//
-				// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2
-				if !comparable_types(compiled_operand.typ.typ, compiled_when.typ.typ) {
-					return sqlstate_42804('in CASE WHEN', compiled_operand.typ.str(),
-						compiled_when.typ.str())
+				mut compiled_when := []CompileResult{}
+				for when_operand in when.operands {
+					compiled := when_operand.predicate.compile(mut c)!
+					compiled_when << compiled
+					contains_agg = contains_agg || compiled.contains_agg
 				}
-				c.check_time_zone_comparison(compiled_operand.typ, compiled_when.typ)!
-
 				compiled_whens << compiled_when
-				contains_agg = contains_agg || compiled_when.contains_agg
 			}
 
 			compiled_results, results_contain_agg := compile_case_results(mut c,
 				e.whens.map(it.result), e.else_result)!
 
 			return CompileResult{
-				run:          fn [compiled_operand, compiled_whens, compiled_results] (mut conn Connection, data Row, params map[string]Value) !Value {
-					// The operand is only evaluated once, even though there may be
-					// many WHENs.
-					operand := compiled_operand.run(mut conn, data, params)!
+				run:          fn [compiled_operand, mut operand, compiled_whens, compiled_results] (mut conn Connection, data Row, params map[string]Value) !Value {
+					operand.values = run_fields(mut conn, compiled_operand, data, params)!
+
+					// A WHEN matches if any of its <when operand>s is TRUE.
 					for i, compiled_when in compiled_whens {
-						value := compiled_when.run(mut conn, data, params)!
-						if compare(conn, operand, value)! == .is_equal {
-							return compiled_results[i].run(mut conn, data, params)!
+						for compiled in compiled_when {
+							value := compiled.run(mut conn, data, params)!
+							if !value.is_null && value.bool_value() == .is_true {
+								return compiled_results[i].run(mut conn, data, params)!
+							}
 						}
 					}
 
@@ -284,8 +293,78 @@ struct CaseExpressionSimple {
 }
 
 struct CaseExpressionSimpleWhen {
-	operand RowValueConstructorPredicand
-	result  CaseResult
+	operands []CaseWhenOperand
+	result   CaseResult
+}
+
+// CaseWhenOperand is a <when operand> as the predicate that it's equivalent to,
+// which has the case operand (CaseOperand) on the left. is_value is true if it's
+// a <row value predicand> (WO), so the predicate is "CO = WO".
+//
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2.f
+struct CaseWhenOperand {
+	predicate Predicate
+	is_value  bool
+}
+
+fn (e CaseWhenOperand) pstr(params map[string]Value) string {
+	if e.is_value {
+		return (e.predicate as ComparisonPredicate).right.pstr(params)
+	}
+
+	// The case operand isn't shown, so this is just the <predicate part 2>.
+	return e.predicate.pstr(params).trim_space()
+}
+
+// CaseOperand is the case operand of a simple CASE, where it's used in each
+// <when operand>. It's evaluated by the CASE (see CaseOperandValues).
+struct CaseOperand {}
+
+// case_operand is a CaseOperand as the left of a predicate.
+fn case_operand() RowValueConstructorPredicand {
+	return RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(CaseOperand{})))
+}
+
+fn (e CaseOperand) pstr(params map[string]Value) string {
+	return ''
+}
+
+// compile is for a predicate that needs a single value. The fields are in
+// Compiler.case_operands, see compile_fields.
+fn (e CaseOperand) compile(mut c Compiler) !CompileResult {
+	fields := c.case_operands.last()
+	if fields.len != 1 {
+		return sqlstate_42601('a row value cannot be used here')
+	}
+
+	return fields[0]
+}
+
+// is_case_operand is true for a CaseOperand.
+fn (e RowValueConstructorPredicand) is_case_operand() bool {
+	return e is BooleanPredicand && e is NonparenthesizedValueExpressionPrimary
+		&& e is CaseOperand
+}
+
+// CaseOperandValues is the value of each field of the case operand, for the
+// row that the CASE is being evaluated for.
+@[heap]
+struct CaseOperandValues {
+mut:
+	values []Value
+}
+
+// field returns the value of the field (at index) of the case operand, that's
+// compiled as compiled_field.
+fn (operand &CaseOperandValues) field(compiled_field CompileResult, index int) CompileResult {
+	return CompileResult{
+		run:            fn [operand, index] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return operand.values[index]
+		}
+		typ:            compiled_field.typ
+		contains_agg:   false
+		null_parameter: compiled_field.null_parameter
+	}
 }
 
 fn new_case_expression_simple(operand RowValueConstructorPredicand, whens []CaseExpressionSimpleWhen, else_result CaseResult) CaseExpressionSimple {

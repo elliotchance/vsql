@@ -223,6 +223,23 @@ fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 	}
 }
 
+// flag_simple_case flags the case operand of a simple CASE. A row needs F262.
+// The Conformance Rules of the predicates are applied to the equivalent
+// searched CASE, so the left of a LIKE (the case operand) that isn't a column
+// needs F281.
+//
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2.k and
+// Conformance Rules, 1
+fn flag_simple_case(mut yylex YYLexer, operand RowValueConstructorPredicand, whens []CaseExpressionSimpleWhen) {
+	flag_if(mut yylex, operand is ExplicitRowValueConstructor, 'F262')
+	if !is_column_reference(operand) {
+		for when in whens {
+			flag_if(mut yylex, when.operands.any(it.predicate is CharacterLikePredicate),
+				'F281')
+		}
+	}
+}
+
 // flag_identifier flags an identifier (a <regular identifier>, or a
 // <delimited identifier> that's in quotes) that is too long for Core SQL
 // (ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 1

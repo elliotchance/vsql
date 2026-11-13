@@ -54,7 +54,13 @@ fn (e RowValueConstructorPredicand) compile(mut c Compiler) !CompileResult {
 fn (e RowValueConstructorPredicand) compile_fields(mut c Compiler) ![]CompileResult {
 	return match e {
 		ExplicitRowValueConstructor { e.exprs.map(it.compile(mut c)!) }
-		CommonValueExpression, BooleanPredicand { [e.compile(mut c)!] }
+		CommonValueExpression, BooleanPredicand {
+			if e.is_case_operand() {
+				c.case_operands.last()
+			} else {
+				[e.compile(mut c)!]
+			}
+		}
 	}
 }
 

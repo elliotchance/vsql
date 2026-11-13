@@ -30,6 +30,9 @@ mut:
 	//
 	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
 	next_value_not_allowed string
+	// case_operands is the fields of the case operand of each simple CASE that
+	// is being compiled (the innermost is last), see CaseOperand.
+	case_operands [][]CompileResult
 	// grouping_columns is set when compiling the select list of a grouped query.
 	// A column reference must then be one of these, unless it's in the argument
 	// of an aggregate function (in_aggregate).

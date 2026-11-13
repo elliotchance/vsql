@@ -21,6 +21,9 @@ struct SQLTest {
 	// page_size is the page size of the test's databases from its
 	// "page_size" directive, or 0 for the one in sql_test_options.
 	page_size int
+	// postgresql is true if the test registers the functions and tables of
+	// PostgreSQL clients, see the "postgresql" directive.
+	postgresql bool
 }
 
 fn get_test_filter() (string, int) {
@@ -58,12 +61,13 @@ fn get_tests() ![]SQLTest {
 		mut show_flags := false
 		mut extensions := []string{}
 		mut page_size := 0
+		mut postgresql := false
 		for line in lines {
 			if line == '' {
 				// A block with only a setup or comments isn't a test. A block
 				// with only an expected output is kept, so that it fails.
 				if stmts.len > 0 || expected.len > 0 {
-					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size}
+					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size, postgresql}
 				}
 				stmts = []
 				expected = []
@@ -72,6 +76,7 @@ fn get_tests() ![]SQLTest {
 				show_flags = false
 				extensions = []
 				page_size = 0
+				postgresql = false
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
@@ -91,6 +96,8 @@ fn get_tests() ![]SQLTest {
 					show_types = true
 				} else if contents == 'flags' {
 					show_flags = true
+				} else if contents == 'postgresql' {
+					postgresql = true
 				} else if contents.starts_with('extensions ') {
 					extensions = parse_extensions(contents[11..])
 				} else if contents.starts_with('page_size ') {
@@ -130,7 +137,7 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size}
+			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size, postgresql}
 		}
 	}
 
@@ -635,7 +642,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	main_path := if mode == .on_disk { os.join_path(dir, sql_test_main_file) } else { ':memory:' }
 	file_name := os.join_path(dir, 'test.vsql')
 
-	mut db := new_sql_test_conn(through_server, main_path, options, port)!
+	mut db := new_sql_test_conn(through_server, main_path, options, port, test.postgresql)!
 	mut opened := [db]
 	defer {
 		for mut conn in opened {
@@ -757,7 +764,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 				os.mkdir_all(restored_dir)!
 				path = os.join_path(restored_dir, sql_test_main_file)
 			}
-			db = new_sql_test_conn(false, path, options, port)!
+			db = new_sql_test_conn(false, path, options, port, test.postgresql)!
 			opened << db
 			for dump_stmt in split_statements(last_dump) {
 				db.db.query(dump_stmt) or {
@@ -773,7 +780,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 				// A connection that can't be opened (such as because of a fault)
 				// is an error of the test, and the current connection stays the
 				// same.
-				conn := new_sql_test_conn(through_server, file_name, options, port) or {
+				conn := new_sql_test_conn(through_server, file_name, options, port, test.postgresql) or {
 					actual += '${connection_name}: error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 					continue
 				}
@@ -959,7 +966,10 @@ fn open_sql_test_database(path string, options ConnectionOptions) !&Connection {
 // test server opens, for the page size of a "page_size" directive.
 const sql_test_page_size_suffix = '?page_size='
 
-fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions, port int) !&SQLTestConn {
+// new_sql_test_conn opens a connection for a test. postgresql registers the
+// functions and tables that the server registers for its clients (see the
+// "postgresql" directive), so that a test has them in every mode.
+fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions, port int, postgresql bool) !&SQLTestConn {
 	if through_server {
 		database := if options.page_size == sql_test_options().page_size {
 			path
@@ -973,15 +983,12 @@ fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions
 
 	mut db := open_sql_test_database(path, options)!
 	db.now = sql_test_now
-	register_pg_functions(mut db) or {
-		db.close()
-		return err
-	}
-
-	// A file that failed while it was being created doesn't have the PUBLIC
-	// schema for pg_database yet, see tests/impl_storage_faults.sql.
-	register_pg_virtual_tables(mut db) or {
-		if err !is SQLState3F000 {
+	if postgresql {
+		register_pg_functions(mut db) or {
+			db.close()
+			return err
+		}
+		register_pg_virtual_tables(mut db) or {
 			db.close()
 			return err
 		}

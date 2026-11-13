@@ -437,6 +437,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				plan.operations << VirtualTableOperation{table_name_id, virtual_table, conn}
 				table = virtual_table.table()
 				conn.flag_information_schema_view(table_name)
+				if conn.flagging {
+					conn.flagged_features << virtual_table.features
+				}
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): &Table{

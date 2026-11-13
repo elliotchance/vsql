@@ -23,7 +23,7 @@ sleep 2
 
 # Statements only send their command tag (not a result set), an INSERT tag has
 # an OID, a query with no rows still has columns and errors have their real
-# SQLSTATE.
+# SQLSTATE. Names are lower case, like PostgreSQL.
 cat <<SQL | psql -h 127.0.0.1 -p $PORT -X -e > $TXT_FILE 2>&1
 \set VERBOSITY verbose
 CREATE TABLE t (x INT);
@@ -43,7 +43,7 @@ CREATE TABLE 1
 INSERT INTO t (x) VALUES (1), (2);
 INSERT 0 2
 SELECT * FROM t WHERE x > 5;
- X 
+ x 
 ---
 (0 rows)
 

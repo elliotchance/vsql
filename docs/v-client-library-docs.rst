@@ -1254,6 +1254,14 @@ struct ServerOptions
    	// aren't valid SQL but are sent by many PostgreSQL clients. A SET of
    	// anything in the SQL standard (such as SET SCHEMA) still runs.
    	ignore_pg_set bool
+   	// rewrite_pg_syntax changes the PostgreSQL syntax that clients use to read
+   	// the system catalog (such as pg_class, see register_pg_virtual_tables)
+   	// into SQL before it's run, see rewrite_pg_syntax.
+   	rewrite_pg_syntax bool
+   	// lower_case_names sends the name of a column in lower case if it has no
+   	// lower case letters (such as a name that wasn't quoted), like PostgreSQL
+   	// does. Clients find the columns of their catalog queries by these names.
+   	lower_case_names bool
    }
 
 
@@ -1418,6 +1426,9 @@ struct VirtualTable
    	create_table_sql  string
    	create_table_stmt TableDefinition
    	data              VirtualTableProviderFn @[required]
+   	// features are flagged when the table is read (see
+   	// register_flagged_virtual_table). It's only used by the SQL Flagger.
+   	features []string
    mut:
    	is_done bool
    	rows    []Row

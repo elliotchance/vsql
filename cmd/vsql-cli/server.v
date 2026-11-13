@@ -46,6 +46,8 @@ fn server_command(cmd cli.Command) ! {
 		verbose:             cmd.flags.get_bool('verbose') or { false }
 		select_without_from: true
 		ignore_pg_set:       true
+		rewrite_pg_syntax:   true
+		lower_case_names:    true
 	})
 
 	server.listen()!

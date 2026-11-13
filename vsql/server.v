@@ -37,6 +37,14 @@ pub:
 	// aren't valid SQL but are sent by many PostgreSQL clients. A SET of
 	// anything in the SQL standard (such as SET SCHEMA) still runs.
 	ignore_pg_set bool
+	// rewrite_pg_syntax changes the PostgreSQL syntax that clients use to read
+	// the system catalog (such as pg_class, see register_pg_virtual_tables)
+	// into SQL before it's run, see rewrite_pg_syntax.
+	rewrite_pg_syntax bool
+	// lower_case_names sends the name of a column in lower case if it has no
+	// lower case letters (such as a name that wasn't quoted), like PostgreSQL
+	// does. Clients find the columns of their catalog queries by these names.
+	lower_case_names bool
 }
 
 // Server accepts connections from PostgreSQL clients, see new_server.
@@ -197,6 +205,7 @@ pub fn (mut s Server) stop() ! {
 // disconnects that client.
 fn (s &Server) handle_client(mut c net.TcpConn) {
 	mut conn := new_pg_conn(c)
+	conn.lower_case_names = s.options.lower_case_names
 	database := conn.accept() or {
 		s.log('error: ${err}')
 		c.close() or {}
@@ -255,6 +264,170 @@ fn is_pg_set(query string) bool {
 		&& tokens[i + 1].token in [token_to, token_operator_equals]
 }
 
+// rewrite_pg_syntax changes a PostgreSQL cast ("x::type") into a CAST, removes
+// "pg_catalog." before a name, because the system catalog is in the default
+// schema, and gives an untyped NULL column a type (see pg_is_untyped_null). The operand of a cast is a name, a string, a number or
+// anything in parentheses just before the "::". Text in quotes and comments
+// isn't changed.
+fn rewrite_pg_syntax(query string) string {
+	mut out := []u8{}
+	mut i := 0
+	for i < query.len {
+		ch := query[i]
+
+		// Copy strings, delimited identifiers and comments as they are.
+		mut end := i
+		if ch == `'` || ch == `"` {
+			end = i + 1
+			for end < query.len {
+				if query[end] == ch {
+					if end + 1 < query.len && query[end + 1] == ch {
+						end += 2
+						continue
+					}
+					break
+				}
+				end++
+			}
+			end = if end < query.len { end + 1 } else { end }
+		} else if query[i..].starts_with('--') {
+			end = query.index_after('\n', i) or { query.len }
+		} else if query[i..].starts_with('/*') {
+			end = query.index_after('*/', i) or { query.len - 2 } + 2
+		}
+		if end > i {
+			out << query[i..end].bytes()
+			i = end
+			continue
+		}
+
+		if i + pg_catalog_prefix.len <= query.len
+			&& query[i..i + pg_catalog_prefix.len].to_lower() == pg_catalog_prefix
+			&& (i == 0 || !is_pg_name_byte(query[i - 1])) {
+			i += pg_catalog_prefix.len
+			continue
+		}
+
+		if pg_is_untyped_null(query, i, out) {
+			out << 'CAST(NULL AS BIGINT)'.bytes()
+			i += 4
+			continue
+		}
+
+		if query[i..].starts_with('::') {
+			for out.len > 0 && out.last() == ` ` {
+				out.delete_last()
+			}
+			start := pg_operand_start(out)
+			mut type_end := i + 2
+			for type_end < query.len && query[type_end] == ` ` {
+				type_end++
+			}
+			type_start := type_end
+			for type_end < query.len && is_pg_name_byte(query[type_end]) {
+				type_end++
+			}
+			type_name := pg_type_name(query[type_start..type_end])
+			operand := out[start..].bytestr()
+			out = out[..start].clone()
+			out << 'CAST(${operand} AS ${type_name})'.bytes()
+			i = type_end
+			continue
+		}
+
+		out << ch
+		i++
+	}
+
+	return out.bytestr()
+}
+
+const pg_catalog_prefix = 'pg_catalog.'
+
+// pg_is_untyped_null is true for a NULL at i that's a column of a select list
+// (after a comma or SELECT, and before AS), which PostgreSQL allows without a
+// type. Clients use it for a size in a UNION, so it's a BIGINT.
+fn pg_is_untyped_null(query string, i int, out []u8) bool {
+	if i + 4 > query.len || query[i..i + 4].to_upper() != 'NULL'
+		|| (i + 4 < query.len && is_pg_name_byte(query[i + 4])) {
+		return false
+	}
+	before := out.bytestr().trim_right(' \t\n').to_upper()
+	if !before.ends_with(',') && !(before.ends_with('SELECT')
+		&& (before.len == 6 || !is_pg_name_byte(before[before.len - 7]))) {
+		return false
+	}
+	after := query[i + 4..].trim_left(' \t\n').to_upper()
+
+	return after.starts_with('AS') && (after.len == 2 || !is_pg_name_byte(after[2]))
+}
+
+fn is_pg_name_byte(ch u8) bool {
+	return ch.is_letter() || ch.is_digit() || ch == `_` || ch == `.`
+}
+
+// pg_operand_start is where the operand of a cast starts at the end of out: a
+// name or number, a string or delimited identifier, or something in
+// parentheses (which may be a function call).
+fn pg_operand_start(out []u8) int {
+	mut i := out.len
+	if i > 0 && (out[i - 1] == `'` || out[i - 1] == `"`) {
+		quote := out[i - 1]
+		i--
+		for i > 0 {
+			i--
+			if out[i] == quote {
+				if i > 0 && out[i - 1] == quote {
+					i--
+					continue
+				}
+				break
+			}
+		}
+		return i
+	}
+	if i > 0 && out[i - 1] == `)` {
+		mut depth := 0
+		for i > 0 {
+			i--
+			if out[i] == `)` {
+				depth++
+			} else if out[i] == `(` {
+				depth--
+				if depth == 0 {
+					break
+				}
+			}
+		}
+		// A function call, such as count(*)::int.
+		for i > 0 && is_pg_name_byte(out[i - 1]) {
+			i--
+		}
+		return i
+	}
+	for i > 0 && is_pg_name_byte(out[i - 1]) {
+		i--
+	}
+
+	return i
+}
+
+// pg_type_name is the SQL type for a PostgreSQL type of a cast. A type that
+// names an object (such as regtype) is a VARCHAR.
+fn pg_type_name(name string) string {
+	lower := name.to_lower().trim_string_left(pg_catalog_prefix)
+	return match lower {
+		'int2' { 'SMALLINT' }
+		'int', 'int4', 'oid' { 'INTEGER' }
+		'int8' { 'BIGINT' }
+		'float4' { 'REAL' }
+		'float8' { 'DOUBLE PRECISION' }
+		'bool' { 'BOOLEAN' }
+		'text', 'name', 'regtype', 'regclass', 'regproc', 'regnamespace' { 'VARCHAR(255)' }
+		else { lower.to_upper() }
+	}
+}
+
 fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
@@ -291,6 +464,10 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 					conn.write_command_complete('SET')!
 					conn.write_ready_for_query()!
 					continue
+				}
+
+				if s.options.rewrite_pg_syntax {
+					query = rewrite_pg_syntax(query)
 				}
 
 				// A missing "FROM" clause is valid in PostgreSQL, but it's not

@@ -710,8 +710,18 @@ followed by ``AS`` and a query for its rows:
    -- ID: 2 NAME: pear
 
 The query is run when the virtual table is registered. If it can't be
-registered, the error is in the output. The ``pg_database`` virtual table that
-the server registers for PostgreSQL clients is also registered for each test.
+registered, the error is in the output.
+
+The functions and virtual tables that the server registers for PostgreSQL
+clients (such as ``version()`` and ``pg_class``) are only registered for a test
+with the ``postgresql`` directive, so that the test has them whether or not it
+runs through the server:
+
+.. code-block:: sql
+
+   /* postgresql */
+   SELECT * FROM pg_database;
+   -- DATNAME: vsql
 
 Dump and Restore
 ^^^^^^^^^^^^^^^^

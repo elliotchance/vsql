@@ -1463,7 +1463,7 @@ Optional Features
    * - ❌ **T491**
      - **LATERAL derived table**
 
-   * - ❌ **T495**
+   * - ✅ **T495**
      - **Combined data change and retrieval**
 
    * - ✅ **T501**

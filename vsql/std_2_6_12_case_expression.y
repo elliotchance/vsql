@@ -104,7 +104,7 @@ when_operand_list:
 // The predicates that vsql doesn't have (such as <octet like predicate part 2>)
 // can't be a <when operand>.
 //
-// ISO/IEC 9075-2:2023, 6.12, <caseexpression>, Conformance Rules, 2; ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 6.12, <case expression>, Conformance Rules, 2; ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Conformance Rules, 1
 when_operand:
   row_value_predicand {
     flag_if(mut yylex, ($1.v as RowValueConstructorPredicand) is ExplicitRowValueConstructor,

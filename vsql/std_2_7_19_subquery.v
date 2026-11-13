@@ -4,7 +4,7 @@ module vsql
 //
 // Specify a scalar value, a row, or a table derived from a <query expression>.
 
-type TablePrimaryBody = Identifier | QueryExpression
+type TablePrimaryBody = DataChangeDeltaTable | Identifier | QueryExpression
 
 // A Subquery is a <query expression> used in an expression, such as in EXISTS
 // or IN. In a value expression it's a <scalar subquery>. query is a reference

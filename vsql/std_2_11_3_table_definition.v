@@ -172,7 +172,7 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 			InsertStatement{
 				table_name: table_name
 				query:      as_subquery.query
-			}.insert(mut conn, map[string]Value{})!
+			}.change(mut conn, map[string]Value{})!
 		}
 	}
 

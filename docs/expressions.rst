@@ -340,8 +340,8 @@ aggregate function (such as ``MAX``).
 Correlated Subqueries
 ^^^^^^^^^^^^^^^^^^^^^
 
-Any subquery (including in ``EXISTS``, ``IN``, ``ALL`` and ``SOME``) can refer
-to the columns of the queries that contain it, such as ``t1.x`` in:
+Any subquery (including in ``EXISTS``, ``UNIQUE``, ``IN``, ``ALL`` and
+``SOME``) can refer to the columns of the queries that contain it, such as ``t1.x`` in:
 
 .. code-block:: sql
 
@@ -457,3 +457,26 @@ that has a class such as ``[:ALPHA:]`` is a 2200B escape character conflict.
   '$0.87' SIMILAR TO '$[0-9]+(.[0-9][0-9])?'                       -- TRUE
   'abab' SIMILAR TO '%a%b'                                         -- TRUE
   'A1' SIMILAR TO '[[:UPPER:]][^a-z]'                              -- TRUE
+
+UNIQUE
+------
+
+.. code-block:: text
+
+  UNIQUE ( <query> )
+
+Returns ``TRUE`` if no two rows of the subquery are equal, otherwise ``FALSE``.
+It's never ``UNKNOWN``, and the subquery can have any number of columns. Values
+are equal when ``=`` is ``TRUE`` for them, so ``1.5`` and ``1.50`` are the same.
+A row that contains a ``NULL`` is never equal to another row, and it's ``TRUE``
+when there are no rows.
+
+*Examples*
+
+.. code-block:: sql
+
+  UNIQUE (SELECT email FROM customers)
+  UNIQUE (VALUES ROW(1, 'a'), ROW(1, 'b'))             -- TRUE
+  UNIQUE (VALUES 1, 1)                                 -- FALSE
+  UNIQUE (VALUES CAST(NULL AS INT), CAST(NULL AS INT)) -- TRUE
+  NOT UNIQUE (SELECT * FROM products)

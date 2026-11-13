@@ -734,7 +734,7 @@ Optional Features
    * - ✅ **F281**
      - **LIKE enhancements**
 
-   * - ❌ **F291**
+   * - ✅ **F291**
      - **UNIQUE predicate**
 
    * - ❌ **F301**

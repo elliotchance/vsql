@@ -139,7 +139,8 @@ The ``tpc-b`` suite runs a TPC-B-like transactional test that is inspired by
 And executes the following (where *size* is ``-size``):
 
 1. Create the ``TPC_B`` schema.
-2. Create an ``ACCOUNTS`` table with 100,000 rows for each *size*.
+2. Create an ``ACCOUNTS`` table with 100,000 rows for each *size*. The rows are
+   inserted in transactions of 100 rows.
 3. Create a ``TELLERS`` table with 10 rows for each *size*.
 4. Create a ``BRANCHES`` table with one row for each *size*.
 5. Create a ``HISTORY`` table that is empty.

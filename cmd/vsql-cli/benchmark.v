@@ -47,6 +47,10 @@ fn new_benchmark(conn &vsql.Connection, size int) Benchmark {
 	}
 }
 
+// setup_batch_rows is the number of rows that tpc-b-setup inserts into ACCOUNTS
+// in each transaction.
+const setup_batch_rows = 100
+
 // setup is the tpc-b-setup suite. It creates the TPC_B schema and its tables,
 // and inserts the rows.
 fn (mut b Benchmark) setup() ! {
@@ -58,9 +62,19 @@ fn (mut b Benchmark) setup() ! {
 	}
 	b.conn.query('CREATE TABLE tpc_b.accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ')!
 
+	// The rows are committed in transactions of setup_batch_rows, rather than
+	// one at a time, because each commit syncs the file. Syncing 100,000 times
+	// takes more than 20 minutes on Windows. A larger transaction is slower for
+	// each row it inserts, so they're kept small.
 	mut t := vsql.start_timer()
 	for aid in 1 .. b.account_rows + 1 {
+		if aid % setup_batch_rows == 1 {
+			b.conn.query('START TRANSACTION')!
+		}
 		b.conn.query('INSERT INTO tpc_b.accounts (aid, abalance) VALUES (${aid}, 0)')!
+		if aid % setup_batch_rows == 0 || aid == b.account_rows {
+			b.conn.query('COMMIT')!
+		}
 		if aid % 100 == 0 {
 			b.sample_memory()
 		}

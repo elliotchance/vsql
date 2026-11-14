@@ -268,6 +268,11 @@ computational_operation:
     flag(mut yylex, 'T031')
     $$.v = $1.v as string
   }
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 2
+| ANY_VALUE {
+    flag(mut yylex, 'T626')
+    $$.v = $1.v as string
+  }
 
 binary_set_function:
   binary_set_function_type left_paren dependent_variable_expression comma

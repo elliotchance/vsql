@@ -299,6 +299,7 @@ module vsql
 %token ALTER
 %token AND
 %token ANY
+%token ANY_VALUE
 %token ARE
 %token ARRAY
 %token ARRAY_AGG

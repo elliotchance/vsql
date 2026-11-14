@@ -335,3 +335,27 @@ fn test_virtual_table_on_new_connection() ! {
 	}
 	assert nums == [1]
 }
+
+fn test_open_during_statement() ! {
+	// The closures of a connection that's opened while a statement of another
+	// connection is running are made in that statement's frame (see
+	// Connection.keep), so the new connection works until the statement ends.
+	mut db := open(':memory:')!
+	db.register_virtual_table('CREATE TABLE foo (num INT)', fn (mut t VirtualTable) ! {
+		mut db2 := open(':memory:')!
+		db2.query('CREATE TABLE bar (x INT)')!
+		mut tables := 0
+		for _ in db2.query("SELECT * FROM information_schema.tables WHERE table_schema = 'PUBLIC'")! {
+			tables++
+		}
+		db2.close()
+		t.next_values([new_integer_value(tables)])
+		t.done()
+	})!
+
+	mut nums := []int{}
+	for row in db.query('SELECT num FROM foo')! {
+		nums << row.get_int('NUM')!
+	}
+	assert nums == [1]
+}

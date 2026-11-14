@@ -47,7 +47,13 @@ mut:
 	// PreparedStmt.query. frame_work runs frame_stmt (or describes
 	// frame_describe, see describe_parameters), it's made once so that it isn't
 	// a closure that's leaked for each statement.
-	lifetime       closure.Lifetime
+	lifetime closure.Lifetime
+	// kept has the closures that last as long as the connection, which are made
+	// when it's opened and when a catalog is added (such as frame_work and the
+	// views of the INFORMATION_SCHEMA). They're released when it's closed, see
+	// keep. Some of them refer to the connection, so it could never be freed
+	// otherwise.
+	kept           closure.Lifetime
 	frame_work     fn () = unsafe { nil }
 	frame_active   bool
 	frame_ran      bool
@@ -273,6 +279,73 @@ fn open_connection(path string, catalog_name string, options ConnectionOptions) 
 	}
 
 	conn.lifetime = closure.new_lifetime()
+	conn.kept = closure.new_lifetime()
+	mut work := &KeptWork{
+		open:         true
+		catalog_name: catalog_name
+		path:         path
+		options:      options
+	}
+	conn.keep(mut work) or {
+		conn.close()
+		return err
+	}
+
+	return conn
+}
+
+// KeptWork is the work of opening a connection or adding a catalog, which is
+// run by Connection.keep.
+@[heap]
+struct KeptWork {
+	open         bool
+	catalog_name string
+	path         string
+	options      ConnectionOptions
+mut:
+	conn &Connection = unsafe { nil }
+	ran  bool
+	err  IError = none
+}
+
+// keep runs work in a frame of kept, so that the closures it makes are released
+// when the connection is closed. The closure that runs it can't be released
+// (it isn't part of the frame), so it only refers to work, which is cleared
+// afterwards. If another lifetime already has a frame on this thread (a
+// connection that's opened by a statement), the work just runs in that frame.
+fn (mut conn Connection) keep(mut work KeptWork) ! {
+	work.conn = conn
+	run := fn [mut work] () {
+		work.ran = true
+		work.run() or { work.err = err }
+	}
+	conn.kept.frame(run) or {
+		if !work.ran {
+			run()
+		}
+	}
+
+	err := work.err
+	work.conn = unsafe { nil }
+	work.err = none
+	if err !is none {
+		return err
+	}
+}
+
+fn (mut work KeptWork) run() ! {
+	mut conn := work.conn
+	if work.open {
+		conn.make_frame_work()
+		register_builtin_funcs(mut conn)!
+		register_operators(mut conn)
+	}
+
+	conn.add_catalog_now(work.catalog_name, work.path, work.options)!
+}
+
+// make_frame_work makes frame_work, see Connection.lifetime.
+fn (mut conn Connection) make_frame_work() {
 	conn.frame_work = fn [mut conn] () {
 		conn.frame_ran = true
 		if stmt := conn.frame_describe {
@@ -285,18 +358,13 @@ fn open_connection(path string, catalog_name string, options ConnectionOptions) 
 			Result{}
 		}
 	}
-
-	register_builtin_funcs(mut conn)!
-	register_operators(mut conn)
-
-	conn.add_catalog(catalog_name, path, options)!
-
-	return conn
 }
 
-// close releases the session lock of each file catalog, and closes its files.
-// The connection must not be used after it's closed.
+// close releases the session lock of each file catalog, closes its files, and
+// releases the closures it kept (see keep). The connection must not be used
+// after it's closed.
 pub fn (mut conn Connection) close() {
+	conn.kept.dispose() or {}
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
@@ -307,6 +375,15 @@ pub fn (mut conn Connection) close() {
 }
 
 pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {
+	mut work := &KeptWork{
+		catalog_name: catalog_name
+		path:         path
+		options:      options
+	}
+	conn.keep(mut work)!
+}
+
+fn (mut conn Connection) add_catalog_now(catalog_name string, path string, options ConnectionOptions) ! {
 	if catalog_name in conn.catalogs {
 		return sqlstate_42p04(catalog_name)
 	}

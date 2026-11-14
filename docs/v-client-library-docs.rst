@@ -703,7 +703,13 @@ struct Connection
    	// PreparedStmt.query. frame_work runs frame_stmt (or describes
    	// frame_describe, see describe_parameters), it's made once so that it isn't
    	// a closure that's leaked for each statement.
-   	lifetime       closure.Lifetime
+   	lifetime closure.Lifetime
+   	// kept has the closures that last as long as the connection, which are made
+   	// when it's opened and when a catalog is added (such as frame_work and the
+   	// views of the INFORMATION_SCHEMA). They're released when it's closed, see
+   	// keep. Some of them refer to the connection, so it could never be freed
+   	// otherwise.
+   	kept           closure.Lifetime
    	frame_work     fn () = unsafe { nil }
    	frame_active   bool
    	frame_ran      bool

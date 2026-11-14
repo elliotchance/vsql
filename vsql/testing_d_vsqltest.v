@@ -378,7 +378,7 @@ const flagging_modules = {
 		'F857',
 		'T551',
 	]
-	'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN c; PROCEDURE f (SQLSTATE, :x INT); FETCH NEXT FROM c INTO :x;':                                                                                                                                                 ['F431']
+	'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN c; PROCEDURE f (SQLSTATE, :x INT); FETCH NEXT FROM c INTO :x;':                                                                                                                                                 ['F432']
 	// Connection statements.
 	'PROCEDURE p (SQLSTATE); CONNECT TO DEFAULT;':                                                                                                                                                                                                                                      ['F771']
 	'PROCEDURE p (SQLSTATE); SET CONNECTION DEFAULT;':                                                                                                                                                                                                                                  ['F771']
@@ -447,7 +447,7 @@ const flagging_modules = {
 	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE, :n INT); FETCH c INTO :n;':                                                                                                                                                                                                       ['B031']
 	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE, :n INT); FETCH NEXT FROM c INTO :n;':                                                                                                                                                                                             [
 		'B031',
-		'F431',
+		'F432',
 	]
 	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE); CLOSE c;':                                                                                                                                                                                                                       ['B031']
 	flagging_dynamic_cursor + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE CURRENT OF c;':                                                                                                                                                                                              ['B031']
@@ -457,14 +457,14 @@ const flagging_modules = {
 		'T551',
 	]
 	// Diagnostics.
-	'PROCEDURE p (SQLSTATE, :n INT); GET DIAGNOSTICS :n = NUMBER;':                                                                                                                                                                                                                     ['F121']
+	'PROCEDURE p (SQLSTATE, :n INT); GET DIAGNOSTICS :n = NUMBER;':                                                                                                                                                                                                                     ['F120']
 	'PROCEDURE p (SQLSTATE, :n INT, :m INT); GET DIAGNOSTICS :n = TRANSACTIONS_COMMITTED, :m = ROW_COUNT;':                                                                                                                                                                             [
-		'F121',
+		'F120',
 		'T511',
 	]
-	'PROCEDURE p (SQLSTATE, :s VARCHAR(9), :n INT); GET DIAGNOSTICS CONDITION 1 :s = MESSAGE_TEXT, :n = CONDITION_NUMBER;':                                                                                                                                                             ['F121']
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(9), :n INT); GET DIAGNOSTICS CONDITION 1 :s = MESSAGE_TEXT, :n = CONDITION_NUMBER;':                                                                                                                                                             ['F120']
 	'PROCEDURE p (SQLSTATE, :s CHAR(9)); GET DIAGNOSTICS CONDITION 1 :s = MESSAGE_TEXT;':                                                                                                                                                                                               [
-		'F121',
+		'F120',
 		'F122',
 	]
 	// Indicator parameters that have different data types, in any statement.

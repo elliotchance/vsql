@@ -170,7 +170,7 @@ CREATE TABLE c6 (a BIGINT REFERENCES c6 (b), b INT NOT NULL UNIQUE);
 
 /* flags */
 ALTER TABLE c1 ADD FOREIGN KEY (b) REFERENCES p1 (id);
--- flags: F381, T201
+-- flags: F388, T201
 -- msg: ALTER TABLE 1
 
 /* flags */
@@ -193,7 +193,7 @@ CREATE TABLE c8 (a INT REFERENCES c8 (b), b INT NOT NULL UNIQUE);
 
 /* flags */
 ALTER TABLE old_key ADD FOREIGN KEY (b) REFERENCES p1 (id);
--- flags: F381
+-- flags: F388
 -- msg: ALTER TABLE 1
 
 /* flags */
@@ -203,7 +203,7 @@ ALTER TABLE old_key ADD COLUMN w INT;
 
 /* flags */
 ALTER TABLE old_key ALTER COLUMN b DROP DEFAULT;
--- flags: F381
+-- flags: F387
 -- error 42601: syntax error: column B has no DEFAULT
 
 /* flags */

@@ -1,17 +1,17 @@
 -- # SET TRANSACTION doesn't need any characteristics. DIAGNOSTICS SIZE is
--- # flagged as F121 (17.3, Conformance Rules, 2), and START TRANSACTION as T241
+-- # flagged as F124 (17.3, Conformance Rules, 5), and START TRANSACTION as T241
 -- # (17.1, Conformance Rules, 1).
 SET TRANSACTION;
 -- msg: SET TRANSACTION
 
 /* flags */
 SET TRANSACTION DIAGNOSTICS SIZE 1;
--- flags: F121
+-- flags: F124
 -- msg: SET TRANSACTION
 
 /* flags */
 START TRANSACTION DIAGNOSTICS SIZE 1;
--- flags: F121, T241
+-- flags: F124, T241
 -- msg: START TRANSACTION
 
 -- # DIAGNOSTICS SIZE is the most conditions kept for a statement, so only one

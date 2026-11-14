@@ -360,8 +360,8 @@ cursor.
    PROCEDURE close_expensive (SQLSTATE);
      CLOSE expensive;
 
-``GET DIAGNOSTICS`` (ISO/IEC 9075-2, 23.1, Feature F121 "Basic diagnostics
-management") gets information about the last statement that was executed (that
+``GET DIAGNOSTICS`` (ISO/IEC 9075-2, 23.1, Feature F120 "Get diagnostics
+statement") gets information about the last statement that was executed (that
 wasn't ``GET DIAGNOSTICS``):
 
 .. code-block:: text

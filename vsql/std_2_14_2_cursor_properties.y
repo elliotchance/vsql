@@ -16,13 +16,14 @@ cursor_properties:
       hold: $3.v as bool})
   }
 
+// ISO/IEC 9075-2:2023, 14.2, <cursor properties>, Conformance Rules, 4
 cursor_scrollability:
   SCROLL {
-    flag(mut yylex, 'F431')
+    flag(mut yylex, 'F438')
     $$.v = true
   }
 | NO SCROLL {
-    flag(mut yylex, 'F431')
+    flag(mut yylex, 'F438')
     $$.v = false
   }
 

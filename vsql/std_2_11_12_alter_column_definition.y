@@ -3,11 +3,11 @@
 // ISO/IEC 9075-2:2023, 11.12, <alter column definition>, Conformance Rules, 1
 alter_column_definition:
   ALTER column_name alter_column_action {
-    flag(mut yylex, 'F381')
+    flag(mut yylex, 'F387')
     $$.v = yy_box(AlterColumnDefinition{$2.v as Identifier, $3.v as AlterColumnAction})
   }
 | ALTER COLUMN column_name alter_column_action {
-    flag(mut yylex, 'F381')
+    flag(mut yylex, 'F387')
     $$.v = yy_box(AlterColumnDefinition{$3.v as Identifier, $4.v as AlterColumnAction})
   }
 

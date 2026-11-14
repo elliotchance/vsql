@@ -1586,7 +1586,7 @@ Optional Features
    * - ❌ **T662**
      - **Underscores in numeric literals**
 
-   * - ❌ **T670**
+   * - ✅ **T670**
      - **Schema and data statement mixing**
 
    * - ❌ **T801**

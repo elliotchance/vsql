@@ -449,6 +449,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		}
 	}
 
+	// An SQL-transaction can have both SQL-schema statements and SQL-data
+	// statements (T670), so there's nothing to check for them. An open cursor
+	// keeps the rows it had when it was opened, and a deferred constraint that's
+	// dropped isn't checked when the transaction ends.
+	//
+	// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 11 and 11.a
+
 	// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 12
 	// ISO/IEC 9075-2:2023, 14.9, <delete statement: searched>, General Rules, 1
 	// ISO/IEC 9075-2:2023, 14.11, <insert statement>, General Rules, 1

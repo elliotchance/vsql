@@ -59,7 +59,8 @@ database), an empty ``pg_type``, ``pg_enum`` and ``pg_proc``, and the
 ``pg_indexes_size()`` functions (there are no comments, and the sizes are
 ``NULL``). ``vsql server`` also accepts the PostgreSQL syntax that clients use
 in these queries: it removes ``pg_catalog.`` before a name (the catalog is in
-the default schema), runs a cast such as ``reltuples::int8`` as a ``CAST``, and
+the default schema), changes the PostgreSQL type of a cast (``::``, see
+:doc:`expressions`) such as ``reltuples::int8`` into an SQL type (``BIGINT``), and
 runs a ``NULL`` column of a select list (such as ``SELECT NULL AS size``) as a
 ``BIGINT``. Like PostgreSQL, it sends the name of a column in lower case if it
 has no lower case letters, so ``SELECT relname AS name`` has a ``name`` column.

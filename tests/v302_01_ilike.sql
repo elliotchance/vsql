@@ -471,7 +471,7 @@ SELECT x FROM t WHERE x ILIKE NULL;
 -- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE NULL"
 
 SELECT x FROM t WHERE x LIKE NULL;
--- error 42601: syntax error: unexpected NULL at line 1, column 30 near "WHERE x LIKE NULL"
+-- error 42601: syntax error: unexpected $end at line 1, column 34 near "WHERE x LIKE NULL", expecting "::"
 
 -- # More functions that return a character string.
 /* extensions V302-01 */

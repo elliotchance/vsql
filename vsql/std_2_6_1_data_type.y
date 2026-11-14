@@ -27,6 +27,22 @@ character_string_type:
 | VARCHAR left_paren character_length right_paren {
     $$.v = yy_box(parse_type_with_length('CHARACTER VARYING', $3.v as string)!)
   }
+// Without a length, a CHARACTER VARYING has the maximum length (T081).
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 7
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Conformance Rules, 22
+| CHARACTER VARYING {
+    flag(mut yylex, 'T081')
+    $$.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
+  }
+| CHAR VARYING {
+    flag(mut yylex, 'T081')
+    $$.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
+  }
+| VARCHAR {
+    flag(mut yylex, 'T081')
+    $$.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
+  }
 
 numeric_type:
   exact_numeric_type { $$.v = $1.v }

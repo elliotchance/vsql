@@ -1283,7 +1283,7 @@ Optional Features
    * - ❌ **T076**
      - **DECFLOAT data type**
 
-   * - ❌ **T081**
+   * - ✅ **T081**
      - **Optional string types maximum length**
 
    * - ❌ **T101**

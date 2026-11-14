@@ -18,7 +18,7 @@ vsql follows three of them. Each has its own page:
    * - :doc:`sql-compliance-9075-2`
      - The SQL language
      - 128 of 163
-     - 103 of 408
+     - 104 of 408
 
    * - :doc:`sql-compliance-9075-3`
      - The C API
@@ -27,7 +27,7 @@ vsql follows three of them. Each has its own page:
 
    * - :doc:`sql-compliance-9075-11`
      - The tables that describe a database
-     - 9 of 15
+     - 10 of 15
      - 2 of 24
 
 The counts include subfeatures, and only count the ones that are fully

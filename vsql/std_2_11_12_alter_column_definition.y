@@ -18,6 +18,9 @@ alter_column_action:
 | drop_column_default_clause {
     $$.v = yy_box(AlterColumnAction($1.v as DropColumnDefaultClause))
   }
+| alter_column_data_type_clause {
+    $$.v = yy_box(AlterColumnAction($1.v as AlterColumnDataTypeClause))
+  }
 | alter_identity_column_specification {
     $$.v = yy_box(AlterColumnAction($1.v as AlterIdentityColumnSpecification))
   }

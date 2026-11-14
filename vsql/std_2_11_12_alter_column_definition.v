@@ -4,9 +4,10 @@ module vsql
 //
 // Change a column and its definition.
 
-// SET DEFAULT, DROP DEFAULT and the <alter identity column specification> are
-// the only <alter column action>s that are supported.
-type AlterColumnAction = AlterIdentityColumnSpecification
+// SET DEFAULT, DROP DEFAULT, SET DATA TYPE and the <alter identity column
+// specification> are the only <alter column action>s that are supported.
+type AlterColumnAction = AlterColumnDataTypeClause
+	| AlterIdentityColumnSpecification
 	| DropColumnDefaultClause
 	| SetColumnDefaultClause
 
@@ -17,7 +18,7 @@ struct AlterColumnDefinition {
 
 // execute changes the descriptor of the column, which must be a column of the
 // table. Only the definition of the table is changed, the existing rows keep
-// their values.
+// their values, unless the data type changes, which writes every row again.
 //
 // ISO/IEC 9075-2:2023, 11.12, <alter column definition>, Syntax Rules, 4
 // ISO/IEC 9075-2:2023, 11.12, <alter column definition>, General Rules, 1
@@ -28,7 +29,11 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 	is_identity := column.identity != none
 	if is_identity != (d.action is AlterIdentityColumnSpecification) {
 		return sqlstate_42601(if is_identity {
-			'cannot change the default of identity column ${column.name.sub_entity_name}'
+			'cannot change the ${if d.action is AlterColumnDataTypeClause {
+				'data type'
+			} else {
+				'default'
+			}} of identity column ${column.name.sub_entity_name}'
 		} else {
 			'column ${column.name.sub_entity_name} is not an identity column'
 		})
@@ -41,6 +46,9 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 
 	mut sequence := ?Sequence(none)
 	new_column := match d.action {
+		AlterColumnDataTypeClause {
+			d.action.execute(mut conn, table, column)!
+		}
 		AlterIdentityColumnSpecification {
 			new_column, new_sequence := d.action.execute(mut conn, table, column)!
 			sequence = new_sequence
@@ -54,14 +62,19 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 		}
 	}
 
-	catalog.storage.update_table(Table{
+	new_table := Table{
 		...table
 		columns: table.columns.map(if it.name.sub_entity_name == column.name.sub_entity_name {
 			new_column
 		} else {
 			it
 		})
-	})!
+	}
+	if new_column.typ != column.typ {
+		replace_table_definition(mut conn, mut catalog, table, new_table)!
+	} else {
+		catalog.storage.update_table(new_table)!
+	}
 	if s := sequence {
 		catalog.storage.update_identity(table.id, s)!
 	}

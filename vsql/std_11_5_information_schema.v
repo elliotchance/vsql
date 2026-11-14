@@ -799,8 +799,12 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 
 	match t.typ {
 		.is_character, .is_varchar {
+			// A length in octets is converted to the same number of characters,
+			// since a character is at least one octet.
+			//
+			// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 3
 			character_maximum_length = t.size
-			character_octet_length = t.size * 4
+			character_octet_length = if t.octets { t.size } else { t.size * 4 }
 			character_set = true
 		}
 		.is_smallint, .is_integer, .is_bigint {

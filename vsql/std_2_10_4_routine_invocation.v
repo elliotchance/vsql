@@ -104,7 +104,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 9
 	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
 	mut return_type := if is_fold {
-		Type{arg_types[0].typ, arg_types[0].size, 0, false}
+		Type{arg_types[0].typ, arg_types[0].size, 0, false, false}
 	} else {
 		numeric_function_type(func_name, found_func.return_type, arg_types)
 	}

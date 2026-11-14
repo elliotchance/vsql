@@ -214,7 +214,7 @@ fn arithmetic_type(t1 Type, t2 Type, op string) Type {
 // VALUES (9.5 Syntax Rule 3d), that's DOUBLE PRECISION, unless both are REAL.
 fn arithmetic_supertype(t1 Type, t2 Type) !Type {
 	if (t1.typ in approximate_types) != (t2.typ in approximate_types) {
-		return Type{.is_double_precision, 0, 0, false}
+		return Type{.is_double_precision, 0, 0, false, false}
 	}
 
 	return most_specific_type(t1, t2)

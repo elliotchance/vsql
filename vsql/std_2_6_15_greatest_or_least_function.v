@@ -40,7 +40,7 @@ fn (e GreatestOrLeastFunction) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xvi
 	compiled := c.with_types(e.exprs.map(it.compile(mut c)!), same_type)
 
-	mut typ := Type{compiled[0].typ.typ, compiled[0].typ.size, compiled[0].typ.scale, false}
+	mut typ := Type{compiled[0].typ.typ, compiled[0].typ.size, compiled[0].typ.scale, false, false}
 	mut contains_agg := false
 	for i, a in compiled {
 		for b in compiled[i + 1..] {

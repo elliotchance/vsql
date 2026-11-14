@@ -13,8 +13,8 @@
 6.1/SR/5                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/6                 n/a          - - binary strings (T021)
 6.1/SR/7                 impl-defined vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql 10485760, the maximum length
-6.1/SR/8                 n/a          - - char length units (T061)
-6.1/SR/9                 n/a          - - char length units (T061)
+6.1/SR/8                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql the character set is always UTF8, whose repertoire is UCS
+6.1/SR/9                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql
 6.1/SR/10                n/a          - - LOBs (T041)
 6.1/SR/11                n/a          - - LOBs (T041)
 6.1/SR/11.a              n/a          - - LOBs (T041)
@@ -34,9 +34,9 @@
 6.1/SR/16.a.ii           implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql
 6.1/SR/16.a.iii          n/a          - - LOBs (T041)
 6.1/SR/16.b              container    - -
-6.1/SR/16.b.i            n/a          - - char length units (T061)
-6.1/SR/16.b.ii           n/a          - - char length units (T061)
-6.1/SR/16.b.iii          n/a          - - char length units (T061)
+6.1/SR/16.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
+6.1/SR/16.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
+6.1/SR/16.b.iii          n/a          - - LOBs (T041)
 6.1/SR/17                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum length is 10485760 (there are no LOBs, T041)
 6.1/SR/18                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the character set is always UTF8
 6.1/SR/19                n/a          - - binary strings (T021, T041)
@@ -92,7 +92,7 @@
 6.1/AR/1.b               n/a          - - user-defined types (S023)
 6.1/GR/1                 impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only character set is UTF8, which contains every character
 6.1/GR/2                 unclear      vsql/std_2_6_1_data_type.v tests/std_2_5_2_unicode_escapes.sql changed in 2023 (#1501)
-6.1/GR/3                 n/a          - - char length units (T061)
+6.1/GR/3                 impl-defined vsql/std_11_5_information_schema.v tests/std_2_6_1_char_length_units.sql a length in octets is the same number of characters
 6.1/GR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/4.a               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_date.sql
 6.1/GR/4.b               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_time.sql
@@ -173,7 +173,7 @@
 6.1/CR/20                n/a          - - LOBs (T041)
 6.1/CR/21                n/a          - - LOBs (T041)
 6.1/CR/22                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql
-6.1/CR/23                n/a          - - char length units aren't allowed in a data type (T061)
+6.1/CR/23                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql
 6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
 6.1/CR/25                n/a          - - binary strings (T021)
 6.1/CR/26                n/a          - - binary strings (T021)

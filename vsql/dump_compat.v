@@ -51,8 +51,13 @@ fn (c DumpCompat) table_sql(name Identifier) string {
 }
 
 // type_sql is the closest type of the database. Types are shown in the table of
-// "vsql out" in docs/cli.rst.
-fn (c DumpCompat) type_sql(t Type) string {
+// "vsql out" in docs/cli.rst. A length in OCTETS (T062) is a length in
+// characters, since the other databases don't have it.
+fn (c DumpCompat) type_sql(typ Type) string {
+	t := Type{
+		...typ
+		octets: false
+	}
 	return match c {
 		.sqlite3 {
 			match t.typ {

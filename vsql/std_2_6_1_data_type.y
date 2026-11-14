@@ -95,8 +95,22 @@ approximate_numeric_type:
 length:
   unsigned_integer { $$.v = $1.v as string }
 
+// The length of a character string type is in characters, unless it's OCTETS
+// (T062).
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 8 and 9
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Conformance Rules, 23
 character_length:
   length { $$.v = $1.v as string }
+| length CHARACTERS {
+    flag(mut yylex, 'T062')
+    $$.v = $1.v as string
+  }
+| length OCTETS {
+    flag(mut yylex, 'T062')
+    length := $1.v as string
+    $$.v = '${length} OCTETS'
+  }
 
 char_length_units:
   CHARACTERS {

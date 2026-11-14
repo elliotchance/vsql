@@ -10,11 +10,11 @@ import rand
 // (see find_function), and the result is NULL when any argument is NULL.
 
 fn register_math_funcs(mut conn Connection) ! {
-	double_precision := Type{SQLType.is_double_precision, 0, 0, false}
-	numeric := Type{SQLType.is_numeric, 0, 0, false}
-	smallint := Type{SQLType.is_smallint, 0, 0, false}
-	integer := Type{SQLType.is_integer, 0, 0, false}
-	bigint := Type{SQLType.is_bigint, 0, 0, false}
+	double_precision := Type{SQLType.is_double_precision, 0, 0, false, false}
+	numeric := Type{SQLType.is_numeric, 0, 0, false, false}
+	smallint := Type{SQLType.is_smallint, 0, 0, false, false}
+	integer := Type{SQLType.is_integer, 0, 0, false, false}
+	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
 
 	// ROUND and TRUNC have an optional number of decimal places, which can be
 	// negative to round to the left of the decimal point. Any integer is
@@ -119,7 +119,7 @@ fn round_numeric(n Numeric, places i64, truncate bool) Numeric {
 		return n
 	}
 
-	typ := Type{.is_numeric, 0, if places > 0 { int(places) } else { 0 }, false}
+	typ := Type{.is_numeric, 0, if places > 0 { int(places) } else { 0 }, false, false}
 
 	// Every digit of n is to the right of the place it's rounded to, so it's 0,
 	// even if the first digit is 5 or more. The integer part of n has fewer
@@ -175,7 +175,7 @@ fn rounding_function_type(name string, arg Type, places ?i64) Type {
 	}
 
 	if p == 0 {
-		return Type{.is_numeric, 0, scale, false}
+		return Type{.is_numeric, 0, scale, false, false}
 	}
 
 	mut size := p - s + scale
@@ -186,7 +186,7 @@ fn rounding_function_type(name string, arg Type, places ?i64) Type {
 		size = 1
 	}
 
-	return Type{.is_numeric, size, scale, false}
+	return Type{.is_numeric, size, scale, false, false}
 }
 
 // SIGN(DOUBLE PRECISION) DOUBLE PRECISION

@@ -1051,7 +1051,7 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 
 			// All CHARACTER types are considered to be CHARACTER VARYING.
 			if t.typ == .is_character {
-				real_arg_type = Type{SQLType.is_varchar, t.scale, 0, false}
+				real_arg_type = Type{SQLType.is_varchar, t.scale, 0, false, false}
 			}
 
 			// Only compare the SQLType so that the precision/scale/null isn't

@@ -21,6 +21,9 @@ pub mut:
 	scale i16
 	// Is NOT NULL?
 	not_null bool
+	// octets is true when the size of a character string type is in octets
+	// (such as CHARACTER VARYING(10 OCTETS)) rather than characters.
+	octets bool
 }
 
 // SQLType is the fundamental SQL type, without its size or precision.
@@ -158,14 +161,14 @@ fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 
 	if op == '*' {
 		size := if p1 == 0 || p2 == 0 { 0 } else { p1 + p2 }
-		return Type{typ, math.min(size, max_numeric_precision), s1 + s2, false}
+		return Type{typ, math.min(size, max_numeric_precision), s1 + s2, false, false}
 	}
 
 	scale := if s1 > s2 { s1 } else { s2 }
 	integer_digits := if p1 - s1 > p2 - s2 { p1 - s1 } else { p2 - s2 }
 	size := if p1 == 0 || p2 == 0 { 0 } else { integer_digits + scale + 1 }
 
-	return Type{typ, math.min(size, max_numeric_precision), scale, false}
+	return Type{typ, math.min(size, max_numeric_precision), scale, false, false}
 }
 
 // exact_precision is the number of decimal digits that an exact numeric type
@@ -197,15 +200,15 @@ fn (t Type) numeric_precision() int {
 fn implicit_cast_type(v Value, t Type) Type {
 	if t.typ == .is_numeric || t.typ == .is_decimal {
 		if v.typ.typ == .is_numeric || v.typ.typ == .is_decimal {
-			return Type{t.typ, v.typ.size, v.typ.scale, false}
+			return Type{t.typ, v.typ.size, v.typ.scale, false, false}
 		}
 
 		if v.typ.typ in [.is_smallint, .is_integer, .is_bigint] && !v.is_null {
-			return Type{t.typ, v.str().trim_left('-').len, 0, false}
+			return Type{t.typ, v.str().trim_left('-').len, 0, false, false}
 		}
 	}
 
-	return Type{t.typ, 0, 0, false}
+	return Type{t.typ, 0, 0, false, false}
 }
 
 fn most_specific_type(t1 Type, t2 Type) !Type {
@@ -217,10 +220,10 @@ fn most_specific_type(t1 Type, t2 Type) !Type {
 		// cast (like an integer) will get the correct size.
 
 		if t1_supertype > t2_supertype {
-			return Type{t1.typ, 0, 0, false}
+			return Type{t1.typ, 0, 0, false, false}
 		}
 
-		return Type{t2.typ, 0, 0, false}
+		return Type{t2.typ, 0, 0, false, false}
 	}
 
 	return sqlstate_42601('no supertype of both ${t1} and ${t2}')
@@ -245,54 +248,60 @@ fn type_from_name(name string, size int, scale i16) !Type {
 
 	return match name_without_size {
 		'BIGINT' {
-			Type{.is_bigint, size, scale, false}
+			Type{.is_bigint, size, scale, false, false}
 		}
 		'BOOLEAN' {
-			Type{.is_boolean, size, scale, false}
+			Type{.is_boolean, size, scale, false, false}
 		}
 		'CHARACTER VARYING', 'CHAR VARYING', 'VARCHAR' {
-			Type{.is_varchar, size, scale, false}
+			Type{.is_varchar, size, scale, false, false}
 		}
 		'CHARACTER', 'CHAR' {
-			Type{.is_character, size, scale, false}
+			Type{.is_character, size, scale, false, false}
 		}
 		'DOUBLE PRECISION', 'FLOAT' {
-			Type{.is_double_precision, size, scale, false}
+			Type{.is_double_precision, size, scale, false, false}
 		}
 		'REAL' {
-			Type{.is_real, size, scale, false}
+			Type{.is_real, size, scale, false, false}
 		}
 		'INT', 'INTEGER' {
-			Type{.is_integer, size, scale, false}
+			Type{.is_integer, size, scale, false, false}
 		}
 		'SMALLINT' {
-			Type{.is_smallint, size, scale, false}
+			Type{.is_smallint, size, scale, false, false}
 		}
 		'DATE' {
-			Type{.is_date, size, scale, false}
+			Type{.is_date, size, scale, false, false}
 		}
 		'TIME', 'TIME WITHOUT TIME ZONE' {
-			Type{.is_time_without_time_zone, size, scale, false}
+			Type{.is_time_without_time_zone, size, scale, false, false}
 		}
 		'TIME WITH TIME ZONE' {
-			Type{.is_time_with_time_zone, size, scale, false}
+			Type{.is_time_with_time_zone, size, scale, false, false}
 		}
 		'TIMESTAMP', 'TIMESTAMP WITHOUT TIME ZONE' {
-			Type{.is_timestamp_without_time_zone, size, scale, false}
+			Type{.is_timestamp_without_time_zone, size, scale, false, false}
 		}
 		'TIMESTAMP WITH TIME ZONE' {
-			Type{.is_timestamp_with_time_zone, size, scale, false}
+			Type{.is_timestamp_with_time_zone, size, scale, false, false}
 		}
 		'DECIMAL' {
-			Type{.is_decimal, size, scale, false}
+			Type{.is_decimal, size, scale, false, false}
 		}
 		'NUMERIC' {
-			Type{.is_numeric, size, scale, false}
+			Type{.is_numeric, size, scale, false, false}
 		}
 		else {
 			return sqlstate_42601('unknown type: ${name_without_size}')
 		}
 	}
+}
+
+// size_str is the length of a character string type, with " OCTETS" when it's
+// in octets.
+fn (t Type) size_str() string {
+	return if t.octets { '${t.size} OCTETS' } else { '${t.size}' }
 }
 
 // str is the SQL representation, such as ``TIME(3) WITHOUT TIME ZONE``.
@@ -306,7 +315,7 @@ pub fn (t Type) str() string {
 		}
 		.is_character {
 			if t.size > 0 {
-				'CHARACTER(${t.size})'
+				'CHARACTER(${t.size_str()})'
 			} else {
 				'CHARACTER'
 			}
@@ -325,7 +334,7 @@ pub fn (t Type) str() string {
 		}
 		.is_varchar {
 			if t.size > 0 {
-				'CHARACTER VARYING(${t.size})'
+				'CHARACTER VARYING(${t.size_str()})'
 			} else {
 				'CHARACTER VARYING'
 			}

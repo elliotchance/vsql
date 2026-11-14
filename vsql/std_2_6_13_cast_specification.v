@@ -148,6 +148,9 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11 and 12
 fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 	mut s := v.string_value()
+	if to.octets {
+		return cast_character_to_octets(mut conn, s, to)
+	}
 	chars := s.runes()
 	if chars.len > to.size {
 		if !chars[to.size..].all(it == ` `) {
@@ -164,6 +167,38 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 		typ: to
 		v:   InternalValue{
 			string_value: s
+		}
+	}
+}
+
+// cast_character_to_octets casts a character string to CHAR(n OCTETS) or
+// VARCHAR(n OCTETS), which is the same as for a length in characters, except
+// that the length is in octets (UTF-8 bytes). A string that's too long is cut
+// to the last whole character that fits, and a CHARACTER is padded with spaces
+// to n octets (so a cut character becomes spaces).
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.b.i and 16.b.ii
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11 and 12
+fn cast_character_to_octets(mut conn Connection, s string, to Type) Value {
+	mut result := s
+	if s.len > to.size {
+		mut end := to.size
+		for end > 0 && (s[end] & 0xC0) == 0x80 {
+			end--
+		}
+		if !s[end..].bytes().all(it == ` `) {
+			conn.add_warning(sqlstate_01004())
+		}
+		result = s[..end]
+	}
+	if to.typ == .is_character && result.len < to.size {
+		result += strings.repeat(` `, to.size - result.len)
+	}
+
+	return Value{
+		typ: to
+		v:   InternalValue{
+			string_value: result
 		}
 	}
 }

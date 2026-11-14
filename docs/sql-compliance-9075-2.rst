@@ -1274,7 +1274,7 @@ Optional Features
    * - ❌ **T061**
      - **UCS support**
 
-   * - ❌ **T062**
+   * - ✅ **T062**
      - **Character length units**
 
    * - ✅ **T071**

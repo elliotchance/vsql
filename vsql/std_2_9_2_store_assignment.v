@@ -73,6 +73,9 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// The characters are only counted, rather than decoded with runes()
 			// (which needs 4 bytes for each byte of s), unless it's too long.
 			s := cast_character_source(v)
+			if t.octets {
+				return store_octets(s, t)!
+			}
 			m := s.len_utf8()
 
 			l := t.size
@@ -104,6 +107,9 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			//
 			// See note above about using v.str() instead of string_value().
 			s := cast_character_source(v)
+			if t.octets {
+				return store_octets(s, t)!
+			}
 
 			// A CHARACTER VARYING without a length (such as the declared type of an
 			// expression) has no maximum length. Like CHARACTER, the characters
@@ -629,5 +635,32 @@ fn check_numeric_range(x Numeric, typ SQLType) ! {
 			}
 		}
 		else {}
+	}
+}
+
+// store_octets assigns the string s to a CHARACTER(L OCTETS) or CHARACTER
+// VARYING(L OCTETS), which is the same as for a length in characters, except
+// that the length of s is in octets (UTF-8 bytes). A string that's too long can
+// only lose spaces, which are one octet each, so it's never cut in the middle of
+// a character. A CHARACTER is padded with spaces to L octets.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.b.i and 16.b.ii
+// ISO/IEC 9075-2:2023, 9.2, Store assignment, General Rules, 3.b.i to 3.b.v
+fn store_octets(s string, t Type) !Value {
+	l := t.size
+	mut result := s
+	if s.len > l {
+		if !s[l..].bytes().all(it == ` `) {
+			return sqlstate_22001(t)
+		}
+		result = s[..l]
+	} else if t.typ == .is_character && s.len < l {
+		result += strings.repeat(` `, l - s.len)
+	}
+
+	return if t.typ == .is_character {
+		new_character_value(result)
+	} else {
+		new_varchar_value(result)
 	}
 }

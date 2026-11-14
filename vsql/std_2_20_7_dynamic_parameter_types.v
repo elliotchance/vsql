@@ -24,14 +24,14 @@ module vsql
 // untyped_parameter_type is the type of a dynamic parameter until its type is
 // known. Any expression that can't give it a type leaves it untyped, so this
 // is never its type.
-const untyped_parameter_type = Type{.is_varchar, 0, 0, false}
+const untyped_parameter_type = Type{.is_varchar, 0, 0, false, false}
 
 // position_parameter_type is the type of a dynamic parameter that is the start
 // position or string length of a SUBSTRING or OVERLAY, which is the largest
 // exact numeric with scale 0.
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.vi and 5.a.viii.2
-const position_parameter_type = Type{.is_numeric, max_numeric_precision, 0, false}
+const position_parameter_type = Type{.is_numeric, max_numeric_precision, 0, false, false}
 
 // describe_parameters returns the data type of each dynamic parameter (by its
 // name, such as "?1") that's determined by the statement. A dynamic parameter
@@ -217,7 +217,7 @@ fn (mut c Compiler) with_type(r CompileResult, typ Type) CompileResult {
 		return r
 	}
 
-	t := Type{typ.typ, typ.size, typ.scale, false}
+	t := Type{typ.typ, typ.size, typ.scale, false, false}
 	c.conn.parameter_types[r.untyped_parameter] = t
 
 	return parameter_result('', t)
@@ -255,7 +255,7 @@ fn (mut c Compiler) with_types(results []CompileResult, derive fn (Type) Type) [
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xii
 fn (mut c Compiler) with_boolean_type(r CompileResult) CompileResult {
-	return c.with_type(r, Type{.is_boolean, 0, 0, false})
+	return c.with_type(r, Type{.is_boolean, 0, 0, false, false})
 }
 
 // with_pair_types is with_types for two operands, such as the sides of a
@@ -381,7 +381,7 @@ fn same_type(typ Type) Type {
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5
 fn character_type(typ Type) Type {
 	if typ.typ.is_string() {
-		return Type{.is_varchar, max_character_length, 0, false}
+		return Type{.is_varchar, max_character_length, 0, false, false}
 	}
 
 	return typ

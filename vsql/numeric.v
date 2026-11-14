@@ -106,7 +106,7 @@ fn new_numeric_from_string(x string) Numeric {
 		numerator = numerator.neg()
 	}
 
-	typ := Type{.is_numeric, size, scale, false}
+	typ := Type{.is_numeric, size, scale, false, false}
 	return new_numeric(typ, numerator, denominator)
 }
 

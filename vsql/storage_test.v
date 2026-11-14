@@ -707,11 +707,11 @@ fn test_index_entry_order() {
 			name: Identifier{
 				sub_entity_name: 'A'
 			}
-			typ:  Type{.is_integer, 0, 0, false}
+			typ:  Type{.is_integer, 0, 0, false, false}
 		}]
 	}
 	values := [Value{
-		typ:     Type{.is_integer, 0, 0, false}
+		typ:     Type{.is_integer, 0, 0, false, false}
 		is_null: true
 	}, new_integer_value(-5), new_integer_value(0), new_integer_value(7)]
 	for desc in [false, true] {

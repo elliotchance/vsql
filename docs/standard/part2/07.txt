@@ -1502,7 +1502,7 @@
 7.17/CR/22               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.17/CR/23               n/a          - - FETCH FIRST PERCENT (F866)
 7.17/CR/24               n/a          - - FETCH FIRST WITH TIES (F867)
-7.17/CR/25               n/a          - - ORDER BY in grouped table (F868, #1187)
+7.17/CR/25               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_17_order_by_grouped.sql
 # 7.18, <search or cycle clause>
 7.18                     n/a          - - recursive queries (T131)
 7.18/SR/1                n/a          - - recursive queries (T131)

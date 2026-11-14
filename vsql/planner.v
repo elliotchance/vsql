@@ -802,6 +802,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			params:                 params
 			tables:                 tables
 			next_value_not_allowed: 'ORDER BY'
+			in_sort_key:            true
 		}
 		result_columns := if stmt.body is QuerySpecification {
 			new_expr_operation(mut conn, params, stmt.body.exprs, tables)!.columns()

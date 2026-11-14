@@ -117,9 +117,10 @@ mut:
 	// as balancing happens on the tree.
 	root_page int
 	// cache keeps up to cache_size pages that were read from the file, so that
-	// reading them again doesn't read the file. The pager is only used for one
-	// statement, while the file is locked, so the file can't change underneath
-	// it. cache_order is the page numbers in the order they were added (a ring
+	// reading them again doesn't read the file. The pager is only used while
+	// the file is locked, so the file can't change underneath it, and it's only
+	// used again by the next statement if no other connection changed the file
+	// in between (see Storage.open). cache_order is the page numbers in the order they were added (a ring
 	// starting at cache_next) so that the oldest one is removed when it's full.
 	cache_size  int
 	cache       map[int][]u8
@@ -155,11 +156,13 @@ fn (mut p FilePager) read_page(page_number int) !Page {
 		return page_view(data)
 	}
 
+	// A page that's read from the cache can still fail, so that a test can
+	// fail any read, whether or not the page was cached.
+	fault_point('read_page')!
+
 	if data := p.cache[page_number] {
 		return page_view(data)
 	}
-
-	fault_point('read_page')!
 
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
@@ -234,6 +237,19 @@ fn (mut p FilePager) discard() {
 	p.cache = map[int][]u8{}
 	p.cache_order = []int{}
 	p.cache_next = 0
+}
+
+// committed is called once the dirty pages are in the file, so they're cached
+// as they are now.
+fn (mut p FilePager) committed() {
+	for page_number, data in p.dirty {
+		if page_number in p.cache {
+			p.cache[page_number] = data
+		} else {
+			p.cache_page(page_number, data)
+		}
+	}
+	p.dirty = map[int][]u8{}
 }
 
 fn (mut p FilePager) total_pages() int {

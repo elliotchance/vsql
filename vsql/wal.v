@@ -104,6 +104,26 @@ fn (mut l WalLog) create() ! {
 	l.opened()
 }
 
+// A WalPosition is where the end of the log is, see WalLog.position.
+struct WalPosition {
+	salt u32
+	tail int
+}
+
+// position returns where the end of the log is. It's none when there's no log,
+// or it isn't valid (so the next statement starts a new one).
+fn (mut l WalLog) position(page_size int) ?WalPosition {
+	if !l.file.is_opened {
+		return none
+	}
+	salt, tail, _ := wal_tail(mut l.file, page_size)
+	if tail == 0 {
+		return none
+	}
+
+	return WalPosition{salt, tail}
+}
+
 // can_skip_sync returns true if the statement can be committed without syncing
 // the log, which is only allowed for a statement in an explicit transaction
 // (see wal_prepare). Its pages are copied into the database file straight
@@ -247,7 +267,6 @@ fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []in
 	// The copy is the same open file.
 	mut log := prepared.log
 	log_path := prepared.log_path
-	log.seek(0, .start)!
 	mut salt, mut tail, mut checksum := wal_tail(mut log, prepared.page_size)
 	if tail == 0 || tail + prepared.size > wal_max_size {
 		// The statements in the log are about to be lost, so the database file
@@ -350,9 +369,10 @@ fn wal_write_header(mut log os.File, header []u8) ! {
 
 // wal_tail returns the salt of the log, where the next statement goes, and the
 // checksum before it. The position is zero if a new log needs to be started.
+// The header is read from the start of the log, wherever the file is.
 fn wal_tail(mut log os.File, page_size int) (u32, int, u32) {
 	mut header := []u8{len: wal_header_size}
-	read := log.read(mut header) or { 0 }
+	read := log.read_from(0, mut header) or { 0 }
 	if read != wal_header_size || !wal_header_is_valid(header)
 		|| binary.big_endian_u16_at(header, wal_magic.len) != wal_version
 		|| int(binary.big_endian_u32_at(header, 12)) != page_size {

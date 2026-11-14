@@ -129,6 +129,15 @@ import arrays
 //
 // V403: Mathematical functions.
 // V403-01: MOD with an argument that has a scale or is approximate.
+// V403-02: ROUND.
+// V403-03: TRUNC.
+// V403-04: SIGN.
+// V403-05: PI.
+// V403-06: RANDOM.
+// V403-07: ATAN2.
+// V403-08: DEGREES.
+// V403-09: RADIANS.
+// V403-10: CBRT.
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
@@ -195,6 +204,15 @@ const vsql_ilike = 'V302-01'
 const vsql_double_colon_cast = 'V303-01'
 const vsql_now = 'V402-01'
 const vsql_mod_not_integer = 'V403-01'
+const vsql_round = 'V403-02'
+const vsql_trunc = 'V403-03'
+const vsql_sign = 'V403-04'
+const vsql_pi = 'V403-05'
+const vsql_random = 'V403-06'
+const vsql_atan2 = 'V403-07'
+const vsql_degrees = 'V403-08'
+const vsql_radians = 'V403-09'
+const vsql_cbrt = 'V403-10'
 const vsql_trim_only_from = 'V404-01'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'

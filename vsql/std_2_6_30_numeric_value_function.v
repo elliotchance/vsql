@@ -431,7 +431,8 @@ fn func_ceil_numeric(_ FunctionContext, args []Value) !Value {
 	return new_numeric_value_from_numeric(t)
 }
 
-// numeric_function_type is the declared type of ABS, MOD, FLOOR and CEIL when
+// numeric_function_type is the declared type of ABS, MOD, FLOOR, CEIL, ROUND,
+// TRUNC and SIGN when
 // they return an exact numeric (NUMERIC or DECIMAL), which depends on the
 // declared types of the arguments.
 fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
@@ -464,6 +465,18 @@ fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
 			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 20.a
 			size := if p1 == 0 || s1 == 0 { p1 } else { p1 - s1 + 1 }
 			return Type{return_type.typ, size, 0, false}
+		}
+		'SIGN' {
+			// A vsql extension (V403-04), see func_sign_numeric.
+			return Type{return_type.typ, 1, 0, false}
+		}
+		'ROUND', 'TRUNC' {
+			// A vsql extension (V403-02 and V403-03), see rounding_function_type.
+			return rounding_function_type(name, arg_types[0], if arg_types.len == 1 {
+				?i64(0)
+			} else {
+				none
+			})
 		}
 		'WIDTH_BUCKET' {
 			// The declared type is that of the count, which must have a scale of 0.

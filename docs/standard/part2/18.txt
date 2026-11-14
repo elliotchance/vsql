@@ -37,7 +37,7 @@
 18.1/GR/13.l             n/a          - - SQL-invoked routines (T321)
 18.1/GR/13.m             implemented  vsql/connection.v vsql/module_test.v,vsql/api_test.v
 18.1/GR/13.n             unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, as after a COMMIT (17.7 GR 10.b.ii), so an INITIALLY DEFERRED constraint is deferred
-18.1/GR/14               n/a          - - savepoints (T271)
+18.1/GR/14               n/a          - - there is one savepoint level, which has nothing in a new SQL-session
 18.1/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/std_2_18_1_connections.sql
 # 18.2, <set connection statement>
 18.2                     implemented  vsql/std_2_18_2_set_connection_statement.v vsql/module_test.v,vsql/api_test.v

@@ -7,18 +7,32 @@ import time
 // Terminate the current SQL-transaction with rollback, or rollback all actions
 // affecting SQL-data and/or schemas since the establishment of a savepoint.
 //
-// TO SAVEPOINT (T271) isn't supported. Like COMMIT, a ROLLBACK when there isn't an
-// active SQL-transaction does nothing, even with AND CHAIN.
+// Like COMMIT, a ROLLBACK when there isn't an active SQL-transaction does nothing,
+// even with AND CHAIN. TO SAVEPOINT is a savepoint exception then, because there
+// are no savepoints.
 
 struct RollbackStatement {
 	// chain is AND CHAIN. Without it, or with AND NO CHAIN, it's false.
 	//
 	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Syntax Rules, 2
 	chain bool
+	// savepoint is the name of the TO SAVEPOINT, which is empty without it.
+	savepoint string
 }
 
 fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
+
+	if stmt.savepoint != '' {
+		// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Syntax Rules, 1
+		if stmt.chain {
+			return sqlstate_42601('AND CHAIN cannot be used with TO SAVEPOINT')
+		}
+
+		conn.rollback_to_savepoint(stmt.savepoint)!
+
+		return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
+	}
 
 	// Like COMMIT, there's nothing to roll back outside of a transaction.
 	if !conn.in_transaction() {
@@ -82,6 +96,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	catalog.storage.transaction_pages = map[int]bool{}
 	catalog.storage.transaction_keys = map[string]bool{}
 	catalog.storage.end_constraint_modes()
+	catalog.storage.end_savepoints()
 
 	// Tables, schemas and indexes that were created or dropped in this
 	// transaction must be reloaded, here and in other connections. A

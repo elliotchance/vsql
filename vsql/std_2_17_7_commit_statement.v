@@ -107,6 +107,7 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	catalog.storage.transaction_state = .not_active
 	catalog.storage.isolation_end()!
 	catalog.storage.end_constraint_modes()
+	catalog.storage.end_savepoints()
 
 	// Other connections may have loaded the schema while this transaction was
 	// active, so they could not see the tables, schemas and indexes it created

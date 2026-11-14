@@ -178,6 +178,7 @@ fn test_module_errors() ! {
 	assert module_error('MODULE LANGUAGE ADA SCHEMA s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: only LANGUAGE C is supported, not ADA'
 	assert module_error('MODULE LANGUAGE C PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: expected SCHEMA or AUTHORIZATION after LANGUAGE C'
 	assert module_error(module_header + 'PATH s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: expected PROCEDURE or DECLARE after the module authorization clause'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); ROLLBACK TO SAVEPOINT s;') == 'syntax error: procedure p: ROLLBACK TO SAVEPOINT is not supported in a module'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT') == 'syntax error: a statement in a module must end with a semicolon'
 	assert module_error('MODULE') == 'syntax error: a statement in a module must end with a semicolon'
 	assert module_error('MODULE;;') == 'syntax error: expected LANGUAGE at the end'

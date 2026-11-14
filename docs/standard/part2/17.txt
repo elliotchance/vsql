@@ -60,18 +60,18 @@
 17.4/GR/3.b              implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
 17.4/CR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.y tests/std_1_8_5_flagging.sql
 # 17.5, <savepoint statement>
-17.5                     n/a          - - savepoints (T271)
-17.5/GR/1                n/a          - - savepoints (T271)
-17.5/GR/2                n/a          - - savepoints (T271)
-17.5/GR/3                n/a          - - savepoints (T271)
-17.5/GR/4                n/a          - - savepoints (T271)
-17.5/CR/1                n/a          - - savepoints (T271)
+17.5                     implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.5/GR/1                definition   - -
+17.5/GR/2                implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.5/GR/3                n/a          - - there is no maximum number of savepoints, so 3B002 is never raised
+17.5/GR/4                implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.5/CR/1                implemented  vsql/std_2_17_5_savepoint_statement.y tests/std_2_17_5_savepoints.sql
 # 17.6, <release savepoint statement>
-17.6                     n/a          - - savepoints (T271)
-17.6/GR/1                n/a          - - savepoints (T271)
-17.6/GR/2                n/a          - - savepoints (T271)
-17.6/GR/3                n/a          - - savepoints (T271)
-17.6/CR/1                n/a          - - savepoints (T271)
+17.6                     implemented  vsql/std_2_17_6_release_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.6/GR/1                definition   - -
+17.6/GR/2                implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.6/GR/3                implemented  vsql/std_2_17_6_release_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.6/CR/1                implemented  vsql/std_2_17_6_release_savepoint_statement.y tests/std_2_17_5_savepoints.sql
 # 17.7, <commit statement>
 17.7                     implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_1_transaction.sql
 17.7/SR/1                implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_7_chained_transactions.sql
@@ -84,7 +84,7 @@
 17.7/GR/6.a              implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_4_set_constraints.sql
 17.7/GR/6.b              impl-defined vsql/std_2_17_7_commit_statement.v tests/std_2_17_7_commit_faults.sql the subclass is 40V01
 17.7/GR/6.c              implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_1_transaction.sql
-17.7/GR/7                n/a          - - savepoints (T271)
+17.7/GR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_17_5_savepoints.sql there is one savepoint level
 17.7/GR/8                n/a          - - there are no locators (T041)
 17.7/GR/9                implemented  vsql/std_2_17_7_commit_statement.v tests/std_2_17_1_transaction.sql
 17.7/GR/10               container    - -
@@ -96,13 +96,13 @@
 17.7/CR/1                implemented  vsql/std_2_17_7_commit_statement.y tests/std_2_17_7_chained_transactions.sql
 # 17.8, <rollback statement>
 17.8                     implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_1_transaction.sql
-17.8/SR/1                n/a          - - savepoints (T271)
+17.8/SR/1                implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_5_savepoints.sql
 17.8/SR/2                implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_7_chained_transactions.sql
 17.8/GR/1                n/a          - - there's no external transaction manager or encompassing transaction
 17.8/GR/2                implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_1_transaction.sql
 17.8/GR/2.a              n/a          - - there are no SQL-invoked routines (T321)
 17.8/GR/2.b              implemented  vsql/std_2_17_8_rollback_statement.v tests/std_2_17_1_transaction.sql
-17.8/GR/2.c              n/a          - - savepoints (T271)
+17.8/GR/2.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_17_5_savepoints.sql there is one savepoint level
 17.8/GR/2.d              n/a          - - there are no locators (T041)
 17.8/GR/2.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 17.8/GR/2.f              impl-defined vsql/prepare.v tests/std_2_14_1_cursors.sql no prepared statement is deallocated
@@ -112,16 +112,16 @@
 17.8/GR/2.h.ii           container    - -
 17.8/GR/2.h.ii.1         implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.8/GR/2.h.ii.2         implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_17_4_set_constraints.sql
-17.8/GR/3                n/a          - - savepoints (T271)
-17.8/GR/3.a              n/a          - - savepoints (T271)
-17.8/GR/3.b              n/a          - - savepoints (T271)
-17.8/GR/3.c              n/a          - - savepoints (T271)
-17.8/GR/3.d              n/a          - - savepoints (T271)
-17.8/GR/3.e              n/a          - - savepoints (T271)
-17.8/GR/3.f              n/a          - - savepoints (T271)
-17.8/GR/3.g              n/a          - - savepoints (T271)
-17.8/GR/3.h              n/a          - - savepoints (T271)
-17.8/GR/3.i              n/a          - - savepoints (T271)
-17.8/GR/3.j              n/a          - - savepoints (T271)
-17.8/CR/1                n/a          - - savepoints (T271)
+17.8/GR/3                implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.8/GR/3.a              definition   - -
+17.8/GR/3.b              implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.8/GR/3.c              n/a          - - there are no atomic execution contexts
+17.8/GR/3.d              implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.8/GR/3.e              implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.8/GR/3.f              n/a          - - there are no locators (T041)
+17.8/GR/3.g              implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
+17.8/GR/3.h              impl-defined vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql a holdable cursor stays open, and it is a copy of its rows
+17.8/GR/3.i              impl-defined vsql/prepare.v tests/std_2_14_1_cursors.sql no prepared statement is deallocated
+17.8/GR/3.j              impl-defined vsql/prepare.v tests/std_2_14_1_cursors.sql no prepared statement is deallocated
+17.8/CR/1                implemented  vsql/std_2_17_8_rollback_statement.y tests/std_2_17_5_savepoints.sql
 17.8/CR/2                implemented  vsql/std_2_17_7_commit_statement.y tests/std_2_17_7_chained_transactions.sql

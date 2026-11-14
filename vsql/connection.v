@@ -139,6 +139,8 @@ mut:
 	// enduring_transaction is set by SET SESSION CHARACTERISTICS. See
 	// enduring_characteristics.
 	enduring_transaction TransactionCharacteristics
+	// savepoints are the savepoints of the current SQL-transaction, oldest first.
+	savepoints []Savepoint
 	// read_only is the access mode of the current SQL-transaction, see
 	// begin_transaction.
 	read_only bool
@@ -356,6 +358,12 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	if in_transaction {
 		catalog.start_transaction(conn.isolation_level)!
 		conn.finish_write(true)!
+
+		// Rolling back to a savepoint from before it joined the transaction undoes
+		// everything since it joined.
+		for mut savepoint in conn.savepoints {
+			savepoint.catalogs[catalog_name] = catalog.storage.savepoint_state()
+		}
 	}
 }
 

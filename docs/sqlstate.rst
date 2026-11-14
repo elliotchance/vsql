@@ -742,6 +742,17 @@ The number of diagnostic conditions isn't valid.
 ``35000`` is returned when the ``DIAGNOSTICS SIZE`` of :doc:`set-transaction`
 or :doc:`start-transaction` is less than 1.
 
+Class ``3B``: Savepoint Exception
+---------------------------------
+
+A savepoint couldn't be used.
+
+``3B001`` savepoint exception: invalid specification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``3B001`` is returned when :doc:`savepoint` uses the name of a savepoint that
+doesn't exist in the current transaction.
+
 Class ``3D``: Invalid Catalog Name
 ----------------------------------
 

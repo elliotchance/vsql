@@ -795,6 +795,8 @@ struct Connection
    	// enduring_transaction is set by SET SESSION CHARACTERISTICS. See
    	// enduring_characteristics.
    	enduring_transaction TransactionCharacteristics
+   	// savepoints are the savepoints of the current SQL-transaction, oldest first.
+   	savepoints []Savepoint
    	// read_only is the access mode of the current SQL-transaction, see
    	// begin_transaction.
    	read_only bool

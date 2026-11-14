@@ -222,7 +222,7 @@
 13.4/GR/18.b.ii          implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
 13.4/GR/19               implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
 13.4/GR/20               impl-defined vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c every condition that the statement raised is in the first diagnostics area
-13.4/GR/21               n/a          - - savepoints (T271)
+13.4/GR/21               n/a          - - there are no atomic execution contexts
 13.4/GR/22               definition   - -
 13.4/GR/23               definition   - -
 # 13.5, Data type correspondences

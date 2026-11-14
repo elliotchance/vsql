@@ -22,6 +22,7 @@ SQL Reference
    explain.rst
    insert.rst
    rollback.rst
+   savepoint.rst
    select.rst
    set-catalog.rst
    set-connection.rst

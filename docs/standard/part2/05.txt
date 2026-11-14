@@ -9,12 +9,12 @@
 # 5.2, <token> and <separator>
 5.2                      partial      vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql regular identifiers can only be ASCII (#761)
 5.2/SR/1                 partial      vsql/lexer.v tests/std_2_5_2_identifier_e.sql only the ASCII letters and underscore (#761)
-5.2/SR/2                 unclear      vsql/lexer.v tests/std_2_5_2_identifier_e.sql changed in 2023 (#1498)
+5.2/SR/2                 partial      vsql/lexer.v tests/std_2_5_2_identifier_e.sql only the ASCII digits and underscore (#761)
 5.2/SR/3                 implemented  vsql/lexer.v tests/std_2_5_2_whitespace.sql
 5.2/SR/4                 unclear      - - truncating whitespace is implementation-defined (#1500)
 5.2/SR/5                 impl-defined vsql/lexer.v tests/std_2_5_2_comments.sql a line feed (U+000A)
 5.2/SR/6                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
-5.2/SR/7                 unclear      vsql/lexer.v tests/std_2_11_3_create_table.sql changed in 2023 (#1498)
+5.2/SR/7                 implemented  vsql/lexer.v tests/std_2_11_3_create_table.sql
 5.2/SR/8                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
 5.2/SR/9                 implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
 5.2/SR/10                n/a          - - large objects (T041)

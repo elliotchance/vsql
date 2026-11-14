@@ -195,6 +195,13 @@ VALUES 'a' SIMILAR TO 'a{3,2}';
 VALUES 'aab' SIMILAR TO 'a{,2}b';
 -- error 2201B: invalid regular expression
 
+-- # A <low value> or <high value> can't have an underscore.
+VALUES 'aaaaaaaaaa' SIMILAR TO 'a{1_0}';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO 'a{1,1_0}';
+-- error 2201B: invalid regular expression
+
 VALUES 'a(' SIMILAR TO 'a(';
 -- error 2201B: invalid regular expression
 

@@ -408,7 +408,7 @@ fn (mut f Storage) check_unique_indexes(t Table, rows []Row) ! {
 
 	for index in indexes {
 		for row in rows {
-			if f.has_duplicate_entry(index, t, row)! {
+			if f.has_duplicate_entry(index, t, row, true)! {
 				return index.unique_violation(t)
 			}
 		}
@@ -418,11 +418,12 @@ fn (mut f Storage) check_unique_indexes(t Table, rows []Row) ! {
 // has_duplicate_entry is true when another row of t (including another new
 // row) has an entry in the index with the same values as row, which has already
 // been written. It's an error if another transaction is creating or deleting
-// one, since it might or might not exist once that transaction finishes. A row
-// with a NULL in any of the columns never has a duplicate. Only the entries
-// with the same values are read.
-fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row) !bool {
-	if index.has_null(row) {
+// one, since it might or might not exist once that transaction finishes. When
+// nulls_distinct, a row with a NULL in any of the columns never has a duplicate,
+// otherwise a NULL is the same as another NULL. Only the entries with the same
+// values are read.
+fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row, nulls_distinct bool) !bool {
+	if nulls_distinct && index.has_null(row) {
 		return false
 	}
 

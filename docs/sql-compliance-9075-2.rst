@@ -740,7 +740,7 @@ Optional Features
    * - ✅ **F291**
      - **UNIQUE predicate**
 
-   * - ❌ **F292**
+   * - ✅ **F292**
      - **UNIQUE null treatment**
 
    * - ❌ **F301**

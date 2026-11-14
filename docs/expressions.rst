@@ -538,7 +538,7 @@ UNIQUE
 
 .. code-block:: text
 
-  UNIQUE ( <query> )
+  UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <query> )
 
 Returns ``TRUE`` if no two rows of the subquery are equal, otherwise ``FALSE``.
 It's never ``UNKNOWN``, and the subquery can have any number of columns. Values
@@ -546,11 +546,16 @@ are equal when ``=`` is ``TRUE`` for them, so ``1.5`` and ``1.50`` are the same.
 A row that contains a ``NULL`` is never equal to another row, and it's ``TRUE``
 when there are no rows.
 
+With ``NULLS NOT DISTINCT``, a ``NULL`` is equal to another ``NULL``, so rows
+with ``NULL`` in the same columns (and the same other values) are equal.
+``NULLS DISTINCT`` is the same as not having either.
+
 *Examples*
 
 .. code-block:: sql
 
   UNIQUE (SELECT email FROM customers)
+  UNIQUE NULLS NOT DISTINCT (VALUES CAST(NULL AS INT), CAST(NULL AS INT)) -- FALSE
   UNIQUE (VALUES ROW(1, 'a'), ROW(1, 'b'))             -- TRUE
   UNIQUE (VALUES 1, 1)                                 -- FALSE
   UNIQUE (VALUES CAST(NULL AS INT), CAST(NULL AS INT)) -- TRUE

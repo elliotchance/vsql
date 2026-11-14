@@ -5,7 +5,7 @@ module vsql
 // Specify a uniqueness constraint for a table.
 //
 // The grammar needs at least one column for a UNIQUE, PRIMARY KEY or FOREIGN
-// KEY, which is the assertion of ISO/IEC 9075-11:2008(E), 6.3,
+// KEY, which is the assertion of ISO/IEC 9075-11:2006, 6.3,
 // KEY_DEGREE_GREATER_THAN_OR_EQUAL_TO_1 assertion.
 //
 // The concept is described by:

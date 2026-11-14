@@ -7,8 +7,8 @@ module vsql
 // 9075-11:2006, 6.43), which only exists as this view, SQL_FEATURES and
 // SQL_PACKAGES.
 //
-// The parts are the ones in ISO/IEC 9075-1:2023, 5.2 to 5.10, with their
-// names, without the parts that SQL:2023 added in 5.11 and 5.12 (#1505). Supporting a part means supporting all of its mandatory features
+// The parts are the ones in ISO/IEC 9075-1:2023, 5.2 to 5.12, with their
+// names. Supporting a part means supporting all of its mandatory features
 // (ISO/IEC 9075-1:2023, 9.3, Conformance to parts), so a part that has a
 // docs/sql-compliance-9075-*.rst page is supported when the page says that all
 // of its mandatory features are, and the COMMENTS has the count from that
@@ -27,13 +27,15 @@ struct SqlPart {
 const sql_parts = [
 	SqlPart{'1', 'Framework (SQL/Framework)', ''},
 	SqlPart{'2', 'Foundation (SQL/Foundation)', $embed_file('../docs/sql-compliance-9075-2.rst').to_string()},
-	SqlPart{'3', 'Call Level Interface (SQL/CLI)', $embed_file('../docs/sql-compliance-9075-3.rst').to_string()},
+	SqlPart{'3', 'Call-Level Interface (SQL/CLI)', $embed_file('../docs/sql-compliance-9075-3.rst').to_string()},
 	SqlPart{'4', 'Persistent Stored Modules (SQL/PSM)', ''},
 	SqlPart{'9', 'Management of External Data (SQL/MED)', ''},
 	SqlPart{'10', 'Object Language Bindings (SQL/OLB)', ''},
 	SqlPart{'11', 'Information and Definition Schemas (SQL/Schemata)', $embed_file('../docs/sql-compliance-9075-11.rst').to_string()},
-	SqlPart{'13', 'Java Routines and Types Using the Java Programming Language (SQL/JRT)', ''},
+	SqlPart{'13', 'SQL Routines and Types Using the Java Programming Language (SQL/JRT)', ''},
 	SqlPart{'14', 'XML-Related Specifications (SQL/XML)', ''},
+	SqlPart{'15', 'Multidimensional Arrays (SQL/MDA)', ''},
+	SqlPart{'16', 'Property Graph Queries (SQL/PGQ)', ''},
 ]
 
 // mandatory_features_supported returns the number of mandatory features that a

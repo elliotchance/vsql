@@ -122,7 +122,7 @@ SELECT COUNT(*) FROM INFORMATION_SCHEMA.SQL_PACKAGES;
 /* flags */
 SELECT COUNT(*) FROM INFORMATION_SCHEMA.SQL_PARTS;
 -- flags: F502
--- COL1: 9
+-- COL1: 11
 
 -- # SQL_SIZING_PROFILES needs F502 and F391 (5.57, Conformance Rules, 1 and
 -- # 2), and its short name view only needs F502 (5.77, Conformance Rules, 20).

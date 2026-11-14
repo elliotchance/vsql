@@ -208,7 +208,7 @@
 5.53/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
 5.53/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
 # 5.54, SQL_PACKAGES view
-5.54                     implemented  vsql/std_11_5_54_sql_packages.v tests/std_11_5_54_sql_packages.sql the packages of SQL:2003, Part 1, 8.4, which SQL:2023 removed (#1505)
+5.54                     implemented  vsql/std_11_5_54_sql_packages.v tests/std_11_5_54_sql_packages.sql the packages of SQL:2003, Part 1, 8.4, which SQL:2023 removed
 5.54/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.55, SQL_PARTS view
 5.55                     implemented  vsql/std_11_5_55_sql_parts.v tests/std_11_5_55_sql_parts.sql

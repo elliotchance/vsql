@@ -30,3 +30,14 @@ VALUES CAST('ABC' AS CHAR(3)) = CAST('ABC' AS VARCHAR(3));
 
 VALUES CAST('ABC' AS CHAR(3)) = CAST('DEF' AS VARCHAR(3));
 -- COL1: FALSE
+
+-- # A value that's too long can only lose spaces, which is the only <truncating
+-- # whitespace> (5.2, Syntax Rules, 4), not a tab.
+CREATE TABLE foo (x VARCHAR(2));
+INSERT INTO foo (x) VALUES ('ab  ');
+INSERT INTO foo (x) VALUES (U&'ab\0009');
+SELECT x || '|' FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 22001: string data right truncation for CHARACTER VARYING(2)
+-- COL1: ab|

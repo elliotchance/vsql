@@ -110,12 +110,12 @@
 9.2/GR/3.b.i             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
 9.2/GR/3.b.ii            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
 9.2/GR/3.b.ii.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
-9.2/GR/3.b.ii.2          unclear      vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql changed in 2023 (#1500)
+9.2/GR/3.b.ii.2          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
 9.2/GR/3.b.iii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character.sql
 9.2/GR/3.b.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
 9.2/GR/3.b.v             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
 9.2/GR/3.b.v.1           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
-9.2/GR/3.b.v.2           unclear      vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql changed in 2023 (#1500)
+9.2/GR/3.b.v.2           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
 9.2/GR/3.b.vi            n/a          - - there are no CLOBs (T041)
 9.2/GR/3.b.vii           n/a          - - there are no CLOBs (T041)
 9.2/GR/3.b.vii.1         n/a          - - there are no CLOBs (T041)

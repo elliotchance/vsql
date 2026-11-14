@@ -44,15 +44,12 @@ const default_timestamp_precision = 6
 // be two digits (with the exception of the seconds fraction, which may have up
 // to six digits).
 //
+// with_time_zone must only be true when s ends with a time zone (see
+// has_time_zone), which isn't checked again.
+//
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 39
 fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
-	mut timestamp := s
-	if with_time_zone {
-		if s.len < 6 || !matches_datetime_pattern(s[s.len - 6..], '+00:00') {
-			return false
-		}
-		timestamp = s[..s.len - 6]
-	}
+	timestamp := if with_time_zone { s[..s.len - 6] } else { s }
 
 	if timestamp.len < 19 || !matches_datetime_pattern(timestamp[..19], '0000-00-00 00:00:00') {
 		return false
@@ -95,10 +92,46 @@ pub mut:
 	t time.Time
 }
 
+// The range of a time zone displacement is implementation-defined, but it must
+// reach at least -12:00 and +14:00. vsql's is -14:00 to +14:00, in minutes.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 6
+const min_time_zone_displacement = -840
+const max_time_zone_displacement = 840
+
+// has_time_zone reports whether the datetime string s ends with a time zone
+// displacement ("+HH:MM" or "-HH:MM"), which may still be out of range.
+fn has_time_zone(s string) bool {
+	return s.len > 6 && matches_datetime_pattern(s[s.len - 6..], '+00:00')
+}
+
+// time_zone_displacement returns the time zone displacement (in minutes) at
+// the end of the datetime string s, which must have one (see has_time_zone). The
+// sign applies to both the hours and minutes, so "-00:30" is 30 minutes behind
+// UTC, and the hours and minutes can't have opposite signs. It's an error
+// (22009) if the minutes are more than 59 or it's out of range.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 8
+fn time_zone_displacement(s string) !i16 {
+	hours := i16(s[s.len - 5..s.len - 3].int())
+	minutes := i16(s[s.len - 2..s.len].int())
+	mut time_zone := hours * 60 + minutes
+	if s[s.len - 6] == `-` {
+		time_zone = -time_zone
+	}
+
+	if minutes > 59 || time_zone < min_time_zone_displacement
+		|| time_zone > max_time_zone_displacement {
+		return sqlstate_22009()
+	}
+
+	return time_zone
+}
+
 // This is an internal constructor, you will want to use new_timestamp_value
 // (or similar others) to return the Value instead.
 fn new_timestamp_from_string(s string) !Time {
-	expects_time_zone := s.len > 6 && (s[s.len - 6] == `+` || s[s.len - 6] == `-`)
+	expects_time_zone := has_time_zone(s)
 
 	if !is_unquoted_timestamp_string(s, expects_time_zone) {
 		return sqlstate_42601("TIMESTAMP '${s}' is not valid")
@@ -107,17 +140,11 @@ fn new_timestamp_from_string(s string) !Time {
 	mut time_zone := i16(0)
 	mut to_parse := s
 	if expects_time_zone {
-		// The sign applies to both the hours and minutes, so "-00:30" is 30
-		// minutes behind UTC.
-		hours := i16(s[s.len - 5..s.len - 3].int())
-		minutes := i16(s[s.len - 2..s.len].int())
-		time_zone = hours * 60 + minutes
-		if s[s.len - 6] == `-` {
-			time_zone = -time_zone
-		}
-
+		// A <time zone interval> of a literal must be a valid time zone
+		// displacement, so it's a syntax error rather than 22009.
+		//
 		// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 43
-		if minutes > 59 || time_zone < -840 || time_zone > 840 {
+		time_zone = time_zone_displacement(s) or {
 			return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 		}
 

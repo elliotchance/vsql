@@ -215,14 +215,6 @@ It's also returned for an aggregate function of only the columns of an outer
 query in a correlated subquery, such as ``(SELECT MAX(t1.x) FROM t2)``, which
 isn't supported yet.
 
-``0A001`` feature not supported: multiple server transactions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``0A001`` is returned by :doc:`connect` or :doc:`set-connection` when the
-current connection has an active transaction, since a transaction can't be
-across more than one database. It's also always returned by
-``SET LOCAL TRANSACTION`` (see :doc:`set-transaction`).
-
 Class ``0B``: Invalid Transaction Initiation
 --------------------------------------------
 
@@ -625,6 +617,32 @@ already active transaction.
    START TRANSACTION;
    -- msg: START TRANSACTION
    -- error 25001: invalid transaction state: active sql transaction
+
+``25002`` invalid transaction state: branch transaction already active
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``SET LOCAL TRANSACTION`` (see :doc:`set-transaction`) can't be used once the
+transaction has started on the current connection.
+
+``25003`` invalid transaction state: inappropriate access mode for branch transaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``SET LOCAL TRANSACTION READ WRITE`` can't be used when the transaction is
+``READ ONLY``.
+
+``25004`` invalid transaction state: inappropriate isolation level for branch transaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``SET LOCAL TRANSACTION`` can't set an isolation level that's less strict than
+the isolation level of the transaction, such as ``READ COMMITTED`` when it's
+``SERIALIZABLE``.
+
+``25005`` invalid transaction state: no active sql transaction for branch transaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``SET LOCAL TRANSACTION`` sets the characteristics of the part of a
+transaction on another connection, so it can only be used when the transaction
+is active on another connection (see :doc:`set-transaction`).
 
 ``25006`` read-only sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -151,6 +151,10 @@ mut:
 	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
 	// whether it's started by START TRANSACTION or implicitly by a statement.
 	next_transaction ?TransactionCharacteristics
+	// branch_of is the characteristics of the SQL-transaction of the Agent when
+	// it's active on another SQL-connection (T262), so that a transaction of
+	// this SQL-connection is a branch of it (see Agent.direct).
+	branch_of ?TransactionCharacteristics
 	// enduring_transaction is set by SET SESSION CHARACTERISTICS. See
 	// enduring_characteristics.
 	enduring_transaction TransactionCharacteristics

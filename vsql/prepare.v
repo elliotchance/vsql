@@ -443,7 +443,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	// own. EXPLAIN doesn't run the statement, so it doesn't use up a SET
 	// TRANSACTION.
 	if !p.explain && !p.c.is_active() && p.is_transaction_initiating() {
-		p.c.initiate_transaction(p.c.next_transaction or { p.c.enduring_characteristics() })
+		// A branch of an SQL-transaction that's active on another SQL-connection
+		// has the same characteristics, unless SET LOCAL TRANSACTION changed them.
+		//
+		// ISO/IEC 9075-2:2023, 4.43.7.2, Encompassing transaction belonging to the SQL-agent
+		p.c.initiate_transaction(p.c.next_transaction or {
+			p.c.branch_of or { p.c.enduring_characteristics() }
+		})
 		if !p.c.read_only && p.changes_database() && p.c.isolation_level.locks_transaction() {
 			p.c.lock_transaction(false)!
 		}

@@ -32,11 +32,11 @@ struct ConnectionTarget {
 fn (stmt ConnectStatement) execute(mut a Agent, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	// Each SQL-connection is to a different SQL-server, and vsql doesn't
-	// support transactions that affect more than one SQL-server.
+	// Each SQL-connection is to a different SQL-server, and an SQL-transaction
+	// can have a branch on each of them (T262), so it can be connected to while
+	// it's active.
 	//
 	// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 1
-	a.check_multiple_server_transactions()!
 
 	target := stmt.target or {
 		// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 7 and 8.a

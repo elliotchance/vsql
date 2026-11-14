@@ -1,13 +1,16 @@
--- # vsql doesn't have transactions on more than one SQL-server, so it's always
--- # 0A001 (17.2, General Rule 1.b.i).
+-- # SET LOCAL TRANSACTION is for a branch of an SQL-transaction that's active
+-- # on another SQL-connection (T262), so on its own it's 25005 (17.2, General
+-- # Rule 1.b.ii). See vsql/api_test.v for transactions on more than one
+-- # SQL-connection.
 SET LOCAL TRANSACTION;
 SET LOCAL TRANSACTION READ ONLY;
 SET LOCAL TRANSACTION ISOLATION LEVEL READ COMMITTED, READ WRITE;
--- error 0A001: feature not supported: multiple server transactions
--- error 0A001: feature not supported: multiple server transactions
--- error 0A001: feature not supported: multiple server transactions
+-- error 25005: invalid transaction state: no active sql transaction for branch transaction
+-- error 25005: invalid transaction state: no active sql transaction for branch transaction
+-- error 25005: invalid transaction state: no active sql transaction for branch transaction
 
--- # It's the same in an SQL-transaction, which it doesn't change.
+-- # In an SQL-transaction, the branch has already started, so it's 25002 (17.2,
+-- # General Rule 1.b.iii), which doesn't change it.
 CREATE TABLE t (x INT);
 START TRANSACTION;
 INSERT INTO t (x) VALUES (1);
@@ -18,7 +21,7 @@ SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
--- error 0A001: feature not supported: multiple server transactions
+-- error 25002: invalid transaction state: branch transaction already active
 -- msg: INSERT 1
 -- msg: COMMIT
 -- X: 1
@@ -29,7 +32,7 @@ CREATE TABLE t (x INT);
 SET LOCAL TRANSACTION READ ONLY;
 INSERT INTO t (x) VALUES (1);
 -- msg: CREATE TABLE 1
--- error 0A001: feature not supported: multiple server transactions
+-- error 25005: invalid transaction state: no active sql transaction for branch transaction
 -- msg: INSERT 1
 
 -- # The Syntax Rules are checked first (17.2, Syntax Rule 1 and 17.3, Syntax
@@ -47,7 +50,7 @@ EXPLAIN SET LOCAL TRANSACTION READ ONLY;
 /* flags */
 SET LOCAL TRANSACTION READ ONLY;
 -- flags: T251
--- error 0A001: feature not supported: multiple server transactions
+-- error 25005: invalid transaction state: no active sql transaction for branch transaction
 
 /* flags */
 SET TRANSACTION READ ONLY;

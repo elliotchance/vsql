@@ -6,9 +6,8 @@ import arrays
 //
 // An SQL Flagger identifies SQL language that isn't Core SQL, so that it can be
 // moved to another SQL-implementation. vsql provides "Core SQL Flagging" with
-// "Syntax Only" checking (Feature F812, "Basic flagging"), and also "SQL
-// Feature Flagging": each statement is flagged with the optional features that
-// it uses.
+// "Syntax Only" checking, and also "SQL Feature Flagging": each statement is
+// flagged with the optional features of ISO/IEC 9075-2:2023 that it uses.
 //
 // The features are recorded by the grammar actions (see flag) of the language
 // that each Conformance Rule of ISO/IEC 9075-2 doesn't allow without a
@@ -360,16 +359,17 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 	}
 }
 
-// flag_updatability_clause flags a FOR UPDATE of a query with an ORDER BY, or
-// of a cursor with a <cursor scrollability> (even NO SCROLL). A positioned
-// UPDATE of such a cursor needs the same feature, so it's flagged here instead.
+// flag_updatability_clause flags a FOR UPDATE of a query with an ORDER BY
+// (F833), or of a cursor with a <cursor scrollability>, even NO SCROLL (F832). A
+// positioned UPDATE of an ordered cursor needs F833 too, so it's flagged here
+// instead.
 //
 // ISO/IEC 9075-2:2023, 14.1, <declare cursor>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 14.3, <cursor specification>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 14.13, <update statement: positioned>, Conformance Rules, 1
 fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, properties CursorProperties, updatability UpdatabilityClause) {
-	flag_if(mut yylex, updatability.for_update && (e.order.len > 0 || properties.scrollability),
-		'F831')
+	flag_if(mut yylex, updatability.for_update && properties.scrollability, 'F832')
+	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F833')
 }
 
 // SortKeyPart is what a <sort key> must, or can't, contain.
@@ -885,7 +885,7 @@ fn module_statement_features(text string, p ExternallyInvokedProcedure, cursors 
 			return if cursor.statement == '' { []string{} } else { features }
 		}
 		'FETCH' {
-			mut fetch := if t.accept('NEXT') { ['F431'] } else { []string{} }
+			mut fetch := if t.accept('NEXT') { ['F432'] } else { []string{} }
 			t.accept('FROM')
 			if t.module_cursor(p, cursors)!.statement != '' {
 				fetch << features
@@ -953,7 +953,7 @@ fn (t ModuleTokens) dynamic_features() []string {
 //
 // ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, Conformance Rules, 1 to 3
 fn (t ModuleTokens) diagnostics_features(p ExternallyInvokedProcedure) ![]string {
-	mut features := ['F121']
+	mut features := ['F120']
 	for i, tok in t.tokens {
 		if tok.is_colon() && t.tokens[i + 2].text == '=' {
 			item := t.tokens[i + 3].text.to_upper()

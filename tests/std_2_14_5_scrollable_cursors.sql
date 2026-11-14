@@ -293,29 +293,29 @@ DELETE FROM t WHERE CURRENT OF e;
 CLOSE e;
 -- flags: T241
 -- msg: START TRANSACTION
--- flags: F431, V108-01
+-- flags: F438, V108-01
 -- msg: DECLARE CURSOR
--- flags: F431, T551, V108-01
+-- flags: F438, T551, V108-01
 -- msg: DECLARE CURSOR
--- flags: F431, F831, V108-01
+-- flags: F438, F832, V108-01
 -- msg: DECLARE CURSOR
--- flags: F431, F831, V108-01
+-- flags: F438, F832, V108-01
 -- msg: DECLARE CURSOR
--- flags: F431, V108-01
+-- flags: F438, V108-01
 -- msg: DECLARE CURSOR
 -- flags: V108-01
 -- msg: DECLARE CURSOR
 -- flags: V109-01
 -- msg: OPEN
--- flags: F431, V110-01
+-- flags: F435, V110-01
 -- warning 02000: no data
--- flags: F431, V110-01
+-- flags: F433, V110-01
 -- X: 1
--- flags: F431, V110-01
+-- flags: F434, V110-01
 -- X: 4
--- flags: F431, V110-01
+-- flags: F436, V110-01
 -- X: 2
--- flags: F431, V110-01
+-- flags: F437, V110-01
 -- X: 1
 -- flags: V110-01
 -- X: 2

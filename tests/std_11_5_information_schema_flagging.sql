@@ -106,6 +106,36 @@ SELECT CHARACTER_VALUE FROM INFORMATION_SCHEMA.SQL_IMPLEMENTATION_INFO WHERE IMP
 -- flags: F391, F502
 -- CHARACTER_VALUE: vsql
 
+-- # Its short name view only needs F502 (5.77, Conformance Rules, 19).
+/* flags */
+SELECT CHARACTER_VALUE FROM INFORMATION_SCHEMA.SQL_IMPL_INFO WHERE IMPL_INFO_ID = '17';
+-- flags: F502
+-- CHARACTER_VALUE: vsql
+
+-- # SQL_PACKAGES and SQL_PARTS need F502 (5.54 and 5.55, Conformance Rules,
+-- # 1).
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SQL_PACKAGES;
+-- flags: F502
+-- COL1: 7
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SQL_PARTS;
+-- flags: F502
+-- COL1: 9
+
+-- # SQL_SIZING_PROFILES needs F502 and F391 (5.57, Conformance Rules, 1 and
+-- # 2), and its short name view only needs F502 (5.77, Conformance Rules, 20).
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SQL_SIZING_PROFILES;
+-- flags: F391, F502
+-- COL1: 0
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SQL_SIZING_PROFS;
+-- flags: F502
+-- COL1: 0
+
 -- # The other views, and a table with the same name as a view in another
 -- # schema, can be referenced in Core SQL.
 /* flags */

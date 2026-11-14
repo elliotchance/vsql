@@ -1058,7 +1058,11 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // ISO/IEC 9075-11:2008(E), 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
 // ISO/IEC 9075-11:2008(E), 5.53, SQL_IMPLEMENTATION_INFO view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2008(E), 5.54, SQL_PACKAGES view, Conformance Rules, 1
+// ISO/IEC 9075-11:2008(E), 5.55, SQL_PARTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2008(E), 5.57, SQL_SIZING_PROFILES view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2008(E), 5.61, TABLES view, Conformance Rules, 1
+// ISO/IEC 9075-11:2008(E), 5.77, Short name views, Conformance Rules, 19 and 20
 const information_schema_features = {
 	'COLUMNS':                       ['F391']
 	'COLUMNS.IS_GENERATED':          ['T175']
@@ -1067,6 +1071,11 @@ const information_schema_features = {
 	'KEY_COLUMN_USAGE':              ['F341', 'F391']
 	'REFERENTIAL_CONSTRAINTS':       ['F391']
 	'SQL_IMPLEMENTATION_INFO':       ['F391', 'F502']
+	'SQL_IMPL_INFO':                 ['F502']
+	'SQL_PACKAGES':                  ['F502']
+	'SQL_PARTS':                     ['F502']
+	'SQL_SIZING_PROFILES':           ['F391', 'F502']
+	'SQL_SIZING_PROFS':              ['F502']
 	'TABLES':                        ['F391']
 }
 

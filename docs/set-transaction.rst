@@ -33,9 +33,15 @@ once, the last one wins. Each kind of mode can only be used once (``42601``).
 start one. ``SET CATALOG``, ``SET SCHEMA`` and ``EXPLAIN`` don't start a
 transaction either, so they don't use it up.
 
-``SET LOCAL TRANSACTION`` is for a transaction that's on more than one SQL-server.
-vsql doesn't have those, so it always fails with ``0A001`` and changes nothing.
-It also can't have a ``DIAGNOSTICS SIZE`` (``42601``).
+``SET LOCAL TRANSACTION`` sets the access mode or isolation level of the part
+of a transaction on the current connection, when the transaction is already
+active on another connection (see :doc:`connect`), before it's started on the
+current connection. Otherwise it's ``25005``, or ``25002`` once it's started.
+The modes that aren't given are the same as the transaction's, and they can't
+be less strict: ``READ WRITE`` for a ``READ ONLY`` transaction is ``25003``,
+and an isolation level that's less strict than the transaction's is ``25004``
+(except for ``READ UNCOMMITTED``). It also can't have a ``DIAGNOSTICS SIZE``
+(``42601``).
 
 Access Mode
 -----------

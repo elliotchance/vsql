@@ -221,10 +221,8 @@ fn test_agent() {
 	a.direct('CREATE TABLE t (x INT);')!
 	assert a.in_transaction()
 
-	// Only the current SQL-connection can have an active SQL-transaction.
-	for stmt in ["CONNECT TO ':memory:' AS 'c';", 'SET CONNECTION DEFAULT;', 'DISCONNECT CURRENT;'] {
-		assert agent_sqlstate(mut a, stmt) in ['0A001', '25001'], stmt
-	}
+	// An SQL-connection with an active SQL-transaction can't be disconnected.
+	assert agent_sqlstate(mut a, 'DISCONNECT CURRENT;') == '25001'
 	a.direct('COMMIT;')!
 
 	// A connection name is an identifier, and the SQL-server name is the
@@ -257,7 +255,6 @@ fn test_agent() {
 	// The connection is a different SQL-server. The SQL-transaction that the
 	// query started is still active.
 	assert agent_sqlstate(mut a, 'SELECT * FROM t;') == '42P01'
-	assert agent_sqlstate(mut a, 'SET CONNECTION DEFAULT;') == '0A001'
 	a.direct('ROLLBACK;')!
 	a.direct('SET CONNECTION DEFAULT;')!
 	assert a.direct('SELECT * FROM t;')!.rows.len == 0
@@ -1200,4 +1197,143 @@ fn test_listagg_literal_too_long() ! {
 	} else {
 		assert sqlstate_from_int(err.code()) == '42601'
 	}
+}
+
+// An SQL-transaction can have a branch on each SQL-connection (T262). A branch
+// has the same characteristics, unless SET LOCAL TRANSACTION changes them, and
+// a COMMIT or ROLLBACK on any of them ends every branch.
+//
+// ISO/IEC 9075-2:2023, 4.43.7.2, Encompassing transaction belonging to the SQL-agent
+// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.b
+// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 1
+// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 1
+fn test_agent_multiple_server_transactions() ! {
+	mut a := new_agent(':memory:')
+	a.direct('CREATE TABLE t (x INT);')!
+	a.direct('COMMIT;')!
+
+	// Both branches are committed, from either SQL-connection.
+	a.direct('START TRANSACTION ISOLATION LEVEL REPEATABLE READ;')!
+	a.direct('INSERT INTO t (x) VALUES (1);')!
+	a.direct("CONNECT TO ':memory:' AS 'b';")!
+	assert agent_sqlstate(mut a, 'START TRANSACTION;') == '25001'
+	assert agent_sqlstate(mut a, 'SET TRANSACTION READ ONLY;') == '25001'
+	a.direct('CREATE TABLE u (y INT);')!
+	assert a.current.isolation_level == .repeatable_read
+	assert a.in_transaction()
+	a.direct('SET CONNECTION DEFAULT;')!
+	a.direct('COMMIT;')!
+	assert !a.in_transaction()
+	a.direct("SET CONNECTION 'B';")!
+	assert a.direct('SELECT * FROM u;')!.rows.len == 0
+	a.direct('COMMIT;')!
+
+	// Both branches are rolled back.
+	a.direct('SET CONNECTION DEFAULT;')!
+	a.direct('INSERT INTO t (x) VALUES (2);')!
+	a.direct("SET CONNECTION 'B';")!
+	a.direct('INSERT INTO u (y) VALUES (2);')!
+	a.direct('ROLLBACK;')!
+	assert !a.in_transaction()
+	assert a.direct('SELECT * FROM u;')!.rows.len == 0
+	a.direct('COMMIT;')!
+	a.direct('SET CONNECTION DEFAULT;')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 1
+	a.direct('COMMIT;')!
+
+	// SET LOCAL TRANSACTION sets the characteristics of a branch before it
+	// starts, which can't be less strict than the SQL-transaction.
+	assert agent_sqlstate(mut a, 'SET LOCAL TRANSACTION READ ONLY;') == '25005'
+	a.direct('START TRANSACTION READ ONLY, ISOLATION LEVEL REPEATABLE READ;')!
+	a.direct('SELECT * FROM t;')!
+	assert agent_sqlstate(mut a, 'SET LOCAL TRANSACTION READ ONLY;') == '25002'
+	a.direct("SET CONNECTION 'B';")!
+	assert agent_sqlstate(mut a, 'SET LOCAL TRANSACTION READ WRITE;') == '25003'
+	assert agent_sqlstate(mut a, 'SET LOCAL TRANSACTION ISOLATION LEVEL READ COMMITTED;') == '25004'
+	a.direct('SET LOCAL TRANSACTION ISOLATION LEVEL SERIALIZABLE;')!
+	a.direct('SELECT * FROM u;')!
+	assert a.current.isolation_level == .serializable
+	assert a.current.read_only
+	assert agent_sqlstate(mut a, 'INSERT INTO u (y) VALUES (3);') == '25006'
+	a.direct('ROLLBACK;')!
+	assert !a.in_transaction()
+
+	// A deferred constraint of any branch that isn't satisfied rolls back every
+	// branch.
+	a.direct('CREATE TABLE d (z INT CHECK (z > 0) INITIALLY DEFERRED);')!
+	a.direct('COMMIT;')!
+	a.direct('INSERT INTO d (z) VALUES (-1);')!
+	a.direct('SET CONNECTION DEFAULT;')!
+	a.direct('INSERT INTO t (x) VALUES (4);')!
+	assert agent_sqlstate(mut a, 'COMMIT;') == '23514'
+	assert !a.in_transaction()
+	assert a.direct('SELECT * FROM t;')!.rows.len == 1
+	a.direct('COMMIT;')!
+
+	// A deferred constraint of the current branch that isn't satisfied also
+	// rolls back every branch.
+	a.direct('INSERT INTO t (x) VALUES (6);')!
+	a.direct("SET CONNECTION 'B';")!
+	a.direct('INSERT INTO d (z) VALUES (-1);')!
+	assert agent_sqlstate(mut a, 'COMMIT;') == '40002'
+	assert !a.in_transaction()
+	a.direct('SET CONNECTION DEFAULT;')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 1
+	a.direct('COMMIT;')!
+
+	// Only one COMMIT or ROLLBACK ends every branch. Anything else, such as
+	// more than one statement or a syntax error, is run on the current branch.
+	a.direct('INSERT INTO t (x) VALUES (7);')!
+	a.direct("SET CONNECTION 'B';")!
+	a.direct('SELECT * FROM u;')!
+	for stmt in ['SELECT 1; SELECT 2;', 'SELECT "";', 'SELEC 1;'] {
+		assert agent_sqlstate(mut a, stmt) == '42601', stmt
+		assert a.in_transaction(), stmt
+	}
+	a.direct('ROLLBACK;')!
+	assert !a.in_transaction()
+	a.direct('SET CONNECTION DEFAULT;')!
+
+	// Closing the SQL-agent commits every branch.
+	a.direct('INSERT INTO t (x) VALUES (5);')!
+	a.direct("SET CONNECTION 'B';")!
+	a.direct('INSERT INTO u (y) VALUES (5);')!
+	a.close(true)!
+}
+
+// An error that rolls back a branch of an SQL-transaction, such as a
+// serialization failure, rolls back the other branches too.
+//
+// ISO/IEC 9075-2:2023, 4.43.7.2, Encompassing transaction belonging to the SQL-agent
+fn test_agent_branch_serialization_failure() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-agent-branch-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(session_path(path)) or {}
+		os.rm(path + '.wal') or {}
+	}
+
+	mut db := open(path)!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE r (x INT)')!
+	db.query('INSERT INTO r (x) VALUES (1)')!
+	db.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	db.query('UPDATE r SET x = 2')!
+
+	mut a := new_agent(':memory:')
+	a.direct('CREATE TABLE t (x INT);')!
+	a.direct('COMMIT;')!
+	a.direct('START TRANSACTION ISOLATION LEVEL READ COMMITTED;')!
+	a.direct('INSERT INTO t (x) VALUES (1);')!
+	a.direct("CONNECT TO '${path}' AS 'f';")!
+	a.direct('INSERT INTO r (x) VALUES (3);')!
+	assert agent_sqlstate(mut a, 'UPDATE r SET x = 3;') == '40001'
+	assert !a.in_transaction()
+	a.direct('SET CONNECTION DEFAULT;')!
+	assert !a.in_transaction()
+	assert a.direct('SELECT * FROM t;')!.rows.len == 0
+	a.close(true)!
+	db.query('COMMIT')!
 }

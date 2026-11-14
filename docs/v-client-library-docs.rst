@@ -627,7 +627,9 @@ struct Agent
 
 An Agent is an SQL-agent, which runs <direct SQL statement>s on its SQL-connections, and is how "vsql cli" runs statements. Unlike a Connection, it can run the connection statements: CONNECT TO, SET CONNECTION and DISCONNECT. The SQL-connections that aren't current are dormant, and each keeps its own SQL-session context.
 
-Each SQL-connection is to a different SQL-server (a database file, or a new in-memory database), and vsql doesn't support transactions that affect more than one SQL-server. So only the current SQL-connection can have an active SQL-transaction.
+Each SQL-connection is to a different SQL-server (a database file, or a new in-memory database). An SQL-transaction can affect more than one SQL-server (T262): the part of it on each SQL-connection is a branch, which is started with the same characteristics (unless SET LOCAL TRANSACTION changes them), and a COMMIT or ROLLBACK on any of them ends every branch.
+
+ISO/IEC 9075-2:2023, 4.43.7.2, Encompassing transaction belonging to the SQL-agent
 
 struct AgentOptions
 -------------------
@@ -807,6 +809,10 @@ struct Connection
    	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
    	// whether it's started by START TRANSACTION or implicitly by a statement.
    	next_transaction ?TransactionCharacteristics
+   	// branch_of is the characteristics of the SQL-transaction of the Agent when
+   	// it's active on another SQL-connection (T262), so that a transaction of
+   	// this SQL-connection is a branch of it (see Agent.direct).
+   	branch_of ?TransactionCharacteristics
    	// enduring_transaction is set by SET SESSION CHARACTERISTICS. See
    	// enduring_characteristics.
    	enduring_transaction TransactionCharacteristics

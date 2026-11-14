@@ -15,8 +15,8 @@ Syntax
 connection. ``<name>`` is a string literal, like ``'archive'``. ``DEFAULT`` is
 the file that ``vsql cli`` was started with.
 
-A connection that doesn't exist is ``08003``. If the current connection has an
-active transaction, it's ``0A001`` (multiple server transactions).
+A connection that doesn't exist is ``08003``. A transaction can be across more
+than one connection (see :doc:`connect`).
 
 Examples
 --------

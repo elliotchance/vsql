@@ -14,8 +14,10 @@ struct SetConnectionStatement {
 fn (stmt SetConnectionStatement) execute(mut a Agent, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// An SQL-transaction can have a branch on each SQL-connection (T262), so it
+	// can be changed while it's active.
+	//
 	// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 1
-	a.check_multiple_server_transactions()!
 
 	// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 2, 4 and 5
 	a.current = a.connection(stmt.connection_name)!

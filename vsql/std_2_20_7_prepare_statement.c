@@ -3,7 +3,7 @@
  * The prepared statements of the module in an SQL-connection, which is the
  * SQL-session.
  *
- * ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 10
+ * ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 10
  */
 static struct vsql_m_prepared **
 vsql_m_find_prepared(struct vsql_m_connection *c, const char *name) {
@@ -25,7 +25,7 @@ vsql_m_find_prepared(struct vsql_m_connection *c, const char *name) {
  * out if it's open. A closed dynamic cursor has no cursor instance until it's
  * opened again (with the statement that's prepared then).
  *
- * ISO/IEC 9075-2:2016(E), 20.9, <deallocate prepared statement>, General Rules, 2 and 3
+ * ISO/IEC 9075-2:2023(E), 20.9, <deallocate prepared statement>, General Rules, 2 and 3
  */
 static int vsql_m_deallocate(char *sqlstate, struct vsql_m_connection *c,
                              struct vsql_m_prepared **p) {
@@ -60,9 +60,9 @@ static int vsql_m_deallocate(char *sqlstate, struct vsql_m_connection *c,
  * current SQL-connection, or NULL (with the status parameter set) if there
  * isn't one: invalid SQL statement name.
  *
- * ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 1
- * ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 1
- * ISO/IEC 9075-2:2016(E), 20.19, <dynamic open statement>, General Rules, 1.a.i
+ * ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, General Rules, 1
+ * ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 1
+ * ISO/IEC 9075-2:2023(E), 20.19, <dynamic open statement>, General Rules, 1.a.i
  */
 static struct vsql_m_prepared *vsql_m_prepared_statement(char *sqlstate,
                                                          const char *name) {
@@ -89,7 +89,7 @@ static struct vsql_m_prepared *vsql_m_prepared_statement(char *sqlstate,
  * can't be prepared, since the SQL/CLI only does them with SQLStartTran and
  * SQLEndTran.
  *
- * ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 6.c and 10
+ * ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 6.c and 10
  */
 static void vsql_m_prepare(char *sqlstate, const char *name, const char *sql) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
@@ -102,7 +102,7 @@ static void vsql_m_prepare(char *sqlstate, const char *name, const char *sql) {
 
   /* A prepared statement with the name is deallocated.
    *
-   * ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 9 */
+   * ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 9 */
   p = vsql_m_find_prepared(c, name);
   if (*p != NULL && !vsql_m_deallocate(sqlstate, c, p)) {
     return;
@@ -130,7 +130,7 @@ static void vsql_m_prepare(char *sqlstate, const char *name, const char *sql) {
   /* The <prepare statement> is transaction-initiating, since the statement
    * is.
    *
-   * ISO/IEC 9075-2:2016(E), 4.39.4, SQL-statements and transaction states */
+   * ISO/IEC 9075-2:2023(E), 4.41.4, SQL-statements and transaction states */
   c->active = 1;
   rc = SQLPrepare(prepared->stmt, (SQLCHAR *)sql, SQL_NTS);
   vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, prepared->stmt);
@@ -152,7 +152,7 @@ static void vsql_m_prepare(char *sqlstate, const char *name, const char *sql) {
 }
 
 /* section deallocate_prepare */
-/* ISO/IEC 9075-2:2016(E), 20.9, <deallocate prepared statement> */
+/* ISO/IEC 9075-2:2023(E), 20.9, <deallocate prepared statement> */
 static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
   struct vsql_m_prepared **p;
@@ -162,7 +162,7 @@ static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
   }
   c->active = 1;
 
-  /* ISO/IEC 9075-2:2016(E), 20.9, <deallocate prepared statement>, General Rules, 1 */
+  /* ISO/IEC 9075-2:2023(E), 20.9, <deallocate prepared statement>, General Rules, 1 */
   p = vsql_m_find_prepared(c, name);
   if (*p == NULL) {
     vsql_m_status(sqlstate, "26000");
@@ -181,7 +181,7 @@ static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
  * data type (such as SQL_TYPE_DATE) in the IRD. LEVEL is 0 (zero), and a
  * collation that isn't set is the zero-length string.
  *
- * ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 7
+ * ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, General Rules, 7
  */
 static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
                                    struct vsql_m_item *item) {
@@ -234,7 +234,7 @@ static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
  * <dynamic select statement> has no output dynamic parameters, so its COUNT is
  * 0 (zero).
  *
- * ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 5.b and 5.c
+ * ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, General Rules, 5.b and 5.c
  */
 static void vsql_m_describe(char *sqlstate, const char *statement,
                             const char *name, const void *module) {
@@ -251,19 +251,19 @@ static void vsql_m_describe(char *sqlstate, const char *statement,
     return;
   }
 
-  /* ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.a to 6.c */
+  /* ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, General Rules, 6.a to 6.c */
   SQLNumResultCols(p->stmt, &columns);
   d->count = columns;
   d->top_level_count = columns;
   strcpy(d->dynamic_function, p->dynamic_function);
   d->dynamic_function_code = p->dynamic_function_code;
 
-  /* ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.d */
+  /* ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, General Rules, 6.d */
   SQLGetStmtAttr(p->stmt, SQL_ATTR_IMP_ROW_DESC, &ird, 0, NULL);
   SQLGetDescField(ird, 0, SQL_DESC_KEY_TYPE, &key_type, 0, NULL);
   d->key_type = key_type;
 
-  /* ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.e and 6.f */
+  /* ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, General Rules, 6.e and 6.f */
   if (columns > d->max) {
     vsql_m_status(sqlstate, "01005");
     return;
@@ -280,7 +280,7 @@ static void vsql_m_describe(char *sqlstate, const char *statement,
  * An <input using clause> is the host parameters (n of them) or an SQL
  * descriptor area. n is -1 when there isn't one.
  *
- * ISO/IEC 9075-2:2016(E), 20.11, <input using clause>
+ * ISO/IEC 9075-2:2023(E), 20.11, <input using clause>
  */
 struct vsql_m_input {
   int n;
@@ -293,7 +293,7 @@ struct vsql_m_input {
  * i, or the null value if INDICATOR is negative. The value isn't cast to the
  * type of the dynamic parameter, since it isn't determined (#649).
  *
- * ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, General Rules, 6.b.i */
+ * ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, General Rules, 6.b.i */
 static SQLRETURN vsql_m_bind_item(SQLHSTMT stmt, SQLSMALLINT i,
                                   struct vsql_m_item *item) {
   SQLINTEGER *number = item->number, size = 0;
@@ -325,7 +325,7 @@ static SQLRETURN vsql_m_bind_item(SQLHSTMT stmt, SQLSMALLINT i,
  * statement, which was prepared from sql. It returns 0 (with the status
  * parameter set) if they don't match.
  *
- * ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, General Rules, 2 and 3
+ * ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, General Rules, 2 and 3
  */
 static int vsql_m_bind(char *sqlstate, SQLHSTMT stmt, const char *sql,
                        struct vsql_m_input *in) {
@@ -334,7 +334,7 @@ static int vsql_m_bind(char *sqlstate, SQLHSTMT stmt, const char *sql,
   int single, n = vsql_m_scan(sql, &single), i;
 
   if (in->descriptor != NULL) {
-    /* ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, General Rules, 5 and 5.d.ii */
+    /* ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, General Rules, 5 and 5.d.ii */
     d = vsql_m_descriptor(sqlstate, in->descriptor, in->module);
     if (d == NULL || !vsql_m_items(sqlstate, d, n, "07001")) {
       return 0;
@@ -348,15 +348,15 @@ static int vsql_m_bind(char *sqlstate, SQLHSTMT stmt, const char *sql,
       rc = vsql_m_bind_item(stmt, (SQLSMALLINT)(i + 1), &d->items[i]);
     }
   } else if (in->n < 0) {
-    /* ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 5
-     * ISO/IEC 9075-2:2016(E), 20.19, <dynamic open statement>, General Rules, 3
+    /* ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 5
+     * ISO/IEC 9075-2:2023(E), 20.19, <dynamic open statement>, General Rules, 3
      */
     if (n > 0) {
       vsql_m_status(sqlstate, "07004");
       return 0;
     }
   } else {
-    /* ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, General Rules, 4
+    /* ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, General Rules, 4
      */
     if (in->n != n) {
       vsql_m_status(sqlstate, "07001");
@@ -378,7 +378,7 @@ static int vsql_m_bind(char *sqlstate, SQLHSTMT stmt, const char *sql,
  * An <output using clause> is the targets (n of them) or an SQL descriptor
  * area. n is -1 when there isn't one.
  *
- * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>
+ * ISO/IEC 9075-2:2023(E), 20.12, <output using clause>
  */
 struct vsql_m_output {
   int n;
@@ -415,8 +415,8 @@ static char *vsql_m_cut(char *s, SQLINTEGER length) {
  * a space. That includes the rest of a value that didn't fit DATA, which is
  * read (and discarded) to check it.
  *
- * ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.d and 12.d
- * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 5.d.ii and 5.e.i
+ * ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 11.d and 12.d
+ * ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, General Rules, 5.d.ii and 5.e.i
  */
 static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
                                    struct vsql_m_item *item) {
@@ -501,8 +501,8 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
  * values were assigned, otherwise the status parameter is set (and no data
  * isn't an assignment).
  *
- * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 1 and 2.a
- * ISO/IEC 9075-2:2016(E), 20.20, <dynamic fetch statement>, General Rules, 4 and 5
+ * ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, General Rules, 1 and 2.a
+ * ISO/IEC 9075-2:2023(E), 20.20, <dynamic fetch statement>, General Rules, 4 and 5
  */
 static int vsql_m_into(char *sqlstate, SQLHSTMT stmt, SQLRETURN rc,
                        struct vsql_m_output *out) {
@@ -519,14 +519,14 @@ static int vsql_m_into(char *sqlstate, SQLHSTMT stmt, SQLRETURN rc,
   }
 
   if (out->descriptor == NULL) {
-    /* ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 3 and 5.e.ii */
+    /* ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, General Rules, 3 and 5.e.ii */
     if (out->n != columns) {
       vsql_m_status(sqlstate, "07002");
       return 0;
     }
     rc = vsql_m_assign_row(stmt, rc, out->n, out->targets, &truncated);
   } else {
-    /* ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 4
+    /* ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, General Rules, 4
      */
     d = vsql_m_descriptor(sqlstate, out->descriptor, out->module);
     if (d == NULL || !vsql_m_items(sqlstate, d, columns, "07002")) {
@@ -556,9 +556,9 @@ static int vsql_m_into(char *sqlstate, SQLHSTMT stmt, SQLRETURN rc,
  * statement>, with an <output using clause>. Any other statement has no output
  * dynamic parameters. It returns 1 if the values of a row were assigned.
  *
- * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 2.b
- * ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 2 and 7
- * ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 10
+ * ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, General Rules, 2.b
+ * ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 2 and 7
+ * ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 10
  */
 static int vsql_m_execute_prepared(char *sqlstate, const char *name,
                                    struct vsql_m_input *in,
@@ -578,13 +578,13 @@ static int vsql_m_execute_prepared(char *sqlstate, const char *name,
   vsql_m_scan(p->sql, &single);
   SQLNumResultCols(p->stmt, &columns);
   if (columns > 0) {
-    /* ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 3.a and 3.b */
+    /* ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 3.a and 3.b */
     if (!single) {
       vsql_m_status(sqlstate, "07003");
       return 0;
     }
 
-    /* ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 6 */
+    /* ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 6 */
     if (out->n < 0 && out->descriptor == NULL) {
       vsql_m_status(sqlstate, "07007");
       return 0;
@@ -608,8 +608,8 @@ static int vsql_m_execute_prepared(char *sqlstate, const char *name,
   /* The statement initiates an SQL-transaction, other than a <set
    * transaction statement> (75).
    *
-   * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 9
-   * ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, General Rules, 9 */
+   * ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 10
+   * ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, General Rules, 9 */
   if (p->dynamic_function_code != 75) {
     vsql_m_current->active = 1;
   }
@@ -625,7 +625,7 @@ static int vsql_m_execute_prepared(char *sqlstate, const char *name,
 
   /* There must be one row.
    *
-   * ISO/IEC 9075-2:2016(E), 20.21, <dynamic single row select statement>, General Rules, 2.a and 2.b */
+   * ISO/IEC 9075-2:2023(E), 20.21, <dynamic single row select statement>, General Rules, 2.a and 2.b */
   assigned = vsql_m_into(sqlstate, p->stmt, SQLFetch(p->stmt), out);
   if (assigned) {
     rc = SQLFetch(p->stmt);
@@ -647,7 +647,7 @@ static int vsql_m_execute_prepared(char *sqlstate, const char *name,
  * be a query, or have a dynamic parameter: syntax error or access rule
  * violation.
  *
- * ISO/IEC 9075-2:2016(E), 20.14, <execute immediate statement>, General Rules, 1 to 3
+ * ISO/IEC 9075-2:2023(E), 20.14, <execute immediate statement>, General Rules, 1 to 3
  */
 static void vsql_m_execute_immediate(char *sqlstate, const char *sql) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
@@ -688,7 +688,7 @@ static void vsql_m_execute_immediate(char *sqlstate, const char *sql) {
   /* The statement initiates an SQL-transaction, other than a <set
    * transaction statement> (75).
    *
-   * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 9
+   * ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 10
    */
   if (!vsql_m_failed(rc)) {
     if (vsql_m_da.dynamic_function_code != 75) {
@@ -712,8 +712,8 @@ static void vsql_m_execute_immediate(char *sqlstate, const char *sql) {
  * more than one cursor can be declared for the same prepared statement. The
  * cursor is updatable if its query is.
  *
- * ISO/IEC 9075-2:2016(E), 20.19, <dynamic open statement>, General Rules, 4 to 7
- * ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 4.b
+ * ISO/IEC 9075-2:2023(E), 20.19, <dynamic open statement>, General Rules, 4 to 7
+ * ISO/IEC 9075-2:2023(E), 15.1, Effect of opening a cursor, General Rules, 4.b
  */
 static void vsql_m_open_dynamic(char *sqlstate, int i, const char *name,
                                 int hold, const char *statement,
@@ -727,7 +727,7 @@ static void vsql_m_open_dynamic(char *sqlstate, int i, const char *name,
     return;
   }
 
-  /* ISO/IEC 9075-2:2016(E), 20.19, <dynamic open statement>, General Rules, 1.a.ii */
+  /* ISO/IEC 9075-2:2023(E), 20.19, <dynamic open statement>, General Rules, 1.a.ii */
   SQLNumResultCols(p->stmt, &columns);
   if (columns == 0) {
     vsql_m_status(sqlstate, "07005");
@@ -766,7 +766,7 @@ static void vsql_m_open_dynamic(char *sqlstate, int i, const char *name,
  * vsql_m_fetch_dynamic moves the dynamic cursor i to the next row and assigns
  * its values to the <output using clause>. It returns 1 if they were assigned.
  *
- * ISO/IEC 9075-2:2016(E), 20.20, <dynamic fetch statement>, General Rules, 2 and 3
+ * ISO/IEC 9075-2:2023(E), 20.20, <dynamic fetch statement>, General Rules, 2 and 3
  */
 static int vsql_m_fetch_dynamic(char *sqlstate, int i,
                                 struct vsql_m_output *out) {

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>
 //
 // An <embedded SQL C program> is C with "EXEC SQL ...;" statements. "vsql
 // precompile" turns it into the implied program, C that calls the procedures of
@@ -11,18 +11,18 @@ module vsql
 // comment or string, and the semicolon that ends it, without parsing the C.
 // Only C (Feature B012, "Embedded C") is supported.
 //
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 1 and 17.b
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 21 to 23
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, General Rules, 1
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 1 and 17.b
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 21 to 23
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, General Rules, 1
 //
 // Embedded SQL is one of the binding styles of a host language, described by
 // ISO/IEC 9075-1:2003(E), 4.8.1, Host languages.
 //
 // The concepts are also described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.29, Embedded syntax
-// ISO/IEC 9075-2:2016(E), 4.37, Host languages
-// ISO/IEC 9075-2:2016(E), 4.39.6, Embeddable SQL-statements
+// ISO/IEC 9075-2:2023(E), 4.31, Embedded syntax
+// ISO/IEC 9075-2:2023(E), 4.39, Host languages
+// ISO/IEC 9075-2:2023(E), 4.41.6, Embeddable SQL-statements
 
 // PrecompiledProgram is the C of an <embedded SQL C program>, and its implied
 // module.
@@ -47,10 +47,10 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 	// default character set and SQL-path, since there's no <embedded character
 	// set declaration> (F461) or <embedded path specification> (S071).
 	//
-	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 12
-	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.a to 22.c
-	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.d.ii
-	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.e.ii
+	// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 12
+	// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.a to 22.c
+	// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.d.ii
+	// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.e.ii
 	mut implied := 'MODULE LANGUAGE C SCHEMA "PUBLIC"\n'
 	mut variables := map[string]CHostVariable{}
 	// The cursors declared so far, each with the C call of the procedure that
@@ -62,7 +62,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 	mut runtime := []string{}
 	mut in_declare := false
 	mut procedure_lines := []int{}
-	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Conformance Rules, 1
+	// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Conformance Rules, 1
 	mut features := ['B012']
 	mut start := 0
 	mut i := 0
@@ -98,7 +98,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 
 		// The statement ends with a semicolon.
 		//
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 3.c
+		// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 3.c
 		line := cs[..i].count(it == `\n`) + 1
 		mut end := after
 		for end < cs.len && cs[end] != `;` {
@@ -116,7 +116,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 			return embedded_error(line, sqlstate_42601('EXEC SQL must end with a semicolon'))
 		}
 
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.b
+		// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.b
 		if in_declare {
 			program += c_declare_section(cs[start..i].string(), mut variables) or {
 				return embedded_error(line, err)
@@ -134,7 +134,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 
 		// A declare section is deleted, other than its definitions.
 		//
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.a
+		// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.a
 		if first == 'BEGIN' || first == 'END' {
 			if t.accept('DECLARE') && t.accept('SECTION') && t.peek() == none {
 				if in_declare == (first == 'BEGIN') {
@@ -151,7 +151,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 
 		// SQLSTATE is defined before any <embedded SQL statement>.
 		//
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 19 and 20
+		// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 19 and 20
 		if 'SQLSTATE' !in variables {
 			return embedded_error(line, sqlstate_42601('SQLSTATE must be defined in a declare section before the first EXEC SQL'))
 		}
@@ -162,8 +162,8 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 			// The exception actions are in the implied program, instead of the
 			// implied module.
 			//
-			// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.k
-			// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.c
+			// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.k
+			// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.c
 			'WHENEVER' {
 				whenever.declare(mut t, 'PUBLIC') or { return embedded_error(line, err) }
 				features << whenever_features(t.tokens[1].text)
@@ -171,7 +171,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 				continue
 			}
 			'DECLARE' {
-				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Conformance Rules, 1
+				// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Conformance Rules, 1
 				if t.accept('SCHEMA') || t.accept('AUTHORIZATION') {
 					return embedded_error(line, sqlstate_42601('DECLARE SCHEMA and DECLARE AUTHORIZATION are not supported'))
 				}
@@ -181,9 +181,9 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 				// a <declare cursor>, with the host variables in it, whether the
 				// program has no OPEN of the cursor or several.
 				//
-				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.h
-				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.i
-				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.c
+				// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.h
+				// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.i
+				// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.c
 				cursor := declare_module_cursor(text, 0) or { return embedded_error(line, err) }
 				implied += text.trim_space() + ';\n'
 				cursors[cursor.name] = ''
@@ -202,8 +202,8 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 			'OPEN' {
 				// A cursor is declared before it's opened.
 				//
-				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 14 and 15
-				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.ii
+				// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 14 and 15
+				// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.ii
 				name := t.identifier('a cursor name') or { return embedded_error(line, err) }
 				call = cursors[name] or {
 					return embedded_error(line, sqlstate_42601('cursor ${name} must be declared before it is opened'))
@@ -232,7 +232,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		// The statement is replaced by a call of its procedure, and the
 		// exception actions.
 		//
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.d
+		// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.d
 		program += '{ ${call};${whenever.c_checks()} }${new_lines}'
 		if whenever.constraints.len > 0 {
 			runtime = ['violated']
@@ -242,7 +242,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 	if in_declare {
 		return embedded_error(cs.count(it == `\n`) + 1, sqlstate_42601('END DECLARE SECTION is missing'))
 	}
-	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 1
 	if procedure_lines.len == uncalled.len {
 		return sqlstate_42601('an embedded SQL program must have an SQL statement')
 	}
@@ -259,7 +259,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 
 	// A <C numeric variable> that contains long long, even if it's not used.
 	//
-	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Conformance Rules, 11
+	// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Conformance Rules, 11
 	if variables.values().any(it.typ == 'BIGINT') {
 		features << 'T071'
 	}
@@ -284,9 +284,9 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 // procedure statement>, with each host variable, which must be defined before
 // it, and the C call of the procedure.
 //
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 16
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.1 to 22.l.i.5
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.9
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 16
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.1 to 22.l.i.5
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.9
 fn embedded_procedure(mut procedure_lines []int, line int, text string, names []string, variables map[string]CHostVariable) !(string, string) {
 	procedure := 'vsql_e${procedure_lines.len + 1}'
 	procedure_lines << line
@@ -306,7 +306,7 @@ fn embedded_procedure(mut procedure_lines []int, line int, text string, names []
 // exec_sql_end returns the position after the "EXEC SQL" (the <SQL prefix>)
 // at cs[i], or -1 if there isn't one. Its words are separated by spaces.
 //
-// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 2.b and 5
+// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 2.b and 5
 fn exec_sql_end(cs []rune, i int) int {
 	if (i > 0 && is_identifier_char(cs[i - 1], true)) || i + 4 > cs.len
 		|| cs[i..i + 4].string().to_upper() != 'EXEC' {

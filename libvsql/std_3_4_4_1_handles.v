@@ -199,8 +199,8 @@ fn new_handle() i64 {
 // the connection is closed too, but it's still declared until the cursor is
 // destroyed (see destroy_cursor).
 //
-// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 6
-// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 6
+// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 6
+// ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 6
 fn (mut stmt Stmt) close_cursor() {
 	if stmt.dynamic_cursor != '' {
 		if mut conn := stmt_connection(stmt) {

@@ -168,7 +168,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 	catalog.register_sql_features_view()!
 
 	// ISO/IEC 9075-11:2008(E), 5.58, TABLE_CONSTRAINTS view. ENFORCED is whether
-	// the table constraint is enforced (ISO/IEC 9075-2:2016(E), 4.23.3.1).
+	// the table constraint is enforced (ISO/IEC 9075-2:2023(E), 4.25.3.1).
 	catalog.add_information_schema_table('CREATE TABLE TABLE_CONSTRAINTS (
 		CONSTRAINT_CATALOG ${id} NOT NULL,
 		CONSTRAINT_SCHEMA ${id} NOT NULL,
@@ -486,7 +486,7 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 // has a readily-known-not-null condition for the column, which is the same thing
 // as NOT NULL.
 //
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 3.a
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 5.a
 fn is_known_not_nullable(table Table, column Column) bool {
 	column_name := column.name.sub_entity_name
 	if column.not_null || column_name in table.primary_key {
@@ -574,7 +574,7 @@ fn identity_descriptor(column Column) []Value {
 // check_constraints_view_rows are the rows of the CHECK_CONSTRAINTS view
 // (ISO/IEC 9075-11:2008(E), 6.14, CHECK_CONSTRAINTS base table) for a table. A
 // NOT NULL column is the same as a CHECK (column IS NOT NULL) constraint
-// (ISO/IEC 9075-2:2016(E), 11.4, Syntax Rules, 17.a), so it's included, in the
+// (ISO/IEC 9075-2:2023(E), 11.4, Syntax Rules, 17.a), so it's included, in the
 // order of the columns, before the CHECK constraints in the order they were
 // defined. The views of the INFORMATION_SCHEMA don't have constraints. There
 // are no domain constraints (F251) or assertions (F521), so these are the only

@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 17.6, <release savepoint statement>
+// ISO/IEC 9075-2:2023(E), 17.6, <release savepoint statement>
 //
 // Destroy a savepoint.
 
@@ -13,7 +13,7 @@ struct ReleaseSavepointStatement {
 fn (stmt ReleaseSavepointStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	// ISO/IEC 9075-2:2016(E), 17.6, <release savepoint statement>, General Rules, 1 and 3
+	// ISO/IEC 9075-2:2023(E), 17.6, <release savepoint statement>, General Rules, 1 and 3
 	conn.savepoints.trim(conn.savepoint_index(stmt.name)!)
 
 	// The changes so far can't be undone any more, so they aren't needed.

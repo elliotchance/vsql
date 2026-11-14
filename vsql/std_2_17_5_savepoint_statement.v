@@ -2,13 +2,13 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 17.5, <savepoint statement>
+// ISO/IEC 9075-2:2023(E), 17.5, <savepoint statement>
 //
 // Establish a savepoint.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.41.2, Savepoints
+// ISO/IEC 9075-2:2023(E), 4.43.2, Savepoints
 //
 // There's only one savepoint level, because there are no SQL-invoked routines
 // (T321) or atomic blocks. There's no maximum number of savepoints, so 3B002
@@ -24,7 +24,7 @@ struct SavepointStatement {
 // Savepoint is a point in the current SQL-transaction that it can be rolled back
 // to, with the state of each catalog at that point.
 //
-// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, General Rules, 26
+// ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, General Rules, 26
 struct Savepoint {
 	name string
 mut:
@@ -54,10 +54,10 @@ fn (stmt SavepointStatement) execute(mut conn Connection, _ map[string]Value, el
 	if conn.in_transaction() {
 		// A savepoint that is destroyed doesn't destroy the ones after it.
 		//
-		// ISO/IEC 9075-2:2016(E), 17.5, <savepoint statement>, General Rules, 1 and 2
+		// ISO/IEC 9075-2:2023(E), 17.5, <savepoint statement>, General Rules, 1 and 2
 		conn.savepoints = conn.savepoints.filter(it.name != stmt.name)
 
-		// ISO/IEC 9075-2:2016(E), 17.5, <savepoint statement>, General Rules, 4
+		// ISO/IEC 9075-2:2023(E), 17.5, <savepoint statement>, General Rules, 4
 		mut savepoint := Savepoint{
 			name: stmt.name
 		}
@@ -76,8 +76,8 @@ fn (stmt SavepointStatement) explain(mut _ Connection, _ map[string]Value, _ tim
 
 // savepoint_index is the position in savepoints of a savepoint by its name.
 //
-// ISO/IEC 9075-2:2016(E), 17.6, <release savepoint statement>, General Rules, 2
-// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 3.b
+// ISO/IEC 9075-2:2023(E), 17.6, <release savepoint statement>, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 3.b
 //
 // That's only needed for 17.6 and 17.8, so it's here beside what they share.
 fn (conn Connection) savepoint_index(name string) !int {
@@ -96,7 +96,7 @@ fn (conn Connection) savepoint_index(name string) !int {
 // so it isn't changed. Nothing changes for other connections, because none of
 // these changes have been committed, so they don't need to reload the schema.
 //
-// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 3, 3.d, 3.e, 3.g and 3.h
+// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 3, 3.d, 3.e, 3.g and 3.h
 fn (mut conn Connection) rollback_to_savepoint(name string) ! {
 	index := conn.savepoint_index(name)!
 

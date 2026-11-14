@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>
+// ISO/IEC 9075-2:2023(E), 6.6, <identifier chain>
 //
 // Disambiguate a <period>-separated chain of identifiers.
 

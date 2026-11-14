@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>
 //
 // Specify a table derived from a Cartesian product, inner join, or outer join.
 
@@ -61,7 +61,7 @@ fn (o &JoinOperation) str() string {
 // implementation-defined rule (without T101, an outer join is otherwise only ever
 // possibly nullable).
 //
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 8, 10.i, 14 and 15
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 8, 10.i, 13 and 14
 fn (o &JoinOperation) columns() Columns {
 	mut hidden := map[string]bool{}
 	mut columns := []Column{}
@@ -112,7 +112,7 @@ fn possibly_nullable_columns(columns Columns) Columns {
 // row of the left (or right) side that didn't match, with NULLs for the other
 // side.
 //
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, General Rules, 3-5
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, General Rules, 3-5
 //
 // The rows are in the order of the outer side (the left side, or the right side
 // of a RIGHT join), then the inner side. Each row of the outer side is compared
@@ -155,7 +155,7 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, General Rules, 6.a
+	// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, General Rules, 6.a
 	mut c := Compiler{
 		conn:   o.conn
 		params: o.params
@@ -215,7 +215,7 @@ fn (c CommonColumn) equality() BooleanTest {
 // not NULL) in a matched row, so that only depends on the side that's kept for a
 // row that isn't matched.
 //
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.c, 10.e, 10.f and 15.c
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 10.c, 10.e, 10.f and 14.c
 fn new_common_columns(names []Identifier, join_type JoinType, left_columns Columns, right_columns Columns, range_variable string) ![]CommonColumn {
 	mut seen := map[string]bool{}
 	for name in names {
@@ -262,7 +262,7 @@ fn new_common_columns(names []Identifier, join_type JoinType, left_columns Colum
 // join_column is the only column with the name on one side of a named columns
 // join.
 //
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.c
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 10.c
 fn join_column(columns Columns, name string) !Column {
 	matching := columns.filter(it.name.sub_entity_name == name)
 	if matching.len > 1 {
@@ -277,7 +277,7 @@ fn join_column(columns Columns, name string) !Column {
 
 // join_equalities is the join condition of a named columns join.
 //
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, General Rules, 1.c
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, General Rules, 1.c
 fn join_equalities(common_columns []CommonColumn) BooleanValueExpression {
 	mut term := BooleanTerm{
 		factor: common_columns[0].equality()

@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>
 //
 // Position a standing cursor on a specified row of the standing cursor's result
 // set and retrieve values from that row.
@@ -16,7 +16,7 @@ struct FetchStatement {
 
 // FetchDirection is the <fetch orientation>, which is NEXT if there isn't one.
 //
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 2
 enum FetchDirection {
 	next
 	prior
@@ -40,8 +40,8 @@ fn (stmt FetchStatement) execute(mut conn Connection, params map[string]Value, e
 
 	// Only a SCROLL cursor can be fetched in a direction other than NEXT.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 7
-	// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a cursor, General Rules, 4
+	// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 7
+	// ISO/IEC 9075-2:2023(E), 15.3, Determination of the current row of a cursor, General Rules, 4
 	if stmt.orientation.direction != .next && !cursor.scroll {
 		return sqlstate_42601('cursor ${stmt.name} is not a SCROLL cursor, so it can only FETCH NEXT')
 	}
@@ -53,7 +53,7 @@ fn (stmt FetchStatement) execute(mut conn Connection, params map[string]Value, e
 	// with no data. The rows of the cursor's result don't change while it's
 	// open (including a row that it deleted), so the row is found by its index.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, General Rules, 3 and 4
+	// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, General Rules, 3 and 4
 	if !cursor.move(stmt.orientation.direction, j) {
 		conn.add_warning(sqlstate_02000())
 
@@ -67,8 +67,8 @@ fn (stmt FetchStatement) execute(mut conn Connection, params map[string]Value, e
 // number is the value of ABSOLUTE or RELATIVE, which must be an exact numeric
 // with scale 0. It's 1 for NEXT and FIRST, and -1 for PRIOR and LAST.
 //
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 8
-// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a cursor, General Rules, 5
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 8
+// ISO/IEC 9075-2:2023(E), 15.3, Determination of the current row of a cursor, General Rules, 5
 fn (o FetchOrientation) number(mut conn Connection, params map[string]Value) !i64 {
 	value := o.value or { return if o.direction in [.next, .first] { 1 } else { -1 } }
 	mut c := Compiler{
@@ -96,7 +96,7 @@ fn (o FetchOrientation) number(mut conn Connection, params map[string]Value) !i6
 // forward (or LAST), otherwise it's before the first row. RELATIVE 0 doesn't
 // move the cursor.
 //
-// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a cursor, General Rules, 6-9
+// ISO/IEC 9075-2:2023(E), 15.3, Determination of the current row of a cursor, General Rules, 6-9
 fn (mut cursor Cursor) move(direction FetchDirection, j i64) bool {
 	n := i64(cursor.rows.len)
 	position := i64(cursor.position)
@@ -166,7 +166,7 @@ fn (mut t ModuleTokens) fetch_statement(p ExternallyInvokedProcedure, cursors []
 
 	// The number of targets must be the degree of the cursor.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 9.b.i
+	// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 9.b.i
 	if cursor.degree >= 0 && cursor.degree != targets.len {
 		are := if targets.len == 1 { 'is' } else { 'are' }
 		return sqlstate_42601('procedure ${p.name}: cursor ${cursor.name} has ${cursor.degree} ${pluralize(cursor.degree, 'column')}, but there ${are} ${targets.len} ${pluralize(targets.len, 'target')}')

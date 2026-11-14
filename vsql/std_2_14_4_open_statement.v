@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 14.4, <open statement>
+// ISO/IEC 9075-2:2023(E), 14.4, <open statement>
 //
 // Open a standing cursor.
 
@@ -15,7 +15,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 
 	mut cursor := conn.cursor(stmt.name)!
 
-	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 2
+	// ISO/IEC 9075-2:2023(E), 15.1, Effect of opening a cursor, General Rules, 2
 	if cursor.is_open {
 		return sqlstate_24000(stmt.name, 'cursor ${stmt.name} is already open')
 	}
@@ -38,7 +38,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 	// first row. Since the rows are a copy, later changes to the table aren't
 	// visible through the cursor.
 	//
-	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 5.a, 5.g and 5.h
+	// ISO/IEC 9075-2:2023(E), 15.1, Effect of opening a cursor, General Rules, 5.a, 5.g and 5.h
 	mut plan := create_plan(cursor.query, cursor.params, mut conn)!
 	cursor.rows = plan.execute([]Row{})!
 	cursor.row_states = []CursorRowState{len: cursor.rows.len}

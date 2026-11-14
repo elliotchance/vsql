@@ -142,7 +142,7 @@ mut:
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
 // a statement that changes the database. A statement that fails must not
-// change anything (ISO/IEC 9075-2:2016(E), 4.39.5), so this is put back, and
+// change anything (ISO/IEC 9075-2:2023(E), 4.41.5), so this is put back, and
 // the pages it changed are never written.
 struct StatementSnapshot {
 mut:
@@ -340,7 +340,7 @@ fn (mut f Storage) finish_commit(path string) ! {
 // discard_statement forgets the changes made by the current statement, because
 // it failed. Except that values issued by sequences are kept: "changes to the
 // current base value of a sequence generator are not controlled by
-// SQL-transactions" (ISO/IEC 9075-2:2016(E), 4.27.2).
+// SQL-transactions" (ISO/IEC 9075-2:2023(E), 4.29.2).
 fn (mut f Storage) discard_statement(path string) ! {
 	sequence_values := f.sequence_values.clone()
 

@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 11.74, <drop sequence generator statement>
+// ISO/IEC 9075-2:2023(E), 11.74, <drop sequence generator statement>
 //
 // Destroy an external sequence generator.
 
@@ -33,7 +33,7 @@ fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, _ map[stri
 	}
 	check_writable_schema(name)!
 	mut catalog := conn.catalog_for(name)
-	// ISO/IEC 9075-2:2016(E), 11.74, <drop sequence generator statement>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 11.74, <drop sequence generator statement>, Syntax Rules, 2
 	sequence := catalog.storage.sequence(name) or {
 		if stmt.if_exists && err is SQLState42P01 {
 			return new_result_msg('DROP SEQUENCE 0', elapsed_parse, t.elapsed())
@@ -41,7 +41,7 @@ fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, _ map[stri
 
 		return err
 	}
-	// ISO/IEC 9075-2:2016(E), 11.74, <drop sequence generator statement>, General Rules, 2
+	// ISO/IEC 9075-2:2023(E), 11.74, <drop sequence generator statement>, General Rules, 2
 	catalog.storage.delete_sequence(name, sequence.tid)!
 
 	return new_result_msg('DROP SEQUENCE 1', elapsed_parse, t.elapsed())

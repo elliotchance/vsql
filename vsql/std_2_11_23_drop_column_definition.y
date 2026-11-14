@@ -1,12 +1,12 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>
+// ISO/IEC 9075-2:2023(E), 11.23, <drop column definition>
 //
 // Destroy a column of a base table.
 
 // The <drop behavior> is optional (V105-01, see vsql_drop_column_behavior).
 //
-// ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 11.23, <drop column definition>, Conformance Rules, 1
 drop_column_definition:
   DROP column_name {
     flag(mut yylex, 'F033')

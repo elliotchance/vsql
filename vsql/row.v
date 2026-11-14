@@ -634,8 +634,8 @@ fn write_key_numeric(mut buf Bytes, value Numeric) {
 // way too. For example, 'a' is equal to 'a ' and greater than 'a' followed by a
 // tab, but less than 'a b'.
 //
-// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 3.b
-// ISO/IEC 9075-2:2016(E), 9.12, Grouping operations, Syntax Rules, 4
+// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 3.b
+// ISO/IEC 9075-2:2023(E), 9.12, Grouping operations, Syntax Rules, 4
 //
 // Trailing spaces are removed. Each other space is written as a space and then
 // a byte for whether the next character that isn't a space sorts after a space

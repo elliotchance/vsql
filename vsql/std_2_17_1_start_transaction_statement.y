@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 17.1, <start transaction statement>, Conformance Rules, 1
 
 start_transaction_statement:
   START TRANSACTION {

@@ -1,12 +1,12 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.35, <datetime value expression>
+// ISO/IEC 9075-2:2023(E), 6.42, <datetime value expression>
 //
 // Specify a datetime value.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.6.4, Operations involving datetimes and intervals
+// ISO/IEC 9075-2:2023(E), 4.7.4, Operations involving datetimes and intervals
 
 type DatetimePrimary = DatetimeValueFunction | ValueExpressionPrimary
 

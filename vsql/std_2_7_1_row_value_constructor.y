@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>
+// ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>
 //
 // Specify a value or list of values to be constructed into a row.
 
@@ -27,7 +27,7 @@ explicit_row_value_constructor:
       $4.v as []ContextuallyTypedRowValueConstructorElement))!)
   }
 | ROW left_paren row_value_constructor_element_list right_paren {
-    // ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>, Conformance Rules, 1
+    // ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>, Conformance Rules, 1
     flag(mut yylex, 'T051')
     $$.v = yy_box(ExplicitRowValueConstructor{$3.v as []ValueExpression})
   }
@@ -43,7 +43,7 @@ row_value_constructor_element:
 
 // Without F641, a VALUES of an INSERT can only have one row, in parentheses.
 //
-// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>, Conformance Rules, 1
 
 contextually_typed_row_value_constructor:
   common_value_expression {
@@ -97,7 +97,7 @@ row_value_constructor_predicand:
   }
 | explicit_row_value_constructor {
     row := $1.v as ExplicitRowValueConstructor
-    // ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>, Conformance Rules, 3
+    // ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>, Conformance Rules, 3
     flag_if(mut yylex, row.exprs.len > 1, 'F641')
     $$.v = yy_box(RowValueConstructorPredicand(row))
   }

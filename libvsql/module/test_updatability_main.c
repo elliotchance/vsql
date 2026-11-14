@@ -2,7 +2,7 @@
  * The tests of the <updatability clause> of a cursor (test_updatability.mod).
  * See test_main.c.
  *
- * ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 6 and 9
+ * ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Syntax Rules, 6 and 9
  */
 
 #include <stdio.h>

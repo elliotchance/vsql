@@ -106,7 +106,7 @@ const snapshot_file_format_version = u16(3)
 // changes (write skew). REPEATABLE READ allows phantoms, so it doesn't need to
 // be, and SERIALIZABLE uses the isolation lock instead (see isolation.v).
 //
-// ISO/IEC 9075-2:2016(E), 4.41.4, Isolation levels of SQL-transactions
+// ISO/IEC 9075-2:2023(E), 4.43.4, Isolation levels of SQL-transactions
 struct TransactionSnapshot {
 	// xmax is the ID of the transaction itself. Transactions with a higher ID
 	// started after it.

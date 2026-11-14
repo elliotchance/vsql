@@ -109,7 +109,7 @@ right-aligned. Type ``exit`` (or press ctrl+c) to leave:
 
 Use ``:memory:`` as the file name for an in-memory database.
 
-The shell is direct invocation of SQL (ISO/IEC 9075-2:2016(E), Clause 22,
+The shell is direct invocation of SQL (ISO/IEC 9075-2:2023(E), Clause 22,
 "Direct invocation of SQL"):
 
 - Each statement ends with a semicolon, so it can be over many lines (``->``

@@ -2,13 +2,13 @@ module vsql
 
 import math
 
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>
 //
 // Specify a value computed from a collection of rows.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.16 (Data analysis operations involving tables)
+// ISO/IEC 9075-2:2023(E), 4.18 (Data analysis operations involving tables)
 
 type AggregateFunction = AggregateFunctionCount
 	| ListaggSetFunction
@@ -46,7 +46,7 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 				// This isn't seen as an aggregate function by an enclosing one, because
 				// it's a value of this query.
 				//
-				// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
+				// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 1
 				if c.in_aggregate {
 					return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
 				}
@@ -137,7 +137,7 @@ fn aggregate_result(mut c Compiler, e AggregateFunction, typ Type, in_aggregate 
 		// This isn't seen as an aggregate function by an enclosing one, because
 		// it's a value of this query.
 		//
-		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 1
 		if in_aggregate {
 			return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
 		}
@@ -171,8 +171,8 @@ fn filter_pstr(filter ?&BooleanValueExpression, params map[string]Value) string 
 // any column of a grouped query, and it can't contain an aggregate function or
 // a subquery (see Subquery.plan). There are no window functions.
 //
-// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 5
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 8
+// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 8
 fn compile_filter(mut c Compiler, filter ?&BooleanValueExpression, agg string) ! {
 	f := filter or { return }
 
@@ -203,7 +203,7 @@ fn compile_filter(mut c Compiler, filter ?&BooleanValueExpression, agg string) !
 // If there's a <filter clause>, they're only the rows where its search condition
 // is True.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 4
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 4
 fn filter_rows(mut c Compiler, filter ?&BooleanValueExpression, rows []Row) ![]Row {
 	f := filter or { return rows }
 
@@ -221,7 +221,7 @@ fn filter_rows(mut c Compiler, filter ?&BooleanValueExpression, rows []Row) ![]R
 // non_null_values removes NULLs before a general set function is applied. If
 // all values are NULL (or there are no values) the result will be NULL.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.a
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 7.a
 fn non_null_values(values []Value) []Value {
 	return values.filter(!it.is_null)
 }
@@ -231,7 +231,7 @@ fn non_null_values(values []Value) []Value {
 // with =, so 1.5 and 1.50 (or 'a' and 'a ') are the same value. The first of
 // each set of duplicates is kept.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.b
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 7.b
 //
 // Values that are equal with = have the same PRIMARY KEY encoding, and values
 // that aren't have different ones, so each value is found by its key rather
@@ -256,7 +256,7 @@ fn distinct_values(mut conn Connection, values []Value, typ Type) ![]Value {
 // set_function_type is the declared type of the result of a general set
 // function with an argument of type t.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 4 and 7
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 4 and 7
 fn set_function_type(name string, t Type) Type {
 	// The implementation-defined type of COUNT (SR 4), and of REGR_COUNT, which
 	// also counts rows (SR 9.c.i).
@@ -296,8 +296,8 @@ fn set_function_type(name string, t Type) Type {
 // SUM) for the values of one group, where t is the declared type of the
 // argument.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 3.e
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 3.e
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 7
 fn eval_set_function(mut conn Connection, name string, all_values []Value, t Type) !Value {
 	values := non_null_values(all_values)
 	typ := set_function_type(name, t)
@@ -316,7 +316,7 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	// EVERY is TRUE if every value is TRUE, and ANY (or SOME) is TRUE if any
 	// value is TRUE. Unknown values are NULLs, which have been removed.
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.vi and 7.d.vii
+	// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 7.d.vii and 7.d.viii
 	if name == 'EVERY' {
 		return new_boolean_value(values.all(it.bool_value() == .is_true))
 	}
@@ -369,7 +369,7 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 
 // binary_set_functions are the names of every <binary set function type>.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Format
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Format
 const binary_set_functions = ['COVAR_POP', 'COVAR_SAMP', 'CORR', 'REGR_SLOPE', 'REGR_INTERCEPT',
 	'REGR_COUNT', 'REGR_R2', 'REGR_AVGX', 'REGR_AVGY', 'REGR_SXX', 'REGR_SYY', 'REGR_SXY']
 
@@ -459,8 +459,8 @@ fn power_of_two_scale(x f64) f64 {
 // REGR_SLOPE and REGR_INTERCEPT (when or_null is true), otherwise it's an
 // exception.
 //
-// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 6
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 8.c.x.3, 8.c.xi.3, 8.c.xii.2 and 8.c.xiii.2
+// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>, General Rules, 6
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 8.c.x.3, 8.c.xi.3, 8.c.xii.2 and 8.c.xiii.2
 fn scaled_value(x f64, factors []f64, or_null bool) !Value {
 	mut result := x
 	for factor in factors {
@@ -489,8 +489,8 @@ fn null_double_precision() Value {
 // for the (non-null) values of one group. STDDEV_POP and STDDEV_SAMP are the
 // square roots of VAR_POP and VAR_SAMP.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.i and 7.j
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.viii
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 7.i and 7.j
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 7.d.ix
 fn eval_variance(name string, values []Value) !Value {
 	mut xs := []f64{}
 	for value in values {
@@ -520,7 +520,7 @@ fn eval_variance(name string, values []Value) !Value {
 // can't be negative, but that's not the correlation that it describes, nor what
 // any other database returns.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 8.b and 8.c
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 8.b and 8.c
 fn eval_binary_set_function(name string, ys []Value, xs []Value) !Value {
 	mut fxs := []f64{}
 	mut fys := []f64{}
@@ -588,7 +588,7 @@ struct ListaggSetFunction {
 // OVERFLOW ERROR (truncate is false). The filler is '...' if it isn't
 // specified.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
 struct ListaggOverflow {
 	truncate   bool
 	filler     Value = new_varchar_value('...')
@@ -620,7 +620,7 @@ fn (e ListaggSetFunction) pstr(params map[string]Value) string {
 // listagg_type is the declared type of the result of LISTAGG. It's a VARCHAR
 // with the maximum length (MLRT), rather than a CLOB, which isn't supported.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.d
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 11.d
 fn listagg_type() Type {
 	return new_type('CHARACTER VARYING', max_character_length, 0)
 }
@@ -632,7 +632,7 @@ fn (e ListaggSetFunction) compile(mut c Compiler) !CompileResult {
 	// can't contain a subquery (see Subquery.plan), and there are no window
 	// functions.
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.a
+	// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 11.a
 	in_aggregate := c.in_aggregate
 	aggregated_columns := c.aggregated_columns
 	c.in_aggregate = true
@@ -658,7 +658,7 @@ fn (e ListaggSetFunction) compile(mut c Compiler) !CompileResult {
 		return sqlstate_42883('function does not exist: LISTAGG(${value.typ})')
 	}
 
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
+	// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
 	check_listagg_literal(e.separator)!
 	check_listagg_literal(e.overflow.filler)!
 
@@ -670,7 +670,7 @@ fn (e ListaggSetFunction) compile(mut c Compiler) !CompileResult {
 // check_listagg_literal checks that the separator or the filler of a LISTAGG
 // isn't longer than the result can be.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
 fn check_listagg_literal(literal Value) ! {
 	if literal.string_value().runes().len > max_character_length {
 		return sqlstate_42601('LISTAGG literal is longer than the maximum length of ${max_character_length}')
@@ -688,8 +688,8 @@ fn check_listagg_literal(literal Value) ! {
 // be compared, so the value can always be an operand of a grouping operation
 // for DISTINCT.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.b
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 11
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 11.b
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 11
 fn (e ListaggSetFunction) eval(mut c Compiler, rows []Row) !(Value, bool) {
 	mut order := new_order_operation(e.order, c.params, c.conn, []Column{}, c.tables,
 		map[string][]ValueExpression{})
@@ -733,7 +733,7 @@ fn (e ListaggSetFunction) eval(mut c Compiler, rows []Row) !(Value, bool) {
 // as fit with the filler (and the number of values that were removed, WITH
 // COUNT) after them.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 3.d, 11.f and 11.g
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 3.d, 11.f and 11.g
 fn listagg_result(values []string, separator string, overflow ListaggOverflow, mlrt int) !string {
 	result := values.join(separator)
 	// The number of characters can't be more than the number of bytes.
@@ -799,7 +799,7 @@ fn listagg_result(values []string, separator string, overflow ListaggOverflow, m
 // like an expression of the select list, so a column must be a grouping column
 // (or an outer reference). Only the sort keys (and the filter) are aggregated.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 14
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 14
 struct OrderedSetFunction {
 	name   string
 	args   []ValueExpression
@@ -822,7 +822,7 @@ fn (e OrderedSetFunction) is_hypothetical() bool {
 // DENSE_RANK are an INTEGER, like COUNT. The others are a DOUBLE PRECISION,
 // since there's no decimal floating-point type (or intervals).
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 10.d and 12.e
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 10.d and 12.e
 fn ordered_set_function_type(name string) Type {
 	if name in ['RANK', 'DENSE_RANK'] {
 		return new_type('INTEGER', 0, 0)
@@ -851,7 +851,7 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 	// (see Subquery.plan) or an aggregate function, and there are no window
 	// functions.
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 10.a and 12.b
+	// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 10.a and 12.b
 	in_aggregate := c.in_aggregate
 	aggregated_columns := c.aggregated_columns
 	c.in_aggregate = true
@@ -874,7 +874,7 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 	}
 
 	if e.is_hypothetical() {
-		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 10.b and 10.c
+		// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 10.b and 10.c
 		if arg_types.len != key_types.len {
 			return sqlstate_42601('${e.name} has ${arg_types.len} ${pluralize(arg_types.len, 'argument')} but ${key_types.len} ${pluralize(key_types.len, 'sort key')}')
 		}
@@ -884,7 +884,7 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 			}
 		}
 	} else {
-		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 12.a, 12.c and 12.d
+		// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Syntax Rules, 12.a, 12.c and 12.d
 		if key_types.len != 1 {
 			return sqlstate_42601('${e.name} must have one sort key')
 		}
@@ -944,7 +944,7 @@ fn (e OrderedSetFunction) eval(mut c Compiler, group_row Row, rows []Row) !(Valu
 // or 0 when it's the only row. CUME_DIST is the number of rows before it or
 // peers of it, including itself, divided by N + 1.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 9
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 9
 fn hypothetical_set_function(conn &Connection, name string, args []Value, keys [][]Value, order []SortSpecification) !Value {
 	mut before := 0
 	mut distinct_before := 0
@@ -993,7 +993,7 @@ fn hypothetical_set_function(conn &Connection, name string, args []Value, keys [
 // returned as a DOUBLE PRECISION, so a percentile of integers is an integer.
 // The position is calculated exactly.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 10
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, General Rules, 10
 fn inverse_distribution_function(mut conn Connection, name string, p Value, all_values []Value, typ Type) !(Value, bool) {
 	result_type := new_type('DOUBLE PRECISION', 0, 0)
 	null := Value{

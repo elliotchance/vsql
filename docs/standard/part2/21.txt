@@ -1,14 +1,14 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023(E)
 # id status code tests note (see docs/standard-index.rst)
 # 21, Embedded SQL
 21                       container    - -
 # 21.1, <embedded SQL host program>
 21.1                     implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v only C (B012)
 21.1/SR/1                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
-21.1/SR/2                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
+21.1/SR/2                container    - -
 21.1/SR/2.a              n/a          - - Embedded MUMPS (B015)
 21.1/SR/2.b              implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
-21.1/SR/3                container    - -
+21.1/SR/3                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
 21.1/SR/3.a              n/a          - - Embedded COBOL (B013)
 21.1/SR/3.b              n/a          - - Embedded Fortran (B014)
 21.1/SR/3.c              implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
@@ -131,23 +131,20 @@
 21.2/GR/1                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
 21.2/GR/1.a              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
 21.2/GR/1.b              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.c              implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
+21.2/GR/1.c              container    - -
 21.2/GR/1.c.i            implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
-21.2/GR/1.c.ii           impl-defined vsql/std_2_21_2_embedded_exception_declaration.c vsql/module_test.v the first WHENEVER CONSTRAINT that was declared
-21.2/GR/1.c.iii          implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
-21.2/GR/1.d              container    - -
-21.2/GR/1.d.i            implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.ii           implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii          container    - -
-21.2/GR/1.d.iii.1        implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii.2        implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii.3        container    - -
-21.2/GR/1.d.iii.3.A      implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii.3.B      implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii.3.C      container    - -
-21.2/GR/1.d.iii.3.C.I    implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii.3.C.II   implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
-21.2/GR/1.d.iii.3.C.III  implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.i.1          implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
+21.2/GR/1.c.i.2          impl-defined vsql/std_2_21_2_embedded_exception_declaration.c vsql/module_test.v the first WHENEVER CONSTRAINT that was declared
+21.2/GR/1.c.i.3          implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
+21.2/GR/1.c.ii           implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.1         implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2         implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2.A       implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2.B       implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2.B.I     implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2.B.II    implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2.B.II.1  implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
+21.2/GR/1.c.ii.2.B.II.2  implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
 21.2/CR/1                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
 21.2/CR/2                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/module_test.v
 # 21.3, <embedded SQL Ada program>
@@ -220,7 +217,7 @@
 21.3/CR/12               n/a          - - Embedded Ada (B011)
 21.3/CR/13               n/a          - - Embedded Ada (B011)
 21.3/CR/14               n/a          - - Embedded Ada (B011)
-# 21.4, <embedded SQL C program>
+# 21.4, <embeddedSQLCprogram>
 21.4                     partial      vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v only numeric, char and VARCHAR host variables
 21.4/SR/1                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the C compiler checks the C
 21.4/SR/2                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the C compiler checks where it is
@@ -285,7 +282,7 @@
 21.4/CR/11               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
 21.4/CR/12               n/a          - - binary strings (T021)
 21.4/CR/13               n/a          - - binary strings (T021)
-# 21.5, <embedded SQL COBOL program>
+# 21.5, <embeddedSQL COBOL program>
 21.5                     n/a          - - Embedded COBOL (B013)
 21.5/SR/1                n/a          - - Embedded COBOL (B013)
 21.5/SR/2                n/a          - - Embedded COBOL (B013)

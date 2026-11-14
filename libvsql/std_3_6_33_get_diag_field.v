@@ -266,7 +266,7 @@ fn transaction_active(handle_type i16, h i64) bool {
 
 // connection_active is true if the established SQL-connection of a connection
 // has an active SQL-transaction, which makes it an active SQL-connection
-// (ISO/IEC 9075-2:2016(E), 4.42, SQL-connections).
+// (ISO/IEC 9075-2:2023(E), 4.44, SQL-connections).
 fn connection_active(dh i64) bool {
 	if mut conn := (dbcs[dh] or { return false }).conn {
 		return conn.in_transaction()

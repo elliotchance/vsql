@@ -5,7 +5,7 @@ set_transaction_statement:
 | SET TRANSACTION transaction_characteristics {
     $$.v = yy_box(Stmt(SetTransactionStatement{modes: $3.v as []TransactionMode}))
   }
-// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, Conformance Rules, 1
 | SET LOCAL TRANSACTION {
     flag(mut yylex, 'T251')
     $$.v = yy_box(Stmt(SetTransactionStatement{local: true}))

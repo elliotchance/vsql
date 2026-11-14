@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>
+// ISO/IEC 9075-2:2023(E), 14.14, <update statement: searched>
 //
 // Update rows of a table.
 
@@ -8,7 +8,7 @@
 // expressions", and FOR PORTION OF needs Feature T181, "Application-time period
 // tables". Without WHERE, every row is updated.
 //
-// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023(E), 14.14, <update statement: searched>, Syntax Rules, 5
 
 update_statement_searched:
   UPDATE target_table target_correlation_name SET set_clause_list {

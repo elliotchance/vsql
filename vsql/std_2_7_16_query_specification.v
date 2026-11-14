@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>
 //
 // Specify a table derived from the result of a <table expression>.
 
@@ -130,7 +130,7 @@ fn (e DerivedColumn) column_reference() ?Identifier {
 // equal to each other. The first of the duplicate rows is kept, before the
 // select list is applied, so that the ORDER BY can still be evaluated.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, General Rules, 2.b
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, General Rules, 2.b
 struct DistinctOperation {
 	params  map[string]Value
 	columns Columns
@@ -146,7 +146,7 @@ fn new_distinct_operation(mut conn Connection, params map[string]Value, select_l
 	// The select list is evaluated for each row here, and again for each row
 	// that remains, which is only safe because NEXT VALUE FOR isn't allowed.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 2
 	mut c := Compiler{
 		conn:     conn
 		params:   params
@@ -261,7 +261,7 @@ fn duplicate_key(values []Value) string {
 }
 
 // is_duplicate_row is true if each value is equal. Unlike =, two NULLs are
-// duplicates (ISO/IEC 9075-2:2016(E), 4.1.5, Properties of distinct).
+// duplicates (ISO/IEC 9075-2:2023(E), 4.2.5, Properties of distinct).
 fn is_duplicate_row(conn &Connection, a []Value, b []Value) !bool {
 	for i, value in a {
 		if value.is_null || b[i].is_null {
@@ -284,7 +284,7 @@ fn is_duplicate_row(conn &Connection, a []Value, b []Value) !bool {
 // in the select list (such as "ORDER BY a + b" for "SELECT DISTINCT a + b") is
 // replaced by that column, so it can use any column.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.d
+// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Syntax Rules, 26.d
 fn (mut c Compiler) set_distinct_columns(body SimpleTable, sort_key ValueExpression) ! {
 	c.distinct_columns = none
 	if body !is QuerySpecification {

@@ -14,8 +14,8 @@ module vsql
 // for each column. Any other candidate key (such as every column of a result
 // without duplicate rows) isn't known, so the result has no key at all.
 //
-// ISO/IEC 9075-2:2016(E), 4.24.3, Known functional dependencies in a base table
-// ISO/IEC 9075-2:2016(E), 4.25, Candidate keys
+// ISO/IEC 9075-2:2023(E), 4.26.3, Known functional dependencies in a base table
+// ISO/IEC 9075-2:2023(E), 4.27, Candidate keys
 fn set_result_key(mut columns []Column, body QuerySpecification, tables map[string]&Table, mut conn Connection) {
 	mut table := Table{}
 	mut base := Table{}
@@ -114,7 +114,7 @@ fn key_counterparts(table Table, names []string, sources []int) []int {
 // other one isn't a candidate key. Otherwise, the "left-most" rule compares the
 // column numbers in order, where the shorter key is padded with zeros.
 //
-// ISO/IEC 9075-2:2016(E), 4.25, Candidate keys
+// ISO/IEC 9075-2:2023(E), 4.27, Candidate keys
 fn is_preferred_key(a []int, b []int) bool {
 	if a.all(it in b) {
 		return true

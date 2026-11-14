@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 4.27, Sequence generators
+// ISO/IEC 9075-2:2023(E), 4.29, Sequence generators
 //
 // The concept is described by ISO/IEC 9075-1:2003(E), 4.6.11, Sequence
 // generators.
@@ -9,7 +9,7 @@ module vsql
 // base value is current_value plus increment_by when the sequence is unused,
 // otherwise the next value after current_value.
 //
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, General Rules, 2
 pub struct Sequence {
 mut:
 	// The tid is the transaction ID that created this table.
@@ -118,8 +118,8 @@ fn (s Sequence) type_range() (i64, i64) {
 // identity_range), it's 1 for an ascending sequence, and the smallest value of
 // the data type for a descending one.
 //
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 8
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 7.a.i
+// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 8
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 7.a.i
 fn (s Sequence) min() i64 {
 	if s.has_min_value {
 		return s.min_value
@@ -138,8 +138,8 @@ fn (s Sequence) min() i64 {
 // implementation-defined: the largest value of the data type for an ascending
 // sequence, and -1 for a descending one (see min).
 //
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 7
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 6.a.i
+// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 7
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 6.a.i
 fn (s Sequence) max() i64 {
 	if s.has_max_value {
 		return s.max_value
@@ -157,7 +157,7 @@ fn (s Sequence) max() i64 {
 // reset is the first value of a new cycle: the minimum value of an ascending
 // sequence, or the maximum value of a descending one.
 //
-// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3.b
+// ISO/IEC 9075-2:2023(E), 9.35, Generation of the next value of a sequence generator, General Rules, 3.b
 fn (s Sequence) reset() i64 {
 	if s.increment_by > 0 {
 		return s.min()
@@ -168,8 +168,8 @@ fn (s Sequence) reset() i64 {
 
 // check is used by CREATE SEQUENCE and ALTER SEQUENCE.
 //
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 5 and 11
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 5.a.ii and 11
+// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 5 and 11
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 5.a.ii and 11
 fn (s Sequence) check() ! {
 	if s.increment_by == 0 {
 		return sqlstate_42601('INCREMENT BY must not be 0')
@@ -185,8 +185,8 @@ fn (s Sequence) check() ! {
 // WITH are between the MINVALUE and MAXVALUE (see check_in_range), so they are
 // too.
 //
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 10
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 10
+// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 10
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 10
 fn (s Sequence) check_data_type() ! {
 	min, max := s.type_range()
 	for name, value in {
@@ -204,8 +204,8 @@ fn (s Sequence) check_data_type() ! {
 
 // check_in_range is used for the START WITH and RESTART WITH values.
 //
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 12
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 12
+// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 12
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 12
 fn (s Sequence) check_in_range(name string, value i64) ! {
 	if value < s.min() {
 		return sqlstate_42601('${name} (${value}) must not be less than MINVALUE (${s.min()})')
@@ -220,7 +220,7 @@ fn (s Sequence) check_in_range(name string, value i64) ! {
 // if the sequence has gone past its limit. In that case "NEXT VALUE FOR" will
 // either start again (CYCLE) or raise an error.
 //
-// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3
+// ISO/IEC 9075-2:2023(E), 9.35, Generation of the next value of a sequence generator, General Rules, 3
 pub fn (s Sequence) next_value() ?i64 {
 	// A new sequence stores START WITH minus INCREMENT BY as the current_value,
 	// which can wrap around (for example, START WITH -9223372036854775808). So
@@ -239,7 +239,7 @@ pub fn (s Sequence) next_value() ?i64 {
 // CYCLE, it's 2200H (sequence generator limit exceeded) when there are no more
 // values.
 //
-// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 1-5
+// ISO/IEC 9075-2:2023(E), 9.35, Generation of the next value of a sequence generator, General Rules, 1-4
 fn (s Sequence) next() !Sequence {
 	next_value := s.next_value() or {
 		if !s.cycle {

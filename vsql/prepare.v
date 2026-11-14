@@ -49,8 +49,8 @@ type Stmt = AlterSequenceGeneratorStatement
 // A prepared statement isn't deallocated when an SQL-transaction ends, so it
 // can still be executed after a COMMIT or ROLLBACK.
 pub struct PreparedStmt {
-	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 11
-	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.f
+	// ISO/IEC 9075-2:2023(E), 17.7, <commit statement>, General Rules, 11
+	// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 2.f
 	stmt Stmt
 	// params can be set on the statement and will be merged with the extra
 	// params at execution time. If name collisions occur, the params provided
@@ -60,7 +60,7 @@ pub struct PreparedStmt {
 	// removed from the query before parsing since this keyword is not part of
 	// the SQL standard. It's a <direct implementation-defined statement>.
 	//
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, Syntax Rules, 2
 	explain bool
 	// writes is true if a query modifies the database, even though it would
 	// otherwise be read only. At the moment this is only when it contains a
@@ -182,7 +182,7 @@ pub fn (p PreparedStmt) dynamic_parameter_type(position int) ?Type {
 // (rather than a restricted data type attribute violation), which libvsql
 // checks for itself.
 //
-// ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, General Rules, 6.a, 6.c.ii, 6.c.ii.2.A and 6.c.ii.2.B
+// ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, General Rules, 6.a, 6.c.ii, 6.c.ii.2.A and 6.c.ii.2.B
 fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Value {
 	mut all_params := params.clone()
 	for k, v in p.params {
@@ -206,7 +206,7 @@ fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Val
 // statement> ("SELECT CURSOR"). EXPLAIN, DECLARE CURSOR, CREATE INDEX and DROP
 // INDEX aren't standard statements, so their codes are negative.
 pub fn (p PreparedStmt) command_function() (string, int) {
-	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.c to 2.e
+	// ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, General Rules, 2.c to 2.e
 	if p.explain {
 		return 'EXPLAIN', -1
 	}
@@ -317,7 +317,7 @@ fn is_name_resolution_error(err IError) bool {
 //
 // prepare does this, but not parse.
 //
-// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 6.c
+// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 6.c
 pub fn (mut p PreparedStmt) resolve_names() ! {
 	mut params := map[string]Value{}
 	for i in 1 .. p.dynamic_parameters + 1 {
@@ -408,9 +408,9 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 	// A statement that fails must not change anything, but the transaction it's
 	// in continues, unless the exception condition is a transaction rollback.
 	//
-	// ISO/IEC 9075-2:2016(E), 4.39.5, SQL-statement atomicity and statement execution contexts
-	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 18.b.i
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 8.b
+	// ISO/IEC 9075-2:2023(E), 4.41.5, SQL-statement atomicity and statement execution contexts
+	// ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 20.b.i
+	// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 8.b
 	p.c.take_isolation_error() or {}
 	p.c.finish_write(false) or {}
 
@@ -449,12 +449,12 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 11
-	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 1
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 1
-	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 1
-	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 2
-	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 2
+	// ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 12
+	// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>, General Rules, 1
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 1
+	// ISO/IEC 9075-2:2023(E), 14.14, <update statement: searched>, General Rules, 1
+	// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 2
+	// ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 2
 	if !p.explain && p.c.read_only && p.changes_database() {
 		return sqlstate_25006('cannot execute ${p.changes_database_name()}')
 	}

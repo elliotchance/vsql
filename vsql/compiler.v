@@ -28,7 +28,7 @@ mut:
 	// next_value_not_allowed is set to the clause being compiled (such as
 	// "WHERE") when it can't contain a NEXT VALUE FOR.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 2
 	next_value_not_allowed string
 	// case_operands is the fields of the case operand of each simple CASE that
 	// is being compiled (the innermost is last), see CaseOperand.
@@ -37,7 +37,7 @@ mut:
 	// A column reference must then be one of these, unless it's in the argument
 	// of an aggregate function (in_aggregate).
 	//
-	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 3
+	// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Conformance Rules, 3
 	grouping_columns ?[]Column
 	in_aggregate     bool
 	// aggregated_columns collects the column references in the argument of the
@@ -53,7 +53,7 @@ mut:
 	// A column reference must then be one of these columns of the select list,
 	// unless the whole sort key is also in the select list.
 	//
-	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.d
+	// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Syntax Rules, 26.d
 	distinct_columns ?[]Column
 	// result_columns is set when compiling an ORDER BY, see set_result_columns.
 	result_columns map[string][]ValueExpression
@@ -71,7 +71,7 @@ mut:
 	// CheckConstraintDefinition.columns). Since a parameter can't be used, it
 	// also can't be in the <table contents source> of a <table definition>.
 	//
-	// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023(E), 11.3, <table definition>, Syntax Rules, 4
 	restricted string
 	// retrospective is set while compiling the search condition of a CHECK, until
 	// it gets to something that isn't a <boolean value expression> that can be
@@ -85,7 +85,7 @@ mut:
 	// so a qualifier that doesn't have a schema or catalog must still be the table,
 	// whatever the current schema and catalog are now.
 	//
-	// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, Syntax Rules, 4
 	stored_definition bool
 }
 
@@ -108,7 +108,7 @@ struct AggregatedColumn {
 // still be a grouping column of its query. An aggregate function without any
 // column references is of this query, unless it's in a VALUES.
 //
-// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6 and 8
+// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 6 and 8
 fn (c Compiler) aggregation_scope() !int {
 	if c.aggregated_columns.len == 0 {
 		return c.aggregation_query or { -1 }
@@ -176,10 +176,10 @@ fn (mut c Compiler) set_grouping_columns(body SimpleTable) ! {
 // A CHECK constraint only has to be retrospectively deterministic, so a
 // comparison with CURRENT_DATE can be allowed (see compile_retrospective).
 //
-// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 5
-// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 10.d
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 7
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 10.d
+// ISO/IEC 9075-2:2023(E), 9.16, Potential sources of non-determinism, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 7
 fn (c Compiler) check_deterministic(what string) ! {
 	if c.restricted != '' {
 		return sqlstate_42601('${what} cannot be used in ${c.restricted}')
@@ -192,7 +192,7 @@ fn (c Compiler) check_deterministic(what string) ! {
 // or Y - Z. If it isn't exactly one of the functions, it's compiled the same as
 // any other comparand.
 //
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.ii
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 7.c.ii
 fn (mut c Compiler) compile_retrospective(e RowValueConstructorPredicand) !CompileResult {
 	y := e.pstr(c.params)
 	if y != 'CURRENT_DATE' && !(y.len == 'CURRENT_TIMESTAMP(0)'.len
@@ -223,7 +223,7 @@ fn (mut c Compiler) compile_retrospective(e RowValueConstructorPredicand) !Compi
 // of values was checked, so a prepared statement can still be described with a
 // NULL for each parameter whose type isn't known yet.
 //
-// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, Syntax Rules, 3
 fn (c Compiler) check_comparison(left Type, right Type, null_parameter bool) ! {
 	if null_parameter {
 		return
@@ -242,7 +242,7 @@ fn (c Compiler) check_comparison(left Type, right Type, null_parameter bool) ! {
 // a time zone is in the time zone of the session, so the result depends on the
 // session.
 //
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 7.g
+// ISO/IEC 9075-2:2023(E), 9.16, Potential sources of non-determinism, Syntax Rules, 1.ah
 fn (c Compiler) check_time_zone_comparison(left Type, right Type) ! {
 	if left.typ.is_datetime() && right.typ.is_datetime()
 		&& left.has_time_zone() != right.has_time_zone() {

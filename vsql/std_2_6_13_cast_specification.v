@@ -2,13 +2,13 @@ module vsql
 
 import strings
 
-// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>
+// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>
 //
 // Specify a data conversion.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.11, Data conversions
+// ISO/IEC 9075-2:2023(E), 4.13, Data conversions
 
 type CastOperand = NullSpecification | ValueExpression
 
@@ -61,13 +61,13 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xv
+	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xv
 	compiled_expr := c.with_type(e.expr.compile(mut c)!, e.target)
 
 	// A datetime without a time zone gets the time zone of the session, and a
 	// TIME becomes a TIMESTAMP on the CURRENT_DATE (General Rules 18 and 19).
 	//
-	// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 7.c
+	// ISO/IEC 9075-2:2023(E), 9.16, Potential sources of non-determinism, Syntax Rules, 1.d
 	from := compiled_expr.typ
 	if (e.target.has_time_zone() && !from.has_time_zone())
 		|| (from.typ in [.is_time_with_time_zone, .is_time_without_time_zone]
@@ -145,7 +145,7 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 // with a warning (01004) rather than an error, if the characters removed aren't
 // all spaces.
 //
-// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11 and 12
+// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 11 and 12
 fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 	mut s := v.string_value()
 	chars := s.runes()
@@ -172,7 +172,7 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 // trailing spaces are ignored, then the string must be a <boolean literal>
 // (TRUE, FALSE or UNKNOWN, in any case). UNKNOWN is the null value.
 //
-// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 21.a
+// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 21.a
 fn cast_character_to_boolean(v Value) !Value {
 	return match v.string_value().trim(' ').to_upper_ascii() {
 		'TRUE' { new_boolean_value(true) }
@@ -186,7 +186,7 @@ fn cast_character_to_boolean(v Value) !Value {
 // strings, it's an error (22018) if the target is too short, rather than being
 // truncated.
 //
-// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.f and 12.f
+// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 11.f and 12.f
 fn cast_boolean_to_character(mut conn Connection, v Value, to Type) !Value {
 	s := if v.bool_value() == .is_true { 'TRUE' } else { 'FALSE' }
 	if s.len > to.size {
@@ -202,7 +202,7 @@ fn cast_boolean_to_character(mut conn Connection, v Value, to Type) !Value {
 // (such as "DATE '2022-06-30'") for the target type. A time zone is added or
 // removed in the same way as casting between the datetime types.
 //
-// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 14.a, 16.a,
+// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 14.a, 16.a,
 // 17.a, 18.a and 19.a
 fn cast_string_to_datetime(mut conn Connection, v Value, to Type) !Value {
 	s := v.string_value().trim(' ')
@@ -229,7 +229,7 @@ fn cast_string_to_datetime(mut conn Connection, v Value, to Type) !Value {
 // datetime string. The keyword must be the one for the target type, so a DATE
 // literal can't be cast to a TIMESTAMP.
 //
-// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Format
+// ISO/IEC 9075-2:2023(E), 5.3, <literal>, Format
 fn unquote_datetime_literal(s string, keyword string) string {
 	if s.len < keyword.len || s[..keyword.len].to_upper() != keyword {
 		return s

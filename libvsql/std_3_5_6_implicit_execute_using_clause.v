@@ -297,7 +297,7 @@ fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 }
 
 // is_restricted_cast is true if a value of one type can't be CAST to the
-// other (ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, Syntax Rules, 6):
+// other (ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, Syntax Rules, 6):
 // a number, datetime or BOOLEAN can only be cast to the same kind of type (or
 // a character string), and a DATE and a TIME can't be cast to each other.
 fn is_restricted_cast(from vsql.SQLType, to vsql.SQLType) bool {

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 8.21, <search condition>
+// ISO/IEC 9075-2:2023(E), 8.21, <search condition>
 //
 // Specify a condition that is True, False, or Unknown, depending on the value
 // of a <boolean value expression>.
@@ -8,7 +8,7 @@ module vsql
 // A WhereOperation executes a condition on each row, only passing through rows
 // that evaluate to TRUE.
 //
-// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 7.12, <where clause>, General Rules, 2
 struct WhereOperation {
 	condition BooleanValueExpression
 	params    map[string]Value
@@ -61,7 +61,7 @@ fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params 
 		}
 		compiled << e.compile(mut c)!
 	}
-	// ISO/IEC 9075-2:2016(E), 8.21, <search condition>, General Rules, 1
+	// ISO/IEC 9075-2:2023(E), 8.21, <search condition>, General Rules, 1
 	v := compiled[0].run(mut conn, data, params)!
 
 	if v.typ.typ == .is_boolean {

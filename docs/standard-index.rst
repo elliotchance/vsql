@@ -37,9 +37,9 @@ when a newer edition (or another draft) of the same part is available:
      - ``ISO_IEC 9075-1 2003 WD Framework``
 
    * - 2 (Foundation)
-     - ISO/IEC 9075-2:2016(E)
-     - SQL:2016
-     - ``ISO_IEC 9075-2 2016 Foundation``
+     - ISO/IEC 9075-2:2023(E)
+     - SQL:2023
+     - ``ISO_IEC 9075-2 2023 Foundation``
 
    * - 3 (Call-Level Interface)
      - ISO/IEC 9075-3:2003(E)
@@ -56,7 +56,7 @@ the SHA-256 of the PDF that the index is generated from. The PDF in the folder
 can have any file name, but it must have that SHA-256.
 
 Every other document in ``standard_docs/`` is for reference only, such as
-ISO/IEC 9075-2:2023, the other SQL:2003 drafts and SQL/MM (ISO/IEC 13249). They
+ISO/IEC 9075-2:2016, the other SQL:2003 drafts and SQL/MM (ISO/IEC 13249). They
 can explain the background of a rule, but they are never cited, and vsql doesn't
 follow them where they differ from the pinned edition. Moving a part to another
 edition is a change of its own:
@@ -156,7 +156,7 @@ A citation of the standard in the code looks like:
 
 .. code-block:: text
 
-  ISO/IEC 9075-2:2016(E), 8.8, <null predicate>, General Rules, 2.a
+  ISO/IEC 9075-2:2023(E), 8.8, <null predicate>, General Rules, 2.a
 
 The title (``<null predicate>``) and the rules are optional. The title must be
 the title of the Subclause, or one of the ``<...>`` names in it (such as

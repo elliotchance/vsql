@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>
+// ISO/IEC 9075-2:2023(E), 6.12, <case expression>
 //
 // Specify a conditional value.
 
@@ -25,7 +25,7 @@ case_specification:
 
 // Without an ELSE, the ELSE is NULL.
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023(E), 6.12, <case expression>, Syntax Rules, 4
 
 simple_case:
   CASE case_operand simple_when_clause_list END {
@@ -75,7 +75,7 @@ else_clause:
 case_operand:
   row_value_predicand { $$.v = $1.v }
 
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Conformance Rules, 3
+// ISO/IEC 9075-2:2023(E), 6.12, <case expression>, Conformance Rules, 3
 when_operand_list:
   when_operand { $$.v = yy_box([$1.v as CaseWhenOperand]) }
 | when_operand_list comma when_operand {
@@ -86,12 +86,12 @@ when_operand_list:
 // Each <when operand> is a predicate with the <case operand> on the left (see
 // CaseOperand). A <row value predicand> is compared with =.
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2.f and 2.i
+// ISO/IEC 9075-2:2023(E), 6.12, <case expression>, Syntax Rules, 2.f and 2.i
 //
 // The predicates that vsql doesn't have (such as <overlaps predicate part 2>)
 // can't be a <when operand>.
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Conformance Rules, 2 and 4
+// ISO/IEC 9075-2:2023(E), 6.12, <caseexpression>, Conformance Rules, 2; ISO/IEC 9075-2:2023(E), 8.6, <similar predicate>, Conformance Rules, 1
 when_operand:
   row_value_predicand {
     flag_if(mut yylex, ($1.v as RowValueConstructorPredicand) is ExplicitRowValueConstructor,

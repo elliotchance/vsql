@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>
+// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>
 //
 // Specify a set of <row value expression>s to be constructed into a table.
 
@@ -48,7 +48,7 @@ mut:
 // is in the FROM of its query specification, which can't have an aggregate
 // function, so a VALUES there doesn't have one either.
 //
-// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6.a and 7
+// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 6.a and 7
 fn values_aggregation_query(conn &Connection) int {
 	if conn.in_derived_table || conn.subquery_scopes.len == 0 {
 		return -1
@@ -63,7 +63,7 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 	// see InsertStatement), but not in a VALUES that's a query. Use "SELECT
 	// NEXT VALUE FOR s FROM (VALUES 1) AS t" instead.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 1
 	mut c := Compiler{
 		conn:                   conn
 		params:                 params
@@ -74,14 +74,13 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 	// All rows must have the same number of columns, and each column has the
 	// combined type of that column in every row (9.5).
 	//
-	// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Syntax Rules, 1
-	// and 4
+	// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>, Syntax Rules, 1 and 3
 	mut compiled_rows := [][]CompileResult{}
 	for row in rows {
 		compiled_rows << row.compile_elements(mut c)!
 	}
 
-	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xix.1.B
+	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xix.1.B
 	compiled_rows = c.with_row_types(compiled_rows)
 
 	mut types := []Type{}
@@ -89,7 +88,7 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 
 		// An aggregate function of an outer query (which is a value here) is allowed.
 		//
-		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
+		// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 7
 		if compiled.any(it.contains_agg) {
 			return sqlstate_42601('an aggregate function cannot be used in VALUES')
 		}

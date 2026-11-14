@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>
+// ISO/IEC 9075-2:2023(E), 17.4, <set constraints mode statement>
 //
 // If an SQL-transaction is currently active, then set the constraint mode for
 // that SQL-transaction in the current SQL-session. If no SQL-transaction is
@@ -24,8 +24,8 @@ struct SetConstraintsModeStatement {
 // changes, so it's still deferred and checked again later. Outside of an
 // SQL-transaction, it's the constraint mode of the next one.
 //
-// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
-// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>, General Rules, 2 and 3
+// ISO/IEC 9075-2:2023(E), 4.25.2, Checking of constraints
+// ISO/IEC 9075-2:2023(E), 17.4, <set constraints mode statement>, General Rules, 2 and 3
 fn (stmt SetConstraintsModeStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
@@ -73,7 +73,7 @@ fn (stmt SetConstraintsModeStatement) explain(mut _ Connection, _ map[string]Val
 // constraint that has the name, which can be qualified by its schema and
 // catalog.
 //
-// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 17.4, <set constraints mode statement>, Syntax Rules, 1
 fn (mut conn Connection) find_constraint(name Identifier) !(&CatalogConnection, Table, ConstraintCharacteristics) {
 	resolved := conn.resolve_identifier(name)
 	mut catalog := conn.catalogs[resolved.catalog_name] or {

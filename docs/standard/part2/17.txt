@@ -1,4 +1,4 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023(E)
 # id status code tests note (see docs/standard-index.rst)
 # 17, Transaction management
 17                       container    - -
@@ -46,7 +46,10 @@
 17.3/SR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.3/SR/7                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql it's 100
 17.3/CR/1                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
-17.3/CR/2                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_2_17_2_set_transaction.sql
+17.3/CR/2                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
+17.3/CR/3                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
+17.3/CR/4                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
+17.3/CR/5                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_2_17_2_set_transaction.sql
 # 17.4, <set constraints mode statement>
 17.4                     implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
 17.4/SR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql

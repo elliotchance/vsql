@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>
+// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>
 //
 // Define an externally-invoked procedure.
 //
@@ -9,8 +9,8 @@ module vsql
 //
 // The concepts are also described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.32, Externally-invoked procedures
-// ISO/IEC 9075-2:2016(E), 4.35, Host parameters
+// ISO/IEC 9075-2:2023(E), 4.34, Externally-invoked procedures
+// ISO/IEC 9075-2:2023(E), 4.37, Host parameters
 
 struct ExternallyInvokedProcedure {
 	// The name, and the names of the host parameters, are kept as they were
@@ -41,7 +41,7 @@ fn (mut t ModuleTokens) procedure_declaration() !ExternallyInvokedProcedure {
 		if t.accept('SQLSTATE') {
 			// There must be exactly one status parameter.
 			//
-			// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 7
+			// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 7
 			if has_status {
 				return sqlstate_42601('procedure ${name}: SQLSTATE can only be used once')
 			}
@@ -53,7 +53,7 @@ fn (mut t ModuleTokens) procedure_declaration() !ExternallyInvokedProcedure {
 
 			// Each host parameter has a different name.
 			//
-			// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 2
+			// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 2
 			for p in parameters {
 				if p.name.to_upper() == parameter.to_upper() {
 					return sqlstate_42601('procedure ${name}: host parameter :${parameter} is declared more than once')
@@ -98,7 +98,7 @@ fn (p ExternallyInvokedProcedure) parameter(name string) ?HostParameterDeclarati
 // parameter is from Table 20, "Data type correspondences for C". A C compiler
 // checks that a call has an argument of the right type for each parameter.
 //
-// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 6 and 11
+// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 6 and 11
 fn (p ExternallyInvokedProcedure) c_prototype() string {
 	mut parameters := []string{}
 	for parameter in p.parameters {
@@ -107,7 +107,7 @@ fn (p ExternallyInvokedProcedure) c_prototype() string {
 		} else {
 			// An SQLSTATE host parameter is a char with length 6.
 			//
-			// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 11.a
+			// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 11.a
 			parameters << 'char SQLSTATE[6]'
 		}
 	}
@@ -120,7 +120,7 @@ fn (p ExternallyInvokedProcedure) c_prototype() string {
 // parameter) is cast to void, so that the C compiler doesn't warn about it. The
 // status parameter is always an output host parameter.
 //
-// ISO/IEC 9075-2:2016(E), 9.8, Host parameter mode determination, Syntax Rules, 3.a and 3.b.v
+// ISO/IEC 9075-2:2023(E), 9.8, Host parameter mode determination, Syntax Rules, 3.a and 3.b.v
 fn (p ExternallyInvokedProcedure) c_function() string {
 	mut s := '${p.c_prototype()} {\n'
 	used := p.statement.parameters

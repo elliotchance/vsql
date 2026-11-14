@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.5, <default clause>
+// ISO/IEC 9075-2:2023(E), 11.5, <default clause>
 //
 // Specify the default for a column, domain, or attribute.
 
@@ -42,7 +42,7 @@ fn (o DefaultOption) compile(mut c Compiler) !CompileResult {
 // datetime value function doesn't have to be the same, since the value is
 // assigned to the column.
 //
-// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, Syntax Rules, 4.b and 4.d
+// ISO/IEC 9075-2:2023(E), 11.5, <default clause>, Syntax Rules, 4.b and 4.d
 fn check_default_clause(mut conn Connection, column Column) ! {
 	default_value := column.default_value or { return }
 	mut c := Compiler{
@@ -79,7 +79,7 @@ fn check_default_clause(mut conn Connection, column Column) ! {
 // fields and time zone fields, and can't have more fractional seconds than the
 // column.
 //
-// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, Syntax Rules, 4.a
+// ISO/IEC 9075-2:2023(E), 11.5, <default clause>, Syntax Rules, 4.a
 fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
 	return match t.typ {
 		.is_boolean {

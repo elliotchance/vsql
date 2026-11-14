@@ -2,14 +2,14 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>
 //
 // Create new rows in a table.
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.15.6, Table updatability
-// ISO/IEC 9075-2:2016(E), 4.15.10, Operations involving tables
+// ISO/IEC 9075-2:2023(E), 4.17.6, Table updatability
+// ISO/IEC 9075-2:2023(E), 4.17.10, Operations involving tables
 
 // overriding is the <override clause>, which is 'USER' (OVERRIDING USER
 // VALUE), 'SYSTEM' (OVERRIDING SYSTEM VALUE), or empty when it's not given. The
@@ -30,7 +30,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 
 	// No column can be listed more than once.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 8
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 8
 	mut insert_columns := map[string]bool{}
 	for column in stmt.columns {
 		if column.sub_entity_name in insert_columns {
@@ -51,7 +51,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	// Without an <insert column list>, it's every column in the order of the
 	// table.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 7
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 7
 	columns := if stmt.columns.len > 0 { stmt.columns } else { table.columns.map(it.name) }
 	stmt.check_override_clause(table, columns)!
 
@@ -61,14 +61,14 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	// reason, a query that reads from the table doesn't see the new rows. A
 	// generated column is set from the other columns of its row.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 5, 6, 7 and 8.a
-	// ISO/IEC 9075-2:2016(E), 15.10, Effect of inserting tables into base tables, General Rules, 5.a and 5.c
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 5, 6, 7 and 8.a
+	// ISO/IEC 9075-2:2023(E), 15.11, Effect of inserting tables into base tables, General Rules, 6.a and 8
 	check_constraints := new_check_constraints(mut conn, table)!
 	generated_columns := new_generated_columns(mut conn, table)!
 	// DEFAULT VALUES is the same as a VALUES of one row that's DEFAULT for
 	// every column of the table.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 6
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 6
 	row_values := if query := stmt.query {
 		stmt.query_rows(mut conn, params, table, columns, query)!
 	} else if stmt.from_default {
@@ -94,7 +94,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	catalog.storage.check_unique_constraints(table, rows)!
 	catalog.storage.check_foreign_keys(mut conn, table, rows)!
 
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 9
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 9
 	if rows.len == 0 {
 		conn.add_warning(sqlstate_02000())
 	}
@@ -125,7 +125,7 @@ fn row_elements(row_value ContextuallyTypedRowValueConstructor) []ContextuallyTy
 // start of a query (see insert_query). Only a <from constructor> can contain a
 // NULL or DEFAULT on its own, because they get their type from the column.
 //
-// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Format
+// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>, Format
 fn row_value_constructors(rows []ContextuallyTypedRowValueConstructor) ![]RowValueConstructor {
 	mut constructors := []RowValueConstructor{}
 	for row in rows {
@@ -155,7 +155,7 @@ fn row_value_constructors(rows []ContextuallyTypedRowValueConstructor) ![]RowVal
 // the query having any rows. A GENERATED ALWAYS identity column can only be
 // assigned from a query with an <override clause>.
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 11.b.i, 13 and 14
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 13.d.i, 15 and 16
 fn (stmt InsertStatement) query_rows(mut conn Connection, params map[string]Value, table Table, columns []Identifier, query QueryExpression) ![][]ContextuallyTypedRowValueConstructorElement {
 	mut plan := create_plan(query, params, mut conn)!
 	query_columns := plan.columns()
@@ -197,7 +197,7 @@ fn query_value(value Value) ContextuallyTypedRowValueConstructorElement {
 // check_insert_degree returns an error if a row doesn't have one value for each
 // column.
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 13
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 15
 fn check_insert_degree(columns int, values int) ! {
 	if columns < values {
 		return sqlstate_42601('INSERT has more values than columns')
@@ -213,7 +213,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 	// Each row must have a value for each column, so they all have the same
 	// degree.
 	//
-	// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>, Syntax Rules, 2
 	check_insert_degree(columns.len, values.len)!
 
 	mut row := map[string]Value{}
@@ -225,9 +225,9 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 		// isn't used. In both cases, it's set once the other columns are known
 		// (see GeneratedColumns.apply).
 		//
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 10
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 7.c
-		// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, General Rules, 3.a
+		// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 11.b.ii
+		// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 7.c
+		// ISO/IEC 9075-2:2023(E), 11.5, <default clause>, General Rules, 3.a
 		if table_column.generated != none {
 			if stmt.query == none && !is_default_specification(values[i]) {
 				return sqlstate_428c9(column.sub_entity_name)
@@ -239,9 +239,9 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 		// unless there's an <override clause>. OVERRIDING USER VALUE ignores the
 		// value, so the column gets the next value (4.15.12).
 		//
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 11.b
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 7.e
-		// ISO/IEC 9075-2:2016(E), 15.10, Effect of inserting tables into base tables, General Rules, 2.a
+		// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 13.d
+		// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 7.e
+		// ISO/IEC 9075-2:2023(E), 15.11, Effect of inserting tables into base tables, General Rules, 3.a
 		mut value := values[i]
 		if identity := table_column.identity {
 			if identity.always && stmt.overriding == '' && !is_default_specification(value) {
@@ -258,7 +258,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 
 	// A column that isn't listed gets its default.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 7.a
+	// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 7.a
 	for col in table.columns {
 		if col.name.sub_entity_name !in row && col.generated == none {
 			row[col.name.sub_entity_name] = insert_value(mut conn, params, table, col,
@@ -274,7 +274,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 // the identity column, and only OVERRIDING USER VALUE can be used for a
 // GENERATED BY DEFAULT identity column.
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 11.c and 11.e
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 13.c and 13
 fn (stmt InsertStatement) check_override_clause(table Table, columns []Identifier) ! {
 	if stmt.overriding == '' {
 		return
@@ -296,8 +296,8 @@ fn (stmt InsertStatement) check_override_clause(table Table, columns []Identifie
 // insert_value returns the value to store in a column of the table, which may
 // be DEFAULT. Its type is the type of the column.
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 12 and 14
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 7.c
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 14 and 16
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 7.c
 fn insert_value(mut conn Connection, params map[string]Value, table Table, column Column, element ContextuallyTypedRowValueConstructorElement) !Value {
 	column_name := column.name.sub_entity_name
 	mut c := Compiler{
@@ -310,7 +310,7 @@ fn insert_value(mut conn Connection, params map[string]Value, table Table, colum
 
 	// There's no query for an aggregate function to be calculated by.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
+	// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 7
 	compiled := element.compile(mut c)!
 	if compiled.contains_agg {
 		return sqlstate_42601('an aggregate function cannot be used in VALUES')

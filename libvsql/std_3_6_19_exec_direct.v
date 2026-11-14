@@ -122,7 +122,7 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 
 	// - 7.a. If P doesn't conform to a <preparable statement>, then an
 	// exception condition is raised: syntax error or access rule violation
-	// (see ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, Format). A cursor
+	// (see ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, Format). A cursor
 	// is opened by executing a query, and a connection is made by SQLConnect.
 	if stmt.diag.dynamic_function in ['DECLARE CURSOR', 'OPEN', 'FETCH', 'CLOSE CURSOR', 'CONNECT',
 		'SET CONNECTION', 'DISCONNECT'] {
@@ -171,7 +171,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// so it can't be changed by a <set transaction statement>.
 	//
 	// ISO/IEC 9075-3:2003(E), 6.61, StartTran, General Rules, 10
-	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i
+	// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 1.a.i
 	if stmt.diag.dynamic_function == 'SET TRANSACTION' && !conn.in_transaction()
 		&& start_tran_pending(handle_env(sql_handle_stmt, stmt.handle)) {
 		return cli_error('25001', 'active SQL-transaction')
@@ -181,7 +181,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// A <set transaction statement> doesn't initiate an SQL-transaction, it sets
 	// the characteristics of the next one, which is started here.
 	//
-	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i and 7
+	// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 1.a.i and 7
 	if !conn.in_transaction() && stmt.diag.dynamic_function != 'SET TRANSACTION' {
 		db_query(mut conn, 'START TRANSACTION ${conn.next_transaction_characteristics()}')!
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }

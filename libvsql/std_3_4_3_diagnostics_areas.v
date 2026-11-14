@@ -145,7 +145,7 @@ fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
 // return code of a statement that succeeded (see no_data), even if there were
 // warnings too.
 //
-// ISO/IEC 9075-2:2016(E), 4.36, Diagnostics area
+// ISO/IEC 9075-2:2023(E), 4.38, Diagnostics area
 // ISO/IEC 9075-3:2003(E), 4.1, Introduction to SQL/CLI
 // ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules, 5.b.ii
 fn (mut d Diagnostics) statement_warnings(conn &vsql.Connection, failed bool) {

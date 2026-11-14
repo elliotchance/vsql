@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.12, <where clause>
+// ISO/IEC 9075-2:2023(E), 7.12, <where clause>
 //
 // Specify a table derived by the application of a <search condition> to the
 // result of the preceding <from clause>.

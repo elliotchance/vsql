@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
+// ISO/IEC 9075-2:2023(E), 13.4, <SQL procedure statement>
 //
 // Define all of the SQL-statements that are <SQL procedure statement>s.
 //
@@ -161,12 +161,12 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 		// statement is checked against the cursor (when it's executed) like
 		// any other positioned DELETE or UPDATE.
 		//
-		// ISO/IEC 9075-2:2016(E), 14.8, <delete statement: positioned>, Syntax Rules, 1
-		// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 1
-		// ISO/IEC 9075-2:2016(E), 20.23, <dynamic delete statement: positioned>, Syntax Rules, 2
-		// ISO/IEC 9075-2:2016(E), 20.23, <dynamic delete statement: positioned>, General Rules, 1 to 6
-		// ISO/IEC 9075-2:2016(E), 20.24, <dynamic update statement: positioned>, Syntax Rules, 2
-		// ISO/IEC 9075-2:2016(E), 20.24, <dynamic update statement: positioned>, General Rules, 1 to 8
+		// ISO/IEC 9075-2:2023(E), 14.8, <delete statement: positioned>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023(E), 14.13, <update statement: positioned>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023(E), 20.23, <dynamic delete statement: positioned>, Syntax Rules, 2
+		// ISO/IEC 9075-2:2023(E), 20.23, <dynamic delete statement: positioned>, General Rules, 1 to 6
+		// ISO/IEC 9075-2:2023(E), 20.24, <dynamic update statement: positioned>, Syntax Rules, 2
+		// ISO/IEC 9075-2:2023(E), 20.24, <dynamic update statement: positioned>, General Rules, 1 to 8
 		DeleteStatementPositioned {
 			cursor := find_module_cursor(cursors, stmt.cursor_name, p)!
 			execute_statement(text_sql, references, p, if cursor.statement == '' {
@@ -198,7 +198,7 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 // READ WRITE when there isn't one, except for READ UNCOMMITTED, which is READ
 // ONLY (17.3, <transaction characteristics>, Syntax Rules, 4).
 //
-// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 2 to 5
+// ISO/IEC 9075-2:2023(E), 17.1, <start transaction statement>, General Rules, 2 to 5
 fn start_transaction_statement(stmt StartTransactionStatement, text_sql string) ModuleStatement {
 	mut access := ''
 	mut level := 'SQL_TRANSACTION_SERIALIZABLE'
@@ -242,7 +242,7 @@ fn start_transaction_statement(stmt StartTransactionStatement, text_sql string) 
 // COMMAND_FUNCTION_CODE from Table 37, "SQL-statement codes". They're empty for
 // a statement that libvsql executes, which gives them.
 //
-// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 6
+// ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 7
 fn begin(command_function string, code int) string {
 	return '  vsql_m_begin(${c_string(command_function)}, ${code});\n'
 }
@@ -304,9 +304,9 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 		// is an indicator parameter of the implied module. When the value is
 		// stored, only -1 is NULL and anything less than -1 is an error.
 		//
-		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1 and 9
-		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, General Rules, 4 and 19
-		// ISO/IEC 9075-2:2016(E), 9.2, Store assignment, General Rules, 3.a.ii and 3.a.iii
+		// ISO/IEC 9075-2:2023(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1 and 9
+		// ISO/IEC 9075-2:2023(E), 6.4, <value specification> and <target specification>, General Rules, 4 and 19
+		// ISO/IEC 9075-2:2023(E), 9.2, Store assignment, General Rules, 3.a.ii and 3.a.iii
 		if reference.indicator != '' {
 			indicator := p.indicator(reference.indicator)!
 			b.used << indicator.name.to_upper()
@@ -414,7 +414,7 @@ fn host_parameter_of(e ValueExpression) ?string {
 // indicator is the host parameter of an <indicator parameter>, which must be
 // an exact numeric.
 //
-// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1
 fn (p ExternallyInvokedProcedure) indicator(name string) !HostParameterDeclaration {
 	indicator := p.reference(name)!
 	indicator_type := indicator.typ or { HostParameterType{} }
@@ -428,7 +428,7 @@ fn (p ExternallyInvokedProcedure) indicator(name string) !HostParameterDeclarati
 // reference is the host parameter for a <host parameter name> in the
 // statement, which must be declared.
 //
-// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 3
 fn (p ExternallyInvokedProcedure) reference(name string) !HostParameterDeclaration {
 	return p.parameter(name) or {
 		return sqlstate_42601('procedure ${p.name}: host parameter :${name} is not declared')
@@ -441,7 +441,7 @@ fn (p ExternallyInvokedProcedure) reference(name string) !HostParameterDeclarati
 // Each of them is an input host parameter (and also an output host parameter
 // if it's a target too).
 //
-// ISO/IEC 9075-2:2016(E), 9.8, Host parameter mode determination, Syntax Rules, 3.b.ii and 3.b.iv
+// ISO/IEC 9075-2:2023(E), 9.8, Host parameter mode determination, Syntax Rules, 3.b.ii and 3.b.iv
 fn rewrite_host_parameters(text string, p ExternallyInvokedProcedure) !(string, []HostParameterReference) {
 	return replace_host_parameters(text, fn [p] (name string) !string {
 		typ := p.reference(name)!.typ or { HostParameterType{} }

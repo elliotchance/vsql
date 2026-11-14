@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 24.1, SQLSTATE
+// ISO/IEC 9075-2:2023(E), 24.1, SQLSTATE
 //
 // The SQL standard is pretty flexible on the individual codes, so I've copied
 // the relevant errors code from the definitions in PostgreSQL:
@@ -85,7 +85,7 @@ pub fn violated_constraint(err IError) ?Identifier {
 // unknown column. It's none for any other error, and its parts are empty if
 // the condition doesn't know them.
 //
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii
+// ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii
 // ISO/IEC 9075-3:2003(E), 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
 pub fn condition_table(err IError) ?Identifier {
 	return match err {
@@ -124,7 +124,7 @@ fn (err SQLState) code() int {
 // also been changed by another statement while a cursor is open. cursor_name is
 // the cursor that caused it.
 //
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.e
+// ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, General Rules, 4.e
 struct SQLState01001 {
 	SQLState
 	cursor_name string

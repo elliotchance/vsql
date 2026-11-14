@@ -1,13 +1,13 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>
 //
 // Specify direct execution of SQL.
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.31, Direct invocation of SQL
-// ISO/IEC 9075-2:2016(E), 4.39, SQL-statements
+// ISO/IEC 9075-2:2023(E), 4.33, Direct invocation of SQL
+// ISO/IEC 9075-2:2023(E), 4.41, SQL-statements
 
 // DirectOptions are the options for Connection.direct.
 @[params]
@@ -32,7 +32,7 @@ pub:
 // explains. A query can't have an <updatability clause> (see
 // check_direct_query).
 //
-// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 1, 5.c.ii, 5.c.vi, 7, 8.a and 9
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 2, 6.b.i and 8.a; ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 13.a and 22
 pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Result {
 	text := direct_statement_text(sql_stmt)!
 	tokens := tokenize(text)!
@@ -43,8 +43,8 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 	// The SQL-transaction has the characteristics of a SET TRANSACTION. Each
 	// constraint has its initial constraint mode, rather than immediate.
 	//
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.iii.1.A, 5.c.iii.1.B and 5.c.iii.2
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.iii.2.B to 5.c.iii.2.D
+	// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 6.b.ii.1.A, 6.b.ii.1.B and 6.b.ii.2
+	// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 6.b.ii.2.B to 5.c.iii.2.D
 	if !options.autocommit && !conn.in_transaction() && prepared.is_transaction_initiating() {
 		if !prepared.writes && prepared.stmt is QueryExpression {
 			// Starting the transaction would take the isolation lock, which
@@ -103,7 +103,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 
 	// The rows of a query are the rows of the Result.
 	//
-	// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, General Rules, 2.a and 2.b
+	// ISO/IEC 9075-2:2023(E), 22.2, <direct select statement: multiple rows>, General Rules, 2.a and 2.b
 	if prepared.stmt is QueryExpression && !prepared.explain && result.rows.len == 0 {
 		conn.add_warning(sqlstate_02000())
 	}
@@ -116,7 +116,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 // docs), sorted and without duplicates. The statement is only parsed, not
 // executed.
 //
-// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, Conformance Rules, 1
 pub fn direct_features(sql_stmt string) ![]string {
 	mut stack := []YYSymType{}
 	stmt, _, tokens, features := parse_sql(direct_statement_text(sql_stmt)!, mut stack)!
@@ -129,7 +129,7 @@ pub fn direct_features(sql_stmt string) ![]string {
 // direct_statement_text returns the statement of a <direct SQL statement>. The
 // <semicolon> is part of the <direct SQL statement>.
 //
-// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.a
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 6.a
 fn direct_statement_text(sql_stmt string) !string {
 	statements, rest := split_terminated_statements(sql_stmt)
 	if statements.len != 1 || rest != '' {
@@ -142,7 +142,7 @@ fn direct_statement_text(sql_stmt string) !string {
 // check_direct_query is an error for a query that has an <updatability
 // clause>, which is only for a cursor (see PreparedStmt.open_cursor).
 //
-// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 1
 fn check_direct_query(stmt Stmt) ! {
 	if stmt is QueryExpression && stmt.updatability != none {
 		return sqlstate_42601('FOR READ ONLY and FOR UPDATE can only be used for a cursor')
@@ -152,8 +152,8 @@ fn check_direct_query(stmt Stmt) ! {
 // check_direct_parameters is an error for a "?" or a host parameter, since
 // there is nothing to provide the value.
 //
-// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, Syntax Rules, 1
 fn check_direct_parameters(tokens []Token) ! {
 	if tokens.any(it.token in [token_operator_question_mark, token_operator_colon]) {
 		return sqlstate_42601('a direct SQL statement cannot contain a parameter')
@@ -166,8 +166,8 @@ fn check_direct_parameters(tokens []Token) ! {
 // SET TRANSACTION don't start one. A query is a <direct select statement:
 // multiple rows>, which starts one.
 //
-// ISO/IEC 9075-2:2016(E), 4.39.4, SQL-statements and transaction states
-// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 1.a and 1.b
+// ISO/IEC 9075-2:2023(E), 4.41.4, SQL-statements and transaction states
+// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 2.a and 2.b
 // is_chain is true for a COMMIT or ROLLBACK with AND CHAIN.
 fn (p PreparedStmt) is_chain() bool {
 	stmt := p.stmt
@@ -192,7 +192,7 @@ fn (p PreparedStmt) is_transaction_initiating() bool {
 }
 
 // is_active is true when the connection is an active SQL-connection
-// (ISO/IEC 9075-2:2016(E), 4.42), which is when it has an SQL-transaction,
+// (ISO/IEC 9075-2:2023(E), 4.44), which is when it has an SQL-transaction,
 // including one that Connection.direct hasn't started in storage yet.
 fn (conn Connection) is_active() bool {
 	return conn.in_transaction() || conn.direct_query_transaction

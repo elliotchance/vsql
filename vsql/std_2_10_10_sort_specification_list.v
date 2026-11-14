@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>
+// ISO/IEC 9075-2:2023(E), 10.10, <sort specification list>
 //
 // Specify a sort order.
 

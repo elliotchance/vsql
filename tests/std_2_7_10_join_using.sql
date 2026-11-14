@@ -1,4 +1,4 @@
--- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10
+-- # ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 10
 /* setup */
 CREATE TABLE t (x INTEGER, a INTEGER);
 CREATE TABLE u (x INTEGER, b INTEGER);
@@ -129,7 +129,7 @@ EXPLAIN SELECT * FROM t WHERE EXISTS (SELECT * FROM u AS p JOIN u AS q USING (x,
 -- EXPLAIN: WHERE EXISTS (SELECT * FROM U AS P INNER JOIN U AS Q USING (X, B))
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.X INTEGER, ":memory:".PUBLIC.T.A INTEGER)
 
--- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.c
+-- # ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 10.c
 -- # Each name in the list must name exactly one column on each side, and can
 -- # only be listed once. The list can't be empty.
 SELECT * FROM t JOIN u USING (nope);
@@ -260,7 +260,7 @@ SELECT * FROM only1 LEFT JOIN only2 USING (k) ORDER BY k;
 SELECT only2.* FROM only1 LEFT JOIN only2 USING (k);
 -- error 42601: syntax error: the select list has no columns
 
--- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.e and 10.j
+-- # ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 10.e and 10.j
 -- # The common columns must be comparable. The common column has a type that
 -- # fits both sides, so a BIGINT value isn't cut down to INTEGER. CHARACTER
 -- # and VARCHAR, or SMALLINT and DOUBLE PRECISION, can be compared.
@@ -294,7 +294,7 @@ SELECT f FROM types1 JOIN types2 USING (f) WHERE f = 1 OR f > 100;
 SELECT CAST(f AS BIGINT) FROM types1 RIGHT JOIN types2 USING (f) WHERE f > 100;
 -- COL1: 5000000000
 
--- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 15.c
+-- # ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 14.c
 -- # The common column is NOT NULL when a side that the join never fills with
 -- # NULLs has it NOT NULL. Other NOT NULL columns of a side that an outer
 -- # join can fill with NULLs become nullable.

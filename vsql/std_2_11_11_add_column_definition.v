@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>
+// ISO/IEC 9075-2:2023(E), 11.11, <add column definition>
 //
 // Add a column to a table.
 
@@ -25,8 +25,8 @@ struct AddColumnDefinition {
 // with at most one row, and a REFERENCES column with a default to a table
 // whose rows can all reference that default.
 //
-// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>, Syntax Rules, 3
-// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>, General Rules, 1, 2 and 4
+// ISO/IEC 9075-2:2023(E), 11.11, <add column definition>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023(E), 11.11, <add column definition>, General Rules, 1, 2 and 4
 fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table, params map[string]Value) ! {
 	mut elements := table.elements()
 	elements << d.column_definition

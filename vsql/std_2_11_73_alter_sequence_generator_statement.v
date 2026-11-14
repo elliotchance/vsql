@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 11.73, <alter sequence generator statement>
+// ISO/IEC 9075-2:2023(E), 11.73, <alter sequence generator statement>
 //
 // Change the definition of an external sequence generator.
 
@@ -24,7 +24,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	name := conn.resolve_schema_identifier(stmt.name)!
 	check_writable_schema(name)!
 	mut catalog := conn.catalog_for(name)
-	// ISO/IEC 9075-2:2016(E), 11.73, <alter sequence generator statement>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 11.73, <alter sequence generator statement>, Syntax Rules, 2
 	old_sequence := catalog.storage.sequence(name)!
 	sequence := alter_sequence(mut conn, params, old_sequence, stmt.options)!
 	catalog.storage.update_sequence(old_sequence, sequence)!
@@ -41,8 +41,8 @@ fn (stmt AlterSequenceGeneratorStatement) explain(mut _ Connection, _ map[string
 // are the implicit limits for the (new) direction of the sequence, see
 // Sequence.min and Sequence.max.
 //
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 5-9
-// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 5-9
+// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, General Rules, 2
 fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Sequence, options []SequenceGeneratorOption) !Sequence {
 	mut sequence := old_sequence.copy()
 	mut c := Compiler{
@@ -102,7 +102,7 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 	// A limit that isn't changed stays the same, even when it was implicit and
 	// INCREMENT BY changes the direction of the sequence.
 	//
-	// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 6.b and 7.b
+	// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 6.b and 7.b
 	if (old_sequence.increment_by > 0) != (sequence.increment_by > 0) {
 		if !new_min_value && !old_sequence.has_min_value {
 			sequence.has_min_value = true
@@ -122,8 +122,8 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 	// must be adjusted for the new INCREMENT BY. These wrap around like add_i64,
 	// see Sequence.next.
 	//
-	// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 9
-	// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, General Rules, 2.e
+	// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 9
+	// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, General Rules, 2.e
 	if v := restart_value {
 		sequence.check_in_range(restart_name, v)!
 		sequence.current_value = i64(u64(v) - u64(sequence.increment_by))
@@ -144,7 +144,7 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 		// checked against limits that aren't changed, so CYCLE or NO MAXVALUE can
 		// revive a sequence that has gone past its limit.
 		//
-		// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 12
+		// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 12
 		if has_next && new_min_value && next_value < sequence.min() {
 			return sqlstate_42601('MINVALUE (${sequence.min()}) must not be greater than the next value (${next_value})')
 		}

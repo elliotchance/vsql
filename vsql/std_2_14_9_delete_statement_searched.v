@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>
+// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>
 //
 // Delete rows of a table.
 
@@ -43,10 +43,10 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	// The rows where the search condition is true are deleted. A positioned
 	// DELETE only deletes the current row of its cursor.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 5, 6.b and 8.a
-	// ISO/IEC 9075-2:2016(E), 15.7, Effect of deleting rows from base tables, General Rules, 7
-	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 11.a
-	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 15.b
+	// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>, General Rules, 5, 6.b and 8.a
+	// ISO/IEC 9075-2:2023(E), 15.8, Effect of deleting rows from base tables, General Rules, 8
+	// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 11.a
+	// ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 16.b
 	mut deleted := []Row{}
 	for row in rows {
 		// for_storage() here is important because it will strip the qualified
@@ -65,7 +65,7 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 
 	// A positioned DELETE of a row that has already been deleted isn't no data.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 10
+	// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>, General Rules, 10
 	if rows.len == 0 && stmt.current_of == none {
 		conn.add_warning(sqlstate_02000())
 	}

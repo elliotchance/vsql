@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>
 //
 // Create new rows in a table.
 
@@ -53,7 +53,7 @@ from_subquery:
 // same as query_expression, except that the first <query primary> is
 // insert_query_primary.
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 16
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Syntax Rules, 18
 insert_query:
   insert_query_expression {
     flag_query_expression(mut yylex, $1.v as QueryExpression, .from_subquery)
@@ -113,7 +113,7 @@ insert_query_primary:
     $$.v = yy_box(new_parenthesized_query_expression($1.v as QueryExpression))
   }
 | contextually_typed_table_value_constructor {
-    // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 5
+    // ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Conformance Rules, 5
     flag(mut yylex, 'F661')
     $$.v = yy_box(SimpleTable(row_value_constructors($1.v as []ContextuallyTypedRowValueConstructor)!))
   }
@@ -149,7 +149,7 @@ from_constructor:
 // A <from default> inserts one row where every column gets its default.
 from_default:
   DEFAULT VALUES {
-    // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 2
+    // ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Conformance Rules, 2
     flag(mut yylex, 'F222')
     $$.v = yy_box(InsertStatement{
       from_default: true

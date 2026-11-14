@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>
+// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>
 //
 // Return the next value of a sequence generator.
 
@@ -14,7 +14,7 @@ fn (e NextValueExpression) pstr(_ map[string]Value) string {
 }
 
 fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 2
 	if c.distinct {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in SELECT DISTINCT')
 	}
@@ -26,11 +26,11 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 	// condition, sort key or aggregate argument is evaluated, so it can only be
 	// used where it's evaluated once for each row of the result.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 2
 	if c.next_value_not_allowed != '' {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in ${c.next_value_not_allowed}')
 	}
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 1
 	if c.conn.next_value_not_allowed != '' {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in ${c.conn.next_value_not_allowed}')
 	}
@@ -48,7 +48,7 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 
 	// The value has the data type of the sequence.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 3
 	typ := catalog.storage.sequence(name)!.typ
 
 	return CompileResult{
@@ -99,8 +99,8 @@ fn sequence_value_key(sequence string) string {
 // the sort doesn't change how many values are used. A sort key can only use a
 // NEXT VALUE FOR through the name of a column of the result.
 //
-// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
-// ISO/IEC 9075-2:2016(E), 4.27.2, Operations involving sequence generators
+// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023(E), 4.29.2, Operations involving sequence generators
 struct SequenceValuesOperation {
 	params  map[string]Value
 	exprs   []ValueExpression

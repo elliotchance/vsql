@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>
+// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>
 //
 // Terminate the current SQL-transaction with rollback, or rollback all actions
 // affecting SQL-data and/or schemas since the establishment of a savepoint.
@@ -14,7 +14,7 @@ import time
 struct RollbackStatement {
 	// chain is AND CHAIN. Without it, or with AND NO CHAIN, it's false.
 	//
-	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, Syntax Rules, 2
 	chain bool
 	// savepoint is the name of the TO SAVEPOINT, which is empty without it.
 	savepoint string
@@ -24,7 +24,7 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 	t := start_timer()
 
 	if stmt.savepoint != '' {
-		// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, Syntax Rules, 1
 		if stmt.chain {
 			return sqlstate_42601('AND CHAIN cannot be used with TO SAVEPOINT')
 		}
@@ -42,13 +42,13 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 	characteristics := conn.current_characteristics()
 	constraint_modes := conn.constraint_modes()
 
-	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.b and 2.g
+	// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 2.b and 2.g
 	for _, mut catalog in conn.catalogs {
 		catalog.rollback_transaction()!
 	}
 	conn.end_transaction(false)
 
-	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.h.i
+	// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 2.h.i
 	if stmt.chain {
 		conn.chain_transaction(characteristics, constraint_modes)!
 	}

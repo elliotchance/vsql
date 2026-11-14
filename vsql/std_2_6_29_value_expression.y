@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>
+// ISO/IEC 9075-2:2023(E), 6.29, <value expression>
 //
 // Specify a value.
 
@@ -9,8 +9,8 @@ value_expression:
     $$.v = yy_box(ValueExpression($1.v as CommonValueExpression))
   }
 | boolean_value_expression {
-    // ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Conformance Rules, 1
-    // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Conformance Rules, 1
+    // ISO/IEC 9075-2:2023(E), 6.29, <value expression>, Conformance Rules, 1
+    // ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Conformance Rules, 1
     flag_if(mut yylex, is_boolean_operation($1.v as BooleanValueExpression), 'T031')
     $$.v = yy_box(ValueExpression($1.v as BooleanValueExpression))
   }

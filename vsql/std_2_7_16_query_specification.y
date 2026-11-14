@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>
 //
 // Specify a table derived from the result of a <table expression>.
 
@@ -34,7 +34,7 @@ query_specification:
 // A bare asterisk can only appear alone, unlike a qualified asterisk which can
 // be mixed with other items. Each is replaced by the columns of the table.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 4 and 8
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Syntax Rules, 7 and 10
 select_list:
   asterisk { $$.v = yy_box(SelectList(AsteriskExpr(true))) }
 | select_sublist_list { $$.v = yy_box(SelectList($1.v as []SelectSublist)) }

@@ -113,7 +113,7 @@ datetime_type:
     $$.v = yy_box(parse_time_prec_tz_type($3.v as string, $5.v as bool)!)
   }
 | TIMESTAMP {
-    // ISO/IEC 9075-2:2016(E), 6.1, <data type>, Syntax Rules, 36: the default
+    // ISO/IEC 9075-2:2023(E), 6.1, <data type>, Syntax Rules, 38: the default
     // <timestamp precision> is 6.
     $$.v = yy_box(parse_timestamp_prec_tz_type('6', false)!)
   }

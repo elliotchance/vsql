@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 11.3, <table definition>
+// ISO/IEC 9075-2:2023(E), 11.3, <table definition>
 //
 // Define a persistent base table, a created local temporary table, or a global
 // temporary table.
@@ -11,7 +11,7 @@ import time
 //
 // ISO/IEC 9075-1:2003(E), 4.6.6, Base tables and their components
 // ISO/IEC 9075-1:2003(E), 4.6.6.1, Base tables
-// ISO/IEC 9075-2:2016(E), 4.15, Tables
+// ISO/IEC 9075-2:2023(E), 4.17, Tables
 
 type TableElement = CheckConstraintDefinition
 	| Column
@@ -91,7 +91,7 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 			return false, Table{}
 		}
 
-		// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 7
+		// ISO/IEC 9075-2:2023(E), 11.3, <table definition>, Syntax Rules, 7
 		return sqlstate_42p07('table', table_name.str()) // duplicate table
 	}
 
@@ -125,7 +125,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	// The table elements need at least one column, table constraints aren't
 	// enough.
 	//
-	// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 9.a
+	// ISO/IEC 9075-2:2023(E), 11.3, <table definition>, Syntax Rules, 9.a
 	if !stmt.table_elements.any(it is Column) {
 		return sqlstate_42601('a table must have at least one column')
 	}
@@ -159,9 +159,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				// A table can have at most one identity column (also for ADD
 				// COLUMN), which is implicitly NOT NULL.
 				//
-				// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 15
-				// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>, Syntax Rules, 3
-				// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 16
+				// ISO/IEC 9075-2:2023(E), 11.3, <table definition>, Syntax Rules, 15
+				// ISO/IEC 9075-2:2023(E), 11.11, <add column definition>, Syntax Rules, 3
+				// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 16
 				if identity := column.identity {
 					if _ := Table{
 						columns: columns
@@ -200,7 +200,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					table_name)!
 			}
 			UniqueConstraintDefinition {
-				// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 8
+				// ISO/IEC 9075-2:2023(E), 11.7, <unique constraint definition>, Syntax Rules, 9
 				if table_element.is_primary_key && primary_key.len > 0 {
 					return sqlstate_42601('only one PRIMARY KEY can be defined')
 				}
@@ -216,7 +216,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					// column of any type can be in a PRIMARY KEY or UNIQUE,
 					// because they can all be grouped.
 					//
-					// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 1 and 5.a
+					// ISO/IEC 9075-2:2023(E), 11.7, <unique constraint definition>, Syntax Rules, 1 and 6.a
 					if !stmt.has_column(column.sub_entity_name) {
 						return sqlstate_42601('unknown column ${column} in ${constraint}')
 					}
@@ -236,7 +236,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				// Each referencing column must be a column of the table, and only
 				// once.
 				//
-				// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 8
+				// ISO/IEC 9075-2:2023(E), 11.8, <referential constraint definition>, Syntax Rules, 8
 				mut referencing_columns := []string{}
 				for column in table_element.columns {
 					if column.sub_entity_name in referencing_columns {
@@ -252,7 +252,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				// the referenced table and columns are checked by
 				// resolve_foreign_keys.
 				//
-				// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 4.a
+				// ISO/IEC 9075-2:2023(E), 11.8, <referential constraint definition>, Syntax Rules, 4.a
 				mut referenced_columns := []string{}
 				for column in table_element.referenced_columns {
 					if column.sub_entity_name in referenced_columns {
@@ -275,7 +275,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					referenced_columns: referenced_columns
 					// NO ACTION is the same as no ON UPDATE or ON DELETE.
 					//
-					// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 12 and 13
+					// ISO/IEC 9075-2:2023(E), 11.8, <referential constraint definition>, Syntax Rules, 12 and 13
 					update_rule:        if table_element.update_rule == 'NO ACTION' {
 						''
 					} else {
@@ -294,7 +294,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 
 	// Each unique constraint must have a different set of columns, in any order.
 	//
-	// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.c
+	// ISO/IEC 9075-2:2023(E), 11.7, <unique constraint definition>, Syntax Rules, 6.c
 	mut column_sets := map[string]bool{}
 	mut all_unique_columns := [primary_key]
 	all_unique_columns << unique_constraints.map(it.columns)
@@ -313,7 +313,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 
 	// Columns in the PRIMARY KEY are implicitly NOT NULL.
 	//
-	// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 7
+	// ISO/IEC 9075-2:2023(E), 11.7, <unique constraint definition>, Syntax Rules, 8
 	for i, column in columns {
 		if column.name.sub_entity_name in primary_key {
 			columns[i] = Column{
@@ -340,7 +340,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 // wasn't given one. The name can only be qualified by the schema of the table,
 // which is also the schema of an unqualified name.
 //
-// ISO/IEC 9075-2:2016(E), 11.6, <table constraint definition>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023(E), 11.6, <table constraint definition>, Syntax Rules, 2
 fn table_constraint_name(name Identifier, table_name Identifier) !string {
 	if (name.catalog_name != '' && name.catalog_name != table_name.catalog_name)
 		|| (name.schema_name != '' && name.schema_name != table_name.schema_name) {

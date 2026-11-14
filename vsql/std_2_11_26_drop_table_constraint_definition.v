@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.26, <drop table constraint definition>
+// ISO/IEC 9075-2:2023(E), 11.26, <drop table constraint definition>
 //
 // Destroy a constraint on a table.
 
@@ -22,8 +22,8 @@ struct DropTableConstraintDefinition {
 // their PRIMARY KEY, and they're written again when a NOT NULL is dropped (see
 // replace_table_definition).
 //
-// ISO/IEC 9075-2:2016(E), 11.26, <drop table constraint definition>, Syntax Rules, 2, 3, 11.a, 11.d and 13.a
-// ISO/IEC 9075-2:2016(E), 11.26, <drop table constraint definition>, General Rules, 1 and 6 to 8
+// ISO/IEC 9075-2:2023(E), 11.26, <drop table constraint definition>, Syntax Rules, 2, 3, 11.a, 11.d and 13.a
+// ISO/IEC 9075-2:2023(E), 11.26, <drop table constraint definition>, General Rules, 1.b and 6 to 8
 fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	kind, i := table.find_constraint(d.name)!
 

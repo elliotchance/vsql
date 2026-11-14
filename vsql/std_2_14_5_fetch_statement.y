@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>
 //
 // Position a standing cursor on a specified row of the standing cursor's result
 // set and retrieve values from that row.

@@ -232,7 +232,7 @@ fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 // searched CASE, so the left of a LIKE (the case operand) that isn't a column
 // needs F281.
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2.k and
+// ISO/IEC 9075-2:2023(E), 6.12, <case expression>, Syntax Rules, 2.k and
 // Conformance Rules, 1
 fn flag_simple_case(mut yylex YYLexer, operand RowValueConstructorPredicand, whens []CaseExpressionSimpleWhen) {
 	flag_if(mut yylex, operand is ExplicitRowValueConstructor, 'F262')
@@ -246,7 +246,7 @@ fn flag_simple_case(mut yylex YYLexer, operand RowValueConstructorPredicand, whe
 
 // flag_identifier flags an identifier (a <regular identifier>, or a
 // <delimited identifier> that's in quotes) that is too long for Core SQL
-// (ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 1
+// (ISO/IEC 9075-2:2023(E), 5.2, <token> and <separator>, Conformance Rules, 1
 // and 2). "INFORMATION_SCHEMA" has 18 characters, so it isn't flagged, but the
 // views that need F391 are flagged by what they are (see
 // information_schema_features).
@@ -278,14 +278,14 @@ fn is_long_identifier(identifier string) bool {
 // <identifier> that's in a <character string literal> (such as a descriptor
 // name) isn't flagged, since it's not a token of the SQL language.
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023(E), 5.2, <token> and <separator>, Conformance Rules, 1 and 2
 fn name_features(names []string) []string {
 	return if names.any(is_long_identifier(it)) { ['F391'] } else { []string{} }
 }
 
 // flag_datetime_literal flags the value of a <time literal> (or a <timestamp
 // literal> if is_timestamp) that has a <seconds fraction> or <time zone
-// interval> that Core SQL doesn't allow (ISO/IEC 9075-2:2016(E), 5.3,
+// interval> that Core SQL doesn't allow (ISO/IEC 9075-2:2023(E), 5.3,
 // <literal>, Conformance Rules, 2, 3 and 7).
 fn flag_datetime_literal(mut yylex YYLexer, value string, is_timestamp bool) {
 	time_part := value.trim_space().all_after_last(' ')
@@ -300,7 +300,7 @@ fn flag_datetime_literal(mut yylex YYLexer, value string, is_timestamp bool) {
 // QueryContext is where a <query expression> is, which decides the features
 // needed for its ORDER BY, OFFSET and FETCH FIRST.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 11-21
+// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Conformance Rules, 12-22
 enum QueryContext {
 	// A <cursor specification>, such as the query of a statement.
 	cursor
@@ -346,9 +346,9 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 // of a cursor with a <cursor scrollability> (even NO SCROLL). A positioned
 // UPDATE of such a cursor needs the same feature, so it's flagged here instead.
 //
-// ISO/IEC 9075-2:2016(E), 14.1, <declare cursor>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.1, <declare cursor>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.13, <update statement: positioned>, Conformance Rules, 1
 fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, properties CursorProperties, updatability UpdatabilityClause) {
 	flag_if(mut yylex, updatability.for_update && (e.order.len > 0 || properties.scrollability),
 		'F831')
@@ -356,7 +356,7 @@ fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, properties Cur
 
 // SortKeyPart is what a <sort key> must, or can't, contain.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.b
+// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Syntax Rules, 26.b
 enum SortKeyPart {
 	column_reference
 	query_expression
@@ -394,7 +394,7 @@ fn flag_sort_key(mut yylex YYLexer) {
 // scale or an approximate literal. It's only flagged from the syntax, so an
 // argument of a type like that for any other reason (such as a column) isn't.
 //
-// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12
+// ISO/IEC 9075-2:2023(E), 6.31, <numeric value function>, Syntax Rules, 12
 fn flag_mod_argument(mut yylex YYLexer, e NumericValueExpression) {
 	flag_if(mut yylex, numeric_has_non_integer_literal(e), vsql_mod_not_integer)
 }
@@ -531,7 +531,7 @@ fn is_column_reference(e RowValueConstructorPredicand) bool {
 // flag_exists flags an EXISTS whose query has a <select list> that isn't "*"
 // or a single column.
 //
-// ISO/IEC 9075-2:2016(E), 8.10, <exists predicate>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 8.10, <exists predicate>, Conformance Rules, 1
 fn flag_exists(mut yylex YYLexer, e QueryExpression) {
 	if e.body is QuerySpecification {
 		exprs := e.body.exprs
@@ -542,7 +542,7 @@ fn flag_exists(mut yylex YYLexer, e QueryExpression) {
 // flag_unique_columns flags a UNIQUE constraint (other than a PRIMARY KEY) on
 // a column of the table definition that isn't NOT NULL.
 //
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023(E), 11.7, <unique constraint definition>, Conformance Rules, 2
 fn flag_unique_columns(mut yylex YYLexer, elements []TableElement) {
 	mut not_null := []string{}
 	for element in elements {
@@ -615,7 +615,7 @@ fn dynamic_parameter_of(e ValueExpression) ?DynamicParameterSpecification {
 // when it could be one, but its type isn't known until it's resolved. So a
 // boolean predicand is only flagged with T031 when it contains an operation.
 //
-// ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>, Conformance Rules, 5
+// ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>, Conformance Rules, 5
 fn is_boolean_operation(e BooleanValueExpression) bool {
 	if e.expr != none || e.term.term != none {
 		return true
@@ -658,7 +658,7 @@ fn is_parenthesized_boolean(e BooleanValueExpression) bool {
 // COUNT(ALL ...) needs F441, and DISTINCT of anything other than a column
 // reference needs F561.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 3 and 4
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Conformance Rules, 4 and 5
 fn flag_set_quantifier(mut yylex YYLexer, function string, distinct bool, e ValueExpression) {
 	if !distinct {
 		flag_if(mut yylex, function == 'COUNT', 'F441')
@@ -681,8 +681,8 @@ fn flag_set_quantifier(mut yylex YYLexer, function string, distinct bool, e Valu
 // - F801: A <query specification> that contains more than one DISTINCT, other
 // than in a query that it contains.
 //
-// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Conformance Rules, 1 and 2
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Conformance Rules, 1
 fn token_features(tokens []Token) []string {
 	mut features := []string{}
 	for i, token in tokens {
@@ -780,28 +780,28 @@ fn parse_module_sql(text_sql string) !(Stmt, []string) {
 // cursor or descriptor is only in one of the statements that need B031. So is a
 // <dynamic single row select statement>, which can only be in a PREPARE.
 //
-// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Conformance Rules, 8 and 18 to 20
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.2, <allocate descriptor statement>, Conformance Rules, 1 and 2
-// ISO/IEC 9075-2:2016(E), 20.3, <deallocate descriptor statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, Conformance Rules, 1 and 2
-// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.9, <deallocate prepared statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, Conformance Rules, 2
-// ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, Conformance Rules, 1 and 2
-// ISO/IEC 9075-2:2016(E), 20.14, <execute immediate statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.19, <dynamic open statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.20, <dynamic fetch statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.21, <dynamic single row select statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.22, <dynamic close statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.23, <dynamic delete statement: positioned>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.24, <dynamic update statement: positioned>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, Conformance Rules, 8 and 19 to 20
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 18.1, <connect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 18.2, <set connection statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 18.3, <disconnect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.2, <allocate descriptor statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023(E), 20.3, <deallocate descriptor statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.4, <get descriptor statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023(E), 20.5, <set descriptor statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.9, <deallocate prepared statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023(E), 20.14, <execute immediate statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.19, <dynamic open statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.20, <dynamic fetch statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.21, <dynamic single row select statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.22, <dynamic close statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.23, <dynamic delete statement: positioned>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.24, <dynamic update statement: positioned>, Conformance Rules, 1
 fn module_statement_features(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor) ![]string {
 	mut t := new_module_tokens(text)!
 	mut features := t.dynamic_features()
@@ -910,7 +910,7 @@ fn (t ModuleToken) is_colon() bool {
 // GLOBAL or LOCAL (these are the keywords that can be before DESCRIPTOR in a
 // statement, where it isn't a name itself).
 //
-// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Conformance Rules, 24
+// ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, Conformance Rules, 24
 fn (t ModuleTokens) dynamic_features() []string {
 	mut features := ['B031']
 	for i in 1 .. t.tokens.len - 1 {
@@ -933,7 +933,7 @@ fn (t ModuleTokens) dynamic_features() []string {
 // same declared type. A number is an exact numeric with a scale of 0, and the
 // standard doesn't say which, so that's every target that's allowed for one.
 //
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, Conformance Rules, 1 to 3
+// ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, Conformance Rules, 1 to 3
 fn (t ModuleTokens) diagnostics_features(p ExternallyInvokedProcedure) ![]string {
 	mut features := ['F121']
 	for i, tok in t.tokens {
@@ -1131,10 +1131,10 @@ fn (mut conn Connection) flag_asterisk(table Table) {
 // that are read. A table name that's only the qualifier of a column reference
 // isn't read.
 //
-// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 1.a
-// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Conformance Rules, 1.a
-// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2023(E), 14.14, <update statement: searched>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2023(E), 14.15, <set clause list>, Conformance Rules, 1.a
 fn (mut conn Connection) flag_self_reference(table_name Identifier) {
 	if conn.resolve_identifier(table_name).id() in conn.flagged_tables {
 		conn.flagged_features << 'F781'
@@ -1174,7 +1174,7 @@ fn (mut conn Connection) flag_alter_table(stmt AlterTableStatement) {
 // same data type as its referenced column. The referenced table must already
 // exist to be checked.
 //
-// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Conformance Rules, 5
+// ISO/IEC 9075-2:2023(E), 11.8, <referential constraint definition>, Conformance Rules, 5
 fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_name Identifier, existing int) {
 	mut table := definition.table(table_name, 0) or { return }
 	resolve_foreign_keys(mut conn, mut table) or { return }
@@ -1201,8 +1201,8 @@ fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_nam
 // several, which is also covered by this. An expression may be compiled more
 // than once, so the same column is only counted once.
 //
-// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 5, 7 and 18
+// ISO/IEC 9075-2:2023(E), 6.9, <set function specification>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Conformance Rules, 6, 8 and 19
 fn (mut c Compiler) flag_set_function(e RoutineInvocation) {
 	if !c.conn.flagging || !c.aggregated_columns.any(it.scope >= 0) {
 		return
@@ -1230,8 +1230,8 @@ fn (mut c Compiler) flag_set_function(e RoutineInvocation) {
 // a column that needs a feature to be referenced (see Column.features). It's
 // only called once the reference has been compiled, so it's known to be valid.
 //
-// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 9
+// ISO/IEC 9075-2:2023(E), 7.12, <where clause>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 10.9, <aggregate function>, Conformance Rules, 10
 fn (mut c Compiler) flag_column_reference(e Identifier) {
 	if !c.conn.flagging || e.custom_id != '' {
 		return

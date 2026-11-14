@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 6.7, <column reference>
+// ISO/IEC 9075-2:2023(E), 6.7, <column reference>
 //
 // Reference a column.
 

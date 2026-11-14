@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>
+// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>
 //
 // Specify a test for an overlap between two datetime periods.
 
@@ -20,14 +20,14 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_left := e.left.compile_fields(mut c)!
 	compiled_right := e.right.compile_fields(mut c)!
 
-	// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, Syntax Rules, 1
 	for compiled in [compiled_left, compiled_right] {
 		if compiled.len != 2 {
 			return sqlstate_42601('OVERLAPS needs a row of degree 2, not ${compiled.len}')
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, Syntax Rules, 2 and
+	// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, Syntax Rules, 2 and
 	// 3: every field is a datetime, and they must all be comparable. A dynamic
 	// parameter whose value is NULL is allowed, as it is for a comparison (see
 	// check_comparison).
@@ -46,20 +46,20 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 			left := run_fields(mut conn, compiled_left, data, params)!
 			right := run_fields(mut conn, compiled_right, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, General
+			// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, General
 			// Rules, 1: a row that's the null value (every field is NULL) makes
 			// the result Unknown.
 			if (left[0].is_null && left[1].is_null) || (right[0].is_null && right[1].is_null) {
 				return new_unknown_value()
 			}
 
-			// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, General
+			// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, General
 			// Rules, 2 to 6: each period is put in order, with a NULL start
 			// becoming the end.
 			s1, t1 := overlaps_period(conn, left[0], left[1])!
 			s2, t2 := overlaps_period(conn, right[0], right[1])!
 
-			// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, General
+			// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, General
 			// Rules, 7:
 			//
 			//   ( S1 > S2 AND NOT ( S1 >= T2 AND T1 >= T2 ) )
@@ -87,7 +87,7 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 // overlaps_period returns the start and end of a period given as (D, E). If D
 // is NULL or E < D, they are swapped.
 //
-// ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, General Rules, 4 and 6
+// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, General Rules, 4 and 6
 fn overlaps_period(conn &Connection, d Value, e Value) !(Value, Value) {
 	if d.is_null || overlaps_truth(conn, .less_than, e, d)! == .is_true {
 		return e, d

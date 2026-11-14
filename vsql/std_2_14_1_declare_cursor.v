@@ -2,13 +2,13 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 14.1, <declare cursor>
+// ISO/IEC 9075-2:2023(E), 14.1, <declare cursor>
 //
 // Declare a standing cursor.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.38, Cursors
+// ISO/IEC 9075-2:2023(E), 4.40, Cursors
 
 // A <declare cursor> can only be contained in an SQL-client module, so declaring
 // a cursor by executing it is a vsql extension (V108-01). The cursor belongs to
@@ -25,8 +25,8 @@ struct DeclareCursor {
 // NO SCROLL and WITHOUT HOLD unless it says otherwise. scrollability is true
 // if SCROLL or NO SCROLL is specified.
 //
-// ISO/IEC 9075-2:2016(E), 14.2, <cursor properties>, Syntax Rules, 2 and 3
-// ISO/IEC 9075-2:2016(E), 14.2, <cursor properties>, General Rules, 1.b and 1.c
+// ISO/IEC 9075-2:2023(E), 14.2, <cursor properties>, Syntax Rules, 2 and 3
+// ISO/IEC 9075-2:2023(E), 14.2, <cursor properties>, General Rules, 1.b and 1.c
 struct CursorProperties {
 	scroll        bool
 	scrollability bool
@@ -53,7 +53,7 @@ struct UpdatabilityClause {
 // new_cursor_specification is a query with an <updatability clause>, which is a
 // <dynamic select statement>.
 //
-// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Format
+// ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Format
 fn new_cursor_specification(query QueryExpression, updatability UpdatabilityClause) QueryExpression {
 	return QueryExpression{
 		...query
@@ -62,13 +62,13 @@ fn new_cursor_specification(query QueryExpression, updatability UpdatabilityClau
 }
 
 // Cursor is both the cursor declaration descriptor and the cursor instance
-// descriptor of a standing cursor (ISO/IEC 9075-2:2016(E), 4.38.2). The rows
+// descriptor of a standing cursor (ISO/IEC 9075-2:2023(E), 4.40.2). The rows
 // of an open cursor are a copy, so a change by another statement isn't visible
 // through it, and nothing is disallowed.
 //
-// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 4
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 4
-// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 4
+// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>, General Rules, 4
+// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, General Rules, 4
+// ISO/IEC 9075-2:2023(E), 14.14, <update statement: searched>, General Rules, 4
 struct Cursor {
 	name string
 	hold bool
@@ -101,7 +101,7 @@ mut:
 	on_row   bool
 	// fetched is true if a FETCH has been executed in the current transaction.
 	// A holdable cursor must be fetched in a transaction before its current row
-	// can be changed (ISO/IEC 9075-2:2016(E), 15.5, General Rules, 7).
+	// can be changed (ISO/IEC 9075-2:2023(E), 15.6, General Rules, 7).
 	fetched bool
 	// row_states has what has happened to each of rows since the cursor was
 	// opened (see Connection.note_row_changes).
@@ -144,10 +144,10 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 
 	// A cursor is updatable if it's FOR UPDATE, or if it has no <updatability
 	// clause>, isn't SCROLL, has no ORDER BY, and the query is simply updatable.
-	// A SCROLL cursor that's FOR UPDATE is updatable (F831-01). The columns of
+	// A SCROLL cursor that's FOR UPDATE is updatable (F832). The columns of
 	// FOR UPDATE OF must be in the table.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 4 to 9
+	// ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Syntax Rules, 4 to 9
 	mut table := ?Identifier(none)
 	mut update_columns := []string{}
 	if updatability := stmt.updatability {
@@ -194,8 +194,8 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 // of the select list must be a different column of the table, and a subquery in
 // the WHERE can't read the table.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 24 to 27
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 7 and 9
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Syntax Rules, 22 to 27
+// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Syntax Rules, 7 and 9
 fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut conn Connection) !bool {
 	body := stmt.query.body
 	if body !is QuerySpecification || stmt.query.offset != none || stmt.query.fetch != none {
@@ -230,7 +230,7 @@ fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut
 // reference, and no column is referenced more than once. A qualified asterisk
 // is every column of the only table, so it can't be used with another item.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 24.b, 25.a and 27.c
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Syntax Rules, 22.b, 23.a and 25.c
 fn (e QuerySpecification) has_only_distinct_columns() bool {
 	match e.exprs {
 		AsteriskExpr {
@@ -266,7 +266,7 @@ fn (e QuerySpecification) has_only_distinct_columns() bool {
 // only way to reach them, and without the ORDER BY because only the WHERE counts,
 // which is the only other place in the query that a subquery could be.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 27.d
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Syntax Rules, 25.d
 fn (mut conn Connection) tables_of_subqueries(query QuerySpecification, params map[string]Value) ![]string {
 	conn.collect_subquery_tables = true
 	defer {
@@ -299,9 +299,9 @@ fn (stmt DeclareCursor) table_name(mut conn Connection) !Identifier {
 // table with the same name is also included, because that's what the rows are
 // actually ordered by until then.
 //
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 6
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 10
-// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 13
+// ISO/IEC 9075-2:2023(E), 6.29, <value expression>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023(E), 7.16, <query specification>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023(E), 14.13, <update statement: positioned>, Syntax Rules, 13
 fn (stmt DeclareCursor) sort_columns(table_name Identifier, params map[string]Value, mut conn Connection) ![]string {
 	if stmt.query.order.len == 0 {
 		return []
@@ -388,20 +388,20 @@ fn (stmt DeclareCursor) explain(mut _ Connection, _ map[string]Value, _ time.Dur
 
 // cursor returns the cursor that has been declared with the name.
 //
-// ISO/IEC 9075-2:2016(E), 14.4, <open statement>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 3
-// ISO/IEC 9075-2:2016(E), 14.6, <close statement>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 14.8, <delete statement: positioned>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.4, <open statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023(E), 14.6, <close statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.8, <delete statement: positioned>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.13, <update statement: positioned>, Syntax Rules, 1
 fn (mut conn Connection) cursor(name string) !&Cursor {
 	return conn.cursors[name] or { return sqlstate_34000('cursor ${name} does not exist') }
 }
 
 // open_cursor returns the cursor with the name, which must be open.
 //
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, General Rules, 2
-// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a cursor, General Rules, 2
-// ISO/IEC 9075-2:2016(E), 15.4, Effect of closing a cursor, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 15.3, Determination of the current row of a cursor, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 15.4, Effect of closing a cursor, General Rules, 2
 fn (mut conn Connection) open_cursor(name string) !&Cursor {
 	cursor := conn.cursor(name)!
 	if !cursor.is_open {
@@ -425,7 +425,7 @@ fn (mut conn Connection) open_cursor(name string) !&Cursor {
 // set). Without one, the cursor is updatable if the query is simply updatable
 // and has no ORDER BY.
 //
-// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 4 and 6
+// ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Syntax Rules, 4 and 6
 pub fn (mut p PreparedStmt) open_cursor(name string, hold bool, params map[string]Value) !Result {
 	t := start_timer()
 	query := p.stmt as QueryExpression
@@ -474,7 +474,7 @@ pub fn (mut conn Connection) position_cursor(name string, row int) ! {
 // (rather than an invalid cursor name), until it's removed by remove_cursor.
 // This is for a cursor opened by PreparedStmt.open_cursor.
 //
-// ISO/IEC 9075-2:2016(E), 15.4, Effect of closing a cursor, General Rules, 4-6
+// ISO/IEC 9075-2:2023(E), 15.4, Effect of closing a cursor, General Rules, 4-6
 pub fn (mut conn Connection) close_cursor(name string) {
 	mut cursor := conn.cursors[name] or { return }
 	cursor.close()
@@ -489,11 +489,11 @@ pub fn (mut conn Connection) remove_cursor(name string) {
 // end_transaction closes the cursors when a transaction ends. A holdable
 // cursor stays open after a commit.
 //
-// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 3
-// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.e
+// ISO/IEC 9075-2:2023(E), 17.7, <commit statement>, General Rules, 3
+// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 2.e
 fn (mut conn Connection) end_transaction(commit bool) {
-	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 7
-	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.c
+	// ISO/IEC 9075-2:2023(E), 17.7, <commit statement>, General Rules, 7
+	// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 2.c
 	conn.savepoints = []Savepoint{}
 
 	for _, mut cursor in conn.cursors {
@@ -506,7 +506,7 @@ fn (mut conn Connection) end_transaction(commit bool) {
 
 // close puts the cursor into the closed state, and destroys its result.
 //
-// ISO/IEC 9075-2:2016(E), 15.4, Effect of closing a cursor, General Rules, 4-6
+// ISO/IEC 9075-2:2023(E), 15.4, Effect of closing a cursor, General Rules, 4-6
 fn (mut cursor Cursor) close() {
 	cursor.is_open = false
 	cursor.rows = []Row{}
@@ -519,10 +519,10 @@ fn (mut cursor Cursor) close() {
 // table_name must be its table. A holdable cursor must have been fetched in
 // the current transaction.
 //
-// ISO/IEC 9075-2:2016(E), 14.8, <delete statement: positioned>, Syntax Rules, 4 and 6
-// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 4 and 6
-// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 6 and 7
-// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 6 and 7
+// ISO/IEC 9075-2:2023(E), 14.8, <delete statement: positioned>, Syntax Rules, 4 and 6
+// ISO/IEC 9075-2:2023(E), 14.13, <update statement: positioned>, Syntax Rules, 4 and 6
+// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 6 and 7
+// ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 6 and 7
 fn (mut conn Connection) current_row(name string, table_name Identifier) !&Cursor {
 	mut cursor := conn.cursor(name)!
 	table := cursor.table or { return sqlstate_34000('cursor ${name} is not updatable') }
@@ -561,8 +561,8 @@ fn (mut conn Connection) current_row(name string, table_name Identifier) !&Curso
 // implementation-dependent), so a row that another statement has updated is
 // still found, and is changed.
 //
-// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 9
-// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 16
+// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 9
+// ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 16
 fn current_rows(rows []Row, current_of ?&Cursor) []Row {
 	cursor := current_of or { return rows }
 	if cursor.row_states[cursor.position].deleted {
@@ -601,11 +601,11 @@ fn (conn &Connection) has_open_cursor() bool {
 // referential action isn't one of the statements that 15.5 and 15.6 name, but
 // it's a change by another statement all the same.
 //
-// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 9
-// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 8
-// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 12
-// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 9
-// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 14
+// ISO/IEC 9075-2:2023(E), 14.9, <delete statement: searched>, General Rules, 9
+// ISO/IEC 9075-2:2023(E), 14.14, <update statement: searched>, General Rules, 8
+// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 12
+// ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 9
+// ISO/IEC 9075-2:2023(E), 15.18, Execution of referential actions, General Rules, 14
 fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []RowChange, current_of ?&Cursor) ! {
 	mut own_cursor := ''
 	if cursor := current_of {
@@ -686,11 +686,11 @@ fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []Row
 // A <dynamic declare cursor> has the name of a prepared statement instead of a
 // query, which is its origin.
 //
-// ISO/IEC 9075-2:2016(E), 20.15, <dynamic declare cursor>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 20.15, <dynamic declare cursor>, General Rules, 1
-// ISO/IEC 9075-2:2016(E), 14.1, <declare cursor>, Syntax Rules, 1.b and 1.c
-// ISO/IEC 9075-2:2016(E), 14.1, <declare cursor>, General Rules, 1
-// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, General Rules, 9
+// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, General Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.1, <declare cursor>, Syntax Rules, 1.b and 1.c
+// ISO/IEC 9075-2:2023(E), 14.1, <declare cursor>, General Rules, 1
+// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, General Rules, 9
 struct ModuleCursor {
 	index     int
 	name      string
@@ -706,7 +706,7 @@ struct ModuleCursor {
 // begin is begin for a statement of the cursor, which is also the cursor of any
 // invalid cursor state that the statement raises.
 //
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.i
+// ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, General Rules, 4.i
 fn (cursor ModuleCursor) begin(command_function string, code int) string {
 	return begin(command_function, code) + '  vsql_m_da.cursor_name = ${c_string(cursor.name)};\n'
 }
@@ -723,8 +723,8 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 	// identifier. Its <cursor properties> are found by parsing it with a query
 	// instead.
 	//
-	// ISO/IEC 9075-2:2016(E), 20.15, <dynamic declare cursor>, General Rules, 1.e
-	// ISO/IEC 9075-2:2016(E), 20.15, <dynamic declare cursor>, Conformance Rules, 1
+	// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, General Rules, 1.e
+	// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, Conformance Rules, 1
 	query := cursor_specification(text)!
 	mut statement := ''
 	mut q := new_module_tokens(query)!
@@ -796,7 +796,7 @@ fn cursor_specification(text string) !string {
 // find_module_cursor is the cursor with the name, in the cursors that are
 // declared before the procedure.
 //
-// ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Syntax Rules, 11 and 12
+// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Syntax Rules, 11 and 12
 fn find_module_cursor(cursors []ModuleCursor, name string, p ExternallyInvokedProcedure) !ModuleCursor {
 	for cursor in cursors {
 		if cursor.name == name {

@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.10, <joined table>
+// ISO/IEC 9075-2:2023(E), 7.10, <joined table>
 //
 // Specify a table derived from a Cartesian product, inner join, or outer join.
 //

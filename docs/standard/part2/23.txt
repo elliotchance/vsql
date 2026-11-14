@@ -1,4 +1,4 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023(E)
 # id status code tests note (see docs/standard-index.rst)
 # 23, Diagnostics management
 23                       container    - -
@@ -107,3 +107,4 @@
 23.2/GR/2.a.i            n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
 23.2/GR/2.a.ii           n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
 23.2/GR/2.b              n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
+23.2/GR/3                n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)

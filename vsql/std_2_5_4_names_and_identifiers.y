@@ -59,7 +59,7 @@ correlation_name:
 // Every <constraint name> needs F491, which includes the one in a <constraint
 // name definition>.
 //
-// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023(E), 10.8, <constraint name definition> and <constraint characteristics>, Conformance Rules, 2
 constraint_name:
   schema_qualified_name {
     flag(mut yylex, 'F491')

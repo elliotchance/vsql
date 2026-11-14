@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
+// ISO/IEC 9075-2:2023(E), 13.4, <SQL procedure statement>
 //
 // Define all of the SQL-statements that are <SQL procedure statement>s.
 
@@ -43,10 +43,10 @@ sql_transaction_statement:
 
 // A <connection name> is only in a connection statement, so that's flagged too.
 //
-// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Conformance Rules, 8
-// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, Conformance Rules, 8
+// ISO/IEC 9075-2:2023(E), 18.1, <connect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 18.2, <set connection statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023(E), 18.3, <disconnect statement>, Conformance Rules, 1
 sql_connection_statement:
   connect_statement {
     flag(mut yylex, 'F771')

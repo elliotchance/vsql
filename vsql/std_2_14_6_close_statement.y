@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 14.6, <close statement>
+// ISO/IEC 9075-2:2023(E), 14.6, <close statement>
 //
 // Close a standing cursor.
 

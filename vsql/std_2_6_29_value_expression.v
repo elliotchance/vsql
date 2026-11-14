@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>
+// ISO/IEC 9075-2:2023(E), 6.29, <value expression>
 //
 // Specify a value.
 

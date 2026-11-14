@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>
+// ISO/IEC 9075-2:2023(E), 8.3, <between predicate>
 //
 // Specify a range comparison.
 
@@ -29,7 +29,7 @@ fn (e BetweenPredicate) pstr(params map[string]Value) string {
 // be the current date or timestamp. It can't with NOT, and SYMMETRIC also has
 // "X >= Y". X, Y and Z can also be rows of the same degree.
 //
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.iv
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 7.c.iv
 fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !CompileResult {
 	untyped_expr := e.expr.compile_fields(mut c)!
 	untyped_left := e.left.compile_fields(mut c)!
@@ -40,7 +40,7 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 		e.right.compile_fields(mut c)!
 	}
 
-	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
+	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
 	typed := c.with_row_types([untyped_expr, untyped_left, untyped_right])
 	compiled_expr, compiled_left, compiled_right := typed[0], typed[1], typed[2]
 	c.check_row_comparison(compiled_expr.map(it.typ), compiled_left.map(it.typ), null_parameters(compiled_expr,
@@ -54,7 +54,7 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 			left := run_fields(mut conn, compiled_left, data, params)!
 			right := run_fields(mut conn, compiled_right, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 4
+			// ISO/IEC 9075-2:2023(E), 8.3, <between predicate>, Syntax Rules, 4
 			// and 6 (ASYMMETRIC is implicit, Syntax Rules, 1):
 			//
 			//   X BETWEEN ASYMMETRIC Y AND Z is X >= Y AND X <= Z
@@ -70,7 +70,7 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 					right)!, compare_rows(conn, expr, left)!))
 			}
 
-			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 3
+			// ISO/IEC 9075-2:2023(E), 8.3, <between predicate>, Syntax Rules, 3
 			// and 5: X NOT BETWEEN ... is NOT (X BETWEEN ...).
 			if e.not {
 				result = truth_not(result)
@@ -85,7 +85,7 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 }
 
 // Truth is a value of three-valued logic. Unknown is the same as the null value
-// of BOOLEAN (ISO/IEC 9075-2:2016(E), 4.5.1, Introduction to Boolean types).
+// of BOOLEAN (ISO/IEC 9075-2:2023(E), 4.6.1, Introduction to Boolean types).
 enum Truth {
 	is_false
 	is_true
@@ -109,7 +109,7 @@ fn between_asymmetric(lower []CompareResult, upper []CompareResult) Truth {
 	return truth_and(at_least, at_most)
 }
 
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3,
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, General Rules, 3,
 // Table 13, Truth table for the AND boolean operator
 fn truth_and(a Truth, b Truth) Truth {
 	if a == .is_false || b == .is_false {
@@ -123,7 +123,7 @@ fn truth_and(a Truth, b Truth) Truth {
 	return .is_true
 }
 
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3,
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, General Rules, 3,
 // Table 14, Truth table for the OR boolean operator
 fn truth_or(a Truth, b Truth) Truth {
 	if a == .is_true || b == .is_true {
@@ -137,7 +137,7 @@ fn truth_or(a Truth, b Truth) Truth {
 	return .is_false
 }
 
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 2
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, General Rules, 2
 fn truth_not(a Truth) Truth {
 	return match a {
 		.is_true { .is_false }

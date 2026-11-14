@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>
+// ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>
 //
 // Retrieve values from a specified row of a table.
 //
@@ -85,7 +85,7 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 	// The query must be a <query specification>, which can't have ORDER BY,
 	// OFFSET or FETCH. The statement starts with SELECT, so it's a query.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, Syntax Rules, 4
 	query_expression := stmt as QueryExpression
 	body := query_expression.body
 	if body !is QuerySpecification || query_expression.order.len > 0
@@ -98,7 +98,7 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 	// targets. A row type target has no C data type. With an asterisk, it's
 	// checked when the query is executed.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 3.a and 3.b.i
+	// ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, Syntax Rules, 3.a and 3.b.i
 	if columns >= 0 && columns != targets.len {
 		are := if targets.len == 1 { 'is' } else { 'are' }
 		return sqlstate_42601('procedure ${p.name}: the select list has ${columns} ${pluralize(columns, 'column')}, but there ${are} ${targets.len} ${pluralize(targets.len, 'target')}')
@@ -168,7 +168,7 @@ fn select_list_degree(exprs SelectList) int {
 // select_target_list reads the <select target list>. Each <target
 // specification> is a host parameter, with an optional <indicator parameter>.
 //
-// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, Syntax Rules, 1
 fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget {
 	mut t := new_module_tokens(text)!
 	targets := t.target_list(p, 'INTO')!
@@ -185,8 +185,8 @@ fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget
 // also an input host parameter if it's in a <value specification> too). A
 // target can't be a column reference.
 //
-// ISO/IEC 9075-2:2016(E), 9.8, Host parameter mode determination, Syntax Rules, 3.b.iii and 3.b.iv
-// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 9.8, Host parameter mode determination, Syntax Rules, 3.b.iii and 3.b.iv
+// ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 1
 fn (mut t ModuleTokens) target_list(p ExternallyInvokedProcedure, after string) ![]SelectTarget {
 	mut targets := []SelectTarget{}
 	for {

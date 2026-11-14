@@ -6,7 +6,7 @@ module vsql
 // upper_case_mappings has the lower case (Ll) and title case (Lt) characters that
 // have a corresponding upper case character or characters, ordered by from.
 //
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.i
+// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 7.d.i
 const upper_case_mappings = [
 	CaseMapping{0x61, 0x41, 0x0, 0x0},
 	CaseMapping{0x62, 0x42, 0x0, 0x0},
@@ -1522,7 +1522,7 @@ const upper_case_mappings = [
 // lower_case_mappings has the upper case (Lu) and title case (Lt) characters that
 // have a corresponding lower case character or characters, ordered by from.
 //
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.ii
+// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 7.d.ii
 const lower_case_mappings = [
 	CaseMapping{0x41, 0x61, 0x0, 0x0},
 	CaseMapping{0x42, 0x62, 0x0, 0x0},

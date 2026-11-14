@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>
 //
 // Specify a boolean value.
 //
@@ -8,7 +8,7 @@ module vsql
 //
 // The concept is also described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.5, Boolean types
+// ISO/IEC 9075-2:2023(E), 4.6, Boolean types
 
 type BooleanPrimary = BooleanPredicand | Predicate
 
@@ -74,7 +74,7 @@ fn (e BooleanValueExpression) pstr(params map[string]Value) string {
 // check_boolean_operand returns an error if an operand of a boolean operator
 // isn't a boolean.
 //
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 3
 fn check_boolean_operand(op string, operand CompileResult) ! {
 	if operand.typ.typ != .is_boolean {
 		return sqlstate_42804('in ${op}', 'BOOLEAN', operand.typ.str())
@@ -95,7 +95,7 @@ fn (e BooleanValueExpression) compile(mut c Compiler) !CompileResult {
 
 				// The truth table for OR (Table 14).
 				//
-				// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3
+				// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, General Rules, 3
 
 				if a.is_null {
 					if b.bool_value() == .is_true {
@@ -146,7 +146,7 @@ fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
 
 				// The truth table for AND (Table 13).
 				//
-				// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3
+				// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, General Rules, 3
 
 				if a.is_null {
 					if b.bool_value() == .is_false {
@@ -217,7 +217,7 @@ fn (e BooleanTest) unary_not(v Value) !Value {
 // is_negative is true for a negative <boolean factor>: NOT BP, BP IS FALSE, BP IS
 // NOT TRUE, NOT BP IS NOT FALSE and NOT BP IS TRUE.
 //
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.e.i
+// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 7.e.i
 fn (e BooleanTest) is_negative() bool {
 	if v := e.value {
 		return !v.is_null && ((v.bool_value() == .is_false) != e.not) != e.inverse
@@ -230,7 +230,7 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 	// A negative boolean factor can't contain anything that's possibly
 	// non-deterministic.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.e.ii
+	// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 7.e.ii
 	retrospective := c.retrospective
 	c.retrospective = retrospective && !e.is_negative()
 	mut compiled := e.expr.compile(mut c)!
@@ -245,7 +245,7 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 			run:          fn [e, v, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 				// The truth table for IS (Table 15).
 				//
-				// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3
+				// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, General Rules, 3
 
 				value := compiled.run(mut conn, data, params)!
 				mut result := new_boolean_value(false)

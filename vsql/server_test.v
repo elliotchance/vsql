@@ -372,28 +372,28 @@ fn test_server_ignore_pg_set() ! {
 	assert plain_client.query('SET LOCAL search_path TO public')!.error.starts_with('error 42601: ')
 }
 
-// rewrite_pg_syntax changes PostgreSQL casts into a CAST and removes
-// "pg_catalog." before a name, but not in quotes or comments.
+// rewrite_pg_syntax changes the PostgreSQL type of a cast into an SQL type and
+// removes "pg_catalog." before a name, but not in quotes or comments.
 fn test_rewrite_pg_syntax() {
 	for query, expected in {
-		'SELECT reltuples::int8 FROM pg_class':                       'SELECT CAST(reltuples AS BIGINT) FROM pg_class'
-		'SELECT c.x :: pg_catalog.int2, 1::int, 2::int4, 3::oid':     'SELECT CAST(c.x AS SMALLINT), CAST(1 AS INTEGER), CAST(2 AS INTEGER), CAST(3 AS INTEGER)'
-		'VALUES 1.5::float4 + 2::float8, true::bool':                 'VALUES CAST(1.5 AS REAL) + CAST(2 AS DOUBLE PRECISION), CAST(true AS BOOLEAN)'
-		"VALUES 'it''s'::text, 'x'::name, (1 + (2))::numeric":        "VALUES CAST('it''s' AS VARCHAR(255)), CAST('x' AS VARCHAR(255)), CAST((1 + (2)) AS NUMERIC)"
-		"VALUES count(*)::regclass, 'a'::regproc, 'b'::regnamespace": "VALUES CAST(count(*) AS VARCHAR(255)), CAST('a' AS VARCHAR(255)), CAST('b' AS VARCHAR(255))"
-		"x = 'pg_catalog.trigger'::pg_catalog.regtype":               "x = CAST('pg_catalog.trigger' AS VARCHAR(255))"
-		'SELECT "a::b"::int8, "x""y"::int8 FROM PG_CATALOG.pg_class': 'SELECT CAST("a::b" AS BIGINT), CAST("x""y" AS BIGINT) FROM pg_class'
+		'SELECT reltuples::int8 FROM pg_class':                       'SELECT reltuples::BIGINT FROM pg_class'
+		'SELECT c.x :: pg_catalog.int2, 1::int, 2::int4, 3::oid':     'SELECT c.x ::SMALLINT, 1::INTEGER, 2::INTEGER, 3::INTEGER'
+		'VALUES 1.5::float4 + 2::float8, true::bool':                 'VALUES 1.5::REAL + 2::DOUBLE PRECISION, true::BOOLEAN'
+		"VALUES 'it''s'::text, 'x'::name, (1 + (2))::numeric":        "VALUES 'it''s'::VARCHAR(255), 'x'::VARCHAR(255), (1 + (2))::NUMERIC"
+		"VALUES count(*)::regclass, 'a'::regproc, 'b'::regnamespace": "VALUES count(*)::VARCHAR(255), 'a'::VARCHAR(255), 'b'::VARCHAR(255)"
+		"x = 'pg_catalog.trigger'::pg_catalog.regtype":               "x = 'pg_catalog.trigger'::VARCHAR(255)"
+		'SELECT "a::b"::int8, "x""y"::int8 FROM PG_CATALOG.pg_class': 'SELECT "a::b"::BIGINT, "x""y"::BIGINT FROM pg_class'
 		'SELECT pg_catalog.f(x), my_pg_catalog.t, "pg_catalog.x"':    'SELECT f(x), my_pg_catalog.t, "pg_catalog.x"'
 		"SELECT 'unterminated::int":                                  "SELECT 'unterminated::int"
 		'SELECT 1 -- pg_catalog.x::int\nFROM pg_catalog.t':           'SELECT 1 -- pg_catalog.x::int\nFROM t'
 		'SELECT 1 -- x::int':                                         'SELECT 1 -- x::int'
-		'SELECT /* pg_catalog.x::int */ 1::int8':                     'SELECT /* pg_catalog.x::int */ CAST(1 AS BIGINT)'
+		'SELECT /* pg_catalog.x::int */ 1::int8':                     'SELECT /* pg_catalog.x::int */ 1::BIGINT'
 		'SELECT /* x::int':                                           'SELECT /* x::int'
 		'SELECT NULL AS a, 1, null as b UNION SELECT 1,NULL\tAS c':   'SELECT CAST(NULL AS BIGINT) AS a, 1, CAST(NULL AS BIGINT) as b UNION SELECT 1,CAST(NULL AS BIGINT)\tAS c'
 		'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, NULL AS':       'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, CAST(NULL AS BIGINT) AS'
 		'NULL AS a, NULL':                                            'NULL AS a, NULL'
 		'XSELECT NULL AS a':                                          'XSELECT NULL AS a'
-		'::int':                                                      'CAST( AS INTEGER)'
+		'::int':                                                      '::INTEGER'
 	} {
 		assert rewrite_pg_syntax(query) == expected, query
 	}

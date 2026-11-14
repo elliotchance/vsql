@@ -38,6 +38,9 @@ nonparenthesized_value_expression_primary:
 | cast_specification {
     $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as CastSpecification))
   }
+| pg_cast {
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as CastSpecification))
+  }
 | next_value_expression {
     $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as NextValueExpression)))
   }

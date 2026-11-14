@@ -196,6 +196,10 @@ error is returned because there could be more than one value for the column in
 each set. ``*`` counts as every column, so it can only be used when all of the
 columns are grouped.
 
+The ``ORDER BY`` of a grouped query can use a ``GROUP BY`` column that isn't in
+the ``SELECT`` expressions, such as
+``SELECT AVG(price) FROM products GROUP BY city ORDER BY city``.
+
 See full list of :doc:`functions`.
 
 DISTINCT

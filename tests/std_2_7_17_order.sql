@@ -234,7 +234,7 @@ SELECT COUNT(*) FROM foo ORDER BY COUNT(*);
 /* extensions V202-03 */
 /* flags */
 SELECT COUNT(y) FROM foo ORDER BY COUNT(y) + 1;
--- flags: F441, V202-03
+-- flags: F441, F868, V202-03
 -- COL1: 4
 
 -- # A sort key can't be the name of more than one column of the result (#804).

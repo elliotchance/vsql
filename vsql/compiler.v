@@ -6,6 +6,9 @@ module vsql
 struct Compiler {
 	tables map[string]&Table
 	params map[string]Value @[required]
+	// in_sort_key is true when compiling the <sort key>s of an ORDER BY (see
+	// Identifier.compile).
+	in_sort_key bool
 mut:
 	conn &Connection @[required]
 	// context is used to describe the indetifier environment. For example, in an

@@ -450,7 +450,7 @@ fn sqlstate_22027() IError {
 	}
 }
 
-// Noncharacter in UCS string.
+// Non-character in character string.
 struct SQLState22029 {
 	SQLState
 }
@@ -458,7 +458,7 @@ struct SQLState22029 {
 fn sqlstate_22029() IError {
 	return SQLState22029{
 		code: sqlstate_to_int('22029')
-		msg:  'noncharacter in UCS string'
+		msg:  'non-character in character string'
 	}
 }
 

@@ -12,7 +12,15 @@ Syntax
   [ OVERRIDING { SYSTEM | USER } VALUE ]
   { VALUES ( <value> , ... ) , ... | <query> }
 
+  INSERT INTO <table_name> DEFAULT VALUES
+
 Without a list of columns, it's every column in the order of the table.
+
+``DEFAULT VALUES`` inserts one row where every column gets its default, the
+same as ``VALUES (DEFAULT, ...)`` with a ``DEFAULT`` for each column. Identity
+columns get their next value, generated columns are set from the defaults of
+the other columns, and a column without a default is ``NULL`` (an error
+``23502`` for a ``NOT NULL`` column).
 
 The rows are either the rows of ``VALUES``, or the result of a query (see
 :doc:`select`). A query can use ``UNION``, ``EXCEPT``, ``INTERSECT``,

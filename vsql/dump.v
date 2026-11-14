@@ -489,6 +489,12 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			}
 
 			for row in conn.query('SELECT * FROM ${table.name.storage_sql()}')! {
+				// When every column is generated, there's nothing to insert.
+				if column_names.len == 0 {
+					write_line(mut w, 'INSERT INTO ${name} DEFAULT VALUES;')!
+					continue
+				}
+
 				mut data := []string{}
 				for col in column_names {
 					data << (row.get(col)!).literal()

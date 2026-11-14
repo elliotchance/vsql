@@ -1,6 +1,7 @@
 -- # There's one row for each package of SQL:2003 (Part 1, Subclause 8.4),
--- # which SQL:2023 removed (#1505). A package is Core SQL and its features, so
--- # none of them are supported until Core SQL is. Nothing is verified by a conformance test (6.43, Description, 6).
+-- # which SQL:2023 removed, but Part 11 still has the view. A package is Core
+-- # SQL and its features, so none of them are supported until Core SQL is.
+-- # Nothing is verified by a conformance test (6.43, Description, 6).
 SELECT id, name, is_supported, is_verified_by FROM information_schema.sql_packages;
 -- ID: PKG001 NAME: Enhanced datetime facilities IS_SUPPORTED: NO IS_VERIFIED_BY: NULL
 -- ID: PKG002 NAME: Enhanced integrity management IS_SUPPORTED: NO IS_VERIFIED_BY: NULL

@@ -6,7 +6,7 @@ module vsql
 
 import math
 
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.2, The null value.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.6.2, Null value.
 
 // Possible values for a BOOLEAN.
 pub enum Boolean {

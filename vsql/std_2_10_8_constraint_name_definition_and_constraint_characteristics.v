@@ -5,7 +5,7 @@ module vsql
 //
 // Specify the name of a constraint and its characteristics.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.6.6.3, Table
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.8.5.4, Table
 // constraints.
 
 // ConstraintCharacteristics are the <constraint characteristic>s of a

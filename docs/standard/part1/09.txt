@@ -1,0 +1,24 @@
+# ISO/IEC 9075-1:2023(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9, Conformance
+9                        n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.1, Kinds of conformance claims
+9.1                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.2, Minimum conformance
+9.2                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.3, Conformance to parts
+9.3                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.4, Conformance to features
+9.4                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.5, Extensions and options
+9.5                      implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql the extensions are flagged with V features
+# 9.6, SQL flagger
+9.6                      implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql Core SQL Flagging and SQL Feature Flagging, Syntax Only (F812)
+# 9.7, Claims of conformance
+9.7                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.7.1, How conformance is claimed
+9.7.1                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.7.2, Requirements for SQL applications
+9.7.2                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 9.7.3, Requirements for SQL-implementations
+9.7.3                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)

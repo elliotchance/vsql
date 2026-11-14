@@ -3,7 +3,7 @@ module vsql
 // ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>
 //
 // Get exception or completion condition information from a diagnostics area.
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.4, Diagnostic
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.10.5, Diagnostic
 // information.
 //
 // It's only in an SQL-client module, where each target is a host parameter.

@@ -2,7 +2,7 @@
 
 module vsql
 
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.3, Tables.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.5, Tables.
 
 // A column definition.
 struct Column {

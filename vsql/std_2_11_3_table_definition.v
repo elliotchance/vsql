@@ -9,8 +9,8 @@ import time
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.6.6, Base tables and their components
-// ISO/IEC 9075-1:2003(E), 4.6.6.1, Base tables
+// ISO/IEC 9075-1:2023(E), 4.8.5, Base tables and their components
+// ISO/IEC 9075-1:2023(E), 4.8.5.1, Base tables
 // ISO/IEC 9075-2:2023(E), 4.17, Tables
 
 type TableElement = CheckConstraintDefinition

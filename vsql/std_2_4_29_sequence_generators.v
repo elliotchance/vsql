@@ -2,7 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2023(E), 4.29, Sequence generators
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.6.11, Sequence
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.8.10, Sequence
 // generators.
 
 // A SEQUENCE definition, which is the sequence generator descriptor. The current

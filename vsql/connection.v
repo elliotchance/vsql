@@ -11,8 +11,8 @@ import time
 
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.2.3, SQL-implementations
-// ISO/IEC 9075-1:2003(E), 4.2.3.2, SQL-servers
+// ISO/IEC 9075-1:2023(E), 4.4.3, SQL-implementations
+// ISO/IEC 9075-1:2023(E), 4.4.3.3, SQL-servers
 
 pub const default_schema_name = 'PUBLIC'
 

@@ -9,7 +9,7 @@ import time
 // currently active, then set the constraint mode for the next SQL-transaction
 // in the current SQL-session for the SQL-agent.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.7.1, Constraint
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.9.1, Constraint
 // checking.
 
 // The names are empty for ALL.

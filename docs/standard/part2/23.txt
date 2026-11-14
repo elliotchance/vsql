@@ -95,9 +95,9 @@
 23.1/GR/6.a.iv           n/a          - - ALL (F123)
 23.1/GR/6.b              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 23.1/GR/6.c              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
-23.1/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
-23.1/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
-23.1/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+23.1/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
+23.1/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
+23.1/CR/3                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 23.1/CR/4                n/a          - - ALL (F123)
 # 23.2, Pushing and popping the diagnostics area stack
 23.2                     n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)

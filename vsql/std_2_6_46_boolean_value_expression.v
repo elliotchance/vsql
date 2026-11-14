@@ -4,7 +4,7 @@ module vsql
 //
 // Specify a boolean value.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.3, Boolean type.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.6.3.4, Boolean type.
 //
 // The concept is also described by:
 //

@@ -4,7 +4,7 @@ module main
 //
 // Get a field from a CLI descriptor area.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.3, Descriptor areas.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.10.4, Descriptor areas.
 //
 // There are no implementation-defined descriptor fields (General Rules, 14.c
 // and 15.a).

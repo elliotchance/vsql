@@ -32,9 +32,9 @@ when a newer edition (or another draft) of the same part is available:
      - Folder in ``standard_docs/``
 
    * - 1 (Framework)
-     - ISO/IEC 9075-1:2003(E)
-     - SQL:2003 working draft (2003-09)
-     - ``ISO_IEC 9075-1 2003 WD Framework``
+     - ISO/IEC 9075-1:2023(E)
+     - SQL:2023
+     - ``ISO_IEC 9075-1 2023 Framework``
 
    * - 2 (Foundation)
      - ISO/IEC 9075-2:2023(E)

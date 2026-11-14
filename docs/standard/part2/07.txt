@@ -20,11 +20,11 @@
 7.1/GR/3.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql
 7.1/GR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_7_3_values.sql,tests/std_2_7_1_values_without_row.sql
 7.1/GR/3.c               implemented  vsql/std_2_7_1_row_value_constructor.v tests/std_2_14_11_insert.sql
-7.1/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_8_5_flagging.sql
+7.1/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_9_6_flagging.sql
 7.1/CR/2                 n/a          - - row types (T051); ROW can't be used in the VALUES of an INSERT
-7.1/CR/3                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_8_5_flagging.sql,tests/std_2_8_2_row_comparison.sql
+7.1/CR/3                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_9_6_flagging.sql,tests/std_2_8_2_row_comparison.sql
 7.1/CR/4                 n/a          - - row subqueries (F641)
-7.1/CR/5                 untested     vsql/std_1_8_5_sql_flagger.v - only flagged when it contains a boolean operator
+7.1/CR/5                 untested     vsql/std_1_9_6_sql_flagger.v - only flagged when it contains a boolean operator
 7.1/CR/6                 n/a          - - row and table constructors (F641); a contextually typed row value constructor can only be in a VALUES
 # 7.2, <row value expression>
 7.2                      implemented  vsql/std_2_7_2_row_value_expression.y tests/std_2_7_3_values.sql
@@ -45,8 +45,8 @@
 7.3/SR/3                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
 7.3/GR/1                 n/a          - - row types (T051); a row can't be NULL
 7.3/GR/2                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
-7.3/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_8_5_flagging.sql
-7.3/CR/2                 implemented  vsql/std_2_7_3_table_value_constructor.y tests/std_1_8_5_flagging.sql
+7.3/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_9_6_flagging.sql
+7.3/CR/2                 implemented  vsql/std_2_7_3_table_value_constructor.y tests/std_1_9_6_flagging.sql
 # 7.4, <table expression>
 7.4                      implemented  vsql/std_2_7_4_table_expression.v tests/std_2_7_12_select_where.sql
 7.4/SR/1                 implemented  vsql/std_2_7_4_table_expression.v tests/std_2_7_12_select_where.sql
@@ -353,7 +353,7 @@
 7.6/CR/3                 n/a          - - LATERAL (T491)
 7.6/CR/4                 n/a          - - WITH (T121)
 7.6/CR/5                 n/a          - - ONLY (S111)
-7.6/CR/6                 implemented  vsql/std_2_7_6_table_reference.y tests/std_1_8_5_flagging.sql
+7.6/CR/6                 implemented  vsql/std_2_7_6_table_reference.y tests/std_1_9_6_flagging.sql
 7.6/CR/7                 n/a          - - table functions (T326)
 7.6/CR/8                 n/a          - - sampling (T613)
 7.6/CR/9                 n/a          - - triggers (T211)
@@ -794,7 +794,7 @@
 7.12/SR/2                n/a          - - window functions (T611)
 7.12/GR/1                implemented  vsql/std_2_7_12_where_clause.y tests/std_2_7_12_select_where.sql
 7.12/GR/2                implemented  vsql/std_2_8_21_search_condition.v tests/std_2_7_12_select_where.sql
-7.12/CR/1                partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter, or in the VALUES of an INSERT, or when the aggregate function is only in a subquery of the derived column
+7.12/CR/1                partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter, or in the VALUES of an INSERT, or when the aggregate function is only in a subquery of the derived column
 # 7.13, <groupbyclause>
 7.13                     implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql only grouping column references (T431)
 7.13/SR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_6_6_ambiguous_column.sql
@@ -1220,7 +1220,7 @@
 7.16/GR/2                container    - -
 7.16/GR/2.a              implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_12_select_where.sql
 7.16/GR/2.b              implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
-7.16/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.16/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 7.16/CR/2                n/a          - - row types (T051)
 7.16/CR/3                implemented  vsql/compiler.v tests/std_2_7_13_group_by.sql always enforced, there are no functional dependencies (T301)
 7.16/CR/4                n/a          - - SQL parameters (T325)
@@ -1482,24 +1482,24 @@
 7.17/CR/2                n/a          - - WITH (T122)
 7.17/CR/3                n/a          - - recursive queries (T131)
 7.17/CR/4                n/a          - - recursive queries (T132)
-7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
+7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
 7.17/CR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
 7.17/CR/8                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
 7.17/CR/9                n/a          - - CORRESPONDING (F301)
-7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql,tests/std_2_7_17_intersect.sql
-7.17/CR/11               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
-7.17/CR/12               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/13               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/14               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/15               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/16               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/17               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/18               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/19               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/20               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/21               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/22               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql,tests/std_2_7_17_intersect.sql
+7.17/CR/11               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
+7.17/CR/12               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/13               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/14               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/15               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/16               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/17               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/18               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/19               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/20               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/21               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+7.17/CR/22               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 7.17/CR/23               n/a          - - FETCH FIRST PERCENT (F866)
 7.17/CR/24               n/a          - - FETCH FIRST WITH TIES (F867)
 7.17/CR/25               n/a          - - ORDER BY in grouped table (F868, #1187)

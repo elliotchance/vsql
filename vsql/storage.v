@@ -8,7 +8,7 @@ module vsql
 
 import os
 
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.2.11, SQL-data.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.4.12, SQL-data.
 
 enum TransactionState {
 	not_active

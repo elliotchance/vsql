@@ -2,7 +2,7 @@ module vsql
 
 import arrays
 
-// ISO/IEC 9075-1:2003(E), 8.5, SQL flagger
+// ISO/IEC 9075-1:2023(E), 9.6, SQL flagger
 //
 // An SQL Flagger identifies SQL language that isn't Core SQL, so that it can be
 // moved to another SQL-implementation. vsql provides "Core SQL Flagging" with
@@ -15,7 +15,7 @@ import arrays
 // feature. The rules that depend on what a name refers to are found by planning
 // the statement with the catalog (see Connection.resolved_features). An
 // implementation-defined feature (an extension that only vsql has)
-// has a Feature ID whose letter is "V" (see ISO/IEC 9075-1:2003(E), 6.3.7,
+// has a Feature ID whose letter is "V" (see ISO/IEC 9075-1:2023(E), 6.3.10,
 // Feature ID and Feature Name). It's VXXX-YY, where VXXX is what's extended and
 // YY is each extension of it. The first digit of VXXX is the kind of thing that's
 // extended: 0 for a statement that isn't in the standard, 1 for a statement of the
@@ -26,7 +26,7 @@ import arrays
 
 // The implementation-defined features, which are also listed in the SQL
 // Flagging docs. They're flagged, which is implementation-defined (ISO/IEC
-// 9075-1:2003(E), 8.4.8, Extensions and options).
+// 9075-1:2023(E), 9.5, Extensions and options).
 //
 // V001: EXPLAIN.
 // V001-01: EXPLAIN before a query (such as SELECT or VALUES).

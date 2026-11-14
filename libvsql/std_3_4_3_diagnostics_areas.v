@@ -11,7 +11,7 @@ import vsql
 // raised (see DiagnosticRecord.position). There's no status record for a
 // completion condition: no data (see no_data).
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.4, Diagnostic
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.10.5, Diagnostic
 // information.
 
 struct DiagnosticRecord {

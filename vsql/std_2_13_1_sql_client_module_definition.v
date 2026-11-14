@@ -10,8 +10,8 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.2.4, SQL-client modules
-// ISO/IEC 9075-1:2003(E), 4.9, Modules
+// ISO/IEC 9075-1:2023(E), 4.4.4, SQL-client modules
+// ISO/IEC 9075-1:2023(E), 4.11, Modules
 // ISO/IEC 9075-2:2023(E), 4.30, SQL-client modules
 
 // CompiledModule is the C header (.h) and source (.c) of an SQL-client module.

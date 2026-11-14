@@ -6,9 +6,9 @@ import math
 
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.4, SQL data types
-// ISO/IEC 9075-1:2003(E), 4.4.1, General data type information
-// ISO/IEC 9075-1:2003(E), 4.4.3, Predefined types
+// ISO/IEC 9075-1:2023(E), 4.6, SQL data types
+// ISO/IEC 9075-1:2023(E), 4.6.1, General data type information
+// ISO/IEC 9075-1:2023(E), 4.6.3, Predefined types
 
 // Type is a fully-qualified SQL type, such as the type of a column or a value.
 pub struct Type {

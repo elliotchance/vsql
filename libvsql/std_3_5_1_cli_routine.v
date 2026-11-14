@@ -21,9 +21,9 @@ module main
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.8, Communication between an SQL-agent and an
+// ISO/IEC 9075-1:2023(E), 4.10, Communication between an SQL-agent and an
 // SQL-server
-// ISO/IEC 9075-1:2003(E), 4.8.1, Host languages
+// ISO/IEC 9075-1:2023(E), 4.10.1, Host languages
 
 // read_integer reads an INTEGER passed by reference.
 fn read_integer(value voidptr) !i64 {

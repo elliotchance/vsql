@@ -4,7 +4,7 @@ module vsql
 
 import time
 
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.4, Datetime types.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.6.3.5, Datetime types.
 
 const second_period = i64(1000000)
 const minute_period = 60 * second_period

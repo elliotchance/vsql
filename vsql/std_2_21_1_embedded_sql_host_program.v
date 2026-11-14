@@ -16,7 +16,7 @@ module vsql
 // ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, General Rules, 1
 //
 // Embedded SQL is one of the binding styles of a host language, described by
-// ISO/IEC 9075-1:2003(E), 4.8.1, Host languages.
+// ISO/IEC 9075-1:2023(E), 4.10.1, Host languages.
 //
 // The concepts are also described by:
 //

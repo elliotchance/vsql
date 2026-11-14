@@ -6,7 +6,7 @@ import time
 //
 // Start an SQL-transaction and set its characteristics.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.5, SQL-transactions.
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.10.6, SQL-transactions.
 //
 // The concept is also described by:
 //

@@ -4,10 +4,10 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.2.8, Catalogs and schemas
-// ISO/IEC 9075-1:2003(E), 4.2.8.2, SQL-schemas
-// ISO/IEC 9075-1:2003(E), 4.6, SQL-schema objects
-// ISO/IEC 9075-1:2003(E), 4.6.1, General SQL-schema object information
+// ISO/IEC 9075-1:2023(E), 4.4.9, Catalogs and schemas
+// ISO/IEC 9075-1:2023(E), 4.4.9.2, SQL-schemas
+// ISO/IEC 9075-1:2023(E), 4.8, SQL-schema objects
+// ISO/IEC 9075-1:2023(E), 4.8.1, General SQL-schema object information
 // ISO/IEC 9075-2:2023(E), 4.17.5, Unique identification of tables
 
 // Represents a schema.

@@ -4,7 +4,7 @@ module vsql
 //
 // Specify a condition for the SQL-data.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.7, Integrity
+// The concept is described by ISO/IEC 9075-1:2023(E), 4.9, Integrity
 // constraints and constraint checking.
 //
 // The concept is also described by:

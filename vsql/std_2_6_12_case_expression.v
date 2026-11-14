@@ -93,7 +93,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 
 			// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 5: the
 			// result has the combined type of all the arguments (9.5).
-			mut typ := Type{compiled_exprs[0].typ.typ, compiled_exprs[0].typ.size, compiled_exprs[0].typ.scale, false}
+			mut typ := Type{compiled_exprs[0].typ.typ, compiled_exprs[0].typ.size, compiled_exprs[0].typ.scale, false, false}
 			mut contains_agg := compiled_exprs[0].contains_agg
 			for i, compiled_expr in compiled_exprs[1..] {
 				typ = combine_types(typ, compiled_expr.typ) or {
@@ -252,7 +252,7 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 				return sqlstate_42804('in CASE', t.str(), compiled_result.typ.str())
 			}
 		} else {
-			typ = Type{compiled_result.typ.typ, compiled_result.typ.size, compiled_result.typ.scale, false}
+			typ = Type{compiled_result.typ.typ, compiled_result.typ.size, compiled_result.typ.scale, false, false}
 		}
 	}
 

@@ -1457,6 +1457,9 @@ struct Type
    	scale i16
    	// Is NOT NULL?
    	not_null bool
+   	// octets is true when the size of a character string type is in octets
+   	// (such as CHARACTER VARYING(10 OCTETS)) rather than characters.
+   	octets bool
    }
 
 Type is a fully-qualified SQL type, such as the type of a column or a value.

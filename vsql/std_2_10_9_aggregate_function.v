@@ -279,8 +279,8 @@ fn set_function_type(name string, t Type) Type {
 	if name == 'SUM' {
 		return match t.typ {
 			.is_smallint, .is_integer, .is_bigint { new_type('BIGINT', 0, 0) }
-			.is_numeric, .is_decimal { Type{t.typ, 0, t.scale, false} }
-			else { Type{t.typ, 0, 0, false} }
+			.is_numeric, .is_decimal { Type{t.typ, 0, t.scale, false, false} }
+			else { Type{t.typ, 0, 0, false, false} }
 		}
 	}
 
@@ -289,7 +289,7 @@ fn set_function_type(name string, t Type) Type {
 	// is allowed because an exact numeric only needs at least the same precision
 	// and scale (SR 7.g.iii), and an approximate numeric only needs at least the
 	// same precision (SR 7.g.iv). The average is truncated to that scale.
-	return Type{t.typ, t.size, t.scale, false}
+	return Type{t.typ, t.size, t.scale, false, false}
 }
 
 // eval_set_function returns the result of the general set function (such as

@@ -94,7 +94,7 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 		}
 
 		if i == 0 {
-			types = compiled.map(Type{it.typ.typ, it.typ.size, it.typ.scale, false})
+			types = compiled.map(Type{it.typ.typ, it.typ.size, it.typ.scale, false, false})
 			continue
 		}
 

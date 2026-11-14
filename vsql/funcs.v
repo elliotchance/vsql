@@ -85,14 +85,14 @@ pub fn (ctx FunctionContext) in_transaction() bool {
 }
 
 fn register_builtin_funcs(mut conn Connection) ! {
-	double_precision := Type{SQLType.is_double_precision, 0, 0, false}
-	integer := Type{SQLType.is_integer, 0, 0, false}
-	varchar := Type{SQLType.is_varchar, 0, 0, false}
-	numeric := Type{SQLType.is_numeric, 0, 0, false}
-	smallint := Type{SQLType.is_smallint, 0, 0, false}
-	bigint := Type{SQLType.is_bigint, 0, 0, false}
-	real := Type{SQLType.is_real, 0, 0, false}
-	decimal := Type{SQLType.is_decimal, 0, 0, false}
+	double_precision := Type{SQLType.is_double_precision, 0, 0, false, false}
+	integer := Type{SQLType.is_integer, 0, 0, false, false}
+	varchar := Type{SQLType.is_varchar, 0, 0, false, false}
+	numeric := Type{SQLType.is_numeric, 0, 0, false, false}
+	smallint := Type{SQLType.is_smallint, 0, 0, false, false}
+	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
+	real := Type{SQLType.is_real, 0, 0, false, false}
+	decimal := Type{SQLType.is_decimal, 0, 0, false, false}
 
 	// Scalar functions. The trigonometric functions, LOG, LN, EXP, POWER and SQRT
 	// return a DOUBLE PRECISION (the approximate numeric type is
@@ -182,7 +182,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
-			arg := Type{typ.value, 0, 0, false}
+			arg := Type{typ.value, 0, 0, false, false}
 			mut names := ['ANY_VALUE', 'COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {
 				names << ['AVG', 'SUM', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP']

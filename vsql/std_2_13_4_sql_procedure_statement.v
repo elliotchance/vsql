@@ -121,7 +121,12 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 	mark_stored_parameters(stmt, mut references)
 
 	if stmt is RollbackStatement && stmt.savepoint != '' {
-		return sqlstate_42601('procedure ${p.name}: ROLLBACK TO SAVEPOINT is not supported in a module')
+		if stmt.chain {
+			return sqlstate_42601('procedure ${p.name}: AND CHAIN cannot be used with TO SAVEPOINT')
+		}
+
+		return ModuleStatement{['connection', 'rollback_to'], [], begin('ROLLBACK WORK', 62) +
+			'  vsql_m_rollback_to(SQLSTATE, ${c_string(delimit_identifier(stmt.savepoint))});\n'}
 	}
 
 	return match stmt {

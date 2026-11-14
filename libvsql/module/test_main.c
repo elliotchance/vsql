@@ -326,6 +326,16 @@ int main(void) {
   EXPECT(start_transaction(sqlstate), "25001");
   EXPECT(rollback_work(sqlstate), "00000");
 
+  /* 17.5, 17.6 and 17.8: savepoints. */
+  EXPECT(rollback_to_s(sqlstate), "3B001");
+  EXPECT(start_transaction(sqlstate), "00000");
+  EXPECT(savepoint_s(sqlstate), "00000");
+  EXPECT(rollback_to_s(sqlstate), "00000");
+  EXPECT(start_transaction(sqlstate), "25001");
+  EXPECT(release_s(sqlstate), "00000");
+  EXPECT(release_s(sqlstate), "3B001");
+  EXPECT(rollback_work(sqlstate), "00000");
+
   /* 18.1: CONNECT TO. */
   EXPECT(connect_default(sqlstate), "08002");
   strcpy(server, ":memory:");

@@ -228,8 +228,9 @@ Transactions
 ^^^^^^^^^^^^
 
 ``orm_begin()``, ``orm_commit()`` and ``orm_rollback()`` use ``START
-TRANSACTION``, ``COMMIT`` and ``ROLLBACK``. vsql doesn't have savepoints, so the
-savepoint functions return an error.
+TRANSACTION``, ``COMMIT`` and ``ROLLBACK``. ``orm_savepoint()``,
+``orm_rollback_to()`` and ``orm_release_savepoint()`` use :doc:`savepoint`, which
+is how nested transactions work.
 
 Limitations
 ^^^^^^^^^^^
@@ -242,7 +243,6 @@ Limitations
 - These are not supported:
 
   - ``ilike``, which isn't part of the SQL standard.
-  - Nested transactions, which use savepoints (see `Transactions`_).
 
   Each of these returns an error from vsql when the query runs.
 

@@ -369,6 +369,7 @@ pub fn (mut conn Connection) close() {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
 			catalog.storage.isolation.close()
+			catalog.storage.deferral.close()
 			catalog.storage.close_files()
 		}
 	}
@@ -412,6 +413,9 @@ fn (mut conn Connection) add_catalog_now(catalog_name string, path string, optio
 		catalog.storage.isolation = IsolationLock{
 			path: isolation_path(path)
 		}
+		catalog.storage.deferral = IsolationLock{
+			path: deferral_path(path)
+		}
 		catalog.storage.log = WalLog{
 			path:       wal_path(path)
 			full_fsync: options.full_fsync
@@ -433,6 +437,7 @@ fn (mut conn Connection) add_catalog_now(catalog_name string, path string, optio
 		catalog.lock_transaction(conn.read_only) or {
 			catalog.storage.session.close()
 			catalog.storage.isolation.close()
+			catalog.storage.deferral.close()
 			catalog.storage.close_files()
 			return err
 		}
@@ -588,6 +593,22 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.storage.begin_statement()
 		conn.begin_transaction()!
 		return
+	}
+
+	// A SERIALIZABLE transaction on another connection may be keeping the pages
+	// that it changed in memory until it ends (see Storage.prepare_commit), so
+	// the file can't be changed until then. It holds the deferral lock
+	// exclusively while it does, so this waits for a shared lock (until the end
+	// of the statement), the same as for a SERIALIZABLE transaction.
+	if conn.storage.deferral.state == .unlocked && conn.storage.isolation.state != .exclusive
+		&& (conn.storage.deferral.file.is_opened || os.exists(conn.storage.deferral.path)) {
+		timeout := conn.options.lock_timeout
+		conn.storage.deferral.acquire(.shared, timeout, if timeout > 0 {
+			'timed out after ${timeout} waiting for another connection to finish its transaction'
+		} else {
+			'another connection has a transaction that must finish first'
+		})!
+		conn.storage.statement_deferral = true
 	}
 
 	conn.options.mutex.@lock()

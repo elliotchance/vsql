@@ -360,7 +360,9 @@ fn test_wal_power_fails_during_transaction() ! {
 	// that doesn't sync can change it.
 	db = open(path)!
 	on_disk_len := os.file_size(path)
-	db.query('START TRANSACTION')!
+	// A SERIALIZABLE transaction would keep the pages in memory until it ends
+	// (see Storage.prepare_commit).
+	db.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
 	mut synced_tail := 0
 	mut skipped := 0
 	for x in 1 .. 101 {
@@ -410,7 +412,8 @@ fn test_kept_files_are_replaced() ! {
 	other_path := os.join_path(os.temp_dir(), 'vsql-kept-other-${os.getpid()}.vsql')
 	defer {
 		for file in [path, other_path] {
-			for suffix in ['', '.wal', '.session', '.isolation', '.isolation.queue', '.lock'] {
+			for suffix in ['', '.wal', '.session', '.isolation', '.isolation.queue',
+				'.isolation.deferred', '.lock'] {
 				os.rm(file + suffix) or {}
 			}
 		}

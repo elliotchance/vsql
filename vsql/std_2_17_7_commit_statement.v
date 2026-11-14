@@ -116,6 +116,7 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
 	catalog.storage.transaction_state = .not_active
+	catalog.storage.rollback_needs_pages = false
 	catalog.storage.isolation_end()!
 	catalog.storage.end_constraint_modes()
 	catalog.storage.end_savepoints()

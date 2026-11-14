@@ -155,13 +155,23 @@ transaction and then holds up the others.
 
 Other connections can always read (outside of a transaction, or in a
 ``READ COMMITTED`` one). ``NEXT VALUE FOR`` is not part of a transaction, so
-it doesn't wait either.
+it doesn't wait either, unless the ``SERIALIZABLE`` transaction has changed the
+database (see below).
 
 A ``READ COMMITTED`` or ``REPEATABLE READ`` transaction doesn't wait, and it
 can change the database while a ``SERIALIZABLE`` transaction is active, but it
 can't commit those changes until the ``SERIALIZABLE`` transaction ends.
 Committing fails with a ``40001`` serialization failure straight away, and the
 transaction is rolled back.
+
+Once a ``SERIALIZABLE`` transaction has changed the database while no other
+transaction was active, it keeps its changes in memory (up to 64 MiB, after
+which they're written and it starts again) and writes them to the file when it
+ends, which is a lot faster than writing each statement. A ``ROLLBACK`` just
+forgets them, unless some were already written (or it used ``NEXT VALUE FOR``,
+which a rollback doesn't undo). Until then, any statement on another connection that
+changes the database (including ``NEXT VALUE FOR``) waits for it to end, up to
+the ``lock_timeout``, the same as another ``SERIALIZABLE`` transaction.
 
 .. code-block:: sql
 

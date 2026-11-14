@@ -129,6 +129,7 @@ fn (mut f Storage) begin_transaction() ! {
 	// same isolation scope (the transaction).
 	f.isolation_start()!
 	f.transaction_state = .active
+	f.rollback_needs_pages = false
 
 	// This would fail is a implicit or explicit transaction did not perform
 	// cleanup.

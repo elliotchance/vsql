@@ -274,7 +274,7 @@ SELECT * FROM t;
 -- # connection 2 copies the log, see recover_log.)
 /* connection 1 */
 CREATE TABLE t (x INT);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (x) VALUES (1);
 /* disconnect 1 */
 /* fault session_shared 2 */

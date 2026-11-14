@@ -175,7 +175,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 // fold_result gives the result of UPPER or LOWER the declared type of its
 // operand. A CHARACTER result is padded, and a result that's longer than the
 // maximum length is truncated, with a warning if any of the removed characters
-// aren't spaces. A type that doesn't have a length never truncates.
+// aren't <truncating whitespace>. A type that doesn't have a length never truncates.
 //
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 7.g.i
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 7.g.ii

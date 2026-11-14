@@ -115,8 +115,8 @@ fn concatenation_type(left Type, right Type) !Type {
 
 // limit_concatenation returns the result of a concatenation that's no longer
 // than the maximum length. A CHARACTER result can't be longer, since its type
-// would've been rejected. Only spaces can be removed from the end of the result,
-// otherwise it's an error.
+// would've been rejected. Only <truncating whitespace> can be removed from the
+// end of the result, otherwise it's an error.
 //
 // ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 2.b.ii.3.B
 fn limit_concatenation(s string) !string {
@@ -130,7 +130,7 @@ fn limit_concatenation(s string) !string {
 		return s
 	}
 
-	if runes[max_character_length..].any(it != ` `) {
+	if !runes[max_character_length..].all(is_truncating_whitespace(it)) {
 		return sqlstate_22001(new_type('CHARACTER VARYING', max_character_length, 0))
 	}
 

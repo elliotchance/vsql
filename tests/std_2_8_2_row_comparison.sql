@@ -1,4 +1,4 @@
--- # Rows of the same degree are compared field by field (ISO/IEC 9075-2:2023(E),
+-- # Rows of the same degree are compared field by field (ISO/IEC 9075-2:2023,
 -- # 8.2, <comparison predicate>, General Rules, 1.b.i).
 /* setup */
 CREATE TABLE t (x INT PRIMARY KEY, y INT);

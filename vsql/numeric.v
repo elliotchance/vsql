@@ -5,7 +5,7 @@ module vsql
 
 import math.big
 
-// The concept is described by ISO/IEC 9075-1:2023(E), 4.6.3.1, Numeric types.
+// The concept is described by ISO/IEC 9075-1:2023, 4.6.3.1, Numeric types.
 
 // These are used for encoding certain aspects for storage. 1 << 0 was for a
 // NULL, which is never stored as a Numeric (see Value.is_null).
@@ -72,7 +72,7 @@ fn shift_exponent(x string) string {
 
 fn new_numeric_from_string(x string) Numeric {
 	// The scale of an exact numeric literal is the number of digits after the
-	// period, and its type must hold the value exactly (ISO/IEC 9075-2:2023(E),
+	// period, and its type must hold the value exactly (ISO/IEC 9075-2:2023,
 	// 5.3, <literal>, Syntax Rules, 29).
 
 	mut n := if x.contains('e') || x.contains('E') { shift_exponent(x) } else { x }
@@ -224,7 +224,7 @@ fn (n Numeric) divide(n2 Numeric) !Numeric {
 // digits than its type can hold. The type of an arithmetic result is limited to
 // the maximum precision, see exact_arithmetic_type.
 //
-// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>, General Rules, 5
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, General Rules, 5
 fn check_numeric_precision(n Numeric) !Numeric {
 	integer := n.integer().str().trim_left('-')
 	digits := if integer == '0' { 0 } else { integer.len }
@@ -259,7 +259,7 @@ fn (n Numeric) scale_numerator(denominator big.Integer) Numeric {
 // lose precision if it goes beyond the specified precision.
 //
 // A NUMERIC or DECIMAL always has exactly the scale of its type: its value is a
-// multiple of 10^-scale (ISO/IEC 9075-2:2023(E), 4.5.2 and 6.1 Syntax Rules 26
+// multiple of 10^-scale (ISO/IEC 9075-2:2023, 4.5.2 and 6.1 Syntax Rules 26
 // and 27). DECIMAL differs from NUMERIC only in that its precision may be
 // larger, which vsql doesn't use, so they're the same apart from the name.
 fn (n Numeric) normalize_denominator(typ Type) Numeric {

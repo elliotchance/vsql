@@ -2,7 +2,7 @@ module main
 
 import encoding.utf8
 
-// ISO/IEC 9075-3:2003(E), 6.56, SetDescField
+// ISO/IEC 9075-3:2003, 6.56, SetDescField
 //
 // Set a field in a CLI descriptor area.
 //
@@ -32,7 +32,7 @@ fn sql_set_desc_field(descriptor_handle SQLInteger, record_number i16, field_ide
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.ii
 	desc.invoke() or { return desc.diag.error(err) }
 
@@ -298,7 +298,7 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 }
 
 // is_consistent is true if an item descriptor area of an ARD or APD has a data
-// type that can be used in C (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI
+// type that can be used in C (ISO/IEC 9075-3:2003, 5.13, Description of CLI
 // item descriptor areas, Syntax Rules, 7). NUMERIC, DECIMAL and FLOAT don't
 // have a C data type (Table 45), so they're never consistent (7.b.iii). An
 // item descriptor area of an IPD must be valid (Syntax Rules, 5). A DATE has no

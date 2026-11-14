@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 14.13, <update statement: positioned>
+// ISO/IEC 9075-2:2023, 14.13, <update statement: positioned>
 //
 // Update a row of a table.
 

@@ -156,7 +156,7 @@ fn (mut catalog CatalogConnection) lock_transaction(read_only bool) ! {
 // transaction that can't be isolated any more is rolled back with a
 // serialization failure, which has nothing to undo.
 //
-// ISO/IEC 9075-2:2023(E), 4.43.5, Implicit rollbacks
+// ISO/IEC 9075-2:2023, 4.43.5, Implicit rollbacks
 fn (mut conn Connection) check_direct_query() ! {
 	if conn.isolation_level !in [.repeatable_read, .serializable] {
 		return

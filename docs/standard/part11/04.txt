@@ -1,4 +1,4 @@
-# ISO/IEC 9075-11:2006(E)
+# ISO/IEC 9075-11:2006
 # id status code tests note (see docs/standard-index.rst)
 # 4, Concepts
 4                        container    - -

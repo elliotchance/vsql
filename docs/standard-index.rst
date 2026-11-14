@@ -32,22 +32,22 @@ when a newer edition (or another draft) of the same part is available:
      - Folder in ``standard_docs/``
 
    * - 1 (Framework)
-     - ISO/IEC 9075-1:2023(E)
+     - ISO/IEC 9075-1:2023
      - SQL:2023
      - ``ISO_IEC 9075-1 2023 Framework``
 
    * - 2 (Foundation)
-     - ISO/IEC 9075-2:2023(E)
+     - ISO/IEC 9075-2:2023
      - SQL:2023
      - ``ISO_IEC 9075-2 2023 Foundation``
 
    * - 3 (Call-Level Interface)
-     - ISO/IEC 9075-3:2003(E)
+     - ISO/IEC 9075-3:2003
      - SQL:2003 working draft (2003-09)
      - ``ISO_IEC 9075-3 2003 WD Call-Level Interface (CLI)``
 
    * - 11 (Information and Definition Schemas)
-     - ISO/IEC 9075-11:2006(E)
+     - ISO/IEC 9075-11:2006
      - SQL:2008 committee draft (2006-02)
      - ``ISO_IEC 9075-11 2006 CD Information and Definition Schemas (Schemata)``
 
@@ -158,7 +158,7 @@ A citation of the standard in the code looks like:
 
 .. code-block:: text
 
-  ISO/IEC 9075-2:2023(E), 8.8, <null predicate>, General Rules, 2.a
+  ISO/IEC 9075-2:2023, 8.8, <null predicate>, General Rules, 2.a
 
 The title (``<null predicate>``) and the rules are optional. The title must be
 the title of the Subclause, or one of the ``<...>`` names in it (such as

@@ -4,8 +4,8 @@
  * that it opens. FOR READ ONLY can't be changed by a positioned statement, even
  * though the query is simply updatable.
  *
- * ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Syntax Rules, 6.b
- * ISO/IEC 9075-2:2023(E), 14.8, <delete statement: positioned>, Syntax Rules, 4
+ * ISO/IEC 9075-2:2023, 14.3, <cursor specification>, Syntax Rules, 6.b
+ * ISO/IEC 9075-2:2023, 14.8, <delete statement: positioned>, Syntax Rules, 4
  */
 UTEST_F(db, cursor_updatability_read_only) {
   SQLHSTMT stmt2;
@@ -33,7 +33,7 @@ UTEST_F(db, cursor_updatability_read_only) {
 /* FOR UPDATE OF limits the columns that a positioned UPDATE can set. The query
  * can be prepared, and FOR UPDATE makes an ordered query updatable.
  *
- * ISO/IEC 9075-2:2023(E), 14.3, <cursor specification>, Syntax Rules, 6.a and 9
+ * ISO/IEC 9075-2:2023, 14.3, <cursor specification>, Syntax Rules, 6.a and 9
  */
 UTEST_F(db, cursor_updatability_for_update_of) {
   SQLHSTMT stmt2;
@@ -74,8 +74,8 @@ UTEST_F(db, cursor_updatability_for_update_of) {
  * name changes), so a positioned statement is an invalid cursor state rather
  * than an invalid cursor name. A query can then open the cursor again.
  *
- * ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 6
- * ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 6
+ * ISO/IEC 9075-2:2023, 15.6, Effect of a positioned delete, General Rules, 6
+ * ISO/IEC 9075-2:2023, 15.7, Effect of a positioned update, General Rules, 6
  */
 UTEST_F(db, cursor_updatability_closed_cursor) {
   SQLHSTMT stmt2;

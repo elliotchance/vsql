@@ -1,10 +1,10 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.31, GetDescField
+// ISO/IEC 9075-3:2003, 6.31, GetDescField
 //
 // Get a field from a CLI descriptor area.
 //
-// The concept is described by ISO/IEC 9075-1:2023(E), 4.10.4, Descriptor areas.
+// The concept is described by ISO/IEC 9075-1:2023, 4.10.4, Descriptor areas.
 //
 // There are no implementation-defined descriptor fields (General Rules, 14.c
 // and 15.a).
@@ -18,7 +18,7 @@ fn sql_get_desc_field(descriptor_handle SQLInteger, record_number i16, field_ide
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.ii
 	desc.invoke() or { return desc.diag.error(err) }
 

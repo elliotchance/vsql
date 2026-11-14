@@ -2,7 +2,7 @@ module vsql
 
 import strings
 
-// ISO/IEC 9075-2:2023(E), 9.2, Store assignment
+// ISO/IEC 9075-2:2023, 9.2, Store assignment
 //
 // Specify rules for assignments where the target permits null without the use
 // of indicator parameters or indicator variables, such as storing SQL-data or
@@ -10,9 +10,9 @@ import strings
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.7, Sites and operations on sites
-// ISO/IEC 9075-1:2023(E), 4.7.1, Sites
-// ISO/IEC 9075-1:2023(E), 4.7.2, Assignment
+// ISO/IEC 9075-1:2023, 4.7, Sites and operations on sites
+// ISO/IEC 9075-1:2023, 4.7.1, Sites
+// ISO/IEC 9075-1:2023, 4.7.2, Assignment
 
 const min_smallint = new_numeric_from_string('-32768')
 
@@ -42,7 +42,7 @@ pub fn (mut conn Connection) store_assignment(v Value, to Type) !Value {
 // cast converts v to the type t by the rules of a store assignment, which are
 // also used for a CAST of most of the supported types.
 //
-// ISO/IEC 9075-2:2023(E), 9.2, Store assignment, General Rules, 1-3
+// ISO/IEC 9075-2:2023, 9.2, Store assignment, General Rules, 1-3
 fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 	// - GR 1. T is t and V is v.
 
@@ -196,7 +196,7 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 // target is a character string. For datetimes, the shortest <literal> (such as
 // "DATE '2022-06-30'") is required rather than just the formatted value.
 //
-// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 11.e and 12.e
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.e and 12.e
 fn cast_character_source(v Value) string {
 	return match v.typ.typ {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
@@ -221,7 +221,7 @@ fn cast_character_source(v Value) string {
 // an exponent (such as "-1.23E2" or "1.234567E6"). The period is always required,
 // so one is "1.0E0". Zero is "0E0", which has no sign even if it's negative.
 //
-// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 11.b and 12.b
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.b and 12.b
 fn approximate_character_string(shortest string) string {
 	parts := shortest.trim_left('-').split('e')
 	all_digits := parts[0].replace('.', '')
@@ -280,7 +280,7 @@ fn cast_datetime(conn Connection, v Value, t Type) !Value {
 // A datetime can only be assigned to the same kind of datetime (4.6.2): both
 // DATE, both TIME or both TIMESTAMP (with or without a time zone).
 //
-// ISO/IEC 9075-2:2023(E), 9.2, Store assignment, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 9.2, Store assignment, Syntax Rules, 3
 fn check_store_assignment(v Value, t Type) ! {
 	if v.is_null {
 		return
@@ -313,7 +313,7 @@ fn check_assignable(from Type, t Type) ! {
 }
 
 // cast_character_to_number casts a character string to a number (ISO/IEC
-// 9075-2:2023(E), 6.13, General Rules, 8.b and 9.b). Leading and trailing spaces
+// 9075-2:2023, 6.13, General Rules, 8.b and 9.b). Leading and trailing spaces
 // are removed, and what's left must be a <signed numeric literal>.
 //
 // The cast is then the same as casting that literal. So an approximate literal
@@ -322,7 +322,7 @@ fn check_assignable(from Type, t Type) ! {
 // out of range) rather than becoming infinity, whatever the target. One that's
 // too small becomes zero.
 //
-// ISO/IEC 9075-2:2023(E), 5.3, <literal>, Syntax Rules, 30 and General Rules, 5
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 30 and General Rules, 5
 fn cast_character_to_number(mut conn Connection, v Value, t Type) !Value {
 	s := v.string_value().trim(' ')
 
@@ -340,7 +340,7 @@ enum NumericLiteralKind {
 }
 
 // numeric_literal_kind returns whether s is a <signed numeric literal> (ISO/IEC
-// 9075-2:2023(E), 5.3).
+// 9075-2:2023, 5.3).
 fn numeric_literal_kind(s string) NumericLiteralKind {
 	mut i := 0
 	if i < s.len && (s[i] == `+` || s[i] == `-`) {
@@ -391,7 +391,7 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 
 	// A boolean or datetime can't be cast to a number.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, Syntax Rules, 7
+	// ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 7
 	if v.typ.typ == .is_boolean || v.typ.typ.is_datetime() {
 		return sqlstate_42846(v.typ, t)
 	}
@@ -519,7 +519,7 @@ fn cast_time_without_to_time_with(conn &Connection, v Value, to Type) !Value {
 
 // When a TIME is cast to a TIMESTAMP the date is the same as CURRENT_DATE.
 //
-// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 18 and 19
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 18 and 19
 fn current_date_str(conn &Connection) string {
 	now := local_now(conn)
 

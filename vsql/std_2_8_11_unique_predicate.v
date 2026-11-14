@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 8.11, <unique predicate>
+// ISO/IEC 9075-2:2023, 8.11, <unique predicate>
 //
 // Specify a test for the absence of duplicate rows.
 
@@ -32,8 +32,8 @@ fn (e UniquePredicate) compile(mut c Compiler) !CompileResult {
 // rows. Each column is compared like a grouping operation, the same as for
 // SELECT DISTINCT.
 //
-// ISO/IEC 9075-2:2023(E), 8.11, <unique predicate>, Syntax Rules, 2
-// ISO/IEC 9075-2:2023(E), 8.11, <unique predicate>, General Rules, 2
+// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, General Rules, 2
 fn is_unique_rows(conn &Connection, rows [][]Value) !bool {
 	mut kept := [][]Value{}
 	for row in rows {

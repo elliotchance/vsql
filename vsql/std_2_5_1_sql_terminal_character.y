@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 5.1, <SQL terminal character>
+// ISO/IEC 9075-2:2023, 5.1, <SQL terminal character>
 //
 // Define the terminal symbols of the SQL language and the elements of strings.
 

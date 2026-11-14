@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 4 and 5
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 4 and 5
 //
 // The data type of each dynamic parameter ("?") is determined from where it's
 // used when the statement is prepared, such as the type of the column in "x =
@@ -30,7 +30,7 @@ const untyped_parameter_type = Type{.is_varchar, 0, 0, false}
 // position or string length of a SUBSTRING or OVERLAY, which is the largest
 // exact numeric with scale 0.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.vi and 5.a.viii.2
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.vi and 5.a.viii.2
 const position_parameter_type = Type{.is_numeric, max_numeric_precision, 0, false}
 
 // describe_parameters returns the data type of each dynamic parameter (by its
@@ -38,7 +38,7 @@ const position_parameter_type = Type{.is_numeric, max_numeric_precision, 0, fals
 // whose type can't be determined is a syntax error, and one that isn't in the
 // result (because the statement couldn't be compiled) has the type of its value.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.b
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.b
 fn (mut conn Connection) describe_parameters(stmt Stmt, params map[string]Value) !map[string]Type {
 	conn.describing = true
 	conn.parameter_types = map[string]Type{}
@@ -119,7 +119,7 @@ fn (mut conn Connection) describe_statement(stmt Stmt, params map[string]Value) 
 // describe_values gives each dynamic parameter that is a value of a VALUES of
 // an INSERT the type of its column. A query is the same as any other query.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xix.1.A
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xix.1.A
 fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string]Value) ! {
 	if query := stmt.query {
 		create_plan(query, params, mut conn)!
@@ -151,7 +151,7 @@ fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string
 // describe_set_clauses gives each dynamic parameter that is the value of a
 // <set clause> the type of its column.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxvi
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxvi
 fn (stmt UpdateStatementSearched) describe_set_clauses(mut conn Connection, params map[string]Value) ! {
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
@@ -253,7 +253,7 @@ fn (mut c Compiler) with_types(results []CompileResult, derive fn (Type) Type) [
 // own is also a <boolean value expression> (see common_value_expression), so it
 // isn't always a BOOLEAN.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xii
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xii
 fn (mut c Compiler) with_boolean_type(r CompileResult) CompileResult {
 	return c.with_type(r, Type{.is_boolean, 0, 0, false})
 }
@@ -319,7 +319,7 @@ fn (mut c Compiler) with_field_types(fields []CompileResult, types []Type) []Com
 // type of the others, as a character string. They're all character strings if
 // they're all dynamic parameters.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxv
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxv
 fn (mut c Compiler) with_pattern_types(value CompileResult, pattern CompileResult, escape CompileResult, has_escape bool) (CompileResult, CompileResult, CompileResult) {
 	mut operands := [value, pattern]
 	if has_escape {
@@ -342,8 +342,8 @@ fn (mut c Compiler) with_pattern_types(value CompileResult, pattern CompileResul
 // with that name and number of arguments (otherwise it's ambiguous, such as for
 // ABS). An aggregate function's argument can't be a dynamic parameter.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.iii, 5.a.iv and 5.a.v
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxx.1 and 5.a.xxx
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.iii, 5.a.iv and 5.a.v
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxx.1 and 5.a.xxx
 fn (mut c Compiler) with_argument_types(function_name string, args []CompileResult) []CompileResult {
 	return match function_name {
 		'CHAR_LENGTH', 'OCTET_LENGTH' {
@@ -378,7 +378,7 @@ fn same_type(typ Type) Type {
 // the implementation-defined maximum length (ML), and any other type is the
 // same type.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5
 fn character_type(typ Type) Type {
 	if typ.typ.is_string() {
 		return Type{.is_varchar, max_character_length, 0, false}

@@ -1,19 +1,19 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 6.1, <data type>
+// ISO/IEC 9075-2:2023, 6.1, <data type>
 //
 // Specify a data type.
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.6.3.2, Character string types
-// ISO/IEC 9075-1:2023(E), 4.8.2, Descriptors relating to character sets
-// ISO/IEC 9075-1:2023(E), 4.8.2.1, Character sets
-// ISO/IEC 9075-1:2023(E), 4.8.2.2, Collations
-// ISO/IEC 9075-2:2023(E), 4.2, Data types
-// ISO/IEC 9075-2:2023(E), 4.3, Character strings
-// ISO/IEC 9075-2:2023(E), 4.5, Numbers
-// ISO/IEC 9075-2:2023(E), 4.7, Datetimes and intervals
+// ISO/IEC 9075-1:2023, 4.6.3.2, Character string types
+// ISO/IEC 9075-1:2023, 4.8.2, Descriptors relating to character sets
+// ISO/IEC 9075-1:2023, 4.8.2.1, Character sets
+// ISO/IEC 9075-1:2023, 4.8.2.2, Collations
+// ISO/IEC 9075-2:2023, 4.2, Data types
+// ISO/IEC 9075-2:2023, 4.3, Character strings
+// ISO/IEC 9075-2:2023, 4.5, Numbers
+// ISO/IEC 9075-2:2023, 4.7, Datetimes and intervals
 
 // max_character_length is the maximum <length> of a CHARACTER or CHARACTER
 // VARYING (6.1 Syntax Rule 15).
@@ -98,7 +98,7 @@ fn parse_time_prec_tz_type(prec string, tz bool) !Type {
 	return new_type('TIME WITHOUT TIME ZONE', prec.int(), 0)
 }
 
-// ISO/IEC 9075-2:2023(E), 6.1, <data type>, Syntax Rules, 40: <time precision>
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 40: <time precision>
 // and <timestamp precision> share an implementation-defined maximum, which must
 // be at least 6. vsql's maximum is 6.
 fn check_fractional_seconds_precision(name string, prec string) ! {
@@ -111,7 +111,7 @@ fn check_fractional_seconds_precision(name string, prec string) ! {
 // to U+FDEF, and the last two code points of each plane). The only character
 // set is UTF8, which is a UCS repertoire, so a character string can't have one.
 //
-// ISO/IEC 9075-2:2023(E), 6.1, <data type>, General Rules, 2
+// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 2
 fn check_noncharacters(s string) ! {
 	// runes_iterator doesn't need 4 bytes for each byte of a long string, like
 	// runes() does.

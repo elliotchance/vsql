@@ -1,4 +1,4 @@
-# ISO/IEC 9075-1:2023(E)
+# ISO/IEC 9075-1:2023
 # id status code tests note (see docs/standard-index.rst)
 # 8, Status codes
 8                        implemented  vsql/std_2_24_1_sqlstate.v tests/std_1_4_10_3_4_errors.sql

@@ -2,14 +2,14 @@ module vsql
 
 import math
 
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>
+// ISO/IEC 9075-2:2023, 6.33, <string value function>
 //
 // Specify a function yielding a value of type character string or binary
 // string.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2023(E), 4.3.3, Operations involving character strings
+// ISO/IEC 9075-2:2023, 4.3.3, Operations involving character strings
 
 type CharacterValueFunction = CharacterSubstringFunction
 	| OverlayFunction
@@ -73,7 +73,7 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 // A dynamic parameter that is the start position or string length has the type
 // position_parameter_type.
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.vi
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.vi
 fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	compiled_value := e.value.compile(mut c)!
 	compiled_from := if f := e.from {
@@ -99,7 +99,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 4
 	typ := varying_string_type('SUBSTRING', compiled_value.typ)!
 
 	return CompileResult{
@@ -116,7 +116,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 				new_integer_value(0)
 			}
 
-			// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 3.d
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 3.d
 			if value.is_null || from_value.is_null || for_value.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
@@ -150,7 +150,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 // prepared (see describe_parameters). Then it may be any number that's a whole
 // number (see substring_position).
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 3
 fn check_substring_argument(function_name string, name string, e NumericValueExpression, typ Type) ! {
 	if typ.typ in [.is_smallint, .is_integer, .is_bigint]
 		|| (typ.typ in [.is_numeric, .is_decimal] && typ.scale == 0) {
@@ -201,7 +201,7 @@ fn substring_position(function_name string, name string, v Value) !i64 {
 // the string. Positions before the start of the string are skipped, so
 // SUBSTRING('hello' FROM 0 FOR 3) is 'he'.
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 3.c, 3.e and 3.f
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 3.c, 3.e and 3.f
 fn substring_range(length int, from i64, has_for bool, @for i64) !(int, int) {
 	mut end := i64(0)
 	if has_for {
@@ -238,7 +238,7 @@ fn substring_range(length int, from i64, has_for bool, @for i64) !(int, int) {
 // The expressions are references because a CharacterValueExpression can contain
 // an OverlayFunction, and V stores a sum type's value inline.
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 17
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 17
 struct OverlayFunction {
 	value   &CharacterValueExpression
 	placing &CharacterValueExpression
@@ -265,7 +265,7 @@ fn (e OverlayFunction) pstr(params map[string]Value) string {
 }
 
 fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.viii
+	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.viii
 	compiled_value, compiled_placing := c.with_pair_types(e.value.compile(mut c)!, e.placing.compile(mut c)!,
 		character_type)
 	compiled_from := c.with_type(e.from.compile(mut c)!, position_parameter_type)
@@ -293,7 +293,7 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 	// so its type is the concatenation of the SUBSTRINGs (each a CHARACTER
 	// VARYING as long as CV) and RS.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 17.c
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 17.c
 	substring_type := varying_string_type('OVERLAY', compiled_value.typ)!
 	typ := concatenation_type(concatenation_type(substring_type, compiled_placing.typ)!,
 		substring_type)!
@@ -309,8 +309,8 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 				new_integer_value(0)
 			}
 
-			// ISO/IEC 9075-2:2023(E), 6.32, <string value expression>, General Rules, 2.a
-			// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 3.d
+			// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 2.a
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 3.d
 			if value.is_null || placing.is_null || from_value.is_null || for_value.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
@@ -321,7 +321,7 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 				placing_characters := placing.string_value().runes()
 				// Without FOR, the string length is CHAR_LENGTH(RS).
 				//
-				// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 17.b
+				// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 17.b
 				length := if e.@for != none {
 					substring_position('OVERLAY', 'string length', for_value)!
 				} else {
@@ -383,8 +383,8 @@ fn overlay_after(from i64, length i64) i64 {
 // and the result is the part of value that matches the middle one. The fields
 // are references for the same reason as CharacterSubstringFunction.
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Format
-// ISO/IEC 9075-2:2023(E), 4.3.3.2, Operators that operate on character strings and return character strings
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Format
+// ISO/IEC 9075-2:2023, 4.3.3.2, Operators that operate on character strings and return character strings
 struct RegularExpressionSubstringFunction {
 	value   &CharacterValueExpression
 	pattern &CharacterValueExpression
@@ -402,7 +402,7 @@ fn (e RegularExpressionSubstringFunction) pstr(params map[string]Value) string {
 // The value, the pattern and the escape character must be character strings,
 // and the result has the type of the value as a CHARACTER VARYING.
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 7
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 7
 fn (e RegularExpressionSubstringFunction) compile(mut c Compiler) !CompileResult {
 	compiled_value := e.value.compile(mut c)!
 	compiled_pattern := e.pattern.compile(mut c)!
@@ -420,12 +420,12 @@ fn (e RegularExpressionSubstringFunction) compile(mut c Compiler) !CompileResult
 			pattern := compiled_pattern.run(mut conn, data, params)!
 			escape := compiled_escape.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.i
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.i
 			if value.is_null || pattern.is_null || escape.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
 
-			// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.ii
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.ii
 			result, found := similar_substring(value.string_value(), pattern.string_value(),
 				escape_character(escape)!)!
 			if !found {
@@ -444,13 +444,13 @@ fn (e RegularExpressionSubstringFunction) compile(mut c Compiler) !CompileResult
 // three parts of pattern. found is false if value doesn't match the whole
 // pattern.
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.iii, 6.a.iv and 6.a.iv.1-3
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.iii, 6.a.iv and 6.a.iv.1-3
 fn similar_substring(value string, pattern string, escape rune) !(string, bool) {
 	// The pattern must have exactly two of the escape character followed by a
 	// double quote.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.iii
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.iv
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.iii
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.iv
 	chars := pattern.runes()
 	mut parts := [][]rune{len: 1}
 	mut i := 0
@@ -470,12 +470,12 @@ fn similar_substring(value string, pattern string, escape rune) !(string, bool) 
 
 	// Each part is a <regular expression>, or empty.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.iv.1
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.iv.1
 	p1 := parse_similar_pattern(r1, escape)!
 	p2 := parse_similar_pattern(r2, escape)!
 	p3 := parse_similar_pattern(r3, escape)!
 
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.iv.2
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.iv.2
 	if !parse_similar_pattern(r1 + r2 + r3, escape)!.matches(value) {
 		return '', false
 	}
@@ -491,7 +491,7 @@ fn similar_substring(value string, pattern string, escape rune) !(string, bool) 
 	// together (such as R1 being "a|b"), nothing is found and it's the same as
 	// not matching.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 6.a.iv.3
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 6.a.iv.3
 	s := value.runes()
 	for start in 0 .. s.len + 1 {
 		if !p1.matches(s[..start].string()) || !p23.matches(s[start..].string()) {
@@ -527,10 +527,10 @@ fn (e TrimFunction) pstr(params map[string]Value) string {
 fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	compiled_source := e.source.compile(mut c)!
 	compiled_character := e.character.compile(mut c)!
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 14
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14
 	typ := varying_string_type('TRIM', compiled_source.typ)!
 
-	// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 14.c
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14.c
 	if !compiled_character.typ.typ.is_string() {
 		return sqlstate_42883('function does not exist: TRIM(${compiled_character.typ} FROM ${compiled_source.typ})')
 	}
@@ -540,12 +540,12 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 			source := compiled_source.run(mut conn, data, params)!
 			character := compiled_character.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 12.c
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 12.c
 			if source.is_null || character.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
 
-			// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, General Rules, 12.d
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 12.d
 			trim_character := character.string_value().runes()
 			if trim_character.len != 1 {
 				return sqlstate_22027()

@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>
+// ISO/IEC 9075-2:2023, 11.9, <check constraint definition>
 //
 // Specify a condition for the SQL-data.
 

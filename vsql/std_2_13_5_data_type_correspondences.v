@@ -1,23 +1,23 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 13.5, Data type correspondences
+// ISO/IEC 9075-2:2023, 13.5, Data type correspondences
 //
 // Specify the data type correspondences for SQL data types and host language
 // types.
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.10.3, Parameter passing and data type
+// ISO/IEC 9075-1:2023, 4.10.3, Parameter passing and data type
 // correspondences
-// ISO/IEC 9075-1:2023(E), 4.10.3.1, General parameter passing and data type
+// ISO/IEC 9075-1:2023, 4.10.3.1, General parameter passing and data type
 // correspondence information
-// ISO/IEC 9075-1:2023(E), 4.10.3.2, Data type correspondences
-// ISO/IEC 9075-2:2023(E), 4.2.3, Host language data types
+// ISO/IEC 9075-1:2023, 4.10.3.2, Data type correspondences
+// ISO/IEC 9075-2:2023, 4.2.3, Host language data types
 
 // max_utf8_octets is k, the maximum number of octets of a character in the
 // character set of a host parameter (UTF8), which is implementation-defined.
 //
-// ISO/IEC 9075-2:2023(E), 13.5, Data type correspondences, Table 20
+// ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 20
 const max_utf8_octets = 4
 
 // HostParameterType is the <data type> of a host parameter that has a C data
@@ -32,7 +32,7 @@ struct HostParameterType {
 // has, but that are 'None' in Table 20 (NUMERIC, DECIMAL, FLOAT, DATE,
 // TIME and TIMESTAMP), can't be used. There's no <locator indication>.
 //
-// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 11.b.ii.1
+// ISO/IEC 9075-2:2023, 13.3, <externally-invoked procedure>, Syntax Rules, 11.b.ii.1
 fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 	word := t.next_word()
 	match word {
@@ -76,8 +76,8 @@ fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 // c_declaration is the C data type of a host parameter, such as "long *x".
 // A string is a char array, and anything else is a pointer.
 //
-// ISO/IEC 9075-2:2023(E), 9.3, Passing a value from a host language to the SQL-server, General Rules, 3 and 4.b
-// ISO/IEC 9075-2:2023(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 2 and 3.b
+// ISO/IEC 9075-2:2023, 9.3, Passing a value from a host language to the SQL-server, General Rules, 3 and 4.b
+// ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 2 and 3.b
 fn (t HostParameterType) c_declaration(name string) string {
 	return match t.typ {
 		.is_character, .is_varchar { 'char ${name}[${t.size()}]' }
@@ -94,7 +94,7 @@ fn (t HostParameterType) c_declaration(name string) string {
 // since libvsql can't cast a number to a BOOLEAN. An INTEGER is passed as a
 // VSQL_M_LONG. Any other value is passed as it is.
 //
-// ISO/IEC 9075-2:2023(E), 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.e.ii and 5.j
+// ISO/IEC 9075-2:2023, 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.e.ii and 5.j
 fn (t HostParameterType) c_parameter(name string) string {
 	return match t.typ {
 		.is_character { '{SQL_CHAR, SQL_CHAR, ${t.length}, ${name}, SQL_NTS}' }
@@ -123,7 +123,7 @@ fn (t HostParameterType) c_target(name string, max_indicator int) string {
 // of this type can contain. The C runtime counts it in a SQLINTEGER, which fits
 // in an INTEGER or BIGINT.
 //
-// ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 5.a and 6.a
+// ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 5.a and 6.a
 fn (t HostParameterType) max_indicator() int {
 	return if t.typ == .is_smallint { 32767 } else { 2147483647 }
 }
@@ -156,8 +156,8 @@ fn (t HostParameterType) sql() string {
 // size is the size in bytes of the char array of a CHARACTER(L) or CHARACTER
 // VARYING(L), which is (L+1)*k. The value is up to L*k bytes, then the null character.
 //
-// ISO/IEC 9075-2:2023(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b
-// ISO/IEC 9075-2:2023(E), 13.5, Data type correspondences, Table 20
+// ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b
+// ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 20
 fn (t HostParameterType) size() int {
 	return (t.length + 1) * max_utf8_octets
 }

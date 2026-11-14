@@ -4,7 +4,7 @@ module vsql
 
 import time
 
-// The concept is described by ISO/IEC 9075-1:2023(E), 4.6.3.5, Datetime types.
+// The concept is described by ISO/IEC 9075-1:2023, 4.6.3.5, Datetime types.
 
 const second_period = i64(1000000)
 const minute_period = 60 * second_period
@@ -44,7 +44,7 @@ const default_timestamp_precision = 6
 // be two digits (with the exception of the seconds fraction, which may have up
 // to six digits).
 //
-// ISO/IEC 9075-2:2023(E), 5.3, <literal>, Syntax Rules, 39
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 39
 fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
 	mut timestamp := s
 	if with_time_zone {
@@ -116,7 +116,7 @@ fn new_timestamp_from_string(s string) !Time {
 			time_zone = -time_zone
 		}
 
-		// ISO/IEC 9075-2:2023(E), 5.3, <literal>, Syntax Rules, 43
+		// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 43
 		if minutes > 59 || time_zone < -840 || time_zone > 840 {
 			return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 		}
@@ -144,7 +144,7 @@ fn new_timestamp_from_string(s string) !Time {
 // by is_unquoted_timestamp_string. Each component must be within the valid
 // range for a Gregorian date and time.
 //
-// ISO/IEC 9075-2:2023(E), 5.3, <literal>, Syntax Rules, 40 (and Table 11)
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 40 (and Table 11)
 fn parse_timestamp_components(s string) !time.Time {
 	date_and_time := s.fields()
 	if date_and_time.len != 2 {
@@ -169,7 +169,7 @@ fn parse_timestamp_components(s string) !time.Time {
 	second := seconds_and_fraction[0].int()
 
 	// The valid values of each field are in Table 11, "Valid values for
-	// datetime fields" (ISO/IEC 9075-2:2023(E), 6.1, <data type>, General
+	// datetime fields" (ISO/IEC 9075-2:2023, 6.1, <data type>, General
 	// Rules, 6). Seconds may be 60 or 61 to allow for leap seconds. These cannot
 	// be represented so they will roll over into the next minute.
 	if hour > 23 || minute > 59 || second > 61 {
@@ -449,7 +449,7 @@ fn (t Time) str_fractional_seconds(prec int) string {
 	// The microseconds are padded so that leading zeros are kept (6
 	// microseconds is ".000006"), then rounded down to the precision.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.13, <cast specification>, General Rules, 16.b
+	// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 16.b
 	s := left_pad(int(t.t.nanosecond / 1000).str(), '0', 6)
 
 	return '.' + s[..prec]
@@ -544,10 +544,10 @@ fn time_zone_str(time_zone i16) string {
 // statement that invoked them. The rows of a cursor in the SQL/CLI are all
 // evaluated by its OPEN statement, so they're at the same instant too.
 //
-// ISO/IEC 9075-2:2023(E), 6.43, <datetime value function>, General Rules, 1
-// ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 5
-// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 8.a.iii
-// ISO/IEC 9075-3:2003(E), 6.49, ParamData, General Rules, 17.b.i.6.C
+// ISO/IEC 9075-2:2023, 6.43, <datetime value function>, General Rules, 1
+// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 5
+// ISO/IEC 9075-3:2003, 5.4, Implicit cursor, General Rules, 8.a.iii
+// ISO/IEC 9075-3:2003, 6.49, ParamData, General Rules, 17.b.i.6.C
 fn (mut conn Connection) set_statement_timestamp() {
 	conn.statement_timestamp, conn.statement_time_zone = conn.now()
 }
@@ -556,7 +556,7 @@ fn (mut conn Connection) set_statement_timestamp() {
 // time from conn.now() shifted by its offset), as used by CURRENT_DATE,
 // CURRENT_TIME, etc.
 //
-// ISO/IEC 9075-2:2023(E), 6.43, <datetime value function>, General Rules, 2
+// ISO/IEC 9075-2:2023, 6.43, <datetime value function>, General Rules, 2
 fn local_now(conn &Connection) time.Time {
 	return conn.statement_timestamp.add_seconds(int(conn.statement_time_zone) * 60)
 }

@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>
+// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>
 //
 // Set the characteristics of the next SQL-transaction for the SQL-agent.
 //
@@ -21,23 +21,23 @@ fn (stmt SetTransactionStatement) execute(mut conn Connection, params map[string
 	check_transaction_modes(stmt.modes)!
 
 	if stmt.local {
-		// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, Syntax Rules, 1
 		if stmt.modes.any(it is DiagnosticsSize) {
 			return sqlstate_42601('DIAGNOSTICS SIZE cannot be used with LOCAL')
 		}
 
-		// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 1.b.i
+		// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.b.i
 		return sqlstate_0a001()
 	}
 
-	// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 1.a.i
+	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.i
 	if conn.is_active() {
 		return sqlstate_25001()
 	}
 
 	// The SQL-transaction isn't initiated yet.
 	//
-	// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 7
+	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 7
 	conn.next_transaction = new_transaction_characteristics(mut conn, params, stmt.modes)!
 
 	return new_result_msg('SET TRANSACTION', elapsed_parse, t.elapsed())

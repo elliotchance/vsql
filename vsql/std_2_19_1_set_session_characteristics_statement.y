@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 19.1, <set session characteristics statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 19.1, <set session characteristics statement>, Conformance Rules, 1
 
 set_session_characteristics_statement:
   SET SESSION CHARACTERISTICS AS session_characteristic_list {

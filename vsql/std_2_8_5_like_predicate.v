@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>
 //
 // Specify a pattern-match comparison.
 
@@ -57,7 +57,7 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 
 // The value, the pattern and the escape character must be character strings.
 //
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 1
 fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 	mut compiled_right := e.right.compile(mut c)!
 	mut compiled_l := e.left.compile(mut c)!
@@ -83,7 +83,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, General Rules, 3.a
+			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.a
 			if left.is_null || right.is_null {
 				return new_unknown_value()
 			}
@@ -92,7 +92,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 			if has_escape {
 				escape_value := compiled_escape.run(mut conn, data, params)!
 
-				// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, General Rules,
+				// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules,
 				// 3.a.ii
 				if escape_value.is_null {
 					return new_unknown_value()
@@ -110,7 +110,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 				like_matches(like_value(left.string_value()), pattern)
 			}
 
-			// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, Syntax Rules, 3.b
+			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 3.b
 			// and 3.c
 			if e.not {
 				return new_boolean_value(!result)
@@ -127,8 +127,8 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 // escape_character is the character of the ESCAPE of a LIKE or SIMILAR TO, or a
 // SQLSTATE 22019 error if it isn't exactly one character.
 //
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, General Rules, 3.b.i.1
-// ISO/IEC 9075-2:2023(E), 8.6, <similar predicate>, General Rules, 3.a
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.b.i.1
+// ISO/IEC 9075-2:2023, 8.6, <similar predicate>, General Rules, 3.a
 fn escape_character(value Value) !rune {
 	runes := value.string_value().runes()
 	if runes.len != 1 {
@@ -150,8 +150,8 @@ struct LikeChar {
 // matched literally, and any other use of it is a SQLSTATE 22025 error. Without
 // an escape character, every "%" and "_" is a wildcard.
 //
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, General Rules, 3.b.i.2
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, General Rules, 3.b.ii
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.b.i.2
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.b.ii
 fn like_pattern(pattern string, escape ?rune) ![]LikeChar {
 	runes := pattern.runes()
 	mut chars := []LikeChar{cap: runes.len}
@@ -245,8 +245,8 @@ fn case_fold(c rune) []rune {
 // the substrings of the standard, each of which is a number of whole characters
 // of the value.
 //
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, Syntax Rules, 3.d
-// ISO/IEC 9075-2:2023(E), 8.5, <like predicate>, General Rules, 3.c and 3.d
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 3.d
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.c and 3.d
 fn like_matches(chars []LikeValueChar, pat []LikeChar) bool {
 	mut i := 0 // position in chars
 	mut j := 0 // position in pat

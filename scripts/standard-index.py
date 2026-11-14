@@ -59,7 +59,7 @@ SECTIONS = {
 # Titles that both the headings and the table of contents of a PDF have
 # garbled (with spaces lost from, or put into, the middle of words).
 TITLES = {
-    'ISO/IEC 9075-1:2023(E)': {
+    'ISO/IEC 9075-1:2023': {
         '4.6': 'SQL data types',
         '4.8.2.3': 'Transliterations',
         '4.8.4.1': 'Introduction to user-defined types',

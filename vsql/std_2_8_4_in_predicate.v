@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 8.4, <in predicate>
+// ISO/IEC 9075-2:2023, 8.4, <in predicate>
 //
 // Specify a quantified comparison.
 
@@ -38,7 +38,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 		rows << value.compile_fields(mut c)!
 	}
 
-	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxiii
+	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxiii
 	rows = c.with_row_types(rows)
 	mut compiled_expr := rows[0]
 	mut contains_agg := compiled_expr.any(it.contains_agg)
@@ -60,7 +60,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 		run:          fn [e, compiled_expr, compiled_values, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := run_fields(mut conn, compiled_expr, data, params)!
 
-			// ISO/IEC 9075-2:2023(E), 8.4, <in predicate>, Syntax Rules, 2, 4 and
+			// ISO/IEC 9075-2:2023, 8.4, <in predicate>, Syntax Rules, 2, 4 and
 			// 5:
 			//
 			//   RVC IN (A, B, C) is RVC = ANY (VALUES A, B, C)

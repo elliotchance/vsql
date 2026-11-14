@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>
+// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>
 //
 // Define an SQL-client module.
 //
@@ -10,9 +10,9 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.4.4, SQL-client modules
-// ISO/IEC 9075-1:2023(E), 4.11, Modules
-// ISO/IEC 9075-2:2023(E), 4.30, SQL-client modules
+// ISO/IEC 9075-1:2023, 4.4.4, SQL-client modules
+// ISO/IEC 9075-1:2023, 4.11, Modules
+// ISO/IEC 9075-2:2023, 4.30, SQL-client modules
 
 // CompiledModule is the C header (.h) and source (.c) of an SQL-client module.
 pub struct CompiledModule {
@@ -30,7 +30,7 @@ struct SQLClientModule {
 	// there isn't a SCHEMA. There's no catalog, and the SQL-path only has the
 	// schema, since there are no SQL-invoked routines.
 	//
-	// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Syntax Rules, 2 to 7
+	// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Syntax Rules, 2 to 7
 	schema     string
 	cursors    []ModuleCursor
 	procedures []ExternallyInvokedProcedure
@@ -99,7 +99,7 @@ const c_runtime_requires = {
 // of the module without its extension. The C source must be compiled with
 // libvsql.h and linked with libvsql.
 //
-// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Conformance Rules, 6
+// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Conformance Rules, 6
 pub fn compile_module(source string, name string) !CompiledModule {
 	m := parse_sql_client_module(source)!
 	mut features := m.features.clone()
@@ -121,7 +121,7 @@ pub fn compile_module(source string, name string) !CompiledModule {
 // one OPEN of each <declare cursor>. A <dynamic declare cursor> doesn't have
 // that rule, so it can have any number of them.
 //
-// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Syntax Rules, 11, 12 and 14
+// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Syntax Rules, 11, 12 and 14
 fn parse_sql_client_module(source string) !SQLClientModule {
 	parts := split_module(source)!
 
@@ -143,8 +143,8 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 
 				// Each cursor has a different name.
 				//
-				// ISO/IEC 9075-2:2023(E), 14.1, <declare cursor>, Syntax Rules, 1.a
-				// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, Syntax Rules, 1
+				// ISO/IEC 9075-2:2023, 14.1, <declare cursor>, Syntax Rules, 1.a
+				// ISO/IEC 9075-2:2023, 20.15, <dynamic declare cursor>, Syntax Rules, 1
 				for c in cursors {
 					if c.name == cursor.name {
 						return sqlstate_42601('cursor ${cursor.name} is declared more than once')
@@ -167,7 +167,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 	// A dynamic cursor is declared for a statement that's prepared in the
 	// module.
 	//
-	// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023, 20.15, <dynamic declare cursor>, Syntax Rules, 2
 	prepared := prepared_statement_names(statements)
 	for cursor in cursors {
 		if cursor.statement != '' && cursor.statement !in prepared {
@@ -186,7 +186,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 
 		// Each procedure has a different name.
 		//
-		// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023, 13.3, <externally-invoked procedure>, Syntax Rules, 1
 		for p in procedures {
 			if p.name.to_upper() == procedure.name.to_upper() {
 				return sqlstate_42601('procedure ${procedure.name} is defined more than once')
@@ -230,7 +230,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 	// The indicator parameters must have the same data type without F611. Each
 	// of the exact numeric types that vsql allows is implementation-defined.
 	//
-	// ISO/IEC 9075-2:2023(E), 6.4, <value specification> and <target specification>, Conformance Rules, 7
+	// ISO/IEC 9075-2:2023, 6.4, <value specification> and <target specification>, Conformance Rules, 7
 	if unique_features(indicators).len > 1 {
 		features << 'F611'
 	}
@@ -246,8 +246,8 @@ fn (mut t ModuleTokens) module_header() !string {
 	// A <language clause>, which must be C (ISO/IEC 9899), since the other host
 	// languages aren't supported.
 	//
-	// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2023(E), 10.2, <language clause>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 10.2, <language clause>, General Rules, 1
 	t.expect('LANGUAGE')!
 	language := t.next_word()
 	if language != 'C' {
@@ -265,7 +265,7 @@ fn (mut t ModuleTokens) module_header() !string {
 		// Without SCHEMA, the schema has the same name as the <module
 		// authorization identifier>.
 		//
-		// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Syntax Rules, 2
+		// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Syntax Rules, 2
 		if schema == '' {
 			schema = authorization
 		}
@@ -277,7 +277,7 @@ fn (mut t ModuleTokens) module_header() !string {
 	// The other optional parts of the module (such as FOR STATIC ONLY or PATH)
 	// aren't supported yet. They each need a feature.
 	//
-	// ISO/IEC 9075-2:2023(E), 13.1, <SQL-client module definition>, Conformance Rules, 1 to 4
+	// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Conformance Rules, 1 to 4
 	if t.next_word() !in ['PROCEDURE', 'DECLARE'] {
 		return sqlstate_42601('expected PROCEDURE or DECLARE after the module authorization clause')
 	}
@@ -348,7 +348,7 @@ fn (m SQLClientModule) c_header(name string) string {
 // module are static, and there's no header. runtime is the other sections of
 // the C runtime that the embedded SQL program uses.
 //
-// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 21
+// ISO/IEC 9075-2:2023, 21.1, <embedded SQL host program>, Syntax Rules, 21
 fn (m SQLClientModule) c_source(name string, embedded bool, runtime []string) string {
 	mut sections := ['core']
 	sections << runtime

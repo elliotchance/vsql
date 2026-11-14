@@ -1,12 +1,12 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>
 //
 // The <host variable definition>s in a declare section of an embedded SQL C
 // program. Only the <C numeric variable>s, <C character variable>s (char) and
 // <C VARCHAR variable>s are supported, without a CHARACTER SET.
 //
-// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 1 to 3
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 1 to 3
 
 // CHostVariable is a host variable. typ is its <host parameter data type>. A
 // string is a char array, and anything else is passed by its address.
@@ -20,7 +20,7 @@ struct CHostVariable {
 // char array (other than SQLSTATE, which is always char SQLSTATE[6]) is
 // multiplied by k, the maximum octets in a UTF-8 character.
 //
-// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 5.a, 5.c and 5.d
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 5.a, 5.c and 5.d
 fn c_declare_section(text string, mut variables map[string]CHostVariable) !string {
 	for definition in remove_c_comments(text).split(';') {
 		if definition.trim_space() != '' {
@@ -46,7 +46,7 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 
 			// VARCHAR can be in any case.
 			//
-			// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 7
+			// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 7
 			c += if word.to_upper() == 'VARCHAR' { 'char' } else { word }
 		} else if cs[i] == `[` && depth == 0 && !initial && word != 'SQLSTATE' {
 			j = i + cs[i..].index(`]`) + 1
@@ -99,7 +99,7 @@ fn skip_c_token(cs []rune, i int) int {
 // semicolon). A <C initial value> is any C after the "=", which the C compiler
 // checks.
 //
-// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 6
 fn c_variable_definition(definition string, mut variables map[string]CHostVariable) ! {
 	mut words := definition.fields()
 	for words.len > 0 && words[0] in ['auto', 'extern', 'static', 'const', 'volatile'] {
@@ -117,8 +117,8 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 
 	// The <host parameter data type> of each type.
 	//
-	// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 4.a.i to 4.a.v
-	// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 4.b.i
+	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.a.i to 4.a.v
+	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.b.i
 	sql_type := match c_type {
 		'long long' { 'BIGINT' }
 		'long' { 'INTEGER' }
@@ -142,7 +142,7 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 			|| !is_identifier_char(name.runes()[0], false) {
 			return sqlstate_42601('unsupported host variable definition: ${definition.trim_space()}')
 		}
-		// ISO/IEC 9075-2:2023(E), 21.1, <embedded SQL host program>, Syntax Rules, 16
+		// ISO/IEC 9075-2:2023, 21.1, <embedded SQL host program>, Syntax Rules, 16
 		if name in variables {
 			return sqlstate_42601('host variable ${name} is defined more than once')
 		}
@@ -150,7 +150,7 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 		// A string has a terminating null character, so the length is one less
 		// than the array.
 		//
-		// ISO/IEC 9075-2:2023(E), 21.4, <embedded SQL C program>, Syntax Rules, 4.b.iii and 4.b.iv
+		// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.b.iii and 4.b.iv
 		if is_array != name_and_length.contains('[') || (is_array && length.int() < 2) {
 			return sqlstate_42601('host variable ${name} must be ${if is_array {
 				'an array of at least 2 characters'
@@ -158,7 +158,7 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 				'a number, not an array'
 			}}')
 		}
-		// ISO/IEC 9075-2:2023(E), 13.3, <externally-invoked procedure>, Syntax Rules, 11.a
+		// ISO/IEC 9075-2:2023, 13.3, <externally-invoked procedure>, Syntax Rules, 11.a
 		if name == 'SQLSTATE' && !(c_type == 'char' && length.int() == 6) {
 			return sqlstate_42601('SQLSTATE must be char SQLSTATE[6]')
 		}

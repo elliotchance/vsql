@@ -1,4 +1,4 @@
-# ISO/IEC 9075-3:2003(E)
+# ISO/IEC 9075-3:2003
 # id status code tests note (see docs/standard-index.rst)
 # 7, Definition Schema
 7                        container    - -
@@ -11,4 +11,4 @@
 7.2/DE/1                 implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql
 7.2/DE/2                 n/a          - - there are no implementation-defined items
 # 7.3, SQL_LANGUAGES base table
-7.3                      n/a          - - SQL_LANGUAGES isn't in ISO/IEC 9075-11:2006(E)
+7.3                      n/a          - - SQL_LANGUAGES isn't in ISO/IEC 9075-11:2006

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 6.4, <value specification> and <target specification>
+// ISO/IEC 9075-2:2023, 6.4, <value specification> and <target specification>
 //
 // Specify one or more values, host parameters, SQL parameters, dynamic
 // parameters, or host variables.
@@ -42,8 +42,8 @@ fn (e DynamicParameterSpecification) pstr(params map[string]Value) string {
 }
 
 fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 11.9, <check constraint definition>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 1
 	if c.restricted != '' {
 		return sqlstate_42601('parameter ${e.name} cannot be used in ${c.restricted}')
 	}
@@ -61,7 +61,7 @@ fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
 
 	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
 
-	// ISO/IEC 9075-2:2023(E), 6.1, <data type>, General Rules, 2
+	// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 2
 	if !p.is_null && p.typ.typ in [.is_character, .is_varchar] {
 		check_noncharacters(p.string_value())!
 	}

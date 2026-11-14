@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 11.23, <drop column definition>
+// ISO/IEC 9075-2:2023, 11.23, <drop column definition>
 //
 // Destroy a column of a base table.
 
@@ -26,8 +26,8 @@ struct DropColumnDefinition {
 // be dropped with CASCADE, which drops it first. So can a column that's in an
 // index, and CASCADE drops the index.
 //
-// ISO/IEC 9075-2:2023(E), 11.23, <drop column definition>, Syntax Rules, 4, 7.b and 7.f
-// ISO/IEC 9075-2:2023(E), 11.23, <drop column definition>, General Rules, 3.b to 8
+// ISO/IEC 9075-2:2023, 11.23, <drop column definition>, Syntax Rules, 4, 7.b and 7.f
+// ISO/IEC 9075-2:2023, 11.23, <drop column definition>, General Rules, 3.b to 8
 //
 // The rows are written again, because the values of a row are stored in the
 // order of the columns (see Row.bytes). The current value of the sequence of

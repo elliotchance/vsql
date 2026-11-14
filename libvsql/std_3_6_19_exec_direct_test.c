@@ -48,7 +48,7 @@ UTEST_F(db, 6_19_exec_direct_open_cursor) {
 /* A DELETE, INSERT or UPDATE of no rows raises a completion condition: no
  * data, which doesn't have a status record. It's still executed (with a row
  * count of 0) and doesn't end the SQL-transaction. 5.2 GR 5.b.ii; ISO/IEC
- * 9075-2:2023(E) 14.9 GR 10, 14.11 GR 9 and 14.14 GR 15. */
+ * 9075-2:2023 14.9 GR 10, 14.11 GR 9 and 14.14 GR 15. */
 UTEST_F(db, 6_19_exec_direct_no_data) {
   const char *statements[] = {
       "DELETE FROM t",

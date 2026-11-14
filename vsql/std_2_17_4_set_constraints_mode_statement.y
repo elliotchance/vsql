@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 17.4, <set constraints mode statement>
+// ISO/IEC 9075-2:2023, 17.4, <set constraints mode statement>
 //
 // If an SQL-transaction is currently active, then set the constraint mode for
 // that SQL-transaction in the current SQL-session. If no SQL-transaction is

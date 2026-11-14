@@ -3,7 +3,7 @@ ISO/IEC 9075-11:2006 (Information and Definition Schemas)
 
 .. contents::
 
-This page is for **ISO/IEC 9075-11:2006(E)** (the SQL:2008 committee draft,
+This page is for **ISO/IEC 9075-11:2006** (the SQL:2008 committee draft,
 2006-02), which is the edition of this part that vsql is pinned to (see
 :doc:`standard-index`). The feature IDs, feature names, table numbers and
 Subclause numbers on this page are all from that edition, and can be different

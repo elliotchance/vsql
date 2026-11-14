@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 7.4, <table expression>
+// ISO/IEC 9075-2:2023, 7.4, <table expression>
 //
 // Specify a table or a grouped table.
 

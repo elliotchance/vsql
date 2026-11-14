@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2023(E), 11.2, <drop schema statement>
+// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>
 //
 // Destroy a schema.
 
@@ -22,10 +22,10 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 
 	mut catalog := conn.catalog_for(conn.resolve_catalog_identifier(stmt.schema_name)!)
 	schema_name := stmt.schema_name.schema_name
-	// ISO/IEC 9075-2:2023(E), 11.2, <drop schema statement>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, Syntax Rules, 3
 	check_writable_schema(stmt.schema_name)!
 
-	// ISO/IEC 9075-2:2023(E), 11.2, <drop schema statement>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, Syntax Rules, 2
 	if schema_name !in catalog.storage.schemas {
 		if stmt.if_exists {
 			return new_result_msg('DROP SCHEMA 0', elapsed_parse, t.elapsed())
@@ -37,7 +37,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 	// Find all dependencies. A schema can only contain tables and sequences,
 	// which are the only objects that RESTRICT needs to check for.
 	//
-	// ISO/IEC 9075-2:2023(E), 11.2, <drop schema statement>, Syntax Rules, 4.n
+	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, Syntax Rules, 4.n
 	mut table_names := []string{}
 	for table_name, table in catalog.storage.tables {
 		if table.name.schema_name == schema_name {
@@ -60,7 +60,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 	// the tables in other schemas that reference the tables are dropped. Then
 	// each sequence and the schema itself are dropped.
 	//
-	// ISO/IEC 9075-2:2023(E), 11.2, <drop schema statement>, General Rules, 1.b, 12.b and 13
+	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, General Rules, 1.b, 12.b and 13
 	catalog.storage.drop_foreign_keys_referencing(table_names)!
 
 	for table_name in table_names {

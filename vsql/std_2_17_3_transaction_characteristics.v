@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>
+// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>
 //
 // Specify transaction characteristics.
 //
@@ -10,7 +10,7 @@ module vsql
 // max_conditions is the most conditions that can be kept in Connection.warnings,
 // and the number when there isn't a <diagnostics size>.
 //
-// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>, Syntax Rules, 7
+// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 7
 const max_conditions = 100
 
 type TransactionMode = DiagnosticsSize | IsolationLevel | TransactionAccessMode
@@ -29,7 +29,7 @@ enum TransactionAccessMode {
 // COMMITTED. REPEATABLE READ uses snapshot isolation (see
 // Storage.take_snapshot). See isolation.v.
 //
-// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 6
+// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 6
 pub enum IsolationLevel {
 	read_uncommitted
 	read_committed
@@ -114,13 +114,13 @@ struct TransactionCharacteristics {
 	// read_only is the <transaction access mode>. READ WRITE is the default,
 	// except for READ UNCOMMITTED.
 	//
-	// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 4
 	read_only bool
 	// isolation_level is SERIALIZABLE when there isn't an <isolation level> (see
 	// Connection.enduring_characteristics).
 	//
-	// ISO/IEC 9075-2:2023(E), 4.43.4, Isolation levels of SQL-transactions
-	// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2023, 4.43.4, Isolation levels of SQL-transactions
+	// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 3
 	isolation_level IsolationLevel = .serializable
 	// condition_area_limit is the <number of conditions>, or 0 if there isn't a
 	// <diagnostics size> (which is max_conditions).
@@ -130,7 +130,7 @@ struct TransactionCharacteristics {
 // check_transaction_modes checks that there's at most one of each kind of mode,
 // and that READ UNCOMMITTED isn't READ WRITE.
 //
-// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>, Syntax Rules, 2 and 5
+// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 2 and 5
 fn check_transaction_modes(modes []TransactionMode) ! {
 	if modes.filter(it is TransactionAccessMode).len > 1 {
 		return sqlstate_42601('transaction access mode is specified more than once')
@@ -150,7 +150,7 @@ fn check_transaction_modes(modes []TransactionMode) ! {
 // new_transaction_characteristics returns the characteristics of modes, which
 // have been checked by check_transaction_modes.
 fn new_transaction_characteristics(mut conn Connection, params map[string]Value, modes []TransactionMode) !TransactionCharacteristics {
-	// ISO/IEC 9075-2:2023(E), 17.1, <start transaction statement>, General Rules, 2.a
+	// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 2.a
 	if modes.len == 0 {
 		return conn.enduring_characteristics()
 	}
@@ -176,7 +176,7 @@ fn new_transaction_characteristics(mut conn Connection, params map[string]Value,
 	// READ UNCOMMITTED is always READ ONLY, including when it's the
 	// ConnectionOptions.isolation_level.
 	//
-	// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 4
 	if isolation_level == .read_uncommitted {
 		read_only = true
 	}
@@ -191,7 +191,7 @@ fn new_transaction_characteristics(mut conn Connection, params map[string]Value,
 // check_held_cursors checks that a holdable cursor that's still open from the
 // previous SQL-transaction has the isolation level that's being set.
 //
-// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 1.a.ii
+// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.ii
 fn (conn Connection) check_held_cursors(level IsolationLevel) ! {
 	if level != conn.isolation_level {
 		for _, cursor in conn.cursors {
@@ -210,19 +210,19 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, size Diagn
 	}
 	v := size.number_of_conditions.compile(mut c)!.run(mut conn, Row{}, params)!
 
-	// ISO/IEC 9075-2:2023(E), 17.3, <transaction characteristics>, Syntax Rules, 6
+	// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 6
 	if !v.typ.uses_int() && !(v.typ.typ in [.is_numeric, .is_decimal] && v.typ.scale == 0) {
 		return sqlstate_42804('for DIAGNOSTICS SIZE', 'exact numeric with scale 0', v.typ.str())
 	}
 
-	// ISO/IEC 9075-2:2023(E), 17.1, <start transaction statement>, General Rules, 3
-	// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 2
+	// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 3
+	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 2
 	n := v.as_int()
 	if v.is_null || n < 1 {
 		return sqlstate_35000()
 	}
 
-	// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 3
+	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 3
 	if n > max_conditions {
 		conn.add_warning(sqlstate_01012())
 		return max_conditions
@@ -238,10 +238,10 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, size Diagn
 // COMMIT or ROLLBACK, have the enduring transaction characteristics (see
 // enduring_characteristics).
 //
-// ISO/IEC 9075-2:2023(E), 17.2, <set transaction statement>, General Rules, 7
-// ISO/IEC 9075-2:2023(E), 17.7, <commit statement>, General Rules, 10.b.i
-// ISO/IEC 9075-2:2023(E), 17.8, <rollback statement>, General Rules, 2.h.ii.1
-// ISO/IEC 9075-2:2023(E), 18.1, <connect statement>, General Rules, 9.c, 13.b and 13.e
+// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 7
+// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 10.b.i
+// ISO/IEC 9075-2:2023, 17.8, <rollback statement>, General Rules, 2.h.ii.1
+// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 9.c, 13.b and 13.e
 // enduring_characteristics are the enduring transaction characteristics of the
 // SQL-session, for an SQL-transaction that doesn't have its own. They start as
 // SERIALIZABLE (unless the connection was opened with another
@@ -249,7 +249,7 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, size Diagn
 // SESSION CHARACTERISTICS changes them. READ WRITE can be set separately from
 // READ UNCOMMITTED, which is still always READ ONLY.
 //
-// ISO/IEC 9075-2:2023(E), 4.43.4, Isolation levels of SQL-transactions
+// ISO/IEC 9075-2:2023, 4.43.4, Isolation levels of SQL-transactions
 fn (conn Connection) enduring_characteristics() TransactionCharacteristics {
 	return TransactionCharacteristics{
 		...conn.enduring_transaction

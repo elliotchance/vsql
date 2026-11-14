@@ -39,7 +39,7 @@ fn cli_command(cmd cli.Command) ! {
 	// Each statement is a <direct SQL statement>, so it ends with a semicolon
 	// and can be over many lines.
 	//
-	// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>
+	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>
 	mut unfinished := ''
 	for {
 		print(if unfinished == '' { 'vsql> ' } else { '   -> ' })
@@ -77,7 +77,7 @@ fn cli_command(cmd cli.Command) ! {
 	// committed. If the shell stops any other way (such as with ctrl+C), or a
 	// START TRANSACTION isn't finished with autocommit, it's rolled back.
 	//
-	// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>, General Rules, 3.a
+	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 3.a
 	agent.close(!autocommit) or { print_error('Error', err) }
 }
 

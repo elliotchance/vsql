@@ -1,16 +1,16 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>
+// ISO/IEC 9075-2:2023, 11.4, <column definition>
 //
 // Define a column of a base table.
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.7.3, Nullability
-// ISO/IEC 9075-1:2023(E), 4.8.5.2, Columns
-// ISO/IEC 9075-2:2023(E), 4.15 (Columns, fields, and attributes)
-// ISO/IEC 9075-2:2023(E), 4.17.12, Identity columns
-// ISO/IEC 9075-2:2023(E), 4.17.13, Base columns and generated columns
+// ISO/IEC 9075-1:2023, 4.7.3, Nullability
+// ISO/IEC 9075-1:2023, 4.8.5.2, Columns
+// ISO/IEC 9075-2:2023, 4.15 (Columns, fields, and attributes)
+// ISO/IEC 9075-2:2023, 4.17.12, Identity columns
+// ISO/IEC 9075-2:2023, 4.17.13, Base columns and generated columns
 
 // A <column constraint>. NOT NULL is the only one that isn't added to the table
 // as a table constraint, but it's also a table element so that it can have a
@@ -35,7 +35,7 @@ struct NotNullConstraint {
 // PRIMARY KEY. A CHECK on a column can only use that column. A NOT NULL is
 // kept as a NOT NULL of the column (with its name) rather than a CHECK.
 //
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 17
+// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 17
 fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) []TableElement {
 	column := elements[0] as Column
 	match constraint {
@@ -130,9 +130,9 @@ fn exact_numeric_range(t Type) (i64, i64) {
 // sequence, and the smallest value of the type to -1 for a descending sequence.
 // So the default START WITH is 1 or -1.
 //
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 16
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, General Rules, 4
-// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 7 and 8
+// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 16
+// ISO/IEC 9075-2:2023, 11.4, <column definition>, General Rules, 4
+// ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, Syntax Rules, 7 and 8
 fn new_identity_sequence(column Column, options []SequenceGeneratorOption) !Sequence {
 	if column.typ.typ !in [.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric]
 		|| column.typ.scale != 0 {
@@ -174,7 +174,7 @@ fn identity_range(t Type, increment_by i64) (i64, i64) {
 // check_identity_sequence returns an error if the sequence of an identity
 // column of type t isn't valid.
 //
-// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 10 and 11
+// ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, Syntax Rules, 10 and 11
 fn check_identity_sequence(t Type, s Sequence) ! {
 	min, max := exact_numeric_range(t)
 	for name, value in {
@@ -194,15 +194,15 @@ fn check_identity_sequence(t Type, s Sequence) ! {
 // of the column in a row is the result of its generation expression for the
 // row, which can only use the base columns of the table.
 //
-// ISO/IEC 9075-2:2023(E), 4.17.13, Base columns and generated columns
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 10
+// ISO/IEC 9075-2:2023, 4.17.13, Base columns and generated columns
+// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 10
 struct GenerationClause {
 	expr ValueExpression
 	// infer_type is set when the column definition doesn't have a data type, so
 	// the column has the declared type of the expression. It's not in the file,
 	// which always has the data type (see Table.bytes).
 	//
-	// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 13.c
+	// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 13.c
 	infer_type bool
 }
 
@@ -220,7 +220,7 @@ fn (g GenerationClause) str() string {
 // checked by the CREATE TABLE. stored is false for a new column, whose names are
 // resolved with the current schema and catalog (see Compiler.stored_definition).
 //
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 1 and 10.c to 10.f
+// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 1 and 10.c to 10.f
 fn (g GenerationClause) compile(mut conn Connection, table Table, column Column, stored bool) !CompileResult {
 	mut c := Compiler{
 		conn:                   conn
@@ -271,7 +271,7 @@ fn (g GenerationClause) columns(mut conn Connection, table Table, column Column)
 // declared type of its expression, otherwise the expression must be assignable
 // to the data type. The columns before the index first_new are already stored.
 //
-// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 13.a and 13.c
+// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 13.a and 13.c
 fn resolve_generated_columns(mut conn Connection, mut table Table, first_new int) ! {
 	for i, column in table.columns {
 		generated := column.generated or { continue }
@@ -313,8 +313,8 @@ fn new_generated_columns(mut conn Connection, table Table) !GeneratedColumns {
 // names (see Row.for_storage). A generated column can't use another generated
 // column, so the order doesn't matter.
 //
-// ISO/IEC 9075-2:2023(E), 15.11, Effect of inserting tables into base tables, General Rules, 6.a
-// ISO/IEC 9075-2:2023(E), 15.14, Effect of replacing rows in base tables, General Rules, 9
+// ISO/IEC 9075-2:2023, 15.11, Effect of inserting tables into base tables, General Rules, 6.a
+// ISO/IEC 9075-2:2023, 15.14, Effect of replacing rows in base tables, General Rules, 9
 fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
 	if g.columns.len == 0 {
 		return

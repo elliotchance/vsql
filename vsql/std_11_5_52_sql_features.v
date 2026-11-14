@@ -1,10 +1,10 @@
 module vsql
 
-// ISO/IEC 9075-11:2006(E), 5.52, SQL_FEATURES view
+// ISO/IEC 9075-11:2006, 5.52, SQL_FEATURES view
 //
 // The SQL_FEATURES view lists the features and subfeatures of the standard, and
 // whether vsql supports them. It's the FEATURE and SUBFEATURE rows of the
-// SQL_CONFORMANCE base table (ISO/IEC 9075-11:2006(E), 6.43), which only exists
+// SQL_CONFORMANCE base table (ISO/IEC 9075-11:2006, 6.43), which only exists
 // as this view.
 //
 // There's one source of truth: the rows are read from the tables in the
@@ -72,7 +72,7 @@ fn parse_sql_features(rst string) []SqlFeature {
 // verified by a conformance test, and there are no comments, so IS_VERIFIED_BY
 // and COMMENTS are NULL.
 //
-// ISO/IEC 9075-11:2006(E), 6.43, SQL_CONFORMANCE base table, Description, 1-8
+// ISO/IEC 9075-11:2006, 6.43, SQL_CONFORMANCE base table, Description, 1-8
 fn sql_features_view_rows(features []SqlFeature) [][]Value {
 	mut feature_names := map[string]string{}
 	mut rows := [][]Value{}

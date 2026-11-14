@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 11.24, <add table constraint definition>
+// ISO/IEC 9075-2:2023, 11.24, <add table constraint definition>
 //
 // Add a constraint to a table.
 
@@ -14,8 +14,8 @@ struct AddTableConstraintDefinition {
 // or a FOREIGN KEY that doesn't reference a unique constraint. Every row must
 // satisfy the new constraint. The columns of a new PRIMARY KEY become NOT NULL.
 //
-// ISO/IEC 9075-2:2023(E), 11.24, <add table constraint definition>, General Rules, 1 and 2
-// ISO/IEC 9075-2:2023(E), 11.7, <unique constraint definition>, Syntax Rules, 10
+// ISO/IEC 9075-2:2023, 11.24, <add table constraint definition>, General Rules, 1 and 2
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 10
 fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	mut elements := table.elements()
 	elements << d.constraint

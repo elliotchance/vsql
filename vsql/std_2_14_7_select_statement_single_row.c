@@ -9,10 +9,10 @@
  * size). It returns 1 if the string was truncated (warning: string data, right
  * truncation). The value can be the target.
  *
- * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 7.a-7.e
- * ISO/IEC 9075-2:2023(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b
- * ISO/IEC 9075-2:2023(E), 13.5, Data type correspondences, Table 20
- * ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, General Rules, 6.b and 6.c
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.a-7.e
+ * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b
+ * ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 20
+ * ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 6.b and 6.c
  */
 static int vsql_m_put(char *target, size_t length, const char *value) {
   size_t octets = 0, characters = 0;
@@ -76,10 +76,10 @@ static SQLINTEGER vsql_m_characters(const char *s) {
  * The value is converted by SQLGetData, so one that isn't assignable is cast
  * when it's retrieved, rather than being a syntax error.
  *
- * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
- * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 3 to 6
- * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 7
- * ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 13.b
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 3 to 6
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7
+ * ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 13.b
  */
 static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
                                struct vsql_m_target *t) {
@@ -93,7 +93,7 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
    * An INTEGER is retrieved as an SQLINTEGER (so a value that's out of range of
    * INTEGER is still an exception) and copied to the long, which can be wider.
    *
-   * ISO/IEC 9075-2:2023(E), 13.5, Data type correspondences, Table 20
+   * ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 20
    */
   if (t->type == SQL_INTEGER) {
     rc = SQLGetData(stmt, i, SQL_INTEGER, &integer, 0, indicator);
@@ -107,8 +107,8 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
   /*
    * A BOOLEAN is retrieved as 'TRUE' or 'FALSE', and is 1 or 0 in C.
    *
-   * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 7.p
-   * ISO/IEC 9075-2:2023(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.g.ii
+   * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.p
+   * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.g.ii
    */
   if (t->type == SQL_BOOLEAN) {
     rc = SQLGetData(stmt, i, SQL_CHAR, b, sizeof(b), indicator);
@@ -128,8 +128,8 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
    * length characters, and is then cut to length characters. A CHARACTER(L)
    * or CHARACTER VARYING(L) is padded with spaces to its length.
    *
-   * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 7.c and 7.e
-   * ISO/IEC 9075-2:2023(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b and 5.l
+   * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.c and 7.e
+   * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b and 5.l
    */
   rc = SQLGetData(stmt, i, SQL_CHAR, t->value, (t->length + 1) * 4, indicator);
   if (vsql_m_failed(rc) || (indicator != NULL && *indicator < 0)) {
@@ -148,7 +148,7 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
    * The target only holds the start of a long value, so the characters of the
    * rest of it are counted in pieces.
    *
-   * ISO/IEC 9075-2:2023(E), 9.1, Retrieval assignment, General Rules, 5.a and 6.a
+   * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 5.a and 6.a
    */
   while (rc == SQL_SUCCESS_WITH_INFO) {
     rc = SQLGetData(stmt, i, SQL_CHAR, b, sizeof(b), NULL);
@@ -171,8 +171,8 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
  * parameters (or embedded variables of the implied module). truncated is set
  * to 1 if a string was truncated.
  *
- * ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, Syntax Rules, 9.b.iv and 9.b.v
- * ISO/IEC 9075-2:2023(E), 14.5, <fetch statement>, General Rules, 5.b
+ * ISO/IEC 9075-2:2023, 14.5, <fetch statement>, Syntax Rules, 9.b.iv and 9.b.v
+ * ISO/IEC 9075-2:2023, 14.5, <fetch statement>, General Rules, 5.b
  */
 static SQLRETURN vsql_m_assign_row(SQLHSTMT stmt, SQLRETURN rc, int m,
                                    struct vsql_m_target *targets,
@@ -229,7 +229,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
    * when the select list has an asterisk: dynamic SQL error — using clause
    * does not match target specifications.
    *
-   * ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, Syntax Rules, 3.b.i
+   * ISO/IEC 9075-2:2023, 14.7, <select statement: single row>, Syntax Rules, 3.b.i
    */
   rc = SQLNumResultCols(stmt, &columns);
   if (!vsql_m_failed(rc) && columns != m) {
@@ -241,7 +241,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
   /*
    * If there's no row, then a completion condition is raised: no data.
    *
-   * ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, General Rules, 2.b and 3
+   * ISO/IEC 9075-2:2023, 14.7, <select statement: single row>, General Rules, 2.b and 3
    */
   if (!vsql_m_failed(rc)) {
     rc = SQLFetch(stmt);
@@ -250,7 +250,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
   /*
    * Otherwise, the values in the row are assigned to the targets.
    *
-   * ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, General Rules, 2.c and 4
+   * ISO/IEC 9075-2:2023, 14.7, <select statement: single row>, General Rules, 2.c and 4
    */
   rc = vsql_m_assign_row(stmt, rc, m, targets, &truncated);
 
@@ -264,7 +264,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
    * If there's more than one row, then an exception condition is raised:
    * cardinality violation. The values of the first row have been assigned.
    *
-   * ISO/IEC 9075-2:2023(E), 14.7, <select statement: single row>, General Rules, 2.a
+   * ISO/IEC 9075-2:2023, 14.7, <select statement: single row>, General Rules, 2.a
    */
   rc = SQLFetch(stmt);
   if (rc == SQL_NO_DATA) {

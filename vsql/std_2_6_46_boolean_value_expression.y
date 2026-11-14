@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>
+// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>
 //
 // Specify a boolean value.
 
@@ -27,8 +27,8 @@ boolean_factor:
 
 // "BP IS NOT TV" is "NOT (BP IS TV)". A truth value is flagged with F571.
 //
-// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 4
-// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Conformance Rules, 2
 
 boolean_test:
   boolean_primary { $$.v = yy_box(new_boolean_test($1.v as BooleanPrimary, false, none, false)) }

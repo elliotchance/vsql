@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 7.2, <row value expression>
+// ISO/IEC 9075-2:2023, 7.2, <row value expression>
 //
 // Specify a row value.
 

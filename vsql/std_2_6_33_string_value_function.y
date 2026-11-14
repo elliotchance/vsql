@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>
+// ISO/IEC 9075-2:2023, 6.33, <string value function>
 //
 // Specify a function yielding a value of type character string or binary
 // string.
@@ -24,7 +24,7 @@ character_value_function:
 
 // Without USING, it's USING CHARACTERS.
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 6
 
 character_substring_function:
   SUBSTRING left_paren character_value_expression FROM start_position
@@ -50,7 +50,7 @@ character_substring_function:
       $9.v as string))
   }
 
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 2
 regular_expression_substring_function:
   SUBSTRING left_paren character_value_expression SIMILAR
   character_value_expression ESCAPE escape_character right_paren {
@@ -72,7 +72,7 @@ fold:
 
 // Without USING, it's USING CHARACTERS (like SUBSTRING).
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 17
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 17
 
 character_overlay_function:
   OVERLAY left_paren character_value_expression PLACING
@@ -109,7 +109,7 @@ trim_function:
 // Without a trim specification it's BOTH, and without a trim character it's a
 // space. vsql also allows FROM without either (V404-01).
 //
-// ISO/IEC 9075-2:2023(E), 6.33, <string value function>, Syntax Rules, 14.a
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14.a
 
 trim_operands:
   trim_source {

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 8.15, <distinct predicate>
+// ISO/IEC 9075-2:2023, 8.15, <distinct predicate>
 //
 // Specify a test of whether two row values are distinct.
 
@@ -28,7 +28,7 @@ fn (e DistinctPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e DistinctPredicate) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2023(E), 8.15, <distinct predicate>, Syntax Rules, 1-3:
+	// ISO/IEC 9075-2:2023, 8.15, <distinct predicate>, Syntax Rules, 1-3:
 	// both sides have the same degree and their respective fields are
 	// comparable. Each field is an operand of an equality operation (Syntax
 	// Rules, 5), which is the same check as for a comparison.
@@ -41,7 +41,7 @@ fn (e DistinctPredicate) compile(mut c Compiler) !CompileResult {
 			x := run_fields(mut conn, left, data, params)!
 			y := run_fields(mut conn, right, data, params)!
 
-			// ISO/IEC 9075-2:2023(E), 8.15, <distinct predicate>, General Rules,
+			// ISO/IEC 9075-2:2023, 8.15, <distinct predicate>, General Rules,
 			// 1.c.iv: rows are distinct if any of their respective fields are.
 			// A value that isn't a row is the same as a row with one field.
 			// Every pair is compared, so that fields that can't be compared are
@@ -53,7 +53,7 @@ fn (e DistinctPredicate) compile(mut c Compiler) !CompileResult {
 				}
 			}
 
-			// ISO/IEC 9075-2:2023(E), 8.15, <distinct predicate>, Syntax Rules,
+			// ISO/IEC 9075-2:2023, 8.15, <distinct predicate>, Syntax Rules,
 			// 6: IS NOT DISTINCT FROM is NOT (X IS DISTINCT FROM Y). So the
 			// result is never Unknown.
 			return new_boolean_value(distinct != e.not)
@@ -65,14 +65,14 @@ fn (e DistinctPredicate) compile(mut c Compiler) !CompileResult {
 
 // values_are_distinct is whether two values (that aren't rows) are distinct.
 fn values_are_distinct(conn &Connection, x Value, y Value) !bool {
-	// ISO/IEC 9075-2:2023(E), 8.15, <distinct predicate>, General Rules, 1.a
+	// ISO/IEC 9075-2:2023, 8.15, <distinct predicate>, General Rules, 1.a
 	// and 1.b: two NULLs aren't distinct, and a NULL is distinct from any value
 	// that isn't NULL.
 	if x.is_null || y.is_null {
 		return x.is_null != y.is_null
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.15, <distinct predicate>, General Rules, 1.c.i:
+	// ISO/IEC 9075-2:2023, 8.15, <distinct predicate>, General Rules, 1.c.i:
 	// otherwise they're distinct when they aren't equal (see compare).
 	// User-defined, reference, array and multiset types (1.c.ii, 1.c.iii, 1.c.v
 	// and 1.c.vi) are not supported.

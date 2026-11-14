@@ -5,7 +5,7 @@
 // doesn't fit in its type raises 22003 (numeric value out of range), and a
 // division is truncated.
 //
-// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>, General Rules, 3, 4 and 5
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, General Rules, 3, 4 and 5
 
 module vsql
 

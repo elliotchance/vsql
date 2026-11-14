@@ -13,7 +13,7 @@ quantified_comparison_predicate:
 // ANY) because SOME and ANY are also aggregate functions, see
 // general_set_function.
 //
-// ISO/IEC 9075-2:2023(E), 8.9, <quantified comparison predicate>, Format
+// ISO/IEC 9075-2:2023, 8.9, <quantified comparison predicate>, Format
 quantified_comparison_predicate_part_2:
   comp_op ALL table_subquery {
     $$.v = yy_box(QuantifiedComparisonPredicate{

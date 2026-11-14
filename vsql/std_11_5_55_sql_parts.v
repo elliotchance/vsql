@@ -1,15 +1,15 @@
 module vsql
 
-// ISO/IEC 9075-11:2006(E), 5.55, SQL_PARTS view
+// ISO/IEC 9075-11:2006, 5.55, SQL_PARTS view
 //
 // The SQL_PARTS view lists the parts of the standard, and whether vsql supports
 // them. It's the PART rows of the SQL_CONFORMANCE base table (ISO/IEC
-// 9075-11:2006(E), 6.43), which only exists as this view, SQL_FEATURES and
+// 9075-11:2006, 6.43), which only exists as this view, SQL_FEATURES and
 // SQL_PACKAGES.
 //
-// The parts are the ones in ISO/IEC 9075-1:2023(E), 5.2 to 5.10, with their
+// The parts are the ones in ISO/IEC 9075-1:2023, 5.2 to 5.10, with their
 // names, without the parts that SQL:2023 added in 5.11 and 5.12 (#1505). Supporting a part means supporting all of its mandatory features
-// (ISO/IEC 9075-1:2023(E), 9.3, Conformance to parts), so a part that has a
+// (ISO/IEC 9075-1:2023, 9.3, Conformance to parts), so a part that has a
 // docs/sql-compliance-9075-*.rst page is supported when the page says that all
 // of its mandatory features are, and the COMMENTS has the count from that
 // sentence. A part without a page isn't supported, and has no comments.
@@ -56,7 +56,7 @@ fn all_mandatory_features_supported(rst string) bool {
 }
 
 // is_core_sql_supported is true if all of the mandatory features of Part 2 and
-// Part 11 are supported, which are Core SQL (ISO/IEC 9075-1:2023(E), 9.2,
+// Part 11 are supported, which are Core SQL (ISO/IEC 9075-1:2023, 9.2,
 // Minimum conformance).
 fn is_core_sql_supported() bool {
 	return sql_parts.filter(it.id in ['2', '11']).all(all_mandatory_features_supported(it.rst))
@@ -65,7 +65,7 @@ fn is_core_sql_supported() bool {
 // sql_parts_view_row is a row of the SQL_PARTS view. Nothing is verified by a
 // conformance test, so IS_VERIFIED_BY is NULL.
 //
-// ISO/IEC 9075-11:2006(E), 6.43, SQL_CONFORMANCE base table, Description, 1-8
+// ISO/IEC 9075-11:2006, 6.43, SQL_CONFORMANCE base table, Description, 1-8
 fn sql_parts_view_row(part SqlPart) []Value {
 	mut is_supported := false
 	mut comments := new_null_value(.is_varchar)

@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 10.8, <constraint name definition> and <constraint
+// ISO/IEC 9075-2:2023, 10.8, <constraint name definition> and <constraint
 // characteristics>
 //
 // Specify the name of a constraint and its characteristics.
@@ -13,9 +13,9 @@ constraint_name_definition:
 // constraint can't be mistaken for the start of a NOT NULL. <constraint
 // enforcement> isn't supported (F492), so every constraint is ENFORCED.
 //
-// ISO/IEC 9075-2:2023(E), 10.8, <constraint name definition> and <constraint characteristics>, Syntax Rules, 3
-// ISO/IEC 9075-2:2023(E), 10.8, <constraint name definition> and <constraint characteristics>, General Rules, 4
-// ISO/IEC 9075-2:2023(E), 10.8, <constraint name definition> and <constraint characteristics>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 10.8, <constraint name definition> and <constraint characteristics>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 10.8, <constraint name definition> and <constraint characteristics>, General Rules, 4
+// ISO/IEC 9075-2:2023, 10.8, <constraint name definition> and <constraint characteristics>, Conformance Rules, 1
 constraint_characteristic:
   DEFERRABLE {
     flag(mut yylex, 'F721')

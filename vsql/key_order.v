@@ -24,7 +24,7 @@ struct KeyOrderColumn {
 // implementation-dependent order, which is the order of the rest of the key (and
 // then the row).
 //
-// ISO/IEC 9075-2:2023(E), 10.10, <sort specification list>, General Rules, 1
+// ISO/IEC 9075-2:2023, 10.10, <sort specification list>, General Rules, 1
 fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[string][]ValueExpression, params map[string]Value, mut conn Connection) bool {
 	// Only the rows of one table are read, and they're still the rows of the
 	// table (not groups) when they're sorted. A query specification always has

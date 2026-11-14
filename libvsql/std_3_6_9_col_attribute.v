@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.9, ColAttribute
+// ISO/IEC 9075-3:2003, 6.9, ColAttribute
 //
 // Get a column attribute.
 //
@@ -15,7 +15,7 @@ fn sql_col_attribute(statement_handle SQLInteger, column_number i16, field_ident
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 

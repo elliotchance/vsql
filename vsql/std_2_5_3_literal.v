@@ -2,7 +2,7 @@ module vsql
 
 import math.big
 
-// ISO/IEC 9075-2:2023(E), 5.3, <literal>
+// ISO/IEC 9075-2:2023, 5.3, <literal>
 //
 // Specify a non-null value.
 

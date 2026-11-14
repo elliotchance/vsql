@@ -1,4 +1,4 @@
-# ISO/IEC 9075-1:2023(E)
+# ISO/IEC 9075-1:2023
 # id status code tests note (see docs/standard-index.rst)
 # 2, Normative references
 2                        definition   - - about the standard itself

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>
+// ISO/IEC 9075-2:2023, 7.1, <row value constructor>
 //
 // Specify a value or list of values to be constructed into a row.
 

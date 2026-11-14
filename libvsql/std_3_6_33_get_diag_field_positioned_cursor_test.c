@@ -2,7 +2,7 @@
  * statement is the cursor that's in the invalid state, rather than the
  * statement handle that executed it.
  *
- * ISO/IEC 9075-3:2003(E), 6.33, GetDiagField, General Rules, 12.i.iv */
+ * ISO/IEC 9075-3:2003, 6.33, GetDiagField, General Rules, 12.i.iv */
 #include "test.h"
 
 /* The name is the one that SQLGetCursorName returns, not the one the engine

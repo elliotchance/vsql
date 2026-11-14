@@ -11,8 +11,8 @@ import time
 
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.4.3, SQL-implementations
-// ISO/IEC 9075-1:2023(E), 4.4.3.3, SQL-servers
+// ISO/IEC 9075-1:2023, 4.4.3, SQL-implementations
+// ISO/IEC 9075-1:2023, 4.4.3.3, SQL-servers
 
 pub const default_schema_name = 'PUBLIC'
 
@@ -182,7 +182,7 @@ pub mut:
 	// more_conditions is true if a warning has been dropped from warnings since
 	// the last clear_warnings(), because there were more than the limit.
 	//
-	// ISO/IEC 9075-2:2023(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+	// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 2.b
 	more_conditions bool
 }
 
@@ -259,7 +259,7 @@ pub fn catalog_name_from_path(path string) string {
 // time zone of the system, no warnings, cursors or prepared statements, and
 // no statement that's being executed.
 //
-// ISO/IEC 9075-2:2023(E), 18.1, <connect statement>, General Rules, 13, 13.f, 13.g, 13.j, 13.k and 13.m
+// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 13, 13.f, 13.g, 13.j, 13.k and 13.m
 fn open_connection(path string, catalog_name string, options ConnectionOptions) !&Connection {
 	mut conn := &Connection{
 		current_catalog:         catalog_name
@@ -621,7 +621,7 @@ fn (mut conn CatalogConnection) unlock_write() {
 // commit_catalogs keeps the changes of a statement in every catalog that it
 // changed, or none of them if it can. This matters for a COMMIT, which must
 // cancel every change of the SQL-transaction if it can't complete (ISO/IEC
-// 9075-2:2023(E), 17.7, <commit statement>, General Rules, 6.b).
+// 9075-2:2023, 17.7, <commit statement>, General Rules, 6.b).
 //
 // Each catalog in a file has its own write-ahead log, so each is committed
 // separately. To get as close as possible to one commit, everything that's
@@ -886,7 +886,7 @@ pub fn (conn Connection) current_catalog_name() string {
 
 // rollback_after_error rolls back the current transaction (if any) after a
 // statement raised an exception condition in class 40 (transaction rollback),
-// such as a serialization failure (ISO/IEC 9075-2:2023(E), 4.43.5, Implicit
+// such as a serialization failure (ISO/IEC 9075-2:2023, 4.43.5, Implicit
 // rollbacks). Any other exception only cancels the statement that raised it,
 // see PreparedStmt.query. If the rollback fails, the
 // transaction is still active.
@@ -901,7 +901,7 @@ fn (mut conn Connection) rollback_after_error() ! {
 
 // register_func adds a function, unless one with the same name and argument
 // types already exists. Only the arguments choose which function is called, so
-// the return type doesn't matter (ISO/IEC 9075-2:2023(E), 11.60, <SQL-invoked
+// the return type doesn't matter (ISO/IEC 9075-2:2023, 11.60, <SQL-invoked
 // routine>, Syntax Rules, 20). CHARACTER arguments are CHARACTER VARYING, see
 // find_function.
 fn (mut conn Connection) register_func(func Func) ! {
@@ -1393,7 +1393,7 @@ pub fn (mut conn Connection) clear_warnings() {
 // begin_row must be called before evaluating the expressions for each new row
 // so that NEXT VALUE FOR returns a new value.
 //
-// ISO/IEC 9075-2:2023(E), 4.29, Sequence generators
+// ISO/IEC 9075-2:2023, 4.29, Sequence generators
 //
 // The rows of a subquery (in an expression) don't begin a new row because
 // they're part of the row that contains the subquery, and NEXT VALUE FOR can't

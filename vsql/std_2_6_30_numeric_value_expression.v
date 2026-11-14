@@ -1,12 +1,12 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>
 //
 // Specify a numeric value.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2023(E), 4.5.3, Operations involving numbers
+// ISO/IEC 9075-2:2023, 4.5.3, Operations involving numbers
 
 struct NumericValueExpression {
 	n    ?&NumericValueExpression
@@ -28,7 +28,7 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 	if n := e.n {
 		mut compiled_n := n.compile(mut c)!
 
-		// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xi
+		// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xi
 		compiled_n, compiled_term = c.with_pair_types(compiled_n, compiled_term, same_type)
 
 		return CompileResult{
@@ -67,7 +67,7 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 	if term := e.term {
 		mut compiled_term := term.compile(mut c)!
 
-		// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.x
+		// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.x
 		compiled_term, compiled_factor = c.with_pair_types(compiled_term, compiled_factor,
 			same_type)
 
@@ -195,7 +195,7 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 // (division is done as multiplication, see Numeric.divide). See
 // arithmetic_supertype for an exact and an approximate number.
 //
-// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1
 fn arithmetic_type(t1 Type, t2 Type, op string) Type {
 	t1_category, _ := t1.typ.supertype()
 	t2_category, _ := t2.typ.supertype()
@@ -235,7 +235,7 @@ fn eval_binary(mut conn Connection, x Value, op string, y Value) !Value {
 	}
 
 	if fnc := conn.binary_operators[key] {
-		// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>, General
+		// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, General
 		// Rules, 1
 		if left.is_null || right.is_null {
 			return Value{

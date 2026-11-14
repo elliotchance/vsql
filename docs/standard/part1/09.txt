@@ -1,4 +1,4 @@
-# ISO/IEC 9075-1:2023(E)
+# ISO/IEC 9075-1:2023
 # id status code tests note (see docs/standard-index.rst)
 # 9, Conformance
 9                        n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)

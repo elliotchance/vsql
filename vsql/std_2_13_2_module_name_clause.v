@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 13.2, <module name clause>
+// ISO/IEC 9075-2:2023, 13.2, <module name clause>
 //
 // Name an SQL-client module.
 

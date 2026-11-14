@@ -2,14 +2,14 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2023(E), 19.5, <set catalog statement>
+// ISO/IEC 9075-2:2023, 19.5, <set catalog statement>
 //
 // Set the default catalog name for unqualified <schema name>s in
 // <preparable statement>s that are prepared in the current SQL-session by an
 // <execute immediate statement> or a <prepare statement> and in
 // <direct SQL statement>s that are invoked directly.
 //
-// The concept is described by ISO/IEC 9075-1:2023(E), 4.4.9.1, Catalogs.
+// The concept is described by ISO/IEC 9075-1:2023, 4.4.9.1, Catalogs.
 
 struct SetCatalogStatement {
 	catalog_name ValueSpecification
@@ -25,16 +25,16 @@ fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Val
 		params: params
 	}
 
-	// ISO/IEC 9075-2:2023(E), 19.5, <set catalog statement>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2023(E), 19.5, <set catalog statement>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 19.5, <set catalog statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 19.5, <set catalog statement>, General Rules, 1
 	value := session_name_value(mut conn, mut c, stmt.catalog_name, 'SET CATALOG')!
 
-	// ISO/IEC 9075-2:2023(E), 19.5, <set catalog statement>, General Rules, 2
+	// ISO/IEC 9075-2:2023, 19.5, <set catalog statement>, General Rules, 2
 	new_catalog := conn.catalog_named(value) or {
 		return sqlstate_3d000(value) // catalog does not exist
 	}
 
-	// ISO/IEC 9075-2:2023(E), 19.5, <set catalog statement>, General Rules, 3
+	// ISO/IEC 9075-2:2023, 19.5, <set catalog statement>, General Rules, 3
 	conn.current_catalog = new_catalog
 
 	return new_result_msg('SET CATALOG 1', elapsed_parse, t.elapsed())

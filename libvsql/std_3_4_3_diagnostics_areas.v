@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 4.3, Diagnostics areas in SQL/CLI
+// ISO/IEC 9075-3:2003, 4.3, Diagnostics areas in SQL/CLI
 //
 // Each handle has a diagnostics area that is emptied at the start of each CLI
 // routine (other than Error, GetDiagField and GetDiagRec) that's given the
@@ -11,7 +11,7 @@ import vsql
 // raised (see DiagnosticRecord.position). There's no status record for a
 // completion condition: no data (see no_data).
 //
-// The concept is described by ISO/IEC 9075-1:2023(E), 4.10.5, Diagnostic
+// The concept is described by ISO/IEC 9075-1:2023, 4.10.5, Diagnostic
 // information.
 
 struct DiagnosticRecord {
@@ -82,7 +82,7 @@ mut:
 
 // CLIError is an exception condition raised by a CLI routine itself, rather
 // than one from executing an SQL statement. Its SQLSTATE is from Table 4 (in
-// ISO/IEC 9075-3:2003(E), 5.12, CLI-specific status codes), or HY000 when the
+// ISO/IEC 9075-3:2003, 5.12, CLI-specific status codes), or HY000 when the
 // condition doesn't have a subclass.
 struct CLIError {
 	Error
@@ -145,9 +145,9 @@ fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
 // return code of a statement that succeeded (see no_data), even if there were
 // warnings too.
 //
-// ISO/IEC 9075-2:2023(E), 4.38, Diagnostics area
-// ISO/IEC 9075-3:2003(E), 4.1, Introduction to SQL/CLI
-// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules, 5.b.ii
+// ISO/IEC 9075-2:2023, 4.38, Diagnostics area
+// ISO/IEC 9075-3:2003, 4.1, Introduction to SQL/CLI
+// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules, 5.b.ii
 fn (mut d Diagnostics) statement_warnings(conn &vsql.Connection, failed bool) {
 	d.more = conn.more_conditions
 	if !failed && conn.warnings.any(vsql.sqlstate_from_int(it.code()).starts_with('02')) {
@@ -231,7 +231,7 @@ fn (mut d Diagnostics) error(err IError) i16 {
 	// A statement can only be canceled by Cancel, which raises a CLI-specific
 	// condition: operation canceled for the routine that was executing it.
 	//
-	// ISO/IEC 9075-3:2003(E), 6.7, Cancel, General Rules, 2.a.vii
+	// ISO/IEC 9075-3:2003, 6.7, Cancel, General Rules, 2.a.vii
 	if sqlstate == '57014' {
 		sqlstate = 'HY008'
 		msg = 'operation canceled'

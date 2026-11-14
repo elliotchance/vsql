@@ -3,7 +3,7 @@ module vsql
 import math
 import time
 
-// ISO/IEC 9075-2:2023(E), 11.72, <sequence generator definition>
+// ISO/IEC 9075-2:2023, 11.72, <sequence generator definition>
 //
 // Define an external sequence generator.
 
@@ -71,7 +71,7 @@ fn (stmt SequenceGeneratorDefinition) create(mut conn Connection) !bool {
 	check_writable_schema(sequence_name)!
 	mut catalog := conn.catalog_for(sequence_name)
 
-	// ISO/IEC 9075-2:2023(E), 11.72, <sequence generator definition>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2023, 11.72, <sequence generator definition>, Syntax Rules, 3
 	if _ := catalog.storage.sequence(sequence_name) {
 		// The existing sequence isn't changed (including its current value) or
 		// compared with these options, which aren't checked either.
@@ -96,8 +96,8 @@ fn (stmt SequenceGeneratorDefinition) create(mut conn Connection) !bool {
 // the values are integers in the range of a BIGINT. This is only done for
 // CREATE SEQUENCE and ALTER SEQUENCE, not when a sequence is read from the file.
 //
-// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 3 and 10
-// ISO/IEC 9075-2:2023(E), 9.37, Altering a sequence generator, Syntax Rules, 4 and 10
+// ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, Syntax Rules, 3 and 10
+// ISO/IEC 9075-2:2023, 9.37, Altering a sequence generator, Syntax Rules, 4 and 10
 fn check_sequence_options(options []SequenceGeneratorOption) ! {
 	mut seen := map[string]bool{}
 	for option in options {
@@ -148,7 +148,7 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 // check_sequence_data_type returns an error if t can't be the data type of a
 // sequence, which must be an exact numeric type with a scale of 0 (zero).
 //
-// ISO/IEC 9075-2:2023(E), 11.72, <sequence generator definition>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023, 11.72, <sequence generator definition>, Syntax Rules, 6
 fn check_sequence_data_type(t Type) ! {
 	if t.typ !in [.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric] || t.scale != 0 {
 		return sqlstate_42601('sequence data type must be an exact numeric with a scale of 0, not ${t}')
@@ -163,9 +163,9 @@ fn check_sequence_data_type(t Type) ! {
 // minimum value of an ascending sequence (or the maximum value of a descending
 // one), which is 1 (or -1) by default.
 //
-// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 4 and 6-9
-// ISO/IEC 9075-2:2023(E), 9.36, Creation of a sequence generator, Syntax Rules, 13
-// ISO/IEC 9075-2:2023(E), 11.72, <sequence generator definition>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, Syntax Rules, 4 and 6-9
+// ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, Syntax Rules, 13
+// ISO/IEC 9075-2:2023, 11.72, <sequence generator definition>, Syntax Rules, 6
 fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequence {
 	mut typ := new_type('BIGINT', 0, 0)
 	mut increment_by := i64(1)

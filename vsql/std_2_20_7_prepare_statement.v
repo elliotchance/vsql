@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>
 //
 // Prepare a statement for execution.
 //
@@ -10,8 +10,8 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-2:2023(E), 4.32, Dynamic SQL concepts
-// ISO/IEC 9075-2:2023(E), 4.41.7, Preparable and immediately executable SQL-statements
+// ISO/IEC 9075-2:2023, 4.32, Dynamic SQL concepts
+// ISO/IEC 9075-2:2023, 4.41.7, Preparable and immediately executable SQL-statements
 
 // prepared_statement_names are the <statement name>s of the <prepare
 // statement>s in the statements of a module.
@@ -31,10 +31,10 @@ fn prepared_statement_names(statements []string) []string {
 // statement> in the module. An <extended statement name> (a host parameter) is
 // Feature B032, "Extended dynamic SQL".
 //
-// ISO/IEC 9075-2:2023(E), 20.9, <deallocate prepared statement>, Syntax Rules, 1.b
-// ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, Syntax Rules, 1.b
-// ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, Syntax Rules, 1.b
-// ISO/IEC 9075-2:2023(E), 20.15, <dynamic declare cursor>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023, 20.9, <deallocate prepared statement>, Syntax Rules, 1.b
+// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Syntax Rules, 1.b
+// ISO/IEC 9075-2:2023, 20.13, <execute statement>, Syntax Rules, 1.b
+// ISO/IEC 9075-2:2023, 20.15, <dynamic declare cursor>, Syntax Rules, 2
 fn (mut t ModuleTokens) statement_name(p ExternallyInvokedProcedure, prepared []string) !string {
 	name := t.identifier('statement name')!
 	if name !in prepared {
@@ -49,8 +49,8 @@ fn (mut t ModuleTokens) statement_name(p ExternallyInvokedProcedure, prepared []
 // VARYING, or (as an extension) a literal. An <attributes specification> is
 // Feature B034, "Dynamic specification of cursor attributes".
 //
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, Syntax Rules, 1 and 2
-// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, Syntax Rules, 1 and 2
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, Conformance Rules, 2
 fn (mut t ModuleTokens) prepare_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	name := t.identifier('statement name')!
 	t.expect('FROM')!
@@ -67,7 +67,7 @@ fn (mut t ModuleTokens) prepare_statement(p ExternallyInvokedProcedure) !ModuleS
 // deallocate_prepared_statement compiles a <deallocate prepared statement>,
 // after DEALLOCATE PREPARE.
 //
-// ISO/IEC 9075-2:2023(E), 20.9, <deallocate prepared statement>
+// ISO/IEC 9075-2:2023, 20.9, <deallocate prepared statement>
 fn (mut t ModuleTokens) deallocate_prepared_statement(p ExternallyInvokedProcedure, prepared []string) !ModuleStatement {
 	name := t.statement_name(p, prepared)!
 	t.end_of_statement(p)!
@@ -81,8 +81,8 @@ fn (mut t ModuleTokens) deallocate_prepared_statement(p ExternallyInvokedProcedu
 // received cursor is Feature T472, "DESCRIBE CURSOR". vsql doesn't have a ROW,
 // ARRAY or MULTISET, so WITH NESTING doesn't change anything.
 //
-// ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, Syntax Rules, 2
-// ISO/IEC 9075-2:2023(E), 20.10, <describe statement>, Conformance Rules, 1 to 3
+// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Conformance Rules, 1 to 3
 fn (mut t ModuleTokens) describe_statement(p ExternallyInvokedProcedure, prepared []string) !ModuleStatement {
 	if t.accept('INPUT') {
 		return sqlstate_42601('procedure ${p.name}: DESCRIBE INPUT is not supported')
@@ -104,7 +104,7 @@ fn (mut t ModuleTokens) describe_statement(p ExternallyInvokedProcedure, prepare
 // execute_statement compiles an <execute statement>, after EXECUTE. Its <result
 // using clause> is before its <parameter using clause>.
 //
-// ISO/IEC 9075-2:2023(E), 20.13, <execute statement>
+// ISO/IEC 9075-2:2023, 20.13, <execute statement>
 fn (mut t ModuleTokens) execute_statement(p ExternallyInvokedProcedure, prepared []string) !ModuleStatement {
 	name := t.statement_name(p, prepared)!
 	mut b := BoundParameters{
@@ -123,7 +123,7 @@ fn (mut t ModuleTokens) execute_statement(p ExternallyInvokedProcedure, prepared
 // EXECUTE IMMEDIATE. The <SQL statement variable> is the same as a <prepare
 // statement>.
 //
-// ISO/IEC 9075-2:2023(E), 20.14, <execute immediate statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 20.14, <execute immediate statement>, Syntax Rules, 1
 fn (mut t ModuleTokens) execute_immediate_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	mut a := ConnectionArguments{
 		sections: ['execute_immediate']
@@ -139,7 +139,7 @@ fn (mut t ModuleTokens) execute_immediate_statement(p ExternallyInvokedProcedure
 // struct vsql_m_input (vsql_m_in) of the C runtime. Each <using argument> is a
 // host parameter, with an optional indicator parameter.
 //
-// ISO/IEC 9075-2:2023(E), 20.11, <input using clause>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 20.11, <input using clause>, Syntax Rules, 1
 fn (mut t ModuleTokens) input_using_clause(p ExternallyInvokedProcedure, mut b BoundParameters) !string {
 	if !t.accept('USING') {
 		return '  struct vsql_m_input vsql_m_in = {-1, NULL, NULL, NULL};\n'
@@ -180,8 +180,8 @@ fn (mut t ModuleTokens) accept_descriptor_keyword() !bool {
 // optional indicator parameter. A <result using clause> is Feature B032,
 // "Extended dynamic SQL", but it's allowed as an extension.
 //
-// ISO/IEC 9075-2:2023(E), 20.12, <output using clause>, Syntax Rules, 1
-// ISO/IEC 9075-2:2023(E), 20.13, <execute statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 20.12, <output using clause>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 20.13, <execute statement>, Conformance Rules, 1
 fn (mut t ModuleTokens) output_using_clause(p ExternallyInvokedProcedure, mut b BoundParameters) !(string, string) {
 	if !t.accept('INTO') {
 		return '  struct vsql_m_output vsql_m_out = {-1, NULL, NULL, NULL};\n', ''
@@ -200,7 +200,7 @@ fn (mut t ModuleTokens) output_using_clause(p ExternallyInvokedProcedure, mut b 
 // dynamic_open_statement compiles a <dynamic open statement>, after OPEN and
 // the cursor name, which is a declared dynamic cursor.
 //
-// ISO/IEC 9075-2:2023(E), 20.19, <dynamic open statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 20.19, <dynamic open statement>, Syntax Rules, 1
 fn (mut t ModuleTokens) dynamic_open_statement(p ExternallyInvokedProcedure, cursor ModuleCursor) !ModuleStatement {
 	mut b := BoundParameters{
 		sections: ['open_dynamic']
@@ -218,7 +218,7 @@ fn (mut t ModuleTokens) dynamic_open_statement(p ExternallyInvokedProcedure, cur
 // only be NEXT (see fetch_statement), since there are no scrollable cursors
 // (F431).
 //
-// ISO/IEC 9075-2:2023(E), 20.20, <dynamic fetch statement>, Syntax Rules, 1 and 2
+// ISO/IEC 9075-2:2023, 20.20, <dynamic fetch statement>, Syntax Rules, 1 and 2
 fn (mut t ModuleTokens) dynamic_fetch_statement(p ExternallyInvokedProcedure, cursor ModuleCursor) !ModuleStatement {
 	t.expect('INTO')!
 	t.pos--

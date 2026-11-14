@@ -3,7 +3,7 @@ module main
 import sync
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 4.4.1, Handles
+// ISO/IEC 9075-3:2003, 4.4.1, Handles
 //
 // A handle is an integer that identifies an allocated SQL-environment,
 // SQL-connection, SQL-statement or CLI descriptor area. A handle must be unique
@@ -143,7 +143,7 @@ mut:
 	auto_ard i64
 	auto_apd i64
 	// The statement attributes, see Table 17, "Codes used for statement
-	// attributes", and their initial values (ISO/IEC 9075-3:2003(E), 4.4.6,
+	// attributes", and their initial values (ISO/IEC 9075-3:2003, 4.4.6,
 	// Statement attributes). CURSOR HOLDABLE is HOLDABLE because the CURSOR
 	// COMMIT BEHAVIOR of GetInfo is PRESERVE.
 	cursor_scrollable   i64 = sql_nonscrollable
@@ -199,8 +199,8 @@ fn new_handle() i64 {
 // the connection is closed too, but it's still declared until the cursor is
 // destroyed (see destroy_cursor).
 //
-// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 6
-// ISO/IEC 9075-2:2023(E), 15.7, Effect of a positioned update, General Rules, 6
+// ISO/IEC 9075-2:2023, 15.6, Effect of a positioned delete, General Rules, 6
+// ISO/IEC 9075-2:2023, 15.7, Effect of a positioned update, General Rules, 6
 fn (mut stmt Stmt) close_cursor() {
 	if stmt.dynamic_cursor != '' {
 		if mut conn := stmt_connection(stmt) {
@@ -219,8 +219,8 @@ fn (mut stmt Stmt) close_cursor() {
 // doesn't exist, and destroys any prepared statements that reference it. They
 // would otherwise use whichever cursor has the name later.
 //
-// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect, General Rules, 10
-// ISO/IEC 9075-3:2003(E), 6.50, Prepare, General Rules, 10
+// ISO/IEC 9075-3:2003, 6.19, ExecDirect, General Rules, 10
+// ISO/IEC 9075-3:2003, 6.50, Prepare, General Rules, 10
 fn (mut stmt Stmt) destroy_cursor() {
 	stmt.close_cursor()
 	stmt.remove_dynamic_cursor()
@@ -256,8 +256,8 @@ fn (mut stmt Stmt) remove_dynamic_cursor() {
 // of a cursor of another statement of the connection: invalid cursor name. A
 // closed cursor still has a name.
 //
-// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect, General Rules, 6
-// ISO/IEC 9075-3:2003(E), 6.50, Prepare, General Rules, 6
+// ISO/IEC 9075-3:2003, 6.19, ExecDirect, General Rules, 6
+// ISO/IEC 9075-3:2003, 6.50, Prepare, General Rules, 6
 fn (stmt &Stmt) check_positioned_cursor(name string) ! {
 	for h, other in stmts {
 		if h != stmt.handle && other.dbc == stmt.dbc && other.has_cursor
@@ -271,7 +271,7 @@ fn (stmt &Stmt) check_positioned_cursor(name string) ! {
 
 // open_cursor opens a cursor on the result of a query, positioned before the
 // first row. The rows are copied, so the cursor is insensitive (ISO/IEC
-// 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 8.e).
+// 9075-3:2003, 5.4, Implicit cursor, General Rules, 8.e).
 fn (mut stmt Stmt) open_cursor(result vsql.Result) {
 	mut r := result
 	mut rows := []vsql.Row{}

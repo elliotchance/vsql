@@ -6,9 +6,9 @@ import math
 
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2023(E), 4.6, SQL data types
-// ISO/IEC 9075-1:2023(E), 4.6.1, General data type information
-// ISO/IEC 9075-1:2023(E), 4.6.3, Predefined types
+// ISO/IEC 9075-1:2023, 4.6, SQL data types
+// ISO/IEC 9075-1:2023, 4.6.1, General data type information
+// ISO/IEC 9075-1:2023, 4.6.3, Predefined types
 
 // Type is a fully-qualified SQL type, such as the type of a column or a value.
 pub struct Type {
@@ -146,7 +146,7 @@ fn (t SQLType) supertype() (i16, i16) {
 // result, up to the maximum precision. It's 0 (the maximum) if either precision
 // is unknown.
 //
-// ISO/IEC 9075-2:2023(E), 6.30, <numeric value expression>, Syntax Rules, 1.c
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1.c
 fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 	typ := if t1.typ == .is_decimal || t2.typ == .is_decimal {
 		SQLType.is_decimal

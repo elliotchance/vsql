@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2023(E), 14.8, <delete statement: positioned>
+// ISO/IEC 9075-2:2023, 14.8, <delete statement: positioned>
 //
 // Delete a row of a table.
 
@@ -23,7 +23,7 @@ fn (stmt DeleteStatementPositioned) execute(mut conn Connection, params map[stri
 
 	// The cursor is then before the next row, or after the last row.
 	//
-	// ISO/IEC 9075-2:2023(E), 15.6, Effect of a positioned delete, General Rules, 13
+	// ISO/IEC 9075-2:2023, 15.6, Effect of a positioned delete, General Rules, 13
 	cursor.on_row = false
 
 	return result

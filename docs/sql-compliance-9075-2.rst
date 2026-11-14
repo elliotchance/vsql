@@ -3,7 +3,7 @@ ISO/IEC 9075-2:2023 (Foundation)
 
 .. contents::
 
-This page is for **ISO/IEC 9075-2:2023(E)** (SQL:2023), which is the edition of
+This page is for **ISO/IEC 9075-2:2023** (SQL:2023), which is the edition of
 this part that vsql is pinned to (see :doc:`standard-index`). The feature IDs,
 feature names, table numbers and Subclause numbers on this page are all from
 that edition, and can be different in other editions.

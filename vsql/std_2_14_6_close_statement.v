@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2023(E), 14.6, <close statement>
+// ISO/IEC 9075-2:2023, 14.6, <close statement>
 //
 // Close a standing cursor.
 
@@ -30,8 +30,8 @@ fn (mut t ModuleTokens) close_statement(p ExternallyInvokedProcedure, cursors []
 
 	// A <dynamic close statement> closes a dynamic cursor.
 	//
-	// ISO/IEC 9075-2:2023(E), 20.22, <dynamic close statement>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2023(E), 20.22, <dynamic close statement>, General Rules, 1 to 3
+	// ISO/IEC 9075-2:2023, 20.22, <dynamic close statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 20.22, <dynamic close statement>, General Rules, 1 to 3
 	command := if cursor.statement == '' {
 		cursor.begin('CLOSE CURSOR', 9)
 	} else {

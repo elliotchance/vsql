@@ -1,12 +1,12 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 7.6, <table reference>
+// ISO/IEC 9075-2:2023, 7.6, <table reference>
 //
 // Reference a table.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2023(E), 4.17.11, Range variables
+// ISO/IEC 9075-2:2023, 4.17.11, Range variables
 
 struct Correlation {
 	name    Identifier
@@ -92,7 +92,7 @@ fn new_qualified_join(left_table TableReference, join_type JoinType, right_table
 // new_cross_join is a comma in FROM: the same as an inner join with a condition
 // that's always true.
 //
-// ISO/IEC 9075-2:2023(E), 7.5, <from clause>, General Rules, 1.b
+// ISO/IEC 9075-2:2023, 7.5, <from clause>, General Rules, 1.b
 fn new_cross_join(left_table TableReference, right_table TableReference) QualifiedJoin {
 	return new_qualified_join(left_table, .inner, right_table, BooleanValueExpression{
 		term: BooleanTerm{

@@ -2,13 +2,13 @@ module vsql
 
 import strings
 
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>
 //
 // Specify a comparison of two row values.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2023(E), 4.3.2, Comparison of character strings
+// ISO/IEC 9075-2:2023, 4.3.2, Comparison of character strings
 struct ComparisonPredicate {
 	left  RowValueConstructorPredicand
 	op    ComparisonOperator
@@ -37,7 +37,7 @@ fn (op ComparisonOperator) str() string {
 
 // truth is the result of "X <op> Y", given the comparison of X with Y. The
 // operators other than = and < are defined in terms of those two by ISO/IEC
-// 9075-2:2023(E), 8.2, <comparison predicate>, Syntax Rules, 6. For example,
+// 9075-2:2023, 8.2, <comparison predicate>, Syntax Rules, 6. For example,
 // "X >= Y" is "Y < X OR Y = X".
 fn (op ComparisonOperator) truth(cmp CompareResult) Truth {
 	if cmp == .is_unknown {
@@ -60,7 +60,7 @@ fn (op ComparisonOperator) truth(cmp CompareResult) Truth {
 // given the comparison of each pair of corresponding fields. A value that isn't
 // a row is the same as a row with one field.
 //
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 1.b.i
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 1.b.i
 fn (op ComparisonOperator) row_truth(cmps []CompareResult) Truth {
 	// 1) X = Y is True if every Xi = Yi is True, and 3) False if any of them is
 	// False.
@@ -123,7 +123,7 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 // They must have the same number of fields. null_parameter is whether each pair
 // has a dynamic parameter whose value is NULL (see null_parameters).
 //
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, Syntax Rules, 1 and 3
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, Syntax Rules, 1 and 3
 fn (c Compiler) check_row_comparison(left []Type, right []Type, null_parameter []bool) ! {
 	if left.len != right.len {
 		return sqlstate_42601('cannot compare a row of degree ${left.len} with a row of degree ${right.len}')
@@ -172,7 +172,7 @@ fn compare_rows(conn &Connection, x []Value, y []Value) ![]CompareResult {
 // Compiler.retrospective) then the greater comparand can be the current date or
 // timestamp.
 //
-// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Syntax Rules, 7.c.ii
+// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Syntax Rules, 7.c.ii
 fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool) !CompileResult {
 	// The case operand of a simple CASE (see CaseOperand) can be a row.
 	if e.left is ExplicitRowValueConstructor || e.right is ExplicitRowValueConstructor
@@ -191,7 +191,7 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 		e.right.compile(mut c)!
 	}
 
-	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
+	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxi
 	compiled_left, compiled_right = c.with_pair_types(compiled_left, compiled_right, same_type)
 	c.check_comparison(compiled_left.typ, compiled_right.typ, compiled_left.null_parameter
 		|| compiled_right.null_parameter)!
@@ -210,7 +210,7 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 
 // compile_row_comparison compiles a comparison where either side is a row.
 fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2023(E), 20.7, <prepare statement>, General Rules, 5.a.xxi
+	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxi
 	typed := c.with_row_types([e.left.compile_fields(mut c)!, e.right.compile_fields(mut c)!])
 	left, right := typed[0], typed[1]
 	c.check_row_comparison(left.map(it.typ), right.map(it.typ), null_parameters(left, right))!
@@ -227,7 +227,7 @@ fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult
 	}
 }
 
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, Format,
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, Format,
 // <comparison predicate part 2>
 struct ComparisonPredicatePart2 {
 	op   ComparisonOperator
@@ -244,15 +244,15 @@ enum CompareResult as i8 {
 // compare() should only be used for comparison predicates (equality) but
 // shouldn't be used for ordering.
 //
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 1-9
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 1-9
 fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 1.a:
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 1.a:
 	// If either value is NULL the comparison is Unknown.
 	if xv.is_null || yv.is_null {
 		return .is_unknown
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules,
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules,
 	// 1.b.i-1b.iv describe row, array, multiset and user-defined type
 	// comparisons. A row is compared one field at a time (see row_truth), and
 	// the other types are not supported, so every comparison of two values falls
@@ -260,43 +260,43 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 	// less than, YV, and False otherwise. The rest of the General Rules define
 	// equal and less than for each type.
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 2
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 2
 	if xv.typ.typ.is_number() && yv.typ.typ.is_number() {
 		return compare_numbers(xv, yv)
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 3
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 3
 	if xv.typ.typ.is_string() && yv.typ.typ.is_string() {
 		return compare_strings(xv, yv)
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 4
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 4
 	// and 5 compare binary strings octet by octet. Binary strings are not
 	// supported.
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 6
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 6
 	//
 	// Datetimes are only comparable if they have the same primary datetime
-	// fields (ISO/IEC 9075-2:2023(E), 4.7.2, Datetimes), so a DATE can't be
+	// fields (ISO/IEC 9075-2:2023, 4.7.2, Datetimes), so a DATE can't be
 	// compared with a TIME or TIMESTAMP without a CAST.
 	if xv.typ.typ.is_datetime() && yv.typ.typ.is_datetime()
 		&& datetime_fields(xv.typ.typ) == datetime_fields(yv.typ.typ) {
 		return compare_datetimes(conn, xv, yv)
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 7
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 7
 	// compares intervals by converting both to integers of their least
 	// significant field. Intervals are not supported.
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 8
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 8
 	if xv.typ.typ == .is_boolean && yv.typ.typ == .is_boolean {
 		return compare_booleans(xv, yv)
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 9
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 9
 	// compares REF values octet by octet. Reference types are not supported.
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, Syntax Rules, 3:
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, Syntax Rules, 3:
 	// the operands must be comparable.
 	return sqlstate_42883('cannot compare ${xv.typ} and ${yv.typ}')
 }
@@ -311,7 +311,7 @@ fn datetime_fields(t SQLType) string {
 	}
 }
 
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 6: two
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 6: two
 // datetimes are compared by the sign of the interval from subtracting them, in
 // units of their least significant field (including fractional seconds).
 fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
@@ -337,14 +337,14 @@ fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 		})
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 6.a:
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 6.a:
 	// equal when the difference is zero.
 	diff := x - y
 	if diff == 0 {
 		return .is_equal
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 6.b:
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 6.b:
 	// less than when the difference is negative.
 	if diff < 0 {
 		return .is_less
@@ -353,7 +353,7 @@ fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 	return .is_greater
 }
 
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 2:
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 2:
 // numbers are compared by their algebraic value.
 fn compare_numbers(xv Value, yv Value) !CompareResult {
 	if (xv.typ.typ == .is_decimal || xv.typ.typ == .is_numeric)
@@ -398,7 +398,7 @@ fn compare_numbers(xv Value, yv Value) !CompareResult {
 	return .is_equal
 }
 
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 3
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 3
 fn compare_strings(xv Value, yv Value) CompareResult {
 	// compare_strings is only invoked when both sides are known to use
 	// string_value.
@@ -409,13 +409,13 @@ fn compare_strings(xv Value, yv Value) CompareResult {
 	// ordering operation. Only the default collation is supported, which has
 	// the PAD SPACE characteristic.
 	//
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 3.a
-	// ISO/IEC 9075-2:2023(E), 9.11, Equality operations, Syntax Rules, 4
-	// ISO/IEC 9075-2:2023(E), 9.12, Grouping operations, Syntax Rules, 4
-	// ISO/IEC 9075-2:2023(E), 9.14, Ordering operations, Syntax Rules, 4
-	// ISO/IEC 9075-2:2023(E), 9.15, Collation determination, Syntax Rules, 2-4
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 3.a
+	// ISO/IEC 9075-2:2023, 9.11, Equality operations, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023, 9.12, Grouping operations, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 4
+	// ISO/IEC 9075-2:2023, 9.15, Collation determination, Syntax Rules, 2-4
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 3.b:
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 3.b:
 	// the shorter string is padded on the right with spaces (for a PAD SPACE
 	// collation) to the length of the longer one.
 	len_x := x.len
@@ -427,7 +427,7 @@ fn compare_strings(xv Value, yv Value) CompareResult {
 		y += strings.repeat(` `, len_x - len_y)
 	}
 
-	// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 3.c:
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 3.c:
 	// the result is given by the collation. Which of several equal strings MAX,
 	// MIN, DISTINCT, UNION, etc. pick is implementation-dependent (General
 	// Rules, 3.d).
@@ -442,7 +442,7 @@ fn compare_strings(xv Value, yv Value) CompareResult {
 	return .is_equal
 }
 
-// ISO/IEC 9075-2:2023(E), 8.2, <comparison predicate>, General Rules, 8: True
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 8: True
 // is greater than False.
 fn compare_booleans(xv Value, yv Value) CompareResult {
 	// compare_booleans is only invoked when both sides are known to use

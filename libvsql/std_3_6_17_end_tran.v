@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.17, EndTran
+// ISO/IEC 9075-3:2003, 6.17, EndTran
 //
 // Terminate an SQL-transaction.
 //

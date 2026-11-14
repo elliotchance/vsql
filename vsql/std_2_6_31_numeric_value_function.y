@@ -1,13 +1,13 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 6.31, <numeric value function>
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>
 //
 // Specify a function yielding a value of type numeric.
 //
 // Each function is flagged with its feature.
 //
-// ISO/IEC 9075-2:2023(E), 6.31, <numeric value function>, Conformance Rules, 9-11
-// ISO/IEC 9075-2:2023(E), 6.31, <numeric value function>, Conformance Rules, 13-20
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 9-11
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 13-20
 
 numeric_value_function:
   position_expression { $$.v = $1.v }

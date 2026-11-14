@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2023(E), 11.1, <schema definition>
+// ISO/IEC 9075-2:2023, 11.1, <schema definition>
 //
 // Define a schema.
 
@@ -29,7 +29,7 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 	// The name can't be the same as another schema, including the
 	// INFORMATION_SCHEMA, which isn't stored.
 	//
-	// ISO/IEC 9075-2:2023(E), 11.1, <schema definition>, Syntax Rules, 3
+	// ISO/IEC 9075-2:2023, 11.1, <schema definition>, Syntax Rules, 3
 	if schema_name in catalog.storage.schemas || schema_name == information_schema_name {
 		if stmt.if_not_exists {
 			return new_result_msg('CREATE SCHEMA 0', elapsed_parse, t.elapsed())
@@ -38,10 +38,10 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 		return sqlstate_42p06(schema_name) // duplicate schema
 	}
 
-	// ISO/IEC 9075-2:2023(E), 11.1, <schema definition>, General Rules, 1.a
+	// ISO/IEC 9075-2:2023, 11.1, <schema definition>, General Rules, 1.a
 	catalog.storage.create_schema(schema_name)!
 
-	// ISO/IEC 9075-2:2023(E), 11.1, <schema definition>, General Rules, 1.e
+	// ISO/IEC 9075-2:2023, 11.1, <schema definition>, General Rules, 1.e
 	stmt.create_elements(mut conn, identifier)!
 
 	return new_result_msg('CREATE SCHEMA 1', elapsed_parse, t.elapsed())
@@ -58,8 +58,8 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 // can reference a table that's after it, and two tables can reference each
 // other.
 //
-// ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, Syntax Rules, 4.b, 13.d.ii and 14.c
-// ISO/IEC 9075-2:2023(E), 11.1, <schema definition>, General Rules, 1.e
+// ISO/IEC 9075-2:2023, 5.4, Names and identifiers, Syntax Rules, 4.b, 13.d.ii and 14.c
+// ISO/IEC 9075-2:2023, 11.1, <schema definition>, General Rules, 1.e
 fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifier) ! {
 	current_catalog := conn.current_catalog
 	current_schema := conn.current_schema
@@ -77,12 +77,12 @@ fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifie
 	for element in stmt.elements {
 		match element {
 			SequenceGeneratorDefinition {
-				// ISO/IEC 9075-2:2023(E), 11.72, <sequence generator definition>, Syntax Rules, 2
+				// ISO/IEC 9075-2:2023, 11.72, <sequence generator definition>, Syntax Rules, 2
 				check_schema_element_name(conn, element.name)!
 				_ := element.create(mut conn)!
 			}
 			TableDefinition {
-				// ISO/IEC 9075-2:2023(E), 11.3, <table definition>, Syntax Rules, 6
+				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 6
 				check_schema_element_name(conn, element.table_name)!
 				created, table := element.create_table(mut conn, true, reserved_names)!
 				if created && table.foreign_keys.len > 0 {

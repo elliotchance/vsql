@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 14.15, <set clause list>
+// ISO/IEC 9075-2:2023, 14.15, <set clause list>
 //
 // Specify a list of updates.
 

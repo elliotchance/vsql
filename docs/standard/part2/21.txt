@@ -1,4 +1,4 @@
-# ISO/IEC 9075-2:2023(E)
+# ISO/IEC 9075-2:2023
 # id status code tests note (see docs/standard-index.rst)
 # 21, Embedded SQL
 21                       container    - -

@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 7.6, <table reference>
+// ISO/IEC 9075-2:2023, 7.6, <table reference>
 //
 // Reference a table.
 
@@ -19,7 +19,7 @@ parenthesized_joined_table:
 
 // Without a join type, it's INNER.
 //
-// ISO/IEC 9075-2:2023(E), 7.10, <joined table>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 5
 
 qualified_join:
   table_reference JOIN table_reference join_specification {
@@ -47,7 +47,7 @@ table_primary:
     })
   }
 | derived_table {
-    // ISO/IEC 9075-2:2023(E), 7.6, <table reference>, Format
+    // ISO/IEC 9075-2:2023, 7.6, <table reference>, Format
     flag(mut yylex, vsql_derived_table_without_name)
     $$.v = $1.v
   }
@@ -92,7 +92,7 @@ correlation_or_recognition:
 
 derived_table:
   table_subquery {
-    // ISO/IEC 9075-2:2023(E), 7.6, <table reference>, Conformance Rules, 6
+    // ISO/IEC 9075-2:2023, 7.6, <table reference>, Conformance Rules, 6
     flag(mut yylex, 'F591')
     $$.v = $1.v
   }

@@ -53,7 +53,7 @@ fn test_split_terminated_statements() {
 	assert split_statements('VALUES 1; VALUES 2 ') == ['VALUES 1', 'VALUES 2']
 }
 
-// ISO/IEC 9075-2:2023(E), 22.1, <direct SQL statement>
+// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>
 fn test_direct() {
 	mut db := open(':memory:')!
 
@@ -594,7 +594,7 @@ fn test_features_without_catalog() ! {
 
 // A prepared statement has a new statement timestamp each time it's executed.
 //
-// ISO/IEC 9075-2:2023(E), 9.17, Executing an <SQL procedure statement>, General Rules, 5
+// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 5
 fn test_prepared_statement_timestamp() ! {
 	mut db := open(':memory:')!
 	mut ticking := &SQLTestTickingClock{}

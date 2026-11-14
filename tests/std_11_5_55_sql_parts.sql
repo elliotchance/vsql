@@ -1,4 +1,4 @@
--- # There's one row for each part (ISO/IEC 9075-1:2023(E), 5.2 to 5.10), but
+-- # There's one row for each part (ISO/IEC 9075-1:2023, 5.2 to 5.10), but
 -- # not for the parts that SQL:2023 added (5.11 and 5.12, #1505). A part is
 -- # only supported when all of its mandatory features are, and the parts that
 -- # have a compliance page say how many are. Nothing is verified

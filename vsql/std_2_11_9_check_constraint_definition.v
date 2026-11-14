@@ -1,15 +1,15 @@
 module vsql
 
-// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>
+// ISO/IEC 9075-2:2023, 11.9, <check constraint definition>
 //
 // Specify a condition for the SQL-data.
 //
-// The concept is described by ISO/IEC 9075-1:2023(E), 4.9, Integrity
+// The concept is described by ISO/IEC 9075-1:2023, 4.9, Integrity
 // constraints and constraint checking.
 //
 // The concept is also described by:
 //
-// ISO/IEC 9075-2:2023(E), 4.25, Integrity constraints
+// ISO/IEC 9075-2:2023, 4.25, Integrity constraints
 
 struct CheckConstraintDefinition {
 	search_condition BooleanValueExpression
@@ -17,7 +17,7 @@ struct CheckConstraintDefinition {
 	// column. It's not in the file, so a CHECK that's read from the file is
 	// always a table constraint.
 	//
-	// ISO/IEC 9075-2:2023(E), 11.4, <column definition>, Syntax Rules, 17.d
+	// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 17.d
 	column_name string
 	// name is empty when the constraint doesn't have a <constraint name
 	// definition> (see Table.name_constraints).
@@ -40,7 +40,7 @@ fn (e CheckConstraintDefinition) str() string {
 // are resolved with the current schema and catalog (see
 // Compiler.stored_definition).
 //
-// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>, Syntax Rules, 1, 2 and 5
+// ISO/IEC 9075-2:2023, 11.9, <check constraint definition>, Syntax Rules, 1, 2 and 5
 fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table, stored bool) !CompileResult {
 	mut c := Compiler{
 		conn:                   conn
@@ -124,10 +124,10 @@ fn check_new_check_constraints(mut conn Connection, table Table, first int) ! {
 // The whole statement then fails, so none of its rows are written. A deferred
 // constraint isn't checked (see defer_check).
 //
-// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>, Syntax Rules, 9
-// ISO/IEC 9075-2:2023(E), 11.9, <check constraint definition>, General Rules, 3
-// ISO/IEC 9075-2:2023(E), 4.25.2, Checking of constraints
-// ISO/IEC 9075-2:2023(E), 4.25.3.4, Table check constraints
+// ISO/IEC 9075-2:2023, 11.9, <check constraint definition>, Syntax Rules, 9
+// ISO/IEC 9075-2:2023, 11.9, <check constraint definition>, General Rules, 3
+// ISO/IEC 9075-2:2023, 4.25.2, Checking of constraints
+// ISO/IEC 9075-2:2023, 4.25.3.4, Table check constraints
 fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 	if c.constraints.len == 0 {
 		return

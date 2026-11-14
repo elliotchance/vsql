@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.11, Columns
+// ISO/IEC 9075-3:2003, 6.11, Columns
 //
 // Based on the specified selection criteria, return a result set that contains
 // information about columns of tables stored in the information schemas of the

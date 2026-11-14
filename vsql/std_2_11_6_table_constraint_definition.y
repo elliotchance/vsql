@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 11.6, <table constraint definition>
+// ISO/IEC 9075-2:2023, 11.6, <table constraint definition>
 //
 // Specify an integrity constraint.
 

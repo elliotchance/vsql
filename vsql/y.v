@@ -45653,7 +45653,7 @@ fn yy_action_313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2226
 	{
-		// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Conformance Rules, 5
+		// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 5
 		flag(mut yylex, 'F661')
 		yy_val.v = yy_box(SimpleTable(row_value_constructors(yy_unbox[[]ContextuallyTypedRowValueConstructor](yy_dollar[1].v))!))
 	}
@@ -45702,7 +45702,7 @@ fn yy_action_318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2262
 	{
-		// ISO/IEC 9075-2:2023(E), 14.11, <insert statement>, Conformance Rules, 2
+		// ISO/IEC 9075-2:2023, 14.11, <insert statement>, Conformance Rules, 2
 		flag(mut yylex, 'F222')
 		yy_val.v = yy_box(InsertStatement{
 			from_default: true
@@ -47526,7 +47526,7 @@ fn yy_action_854(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_855(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3703
 	{
-		// ISO/IEC 9075-2:2023(E), 6.14, <next value expression>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 6.14, <next value expression>, Conformance Rules, 1
 		flag(mut yylex, 'T176')
 		yy_val.v = yy_box(NextValueExpression{
 			name: yy_unbox[Identifier](yy_dollar[4].v)
@@ -47844,7 +47844,7 @@ fn yy_action_898(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_899(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3825
 	{
-		// ISO/IEC 9075-2:2023(E), 6.1, <data type>, Syntax Rules, 38: the default
+		// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 38: the default
 		// <timestamp precision> is 6.
 		yy_val.v = yy_box(parse_timestamp_prec_tz_type('6', false)!)
 	}
@@ -47920,8 +47920,8 @@ fn yy_action_908(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_909(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3872
 	{
-		// ISO/IEC 9075-2:2023(E), 6.29, <value expression>, Conformance Rules, 1
-		// ISO/IEC 9075-2:2023(E), 6.46, <boolean value expression>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 6.29, <value expression>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Conformance Rules, 1
 		flag_if(mut yylex, is_boolean_operation(yy_unbox[BooleanValueExpression](yy_dollar[1].v)), 'T031')
 		yy_val.v = yy_box(ValueExpression(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))
 	}
@@ -50027,7 +50027,7 @@ fn yy_action_1168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5116
 	{
-		// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Conformance Rules, 5
+		// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 5
 		flag(mut yylex, 'F661')
 		yy_val.v = yy_dollar[1].v
 	}
@@ -50036,7 +50036,7 @@ fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5121
 	{
-		// ISO/IEC 9075-2:2023(E), 7.17, <query expression>, Conformance Rules, 6
+		// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 6
 		flag(mut yylex, 'F661')
 		yy_val.v = yy_box(SimpleTable(yy_unbox[QuerySpecification](yy_dollar[1].v)))
 	}
@@ -50188,7 +50188,7 @@ fn yy_action_1192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5251
 	{
-		// ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 1
 		flag(mut yylex, 'T051')
 		yy_val.v = yy_box(ExplicitRowValueConstructor{yy_unbox[[]ValueExpression](yy_dollar[3].v)})
 	}
@@ -50303,7 +50303,7 @@ fn yy_action_1208(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	// line vsql/y.y:5320
 	{
 		row := yy_unbox[ExplicitRowValueConstructor](yy_dollar[1].v)
-		// ISO/IEC 9075-2:2023(E), 7.1, <row value constructor>, Conformance Rules, 3
+		// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 3
 		flag_if(mut yylex, row.exprs.len > 1, 'F641')
 		yy_val.v = yy_box(RowValueConstructorPredicand(row))
 	}
@@ -50333,7 +50333,7 @@ fn yy_action_1211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5353
 	{
-		// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>, Conformance Rules, 2
+		// ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 2
 		flag(mut yylex, 'F641')
 		yy_val.v = yy_box(SimpleTable(yy_unbox[[]RowValueConstructor](yy_dollar[2].v)))
 	}
@@ -50371,7 +50371,7 @@ fn yy_action_1216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5376
 	{
-		// ISO/IEC 9075-2:2023(E), 7.3, <table value constructor>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 1
 		flag(mut yylex, 'F641')
 		yy_val.v = yy_box(append_list(yy_unbox[[]ContextuallyTypedRowValueConstructor](yy_dollar[1].v),
 			yy_unbox[ContextuallyTypedRowValueConstructor](yy_dollar[3].v)))
@@ -50526,7 +50526,7 @@ fn yy_action_1236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5483
 	{
-		// ISO/IEC 9075-2:2023(E), 7.6, <table reference>, Format
+		// ISO/IEC 9075-2:2023, 7.6, <table reference>, Format
 		flag(mut yylex, vsql_derived_table_without_name)
 		yy_val.v = yy_dollar[1].v
 	}
@@ -50593,7 +50593,7 @@ fn yy_action_1243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5528
 	{
-		// ISO/IEC 9075-2:2023(E), 7.6, <table reference>, Conformance Rules, 6
+		// ISO/IEC 9075-2:2023, 7.6, <table reference>, Conformance Rules, 6
 		flag(mut yylex, 'F591')
 		yy_val.v = yy_dollar[1].v
 	}
@@ -50663,7 +50663,7 @@ fn yy_action_1252(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5577
 	{
-		// ISO/IEC 9075-2:2023(E), 8.14, <overlaps predicate>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, Conformance Rules, 1
 		flag(mut yylex, 'F053')
 		yy_val.v = yy_dollar[2].v
 	}
@@ -50891,7 +50891,7 @@ fn yy_action_1281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5699
 	{
-		// ISO/IEC 9075-2:2023(E), 8.3, <between predicate>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 8.3, <between predicate>, Conformance Rules, 1
 		flag(mut yylex, 'T461')
 		yy_val.v = true
 	}
@@ -50946,7 +50946,7 @@ fn yy_action_1287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5736
 	{
-		// ISO/IEC 9075-2:2023(E), 8.4, <in predicate>, Conformance Rules, 1
+		// ISO/IEC 9075-2:2023, 8.4, <in predicate>, Conformance Rules, 1
 		flag_if(mut yylex, (yy_unbox[[]RowValueConstructorPredicand](yy_dollar[2].v)).any(!is_value_specification(it)),
 			'F561')
 		yy_val.v = yy_box(InPredicate{

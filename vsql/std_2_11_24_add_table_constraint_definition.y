@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 11.24, <add table constraint definition>
+// ISO/IEC 9075-2:2023, 11.24, <add table constraint definition>
 //
 // Add a constraint to a table.
 

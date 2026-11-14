@@ -3,7 +3,7 @@ ISO/IEC 9075-3:2003 (Call-Level Interface)
 
 .. contents::
 
-This page is for **ISO/IEC 9075-3:2003(E)** (the SQL:2003 working draft,
+This page is for **ISO/IEC 9075-3:2003** (the SQL:2003 working draft,
 2003-09), which is the edition of this part that vsql is pinned to (see
 :doc:`standard-index`). The feature IDs, feature names, table numbers and
 Subclause numbers on this page are all from that edition, and can be different

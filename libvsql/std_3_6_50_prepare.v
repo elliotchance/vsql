@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.50, Prepare
+// ISO/IEC 9075-3:2003, 6.50, Prepare
 //
 // Prepare a statement.
 //

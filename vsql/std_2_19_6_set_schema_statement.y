@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 19.6, <set schema statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, Conformance Rules, 1
 
 set_schema_statement:
   SET schema_name_characteristic {

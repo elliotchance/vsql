@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2023(E), 19.5, <set catalog statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023, 19.5, <set catalog statement>, Conformance Rules, 1 and 2
 
 set_catalog_statement:
   SET catalog_name_characteristic {

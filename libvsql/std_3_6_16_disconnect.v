@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.16, Disconnect
+// ISO/IEC 9075-3:2003, 6.16, Disconnect
 //
 // Terminate an established connection.
 
@@ -11,7 +11,7 @@ fn sql_disconnect(connection_handle SQLInteger) i16 {
 		entry.leave()
 	}
 	h := i64(connection_handle)
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 1
+	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 1
 	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
@@ -19,7 +19,7 @@ fn sql_disconnect(connection_handle SQLInteger) i16 {
 }
 
 fn disconnect(mut dbc Dbc, h i64) !i16 {
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 2: the
+	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 2: the
 	// connection must be established.
 	mut conn := dbc.conn or { return cli_error('08003', 'connection does not exist') }
 
@@ -30,7 +30,7 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 		autocommit(mut dbc.diag, h, true)!
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 3 and 4: there
+	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 3 and 4: there
 	// can't be an active SQL-transaction, which is a different error (4.a) if a
 	// statement also has a deferred parameter number. Without one, a deferred
 	// parameter doesn't stop the statement from being freed.
@@ -44,7 +44,7 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 		return cli_error('25001', 'active SQL-transaction')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 5 and 6: every
+	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 5 and 6: every
 	// allocated SQL-statement and CLI descriptor area is freed.
 	mut statements := []i64{}
 	for sh, stmt in stmts {
@@ -65,12 +65,12 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 		free_desc(dh)
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 8
+	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 8
 	db_close(mut conn)
 	dbc.conn = none
 	dbc.is_default = false
 
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 7 and 10: if it
+	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 7 and 10: if it
 	// was the current SQL-connection, there's no longer a current one.
 	if current_connection(dbc.env) == h {
 		set_current_connection(dbc.env, 0)

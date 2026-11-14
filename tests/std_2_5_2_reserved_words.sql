@@ -4,6 +4,9 @@
 CREATE TABLE ABS (x INT);
 -- error 42601: syntax error: unexpected ABS at line 1, column 14 near "CREATE TABLE ABS ("; hint: ABS is a reserved word, so it must be quoted to be used as a name, such as "ABS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
+CREATE TABLE ABSENT (x INT);
+-- error 42601: syntax error: unexpected ABSENT at line 1, column 14 near "CREATE TABLE ABSENT ("; hint: ABSENT is a reserved word, so it must be quoted to be used as a name, such as "ABSENT" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
 CREATE TABLE ACOS (x INT);
 -- error 42601: syntax error: unexpected ACOS at line 1, column 14 near "CREATE TABLE ACOS ("; hint: ACOS is a reserved word, so it must be quoted to be used as a name, such as "ACOS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
@@ -492,6 +495,9 @@ CREATE TABLE IS (x INT);
 CREATE TABLE JOIN (x INT);
 -- error 42601: syntax error: unexpected JOIN at line 1, column 14 near "CREATE TABLE JOIN ("; hint: JOIN is a reserved word, so it must be quoted to be used as a name, such as "JOIN" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
+CREATE TABLE JSON (x INT);
+-- error 42601: syntax error: unexpected JSON at line 1, column 14 near "CREATE TABLE JSON ("; hint: JSON is a reserved word, so it must be quoted to be used as a name, such as "JSON" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
 CREATE TABLE JSON_ARRAY (x INT);
 -- error 42601: syntax error: unexpected JSON_ARRAY at line 1, column 14 near "CREATE TABLE JSON_ARRAY ("; hint: JSON_ARRAY is a reserved word, so it must be quoted to be used as a name, such as "JSON_ARRAY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
@@ -509,6 +515,12 @@ CREATE TABLE JSON_OBJECTAGG (x INT);
 
 CREATE TABLE JSON_QUERY (x INT);
 -- error 42601: syntax error: unexpected JSON_QUERY at line 1, column 14 near "CREATE TABLE JSON_QUERY ("; hint: JSON_QUERY is a reserved word, so it must be quoted to be used as a name, such as "JSON_QUERY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
+CREATE TABLE JSON_SCALAR (x INT);
+-- error 42601: syntax error: unexpected JSON_SCALAR at line 1, column 14 near "CREATE TABLE JSON_SCALAR ("; hint: JSON_SCALAR is a reserved word, so it must be quoted to be used as a name, such as "JSON_SCALAR" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
+CREATE TABLE JSON_SERIALIZE (x INT);
+-- error 42601: syntax error: unexpected JSON_SERIALIZE at line 1, column 14 near "CREATE TABLE JSON_SERIALIZE ("; hint: JSON_SERIALIZE is a reserved word, so it must be quoted to be used as a name, such as "JSON_SERIALIZE" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 CREATE TABLE JSON_TABLE (x INT);
 -- error 42601: syntax error: unexpected JSON_TABLE at line 1, column 14 near "CREATE TABLE JSON_TABLE ("; hint: JSON_TABLE is a reserved word, so it must be quoted to be used as a name, such as "JSON_TABLE" (see https://vsql.readthedocs.io/en/latest/keywords.html)

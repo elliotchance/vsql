@@ -152,7 +152,6 @@ non_reserved_word:
 | INVOKER
 | ISOLATION
 | IS_PRUNABLE
-| JSON
 | K
 | KEEP
 | KEY

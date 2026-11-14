@@ -133,7 +133,6 @@ module vsql
 %token INVOKER
 %token ISOLATION
 %token IS_PRUNABLE
-%token JSON
 %token K
 %token KEEP
 %token KEY
@@ -294,6 +293,7 @@ module vsql
 
 // reserved words
 %token ABS
+%token ABSENT
 %token ACOS
 %token ALL
 %token ALLOCATE
@@ -456,12 +456,15 @@ module vsql
 %token INTO
 %token IS
 %token JOIN
+%token JSON
 %token JSON_ARRAY
 %token JSON_ARRAYAGG
 %token JSON_EXISTS
 %token JSON_OBJECT
 %token JSON_OBJECTAGG
 %token JSON_QUERY
+%token JSON_SCALAR
+%token JSON_SERIALIZE
 %token JSON_TABLE
 %token JSON_TABLE_PRIMITIVE
 %token JSON_VALUE

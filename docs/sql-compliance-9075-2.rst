@@ -779,7 +779,7 @@ Optional Features
    * - ✅ **F382**
      - **Alter column data type**
 
-   * - ❌ **F383**
+   * - ✅ **F383**
      - **Set column not null clause**
 
    * - ❌ **F384**

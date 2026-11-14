@@ -571,7 +571,7 @@
 11.11/GR/3               n/a          - - privileges (E081, #732)
 11.11/GR/4               implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 # 11.12, <alter column definition>
-11.12                    partial      vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql only SET DEFAULT, DROP DEFAULT, SET DATA TYPE and the <alter identity column specification>
+11.12                    partial      vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql only SET DEFAULT, DROP DEFAULT, SET NOT NULL, DROP NOT NULL, SET DATA TYPE and the <alter identity column specification>
 11.12/SR/1               definition   - -
 11.12/SR/2               n/a          - - system-versioned tables (T180)
 11.12/SR/3               definition   - -
@@ -595,28 +595,28 @@
 11.14/GR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
 11.14/CR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.y tests/std_1_9_6_flagging.sql
 # 11.15, <set column not null clause>
-11.15                    n/a          - - SET NOT NULL (F383)
-11.15/GR/1               n/a          - - SET NOT NULL (F383)
-11.15/GR/1.a             n/a          - - SET NOT NULL (F383)
-11.15/GR/1.b             n/a          - - SET NOT NULL (F383)
-11.15/GR/1.c             n/a          - - SET NOT NULL (F383)
-11.15/GR/1.c.i           n/a          - - SET NOT NULL (F383)
-11.15/GR/1.c.ii          n/a          - - SET NOT NULL (F383)
-11.15/GR/1.d             n/a          - - SET NOT NULL (F383)
-11.15/CR/1               n/a          - - SET NOT NULL (F383)
+11.15                    implemented  vsql/std_2_11_15_set_column_not_null_clause.v tests/std_2_11_15_set_column_not_null.sql
+11.15/GR/1               implemented  vsql/std_2_11_15_set_column_not_null_clause.v tests/std_2_11_15_set_column_not_null.sql
+11.15/GR/1.a             definition   - -
+11.15/GR/1.b             implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_15_set_column_not_null.sql
+11.15/GR/1.c             implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_15_set_column_not_null.sql
+11.15/GR/1.c.i           implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_15_set_column_not_null.sql
+11.15/GR/1.c.ii          implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_15_set_column_not_null.sql
+11.15/GR/1.d             implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_15_set_column_not_null.sql
+11.15/CR/1               implemented  vsql/std_2_11_15_set_column_not_null_clause.y tests/std_2_11_15_set_column_not_null.sql
 # 11.16, <drop column not null clause>
-11.16                    n/a          - - DROP NOT NULL (F383)
-11.16/SR/1               n/a          - - DROP NOT NULL (F383)
-11.16/SR/2               n/a          - - DROP NOT NULL (F383)
-11.16/SR/3               n/a          - - DROP NOT NULL (F383)
-11.16/SR/4               n/a          - - DROP NOT NULL (F383)
-11.16/GR/1               n/a          - - DROP NOT NULL (F383)
-11.16/GR/1.a             n/a          - - DROP NOT NULL (F383)
-11.16/GR/1.b             n/a          - - DROP NOT NULL (F383)
-11.16/GR/1.b.i           n/a          - - DROP NOT NULL (F383)
-11.16/GR/1.b.ii          n/a          - - DROP NOT NULL (F383)
-11.16/GR/1.c             n/a          - - DROP NOT NULL (F383)
-11.16/CR/1               n/a          - - DROP NOT NULL (F383)
+11.16                    implemented  vsql/std_2_11_16_drop_column_not_null_clause.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/SR/1               definition   - -
+11.16/SR/2               n/a          - - system-versioned tables (T180)
+11.16/SR/3               n/a          - - application-time periods (T181)
+11.16/SR/4               implemented  vsql/std_2_11_16_drop_column_not_null_clause.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/GR/1               implemented  vsql/std_2_11_16_drop_column_not_null_clause.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/GR/1.a             definition   - -
+11.16/GR/1.b             implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/GR/1.b.i           implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/GR/1.b.ii          implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/GR/1.c             implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_16_drop_column_not_null.sql
+11.16/CR/1               implemented  vsql/std_2_11_16_drop_column_not_null_clause.y tests/std_2_11_16_drop_column_not_null.sql
 # 11.17, <add column scope clause>
 11.17                    n/a          - - scope clauses (S043)
 11.17/SR/1               n/a          - - scope clauses (S043)

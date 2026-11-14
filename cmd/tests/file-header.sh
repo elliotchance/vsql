@@ -35,6 +35,14 @@ test "$(dd if=$VSQL_FILE bs=1 skip=4000 count=2 2>/dev/null | od -A n -t x1 | tr
 # A file with a newer write version can be read, but not changed.
 set_header_bytes 10 '\377\377'
 echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep -Ex ' *1'
+
+# Including in a transaction, since one that hasn't changed anything doesn't
+# need to change the file. A REPEATABLE READ transaction can't publish its
+# snapshot, so it starts without one.
+printf 'START TRANSACTION;\nSELECT * FROM foo;\nCOMMIT;\nSTART TRANSACTION ISOLATION LEVEL REPEATABLE READ;\nSELECT * FROM foo;\nCOMMIT;\nSELECT * FROM foo;\n' | $VSQL cli -autocommit=false $VSQL_FILE > $TXT_FILE
+cat $TXT_FILE
+test "$(grep -Ecx ' *1' $TXT_FILE)" = "3"
+if grep 'Error' $TXT_FILE; then exit 1; fi
 echo 'INSERT INTO foo (bar) VALUES (2);' | $VSQL cli $VSQL_FILE | grep 'Error 25006: read-only sql transaction: database needs file format 65535 to be changed'
 if echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep -Ex ' *2'; then
   exit 1

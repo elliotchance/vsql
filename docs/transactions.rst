@@ -191,6 +191,11 @@ change, insert or delete after that aren't seen, even once they're committed.
 Unlike ``SERIALIZABLE``, it doesn't wait for other transactions, and other
 connections can still commit while it's active.
 
+The snapshot is kept in the database file, so on a database that can only be
+read (such as one that needs a newer version of vsql to be changed) it can't
+take one. Its statements fail with a ``40001`` instead if another transaction
+has ended since it started (see :doc:`mvcc`).
+
 .. code-block:: sql
 
   -- From connection 1:

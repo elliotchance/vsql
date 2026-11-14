@@ -89,29 +89,56 @@ fn (mut conn Connection) start_transaction(level IsolationLevel) ! {
 	}
 }
 
-// start_transaction starts the SQL-transaction in the catalog. A REPEATABLE READ
-// transaction takes its snapshot now, see Storage.take_snapshot.
+// start_transaction starts an SQL-transaction that hasn't changed anything, so
+// it doesn't lock or change the file (see TransactionState). It becomes a
+// transaction that can write with begin_transaction.
+//
+// Except for REPEATABLE READ, which takes its snapshot now (see
+// Storage.take_snapshot). The snapshot must be published with the transaction
+// ID, so that a COMMIT in another connection keeps the versions of rows that it
+// can see, so the transaction is given one straight away. If the database can
+// only be read, it can't be, so it starts like the others, without a snapshot
+// until it changes something (see Storage.snapshot_pending).
 fn (mut catalog CatalogConnection) start_transaction(level IsolationLevel) ! {
-	catalog.open_write_connection()!
+	catalog.storage.snapshot_pending = level == .repeatable_read
+	if level != .repeatable_read {
+		catalog.storage.transaction_state = .reading
+		return
+	}
+
+	catalog.open_write_connection() or {
+		if err !is SQLState25006 {
+			return err
+		}
+		catalog.storage.transaction_state = .reading
+		catalog.storage.snapshot_header = catalog.storage.header
+		return
+	}
 	defer {
 		catalog.release_write_connection()
 	}
+	catalog.storage.begin_transaction()!
+}
 
+// begin_transaction makes an SQL-transaction that hasn't changed anything yet
+// (see TransactionState) active, so that it can write. It must be called with
+// the write connection open.
+fn (mut f Storage) begin_transaction() ! {
 	// isolation_start registers the transaction, then transaction_state ensures
 	// that future calls to isolation_start for individual operations use the
 	// same isolation scope (the transaction).
-	catalog.storage.isolation_start()!
-	catalog.storage.transaction_state = .active
+	f.isolation_start()!
+	f.transaction_state = .active
 
 	// This would fail is a implicit or explicit transaction did not perform
 	// cleanup.
-	assert catalog.storage.transaction_pages.len == 0
-	assert catalog.storage.transaction_keys.len == 0
+	assert f.transaction_pages.len == 0
+	assert f.transaction_keys.len == 0
 
-	catalog.storage.transaction_pages = map[int]bool{}
+	f.transaction_pages = map[int]bool{}
 
-	if level == .repeatable_read {
-		catalog.storage.take_snapshot()!
+	if f.snapshot_pending {
+		f.take_snapshot()!
 	}
 }
 

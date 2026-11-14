@@ -112,10 +112,11 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 		}
 		QualifiedJoin {
 			plan = create_join_plan(body, from_clause, params, mut conn, allow_virtual, mut
-				tables)!
+				tables, true)!
 
-			// The WHERE clause applies to the joined rows, so it can't be used to
-			// filter either side before the join.
+			// The WHERE clause applies to the joined rows, so it's applied after the
+			// join. It's only used to narrow down the rows that are read of the
+			// tables that are never NULL-extended (see create_join_plan).
 			add_where_plan(mut &plan, body, params, conn, tables, [])!
 		}
 	}
@@ -169,17 +170,23 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 // in scope, such as t1 in "FROM t1, t2 JOIN t3 ON ...".
 //
 // ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 2
-fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table) !Plan {
+//
+// preserved is true when the rows of this join are never NULL-extended by an
+// outer join it's in, so a row that's left out of it can't be in the result of
+// the FROM clause. Then the WHERE clause can be used to read only some of the
+// rows of a table on a side of the join that isn't NULL-extended either (see
+// create_table_reference_plan), although it's still applied to every joined row.
+fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table, preserved bool) !Plan {
 	outside_join := tables.keys()
 
 	mut plan := Plan{}
 	before_left := tables.keys()
 	first_table := tables.len
 	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
-		params, mut conn, allow_virtual, mut tables)!
+		params, mut conn, allow_virtual, mut tables, preserved && join.join_type != .right)!
 	before_right := tables.keys()
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
-		params, mut conn, allow_virtual, mut tables)!
+		params, mut conn, allow_virtual, mut tables, preserved && join.join_type != .left)!
 	left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
 	right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
 
@@ -342,11 +349,21 @@ fn add_common_columns_range_variable(tables map[string]&Table, first_table int, 
 	return new_tables
 }
 
-fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table) !Plan {
+fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table, preserved bool) !Plan {
 	match table_reference {
 		TablePrimary {
-			plan, table := create_select_plan_without_join(body, table_reference,
+			mut plan, table := create_select_plan_without_join(body, table_reference,
 				params, mut conn, allow_virtual, false)!
+
+			// The WHERE clause is applied after the join, but a key can be used to
+			// read only the rows of the table that it can be true for, when they
+			// can't be NULL-extended (see create_join_plan).
+			reads_table := plan.operations.len == 1 && plan.operations[0] is TableOperation
+			if preserved && reads_table && table_reference.correlation.name.sub_entity_name == '' {
+				if key := key_operation(body, table, table, params, mut conn) {
+					plan.operations = [PlanOperation(key)]
+				}
+			}
 
 			// Rows store each value by its table and column name, so the same
 			// table can't be used twice. A correlation name also can't be the
@@ -375,7 +392,7 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 		}
 		QualifiedJoin {
 			return create_join_plan(body, table_reference, params, mut conn,
-				allow_virtual, mut tables)
+				allow_virtual, mut tables, preserved)
 		}
 	}
 }

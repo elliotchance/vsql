@@ -80,6 +80,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 - ``V5XX``: PostgreSQL compatibility, which only the clients of the server have
   (see :doc:`server`), by what it is, such as a function or a table of the
   system catalog.
+- ``V6XX``: A data type, by its kind, such as a character string.
 
 .. list-table::
    :header-rows: 1
@@ -397,3 +398,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V502-07``
      - ``pg_proc``.
+
+   * - ``V601``
+     - Character string types (see :doc:`text`).
+
+   * - ``V601-01``
+     - ``TEXT``, which is a ``CHARACTER VARYING`` without a length.

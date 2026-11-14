@@ -851,7 +851,7 @@ pub fn reserved_words() []string {
 // are for display, such as highlighting SQL, and mustn't decide if a name needs
 // quotes.
 pub fn extension_keywords() []string {
-	return ['IF', 'ILIKE', 'INDEX', 'LIMIT']
+	return ['IF', 'ILIKE', 'INDEX', 'LIMIT', 'TEXT']
 }
 
 // multi_operator_token returns the token of an operator with two characters, or

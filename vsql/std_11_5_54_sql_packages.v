@@ -7,8 +7,9 @@ module vsql
 // (ISO/IEC 9075-11:2008(E), 6.43), which only exists as this view, SQL_FEATURES
 // and SQL_PARTS.
 //
-// The packages are the ones in ISO/IEC 9075-1:2003(E), 8.4, Conformance to SQL
-// packages, Table 3, with their features (8.4.1 to 8.4.7). A package is Core
+// The packages are the ones of SQL:2003 (Part 1, Subclause 8.4, Conformance to
+// SQL packages, Table 3), with their features (8.4.1 to 8.4.7). SQL:2023 has
+// no packages (#1505), but this view is still in Part 11. A package is Core
 // SQL and its features, so it's only supported when Core SQL is (see
 // is_core_sql_supported) and each of its features is supported in the
 // compliance tables (see SQL_FEATURES). A feature that isn't in them (such as

@@ -10,8 +10,8 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.10, Routines
-// ISO/IEC 9075-1:2003(E), 4.10.1, General routine information
+// ISO/IEC 9075-1:2023, 4.12, Routines
+// ISO/IEC 9075-1:2023, 4.12.1, General routine information
 
 struct RoutineInvocation {
 	function_name string

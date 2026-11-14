@@ -6,8 +6,8 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.5.3, Nullability
-// ISO/IEC 9075-1:2003(E), 4.6.6.2, Columns
+// ISO/IEC 9075-1:2023, 4.7.3, Nullability
+// ISO/IEC 9075-1:2023, 4.8.5.2, Columns
 // ISO/IEC 9075-2:2023, 4.15 (Columns, fields, and attributes)
 // ISO/IEC 9075-2:2023, 4.17.12, Identity columns
 // ISO/IEC 9075-2:2023, 4.17.13, Base columns and generated columns

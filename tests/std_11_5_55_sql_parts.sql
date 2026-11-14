@@ -1,6 +1,7 @@
--- # There's one row for each part (ISO/IEC 9075-1:2003(E), 5.2 to 5.10). A
--- # part is only supported when all of its mandatory features are, and the
--- # parts that have a compliance page say how many are. Nothing is verified
+-- # There's one row for each part (ISO/IEC 9075-1:2023, 5.2 to 5.10), but
+-- # not for the parts that SQL:2023 added (5.11 and 5.12, #1505). A part is
+-- # only supported when all of its mandatory features are, and the parts that
+-- # have a compliance page say how many are. Nothing is verified
 -- # by a conformance test (6.43, Description, 6).
 SELECT part, name, is_supported, is_verified_by FROM information_schema.sql_parts;
 -- PART: 1 NAME: Framework (SQL/Framework) IS_SUPPORTED: NO IS_VERIFIED_BY: NULL

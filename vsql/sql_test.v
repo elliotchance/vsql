@@ -557,7 +557,7 @@ fn decode_sql_test_outcome(s string) SQLTestOutcome {
 // grammar, the lexer and the flagger.
 fn sql_flagger_features() ![]string {
 	mut files := os.glob('vsql/*.y')!
-	files << ['vsql/lexer.v', 'vsql/std_1_8_5_sql_flagger.v']
+	files << ['vsql/lexer.v', 'vsql/std_1_9_6_sql_flagger.v']
 	mut re := regex.regex_opt(r"'[A-Z]\d\d\d(-\d\d)?'")!
 	mut features := []string{}
 	for file in files {

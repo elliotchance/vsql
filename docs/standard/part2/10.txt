@@ -126,8 +126,8 @@
 10.8/GR/2                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
 10.8/GR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
 10.8/GR/4                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_2_10_8_constraint_characteristics.sql every constraint is enforced
-10.8/CR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_1_8_5_flagging.sql
-10.8/CR/2                implemented  vsql/std_2_5_4_names_and_identifiers.y tests/std_1_8_5_flagging.sql
+10.8/CR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_1_9_6_flagging.sql
+10.8/CR/2                implemented  vsql/std_2_5_4_names_and_identifiers.y tests/std_1_9_6_flagging.sql
 10.8/CR/3                n/a          - - <constraint enforcement> (F492)
 # 10.9, <aggregate function>
 10.9                     implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql
@@ -351,8 +351,8 @@
 10.9/CR/1                n/a          - - row pattern recognition (R010)
 10.9/CR/2                n/a          - - ANY_VALUE (T626)
 10.9/CR/3                n/a          - - EVERY, ANY and SOME aren't supported (T031)
-10.9/CR/4                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-10.9/CR/5                implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
+10.9/CR/4                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+10.9/CR/5                implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_9_6_flagging.sql
 10.9/CR/6                missing      - - a column reference that isn't of T (an outer reference) isn't flagged (#880)
 10.9/CR/7                missing      - - a binary set function without a column reference of T (or with an outer reference) isn't flagged (#880)
 10.9/CR/8                missing      - - an outer reference isn't flagged (#880)
@@ -360,8 +360,8 @@
 10.9/CR/10               missing      - - a column derived from an aggregate function isn't flagged (#880)
 10.9/CR/11               n/a          - - STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP (T621)
 10.9/CR/12               n/a          - - binary set functions (T621)
-10.9/CR/13               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
-10.9/CR/14               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
+10.9/CR/13               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_9_6_flagging.sql
+10.9/CR/14               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_9_6_flagging.sql
 10.9/CR/15               n/a          - - multisets (S271)
 10.9/CR/16               n/a          - - FUSION and INTERSECTION (S275)
 10.9/CR/17               missing      - - a mixed outer reference in a hypothetical set function argument isn't flagged (#880)
@@ -371,7 +371,7 @@
 10.9/CR/21               missing      - - a mixed outer reference in a WITHIN GROUP isn't flagged (#880)
 10.9/CR/22               n/a          - - ARRAY_AGG (S098)
 10.9/CR/23               n/a          - - JSON (T811)
-10.9/CR/24               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
+10.9/CR/24               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_9_6_flagging.sql
 # 10.10, <sort specification list>
 10.10                    implemented  vsql/std_2_10_10_sort_specification_list.v tests/std_2_7_17_order.sql
 10.10/SR/1               definition   - -

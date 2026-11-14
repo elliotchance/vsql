@@ -1,176 +1,188 @@
-# ISO/IEC 9075-1:2003(E)
+# ISO/IEC 9075-1:2023
 # id status code tests note (see docs/standard-index.rst)
 # 4, Concepts
 4                        definition   - - concepts that are specified in the other parts (4.1)
-# 4.1, Caveat
-4.1                      definition   - -
-# 4.2, SQL-environments and their components
-4.2                      implemented  vsql/agent.v vsql/api_test.v
-# 4.2.1, SQL-environments
-4.2.1                    implemented  vsql/agent.v vsql/api_test.v an Agent and the SQL-servers it connects to
-# 4.2.2, SQL-agents
-4.2.2                    implemented  vsql/agent.v vsql/api_test.v
-# 4.2.3, SQL-implementations
-4.2.3                    implemented  vsql/connection.v tests/std_2_18_1_connections.sql
-# 4.2.3.1, SQL-clients
-4.2.3.1                  implemented  vsql/agent.v vsql/api_test.v
-# 4.2.3.2, SQL-servers
-4.2.3.2                  implemented  vsql/connection.v tests/std_2_18_1_connections.sql an SQL-server is a database file (or a new in-memory database)
-# 4.2.4, SQL-client modules
-4.2.4                    implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
-# 4.2.5, User identifiers
-4.2.5                    missing      - - authorization identifiers aren't supported (E081, #732)
-# 4.2.6, User mapping concepts
-4.2.6                    n/a          - - user mappings are SQL/MED (Part 9)
-# 4.2.7, Routine mapping concepts
-4.2.7                    n/a          - - routine mappings are SQL/MED (Part 9)
-# 4.2.8, Catalogs and schemas
-4.2.8                    implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_5_4_catalogs.sql
-# 4.2.8.1, Catalogs
-4.2.8.1                  implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_5_4_catalogs.sql
-# 4.2.8.2, SQL-schemas
-4.2.8.2                  implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
-# 4.2.8.3, The Information Schema
-4.2.8.3                  partial      vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql only some of the views (F021)
-# 4.2.8.4, The Definition Schema
-4.2.8.4                  definition   - - it's internal, and can't be queried (Part 11 doesn't require it to be)
-# 4.2.9, Foreign servers and descriptors
-4.2.9                    n/a          - - foreign servers are SQL/MED (Part 9)
-# 4.2.10, Foreign-data wrappers and descriptors
-4.2.10                   n/a          - - foreign-data wrappers are SQL/MED (Part 9)
-# 4.2.11, SQL-data
-4.2.11                   implemented  vsql/storage.v tests/std_2_14_11_insert.sql
-# 4.3, Tables
-4.3                      implemented  vsql/table.v tests/std_2_11_3_create_table.sql
-# 4.4, SQL data types
-4.4                      implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
-# 4.4.1, General data type information
-4.4.1                    implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
-# 4.4.2, The null value
-4.4.2                    implemented  vsql/value.v tests/std_2_8_8_null.sql
-# 4.4.3, Predefined types
-4.4.3                    implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
-# 4.4.3.1, Numeric types
-4.4.3.1                  implemented  vsql/numeric.v tests/std_2_6_1_numeric.sql
-# 4.4.3.2, Character string types
-4.4.3.2                  implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
-# 4.4.3.3, Boolean type
-4.4.3.3                  implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_1_boolean.sql BOOLEAN (T031)
-# 4.4.3.4, Datetime types
-4.4.3.4                  implemented  vsql/time.v tests/std_2_6_1_date.sql
-# 4.4.3.5, Interval types
-4.4.3.5                  n/a          - - intervals (F052)
-# 4.4.3.6, XML type
-4.4.3.6                  n/a          - - XML (Part 14)
-# 4.4.4, Constructed atomic types
-4.4.4                    n/a          - - the only one is reference types (S041)
-# 4.4.4.1, Reference types
-4.4.4.1                  n/a          - - reference types (S041)
-# 4.4.5, Constructed composite types
-4.4.5                    n/a          - - row types (T051), arrays (S091) and multisets (S271)
-# 4.4.5.1, Collection types
-4.4.5.1                  n/a          - - arrays (S091) and multisets (S271)
-# 4.4.5.2, Row types
-4.4.5.2                  n/a          - - row types (T051)
-# 4.4.5.3, Fields
-4.4.5.3                  n/a          - - row types (T051)
-# 4.5, Sites and operations on sites
-4.5                      implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
-# 4.5.1, Sites
-4.5.1                    implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
-# 4.5.2, Assignment
-4.5.2                    implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
-# 4.5.3, Nullability
-4.5.3                    implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
-# 4.6, SQL-schema objects
-4.6                      implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
-# 4.6.1, General SQL-schema object information
-4.6.1                    implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
-# 4.6.2, Descriptors relating to character sets
-4.6.2                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only the UTF8 character set and its default collation
-# 4.6.2.1, Character sets
-4.6.2.1                  partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
-# 4.6.2.2, Collations
-4.6.2.2                  partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only the default collation
-# 4.6.2.3, Transliterations
-4.6.2.3                  n/a          - - transliterations (F695)
-# 4.6.3, Domains and their components
-4.6.3                    n/a          - - domains (F251)
-# 4.6.3.1, Domains
-4.6.3.1                  n/a          - - domains (F251)
-# 4.6.3.2, Domain constraints
-4.6.3.2                  n/a          - - domains (F251)
-# 4.6.4, User-defined types
-4.6.4                    n/a          - - user-defined types (S023)
-# 4.6.4.1, Structured types
-4.6.4.1                  n/a          - - structured types (S023)
-# 4.6.4.2, Attributes
-4.6.4.2                  n/a          - - structured types (S023)
-# 4.6.5, Distinct types
-4.6.5                    n/a          - - distinct types (S011)
-# 4.6.6, Base tables and their components
-4.6.6                    implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
-# 4.6.6.1, Base tables
-4.6.6.1                  implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
-# 4.6.6.2, Columns
-4.6.6.2                  implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_5_column_defaults.sql
-# 4.6.6.3, Table constraints
-4.6.6.3                  implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_11_9_check_constraint.sql
-# 4.6.6.4, Triggers
-4.6.6.4                  n/a          - - triggers (T211)
-# 4.6.7, View definitions
-4.6.7                    missing      - - views aren't supported (F031-02, #731)
-# 4.6.8, Assertions
-4.6.8                    n/a          - - assertions (F521)
-# 4.6.9, SQL-server modules (defined in ISO/IEC 9075-4, SQL/PSM)
-4.6.9                    n/a          - - SQL-server modules are SQL/PSM (Part 4)
-# 4.6.10, Schema routines
-4.6.10                   missing      - - SQL-invoked routines aren't supported (T321, #733)
-# 4.6.11, Sequence generators
-4.6.11                   implemented  vsql/std_2_4_29_sequence_generators.v tests/std_2_11_72_create_sequence.sql
-# 4.6.12, Privileges
-4.6.12                   missing      - - privileges aren't supported (E081, #732)
-# 4.6.13, Roles
-4.6.13                   n/a          - - roles (T331)
-# 4.7, Integrity constraints and constraint checking
-4.7                      implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_10_8_deferrable_constraints.sql
-# 4.7.1, Constraint checking
-4.7.1                    implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
-# 4.7.2, Determinism and constraints
-4.7.2                    implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
-# 4.8, Communication between an SQL-agent and an SQL-server
-4.8                      implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_19_exec_direct_test.c
-# 4.8.1, Host languages
-4.8.1                    implemented  libvsql/std_3_5_1_cli_routine.v,vsql/std_2_21_1_embedded_sql_host_program.v libvsql/std_3_6_19_exec_direct_test.c,vsql/module_test.v C, with the SQL/CLI, SQL-client modules or Embedded SQL
-# 4.8.2, Parameter passing and data type correspondences
-4.8.2                    implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
-# 4.8.2.1, General parameter passing and data type correspondence information
-4.8.2.1                  implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
-# 4.8.2.2, Data type correspondences
-4.8.2.2                  implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
-# 4.8.2.3, Locators
-4.8.2.3                  n/a          - - locators (T041)
-# 4.8.2.4, Status parameters
-4.8.2.4                  implemented  vsql/std_2_24_1_sqlstate.v tests/std_1_4_8_2_4_errors.sql
-# 4.8.2.5, Indicator parameters
-4.8.2.5                  implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
-# 4.8.3, Descriptor areas
-4.8.3                    implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c
-# 4.8.4, Diagnostic information
-4.8.4                    implemented  libvsql/std_3_4_3_diagnostics_areas.v,vsql/std_2_23_1_get_diagnostics_statement.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/module_test.v
-# 4.8.5, SQL-transactions
-4.8.5                    implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
-# 4.9, Modules
-4.9                      implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
-# 4.10, Routines
-4.10                     partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only functions registered from V, not SQL-invoked routines (#733)
-# 4.10.1, General routine information
-4.10.1                   partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only functions registered from V, not SQL-invoked routines (#733)
-# 4.10.2, Type preserving functions
-4.10.2                   n/a          - - type preserving functions need user-defined types (S023)
-# 4.11, SQL-statements
-4.11                     implemented  vsql/std_2_13_4_sql_procedure_statement.v tests/std_2_7_5_select_from.sql
-# 4.11.1, Classes of SQL-statements
-4.11.1                   implemented  vsql/std_2_13_4_sql_procedure_statement.v tests/std_2_7_5_select_from.sql
-# 4.11.2, SQL-statements classified by function
-4.11.2                   implemented  vsql/std_2_13_4_sql_procedure_statement.v tests/std_2_7_5_select_from.sql
+# 4.1, What is SQL?
+4.1                      definition   - - about the standard itself
+# 4.2, Use of terms
+4.2                      definition   - - about the standard itself
+# 4.3, Caveat
+4.3                      definition   - -
+# 4.4, SQL-environments and their components
+4.4                      implemented  vsql/agent.v vsql/api_test.v
+# 4.4.1, SQL-environments
+4.4.1                    implemented  vsql/agent.v vsql/api_test.v an Agent and the SQL-servers it connects to
+# 4.4.2, SQL-agents
+4.4.2                    implemented  vsql/agent.v vsql/api_test.v
+# 4.4.3, SQL-implementations
+4.4.3                    implemented  vsql/connection.v tests/std_2_18_1_connections.sql
+# 4.4.3.1, Introduction to SQL-implementations
+4.4.3.1                  implemented  vsql/connection.v tests/std_2_18_1_connections.sql
+# 4.4.3.2, SQL-clients
+4.4.3.2                  implemented  vsql/agent.v vsql/api_test.v
+# 4.4.3.3, SQL-servers
+4.4.3.3                  implemented  vsql/connection.v tests/std_2_18_1_connections.sql an SQL-server is a database file (or a new in-memory database)
+# 4.4.4, SQL-client modules
+4.4.4                    implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
+# 4.4.5, User identifiers
+4.4.5                    missing      - - authorization identifiers aren't supported (E081, #732)
+# 4.4.6, Roles
+4.4.6                    n/a          - - roles (T331)
+# 4.4.7, User mapping concepts
+4.4.7                    n/a          - - user mappings are SQL/MED (Part 9)
+# 4.4.8, Routine mapping concepts
+4.4.8                    n/a          - - routine mappings are SQL/MED (Part 9)
+# 4.4.9, Catalogs and schemas
+4.4.9                    implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_5_4_catalogs.sql
+# 4.4.9.1, Catalogs
+4.4.9.1                  implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_5_4_catalogs.sql
+# 4.4.9.2, SQL-schemas
+4.4.9.2                  implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
+# 4.4.9.3, Information Schema
+4.4.9.3                  partial      vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql only some of the views (F021)
+# 4.4.9.4, Definition Schema
+4.4.9.4                  definition   - - it's internal, and can't be queried (Part 11 doesn't require it to be)
+# 4.4.10, Foreign servers and descriptors
+4.4.10                   n/a          - - foreign servers are SQL/MED (Part 9)
+# 4.4.11, Foreign-data wrappers and descriptors
+4.4.11                   n/a          - - foreign-data wrappers are SQL/MED (Part 9)
+# 4.4.12, SQL-data
+4.4.12                   implemented  vsql/storage.v tests/std_2_14_11_insert.sql
+# 4.5, Tables
+4.5                      implemented  vsql/table.v tests/std_2_11_3_create_table.sql
+# 4.6, SQL data types
+4.6                      implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
+# 4.6.1, General data type information
+4.6.1                    implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
+# 4.6.2, Null value
+4.6.2                    implemented  vsql/value.v tests/std_2_8_8_null.sql
+# 4.6.3, Predefined types
+4.6.3                    implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
+# 4.6.3.1, Numeric types
+4.6.3.1                  partial      vsql/numeric.v tests/std_2_6_1_numeric.sql no decimal floating point (DECFLOAT, T076)
+# 4.6.3.2, Character string types
+4.6.3.2                  implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
+# 4.6.3.3, Binary string types
+4.6.3.3                  n/a          - - binary strings (T021)
+# 4.6.3.4, Boolean type
+4.6.3.4                  implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_1_boolean.sql BOOLEAN (T031)
+# 4.6.3.5, Datetime types
+4.6.3.5                  implemented  vsql/time.v tests/std_2_6_1_date.sql
+# 4.6.3.6, Interval types
+4.6.3.6                  n/a          - - intervals (F052)
+# 4.6.3.7, XML type
+4.6.3.7                  n/a          - - XML (Part 14)
+# 4.6.3.8, JSON type
+4.6.3.8                  n/a          - - JSON (T801)
+# 4.6.4, Constructed atomic types: reference types
+4.6.4                    n/a          - - the only one is reference types (S041)
+# 4.6.5, Constructed composite types
+4.6.5                    n/a          - - row types (T051), arrays (S091) and multisets (S271)
+# 4.6.5.1, Collection types
+4.6.5.1                  n/a          - - arrays (S091) and multisets (S271)
+# 4.6.5.2, Row types
+4.6.5.2                  n/a          - - row types (T051)
+# 4.7, Sites and operations on sites
+4.7                      implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+# 4.7.1, Sites
+4.7.1                    implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+# 4.7.2, Assignment
+4.7.2                    implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
+# 4.7.3, Nullability
+4.7.3                    implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
+# 4.8, SQL-schema objects
+4.8                      implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
+# 4.8.1, General SQL-schema object information
+4.8.1                    implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
+# 4.8.2, Descriptors relating to character sets
+4.8.2                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only the UTF8 character set and its default collation
+# 4.8.2.1, Character sets
+4.8.2.1                  partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
+# 4.8.2.2, Collations
+4.8.2.2                  partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only the default collation
+# 4.8.2.3, Transliterations
+4.8.2.3                  n/a          - - transliterations (F695)
+# 4.8.3, Domains and their components
+4.8.3                    n/a          - - domains (F251)
+# 4.8.3.1, Domains
+4.8.3.1                  n/a          - - domains (F251)
+# 4.8.3.2, Domain constraints
+4.8.3.2                  n/a          - - domains (F251)
+# 4.8.4, User-defined types
+4.8.4                    n/a          - - user-defined types (S023)
+# 4.8.4.1, Introduction to user-defined types
+4.8.4.1                  n/a          - - user-defined types (S023)
+# 4.8.4.2, Distinct types
+4.8.4.2                  n/a          - - distinct types (S011)
+# 4.8.4.3, Structured types
+4.8.4.3                  n/a          - - structured types (S023)
+# 4.8.5, Base tables and their components
+4.8.5                    implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
+# 4.8.5.1, Base tables
+4.8.5.1                  implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
+# 4.8.5.2, Columns
+4.8.5.2                  implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_5_column_defaults.sql
+# 4.8.5.3, Periods
+4.8.5.3                  n/a          - - periods (T180, T181)
+# 4.8.5.4, Table constraints
+4.8.5.4                  implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_11_9_check_constraint.sql
+# 4.8.5.5, Triggers
+4.8.5.5                  n/a          - - triggers (T211)
+# 4.8.6, View definitions
+4.8.6                    missing      - - views aren't supported (F031-02, #731)
+# 4.8.7, Assertions
+4.8.7                    n/a          - - assertions (F521)
+# 4.8.8, SQL-server modules (defined in ISO/IEC 9075-4)
+4.8.8                    n/a          - - SQL-server modules are SQL/PSM (Part 4)
+# 4.8.9, Schema routines
+4.8.9                    missing      - - SQL-invoked routines aren't supported (T321, #733)
+# 4.8.10, Sequence generators
+4.8.10                   implemented  vsql/std_2_4_29_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+# 4.8.11, Privileges
+4.8.11                   missing      - - privileges aren't supported (E081, #732)
+# 4.9, Integrity constraints and constraint checking
+4.9                      implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_10_8_deferrable_constraints.sql
+# 4.9.1, Constraint checking
+4.9.1                    implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
+# 4.9.2, Determinism and constraints
+4.9.2                    implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
+# 4.9.3, Consistency when deleting and updating multiple rows
+4.9.3                    definition   - - describes the rules of Part 2, Clause 15
+# 4.10, Communication between an SQL-agent and an SQL-server
+4.10                     implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_19_exec_direct_test.c
+# 4.10.1, Host languages
+4.10.1                   implemented  libvsql/std_3_5_1_cli_routine.v,vsql/std_2_21_1_embedded_sql_host_program.v libvsql/std_3_6_19_exec_direct_test.c,vsql/module_test.v C, with the SQL/CLI, SQL-client modules or Embedded SQL
+# 4.10.2, Source language character set
+4.10.2                   unclear      vsql/lexer.v tests/std_2_5_2_identifier_e.sql identifiers can have any character (#1504)
+# 4.10.3, Parameter passing and data type correspondences
+4.10.3                   implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
+# 4.10.3.1, General parameter passing and data type correspondence information
+4.10.3.1                 implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
+# 4.10.3.2, Data type correspondences
+4.10.3.2                 implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
+# 4.10.3.3, Locators
+4.10.3.3                 n/a          - - locators (T041)
+# 4.10.3.4, Status parameters
+4.10.3.4                 implemented  vsql/std_2_24_1_sqlstate.v tests/std_1_4_10_3_4_errors.sql
+# 4.10.3.5, Indicator parameters
+4.10.3.5                 implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/module_test.v
+# 4.10.4, Descriptor areas
+4.10.4                   implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c
+# 4.10.5, Diagnostic information
+4.10.5                   implemented  libvsql/std_3_4_3_diagnostics_areas.v,vsql/std_2_23_1_get_diagnostics_statement.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/module_test.v
+# 4.10.6, SQL-transactions
+4.10.6                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
+# 4.11, Modules
+4.11                     implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
+# 4.12, Routines
+4.12                     partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only functions registered from V, not SQL-invoked routines (#733)
+# 4.12.1, General routine information
+4.12.1                   partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only functions registered from V, not SQL-invoked routines (#733)
+# 4.12.2, Type preserving functions
+4.12.2                   n/a          - - type preserving functions need user-defined types (S023)
+# 4.13, SQL-statements
+4.13                     implemented  vsql/std_2_13_4_sql_procedure_statement.v tests/std_2_7_5_select_from.sql
+# 4.13.1, Classes of SQL-statements
+4.13.1                   implemented  vsql/std_2_13_4_sql_procedure_statement.v tests/std_2_7_5_select_from.sql
+# 4.13.2, SQL-statements classified by function
+4.13.2                   implemented  vsql/std_2_13_4_sql_procedure_statement.v tests/std_2_7_5_select_from.sql

@@ -47,13 +47,15 @@ when a newer edition (or another draft) of the same part is available:
      - ``ISO_IEC 9075-3 2003 WD Call-Level Interface (CLI)``
 
    * - 11 (Information and Definition Schemas)
-     - ISO/IEC 9075-11:2008(E)
+     - ISO/IEC 9075-11:2006
      - SQL:2008 committee draft (2006-02)
      - ``ISO_IEC 9075-11 2006 CD Information and Definition Schemas (Schemata)``
 
 The editions are listed in ``docs/standard/editions.txt``, with the folder and
 the SHA-256 of the PDF that the index is generated from. The PDF in the folder
-can have any file name, but it must have that SHA-256.
+can have any file name, but it must have that SHA-256. A draft that doesn't
+have a year of its own (the Part 11 draft is "ISO/IEC CD 9075-11:200x(E)") is
+cited with the year it's dated.
 
 Every other document in ``standard_docs/`` is for reference only, such as
 ISO/IEC 9075-2:2016, the other SQL:2003 drafts and SQL/MM (ISO/IEC 13249). They

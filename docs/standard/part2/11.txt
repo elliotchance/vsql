@@ -422,14 +422,14 @@
 11.7/SR/4                container    - -
 11.7/SR/4.a              n/a          - - system-versioned tables (T180)
 11.7/SR/4.b              definition   - -
-11.7/SR/5                unclear      - - the default null treatment of a UNIQUE constraint is implementation-defined in 2023 (#1495)
+11.7/SR/5                impl-defined vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql NULLS DISTINCT
 11.7/SR/6                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6.b              n/a          - - system-versioned tables (T180)
 11.7/SR/6.c              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6.d              container    - -
 11.7/SR/6.d.i            n/a          - - application-time periods (T181)
-11.7/SR/6.d.ii           unclear      vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql changed in 2023 (#1495)
+11.7/SR/6.d.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6.e              container    - -
 11.7/SR/6.e.i            implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6.e.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
@@ -442,7 +442,7 @@
 11.7/GR/2.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/GR/2.b              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/GR/2.c              n/a          - - application-time periods (T181)
-11.7/GR/2.d              unclear      - - the default null treatment of a UNIQUE constraint is implementation-defined in 2023 (#1495)
+11.7/GR/2.d              implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql always NULLS DISTINCT, so it isn't stored
 11.7/GR/3                implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/CR/1                n/a          - - UNIQUE (VALUE) (S291)
 11.7/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql

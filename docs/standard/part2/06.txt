@@ -11,8 +11,8 @@
 6.1/SR/3.b               impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only collation is the character set collation of UTF8 (no F690)
 6.1/SR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql
 6.1/SR/5                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
-6.1/SR/6                 n/a          - - optional string types maximum length (T081)
-6.1/SR/7                 n/a          - - optional string types maximum length (T081)
+6.1/SR/6                 n/a          - - binary strings (T021)
+6.1/SR/7                 impl-defined vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql 10485760, the maximum length
 6.1/SR/8                 n/a          - - char length units (T061)
 6.1/SR/9                 n/a          - - char length units (T061)
 6.1/SR/10                n/a          - - LOBs (T041)
@@ -172,11 +172,11 @@
 6.1/CR/19                n/a          - - arrays (S096)
 6.1/CR/20                n/a          - - LOBs (T041)
 6.1/CR/21                n/a          - - LOBs (T041)
-6.1/CR/22                n/a          - - optional string types maximum length (T081)
+6.1/CR/22                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql
 6.1/CR/23                n/a          - - char length units aren't allowed in a data type (T061)
 6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
 6.1/CR/25                n/a          - - binary strings (T021)
-6.1/CR/26                n/a          - - optional string types maximum length (T081)
+6.1/CR/26                n/a          - - binary strings (T021)
 6.1/CR/27                n/a          - - DECFLOAT (T076)
 6.1/CR/28                n/a          - - JSON data type (T801)
 # 6.2, <field definition>

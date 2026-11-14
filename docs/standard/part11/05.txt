@@ -80,10 +80,10 @@
 5.20/CR/1                n/a          - - user-defined types (S023)
 # 5.21, COLUMNS view
 5.21                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql every column, since there are no privileges (#732)
-5.21/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
-5.21/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
-5.21/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
-5.21/CR/4                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
+5.21/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
+5.21/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
+5.21/CR/3                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
+5.21/CR/4                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
 # 5.22, CONSTRAINT_COLUMN_USAGE view
 5.22                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
 5.22/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
@@ -121,8 +121,8 @@
 5.31/CR/2                n/a          - - row types (T051)
 # 5.32, KEY_COLUMN_USAGE view
 5.32                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_32_key_column_usage.sql every constraint, since there are no privileges (#732)
-5.32/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
-5.32/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
+5.32/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
+5.32/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 # 5.33, METHOD_SPECIFICATION_PARAMETERS view
 5.33                     n/a          - - user-defined types (S023)
 5.33/CR/1                n/a          - - user-defined types (S023)
@@ -142,7 +142,7 @@
 5.36/CR/2                n/a          - - reference types (S041)
 # 5.37, REFERENTIAL_CONSTRAINTS view
 5.37                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql every constraint, since there are no privileges (#732)
-5.37/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
+5.37/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 # 5.38, ROLE_COLUMN_GRANTS view
 5.38                     n/a          - - roles (T331)
 5.38/CR/1                n/a          - - roles (T331)
@@ -205,20 +205,20 @@
 5.52                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql
 # 5.53, SQL_IMPLEMENTATION_INFO view
 5.53                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_53_sql_implementation_info.sql
-5.53/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
-5.53/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
+5.53/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
+5.53/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
 # 5.54, SQL_PACKAGES view
-5.54                     implemented  vsql/std_11_5_54_sql_packages.v tests/std_11_5_54_sql_packages.sql the packages of ISO/IEC 9075-1:2003(E), 8.4
-5.54/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.54                     implemented  vsql/std_11_5_54_sql_packages.v tests/std_11_5_54_sql_packages.sql the packages of SQL:2003, Part 1, 8.4, which SQL:2023 removed (#1505)
+5.54/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.55, SQL_PARTS view
 5.55                     implemented  vsql/std_11_5_55_sql_parts.v tests/std_11_5_55_sql_parts.sql
-5.55/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.55/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.56, SQL_SIZING view
 5.56                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_56_sql_sizing.sql
 # 5.57, SQL_SIZING_PROFILES view
 5.57                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql empty, since no profiles are defined
-5.57/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
-5.57/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.57/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.57/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.58, TABLE_CONSTRAINTS view
 5.58                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_58_table_constraints.sql every table, since there are no privileges (#732), and with ENFORCED from a later edition
 # 5.59, TABLE_METHOD_PRIVILEGES view
@@ -230,7 +230,7 @@
 5.60/CR/1                n/a          - - privilege tables (F231)
 # 5.61, TABLES view
 5.61                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql every table, since there are no privileges (#732)
-5.61/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
+5.61/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
 # 5.62, TRANSFORMS view
 5.62                     n/a          - - transforms (S241)
 5.62/CR/1                n/a          - - transforms (S241)
@@ -309,8 +309,8 @@
 5.77/CR/16               n/a          - - TRIG_COLUMN_USAGE: triggers (T211)
 5.77/CR/17               n/a          - - TRIG_SEQ_USAGE_S: triggers (T211)
 5.77/CR/18               missing      - - COL_COL_USAGE: after COLUMN_COLUMN_USAGE (#736)
-5.77/CR/19               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
-5.77/CR/20               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.77/CR/19               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.77/CR/20               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/21               n/a          - - COLLATIONS_S: collations (F690)
 5.77/CR/22               n/a          - - TRANSLATIONS_S: translations (F695)
 5.77/CR/23               n/a          - - TRANSLATIONS_S: translations (F695)

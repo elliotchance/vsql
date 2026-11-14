@@ -572,7 +572,7 @@ fn test_features_of_routine_invocation() ! {
 }
 
 // A rule that needs the catalog isn't flagged if the catalog can't be read, but
-// it's not an error (see tests/std_1_8_5_flagging_name_resolution.sql).
+// it's not an error (see tests/std_1_9_6_flagging_name_resolution.sql).
 fn test_features_without_catalog() ! {
 	dir := os.join_path(os.temp_dir(), 'vsql-features-${os.getpid()}')
 	os.mkdir_all(dir)!

@@ -112,8 +112,8 @@
 8.3/SR/4                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
 8.3/SR/5                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
 8.3/SR/6                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
-8.3/SR/7                 implemented  vsql/std_2_8_3_between_predicate.y tests/std_1_8_5_flagging.sql the Conformance Rules of 8.2 are only about rows and other unsupported types
-8.3/CR/1                 implemented  vsql/std_2_8_3_between_predicate.y tests/std_1_8_5_flagging.sql
+8.3/SR/7                 implemented  vsql/std_2_8_3_between_predicate.y tests/std_1_9_6_flagging.sql the Conformance Rules of 8.2 are only about rows and other unsupported types
+8.3/CR/1                 implemented  vsql/std_2_8_3_between_predicate.y tests/std_1_9_6_flagging.sql
 # 8.4, <in predicate>
 8.4                      implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
 8.4/SR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/std_2_8_4_in_subquery.sql
@@ -121,7 +121,7 @@
 8.4/SR/3                 definition   - -
 8.4/SR/4                 implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
 8.4/SR/5                 implemented  vsql/std_2_8_4_in_predicate.v tests/std_2_8_4_in.sql,tests/std_2_8_4_in_subquery.sql
-8.4/CR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/std_1_8_5_flagging.sql
+8.4/CR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/std_1_9_6_flagging.sql
 # 8.5, <like predicate>
 8.5                      partial      vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql there's no <octet like predicate> (T021)
 8.5/SR/1                 implemented  vsql/std_2_8_5_like_predicate.v tests/std_2_8_5_like.sql,tests/std_2_8_5_like_escape.sql
@@ -178,9 +178,9 @@
 8.5/GR/4.f.ii.5          n/a          - - binary strings (T021)
 8.5/GR/4.f.iii           n/a          - - binary strings (T021)
 8.5/CR/1                 n/a          - - binary strings (T021)
-8.5/CR/2                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_8_5_flagging.sql
-8.5/CR/3                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_8_5_flagging.sql
-8.5/CR/4                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_8_5_flagging.sql
+8.5/CR/2                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_9_6_flagging.sql
+8.5/CR/3                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_9_6_flagging.sql
+8.5/CR/4                 implemented  vsql/std_2_8_5_like_predicate.y tests/std_1_9_6_flagging.sql
 8.5/CR/5                 n/a          - - there are no CLOBs (T041)
 8.5/CR/6                 n/a          - - there are no national character types (F421) or CLOBs (T041)
 8.5/CR/7                 n/a          - - there are no national character types (F421)
@@ -233,7 +233,7 @@
 8.6/GR/7.t               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
 8.6/GR/7.u               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
 8.6/GR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_pad_space.sql
-8.6/CR/1                 implemented  vsql/std_2_6_12_case_expression.y,vsql/std_2_8_6_similar_predicate.y tests/std_2_6_12_case_expression_when_operands.sql,tests/std_1_8_5_flagging.sql
+8.6/CR/1                 implemented  vsql/std_2_6_12_case_expression.y,vsql/std_2_8_6_similar_predicate.y tests/std_2_6_12_case_expression_when_operands.sql,tests/std_1_9_6_flagging.sql
 8.6/CR/2                 n/a          - - there are no CLOBs (T041)
 # 8.7, <regex like predicate>
 8.7                      n/a          - - LIKE_REGEX (F841)
@@ -273,7 +273,7 @@
 8.10                     implemented  vsql/std_2_8_10_exists_predicate.v tests/std_2_8_10_exists_predicate.sql
 8.10/GR/1                definition   - -
 8.10/GR/2                implemented  vsql/std_2_8_10_exists_predicate.v tests/std_2_8_10_exists_predicate.sql
-8.10/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_8_10_exists_predicate.sql
+8.10/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_2_8_10_exists_predicate.sql
 # 8.11, <unique predicate>
 8.11                     implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
 8.11/SR/1                n/a          - - user-defined types (S023)

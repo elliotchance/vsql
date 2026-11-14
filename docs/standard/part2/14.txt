@@ -14,7 +14,7 @@
 14.1/GR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.d              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.1/GR/1.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-14.1/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_14_5_scrollable_cursors.sql
+14.1/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_2_14_5_scrollable_cursors.sql
 # 14.2, <cursor properties>
 14.2                     partial      vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql,tests/std_2_14_5_scrollable_cursors.sql only <cursor scrollability> and <cursor holdability>
 14.2/SR/1                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_1_cursors.sql a cursor's result is found when it's opened, so changes aren't visible through it
@@ -31,7 +31,7 @@
 14.2/CR/3                n/a          - - ASENSITIVE (F791, T231)
 14.2/CR/4                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_2_14_5_scrollable_cursors.sql
 14.2/CR/5                n/a          - - <cursor returnability> (T471)
-14.2/CR/6                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_1_8_5_flagging.sql
+14.2/CR/6                implemented  vsql/std_2_14_2_cursor_properties.y tests/std_1_9_6_flagging.sql
 # 14.3, <cursor specification>
 14.3                     implemented  vsql/std_2_14_3_cursor_specification.y tests/std_2_14_1_cursors.sql
 14.3/SR/1                definition   - -
@@ -81,7 +81,7 @@
 14.3/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/8                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.3/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-14.3/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+14.3/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 # 14.4, <openstatement>
 14.4                     implemented  vsql/std_2_14_4_open_statement.v tests/std_2_14_1_cursors.sql
 14.4/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
@@ -146,12 +146,12 @@
 14.5/GR/5.b.ii           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 14.5/GR/5.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
 14.5/GR/6                untestable   - - the values are implementation-dependent
-14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
-14.5/CR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
-14.5/CR/3                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
-14.5/CR/4                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
-14.5/CR/5                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
-14.5/CR/6                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_8_5_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
+14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_9_6_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
+14.5/CR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_9_6_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
+14.5/CR/3                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_9_6_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
+14.5/CR/4                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_9_6_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
+14.5/CR/5                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_9_6_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
+14.5/CR/6                implemented  vsql/std_2_14_5_fetch_statement.y tests/std_1_9_6_flagging.sql,tests/std_2_14_5_scrollable_cursors.sql
 # 14.6, <closestatement>
 14.6                     implemented  vsql/std_2_14_6_close_statement.v tests/std_2_14_1_cursors.sql
 14.6/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
@@ -283,8 +283,8 @@
 14.9/GR/8.b              n/a          - - views (F031-02)
 14.9/GR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_15_7_cursor_operation_conflict.sql
 14.9/GR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
-14.9/CR/1                partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
-14.9/CR/1.a              partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
+14.9/CR/1                partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
+14.9/CR/1.a              partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
 14.9/CR/1.b              n/a          - - external routines (T321)
 14.9/CR/2                n/a          - - FOR PORTION OF (T181)
 # 14.10, <truncate table statement>
@@ -374,11 +374,11 @@
 14.11/GR/8.b.ii          n/a          - - views (F031-02)
 14.11/GR/9               implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert_from_query.sql
 14.11/CR/1               container    - -
-14.11/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
+14.11/CR/1.a             partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
 14.11/CR/1.b             n/a          - - external routines (T321)
 14.11/CR/2               implemented  vsql/std_2_14_11_insert_statement.y tests/std_2_14_11_insert_default_values.sql
 14.11/CR/3               n/a          - - structured types (S024)
-14.11/CR/4               implemented  vsql/std_2_14_11_insert_statement.y tests/std_1_8_5_flagging.sql
+14.11/CR/4               implemented  vsql/std_2_14_11_insert_statement.y tests/std_1_9_6_flagging.sql
 # 14.12, <merge statement>
 14.12                    n/a          - - MERGE (F312)
 14.12/SR/1               n/a          - - MERGE (F312)
@@ -539,7 +539,7 @@
 14.13/GR/1               definition   - -
 14.13/GR/2               definition   - -
 14.13/GR/3               implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql
-14.13/CR/1               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql flagged on the DECLARE CURSOR
+14.13/CR/1               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql flagged on the DECLARE CURSOR
 # 14.14, <update statement: searched>
 14.14                    partial      vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql no cursor operation conflict warning (#797)
 14.14/SR/1               definition   - -
@@ -600,8 +600,8 @@
 14.14/GR/14.b.i          n/a          - - views (F031-02)
 14.14/GR/14.b.ii         n/a          - - views (F031-02)
 14.14/GR/15              implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
-14.14/CR/1               partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
-14.14/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
+14.14/CR/1               partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
+14.14/CR/1.a             partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
 14.14/CR/1.b             n/a          - - external routines (T321)
 14.14/CR/2               n/a          - - FOR PORTION OF (T181)
 # 14.15, <set clause list>
@@ -643,8 +643,8 @@
 14.15/SR/11              container    - -
 14.15/SR/11.a            n/a          - - arrays (S091)
 14.15/SR/11.b            implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
-14.15/CR/1               partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
-14.15/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter
+14.15/CR/1               partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
+14.15/CR/1.a             partial      vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql not after a dynamic parameter
 14.15/CR/1.b             n/a          - - external routines (T321)
 14.15/CR/2               n/a          - - arrays (S091)
 14.15/CR/3               n/a          - - structured types (S024)

@@ -25,7 +25,7 @@
 11.1/GR/3                n/a          - - named character sets (F461)
 11.1/CR/1                n/a          - - SQL paths (S071)
 11.1/CR/2                n/a          - - named character sets (F461)
-11.1/CR/3                implemented  vsql/std_2_11_1_schema_definition.y tests/std_1_8_5_flagging.sql every <schema name clause> contains a <schema name>
+11.1/CR/3                implemented  vsql/std_2_11_1_schema_definition.y tests/std_1_9_6_flagging.sql every <schema name clause> contains a <schema name>
 11.1/CR/4                n/a          - - roles (T332)
 # 11.2, <drop schema statement>
 11.2                     implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
@@ -85,8 +85,8 @@
 11.2/GR/12.a             implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
 11.2/GR/12.b             implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
 11.2/GR/13               implemented  vsql/std_2_11_2_drop_schema_statement.v tests/std_2_11_2_drop_schema.sql
-11.2/CR/1                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_8_5_flagging.sql
-11.2/CR/2                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_8_5_flagging.sql
+11.2/CR/1                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_9_6_flagging.sql
+11.2/CR/2                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_9_6_flagging.sql
 # 11.3, <table definition>
 11.3                     partial      vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql only persistent base tables with a <table element list> of <column definition>s and <table constraint definition>s
 11.3/SR/1                n/a          - - periods (T180, T181)
@@ -348,8 +348,8 @@
 11.4/GR/6.d              n/a          - - domains (F251)
 11.4/GR/6.e              n/a          - - domains (F251)
 11.4/CR/1                n/a          - - collations (F692)
-11.4/CR/2                implemented  vsql/std_2_11_4_column_definition.y tests/std_1_8_5_flagging.sql
-11.4/CR/3                implemented  vsql/std_2_11_4_column_definition.y tests/std_1_8_5_flagging.sql
+11.4/CR/2                implemented  vsql/std_2_11_4_column_definition.y tests/std_1_9_6_flagging.sql
+11.4/CR/3                implemented  vsql/std_2_11_4_column_definition.y tests/std_1_9_6_flagging.sql
 11.4/CR/4                n/a          - - system-versioned tables (T180)
 # 11.5, <default clause>
 11.5                     implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
@@ -396,8 +396,8 @@
 11.5/CR/1                n/a          - - SQL paths (S071)
 11.5/CR/2                n/a          - - USER and CURRENT_USER (F321)
 11.5/CR/3                n/a          - - roles (T332)
-11.5/CR/4                implemented  vsql/std_2_11_5_default_clause.y tests/std_1_8_5_flagging.sql
-11.5/CR/5                implemented  vsql/std_2_11_5_default_clause.y tests/std_1_8_5_flagging.sql
+11.5/CR/4                implemented  vsql/std_2_11_5_default_clause.y tests/std_1_9_6_flagging.sql
+11.5/CR/5                implemented  vsql/std_2_11_5_default_clause.y tests/std_1_9_6_flagging.sql
 # 11.6, <table constraint definition>
 11.6                     implemented  vsql/std_2_11_6_table_constraint_definition.y tests/std_2_11_6_constraint_names.sql
 11.6/SR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_constraint_characteristics.sql
@@ -445,7 +445,7 @@
 11.7/GR/2.d              unclear      - - the default null treatment of a UNIQUE constraint is implementation-defined in 2023 (#1495)
 11.7/GR/3                implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/CR/1                n/a          - - UNIQUE (VALUE) (S291)
-11.7/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+11.7/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 11.7/CR/3                n/a          - - application-time periods (T181)
 11.7/CR/4                n/a          - - UNIQUE null treatment (F292)
 # 11.8, <referential constraint definition>
@@ -516,9 +516,9 @@
 11.8/GR/2.g              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 11.8/CR/1                n/a          - - RESTRICT (T191)
 11.8/CR/2                n/a          - - MATCH (F741)
-11.8/CR/3                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/std_1_8_5_flagging.sql
-11.8/CR/4                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/std_1_8_5_flagging.sql
-11.8/CR/5                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql
+11.8/CR/3                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/std_1_9_6_flagging.sql
+11.8/CR/4                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/std_1_9_6_flagging.sql
+11.8/CR/5                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging_name_resolution.sql
 11.8/CR/6                n/a          - - application-time periods (T181)
 11.8/CR/7                n/a          - - application-time periods (T181)
 # 11.9, <check constraint definition>
@@ -582,18 +582,18 @@
 11.12/SR/8               n/a          - - DROP EXPRESSION (F385)
 11.12/SR/9               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
 11.12/GR/1               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
-11.12/CR/1               implemented  vsql/std_2_11_12_alter_column_definition.y tests/std_1_8_5_flagging.sql
+11.12/CR/1               implemented  vsql/std_2_11_12_alter_column_definition.y tests/std_1_9_6_flagging.sql
 # 11.13, <set column default clause>
 11.13                    implemented  vsql/std_2_11_13_set_column_default_clause.v tests/std_2_11_12_alter_column.sql
 11.13/GR/1               definition   - -
 11.13/GR/2               implemented  vsql/std_2_11_13_set_column_default_clause.v tests/std_2_11_12_alter_column.sql
-11.13/CR/1               implemented  vsql/std_2_11_13_set_column_default_clause.y tests/std_1_8_5_flagging.sql
+11.13/CR/1               implemented  vsql/std_2_11_13_set_column_default_clause.y tests/std_1_9_6_flagging.sql
 # 11.14, <drop column default clause>
 11.14                    implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
 11.14/SR/1               definition   - -
 11.14/SR/2               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
 11.14/GR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.v tests/std_2_11_12_alter_column.sql
-11.14/CR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.y tests/std_1_8_5_flagging.sql
+11.14/CR/1               implemented  vsql/std_2_11_14_drop_column_default_clause.y tests/std_1_9_6_flagging.sql
 # 11.15, <set column not null clause>
 11.15                    n/a          - - SET NOT NULL (F383)
 11.15/GR/1               n/a          - - SET NOT NULL (F383)
@@ -736,8 +736,8 @@
 11.20/GR/2.b             container    - -
 11.20/GR/2.b.i           n/a          - - SET GENERATED (F386)
 11.20/GR/2.b.ii          n/a          - - SET GENERATED (F386)
-11.20/CR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_8_5_flagging.sql
-11.20/CR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_8_5_flagging.sql
+11.20/CR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_9_6_flagging.sql
+11.20/CR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_9_6_flagging.sql
 11.20/CR/3               n/a          - - SET GENERATED (F386)
 # 11.21, <drop identity property clause>
 11.21                    n/a          - - DROP IDENTITY (F384)
@@ -784,14 +784,14 @@
 11.23/GR/6               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
 11.23/GR/7               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
 11.23/GR/8               implemented  vsql/std_2_11_23_drop_column_definition.v tests/std_2_11_23_drop_column.sql
-11.23/CR/1               implemented  vsql/std_2_11_23_drop_column_definition.y tests/std_1_8_5_flagging.sql
+11.23/CR/1               implemented  vsql/std_2_11_23_drop_column_definition.y tests/std_1_9_6_flagging.sql
 # 11.24, <add table constraint definition>
 11.24                    implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
 11.24/SR/1               definition   - -
 11.24/SR/2               n/a          - - subtables (S081)
 11.24/GR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
 11.24/GR/2               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
-11.24/CR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.y tests/std_1_8_5_flagging.sql
+11.24/CR/1               implemented  vsql/std_2_11_24_add_table_constraint_definition.y tests/std_1_9_6_flagging.sql
 # 11.25, <alter table constraint definition>
 11.25                    n/a          - - <constraint enforcement> (F492)
 11.25/SR/1               n/a          - - <constraint enforcement> (F492)
@@ -846,7 +846,7 @@
 11.26/GR/6               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/GR/7               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
 11.26/GR/8               implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/std_2_11_26_drop_table_constraint.sql
-11.26/CR/1               implemented  vsql/std_2_11_26_drop_table_constraint_definition.y tests/std_1_8_5_flagging.sql
+11.26/CR/1               implemented  vsql/std_2_11_26_drop_table_constraint_definition.y tests/std_1_9_6_flagging.sql
 # 11.27, <add table period definition>
 11.27                    n/a          - - periods (T180, T181)
 11.27/SR/1               n/a          - - periods (T180, T181)
@@ -1051,7 +1051,7 @@
 11.31/GR/4.b.v           n/a          - - typed tables (S051)
 11.31/GR/5               n/a          - - subtables (S081)
 11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
-11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_8_5_flagging.sql
+11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_9_6_flagging.sql
 # 11.32, <view definition>
 11.32                    n/a          - - views (F031-02)
 11.32/SR/1               n/a          - - views (F031-02)
@@ -3093,7 +3093,7 @@
 11.72/AR/1               n/a          - - privileges (E081, #732)
 11.72/GR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/std_2_11_72_create_sequence.sql
 11.72/GR/2               n/a          - - privileges (E081, #732)
-11.72/CR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/std_1_8_5_flagging.sql
+11.72/CR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/std_1_9_6_flagging.sql
 # 11.73, <alter sequence generator statement>
 11.73                    implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 11.73/SR/1               definition   - -
@@ -3102,8 +3102,8 @@
 11.73/SR/4               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
 11.73/AR/1               n/a          - - privileges (E081, #732)
 11.73/GR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/std_2_11_73_alter_sequence.sql
-11.73/CR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_1_8_5_flagging.sql
-11.73/CR/2               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_1_8_5_flagging.sql
+11.73/CR/1               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_1_9_6_flagging.sql
+11.73/CR/2               implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/std_1_9_6_flagging.sql
 # 11.74, <drop sequence generator statement>
 11.74                    implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/std_2_11_74_drop_sequence.sql
 11.74/SR/1               definition   - -
@@ -3115,4 +3115,4 @@
 11.74/AR/1               n/a          - - privileges (E081, #732)
 11.74/GR/1               n/a          - - privileges (E081, #732)
 11.74/GR/2               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.v tests/std_2_11_74_drop_sequence.sql
-11.74/CR/1               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.y tests/std_1_8_5_flagging.sql
+11.74/CR/1               implemented  vsql/std_2_11_74_drop_sequence_generator_statement.y tests/std_1_9_6_flagging.sql

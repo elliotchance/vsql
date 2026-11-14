@@ -45,8 +45,8 @@
 5.2/SR/33                n/a          - - Unicode delimited identifiers (F392)
 5.2/SR/34                implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
 5.2/SR/35                n/a          - - row pattern recognition (R010)
-5.2/CR/1                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-5.2/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+5.2/CR/1                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+5.2/CR/2                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 5.2/CR/3                 implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
 5.2/CR/4                 n/a          - - Unicode delimited identifiers (F392)
 5.2/CR/5                 n/a          - - large objects (T041)
@@ -127,17 +127,17 @@
 5.3/GR/13.a              implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
 5.3/GR/13.b              implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
 5.3/GR/14                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_boolean.sql
-5.3/CR/1                 implemented  vsql/std_2_5_3_literal.v tests/std_1_8_5_flagging.sql
-5.3/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-5.3/CR/3                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+5.3/CR/1                 implemented  vsql/std_2_5_3_literal.v tests/std_1_9_6_flagging.sql
+5.3/CR/2                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
+5.3/CR/3                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 5.3/CR/4                 n/a          - - national character (F421)
 5.3/CR/5                 n/a          - - intervals (F052)
-5.3/CR/6                 implemented  vsql/lexer.v tests/std_1_8_5_flagging.sql
-5.3/CR/7                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+5.3/CR/6                 implemented  vsql/lexer.v tests/std_1_9_6_flagging.sql
+5.3/CR/7                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 5.3/CR/8                 n/a          - - binary strings (T021)
 5.3/CR/9                 n/a          - - binary strings (T021)
 5.3/CR/10                n/a          - - binary strings (T021)
-5.3/CR/11                implemented  vsql/lexer.v tests/std_1_8_5_flagging.sql
+5.3/CR/11                implemented  vsql/lexer.v tests/std_1_9_6_flagging.sql
 5.3/CR/12                n/a          - - non-decimal integer literals (T661)
 5.3/CR/13                n/a          - - underscores in numeric literals (T662)
 # 5.4, Names and identifiers
@@ -262,22 +262,22 @@
 5.4/CR/4                 n/a          - - WITH (T121)
 5.4/CR/5                 n/a          - - user-defined types (S023)
 5.4/CR/6                 n/a          - - row types (T051)
-5.4/CR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_8_5_flagging.sql
+5.4/CR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_9_6_flagging.sql
 5.4/CR/8                 implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/std_2_18_1_connections.sql
 5.4/CR/9                 n/a          - - collations (F690)
 5.4/CR/10                n/a          - - transliterations (F695)
 5.4/CR/11                n/a          - - transcodings (F695)
 5.4/CR/12                n/a          - - local table references (F821)
 5.4/CR/13                n/a          - - domains (F251)
-5.4/CR/14                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_8_5_flagging.sql
+5.4/CR/14                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_9_6_flagging.sql
 5.4/CR/15                n/a          - - named character sets (F461)
 5.4/CR/16                n/a          - - local cursor references (T601)
 5.4/CR/17                n/a          - - extended statement and cursor names (B032)
 5.4/CR/18                n/a          - - extended dynamic SQL (B032)
-5.4/CR/19                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
-5.4/CR/20                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
-5.4/CR/21                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+5.4/CR/19                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
+5.4/CR/20                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
+5.4/CR/21                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 5.4/CR/22                n/a          - - window functions (T611)
-5.4/CR/23                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_8_5_flagging.sql
-5.4/CR/24                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+5.4/CR/23                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_9_6_flagging.sql
+5.4/CR/24                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 5.4/CR/25                n/a          - - polymorphic table functions (B200)

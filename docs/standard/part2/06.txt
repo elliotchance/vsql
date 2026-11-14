@@ -152,12 +152,12 @@
 6.1/GR/24                n/a          - - reference types (S041)
 6.1/GR/25                n/a          - - JSON data type (T801)
 6.1/CR/1                 n/a          - - user-defined types (S023)
-6.1/CR/2                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
-6.1/CR/3                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
-6.1/CR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
+6.1/CR/2                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
+6.1/CR/3                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
+6.1/CR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/5                 n/a          - - intervals (F052)
 6.1/CR/6                 n/a          - - national character (F421)
-6.1/CR/7                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
+6.1/CR/7                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/8                 n/a          - - reference types (S041)
 6.1/CR/9                 n/a          - - row types (T051)
 6.1/CR/10                n/a          - - arrays (S091)
@@ -174,7 +174,7 @@
 6.1/CR/21                n/a          - - LOBs (T041)
 6.1/CR/22                n/a          - - optional string types maximum length (T081)
 6.1/CR/23                n/a          - - char length units aren't allowed in a data type (T061)
-6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_8_5_flagging.sql
+6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/25                n/a          - - binary strings (T021)
 6.1/CR/26                n/a          - - optional string types maximum length (T081)
 6.1/CR/27                n/a          - - DECFLOAT (T076)
@@ -247,10 +247,10 @@
 6.4/CR/2                 n/a          - - domains (F251)
 6.4/CR/3                 n/a          - - user authorization (F321)
 6.4/CR/4                 n/a          - - roles (T332)
-6.4/CR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_8_5_flagging.sql
-6.4/CR/6                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_8_5_flagging.sql
+6.4/CR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_9_6_flagging.sql
+6.4/CR/6                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_9_6_flagging.sql
 6.4/CR/7                 implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/module_test.v
-6.4/CR/8                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_8_5_flagging.sql
+6.4/CR/8                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_1_9_6_flagging.sql
 6.4/CR/9                 n/a          - - array element assignment (S097)
 6.4/CR/10                n/a          - - transform functions (S241)
 6.4/CR/11                n/a          - - transform functions (S241)
@@ -531,7 +531,7 @@
 6.12/SR/2.h              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/2.i              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql,tests/std_2_6_12_case_expression_when_operands.sql
 6.12/SR/2.j              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
-6.12/SR/2.k              implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_6_12_case_expression_when_operands.sql
+6.12/SR/2.k              implemented  vsql/std_1_9_6_sql_flagger.v tests/std_2_6_12_case_expression_when_operands.sql
 6.12/SR/3                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/SR/4                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression.sql
 6.12/SR/5                implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql,tests/std_2_6_12_coalesce.sql
@@ -541,7 +541,7 @@
 6.12/GR/2                container    - -
 6.12/GR/2.a              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
 6.12/GR/2.b              implemented  vsql/std_2_6_12_case_expression.v tests/std_2_6_12_case_expression.sql
-6.12/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_6_12_case_expression_when_operands.sql
+6.12/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_2_6_12_case_expression_when_operands.sql
 6.12/CR/2                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression_when_operands.sql
 6.12/CR/3                implemented  vsql/std_2_6_12_case_expression.y tests/std_2_6_12_case_expression_when_operands.sql
 # 6.13, <cast specification>
@@ -847,7 +847,7 @@
 6.14/GR/1.a              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/GR/1.b              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/GR/1.c              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
-6.14/CR/1                implemented  vsql/std_2_6_14_next_value_expression.y tests/std_1_8_5_flagging.sql
+6.14/CR/1                implemented  vsql/std_2_6_14_next_value_expression.y tests/std_1_9_6_flagging.sql
 # 6.15, <greatest or least function>
 6.15                     n/a          - - GREATEST and LEAST (T054)
 6.15/SR/1                n/a          - - GREATEST and LEAST (T054)
@@ -1067,7 +1067,7 @@
 6.29/GR/3                implemented  vsql/std_2_6_29_value_expression.v tests/std_2_7_12_select_where.sql
 6.29/GR/4                n/a          - - arrays (S091) and multisets (S271)
 6.29/GR/5                n/a          - - reference types (S041)
-6.29/CR/1                implemented  vsql/std_2_6_29_value_expression.y tests/std_1_8_5_flagging.sql
+6.29/CR/1                implemented  vsql/std_2_6_29_value_expression.y tests/std_1_9_6_flagging.sql
 6.29/CR/2                n/a          - - reference types (S041)
 # 6.30, <numeric value expression>
 6.30                     implemented  vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql
@@ -1278,18 +1278,18 @@
 6.31/CR/6                n/a          - - binary strings (T021)
 6.31/CR/7                n/a          - - LOBs (T041)
 6.31/CR/8                n/a          - - LOBs (T041)
-6.31/CR/9                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/10               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/11               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/12               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/13               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/14               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/15               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/16               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/17               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/18               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/19               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
-6.31/CR/20               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_8_5_flagging.sql
+6.31/CR/9                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/10               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/11               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/12               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/13               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/14               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/15               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/16               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/17               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/18               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/19               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/20               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/21               n/a          - - OCCURRENCES_REGEX (F842)
 6.31/CR/22               n/a          - - regular expressions (F846)
 6.31/CR/23               n/a          - - POSITION_REGEX (F843)
@@ -1678,7 +1678,7 @@
 6.33/GR/20.e.iii         n/a          - - row pattern recognition (R010)
 6.33/GR/20.e.iv          n/a          - - row pattern recognition (R010)
 6.33/CR/1                n/a          - - row pattern recognition (R010)
-6.33/CR/2                implemented  vsql/std_2_6_33_string_value_function.y tests/std_1_8_5_flagging.sql
+6.33/CR/2                implemented  vsql/std_2_6_33_string_value_function.y tests/std_1_9_6_flagging.sql
 6.33/CR/3                n/a          - - OVERLAY (T312)
 6.33/CR/4                n/a          - - OVERLAY (T312)
 6.33/CR/5                n/a          - - binary strings (T022)
@@ -1967,10 +1967,10 @@
 6.43/GR/1                implemented  vsql/time.v tests/std_2_6_43_date_time_value_function.sql read once when each statement starts
 6.43/GR/2                implemented  vsql/std_2_6_43_datetime_value_function.v tests/std_2_6_43_date_time_value_function.sql
 6.43/GR/3                implemented  vsql/std_2_6_43_datetime_value_function.v tests/std_2_6_43_date_time_value_function.sql
-6.43/CR/1                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_8_5_flagging.sql
-6.43/CR/2                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_8_5_flagging.sql
-6.43/CR/3                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_8_5_flagging.sql
-6.43/CR/4                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_8_5_flagging.sql
+6.43/CR/1                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_9_6_flagging.sql
+6.43/CR/2                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_9_6_flagging.sql
+6.43/CR/3                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_9_6_flagging.sql
+6.43/CR/4                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_9_6_flagging.sql
 # 6.44, <interval value expression>
 6.44                     n/a          - - intervals (F052)
 6.44/SR/1                n/a          - - intervals (F052)
@@ -2066,8 +2066,8 @@
 6.46/GR/1                implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_46_logical.sql
 6.46/GR/2                implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_46_logical.sql
 6.46/GR/3                implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_46_logical.sql,tests/std_2_6_1_boolean.sql
-6.46/CR/1                implemented  vsql/std_2_6_29_value_expression.y tests/std_1_8_5_flagging.sql
-6.46/CR/2                implemented  vsql/std_2_6_46_boolean_value_expression.y tests/std_1_8_5_flagging.sql
+6.46/CR/1                implemented  vsql/std_2_6_29_value_expression.y tests/std_1_9_6_flagging.sql
+6.46/CR/2                implemented  vsql/std_2_6_46_boolean_value_expression.y tests/std_1_9_6_flagging.sql
 # 6.47, <array value expression>
 6.47                     n/a          - - arrays (S091)
 6.47/SR/1                n/a          - - arrays (S091)

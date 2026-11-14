@@ -2,10 +2,10 @@ module vsql
 
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.2, SQL-environments and their components
-// ISO/IEC 9075-1:2003(E), 4.2.1, SQL-environments
-// ISO/IEC 9075-1:2003(E), 4.2.2, SQL-agents
-// ISO/IEC 9075-1:2003(E), 4.2.3.1, SQL-clients
+// ISO/IEC 9075-1:2023, 4.4, SQL-environments and their components
+// ISO/IEC 9075-1:2023, 4.4.1, SQL-environments
+// ISO/IEC 9075-1:2023, 4.4.2, SQL-agents
+// ISO/IEC 9075-1:2023, 4.4.3.2, SQL-clients
 
 // AgentOptions are the options for new_agent.
 @[params]

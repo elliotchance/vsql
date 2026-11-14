@@ -631,7 +631,7 @@
 6.13/GR/8.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_decimal.sql
 6.13/GR/8.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_decimal.sql the value is truncated
 6.13/GR/8.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/GR/8.b              unclear      vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql changed in 2023 (#1500)
+6.13/GR/8.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/8.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/8.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql,tests/std_2_6_13_numeric_decimal_cast.sql
 6.13/GR/8.c              n/a          - - intervals (F052)
@@ -641,7 +641,7 @@
 6.13/GR/9.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql
 6.13/GR/9.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql the value is rounded to the nearest IEEE 754 value
 6.13/GR/9.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_31_approximate_errors.sql
-6.13/GR/9.b              unclear      vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql changed in 2023 (#1500)
+6.13/GR/9.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/9.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/9.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/10               n/a          - - DECFLOAT (T076)
@@ -681,7 +681,7 @@
 6.13/GR/11.c.iv          n/a          - - DECFLOAT (T076)
 6.13/GR/11.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/GR/11.d.ii          unclear      vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql changed in 2023 (#1500)
+6.13/GR/11.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.d.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/11.e.i           container    - -
@@ -723,7 +723,7 @@
 6.13/GR/12.c.iii         n/a          - - DECFLOAT (T076)
 6.13/GR/12.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/GR/12.d.ii          unclear      vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql changed in 2023 (#1500)
+6.13/GR/12.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/12.e.i           container    - -
 6.13/GR/12.e.i.1         n/a          - - cast templates (T839)
@@ -1333,7 +1333,7 @@
 6.32/GR/2.b.ii.3.A.III   n/a          - - LOBs (T041)
 6.32/GR/2.b.ii.3.B       implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.B.I     implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
-6.32/GR/2.b.ii.3.B.II    unclear      vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql changed in 2023 (#1500)
+6.32/GR/2.b.ii.3.B.II    implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.B.III   implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.C       implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/3                n/a          - - binary strings (T021)
@@ -1554,7 +1554,7 @@
 6.33/GR/7.f              definition   - -
 6.33/GR/7.g              container    - -
 6.33/GR/7.g.i            implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_6_33_fold.sql,tests/std_2_6_33_fold_case_mappings.sql
-6.33/GR/7.g.ii           unclear      vsql/std_2_10_4_routine_invocation.v tests/std_2_6_33_fold_case_mappings.sql changed in 2023 (#1500)
+6.33/GR/7.g.ii           implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_6_33_fold_case_mappings.sql
 6.33/GR/8                n/a          - - transliteration (F695)
 6.33/GR/8.a              n/a          - - transliteration (F695)
 6.33/GR/8.b              n/a          - - transliteration (F695)

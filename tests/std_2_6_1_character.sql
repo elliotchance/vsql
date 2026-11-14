@@ -68,6 +68,12 @@ INSERT INTO foo (x) VALUES ('abcdef');
 -- msg: CREATE TABLE 1
 -- error 22001: string data right truncation for CHARACTER(5)
 
+-- # Only the space is <truncating whitespace> (5.2, Syntax Rules, 4).
+CREATE TABLE foo (x CHARACTER(5));
+INSERT INTO foo (x) VALUES (U&'abcde\0009');
+-- msg: CREATE TABLE 1
+-- error 22001: string data right truncation for CHARACTER(5)
+
 CREATE TABLE foo (x CHARACTER(5));
 INSERT INTO foo (x) VALUES ('abcde');
 UPDATE foo SET x = 'z';

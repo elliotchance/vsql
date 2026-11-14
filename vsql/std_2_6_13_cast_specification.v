@@ -143,14 +143,14 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 // cast_character_to_character casts a character string to CHAR(n) or
 // VARCHAR(n). Unlike a store assignment, a string that's too long is truncated
 // with a warning (01004) rather than an error, if the characters removed aren't
-// all spaces.
+// all <truncating whitespace>.
 //
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11 and 12
 fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 	mut s := v.string_value()
 	chars := s.runes()
 	if chars.len > to.size {
-		if !chars[to.size..].all(it == ` `) {
+		if !chars[to.size..].all(is_truncating_whitespace(it)) {
 			conn.add_warning(sqlstate_01004())
 		}
 		s = chars[..to.size].string()

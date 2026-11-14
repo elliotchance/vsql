@@ -83,9 +83,9 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// - GR 3.b.ii. V is longer than L:
 			if m > l {
 				// - GR 3.b.ii.1. It's truncated if the extra characters are all
-				// spaces.
+				// <truncating whitespace>.
 				chars := s.runes()
-				if chars[l..].all(it == ` `) {
+				if chars[l..].all(is_truncating_whitespace(it)) {
 					return new_character_value(chars[..l].string())
 				}
 
@@ -116,8 +116,9 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 
 			// - GR 3.b.v. V is longer than L:
 			chars := s.runes()
-			if chars[l..].all(it == ` `) {
-				// - GR 3.b.v.1. It's truncated if the extra characters are all spaces.
+			if chars[l..].all(is_truncating_whitespace(it)) {
+				// - GR 3.b.v.1. It's truncated if the extra characters are all
+				// <truncating whitespace>.
 				return new_varchar_value(chars[..l].string())
 			}
 
@@ -313,8 +314,9 @@ fn check_assignable(from Type, t Type) ! {
 }
 
 // cast_character_to_number casts a character string to a number (ISO/IEC
-// 9075-2:2023, 6.13, General Rules, 8.b and 9.b). Leading and trailing spaces
-// are removed, and what's left must be a <signed numeric literal>.
+// 9075-2:2023, 6.13, General Rules, 8.b and 9.b). Leading and trailing
+// <truncating whitespace> is removed, and what's left must be a <signed numeric
+// literal>.
 //
 // The cast is then the same as casting that literal. So an approximate literal
 // is a DOUBLE PRECISION first, even if the target is exact, and one that's too
@@ -324,7 +326,7 @@ fn check_assignable(from Type, t Type) ! {
 //
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 30 and General Rules, 5
 fn cast_character_to_number(mut conn Connection, v Value, t Type) !Value {
-	s := v.string_value().trim(' ')
+	s := trim_truncating_whitespace(v.string_value())
 
 	return match numeric_literal_kind(s) {
 		.exact { cast(mut conn, '', new_numeric_value(s.trim_left('+')), t)! }

@@ -24,6 +24,18 @@ character string is ``42804``.
 The name can also have a catalog, which sets the catalog as well, such as
 ``SET SCHEMA '"my db".foo'``. It's ``3D000`` if the catalog doesn't exist.
 
+``USE`` can be used instead of ``SET SCHEMA``, with the name of the schema
+rather than a character string:
+
+.. code-block:: text
+
+  USE [ <catalog> . ] <schema>
+
+So ``USE foo`` is ``SET SCHEMA 'foo'``, and ``USE "foo"`` is
+``SET SCHEMA '"foo"'``. This is a vsql extension, not standard SQL, and it's
+flagged by ``V121-01`` (see :doc:`sql-flagging`). ``SET SCHEMA`` should be used
+if the SQL needs to be portable.
+
 The default schema is ``PUBLIC`` and is created automatically when the database
 file is initialized.
 

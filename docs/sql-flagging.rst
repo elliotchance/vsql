@@ -248,6 +248,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V118-01``
      - ``EXECUTE IMMEDIATE`` of a literal, rather than a host parameter.
 
+   * - ``V121``
+     - ``SET SCHEMA`` (see :doc:`set-schema`).
+
+   * - ``V121-01``
+     - ``USE`` instead of ``SET SCHEMA``.
+
    * - ``V201``
      - ``FROM``.
 

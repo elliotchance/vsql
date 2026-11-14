@@ -278,6 +278,7 @@ module vsql
 %token UNDER
 %token UNNAMED
 %token USAGE
+%token USE
 %token USER_DEFINED_TYPE_CATALOG
 %token USER_DEFINED_TYPE_CODE
 %token USER_DEFINED_TYPE_NAME

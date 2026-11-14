@@ -62,6 +62,6 @@ UTEST_F(db, 6_44_get_sub_string_implicit_set_connection) {
   EXPECT_EQ(SQLGetSubString(stmt2, SQL_CHAR, 1, 1, 1, SQL_CHAR, value,
                             sizeof(value), &length, &indicator),
             SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+  EXPECT_STRNE(sqlstate(SQL_HANDLE_STMT, stmt2), "0A001");
   free_inactive_stmt(utest_fixture->dbc, dbc2, stmt2);
 }

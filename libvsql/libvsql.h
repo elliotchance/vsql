@@ -793,10 +793,10 @@ SQLRETURN SQLColumns(
  *
  * The new connection becomes the current connection. Using a statement,
  * descriptor or connection of another connection makes that one current
- * instead. Each connection is a different database, and a transaction can't
- * span more than one, so while the current connection has an active
- * transaction, connecting or switching to another connection is 0A001. End
- * the transaction with SQLEndTran first.
+ * instead. Each connection is a different database, and a transaction can span
+ * more than one: while the current connection has an active transaction, a
+ * statement on another connection starts a branch of it there, and SQLEndTran
+ * with any of them ends every branch.
  *
  *   SQLConnect(dbc, (SQLCHAR *)"test.vsql", SQL_NTS, NULL, 0, NULL, 0);
  */

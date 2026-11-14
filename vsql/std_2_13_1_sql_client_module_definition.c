@@ -829,31 +829,46 @@ static void vsql_m_start(char *sqlstate, SQLINTEGER access_mode,
 /* section end */
 static void vsql_m_end(char *sqlstate, SQLSMALLINT completion) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
+  struct vsql_m_connection *n;
   SQLRETURN rc;
+  int active, chained;
 
   if (c == NULL) {
     return;
+  }
+
+  /*
+   * The SQL-transaction can have a branch on each SQL-connection (T262), and
+   * ending it ends all of them (see EndTran in libvsql), so it's active if any
+   * of them is.
+   */
+  active = 0;
+  for (n = vsql_m_connections; n != NULL; n = n->next) {
+    active = active || n->active;
   }
 
   rc = SQLEndTran(SQL_HANDLE_DBC, c->dbc, completion);
   vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
 
   /* A commit that fails with transaction rollback rolls back. */
-  if (c->active &&
+  if (active &&
       (completion == SQL_COMMIT || completion == SQL_COMMIT_AND_CHAIN) &&
       !vsql_m_failed(rc)) {
     vsql_m_da.transactions_committed = 1;
-  } else if (c->active &&
+  } else if (active &&
              (completion == SQL_ROLLBACK ||
               completion == SQL_ROLLBACK_AND_CHAIN ||
               strncmp(sqlstate, "40", 2) == 0)) {
     vsql_m_da.transactions_rolled_back = 1;
   }
 
-  /* AND CHAIN starts another transaction. */
-  c->active = (completion == SQL_COMMIT_AND_CHAIN ||
-               completion == SQL_ROLLBACK_AND_CHAIN) &&
-              !vsql_m_failed(rc);
+  /* AND CHAIN starts another transaction in each branch. */
+  chained = (completion == SQL_COMMIT_AND_CHAIN ||
+             completion == SQL_ROLLBACK_AND_CHAIN) &&
+            !vsql_m_failed(rc);
+  for (n = vsql_m_connections; n != NULL; n = n->next) {
+    n->active = n->active && chained;
+  }
 }
 
 /* section rollback_to */
@@ -965,18 +980,15 @@ static struct vsql_m_connection *vsql_m_find_default(void) {
 
 /* section switch */
 /*
- * A connection statement can't be used while there's an active SQL-transaction:
- * feature not supported — multiple server transactions.
+ * A connection statement can be used while there's an active SQL-transaction,
+ * since it can have a branch on each SQL-connection (Feature T262).
  *
  * ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 1
  * ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 1
  */
 static int vsql_m_switch(char *sqlstate) {
+  (void)sqlstate;
   vsql_m_connected = 1;
-  if (vsql_m_current != NULL && vsql_m_current->active) {
-    vsql_m_status(sqlstate, "0A001");
-    return 0;
-  }
 
   return 1;
 }

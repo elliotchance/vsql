@@ -50,6 +50,6 @@ UTEST_F(db, 6_39_get_length_implicit_set_connection) {
   stmt2 = inactive_stmt(utest_fixture->env, utest_fixture->stmt, &dbc2);
   ASSERT_NE(stmt2, SQL_NULL_HANDLE);
   EXPECT_EQ(SQLGetLength(stmt2, SQL_CHAR, 1, &length, &indicator), SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+  EXPECT_STRNE(sqlstate(SQL_HANDLE_STMT, stmt2), "0A001");
   free_inactive_stmt(utest_fixture->dbc, dbc2, stmt2);
 }

@@ -65,9 +65,16 @@ time.
 Transactions
 ------------
 
-Each connection has its own transaction, and a transaction can't span more than
-one connection, so while the current connection has a transaction, using
-another connection is ``0A001``.
+A transaction can span more than one connection of an environment: while one
+connection has a transaction, the first statement on another one starts a part
+of it there, with the same access mode and isolation level (unless ``SET LOCAL
+TRANSACTION`` changes them first, see :doc:`set-transaction`). ``SQLEndTran``
+with any of those connections (or with the environment) ends every part. A
+commit checks the deferred constraints of every part first, and if any of them
+fail, every part is rolled back. Committing more than one database isn't
+atomic, though: if committing one of them fails after that (such as because of
+a disk error), the ones before it stay committed. ``SQLStartTran`` with a
+connection while the transaction is active on another one is ``25001``.
 
 ``SQLStartTran`` with a connection (``SQL_HANDLE_DBC``) starts its transaction
 straight away. With an environment (``SQL_HANDLE_ENV``), it starts a transaction
@@ -447,9 +454,10 @@ transaction, which is started by the first statement (or ``START
 TRANSACTION``) and ended by ``COMMIT`` or ``ROLLBACK``. ``SET TRANSACTION``
 (even in ``EXECUTE IMMEDIATE`` or a prepared statement) doesn't start one. The
 access mode, isolation level and ``DIAGNOSTICS SIZE`` of a ``START
-TRANSACTION`` are used. A connection statement can't be used while the
-current SQL-connection has a transaction (``0A001``, or ``25001`` for
-``DISCONNECT``).
+TRANSACTION`` are used. A transaction can span more than one SQL-connection, in
+the same way as for the SQL/CLI (see *Transactions* above), so a connection
+statement can be used while there's a transaction, except that a connection
+with a transaction can't be disconnected (``25001``).
 
 When the program exits, every SQL-connection is disconnected, and a transaction
 that wasn't committed is rolled back.

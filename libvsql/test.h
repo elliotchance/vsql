@@ -80,7 +80,8 @@ const char *fetch_strings(SQLHSTMT stmt, SQLSMALLINT column);
 
 /* inactive_stmt allocates a statement on a new connection (other_dbc) to
  * another in-memory database, then starts a transaction on the connection of
- * stmt, so that a routine on the new statement raises 0A001 (see 5.3
+ * stmt, so that a routine on the new statement makes its connection current
+ * while the other has an active transaction, which isn't 0A001 (see 5.3
  * ImplicitSetConnection). It returns SQL_NULL_HANDLE if that fails.
  * free_inactive_stmt rolls back the transaction (of dbc) and frees the new
  * handles. */

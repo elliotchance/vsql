@@ -291,8 +291,8 @@ fn set_function_type(name string, t Type) Type {
 	if name == 'SUM' {
 		return match t.typ {
 			.is_smallint, .is_integer, .is_bigint { new_type('BIGINT', 0, 0) }
-			.is_numeric, .is_decimal { Type{t.typ, 0, t.scale, false} }
-			else { Type{t.typ, 0, 0, false} }
+			.is_numeric, .is_decimal { Type{t.typ, 0, t.scale, false, false} }
+			else { Type{t.typ, 0, 0, false, false} }
 		}
 	}
 
@@ -301,7 +301,7 @@ fn set_function_type(name string, t Type) Type {
 	// is allowed because an exact numeric only needs at least the same precision
 	// and scale (SR 7.g.iii), and an approximate numeric only needs at least the
 	// same precision (SR 7.g.iv). The average is truncated to that scale.
-	return Type{t.typ, t.size, t.scale, false}
+	return Type{t.typ, t.size, t.scale, false, false}
 }
 
 // eval_set_function returns the result of the general set function (such as
@@ -993,7 +993,7 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 			if arg_types.len != 0 {
 				return not_found
 			}
-			typ = Type{key_types[0].typ, key_types[0].size, key_types[0].scale, false}
+			typ = Type{key_types[0].typ, key_types[0].size, key_types[0].scale, false, key_types[0].octets}
 		} else if arg_types.len != 1 || !arg_types[0].typ.is_number()
 			|| !key_types[0].typ.is_number() {
 			return not_found
@@ -1057,7 +1057,7 @@ fn mode_function(conn &Connection, all_values []Value, typ Type) !(Value, bool) 
 	null_eliminated := values.len < all_values.len
 	if values.len == 0 {
 		return Value{
-			typ:     Type{typ.typ, typ.size, typ.scale, false}
+			typ:     Type{typ.typ, typ.size, typ.scale, false, typ.octets}
 			is_null: true
 		}, null_eliminated
 	}

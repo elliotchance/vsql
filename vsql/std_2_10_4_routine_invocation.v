@@ -121,9 +121,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// like SUBSTRING, and CHR (V404-05) is a CHARACTER VARYING(1).
 	is_text := func_name in ['SPLIT_PART', 'CHR']
 	mut return_type := if is_fold {
-		Type{arg_types[0].typ, arg_types[0].size, 0, false}
+		Type{arg_types[0].typ, arg_types[0].size, 0, false, false}
 	} else if func_name == 'SPLIT_PART' {
-		Type{.is_varchar, arg_types[0].size, 0, false}
+		Type{.is_varchar, arg_types[0].size, 0, false, false}
 	} else {
 		numeric_function_type(func_name, found_func.return_type, arg_types)
 	}

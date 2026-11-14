@@ -37,7 +37,12 @@ Text Types
     - See ``CHARACTER(n)``.
     - Is an alias for ``CHARACTER(1)``.
 
-The length *n* must be from 1 to 10485760. A ``CHARACTER VARYING`` (or
+The length *n* must be from 1 to 10485760. It's the number of characters, but
+it can also be the number of octets (bytes of UTF-8), such as
+``VARCHAR(10 OCTETS)``. ``VARCHAR(10 CHARACTERS)`` is the same as
+``VARCHAR(10)``. A string that has more octets than that is the same as one
+that's too long. A ``CHARACTER(n OCTETS)`` is padded with spaces to *n* octets,
+and a cast to it never cuts a character in half. A ``CHARACTER VARYING`` (or
 ``CHAR VARYING`` or ``VARCHAR``) without a length is a
 ``CHARACTER VARYING(10485760)``, the maximum length.
 

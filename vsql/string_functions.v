@@ -11,9 +11,9 @@ import strings
 // characters, not bytes.
 
 fn register_string_funcs(mut conn Connection) ! {
-	varchar := Type{SQLType.is_varchar, 0, 0, false}
-	integer := Type{SQLType.is_integer, 0, 0, false}
-	bigint := Type{SQLType.is_bigint, 0, 0, false}
+	varchar := Type{SQLType.is_varchar, 0, 0, false, false}
+	integer := Type{SQLType.is_integer, 0, 0, false, false}
+	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
 
 	// The result of REPLACE can be longer than any of its arguments, so it's a
 	// CHARACTER VARYING without a maximum length, rather than the type of the
@@ -29,7 +29,7 @@ fn register_string_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'INITCAP', [varchar], false, func_initcap, varchar, false, true, [
 		vsql_initcap,
 	]})!
-	conn.register_func(Func{'CHR', [bigint], false, func_chr, Type{SQLType.is_varchar, 1, 0, false}, false, true, [
+	conn.register_func(Func{'CHR', [bigint], false, func_chr, Type{SQLType.is_varchar, 1, 0, false, false}, false, true, [
 		vsql_chr,
 	]})!
 	conn.register_func(Func{'UNICODE', [varchar], false, func_unicode, integer, false, true, [

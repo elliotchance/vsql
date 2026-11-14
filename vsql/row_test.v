@@ -7,7 +7,7 @@ fn row_test_table(column_names ...string) Table {
 			name:     Identifier{
 				sub_entity_name: name
 			}
-			typ:      Type{.is_integer, 0, 0, false}
+			typ:      Type{.is_integer, 0, 0, false, false}
 			not_null: false
 		}
 	}

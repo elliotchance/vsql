@@ -511,30 +511,30 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 					iv.string_value = buf.read_string4()
 				}
 				.is_date {
-					typ := Type{.is_date, col.typ.size, col.typ.scale, col.not_null}
+					typ := Type{.is_date, col.typ.size, col.typ.scale, col.not_null, false}
 					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_time_with_time_zone {
-					typ := Type{.is_time_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
+					typ := Type{.is_time_with_time_zone, col.typ.size, col.typ.scale, col.not_null, false}
 					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
 				}
 				.is_time_without_time_zone {
 					typ :=
-						Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
+						Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null, false}
 					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_timestamp_with_time_zone {
 					typ :=
-						Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
+						Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null, false}
 					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
 				}
 				.is_timestamp_without_time_zone {
 					typ :=
-						Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
+						Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null, false}
 					iv.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_numeric, .is_decimal {
-					typ := Type{col.typ.typ, col.typ.size, col.typ.scale, col.not_null}
+					typ := Type{col.typ.typ, col.typ.size, col.typ.scale, col.not_null, false}
 					len := buf.read_i16()
 					iv.numeric_value = box_numeric(new_numeric_from_bytes(typ, buf.read_u8s(len)))
 				}

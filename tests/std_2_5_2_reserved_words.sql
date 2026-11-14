@@ -417,6 +417,9 @@ CREATE TABLE GLOBAL (x INT);
 CREATE TABLE GRANT (x INT);
 -- error 42601: syntax error: unexpected GRANT at line 1, column 14 near "CREATE TABLE GRANT ("; hint: GRANT is a reserved word, so it must be quoted to be used as a name, such as "GRANT" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
+CREATE TABLE GREATEST (x INT);
+-- error 42601: syntax error: unexpected GREATEST at line 1, column 14 near "CREATE TABLE GREATEST ("; hint: GREATEST is a reserved word, so it must be quoted to be used as a name, such as "GREATEST" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
 CREATE TABLE GROUP (x INT);
 -- error 42601: syntax error: unexpected GROUP at line 1, column 14 near "CREATE TABLE GROUP ("; hint: GROUP is a reserved word, so it must be quoted to be used as a name, such as "GROUP" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
@@ -530,6 +533,9 @@ CREATE TABLE LEAD (x INT);
 
 CREATE TABLE LEADING (x INT);
 -- error 42601: syntax error: unexpected LEADING at line 1, column 14 near "CREATE TABLE LEADING ("; hint: LEADING is a reserved word, so it must be quoted to be used as a name, such as "LEADING" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
+CREATE TABLE LEAST (x INT);
+-- error 42601: syntax error: unexpected LEAST at line 1, column 14 near "CREATE TABLE LEAST ("; hint: LEAST is a reserved word, so it must be quoted to be used as a name, such as "LEAST" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 CREATE TABLE LEFT (x INT);
 -- error 42601: syntax error: unexpected LEFT at line 1, column 14 near "CREATE TABLE LEFT ("; hint: LEFT is a reserved word, so it must be quoted to be used as a name, such as "LEFT" (see https://vsql.readthedocs.io/en/latest/keywords.html)

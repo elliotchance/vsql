@@ -59,6 +59,29 @@ jobs:
     outputs:
       vc: ${{ steps.vc.outputs.vc }}
     steps:
+      # A pull request that can't be merged into its base isn't tested, since
+      # the run would test an old merge (or none). GitHub works out whether it
+      # can be merged after the event is sent, so this waits for that. The job
+      # fails, rather than skipping the others, since a required check that's
+      # skipped counts as passing. Pushing the fix starts a new run.
+      - name: Check for a merge conflict
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for _ in $(seq 1 20); do
+            mergeable=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq .mergeable || echo null)
+            if [ "$mergeable" = "false" ]; then
+              echo "::error::This pull request has a merge conflict with ${{ github.base_ref }}. Rebase it to run the tests."
+              exit 1
+            fi
+            if [ "$mergeable" = "true" ]; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "GitHub hasn't worked out whether this can be merged, so it's tested anyway."
+
       - name: Checkout
         uses: actions/checkout@v7
 

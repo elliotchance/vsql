@@ -20,19 +20,22 @@ transaction_access_mode:
 isolation_level:
   ISOLATION LEVEL level_of_isolation { $$.v = $3.v }
 
-// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Conformance Rules, 1 to 4
 
 level_of_isolation:
   READ UNCOMMITTED {
     flag(mut yylex, 'F111')
+    flag(mut yylex, 'F112')
     $$.v = yy_box(IsolationLevel.read_uncommitted)
   }
 | READ COMMITTED {
     flag(mut yylex, 'F111')
+    flag(mut yylex, 'F113')
     $$.v = yy_box(IsolationLevel.read_committed)
   }
 | REPEATABLE READ {
     flag(mut yylex, 'F111')
+    flag(mut yylex, 'F114')
     $$.v = yy_box(IsolationLevel.repeatable_read)
   }
 | SERIALIZABLE { $$.v = yy_box(IsolationLevel.serializable) }
@@ -40,7 +43,7 @@ level_of_isolation:
 // ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Conformance Rules, 5
 diagnostics_size:
   DIAGNOSTICS SIZE number_of_conditions {
-    flag(mut yylex, 'F121')
+    flag(mut yylex, 'F124')
     $$.v = yy_box(DiagnosticsSize{$3.v as ValueSpecification})
   }
 

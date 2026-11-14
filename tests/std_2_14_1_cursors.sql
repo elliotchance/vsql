@@ -357,7 +357,7 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- error 34000: invalid cursor name: cursor C is not updatable
 
 -- # FOR UPDATE makes a cursor with ORDER BY updatable (14.3, Syntax Rules,
--- # 6.a). This needs Feature F831 (14.3, Conformance Rules, 1).
+-- # 6.a). This needs Feature F833 (14.3, Conformance Rules, 1).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x DESC FOR UPDATE;

@@ -227,28 +227,29 @@ SELECT NEXT VALUE FOR seq1 FROM t2;
 SELECT x FROM t1 INTERSECT SELECT 1 / 0 FROM t2;
 -- error 22012: division by zero
 
--- # INTERSECT is flagged with F302, and INTERSECT DISTINCT also with T551.
+-- # INTERSECT is flagged with F303, INTERSECT ALL also with F305 and INTERSECT
+-- # DISTINCT also with T551.
 /* flags */
 SELECT x FROM t1 INTERSECT SELECT x FROM t2;
--- flags: F302
+-- flags: F303
 -- X: 2
 -- X: 3
 
 /* flags */
 SELECT x FROM t1 INTERSECT DISTINCT SELECT x FROM t2;
--- flags: F302, T551
+-- flags: F303, T551
 -- X: 2
 -- X: 3
 
 /* flags */
 SELECT x FROM t1 INTERSECT ALL SELECT x FROM t2;
--- flags: F302
+-- flags: F303, F305
 -- X: 2
 -- X: 3
 
 /* flags */
 SELECT x FROM t1 UNION SELECT x FROM t1 INTERSECT DISTINCT SELECT x FROM t2;
--- flags: F302, T551
+-- flags: F303, T551
 -- X: 1
 -- X: 2
 -- X: 3

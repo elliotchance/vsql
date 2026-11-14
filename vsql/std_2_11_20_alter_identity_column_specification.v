@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.20, <alter identity column specification>
+// ISO/IEC 9075-2:2023, 11.20, <alter identity column specification>
 //
 // Change the options specified for an identity column.
 
@@ -15,8 +15,8 @@ struct AlterIdentityColumnSpecification {
 // MAXVALUE that's removed (NO MINVALUE or NO MAXVALUE) is the default for the
 // column again (see new_identity_sequence). There's no SET GENERATED (F386).
 //
-// ISO/IEC 9075-2:2016(E), 11.20, <alter identity column specification>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 11.20, <alter identity column specification>, General Rules, 1
+// ISO/IEC 9075-2:2023, 11.20, <alter identity column specification>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 11.20, <alter identity column specification>, General Rules, 1
 fn (s AlterIdentityColumnSpecification) execute(mut conn Connection, table Table, column Column) !(Column, Sequence) {
 	check_sequence_options(s.options)!
 	identity := column.identity or { return error('not an identity column') }

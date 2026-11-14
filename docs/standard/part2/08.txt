@@ -1,4 +1,4 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023
 # id status code tests note (see docs/standard-index.rst)
 # 8, Predicates
 8                        container    - -
@@ -26,7 +26,7 @@
 8.2/SR/6.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
 8.2/SR/6.d               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/1                 definition   - -
-8.2/GR/1.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_29_null_propagation.sql
+8.2/GR/1.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_30_null_propagation.sql
 8.2/GR/1.b               container    - -
 8.2/GR/1.b.i             implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_row_comparison.sql
 8.2/GR/1.b.i.1           implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_row_comparison.sql
@@ -84,6 +84,26 @@
 8.2/GR/7.b               n/a          - - intervals (F052)
 8.2/GR/8                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_boolean.sql,tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/9                 n/a          - - reference types (S041)
+8.2/GR/10                n/a          - - JSON data type (T801)
+8.2/GR/10.a              n/a          - - JSON data type (T801)
+8.2/GR/10.b              n/a          - - JSON data type (T801)
+8.2/GR/10.b.i            n/a          - - JSON data type (T801)
+8.2/GR/10.b.ii           n/a          - - JSON data type (T801)
+8.2/GR/10.b.iii          n/a          - - JSON data type (T801)
+8.2/GR/10.b.iv           n/a          - - JSON data type (T801)
+8.2/GR/10.b.v            n/a          - - JSON data type (T801)
+8.2/GR/10.b.vi           n/a          - - JSON data type (T801)
+8.2/GR/10.b.vii          n/a          - - JSON data type (T801)
+8.2/GR/10.b.viii         n/a          - - JSON data type (T801)
+8.2/GR/10.b.viii.1       n/a          - - JSON data type (T801)
+8.2/GR/10.b.viii.2       n/a          - - JSON data type (T801)
+8.2/GR/10.b.viii.3       n/a          - - JSON data type (T801)
+8.2/GR/10.b.viii.4       n/a          - - JSON data type (T801)
+8.2/GR/10.b.viii.5       n/a          - - JSON data type (T801)
+8.2/GR/10.b.ix           n/a          - - JSON data type (T801)
+8.2/GR/10.b.ix.1         n/a          - - JSON data type (T801)
+8.2/GR/10.b.ix.2         n/a          - - JSON data type (T801)
+8.2/GR/10.b.x            n/a          - - JSON data type (T801)
 # 8.3, <between predicate>
 8.3                      implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
 8.3/SR/1                 implemented  vsql/std_2_8_3_between_predicate.v tests/std_2_8_3_between.sql
@@ -172,7 +192,8 @@
 8.6/SR/4                 impl-defined vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql only the default collation
 8.6/SR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
 8.6/SR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
-8.6/SR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql checked when evaluated (2201B), since the pattern is a value
+8.6/SR/7                 unclear      - - new in 2023: an underscore can't be a range bound (#1502)
+8.6/SR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql checked when evaluated (2201B), since the pattern is a value
 8.6/GR/1                 definition   - -
 8.6/GR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
 8.6/GR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_escape.sql
@@ -212,7 +233,7 @@
 8.6/GR/7.t               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
 8.6/GR/7.u               implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
 8.6/GR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar_pad_space.sql
-8.6/CR/1                 implemented  vsql/std_2_8_6_similar_predicate.y tests/std_1_8_5_flagging.sql
+8.6/CR/1                 implemented  vsql/std_2_6_12_case_expression.y,vsql/std_2_8_6_similar_predicate.y tests/std_2_6_12_case_expression_when_operands.sql,tests/std_1_8_5_flagging.sql
 8.6/CR/2                 n/a          - - there are no CLOBs (T041)
 # 8.7, <regex like predicate>
 8.7                      n/a          - - LIKE_REGEX (F841)
@@ -222,8 +243,8 @@
 8.7/GR/1                 n/a          - - LIKE_REGEX (F841)
 8.7/GR/1.a               n/a          - - LIKE_REGEX (F841)
 8.7/GR/1.b               n/a          - - LIKE_REGEX (F841)
-8.7/GR/1.c               n/a          - - LIKE_REGEX (F841)
-8.7/GR/1.d               n/a          - - LIKE_REGEX (F841)
+8.7/GR/1.b.i             n/a          - - LIKE_REGEX (F841)
+8.7/GR/1.b.ii            n/a          - - LIKE_REGEX (F841)
 8.7/CR/1                 n/a          - - LIKE_REGEX (F841)
 8.7/CR/2                 n/a          - - LIKE_REGEX (F841)
 # 8.8, <null predicate>
@@ -257,9 +278,15 @@
 8.11                     implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
 8.11/SR/1                n/a          - - user-defined types (S023)
 8.11/SR/2                implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/SR/3                unclear      - - default null treatment is implementation-defined in 2023 (#1495)
 8.11/GR/1                definition   - -
-8.11/GR/2                implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/GR/2                unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql vsql always treats nulls as distinct; the default is implementation-defined in 2023 (#1495)
+8.11/GR/2.a              unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql see 8.11/GR/2 (#1495)
+8.11/GR/2.b              unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql see 8.11/GR/2 (#1495)
+8.11/GR/2.c              n/a          - - UNIQUE null treatment (F292)
+8.11/GR/2.d              unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql see 8.11/GR/2 (#1495)
 8.11/CR/1                implemented  vsql/std_2_8_11_unique_predicate.y tests/std_2_8_11_unique_predicate.sql
+8.11/CR/2                n/a          - - UNIQUE null treatment (F292)
 # 8.12, <normalized predicate>
 8.12                     n/a          - - IS NORMALIZED (T061)
 8.12/SR/1                n/a          - - IS NORMALIZED (T061)
@@ -489,13 +516,18 @@
 8.22/GR/2                container    - -
 8.22/GR/2.a              n/a          - - IS JSON (T822)
 8.22/GR/2.b              n/a          - - IS JSON (T822)
-8.22/GR/2.b.i            n/a          - - IS JSON (T822)
-8.22/GR/2.b.ii           n/a          - - IS JSON (T822)
-8.22/GR/2.b.iii          n/a          - - IS JSON (T822)
-8.22/GR/2.b.iv           n/a          - - IS JSON (T822)
-8.22/GR/2.b.v            n/a          - - IS JSON (T822)
+8.22/GR/2.c              n/a          - - IS JSON (T822)
+8.22/GR/3                n/a          - - IS JSON (T822)
+8.22/GR/3.a              n/a          - - IS JSON (T822)
+8.22/GR/3.b              n/a          - - IS JSON (T822)
+8.22/GR/3.c              n/a          - - IS JSON (T822)
+8.22/GR/3.d              n/a          - - IS JSON (T822)
+8.22/GR/3.e              n/a          - - IS JSON (T822)
 8.22/CR/1                n/a          - - IS JSON (T822)
 8.22/CR/2                n/a          - - IS JSON (T822)
+8.22/CR/3                n/a          - - IS JSON (T822)
+8.22/CR/4                n/a          - - IS JSON (T822)
+8.22/CR/5                n/a          - - IS JSON (T822)
 # 8.23, <JSON exists predicate>
 8.23                     n/a          - - JSON_EXISTS (T821)
 8.23/SR/1                n/a          - - JSON_EXISTS (T821)

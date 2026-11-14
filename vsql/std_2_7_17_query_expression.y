@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>
+// ISO/IEC 9075-2:2023, 7.17, <query expression>
 //
 // Specify a table.
 //
@@ -186,8 +186,8 @@ query_expression_body:
 // Without ALL or DISTINCT, it's DISTINCT. DISTINCT is flagged with T551, and
 // EXCEPT ALL with F304.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 6
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 9 and 10
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 10 and 11
 query_set_operation:
   query_expression_body query_set_operator query_term {
     operator := $2.v as QuerySetOperator
@@ -223,8 +223,8 @@ query_intersect_operation:
 // Without ALL or DISTINCT, it's DISTINCT. INTERSECT is flagged with F302, and
 // INTERSECT DISTINCT also with T551.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 6
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 7 and 9
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 6
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 8 and 10
 intersect_operator:
   INTERSECT {
     flag(mut yylex, 'F302')
@@ -260,12 +260,12 @@ parenthesized_query_expression:
 simple_table:
   query_specification { $$.v = yy_box(SimpleTable($1.v as QuerySpecification)) }
 | table_value_constructor {
-    // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 5
+    // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 5
     flag(mut yylex, 'F661')
     $$.v = $1.v
   }
 | explicit_table {
-    // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 6
+    // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 6
     flag(mut yylex, 'F661')
     $$.v = yy_box(SimpleTable($1.v as QuerySpecification))
   }
@@ -273,8 +273,8 @@ simple_table:
 // "TABLE t" is the same as "SELECT * FROM t", so its columns are the columns of
 // the table.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 4
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 13.b
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 13.b
 explicit_table:
   TABLE table_or_query_name {
     table_expression := TableExpression{TableReference(TablePrimary{
@@ -302,7 +302,7 @@ fetch_first_clause:
   }
 // Without a row count, it's 1.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, General Rules, 7.b.iii
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 7.b.iii
 | FETCH first_or_next row_or_rows ONLY { $$.v = yy_box(ValueSpecification(new_integer_value(1))) }
 
 // LIMIT is a vsql extension that's the same as a fetch_first_clause (V203-01).

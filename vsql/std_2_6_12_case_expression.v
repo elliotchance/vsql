@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>
+// ISO/IEC 9075-2:2023, 6.12, <case expression>
 //
 // Specify a conditional value.
 
@@ -43,7 +43,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 	// NEXT VALUE FOR can't be used anywhere in a CASE (including NULLIF and
 	// COALESCE), since whether it's evaluated depends on the other values.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023, 6.14, <next value expression>, Syntax Rules, 2
 	next_value_not_allowed := c.next_value_not_allowed
 	if next_value_not_allowed == '' {
 		c.next_value_not_allowed = match e {
@@ -58,14 +58,14 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 
 	match e {
 		CaseExpressionNullIf {
-			// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xvi
+			// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xvi
 			compiled_a, compiled_b := c.with_pair_types(e.a.compile(mut c)!, e.b.compile(mut c)!,
 				same_type)
 
 			// NULLIF(V1, V2) is CASE WHEN V1 = V2 THEN NULL ELSE V1 END, so the
 			// values only need to be comparable, such as an INTEGER and a SMALLINT.
 			//
-			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 1.c
+			// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 1.c
 			if !comparable_types(compiled_a.typ.typ, compiled_b.typ.typ) {
 				return sqlstate_42804('in NULLIF', compiled_a.typ.str(), compiled_b.typ.str())
 			}
@@ -88,10 +88,10 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			}
 		}
 		CaseExpressionCoalesce {
-			// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xvi
+			// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xvi
 			compiled_exprs := c.with_types(e.exprs.map(it.compile(mut c)!), same_type)
 
-			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 5: the
+			// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 5: the
 			// result has the combined type of all the arguments (9.5).
 			mut typ := Type{compiled_exprs[0].typ.typ, compiled_exprs[0].typ.size, compiled_exprs[0].typ.scale, false}
 			mut contains_agg := compiled_exprs[0].contains_agg
@@ -129,7 +129,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			// value has the type of the others in the same position. The types are
 			// recorded, so the operand and the WHENs are compiled with them.
 			//
-			// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xviii
+			// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xviii
 			if c.conn.describing {
 				mut rows := [e.operand.compile_fields(mut c)!]
 				for when in e.whens {
@@ -227,7 +227,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 // compile_case_results compiles each THEN and the ELSE (last) of a CASE. They
 // are all converted to the combined type of the results that are not NULL.
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 3 and 5
+// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 3 and 5
 fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResult) !([]CompileResult, bool) {
 	mut results := thens.clone()
 	results << else_result
@@ -239,7 +239,7 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xvii
+	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xvii
 	compiled = c.with_types(compiled, same_type)
 
 	mut typ := ?Type(none)
@@ -256,7 +256,7 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 3: at least
+	// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 3: at least
 	// one result must not be NULL so that the CASE has a type.
 	combined_type := typ or { return sqlstate_42601('CASE needs at least one result that is not NULL') }
 
@@ -325,7 +325,7 @@ struct CaseExpressionSimpleWhen {
 // which has the case operand (CaseOperand) on the left. is_value is true if it's
 // a <row value predicand> (WO), so the predicate is "CO = WO".
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 2.f
+// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 2.f
 struct CaseWhenOperand {
 	predicate Predicate
 	is_value  bool

@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>
+// ISO/IEC 9075-2:2023, 19.6, <set schema statement>
 //
 // Set the default schema name for unqualified <schema qualified name>s in
 // <preparable statement>s that are prepared in the current SQL-session by an
@@ -28,14 +28,14 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 		params: params
 	}
 
-	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, General Rules, 1
 	value := session_name_value(mut conn, mut c, stmt.schema_name, 'SET SCHEMA')!
 
 	// The value is a <schema name>, so 'foo' is the regular identifier FOO, and
 	// '"foo"' is needed for a lower case name. It can have a catalog name.
 	//
-	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, General Rules, 2
+	// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, General Rules, 2
 	parts := split_name_parts(value)
 	if parts.len > 2 {
 		return sqlstate_3f000(value)
@@ -49,13 +49,13 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 
 	// The schema must exist in that catalog.
 	//
-	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, General Rules, 3.a
+	// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, General Rules, 3.a
 	catalog := conn.catalogs[new_catalog] or { return sqlstate_3d000(new_catalog) }
 	if new_schema !in catalog.storage.schemas && new_schema != information_schema_name {
 		return sqlstate_3f000(new_schema) // schema does not exist
 	}
 
-	// ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>, General Rules, 3.b
+	// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, General Rules, 3.b
 	conn.current_catalog = new_catalog
 	conn.current_schema = new_schema
 

@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>
+// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>
 //
 // Specify a referential constraint.
 
@@ -42,7 +42,7 @@ referenced_table_and_columns:
 referenced_column_list:
   column_name_list { $$.v = $1.v }
 
-// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Conformance Rules, 3 and 4
+// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Conformance Rules, 3 and 4
 referential_triggered_action:
   update_rule {
     flag(mut yylex, 'F701')

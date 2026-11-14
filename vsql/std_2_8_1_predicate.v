@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 8.1, <predicate>
+// ISO/IEC 9075-2:2023, 8.1, <predicate>
 //
 // Specify a condition that can be evaluated to give a boolean value.
 

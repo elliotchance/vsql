@@ -27,9 +27,9 @@ pub:
 // than one SQL-server. So only the current SQL-connection can have an active
 // SQL-transaction.
 pub struct Agent {
-	// ISO/IEC 9075-2:2016(E), 4.42, SQL-connections
-	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 9.a
-	// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 4
+	// ISO/IEC 9075-2:2023, 4.44, SQL-connections
+	// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 9.a
+	// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 4
 	default_server string
 	options        AgentOptions
 mut:
@@ -66,7 +66,7 @@ pub fn (mut a Agent) direct(sql_stmt string, options DirectOptions) !Result {
 	// (including a syntax error) is passed to Connection.direct. The warnings
 	// are emptied first, and are the diagnostics of this statement after.
 	//
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.b, 5.c.v and 9
+	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 6.b; ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 7 and 22
 	t := start_timer()
 	if stmt := parse_connection_statement(sql_stmt) {
 		a.connected = true
@@ -84,7 +84,7 @@ pub fn (mut a Agent) direct(sql_stmt string, options DirectOptions) !Result {
 	// A statement after a connection statement doesn't connect to the default
 	// SQL-server again, since it was made dormant or disconnected.
 	//
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.i
+	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 6.b.ii
 	if a.current == unsafe { nil } {
 		if a.connected {
 			return sqlstate_08003('there is no current SQL-connection')
@@ -105,7 +105,7 @@ pub fn (mut a Agent) direct(sql_stmt string, options DirectOptions) !Result {
 // that isn't a connection statement, so it only needs to be called to connect
 // sooner. It doesn't do anything if there is already a current SQL-connection.
 pub fn (mut a Agent) connect_default() ! {
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.i.1 and 5.c.i.2
+	// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 8.a and 8.b
 	if a.current != unsafe { nil } {
 		return
 	}
@@ -142,7 +142,7 @@ pub fn (a Agent) in_transaction() bool {
 // deferred constraint isn't satisfied, it's rolled back). Otherwise, it's
 // rolled back.
 pub fn (mut a Agent) close(commit bool) ! {
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 2.a and 2.c
+	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 3.a and 3.c
 	if commit && a.in_transaction() {
 		a.current.query('COMMIT')!
 	}
@@ -179,7 +179,7 @@ fn (a Agent) open_default() !&Connection {
 // disconnect terminates an SQL-connection. If it's the current SQL-connection,
 // there is no current SQL-connection after.
 //
-// ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, General Rules, 7 and 9
+// ISO/IEC 9075-2:2023, 18.3, <disconnect statement>, General Rules, 7 and 9
 fn (mut a Agent) disconnect(conn &Connection) {
 	mut c := unsafe { conn }
 	c.close()
@@ -205,8 +205,8 @@ fn (mut a Agent) disconnect(conn &Connection) {
 // is active, since vsql doesn't support transactions that affect more than one
 // SQL-server.
 //
-// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 1
-// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 1
+// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 1
+// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 1
 fn (a Agent) check_multiple_server_transactions() ! {
 	if a.current != unsafe { nil } && a.current.is_active() {
 		return sqlstate_0a001()

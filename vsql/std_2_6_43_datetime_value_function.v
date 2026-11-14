@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>
+// ISO/IEC 9075-2:2023, 6.43, <datetime value function>
 //
 // Specify a function yielding a value of type datetime.
 
@@ -26,9 +26,9 @@ fn (e DatetimeValueFunction) pstr(_ map[string]Value) string {
 // the statement is executed, so a prepared statement has a new time each time
 // it's executed.
 //
-// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, Syntax Rules, 1-3
-// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, General Rules, 1-3
-// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 4
+// ISO/IEC 9075-2:2023, 6.43, <datetime value function>, Syntax Rules, 1-3
+// ISO/IEC 9075-2:2023, 6.43, <datetime value function>, General Rules, 1-3
+// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 5
 fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 	c.check_deterministic(e.pstr(c.params))!
 

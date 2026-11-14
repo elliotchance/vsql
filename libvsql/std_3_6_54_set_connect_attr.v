@@ -1,10 +1,10 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr
+// ISO/IEC 9075-3:2003, 6.54, SetConnectAttr
 //
 // Set the value of an SQL-connection attribute.
 //
-// The concept is described by ISO/IEC 9075-3:2003(E), 4.4.5, Connection
+// The concept is described by ISO/IEC 9075-3:2003, 4.4.5, Connection
 // attributes. POPULATE IPD is always True, and can't be set.
 
 @[export: 'SQLSetConnectAttr']
@@ -13,26 +13,26 @@ fn sql_set_connect_attr(connection_handle SQLInteger, attribute SQLInteger, valu
 	defer {
 		entry.leave()
 	}
-	// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General Rules, 1
+	// ISO/IEC 9075-3:2003, 6.54, SetConnectAttr, General Rules, 1
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
 	// AUTOCOMMIT is an implementation-defined INTEGER attribute, see
-	// autocommit.v (ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General
+	// autocommit.v (ISO/IEC 9075-3:2003, 6.54, SetConnectAttr, General
 	// Rules, 5.a).
 	if attribute == sql_attr_autocommit {
 		set_autocommit(mut dbc, i64(connection_handle), value) or { return dbc.diag.error(err) }
 		return sql_success
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General Rules, 2 and 3: the
+	// ISO/IEC 9075-3:2003, 6.54, SetConnectAttr, General Rules, 2 and 3: the
 	// attribute must be one of the codes in Table 16 that can be set (so not
 	// POPULATE IPD).
 	if attribute != sql_attr_savepoint_name {
 		return dbc.diag.error(cli_error('HY092', 'invalid attribute identifier'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General Rules, 4
+	// ISO/IEC 9075-3:2003, 6.54, SetConnectAttr, General Rules, 4
 	dbc.savepoint_name = input_string(unsafe { &char(value) }, i64(string_length)) or { return dbc.diag.error(err) }
 
 	return sql_success

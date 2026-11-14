@@ -3,7 +3,7 @@
  * The class (or subclass) of an SQLSTATE that starts with 0 to 4 or A to H is
  * defined by the standard, and any other is defined by vsql.
  *
- * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.b and 4.c
+ * ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 4.b and 4.c
  */
 static const char *vsql_m_origin(char c) {
   return strchr("01234ABCDEFGH", c) != NULL ? "ISO 9075" : "vsql";
@@ -20,14 +20,14 @@ static const char *vsql_m_origin(char c) {
  * rule violation (such as no such table or no such column), and the column is
  * the one that doesn't exist (see vsql.condition_table).
  *
- * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.f.ii.1.B, 4.h.i.1.A, 4.i, 4.m and 4.p
+ * ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.f.ii.1.B, 4.h.i.1.A, 4.i, 4.m and 4.p
  */
 static const char *vsql_m_item_text(int item, long long n) {
   const char *s = NULL;
 
   switch (item) {
   case SQL_DIAG_MORE:
-    /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+    /* ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 2.b
      */
     return vsql_m_da.more ? "Y" : "N";
   case VSQL_M_COMMAND_FUNCTION:
@@ -65,7 +65,7 @@ static const char *vsql_m_item_text(int item, long long n) {
     s = vsql_m_da.conditions[n - 1].column_name;
     break;
   case SQL_DIAG_CURSOR_NAME:
-    /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules,
+    /* ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules,
      * 4.e */
     if (strcmp(vsql_m_da.conditions[n - 1].sqlstate, "24000") == 0) {
       s = vsql_m_da.cursor_name;
@@ -90,7 +90,7 @@ static const char *vsql_m_item_text(int item, long long n) {
  * that isn't GET DIAGNOSTICS, and TRANSACTION_ACTIVE is 1 if the current
  * SQL-connection has an active SQL-transaction.
  *
- * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.a, 2.j, 4.n and 4.o
+ * ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 2.a, 2.j, 4.n and 4.o
  */
 static long long vsql_m_item_number(int item, long long n) {
   const char *s;

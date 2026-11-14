@@ -45,7 +45,7 @@ aggregate_function:
       $2.v as BooleanValueExpression))
   }
 
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 13
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 14
 filter_clause:
   FILTER left_paren WHERE search_condition right_paren {
     flag(mut yylex, 'T612')
@@ -59,7 +59,7 @@ filter_clause:
 // here, which lets the parser wait until after the "(" to choose: a subquery
 // is a quantified comparison, anything else is this aggregate function.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 3
 general_set_function:
   set_function_type left_paren value_expression right_paren {
     flag_if(mut yylex, $1.v as string == 'COUNT', 'F441')
@@ -120,8 +120,8 @@ general_set_function:
 // operation>, but they're a separate rule because they can't have a <set
 // quantifier>. They're flagged with T621, like a <binary set function>.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 2
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 10 and 11
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 2
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 11 and 12
 statistical_operation:
   STDDEV_POP { $$.v = $1.v as string }
 | STDDEV_SAMP { $$.v = $1.v as string }
@@ -138,8 +138,8 @@ set_function_type:
 
 // The other <ordered set function>s are an OrderedSetFunction.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.c
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 23
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 11.c
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 24
 listagg_set_function:
   LISTAGG left_paren character_value_expression comma listagg_separator
   right_paren within_group_specification {
@@ -171,7 +171,7 @@ listagg_set_function:
 // <listagg set function> is also an <ordered set function>, but it's a
 // ListaggSetFunction.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 12
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 13
 ordered_set_function:
   rank_function_type left_paren
   hypothetical_set_function_value_expression_list right_paren
@@ -232,7 +232,7 @@ within_group_sort_specification:
 listagg_separator:
   character_string_literal { $$.v = $1.v }
 
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
 listagg_overflow_clause:
   ON OVERFLOW ERROR { $$.v = yy_box(ListaggOverflow{}) }
 | ON OVERFLOW TRUNCATE listagg_count_indication {

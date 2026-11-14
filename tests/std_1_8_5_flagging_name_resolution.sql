@@ -11,7 +11,7 @@ CREATE TABLE old_key (a BIGINT REFERENCES p1, b INT);
 INSERT INTO t (x, y) VALUES (1, 2);
 INSERT INTO u (x, z) VALUES (1, 3);
 
--- # ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Conformance Rules, 1
+-- # ISO/IEC 9075-2:2023, 7.12, <where clause>, Conformance Rules, 1
 
 /* flags */
 SELECT * FROM (SELECT COUNT(*) AS c FROM t) AS d WHERE c > 0;
@@ -61,7 +61,7 @@ SELECT COUNT(*) AS c FROM t HAVING COUNT(*) > 0;
 -- flags:
 -- C: 1
 
--- # ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 5, 7 and 18
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 6, 8 and 19
 
 /* flags */
 SELECT (SELECT SUM(t1.x + 1) FROM u) FROM t AS t1;
@@ -111,7 +111,7 @@ SELECT SUM(x + y) FROM t;
 -- flags:
 -- COL1: 3
 
--- # ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 9
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 10
 
 /* flags */
 SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM t GROUP BY x) AS d;
@@ -141,7 +141,7 @@ DECLARE dc CURSOR FOR SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM t GROUP BY x
 -- flags: F441, F591, V108-01
 -- msg: DECLARE CURSOR
 
--- # ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Conformance Rules, 5
+-- # ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Conformance Rules, 5
 
 /* flags */
 CREATE TABLE c2 (a BIGINT REFERENCES p1);
@@ -221,7 +221,7 @@ CREATE TABLE c10 (a BIGINT, a BIGINT REFERENCES p1);
 -- flags: T071
 -- error 42601: syntax error: column A is defined more than once
 
--- # ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
+-- # ISO/IEC 9075-2:2023, 14.9, <delete statement: searched>, Conformance Rules, 1.a
 
 /* flags */
 DELETE FROM t WHERE x IN (SELECT MAX(x) + 1 FROM t);
@@ -285,8 +285,8 @@ DELETE FROM t;
 -- flags:
 -- msg: DELETE 1
 
--- # ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Conformance Rules, 1.a
--- # ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Conformance Rules, 1.a
+-- # ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, Conformance Rules, 1.a
+-- # ISO/IEC 9075-2:2023, 14.15, <set clause list>, Conformance Rules, 1.a
 
 /* flags */
 UPDATE t SET y = 1 WHERE x IN (SELECT x + 1 FROM t);
@@ -347,7 +347,7 @@ DELETE FROM t WHERE x IN (SELECT x FROM t WHERE y = ?);
 -- flags: B031, F781
 -- error 42P02: parameter does not exist: ?1
 
--- # ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 1.a
+-- # ISO/IEC 9075-2:2023, 14.11, <insert statement>, Conformance Rules, 1.a
 
 /* flags */
 INSERT INTO t SELECT x + 10, y FROM t;

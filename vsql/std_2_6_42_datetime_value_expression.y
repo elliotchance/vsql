@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 6.35, <datetime value expression>
+// ISO/IEC 9075-2:2023, 6.42, <datetime value expression>
 //
 // Specify a datetime value.
 //

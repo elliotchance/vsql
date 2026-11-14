@@ -7,7 +7,7 @@ INSERT INTO t2 (x, z) VALUES (2, 'b'), (3, NULL), (4, 'd');
 CREATE SEQUENCE seq1;
 
 -- # INTERSECT (and INTERSECT DISTINCT) keeps one of each row that's on both
--- # sides, where NULLs are not distinct (F302-01).
+-- # sides, where NULLs are not distinct (F303).
 SELECT x, y FROM t1 INTERSECT SELECT x, z FROM t2;
 -- X: 2 Y: b
 -- X: 3 Y: NULL
@@ -35,7 +35,7 @@ SELECT x FROM t1 INTERSECT SELECT x FROM t2 WHERE x > 10;
 
 VALUES 5 INTERSECT SELECT x FROM t1;
 
--- # INTERSECT ALL keeps the smaller number of duplicates of each row (F302-02).
+-- # INTERSECT ALL keeps the smaller number of duplicates of each row (F305).
 SELECT x FROM t1 INTERSECT ALL VALUES 2, 2, 2, 3;
 -- X: 2
 -- X: 2

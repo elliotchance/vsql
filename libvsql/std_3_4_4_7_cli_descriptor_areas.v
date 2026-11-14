@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 4.4.7, CLI descriptor areas
+// ISO/IEC 9075-3:2003, 4.4.7, CLI descriptor areas
 //
 // A CLI descriptor area describes the dynamic parameters (the application and
 // implementation parameter descriptors, APD and IPD) or the result columns
@@ -429,7 +429,7 @@ fn (desc &Desc) field_index() int {
 }
 
 // describe sets the IRD and IPD of a statement after it's prepared or executed
-// (ISO/IEC 9075-3:2003(E), 5.5, Implicit DESCRIBE USING clause). The item
+// (ISO/IEC 9075-3:2003, 5.5, Implicit DESCRIBE USING clause). The item
 // descriptor areas of the IPD are only set by Prepare (see
 // describe_parameters), so that the IPD that's set by BindParameter is still
 // used when the statement is executed again. There are no nested descriptors,
@@ -472,7 +472,7 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 
 // describe_parameters sets the IPD of a statement after it's prepared to an
 // item descriptor area for each dynamic parameter, since POPULATE IPD is True
-// (ISO/IEC 9075-3:2003(E), 5.5, Implicit DESCRIBE USING clause, General Rules,
+// (ISO/IEC 9075-3:2003, 5.5, Implicit DESCRIBE USING clause, General Rules,
 // 7 and 8). Every dynamic parameter is an input parameter, at LEVEL 0 (zero).
 // A dynamic parameter whose type is only known once it has a value (see
 // vsql.PreparedStmt.dynamic_parameter_type) keeps the item descriptor area that
@@ -652,7 +652,7 @@ fn (desc &Desc) has_prepared_or_executed() bool {
 
 // check_desc_deferred raises an exception condition if the descriptor is the
 // current APD, or the IPD, of a statement that has a deferred parameter number:
-// CLI-specific condition — function sequence error (ISO/IEC 9075-3:2003(E),
+// CLI-specific condition — function sequence error (ISO/IEC 9075-3:2003,
 // 5.11, Deferred parameter check). Only the statements of the descriptor's
 // connection are checked (General Rules, 3).
 fn check_desc_deferred(h i64) ! {

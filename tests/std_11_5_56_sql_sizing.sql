@@ -1,5 +1,5 @@
 -- # There's one row for each sizing item (6.45, Description, 1 to 4). The
--- # items are the ones of SQL/CLI (ISO/IEC 9075-3:2003(E), 7.2). The
+-- # items are the ones of SQL/CLI (ISO/IEC 9075-3:2003, 7.2). The
 -- # SUPPORTED_VALUE is 0 (zero) when there's no limit, and NULL when nothing
 -- # that the item is for is supported.
 SELECT * FROM information_schema.sql_sizing;
@@ -28,7 +28,7 @@ SELECT * FROM information_schema.sql_sizing;
 -- SIZING_ID: 25005 SIZING_NAME: MAXIMUM SYSTEM USER LENGTH SUPPORTED_VALUE: NULL COMMENTS: SYSTEM_USER is not supported.
 
 -- # A size is found by its ID, the same way that SQLGetInfo does
--- # (ISO/IEC 9075-3:2003(E), 6.38, General Rules, 10.a).
+-- # (ISO/IEC 9075-3:2003, 6.38, General Rules, 10.a).
 SELECT supported_value FROM information_schema.sql_sizing WHERE sizing_id = 30;
 -- SUPPORTED_VALUE: 128
 

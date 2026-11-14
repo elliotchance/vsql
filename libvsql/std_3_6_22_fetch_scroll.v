@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.22, FetchScroll
+// ISO/IEC 9075-3:2003, 6.22, FetchScroll
 //
 // Position a cursor on the specified row and retrieve values from that row.
 //
@@ -36,7 +36,7 @@ fn sql_fetch_scroll(statement_handle SQLInteger, fetch_orientation i16, fetch_of
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 

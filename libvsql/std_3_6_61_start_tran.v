@@ -2,16 +2,16 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.61, StartTran
+// ISO/IEC 9075-3:2003, 6.61, StartTran
 //
 // Explicitly start an SQL-transaction and set its characteristics.
 //
 // READ WRITE with READ UNCOMMITTED is 42601, as it is for START TRANSACTION
-// (ISO/IEC 9075-2:2016(E), 17.3, Syntax Rules, 4).
+// (ISO/IEC 9075-2:2023, 17.3, Syntax Rules, 4).
 //
 // For an SQL-environment, L1 is only its active SQL-connections (General Rules,
 // 3.d.ii.3), which are the ones that have executed a statement in the current
-// SQL-transaction (ISO/IEC 9075-2:2016(E), 4.42, SQL-connections). Any of those
+// SQL-transaction (ISO/IEC 9075-2:2023, 4.44, SQL-connections). Any of those
 // has an active SQL-transaction, which is an exception condition (General
 // Rules, 4), so TXN is started without being in any SQL-connection yet
 // (General Rules, 10). It's started in the first connection that executes a
@@ -35,7 +35,7 @@ import vsql
 // still sets the DIAGNOSTICS SIZE of TXN (but not its access mode or isolation
 // level). That's how a <start transaction statement> in an SQL-client module is
 // done, since it effectively executes a SET TRANSACTION first (ISO/IEC
-// 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 4).
+// 9075-2:2023, 17.1, <start transaction statement>, General Rules, 4).
 
 // Codes from Table 36, "Values for TRANSACTION ACCESS MODE with StartTran".
 const sql_transaction_read_only = 0x00000001

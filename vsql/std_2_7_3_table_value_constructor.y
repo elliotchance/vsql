@@ -1,12 +1,12 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>
+// ISO/IEC 9075-2:2023, 7.3, <table value constructor>
 //
 // Specify a set of <row value expression>s to be constructed into a table.
 
 table_value_constructor:
   VALUES row_value_expression_list {
-    // ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Conformance Rules, 2
+    // ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 2
     flag(mut yylex, 'F641')
     $$.v = yy_box(SimpleTable($2.v as []RowValueConstructor))
   }
@@ -29,7 +29,7 @@ contextually_typed_row_value_expression_list:
   }
 | contextually_typed_row_value_expression_list comma
   contextually_typed_row_value_expression {
-    // ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Conformance Rules, 1
+    // ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 1
     flag(mut yylex, 'F641')
     $$.v = yy_box(append_list($1.v as []ContextuallyTypedRowValueConstructor,
       $3.v as ContextuallyTypedRowValueConstructor))

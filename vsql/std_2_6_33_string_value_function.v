@@ -12,7 +12,9 @@ import math
 // ISO/IEC 9075-2:2023, 4.3.3, Operations involving character strings
 
 type CharacterValueFunction = CharacterSubstringFunction
+	| MultiCharacterTrimFunction
 	| OverlayFunction
+	| PadFunction
 	| RegularExpressionSubstringFunction
 	| RoutineInvocation // <fold>
 	| TrimFunction
@@ -20,7 +22,7 @@ type CharacterValueFunction = CharacterSubstringFunction
 fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 	return match e {
 		RoutineInvocation, CharacterSubstringFunction, OverlayFunction,
-		RegularExpressionSubstringFunction, TrimFunction {
+		RegularExpressionSubstringFunction, TrimFunction, MultiCharacterTrimFunction, PadFunction {
 			e.pstr(params)
 		}
 	}
@@ -29,7 +31,7 @@ fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 fn (e CharacterValueFunction) compile(mut c Compiler) !CompileResult {
 	match e {
 		CharacterSubstringFunction, OverlayFunction, RegularExpressionSubstringFunction,
-		TrimFunction, RoutineInvocation {
+		TrimFunction, RoutineInvocation, MultiCharacterTrimFunction, PadFunction {
 			return e.compile(mut c)!
 		}
 	}
@@ -582,4 +584,221 @@ fn varying_string_type(function_name string, source Type) !Type {
 	}
 
 	return new_type('CHARACTER VARYING', source.size, 0)
+}
+
+// MultiCharacterTrimFunction is BTRIM, LTRIM or RTRIM. Unlike TRIM, the trim
+// character is a set of characters, any of which are removed. Without one, it's
+// a space.
+struct MultiCharacterTrimFunction {
+	// BTRIM, LTRIM or RTRIM
+	name      string
+	source    &CharacterValueExpression
+	character ?&CharacterValueExpression
+}
+
+fn new_multi_character_trim_function(name string, source CharacterValueExpression, character ?CharacterValueExpression) MultiCharacterTrimFunction {
+	return MultiCharacterTrimFunction{name.to_upper(), &source, if c := character {
+		&c
+	} else {
+		none
+	}}
+}
+
+fn (e MultiCharacterTrimFunction) pstr(params map[string]Value) string {
+	if character := e.character {
+		return '${e.name}(${e.source.pstr(params)}, ${character.pstr(params)})'
+	}
+
+	return '${e.name}(${e.source.pstr(params)})'
+}
+
+// compile gives the result a CHARACTER VARYING with the (maximum) length of
+// the source. BTRIM(s, c) is RTRIM(LTRIM(s, c), c), but the trim character is
+// only evaluated once.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 15
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 13
+fn (e MultiCharacterTrimFunction) compile(mut c Compiler) !CompileResult {
+	compiled_source := e.source.compile(mut c)!
+	typ := varying_string_type(e.name, compiled_source.typ)!
+	mut compiled_character := ?CompileResult(none)
+	if character := e.character {
+		compiled := character.compile(mut c)!
+		// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 15.b.i.1
+		if !compiled.typ.typ.is_string() {
+			return sqlstate_42883('function does not exist: ${e.name}(${compiled_source.typ}, ${compiled.typ})')
+		}
+		compiled_character = compiled
+	}
+	contains_agg := compiled_source.contains_agg || if compiled := compiled_character {
+		compiled.contains_agg
+	} else {
+		false
+	}
+
+	name := e.name
+	return CompileResult{
+		run:          fn [name, compiled_source, compiled_character, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			source := compiled_source.run(mut conn, data, params)!
+			mut set := [` `]
+			if compiled := compiled_character {
+				character := compiled.run(mut conn, data, params)!
+				// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 13.c
+				if character.is_null {
+					return new_null_value(.is_varchar).with_type(typ)
+				}
+				set = character.string_value().runes()
+			}
+			if source.is_null {
+				return new_null_value(.is_varchar).with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 13.d
+			chars := source.string_value().runes()
+			if chars.len == 0 || set.len == 0 {
+				return source.with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 13.e
+			mut start := 0
+			mut end := chars.len
+			if name != 'RTRIM' {
+				for start < end && chars[start] in set {
+					start++
+				}
+			}
+			if name != 'LTRIM' {
+				for end > start && chars[end - 1] in set {
+					end--
+				}
+			}
+
+			return new_varchar_value(chars[start..end].string()).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: contains_agg
+	}
+}
+
+// PadFunction is LPAD or RPAD, which pads (or truncates) a string to a number
+// of characters. Without a padding string, it's a space.
+struct PadFunction {
+	// LPAD or RPAD
+	name    string
+	source  &CharacterValueExpression
+	length  &NumericValueExpression
+	padding ?&CharacterValueExpression
+}
+
+fn new_pad_function(name string, source CharacterValueExpression, length NumericValueExpression, padding ?CharacterValueExpression) PadFunction {
+	return PadFunction{name.to_upper(), &source, &length, if p := padding {
+		&p
+	} else {
+		none
+	}}
+}
+
+fn (e PadFunction) pstr(params map[string]Value) string {
+	if padding := e.padding {
+		return '${e.name}(${e.source.pstr(params)}, ${e.length.pstr(params)}, ${padding.pstr(params)})'
+	}
+
+	return '${e.name}(${e.source.pstr(params)}, ${e.length.pstr(params)})'
+}
+
+// compile gives the result a CHARACTER VARYING of the maximum length (LR is
+// implementation-defined), which is also the longest result. The length must
+// be an exact number with a scale of 0. A longer string is cut to the length,
+// from the end for both LPAD and RPAD, and a length less than 1 is the empty
+// string. The padding string is repeated, and the last one is cut short to fit.
+// An empty padding string pads nothing.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 16
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 14
+fn (e PadFunction) compile(mut c Compiler) !CompileResult {
+	compiled_source := e.source.compile(mut c)!
+	compiled_length := e.length.compile(mut c)!
+	mut compiled_padding := ?CompileResult(none)
+	if padding := e.padding {
+		compiled_padding = padding.compile(mut c)!
+	}
+
+	mut signature := '${compiled_source.typ}, ${compiled_length.typ}'
+	if compiled := compiled_padding {
+		signature += ', ${compiled.typ}'
+	}
+	if !compiled_source.typ.typ.is_string()
+		|| compiled_length.typ.typ !in [.is_smallint, .is_integer, .is_bigint, .is_decimal,
+			.is_numeric]
+		|| compiled_length.typ.scale != 0 || if compiled := compiled_padding {
+		!compiled.typ.typ.is_string()
+	} else {
+		false
+	} {
+		return sqlstate_42883('function does not exist: ${e.name}(${signature})')
+	}
+
+	typ := new_type('CHARACTER VARYING', max_character_length, 0)
+	contains_agg := compiled_source.contains_agg || compiled_length.contains_agg || if compiled := compiled_padding {
+		compiled.contains_agg
+	} else {
+		false
+	}
+
+	left := e.name == 'LPAD'
+	return CompileResult{
+		run:          fn [left, compiled_source, compiled_length, compiled_padding, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			source := compiled_source.run(mut conn, data, params)!
+			length := compiled_length.run(mut conn, data, params)!
+			mut padding := [` `]
+			mut padding_is_null := false
+			if compiled := compiled_padding {
+				value := compiled.run(mut conn, data, params)!
+				padding_is_null = value.is_null
+				padding = value.string_value().runes()
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 14.a to 14.d
+			if source.is_null || length.is_null {
+				return new_null_value(.is_varchar).with_type(typ)
+			}
+			total := if length.typ.typ in [.is_decimal, .is_numeric]
+				&& length.numeric_value().f64() > max_character_length {
+				i64(max_character_length)
+			} else {
+				length.as_int()
+			}
+			if total < 1 {
+				return new_varchar_value('').with_type(typ)
+			}
+			if padding_is_null {
+				return new_null_value(.is_varchar).with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 14.e to 14.j
+			chars := source.string_value().runes()
+			result_length := int(math.min(total, i64(max_character_length)))
+			if result_length <= chars.len {
+				return new_varchar_value(chars[..result_length].string()).with_type(typ)
+			}
+			if padding.len == 0 {
+				return source.with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 14.k to 14.o
+			mut pad := []rune{cap: result_length - chars.len}
+			for pad.len < result_length - chars.len {
+				pad << padding[pad.len % padding.len]
+			}
+			result := if left {
+				pad.string() + chars.string()
+			} else {
+				chars.string() + pad.string()
+			}
+
+			return new_varchar_value(result).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: contains_agg
+	}
 }

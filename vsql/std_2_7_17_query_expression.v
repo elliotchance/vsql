@@ -502,16 +502,16 @@ fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
 	left := o.values(o.left.execute([]Row{})!, o.left.columns())!
 	right := o.values(o.right.execute([]Row{})!, o.right.columns())!
 
-	mut kept := [][]Value{}
+	mut kept := RowSet{}
 	if o.op == 'UNION' {
 		for values in left {
-			if o.all || find_duplicate_row(o.conn, kept, values)! < 0 {
-				kept << values
+			if o.all || kept.find(o.conn, values)! < 0 {
+				kept.add(values)
 			}
 		}
 		for values in right {
-			if o.all || find_duplicate_row(o.conn, kept, values)! < 0 {
-				kept << values
+			if o.all || kept.find(o.conn, values)! < 0 {
+				kept.add(values)
 			}
 		}
 	} else {
@@ -519,15 +519,19 @@ fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
 		// row on the right can only be matched once, so it removes one duplicate
 		// from the left for EXCEPT, or keeps one for INTERSECT. Otherwise, it
 		// removes (or keeps) every duplicate, and only the first one is kept.
+		mut right_rows := RowSet{}
+		for values in right {
+			right_rows.add(values)
+		}
 		mut matched := []bool{len: right.len}
 		for values in left {
-			if !o.all && find_duplicate_row(o.conn, kept, values)! >= 0 {
+			if !o.all && kept.find(o.conn, values)! >= 0 {
 				continue
 			}
 
 			mut is_matched := false
-			for j, other in right {
-				if !matched[j] && is_duplicate_row(o.conn, values, other)! {
+			for j in right_rows.candidates(values) {
+				if !matched[j] && is_duplicate_row(o.conn, values, right[j])! {
 					matched[j] = o.all
 					is_matched = true
 					break
@@ -535,13 +539,13 @@ fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
 			}
 
 			if is_matched == (o.op == 'INTERSECT') {
-				kept << values
+				kept.add(values)
 			}
 		}
 	}
 
 	mut rows := []Row{}
-	for values in kept {
+	for values in kept.rows {
 		mut data := map[string]Value{}
 		for i, column in o.columns {
 			data[column.name.id()] = values[i]
@@ -566,16 +570,4 @@ fn (mut o SetOperationOperation) values(rows []Row, columns Columns) ![][]Value 
 	}
 
 	return all_values
-}
-
-// find_duplicate_row returns the index of the first row that is a duplicate of
-// values, or -1.
-fn find_duplicate_row(conn &Connection, rows [][]Value, values []Value) !int {
-	for i, row in rows {
-		if is_duplicate_row(conn, row, values)! {
-			return i
-		}
-	}
-
-	return -1
 }

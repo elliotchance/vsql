@@ -180,7 +180,7 @@ fn (mut o DistinctOperation) execute(rows []Row) ![]Row {
 	}
 
 	mut kept_rows := []Row{}
-	mut kept_values := [][]Value{}
+	mut kept_values := RowSet{}
 	for row in rows {
 		o.conn.begin_row()
 		mut values := []Value{}
@@ -188,21 +188,76 @@ fn (mut o DistinctOperation) execute(rows []Row) ![]Row {
 			values << expr.run(mut o.conn, row, o.params)!
 		}
 
-		mut is_duplicate := false
-		for existing in kept_values {
-			if is_duplicate_row(o.conn, values, existing)! {
-				is_duplicate = true
-				break
-			}
-		}
-
-		if !is_duplicate {
+		if kept_values.find(o.conn, values)! < 0 {
 			kept_rows << row
-			kept_values << values
+			kept_values.add(values)
 		}
 	}
 
 	return kept_rows
+}
+
+// A RowSet holds rows of values, and finds the one that's a duplicate of
+// another row (see is_duplicate_row) without comparing it with every row. Rows
+// that could be duplicates have the same duplicate_key, so only those are
+// compared.
+struct RowSet {
+mut:
+	rows    [][]Value
+	buckets map[string][]int
+}
+
+// add adds a row to the end, even if it's a duplicate of another.
+fn (mut s RowSet) add(values []Value) {
+	key := duplicate_key(values)
+	s.buckets[key] << s.rows.len
+	s.rows << values
+}
+
+// candidates returns the positions of the rows (in the order they were added)
+// that could be duplicates of values. Each one must still be checked with
+// is_duplicate_row.
+fn (s &RowSet) candidates(values []Value) []int {
+	return s.buckets[duplicate_key(values)] or { []int{} }
+}
+
+// find returns the position of the first row that's a duplicate of values, or
+// -1.
+fn (s &RowSet) find(conn &Connection, values []Value) !int {
+	for i in s.candidates(values) {
+		if is_duplicate_row(conn, s.rows[i], values)! {
+			return i
+		}
+	}
+
+	return -1
+}
+
+// duplicate_key is the same for any two rows that are duplicates (see
+// is_duplicate_row), although rows that aren't duplicates can have the same
+// key too. Numbers of any type are equal when their values are, so they use
+// their approximate value. A string is equal to the same string with spaces on
+// the end (the PAD SPACE characteristic, see compare_strings). Datetimes are
+// compared in UTC, which depends on the session, so they all have the same key.
+fn duplicate_key(values []Value) string {
+	mut key := []string{cap: values.len}
+	for value in values {
+		if value.is_null {
+			key << 'N'
+		} else if value.typ.typ.is_number() {
+			n := value.as_f64() or { 0 }
+			// 0 and -0 are equal, but aren't the same string.
+			key << if n == 0 { '0' } else { n.str() }
+		} else if value.typ.typ.is_string() {
+			key << unsafe { value.v.string_value }.trim_right(' ')
+		} else if value.typ.typ == .is_boolean {
+			key << unsafe { value.v.bool_value }.str()
+		} else {
+			key << ''
+		}
+	}
+
+	return key.join('\x00')
 }
 
 // is_duplicate_row is true if each value is equal. Unlike =, two NULLs are

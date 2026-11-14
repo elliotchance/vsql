@@ -1428,29 +1428,29 @@
 6.33/SR/14.b.ii          n/a          - - LOBs (T041)
 6.33/SR/14.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql
 6.33/SR/14.d             impl-defined vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql the character set is always UTF8, and its collation is the only one
-6.33/SR/15               n/a          - - multi-character TRIM (T056)
+6.33/SR/15               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/SR/15.a             container    - -
-6.33/SR/15.a.i           n/a          - - multi-character TRIM (T056)
-6.33/SR/15.a.ii          n/a          - - multi-character TRIM (T056)
+6.33/SR/15.a.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/15.a.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/SR/15.b             container    - -
-6.33/SR/15.b.i           n/a          - - multi-character TRIM (T056)
-6.33/SR/15.b.i.1         n/a          - - multi-character TRIM (T056)
+6.33/SR/15.b.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/15.b.i.1         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/SR/15.b.i.2         definition   - -
 6.33/SR/15.b.i.2.A       n/a          - - SQL-invoked routines (T321)
-6.33/SR/15.b.i.2.B       n/a          - - multi-character TRIM (T056)
-6.33/SR/15.b.i.2.C       n/a          - - multi-character TRIM (T056)
+6.33/SR/15.b.i.2.B       n/a          - - data change delta tables (T495)
+6.33/SR/15.b.i.2.C       implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/SR/15.b.ii          container    - -
-6.33/SR/15.b.ii.1        n/a          - - multi-character TRIM (T056)
-6.33/SR/15.b.ii.2        n/a          - - multi-character TRIM (T056)
-6.33/SR/15.c             n/a          - - multi-character TRIM (T056)
-6.33/SR/16               n/a          - - string padding functions (T055)
-6.33/SR/16.a             n/a          - - string padding functions (T055)
-6.33/SR/16.b             n/a          - - string padding functions (T055)
+6.33/SR/15.b.ii.1        implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/15.b.ii.2        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/15.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/16               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/16.a             implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/16.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/SR/16.c             container    - -
-6.33/SR/16.c.i           n/a          - - string padding functions (T055)
-6.33/SR/16.c.ii          n/a          - - string padding functions (T055)
-6.33/SR/16.d             n/a          - - string padding functions (T055)
-6.33/SR/16.e             n/a          - - string padding functions (T055)
+6.33/SR/16.c.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/16.c.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/16.d             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/SR/16.e             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/SR/17               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_overlay.sql
 6.33/SR/17.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_overlay.sql
 6.33/SR/17.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_overlay.sql
@@ -1588,46 +1588,46 @@
 6.33/GR/12.e.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql
 6.33/GR/12.e.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql
 6.33/GR/12.e.iii         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql
-6.33/GR/13               n/a          - - multi-character TRIM (T056)
-6.33/GR/13.a             n/a          - - multi-character TRIM (T056)
-6.33/GR/13.b             n/a          - - multi-character TRIM (T056)
-6.33/GR/13.c             n/a          - - multi-character TRIM (T056)
-6.33/GR/13.d             n/a          - - multi-character TRIM (T056)
+6.33/GR/13               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.d             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/GR/13.e             container    - -
-6.33/GR/13.e.i           n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.1         n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.2         n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.3         n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.3.A       n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.3.B       n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.4         n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.i.5         n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii          n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.1        n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.2        n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.3        n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.3.A      n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.3.B      n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.4        n/a          - - multi-character TRIM (T056)
-6.33/GR/13.e.ii.5        n/a          - - multi-character TRIM (T056)
-6.33/GR/14               n/a          - - string padding functions (T055)
-6.33/GR/14.a             n/a          - - string padding functions (T055)
-6.33/GR/14.b             n/a          - - string padding functions (T055)
-6.33/GR/14.c             n/a          - - string padding functions (T055)
-6.33/GR/14.d             n/a          - - string padding functions (T055)
-6.33/GR/14.e             n/a          - - string padding functions (T055)
-6.33/GR/14.f             n/a          - - string padding functions (T055)
-6.33/GR/14.g             n/a          - - string padding functions (T055)
-6.33/GR/14.h             n/a          - - string padding functions (T055)
-6.33/GR/14.i             n/a          - - string padding functions (T055)
-6.33/GR/14.j             n/a          - - string padding functions (T055)
-6.33/GR/14.k             n/a          - - string padding functions (T055)
-6.33/GR/14.l             n/a          - - string padding functions (T055)
-6.33/GR/14.m             n/a          - - string padding functions (T055)
-6.33/GR/14.n             n/a          - - string padding functions (T055)
-6.33/GR/14.o             n/a          - - string padding functions (T055)
-6.33/GR/14.o.i           n/a          - - string padding functions (T055)
-6.33/GR/14.o.ii          n/a          - - string padding functions (T055)
+6.33/GR/13.e.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.1         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.2         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.3         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.3.A       implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.3.B       implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.4         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.i.5         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.1        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.2        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.3        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.3.A      implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.3.B      implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.4        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/13.e.ii.5        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.d             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.e             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.f             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.g             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.h             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.i             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.j             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.k             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.l             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.m             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.n             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.o             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.o.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/GR/14.o.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/GR/15               n/a          - - specific type method (S261)
 6.33/GR/15.a             n/a          - - specific type method (S261)
 6.33/GR/15.b             container    - -
@@ -1695,8 +1695,8 @@
 6.33/CR/16               n/a          - - regular expressions (F847)
 6.33/CR/17               n/a          - - LOBs (T041)
 6.33/CR/18               n/a          - - LOBs (T041)
-6.33/CR/19               n/a          - - string padding functions (T055)
-6.33/CR/20               n/a          - - multi-character TRIM (T056)
+6.33/CR/19               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
+6.33/CR/20               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
 # 6.34, <JSON value constructor>
 6.34                     n/a          - - JSON (T811)
 6.34/SR/1                n/a          - - JSON (T811)

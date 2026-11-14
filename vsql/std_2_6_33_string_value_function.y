@@ -21,6 +21,10 @@ character_value_function:
     $$.v = yy_box(CharacterValueFunction($1.v as OverlayFunction))
   }
 | trim_function { $$.v = yy_box(CharacterValueFunction($1.v as TrimFunction)) }
+| multi_character_trim_function {
+    $$.v = yy_box(CharacterValueFunction($1.v as MultiCharacterTrimFunction))
+  }
+| pad_function { $$.v = yy_box(CharacterValueFunction($1.v as PadFunction)) }
 
 // Without USING, it's USING CHARACTERS.
 //
@@ -134,6 +138,49 @@ trim_operands:
 
 trim_source:
   character_value_expression { $$.v = $1.v }
+
+// Without a trim character it's a space.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 15.b.ii.1
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 20
+multi_character_trim_function:
+  multi_character_trim left_paren trim_source right_paren {
+    flag(mut yylex, 'T056')
+    $$.v = yy_box(new_multi_character_trim_function($1.v as string, $3.v as CharacterValueExpression,
+      none))
+  }
+| multi_character_trim left_paren trim_source comma trim_character right_paren {
+    flag(mut yylex, 'T056')
+    $$.v = yy_box(new_multi_character_trim_function($1.v as string, $3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression))
+  }
+
+multi_character_trim:
+  BTRIM { $$.v = $1.v as string }
+| LTRIM { $$.v = $1.v as string }
+| RTRIM { $$.v = $1.v as string }
+
+// Without a padding character it's a space.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 16.a
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 19
+pad_function:
+  pad left_paren character_value_expression comma numeric_value_expression
+  right_paren {
+    flag(mut yylex, 'T055')
+    $$.v = yy_box(new_pad_function($1.v as string, $3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, none))
+  }
+| pad left_paren character_value_expression comma numeric_value_expression comma
+  character_value_expression right_paren {
+    flag(mut yylex, 'T055')
+    $$.v = yy_box(new_pad_function($1.v as string, $3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, $7.v as CharacterValueExpression))
+  }
+
+pad:
+  LPAD { $$.v = $1.v as string }
+| RPAD { $$.v = $1.v as string }
 
 trim_specification:
   LEADING { $$.v = $1.v as string }

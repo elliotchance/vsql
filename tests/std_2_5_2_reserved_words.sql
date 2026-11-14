@@ -88,6 +88,9 @@ CREATE TABLE BOOLEAN (x INT);
 CREATE TABLE BOTH (x INT);
 -- error 42601: syntax error: unexpected BOTH at line 1, column 14 near "CREATE TABLE BOTH ("; hint: BOTH is a reserved word, so it must be quoted to be used as a name, such as "BOTH" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
+CREATE TABLE BTRIM (x INT);
+-- error 42601: syntax error: unexpected BTRIM at line 1, column 14 near "CREATE TABLE BTRIM ("; hint: BTRIM is a reserved word, so it must be quoted to be used as a name, such as "BTRIM" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
 CREATE TABLE BY (x INT);
 -- error 42601: syntax error: unexpected BY at line 1, column 14 near "CREATE TABLE BY ("; hint: BY is a reserved word, so it must be quoted to be used as a name, such as "BY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
@@ -570,6 +573,12 @@ CREATE TABLE LOG10 (x INT);
 CREATE TABLE LOWER (x INT);
 -- error 42601: syntax error: unexpected LOWER at line 1, column 14 near "CREATE TABLE LOWER ("; hint: LOWER is a reserved word, so it must be quoted to be used as a name, such as "LOWER" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
+CREATE TABLE LPAD (x INT);
+-- error 42601: syntax error: unexpected LPAD at line 1, column 14 near "CREATE TABLE LPAD ("; hint: LPAD is a reserved word, so it must be quoted to be used as a name, such as "LPAD" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
+CREATE TABLE LTRIM (x INT);
+-- error 42601: syntax error: unexpected LTRIM at line 1, column 14 near "CREATE TABLE LTRIM ("; hint: LTRIM is a reserved word, so it must be quoted to be used as a name, such as "LTRIM" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
 CREATE TABLE MATCH (x INT);
 -- error 42601: syntax error: unexpected MATCH at line 1, column 14 near "CREATE TABLE MATCH ("; hint: MATCH is a reserved word, so it must be quoted to be used as a name, such as "MATCH" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
@@ -848,6 +857,12 @@ CREATE TABLE ROW_NUMBER (x INT);
 
 CREATE TABLE ROWS (x INT);
 -- error 42601: syntax error: unexpected ROWS at line 1, column 14 near "CREATE TABLE ROWS ("; hint: ROWS is a reserved word, so it must be quoted to be used as a name, such as "ROWS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
+CREATE TABLE RPAD (x INT);
+-- error 42601: syntax error: unexpected RPAD at line 1, column 14 near "CREATE TABLE RPAD ("; hint: RPAD is a reserved word, so it must be quoted to be used as a name, such as "RPAD" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
+CREATE TABLE RTRIM (x INT);
+-- error 42601: syntax error: unexpected RTRIM at line 1, column 14 near "CREATE TABLE RTRIM ("; hint: RTRIM is a reserved word, so it must be quoted to be used as a name, such as "RTRIM" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 CREATE TABLE RUNNING (x INT);
 -- error 42601: syntax error: unexpected RUNNING at line 1, column 14 near "CREATE TABLE RUNNING ("; hint: RUNNING is a reserved word, so it must be quoted to be used as a name, such as "RUNNING" (see https://vsql.readthedocs.io/en/latest/keywords.html)

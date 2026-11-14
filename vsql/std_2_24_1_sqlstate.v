@@ -266,6 +266,19 @@ fn sqlstate_22007() IError {
 	}
 }
 
+// Invalid time zone displacement value: a time zone is out of range (see
+// min_time_zone_displacement).
+struct SQLState22009 {
+	SQLState
+}
+
+fn sqlstate_22009() IError {
+	return SQLState22009{
+		code: sqlstate_to_int('22009')
+		msg:  'invalid time zone displacement value'
+	}
+}
+
 // Escape character conflict: the ESCAPE of a SIMILAR TO is ":" and the pattern
 // has a character class such as "[:ALPHA:]".
 struct SQLState2200B {

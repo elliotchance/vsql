@@ -155,9 +155,6 @@ Each function also has a **Compatibility** section:
    * - ``MOD``
      - Arithmetic
      - T441
-   * - ``NOW``
-     - Date and Time
-     - Not standard (V402-01)
    * - ``NULLIF``
      - Conditional
      - Core (F261-03)
@@ -963,6 +960,41 @@ vsql extension flagged by ``V403-01`` (see :doc:`sql-flagging`).
   - SQL Server: ``x % y``.
   - Oracle: ``MOD(x, y)``.
 
+SIGN
+^^^^
+
+.. code-block:: sql
+
+   SIGN(SMALLINT) SMALLINT
+   SIGN(INTEGER) INTEGER
+   SIGN(BIGINT) BIGINT
+   SIGN(DOUBLE PRECISION) DOUBLE PRECISION
+   SIGN(NUMERIC(p, s)) NUMERIC(1)
+
+The sign of a number: -1 if it's negative, 0 if it's zero and 1 if it's
+positive. An integer returns the same type, a ``NUMERIC`` or ``DECIMAL`` returns
+a ``NUMERIC(1)``, and a ``REAL`` returns a ``DOUBLE PRECISION``.
+
+``SIGN`` is a vsql extension flagged by ``V403-04`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES SIGN(-5);
+  -- COL1: -1
+
+  VALUES SIGN(0.0);
+  -- COL1: 0
+
+  VALUES SIGN(2.5e0);
+  -- COL1: 1e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** ``SIGN`` in all of them.
+
 WIDTH_BUCKET
 ^^^^^^^^^^^^
 
@@ -1321,6 +1353,40 @@ Exponents and logarithms accept any number, which is converted to a
 return a ``DOUBLE PRECISION``. A result that is too large or too small to be a
 ``DOUBLE PRECISION`` is a ``22003`` error (numeric value out of range).
 
+CBRT
+^^^^
+
+.. code-block:: sql
+
+   CBRT(DOUBLE PRECISION) DOUBLE PRECISION
+
+Cube root. Unlike ``SQRT``, the argument can be negative, so ``CBRT(-8)`` is -2.
+The result is approximate, even for a perfect cube.
+
+``CBRT`` is a vsql extension flagged by ``V403-10`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CBRT(27);
+  -- COL1: 3e0
+
+  VALUES CBRT(-8);
+  -- COL1: -2e0
+
+  VALUES CBRT(2);
+  -- COL1: 1.259921049895e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``CBRT``.
+  - MySQL, SQLite, SQL Server and Oracle: ``POWER(x, 1.0 / 3)``, for an ``x``
+    that isn't negative.
+
 EXP
 ^^^
 
@@ -1332,6 +1398,8 @@ Exponential, *e* (2.718281828459...) raised to the power of the argument. The
 result is always greater than 0, so an argument greater than about 709.78 (the
 result is too large) or less than about -745.13 (the result is too small) is a
 ``22003`` error.
+
+``EXP(1)`` is *e* itself, there's no separate ``E()`` function.
 
 **Examples**
 
@@ -1528,11 +1596,47 @@ function), because ``SQRT(x)`` is the same as ``POWER(x, 0.5)``.
 - **Other databases:** ``SQRT`` in all of them. MySQL and SQLite return
   ``NULL`` for a negative argument.
 
+Random
+------
+
+RANDOM
+^^^^^^
+
+.. code-block:: sql
+
+   RANDOM() DOUBLE PRECISION
+
+A random number that is at least 0 and less than 1. It's a different number
+each time it's called, even in the same statement, so it can't be used in a
+``CHECK`` constraint.
+
+``RANDOM`` is a vsql extension flagged by ``V403-06`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES RANDOM() >= 0 AND RANDOM() < 1;
+  -- COL1: TRUE
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``RANDOM()``.
+  - MySQL and SQL Server: ``RAND()``.
+  - SQLite: ``RANDOM()`` returns a random 64-bit integer instead, use
+    ``ABS(RANDOM()) / 9223372036854775808.0``.
+  - Oracle: ``DBMS_RANDOM.VALUE``.
+
 Rounding
 --------
 
-Rounding functions round a number to an integer, up (``CEIL``) or down
-(``FLOOR``). They accept any number. An exact number (such as an ``INTEGER``
+Rounding functions round a number to an integer, up (``CEIL``), down
+(``FLOOR``), to the nearest (``ROUND``) or towards zero (``TRUNC``). ``ROUND``
+and ``TRUNC`` can also round to a number of decimal places. They accept any
+number. An exact number (such as an ``INTEGER``
 or ``DECIMAL``) is converted to a ``NUMERIC``, and an approximate number (``REAL``
 or ``DOUBLE PRECISION``) to a ``DOUBLE PRECISION``.
 
@@ -1656,6 +1760,99 @@ the argument, because rounding down may need one, such as ``FLOOR(-9.5)`` is
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** ``FLOOR`` in all of them.
+
+ROUND
+^^^^^
+
+.. code-block:: sql
+
+   ROUND(DOUBLE PRECISION) DOUBLE PRECISION
+   ROUND(DOUBLE PRECISION, BIGINT) DOUBLE PRECISION
+   ROUND(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   ROUND(NUMERIC(p, s), PLACES) NUMERIC(p - s + PLACES + 1, PLACES)
+
+Round to the nearest integer, or to ``PLACES`` decimal places. Half is rounded
+away from zero, so ``ROUND(2.5)`` is 3 and ``ROUND(-2.5)`` is -3, for exact and
+approximate numbers. ``PLACES`` can be any integer. When it's negative, the
+number is rounded to the left of the decimal point, so ``ROUND(1250, -2)`` is
+1300.
+
+An exact numeric argument (such as ``INTEGER`` or ``DECIMAL``) returns a
+``NUMERIC``. When ``PLACES`` is a constant, it's the scale of the result (but
+not more than the scale of the argument, or less than 0), and the result has
+one more digit for the integer part, because rounding up may need one, such as
+``ROUND(9.5)`` is 10. Otherwise, the result has the scale of the argument. A
+``REAL`` argument returns a ``DOUBLE PRECISION``.
+
+``ROUND`` is a vsql extension flagged by ``V403-02`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ROUND(9.5);
+  -- COL1: 10
+
+  VALUES ROUND(-1.255, 2);
+  -- COL1: -1.26
+
+  VALUES ROUND(1250, -2);
+  -- COL1: 1300
+
+  VALUES ROUND(-2.5e0);
+  -- COL1: -3e0
+
+  VALUES ROUND(1.2345e0, 2);
+  -- COL1: 1.23e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** ``ROUND`` in all of them. SQL Server needs the decimal
+  places. PostgreSQL and MySQL may round half of an approximate number to the
+  nearest even number, and SQLite always returns a floating point number.
+
+TRUNC
+^^^^^
+
+.. code-block:: sql
+
+   TRUNC(DOUBLE PRECISION) DOUBLE PRECISION
+   TRUNC(DOUBLE PRECISION, BIGINT) DOUBLE PRECISION
+   TRUNC(NUMERIC(p, s)) NUMERIC(p - s, 0)
+   TRUNC(NUMERIC(p, s), PLACES) NUMERIC(p - s + PLACES, PLACES)
+
+Truncate towards zero to an integer, or to ``PLACES`` decimal places, so
+``TRUNC(-9.99)`` is -9. ``PLACES`` can be negative, like ``ROUND``, and the type
+of the result is the same as ``ROUND``, but without the extra digit.
+
+``TRUNC`` is a vsql extension flagged by ``V403-03`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES TRUNC(-9.99);
+  -- COL1: -9
+
+  VALUES TRUNC(-1.259, 2);
+  -- COL1: -1.25
+
+  VALUES TRUNC(1999, -3);
+  -- COL1: 1000
+
+  VALUES TRUNC(1.99e0, 1);
+  -- COL1: 1.9e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL and Oracle: ``TRUNC``.
+  - MySQL: ``TRUNCATE(x, places)``.
+  - SQLite: ``TRUNC(x)``, without decimal places.
+  - SQL Server: ``ROUND(x, places, 1)``.
 
 Statistical
 -----------
@@ -2623,8 +2820,9 @@ Trigonometric
 -------------
 
 The trigonometric functions, including the hyperbolic functions (``SINH``,
-``COSH`` and ``TANH``), use radians. They accept any number, which is converted
-to a ``DOUBLE PRECISION`` (so ``SIN(1)`` is the same as ``SIN(1e0)``), and they
+``COSH`` and ``TANH``), use radians. ``DEGREES`` and ``RADIANS`` convert between
+radians and degrees. They accept any number, which is converted to a
+``DOUBLE PRECISION`` (so ``SIN(1)`` is the same as ``SIN(1e0)``), and they
 return a ``DOUBLE PRECISION``.
 
 ACOS
@@ -2706,6 +2904,35 @@ Inverse (arc) tangent. The result is between -π/2 and π/2, for any argument.
 - **SQL standard:** T622 (trigonometric functions).
 - **Other databases:** ``ATAN`` in all of them.
 
+ATAN2
+^^^^^
+
+.. code-block:: sql
+
+   ATAN2(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+
+``ATAN2(Y, X)`` is the angle of the point (``X``, ``Y``) from the positive x
+axis. It's the inverse tangent of ``Y / X``, but the result is between -π and
+π because the signs of both arguments are used. ``ATAN2(0, 0)`` is 0.
+
+``ATAN2`` is a vsql extension flagged by ``V403-07`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ATAN2(1, 1);
+  -- COL1: 0.785398163397e0
+
+  VALUES ATAN2(-1, -1);
+  -- COL1: -2.356194490192e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** ``ATAN2(y, x)`` in all of them, except SQL Server, which
+  calls it ``ATN2(y, x)``.
+
 COS
 ^^^
 
@@ -2753,6 +2980,85 @@ Hyperbolic cosine. The result is at least 1.
 
   - PostgreSQL, SQLite and Oracle: ``COSH``.
   - MySQL and SQL Server: ``(EXP(x) + EXP(-x)) / 2``.
+
+DEGREES
+^^^^^^^
+
+.. code-block:: sql
+
+   DEGREES(DOUBLE PRECISION) DOUBLE PRECISION
+
+Converts an angle in radians to degrees. A result that is too large to be a
+``DOUBLE PRECISION`` is a ``22003`` error (numeric value out of range).
+
+``DEGREES`` is a vsql extension flagged by ``V403-08`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES DEGREES(PI());
+  -- COL1: 180e0
+
+  VALUES DEGREES(-1);
+  -- COL1: -57.295779513082e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** ``DEGREES`` in all of them, except Oracle, use
+  ``x * 180 / ACOS(-1)``.
+
+PI
+^^
+
+.. code-block:: sql
+
+   PI() DOUBLE PRECISION
+
+π, the ratio of a circle's circumference to its diameter (3.14159265358979...).
+
+``PI`` is a vsql extension flagged by ``V403-05`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES PI();
+  -- COL1: 3.14159265359e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** ``PI()`` in all of them, except Oracle, use
+  ``ACOS(-1)``.
+
+RADIANS
+^^^^^^^
+
+.. code-block:: sql
+
+   RADIANS(DOUBLE PRECISION) DOUBLE PRECISION
+
+Converts an angle in degrees to radians.
+
+``RADIANS`` is a vsql extension flagged by ``V403-09`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES RADIANS(180);
+  -- COL1: 3.14159265359e0
+
+  VALUES RADIANS(0.5);
+  -- COL1: 0.00872664626e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** ``RADIANS`` in all of them, except Oracle, use
+  ``x * ACOS(-1) / 180``.
 
 SIN
 ^^^

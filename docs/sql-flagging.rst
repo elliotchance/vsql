@@ -314,6 +314,33 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
        approximate, such as ``MOD(5.5, 2)``. It's only flagged from the syntax,
        so a column of such a type isn't flagged.
 
+   * - ``V403-02``
+     - ``ROUND``.
+
+   * - ``V403-03``
+     - ``TRUNC``.
+
+   * - ``V403-04``
+     - ``SIGN``.
+
+   * - ``V403-05``
+     - ``PI()``.
+
+   * - ``V403-06``
+     - ``RANDOM()``.
+
+   * - ``V403-07``
+     - ``ATAN2``.
+
+   * - ``V403-08``
+     - ``DEGREES``.
+
+   * - ``V403-09``
+     - ``RADIANS``.
+
+   * - ``V403-10``
+     - ``CBRT``.
+
    * - ``V404``
      - String functions (see :doc:`functions`).
 

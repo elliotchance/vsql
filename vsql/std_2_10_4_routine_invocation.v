@@ -103,12 +103,22 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	//
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 9
 	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
-	return_type := if is_fold {
+	mut return_type := if is_fold {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false}
 	} else {
 		numeric_function_type(func_name, found_func.return_type, arg_types)
 	}
-	is_exact := func_name in ['ABS', 'MOD', 'FLOOR', 'CEIL', 'CEILING']
+
+	// The scale of ROUND or TRUNC of a NUMERIC is the number of decimal places,
+	// when it's a constant (V403-02 and V403-03).
+	if func_name in ['ROUND', 'TRUNC'] && e.args.len == 2
+		&& return_type.typ in [.is_numeric, .is_decimal] && compiled_args[1].constant {
+		places := compiled_args[1].run(mut c.conn, Row{}, c.params)!
+		if !places.is_null {
+			return_type = rounding_function_type(func_name, arg_types[0], places.as_int())
+		}
+	}
+	is_exact := func_name in ['ABS', 'MOD', 'FLOOR', 'CEIL', 'CEILING', 'ROUND', 'TRUNC', 'SIGN']
 		&& return_type.typ in [.is_numeric, .is_decimal]
 
 	return CompileResult{

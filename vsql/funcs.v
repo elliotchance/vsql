@@ -166,6 +166,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'NOW', [], false, func_now, new_type('TIMESTAMP WITH TIME ZONE',
 		6, 0), false, false, []})!
 
+	register_math_funcs(mut conn)!
+
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can
 	// be ordered, which is every type (SR 7.d), SUM and AVG accept any number

@@ -174,7 +174,9 @@ fn compare_rows(conn &Connection, x []Value, y []Value) ![]CompareResult {
 //
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.ii
 fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool) !CompileResult {
-	if e.left is ExplicitRowValueConstructor || e.right is ExplicitRowValueConstructor {
+	// The case operand of a simple CASE (see CaseOperand) can be a row.
+	if e.left is ExplicitRowValueConstructor || e.right is ExplicitRowValueConstructor
+		|| e.left.is_case_operand() {
 		return e.compile_row_comparison(mut c)!
 	}
 

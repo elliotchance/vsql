@@ -156,6 +156,3 @@ VALUES (1, NULL) = (1, 2);
 -- # Only the predicates that compare can have a row.
 VALUES (1, 2) LIKE 'a';
 -- error 42601: syntax error: a row value cannot be used here
-
-VALUES CASE (1, 2) WHEN (1, 2) THEN 1 END;
--- error 42601: syntax error: a row value cannot be used here

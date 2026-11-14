@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 4.2, Return codes
+// ISO/IEC 9075-3:2003, 4.2, Return codes
 //
 // Every CLI routine returns one of these codes. When more than one applies, the
 // later one in this list is returned. An error is returned as soon as it

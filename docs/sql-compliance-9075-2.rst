@@ -1,9 +1,9 @@
-ISO/IEC 9075-2:2016 (Foundation)
+ISO/IEC 9075-2:2023 (Foundation)
 ================================
 
 .. contents::
 
-This page is for **ISO/IEC 9075-2:2016(E)** (SQL:2016), which is the edition of
+This page is for **ISO/IEC 9075-2:2023** (SQL:2023), which is the edition of
 this part that vsql is pinned to (see :doc:`standard-index`). The feature IDs,
 feature names, table numbers and Subclause numbers on this page are all from
 that edition, and can be different in other editions.
@@ -12,9 +12,9 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 129 of the 164 mandatory features** of ISO/IEC 9075-2:2016.
+**vsql supports 128 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
 
-.. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
+.. list-table:: Table H.1 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
 
    * - Feature ID
@@ -485,9 +485,6 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ **F481**
      - **Expanded NULL predicate**
 
-   * - ✅ **F812**
-     - **Basic flagging**
-
    * - ❌ **S011**
      - **Distinct data types**
 
@@ -515,7 +512,7 @@ As of the latest version (or at least the version of this documentation)
 Optional Features
 -----------------
 
-.. list-table:: Table 44 — Feature taxonomy for optional features
+.. list-table:: Table D.1 — Feature taxonomy for optional features
    :header-rows: 1
 
    * - Feature ID
@@ -545,14 +542,14 @@ Optional Features
    * - ✅ **B021**
      - **Direct SQL**
 
+   * - ❌ **B030**
+     - **Enhanced dynamic SQL**
+
    * - ✅ **B031**
      - **Basic dynamic SQL**
 
    * - ❌ **B032**
      - **Extended dynamic SQL**
-
-   * - ❌ B032-01
-     - <describe input statement>
 
    * - ❌ **B033**
      - **Untyped SQL-invoked function arguments**
@@ -562,6 +559,9 @@ Optional Features
 
    * - ✅ **B035**
      - **Non-extended descriptor names**
+
+   * - ❌ **B036**
+     - **Describe input statement**
 
    * - ✅ **B041**
      - **Extensions to embedded SQL exception declarations**
@@ -659,14 +659,17 @@ Optional Features
    * - ❌ **F034**
      - **Extended REVOKE statement**
 
-   * - ❌ F034-01
-     - REVOKE statement performed by other than the owner of a schema object
+   * - ❌ **F035**
+     - **REVOKE with CASCADE**
 
-   * - ❌ F034-02
-     - REVOKE statement: GRANT OPTION FOR clause
+   * - ❌ **F036**
+     - **REVOKE statement performed by non-owner**
 
-   * - ❌ F034-03
-     - REVOKE statement to revoke a privilege that the grantee has WITH GRANT OPTION
+   * - ❌ **F037**
+     - **REVOKE statement: GRANT OPTION FOR clause**
+
+   * - ❌ **F038**
+     - **REVOKE of a WITH GRANT OPTION privilege**
 
    * - ❌ **F052**
      - **Intervals and datetime arithmetic**
@@ -680,29 +683,29 @@ Optional Features
    * - ✅ **F111**
      - **Isolation levels other than SERIALIZABLE**
 
-   * - ✅ F111-01
-     - READ UNCOMMITTED isolation level
+   * - ✅ **F112**
+     - **Isolation level READ UNCOMMITTED**
 
-   * - ✅ F111-02
-     - READ COMMITTED isolation level
+   * - ✅ **F113**
+     - **Isolation level READ COMMITTED**
 
-   * - ✅ F111-03
-     - REPEATABLE READ isolation level
+   * - ✅ **F114**
+     - **Isolation level REPEATABLE READ**
+
+   * - ✅ **F120**
+     - **Get diagnostics statement**
 
    * - ✅ **F121**
      - **Basic diagnostics management**
-
-   * - ✅ F121-01
-     - GET DIAGNOSTICS statement
-
-   * - ✅ F121-02
-     - SET TRANSACTION statement: DIAGNOSTICS SIZE clause
 
    * - ❌ **F122**
      - **Enhanced diagnostics management**
 
    * - ❌ **F123**
      - **All diagnostics**
+
+   * - ✅ **F124**
+     - **SET TRANSACTION statement: DIAGNOSTICS SIZE clause**
 
    * - ✅ **F171**
      - **Multiple schemas per user**
@@ -737,20 +740,23 @@ Optional Features
    * - ✅ **F291**
      - **UNIQUE predicate**
 
+   * - ❌ **F292**
+     - **UNIQUE null treatment**
+
    * - ❌ **F301**
      - **CORRESPONDING in query expressions**
 
    * - ✅ **F302**
      - **INTERSECT table operator**
 
-   * - ✅ F302-01
-     - INTERSECT DISTINCT table operator
-
-   * - ✅ F302-02
-     - INTERSECT ALL table operator
+   * - ✅ **F303**
+     - **INTERSECT DISTINCT table operator**
 
    * - ✅ **F304**
      - **EXCEPT ALL table operator**
+
+   * - ✅ **F305**
+     - **INTERSECT ALL table operator**
 
    * - ❌ **F312**
      - **MERGE statement**
@@ -770,15 +776,6 @@ Optional Features
    * - ✅ **F381**
      - **Extended schema manipulation**
 
-   * - ✅ F381-01
-     - ``ALTER TABLE`` statement: ``ALTER COLUMN`` clause
-
-   * - ✅ F381-02
-     - ``ALTER TABLE`` statement: ``ADD CONSTRAINT`` clause
-
-   * - ✅ F381-03
-     - ``ALTER TABLE`` statement: ``DROP CONSTRAINT`` clause
-
    * - ❌ **F382**
      - **Alter column data type**
 
@@ -793,6 +790,12 @@ Optional Features
 
    * - ❌ **F386**
      - **Set identity column generation clause**
+
+   * - ✅ **F387**
+     - **ALTER TABLE statement: ALTER COLUMN clause**
+
+   * - ✅ **F388**
+     - **ALTER TABLE statement: ADD/DROP CONSTRAINT clause**
 
    * - ✅ **F391**
      - **Long identifiers**
@@ -809,15 +812,6 @@ Optional Features
    * - ❌ **F401**
      - **Extended joined table**
 
-   * - ❌ F401-01
-     - NATURAL JOIN
-
-   * - ❌ F401-02
-     - FULL OUTER JOIN
-
-   * - ❌ F401-04
-     - CROSS JOIN
-
    * - ❌ **F402**
      - **Named column joins for LOBs, arrays, and multisets**
 
@@ -826,6 +820,15 @@ Optional Features
 
    * - ❌ **F404**
      - **Range variable for common column names**
+
+   * - ❌ **F405**
+     - **NATURAL JOIN**
+
+   * - ❌ **F406**
+     - **FULL OUTER JOIN**
+
+   * - ❌ **F407**
+     - **CROSS JOIN**
 
    * - ⭕ **F411**
      - **Time zone specification**
@@ -836,23 +839,26 @@ Optional Features
    * - ✅ **F431**
      - **Read-only scrollable cursors**
 
-   * - ✅ F431-01
-     - FETCH with explicit NEXT
+   * - ✅ **F432**
+     - **FETCH with explicit NEXT**
 
-   * - ✅ F431-02
-     - FETCH FIRST
+   * - ✅ **F433**
+     - **FETCH FIRST**
 
-   * - ✅ F431-03
-     - FETCH LAST
+   * - ✅ **F434**
+     - **FETCH LAST**
 
-   * - ✅ F431-04
-     - FETCH PRIOR
+   * - ✅ **F435**
+     - **FETCH PRIOR**
 
-   * - ✅ F431-05
-     - FETCH ABSOLUTE
+   * - ✅ **F436**
+     - **FETCH ABSOLUTE**
 
-   * - ✅ F431-06
-     - FETCH RELATIVE
+   * - ✅ **F437**
+     - **FETCH RELATIVE**
+
+   * - ✅ **F438**
+     - **Scrollable cursors**
 
    * - ❌ **F441**
      - **Extended set function support**
@@ -962,20 +968,17 @@ Optional Features
    * - ❌ **F801**
      - **Full set function**
 
-   * - ❌ **F813**
-     - **Extended flagging**
-
    * - ❌ **F821**
      - **Local table references**
 
    * - ✅ **F831**
      - **Full cursor update**
 
-   * - ✅ F831-01
-     - Updateable scrollable cursors
+   * - ✅ **F832**
+     - **Updatable scrollable cursors**
 
-   * - ✅ F831-02
-     - Updateable ordered cursors
+   * - ✅ **F833**
+     - **Updatable ordered cursors**
 
    * - ❌ **F841**
      - **LIKE_REGEX predicate**
@@ -1046,6 +1049,9 @@ Optional Features
    * - ❌ **F867**
      - **FETCH FIRST clause: WITH TIES option**
 
+   * - ❌ **F868**
+     - **ORDER BY in grouped table**
+
    * - ❌ **R010**
      - **Row pattern recognition: FROM clause**
 
@@ -1088,20 +1094,17 @@ Optional Features
    * - ❌ **S081**
      - **Subtables**
 
+   * - ❌ **S090**
+     - **Minimal array support**
+
    * - ❌ **S091**
      - **Basic array support**
 
-   * - ❌ S091-01
-     - Arrays of built-in data types
-
-   * - ❌ S091-02
-     - Arrays of distinct types
-
-   * - ❌ S091-03
-     - Array expressions
-
    * - ❌ **S092**
      - **Arrays of user-defined types**
+
+   * - ❌ **S093**
+     - **Arrays of distinct types**
 
    * - ❌ **S094**
      - **Arrays of reference types**
@@ -1118,6 +1121,9 @@ Optional Features
    * - ❌ **S098**
      - **ARRAY_AGG**
 
+   * - ❌ **S099**
+     - **Array expressions**
+
    * - ❌ **S111**
      - **ONLY in query expressions**
 
@@ -1133,14 +1139,14 @@ Optional Features
    * - ❌ **S201**
      - **SQL-invoked routines on arrays**
 
-   * - ❌ S201-01
-     - Array parameters
-
-   * - ❌ S201-02
-     - Array as result type of functions
-
    * - ❌ **S202**
      - **SQL-invoked routines on multisets**
+
+   * - ❌ **S203**
+     - **Array parameters**
+
+   * - ❌ **S204**
+     - **Array as result type of functions**
 
    * - ❌ **S211**
      - **User-defined cast functions**
@@ -1214,23 +1220,14 @@ Optional Features
    * - ✅ **T031**
      - **BOOLEAN data type**
 
+   * - ❌ **T039**
+     - **CLOB locator: non-holdable**
+
+   * - ❌ **T040**
+     - **Concatenation of CLOBs**
+
    * - ❌ **T041**
      - **Basic LOB data type support**
-
-   * - ❌ T041-01
-     - BLOB data type
-
-   * - ❌ T041-02
-     - CLOB data type
-
-   * - ❌ T041-03
-     - POSITION, LENGTH, LOWER, TRIM, UPPER, and SUBSTRING functions for LOB data types
-
-   * - ❌ T041-04
-     - Concatenation of LOB data types
-
-   * - ❌ T041-05
-     - LOB locator: non-holdable
 
    * - ❌ **T042**
      - **Extended LOB data type support**
@@ -1241,20 +1238,53 @@ Optional Features
    * - ❌ **T044**
      - **Multiplier P**
 
+   * - ❌ **T045**
+     - **BLOB data type**
+
+   * - ❌ **T046**
+     - **CLOB data type**
+
+   * - ❌ **T047**
+     - **POSITION, OCTET_LENGTH, TRIM, and SUBSTRING for BLOBs**
+
+   * - ❌ **T048**
+     - **Concatenation of BLOBs**
+
+   * - ❌ **T049**
+     - **BLOB locator: non-holdable**
+
+   * - ❌ **T050**
+     - **String functions for CLOBs**
+
    * - ❌ **T051**
      - **Row types**
 
    * - ❌ **T053**
      - **Explicit aliases for all-fields reference**
 
+   * - ❌ **T054**
+     - **GREATEST and LEAST**
+
+   * - ❌ **T055**
+     - **String padding functions**
+
+   * - ❌ **T056**
+     - **Multi-character TRIM function**
+
    * - ❌ **T061**
      - **UCS support**
+
+   * - ❌ **T062**
+     - **Character length units**
 
    * - ✅ **T071**
      - **BIGINT data type**
 
    * - ❌ **T076**
      - **DECFLOAT data type**
+
+   * - ❌ **T081**
+     - **Optional string types maximum length**
 
    * - ❌ **T101**
      - **Enhanced nullability determination**
@@ -1273,6 +1303,9 @@ Optional Features
 
    * - ❌ **T132**
      - **Recursive query in subquery**
+
+   * - ❌ **T133**
+     - **Enhanced cycle mark values**
 
    * - ✅ **T141**
      - **SIMILAR predicate**
@@ -1316,41 +1349,35 @@ Optional Features
    * - ❌ **T191**
      - **Referential action RESTRICT**
 
+   * - ❌ **T200**
+     - **Trigger DDL**
+
    * - ✅ **T201**
      - **Comparable data types for referential constraints**
 
    * - ❌ **T211**
      - **Basic trigger capability**
 
-   * - ❌ T211-01
-     - Triggers activated on UPDATE, INSERT, or DELETE of one base table.
-
-   * - ❌ T211-02
-     - BEFORE triggers
-
-   * - ❌ T211-03
-     - AFTER triggers
-
-   * - ❌ T211-04
-     - FOR EACH ROW triggers
-
-   * - ❌ T211-05
-     - Ability to specify a search condition that shall be True before the trigger is invoked.
-
-   * - ❌ T211-06
-     - Support for run-time rules for the interaction of triggers and constraints.
-
-   * - ❌ T211-07
-     - TRIGGER privilege
-
-   * - ❌ T211-08
-     - Multiple triggers for the same event are executed in the order in which they were created in the catalog.
-
    * - ❌ **T212**
      - **Enhanced trigger capability**
 
    * - ❌ **T213**
      - **INSTEAD OF triggers**
+
+   * - ❌ **T214**
+     - **BEFORE triggers**
+
+   * - ❌ **T215**
+     - **AFTER triggers**
+
+   * - ❌ **T216**
+     - **Ability to require true search condition before trigger is invoked**
+
+   * - ❌ **T217**
+     - **TRIGGER privilege**
+
+   * - ❌ **T218**
+     - **Multiple triggers for the same event executed in the order created**
 
    * - ❌ **T231**
      - **Sensitive cursors**
@@ -1363,6 +1390,9 @@ Optional Features
 
    * - ✅ **T261**
      - **Chained transactions**
+
+   * - ❌ **T262**
+     - **Multiple server transactions**
 
    * - ✅ **T271**
      - **Savepoints**
@@ -1526,6 +1556,12 @@ Optional Features
    * - ✅ **T625**
      - **LISTAGG**
 
+   * - ❌ **T626**
+     - **ANY_VALUE**
+
+   * - ❌ **T627**
+     - **Window framed COUNT DISTINCT**
+
    * - ❌ **T641**
      - **Multiple column assignment**
 
@@ -1543,6 +1579,24 @@ Optional Features
 
    * - ❌ **T655**
      - **Cyclically dependent routines**
+
+   * - ❌ **T661**
+     - **Non-decimal integer literals**
+
+   * - ❌ **T662**
+     - **Underscores in numeric literals**
+
+   * - ❌ **T670**
+     - **Schema and data statement mixing**
+
+   * - ❌ **T801**
+     - **JSON data type**
+
+   * - ❌ **T802**
+     - **Enhanced JSON data type**
+
+   * - ❌ **T803**
+     - **String-based JSON**
 
    * - ❌ **T811**
      - **Basic SQL/JSON constructor functions**
@@ -1613,14 +1667,89 @@ Optional Features
    * - ❌ **T839**
      - **Formatted cast of datetimes to/from character strings**
 
+   * - ❌ **T840**
+     - **Hex integer literals in SQL/JSON path language**
+
+   * - ❌ **T851**
+     - **SQL/JSON: optional keywords for default syntax**
+
+   * - ❌ **T860**
+     - **SQL/JSON simplified accessor: column reference only**
+
+   * - ❌ **T861**
+     - **SQL/JSON simplified accessor: case-sensitive JSON member accessor**
+
+   * - ❌ **T862**
+     - **SQL/JSON simplified accessor: wildcard member accessor**
+
+   * - ❌ **T863**
+     - **SQL/JSON simplified accessor: string literal as member accessor**
+
+   * - ❌ **T864**
+     - **SQL/JSON simplified accessor**
+
+   * - ❌ **T865**
+     - **SQL/JSON item method: bigint()**
+
+   * - ❌ **T866**
+     - **SQL/JSON item method: boolean()**
+
+   * - ❌ **T867**
+     - **SQL/JSON item method: date()**
+
+   * - ❌ **T868**
+     - **SQL/JSON item method: decimal()**
+
+   * - ❌ **T869**
+     - **SQL/JSON item method: decimal() with precision and scale**
+
+   * - ❌ **T870**
+     - **SQL/JSON item method: integer()**
+
+   * - ❌ **T871**
+     - **SQL/JSON item method: number()**
+
+   * - ❌ **T872**
+     - **SQL/JSON item method: string()**
+
+   * - ❌ **T873**
+     - **SQL/JSON item method: time()**
+
+   * - ❌ **T874**
+     - **SQL/JSON item method: time_tz()**
+
+   * - ❌ **T875**
+     - **SQL/JSON item method: time precision**
+
+   * - ❌ **T876**
+     - **SQL/JSON item method: timestamp()**
+
+   * - ❌ **T877**
+     - **SQL/JSON item method: timestamp_tz()**
+
+   * - ❌ **T878**
+     - **SQL/JSON item method: timestamp precision**
+
+   * - ❌ **T879**
+     - **JSON in equality operations**
+
+   * - ❌ **T880**
+     - **JSON in grouping operations**
+
+   * - ❌ **T881**
+     - **JSON in ordering operations**
+
+   * - ❌ **T882**
+     - **JSON in multiset element grouping operations**
+
 .. [1] A conforming SQL-implementation is required to support at least one
    embedded language or to support the SQL-client module binding for at least
    one host language. vsql supports the SQL-client module binding for C (see
-   :doc:`language-c`), which also gives E182 (Table 40, "Implied feature
+   :doc:`language-c`), which also gives E182 (Table 42, "Implied feature
    relationships of SQL/Foundation"), and embedded SQL in C.
 
 See Also
 --------
 
 - :doc:`sql-compliance` for the other parts.
-- `ISO/IEC 9075-2:2016 - Information technology — Database languages — SQL — Part 2: Foundation (SQL/Foundation) <https://www.iso.org/standard/63556.html>`_
+- `ISO/IEC 9075-2:2023 - Information technology — Database languages — SQL — Part 2: Foundation (SQL/Foundation) <https://www.iso.org/standard/76584.html>`_

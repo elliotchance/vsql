@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 14.2, <cursor properties>
+// ISO/IEC 9075-2:2023, 14.2, <cursor properties>
 //
 // Specify the declared properties of a cursor.
 

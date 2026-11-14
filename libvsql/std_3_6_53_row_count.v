@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.53, RowCount
+// ISO/IEC 9075-3:2003, 6.53, RowCount
 //
 // Get the row count.
 //
@@ -19,23 +19,23 @@ fn sql_row_count(statement_handle SQLInteger, row_count &SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
-	// ISO/IEC 9075-3:2003(E), 6.53, RowCount, General Rules, 1 and 2: the
+	// ISO/IEC 9075-3:2003, 6.53, RowCount, General Rules, 1 and 2: the
 	// statement must have been executed.
 	if !stmt.executed {
 		return stmt.diag.error(cli_error('HY010', 'function sequence error'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers: RowCount can't be a null
+	// ISO/IEC 9075-3:2003, 4.4.3, Null pointers: RowCount can't be a null
 	// pointer.
 	if row_count == unsafe { nil } {
 		return stmt.diag.error(cli_error('HY009', 'invalid use of null pointer'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.53, RowCount, General Rules, 3
+	// ISO/IEC 9075-3:2003, 6.53, RowCount, General Rules, 3
 	unsafe {
 		*row_count = SQLInteger(stmt.row_count)
 	}

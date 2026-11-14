@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.63, Tables
+// ISO/IEC 9075-3:2003, 6.63, Tables
 //
 // Based on the specified selection criteria, return a result set that contains
 // information about tables described by the Information Schema of the

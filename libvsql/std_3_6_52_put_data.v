@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.52, PutData
+// ISO/IEC 9075-3:2003, 6.52, PutData
 //
 // Provide a deferred parameter value.
 //
@@ -18,7 +18,7 @@ fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInt
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.i
 	stmt.invoke(true) or { return stmt.diag.error(err) }
 

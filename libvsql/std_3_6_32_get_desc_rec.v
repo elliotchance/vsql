@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.32, GetDescRec
+// ISO/IEC 9075-3:2003, 6.32, GetDescRec
 //
 // Get commonly-used fields from a CLI descriptor area.
 
@@ -13,12 +13,12 @@ fn sql_get_desc_rec(descriptor_handle SQLInteger, record_number i16, name &char,
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.ii
 	desc.invoke() or { return desc.diag.error(err) }
 
-	// ISO/IEC 9075-3:2003(E), 6.32, GetDescRec, General Rules, 1 and 2 (ISO/IEC
-	// 9075-3:2003(E), 5.11, Deferred parameter check)
+	// ISO/IEC 9075-3:2003, 6.32, GetDescRec, General Rules, 1 and 2 (ISO/IEC
+	// 9075-3:2003, 5.11, Deferred parameter check)
 	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
 
 	return get_desc_rec(mut desc, record_number, name, buffer_length, name_length, type_,
@@ -26,7 +26,7 @@ fn sql_get_desc_rec(descriptor_handle SQLInteger, record_number i16, name &char,
 }
 
 fn get_desc_rec(mut desc Desc, rn i16, name &char, buffer_length i16, name_length &i16, type_ &i16, sub_type &i16, length &SQLInteger, precision &i16, scale &i16, nullable &i16) !i16 {
-	// ISO/IEC 9075-3:2003(E), 6.32, GetDescRec, General Rules, 3 and 4: the
+	// ISO/IEC 9075-3:2003, 6.32, GetDescRec, General Rules, 3 and 4: the
 	// record number must be at least 1, and it's no data after the last
 	// record.
 	if rn < 1 {
@@ -36,13 +36,13 @@ fn get_desc_rec(mut desc Desc, rn i16, name &char, buffer_length i16, name_lengt
 		return desc.diag.no_data()
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.32, GetDescRec, General Rules, 5: an
+	// ISO/IEC 9075-3:2003, 6.32, GetDescRec, General Rules, 5: an
 	// implementation row descriptor needs a prepared or executed statement.
 	if desc.typ == .ird && !desc.has_prepared_or_executed() {
 		return cli_error('HY007', 'associated statement is not prepared')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.32, GetDescRec, General Rules, 6-8.f: each
+	// ISO/IEC 9075-3:2003, 6.32, GetDescRec, General Rules, 6-8.f: each
 	// output that isn't a null pointer is set from the item descriptor area.
 	// An undefined field is 0 (zero).
 	unsafe {
@@ -66,8 +66,8 @@ fn get_desc_rec(mut desc Desc, rn i16, name &char, buffer_length i16, name_lengt
 		}
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.32, GetDescRec, General Rules, 8.g: the NAME
-	// is retrieved by ISO/IEC 9075-3:2003(E), 5.9, Character string retrieval,
+	// ISO/IEC 9075-3:2003, 6.32, GetDescRec, General Rules, 8.g: the NAME
+	// is retrieved by ISO/IEC 9075-3:2003, 5.9, Character string retrieval,
 	// unless null termination is False and BL is zero.
 	nts := desc_null_termination(desc)
 	if name != unsafe { nil } && (nts || buffer_length != 0) {

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.25, FreeEnv
+// ISO/IEC 9075-3:2003, 6.25, FreeEnv
 //
 // Deallocate an SQL-environment.
 
@@ -10,7 +10,7 @@ fn sql_free_env(environment_handle SQLInteger) i16 {
 	defer {
 		entry.leave()
 	}
-	// ISO/IEC 9075-3:2003(E), 6.25, FreeEnv, General Rules, 1 and 2: the same
+	// ISO/IEC 9075-3:2003, 6.25, FreeEnv, General Rules, 1 and 2: the same
 	// as FreeHandle of an ENVIRONMENT HANDLE.
 	return sql_free_handle(sql_handle_env, environment_handle)
 }

@@ -23,8 +23,8 @@ commit_statement:
     $$.v = yy_box(Stmt(CommitStatement{}))
   }
 
-// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023, 17.7, <commit statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 17.8, <rollback statement>, Conformance Rules, 2
 
 and_chain:
   AND CHAIN {

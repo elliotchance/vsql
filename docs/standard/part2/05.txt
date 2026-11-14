@@ -1,4 +1,4 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023
 # id status code tests note (see docs/standard-index.rst)
 # 5, Lexical elements
 5                        container    - -
@@ -9,40 +9,42 @@
 # 5.2, <token> and <separator>
 5.2                      partial      vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql regular identifiers can only be ASCII (#761)
 5.2/SR/1                 partial      vsql/lexer.v tests/std_2_5_2_identifier_e.sql only the ASCII letters and underscore (#761)
-5.2/SR/2                 partial      vsql/lexer.v tests/std_2_5_2_identifier_e.sql only the ASCII digits and underscore (#761)
+5.2/SR/2                 unclear      vsql/lexer.v tests/std_2_5_2_identifier_e.sql changed in 2023 (#1498)
 5.2/SR/3                 implemented  vsql/lexer.v tests/std_2_5_2_whitespace.sql
-5.2/SR/4                 impl-defined vsql/lexer.v tests/std_2_5_2_comments.sql a line feed (U+000A)
-5.2/SR/5                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
-5.2/SR/6                 implemented  vsql/lexer.v tests/std_2_11_3_create_table.sql
-5.2/SR/7                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
-5.2/SR/8                 implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
-5.2/SR/9                 n/a          - - large objects (T041)
-5.2/SR/10                implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
-5.2/SR/11                implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
-5.2/SR/12                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_2_long_identifiers.sql
+5.2/SR/4                 unclear      - - truncating whitespace is implementation-defined (#1500)
+5.2/SR/5                 impl-defined vsql/lexer.v tests/std_2_5_2_comments.sql a line feed (U+000A)
+5.2/SR/6                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
+5.2/SR/7                 unclear      vsql/lexer.v tests/std_2_11_3_create_table.sql changed in 2023 (#1498)
+5.2/SR/8                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
+5.2/SR/9                 implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
+5.2/SR/10                n/a          - - large objects (T041)
+5.2/SR/11                implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
+5.2/SR/12                implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
 5.2/SR/13                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_2_long_identifiers.sql
-5.2/SR/14                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/14                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_2_long_identifiers.sql
 5.2/SR/15                n/a          - - Unicode delimited identifiers (F392)
-5.2/SR/16                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
+5.2/SR/16                n/a          - - Unicode delimited identifiers (F392)
 5.2/SR/17                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
 5.2/SR/18                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
 5.2/SR/19                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
-5.2/SR/20                n/a          - - Unicode delimited identifiers (F392)
-5.2/SR/21                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
+5.2/SR/20                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
+5.2/SR/21                n/a          - - Unicode delimited identifiers (F392)
 5.2/SR/22                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
 5.2/SR/23                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
-5.2/SR/24                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql only ASCII letters (#761)
-5.2/SR/24.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql only ASCII letters (#761)
-5.2/SR/24.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql only ASCII letters (#761)
-5.2/SR/25                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_11_5_61_tables.sql
-5.2/SR/26                implemented  vsql/lexer.v tests/std_2_5_2_reserved_words.sql
-5.2/SR/27                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
-5.2/SR/28                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_11_3_create_table.sql
+5.2/SR/24                implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
+5.2/SR/25                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql only ASCII letters (#761)
+5.2/SR/25.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql only ASCII letters (#761)
+5.2/SR/25.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql only ASCII letters (#761)
+5.2/SR/26                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_11_5_61_tables.sql
+5.2/SR/27                implemented  vsql/lexer.v tests/std_2_5_2_reserved_words.sql
+5.2/SR/28                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
 5.2/SR/29                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_11_3_create_table.sql
-5.2/SR/30                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/30                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_11_3_create_table.sql
 5.2/SR/31                n/a          - - Unicode delimited identifiers (F392)
 5.2/SR/32                n/a          - - Unicode delimited identifiers (F392)
-5.2/SR/33                implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
+5.2/SR/33                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/34                implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
+5.2/SR/35                n/a          - - row pattern recognition (R010)
 5.2/CR/1                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 5.2/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 5.2/CR/3                 implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
@@ -77,39 +79,54 @@
 5.3/SR/18.b              implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the character set is always UTF8
 5.3/SR/19                implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql
 5.3/SR/20                n/a          - - binary strings (T021)
-5.3/SR/21                implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
-5.3/SR/22                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql the smallest of SMALLINT, INTEGER and BIGINT that holds an integer, otherwise NUMERIC (with at most 1000 digits)
-5.3/SR/23                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_approximate_literal_exact.sql DOUBLE PRECISION
-5.3/SR/24                implemented  vsql/lexer.v tests/std_2_5_3_approximate_literal_exact.sql
-5.3/SR/25                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_date.sql
-5.3/SR/26                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_time.sql
-5.3/SR/27                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_timestamp.sql
-5.3/SR/28                implemented  vsql/time.v tests/std_2_6_36_date_time_value_function.sql the time zone displacement from Connection.now
-5.3/SR/29                definition   - -
-5.3/SR/30                n/a          - - intervals (F052)
-5.3/SR/31                implemented  vsql/time.v tests/std_2_6_1_date.sql
-5.3/SR/32                implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
-5.3/SR/33                n/a          - - intervals (F052)
-5.3/SR/34                n/a          - - intervals (F052)
-5.3/SR/35                implemented  vsql/time.v tests/std_2_6_1_time.sql
+5.3/SR/21                unclear      - - the maximum number of digits is implementation-defined; not documented yet
+5.3/SR/22                n/a          - - underscores in numeric literals (T662)
+5.3/SR/23                n/a          - - non-decimal integer literals (T661)
+5.3/SR/24                n/a          - - non-decimal integer literals (T661)
+5.3/SR/25                n/a          - - non-decimal integer literals (T661)
+5.3/SR/26                n/a          - - non-decimal integer literals (T661)
+5.3/SR/27                n/a          - - non-decimal integer literals (T661)
+5.3/SR/28                implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
+5.3/SR/29                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql the smallest of SMALLINT, INTEGER and BIGINT that holds an integer, otherwise NUMERIC (with at most 1000 digits)
+5.3/SR/30                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_approximate_literal_exact.sql DOUBLE PRECISION
+5.3/SR/31                implemented  vsql/lexer.v tests/std_2_5_3_approximate_literal_exact.sql
+5.3/SR/32                n/a          - - non-decimal integer literals (T661)
+5.3/SR/33                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_date.sql
+5.3/SR/34                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_time.sql
+5.3/SR/35                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_timestamp.sql
+5.3/SR/36                implemented  vsql/time.v tests/std_2_6_43_date_time_value_function.sql the time zone displacement from Connection.now
+5.3/SR/37                definition   - -
+5.3/SR/38                n/a          - - intervals (F052)
+5.3/SR/39                implemented  vsql/time.v tests/std_2_6_1_date.sql
+5.3/SR/40                implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
+5.3/SR/41                n/a          - - intervals (F052)
+5.3/SR/42                n/a          - - intervals (F052)
+5.3/SR/43                unclear      vsql/time.v tests/std_2_6_1_time.sql changed in 2023 (#1499)
+5.3/SR/44                n/a          - - underscores in numeric literals (T662)
+5.3/SR/45                n/a          - - underscores in numeric literals (T662)
+5.3/SR/46                n/a          - - underscores in numeric literals (T662)
+5.3/SR/47                partial      vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql no national (F421), binary (T021) or interval (F052) literals
 5.3/GR/1                 implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the source and the literal are both UTF8
 5.3/GR/2                 implemented  vsql/lexer.v tests/std_2_5_3_literal_normalization.sql
 5.3/GR/3                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
-5.3/GR/4                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
-5.3/GR/5                 implemented  vsql/std_2_5_3_literal.v tests/std_2_6_30_approximate_errors.sql
-5.3/GR/6                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
-5.3/GR/7                 implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
-5.3/GR/7.a               implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
-5.3/GR/7.b               n/a          - - intervals (F052)
-5.3/GR/7.b.i             n/a          - - intervals (F052)
-5.3/GR/7.b.ii            n/a          - - intervals (F052)
-5.3/GR/7.b.iii           n/a          - - intervals (F052)
-5.3/GR/8                 implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
-5.3/GR/9                 implemented  vsql/time.v tests/std_2_6_1_time.sql
+5.3/GR/4                 n/a          - - non-decimal integer literals (T661)
+5.3/GR/5                 n/a          - - non-decimal integer literals (T661)
+5.3/GR/6                 n/a          - - non-decimal integer literals (T661)
+5.3/GR/7                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
+5.3/GR/8                 implemented  vsql/std_2_5_3_literal.v tests/std_2_6_31_approximate_errors.sql
+5.3/GR/9                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
 5.3/GR/10                implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
 5.3/GR/10.a              implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
-5.3/GR/10.b              implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
-5.3/GR/11                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_boolean.sql
+5.3/GR/10.b              n/a          - - intervals (F052)
+5.3/GR/10.b.i            n/a          - - intervals (F052)
+5.3/GR/10.b.ii           n/a          - - intervals (F052)
+5.3/GR/10.b.iii          n/a          - - intervals (F052)
+5.3/GR/11                implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
+5.3/GR/12                implemented  vsql/time.v tests/std_2_6_1_time.sql
+5.3/GR/13                implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
+5.3/GR/13.a              implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
+5.3/GR/13.b              implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
+5.3/GR/14                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_boolean.sql
 5.3/CR/1                 implemented  vsql/std_2_5_3_literal.v tests/std_1_8_5_flagging.sql
 5.3/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 5.3/CR/3                 implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
@@ -121,6 +138,8 @@
 5.3/CR/9                 n/a          - - binary strings (T021)
 5.3/CR/10                n/a          - - binary strings (T021)
 5.3/CR/11                implemented  vsql/lexer.v tests/std_1_8_5_flagging.sql
+5.3/CR/12                n/a          - - non-decimal integer literals (T661)
+5.3/CR/13                n/a          - - underscores in numeric literals (T662)
 # 5.4, Names and identifiers
 5.4                      implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql
 5.4/SR/1                 n/a          - - named character sets (F461)
@@ -254,11 +273,11 @@
 5.4/CR/15                n/a          - - named character sets (F461)
 5.4/CR/16                n/a          - - local cursor references (T601)
 5.4/CR/17                n/a          - - extended statement and cursor names (B032)
-5.4/CR/18                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+5.4/CR/18                n/a          - - extended dynamic SQL (B032)
 5.4/CR/19                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 5.4/CR/20                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
-5.4/CR/21                n/a          - - window functions (T611)
-5.4/CR/22                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_8_5_flagging.sql
-5.4/CR/23                n/a          - - extended dynamic SQL (B032)
+5.4/CR/21                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
+5.4/CR/22                n/a          - - window functions (T611)
+5.4/CR/23                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_8_5_flagging.sql
 5.4/CR/24                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 5.4/CR/25                n/a          - - polymorphic table functions (B200)

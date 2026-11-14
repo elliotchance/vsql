@@ -243,8 +243,8 @@
 6.33/DE/1                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql
 6.33/DE/2                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql
 6.33/DE/3                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql always NONE, there are no MATCH types (F741)
-6.33/DE/4                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql,tests/std_2_15_17_foreign_key_update_rules.sql there is no RESTRICT (T191)
-6.33/DE/5                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql,tests/std_2_15_17_foreign_key_delete_rules.sql there is no RESTRICT (T191)
+6.33/DE/4                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql,tests/std_2_15_18_foreign_key_update_rules.sql there is no RESTRICT (T191)
+6.33/DE/5                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_37_referential_constraints.sql,tests/std_2_15_18_foreign_key_delete_rules.sql there is no RESTRICT (T191)
 # 6.34, ROLE_AUTHORIZATION_DESCRIPTORS base table
 6.34                     n/a          - - roles (T331)
 6.34/DE/1                n/a          - - roles (T331)

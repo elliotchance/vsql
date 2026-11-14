@@ -37,11 +37,11 @@ module vsql
 // upper_case_mappings has the lower case (Ll) and title case (Lt) characters that
 // have a corresponding upper case character or characters, ordered by from.
 //
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.i""")
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 7.d.i""")
 print_table("upper_case_mappings", ["Ll", "Lt"], str.upper)
 print("""
 // lower_case_mappings has the upper case (Lu) and title case (Lt) characters that
 // have a corresponding lower case character or characters, ordered by from.
 //
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.ii""")
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 7.d.ii""")
 print_table("lower_case_mappings", ["Lu", "Lt"], str.lower)

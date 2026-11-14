@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.45, GetTypeInfo
+// ISO/IEC 9075-3:2003, 6.45, GetTypeInfo
 //
 // Get information about one or all of the predefined data types supported by
 // the implementation.

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.60, SpecialColumns
+// ISO/IEC 9075-3:2003, 6.60, SpecialColumns
 //
 // Return a result set that contains a list of columns the combined values of
 // which can uniquely identify any row within a single specified table described

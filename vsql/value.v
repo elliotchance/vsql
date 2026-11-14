@@ -160,7 +160,7 @@ pub fn new_bigint_value(x i64) Value {
 // needs to check for a DOUBLE PRECISION that's too small, since x is already
 // zero (see approximate_nonzero_value).
 //
-// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 6
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, General Rules, 6
 fn approximate_value(x f64, typ SQLType) !Value {
 	if typ == .is_real {
 		if math.is_inf(f32(x), 0) || (x != 0 && f32(x) == 0) {
@@ -181,7 +181,7 @@ fn approximate_value(x f64, typ SQLType) !Value {
 // exact result isn't zero, so x is only zero if the result is too small for the
 // type. A denormal is still in the range.
 //
-// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 6
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, General Rules, 6
 fn approximate_nonzero_value(x f64, typ SQLType) !Value {
 	if x == 0 {
 		return sqlstate_22003()
@@ -449,7 +449,7 @@ fn approximate_numeric_literal(s string) string {
 // formatting. The null value is NULL (or UNKNOWN for a BOOLEAN), which is how
 // "vsql cli" shows it.
 pub fn (v Value) str() string {
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 2
+	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>
 	if v.is_null {
 		return if v.typ.typ == .is_boolean { 'UNKNOWN' } else { 'NULL' }
 	}
@@ -478,7 +478,7 @@ pub fn (v Value) str() string {
 			// Trailing zeros up to the scale are part of the value, so 12.00 isn't
 			// shown as 12.
 			//
-			// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.a.i
+			// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.a.i
 			v.numeric_value().str()
 		}
 	}

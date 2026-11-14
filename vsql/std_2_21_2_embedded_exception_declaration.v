@@ -1,19 +1,19 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>
 //
 // WHENEVER is the action after each later <SQL procedure statement> that
 // raises a condition. SQLSTATE and CONSTRAINT are Feature B041.
 //
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Conformance Rules, 1
 
 // EmbeddedExceptionDeclarations are the <embedded exception declaration>s that
 // apply to the next <SQL procedure statement>, and that GOTO a C label
 // (CONTINUE does nothing). The C compiler checks that each label can be used
 // where it's applied.
 //
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 2 and 5
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1.a
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Syntax Rules, 2 and 5
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, General Rules, 1.a
 struct EmbeddedExceptionDeclarations {
 mut:
 	// sqlexception, sqlwarning and not_found are the labels of the <major
@@ -41,7 +41,7 @@ struct EmbeddedConstraint {
 // class code> and <SQLSTATE subclass code> can be used, including those of
 // vsql that aren't in Table 38.
 //
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Syntax Rules, 4
 fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema string) ! {
 	mut condition := ''
 	mut constraint := EmbeddedConstraint{}
@@ -90,7 +90,7 @@ fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema stri
 	// A declaration no longer applies after another one with the same
 	// condition, or with a condition that includes it.
 	//
-	// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 2.a to 2.d
+	// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Syntax Rules, 2.a to 2.d
 	w.constraints = w.constraints.filter(!(condition == 'SQLEXCEPTION' || condition == '23'
 		|| (condition == 'CONSTRAINT' && it.catalog == constraint.catalog
 			&& it.schema == constraint.schema && it.name == constraint.name)))
@@ -132,7 +132,7 @@ fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema stri
 // whenever_features returns the features of an <SQL condition>, from its first
 // word.
 //
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Conformance Rules, 1 and 2
 fn whenever_features(condition string) []string {
 	return match condition.to_upper() {
 		'SQLSTATE' { ['B041'] }
@@ -145,7 +145,7 @@ fn whenever_features(condition string) []string {
 // which may be more than one token (such as 2B), but there can't be a
 // <separator> in it.
 //
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Syntax Rules, 3
 fn (mut t ModuleTokens) sqlstate_code(what string, length int) !string {
 	mut code := ''
 	for {
@@ -172,9 +172,9 @@ fn (mut t ModuleTokens) sqlstate_code(what string, length int) !string {
 // then its category. The categories are X (any class other than 00, 01 and
 // 02), W (01) and N (02). None of them is successful completion (00).
 //
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 1
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1 and 1.b
-// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1.d.i to 1.d.iii
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Syntax Rules, 1
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, General Rules, 1 and 1.b
+// ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, General Rules, 1.c.ii to 1.d.iii
 fn (w EmbeddedExceptionDeclarations) c_checks() string {
 	mut s := ''
 	for c in w.constraints {

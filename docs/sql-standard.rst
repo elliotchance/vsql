@@ -10,12 +10,12 @@ Each version is split into multiple parts.
 is the largest part (in terms of pages) and covers the syntax and behavior for
 the core SQL language. It's also the most relevant part for this project.
 
-vsql works against **SQL:2016** (ISO/IEC 9075-2:2016), as well as
+vsql works against **SQL:2023** (ISO/IEC 9075-2:2023), as well as
 `Part 3: Call-Level Interface (SQL/CLI) <https://www.iso.org/standard/63557.html>`_
 for :doc:`language-c`, and
 `Part 11: Information and Definition Schemas (SQL/Schemata) <https://www.iso.org/standard/63565.html>`_
 for the ``INFORMATION_SCHEMA``. Each part is pinned to one edition (Part 2 is
-ISO/IEC 9075-2:2016, Part 1 and Part 3 are the SQL:2003 working drafts and
+ISO/IEC 9075-2:2023, Part 1 and Part 3 are the SQL:2003 working drafts and
 Part 11 is the SQL:2008 committee draft), and vsql follows only that edition,
 even where a newer one is available (see the editions in
 :doc:`standard-index`). The source files are named after the part and section

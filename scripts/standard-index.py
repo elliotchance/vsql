@@ -59,6 +59,10 @@ SECTIONS = {
 # Headings that end a rules section without starting another one.
 OTHER_HEADINGS = {'Function', 'Format', 'Definition'}
 
+SECTION_KEYS = {re.sub(r'\s+', '', k).lower(): v for k, v in SECTIONS.items()}
+OTHER_KEYS = {k.lower() for k in OTHER_HEADINGS}
+
+
 def roman(n):
     out = ''
     for value, numeral in [(40, 'xl'), (10, 'x'), (9, 'ix'), (5, 'v'), (4, 'iv'), (1, 'i')]:
@@ -107,13 +111,53 @@ def standard_text(edition):
     # which rule a label like "7)" belongs to.
     cache = os.path.join(CACHE, digest + '-layout.txt')
     if not os.path.exists(cache):
+        import io
         import pypdf
         os.makedirs(CACHE, exist_ok=True)
-        pages = [page_text(p) for p in pypdf.PdfReader(path).pages]
+        # Some PDFs (like 9075-2:2023) end with "startxref N%%EOF" on one
+        # line, which pypdf can't read, so the %%EOF is moved to a line of its
+        # own. This doesn't change a PDF that's already well formed.
+        data = open(path, 'rb').read().rstrip()
+        if data.endswith(b'%%EOF'):
+            data = data[:-5].rstrip() + b'\n%%EOF\n'
+        pages = [page_text(p) for p in pypdf.PdfReader(io.BytesIO(data)).pages]
         with open(cache, 'w') as f:
             f.write('\f'.join(pages))
 
     return open(cache).read()
+
+
+def toc_titles(edition):
+    """{number: title} from the table of contents, extracted without the
+    layout mode, which keeps the spaces that the layout mode loses in some
+    PDFs (like 9075-2:2023)."""
+    cache = os.path.join(CACHE, edition['sha256'] + '-toc.txt')
+    if not os.path.exists(cache):
+        import io
+        import pypdf
+        standard_text(edition)
+        folder = os.path.join(ROOT, 'standard_docs', edition['document'])
+        for pdf in sorted(glob.glob(os.path.join(folder, '*.pdf'))):
+            data = open(pdf, 'rb').read()
+            if hashlib.sha256(data).hexdigest() == edition['sha256']:
+                break
+        data = data.rstrip()
+        if data.endswith(b'%%EOF'):
+            data = data[:-5].rstrip() + b'\n%%EOF\n'
+        lines = []
+        for page in pypdf.PdfReader(io.BytesIO(data)).pages[:40]:
+            if '/Contents' in page:
+                lines.extend((page.extract_text() or '').split('\n'))
+        with open(cache, 'w') as f:
+            f.write('\n'.join(lines))
+    titles = {}
+    for line in open(cache):
+        m = re.match(r'^(\d+(?:\.\d+)*) +(.*?)[ .]*(\. \. |\.\.\.)', line.strip())
+        if m and m.group(1) not in titles:
+            title = re.sub(r'(?<=[A-Za-z]) ([ﬁﬂ])', r'\1', m.group(2).strip())
+            title = title.replace('ﬁ', 'fi').replace('ﬂ', 'fl')
+            titles[m.group(1)] = re.sub(r'\s+', ' ', title)
+    return titles
 
 
 def page_text(page):
@@ -189,6 +233,13 @@ def contents(lines):
     return toc
 
 
+def spaced(heading, title):
+    """The heading of a Subclause, or its title from the table of contents if
+    the heading lost the spaces between its words (as 9075-2:2023 does)."""
+    heading = heading.strip()
+    return title if title.count(' ') > heading.count(' ') else heading
+
+
 def subclauses(lines):
     """Yields (number, title, body lines) for each Subclause, found in the body
     by its heading."""
@@ -202,7 +253,7 @@ def subclauses(lines):
         want = squash(number + title)
         for i in range(pos, len(lines)):
             if squash(lines[i]) == want:
-                found.append((i, number, lines[i].strip()[len(number):].strip()))
+                found.append((i, number, spaced(lines[i].strip()[len(number):], title)))
                 pos = i + 1
                 break
         else:
@@ -210,7 +261,7 @@ def subclauses(lines):
             for i in range(pos, len(lines) - 1):
                 if squash(lines[i] + lines[i + 1]) == want:
                     heading = lines[i].strip() + ' ' + lines[i + 1].strip()
-                    found.append((i, number, heading[len(number):].strip()))
+                    found.append((i, number, spaced(heading[len(number):], title)))
                     pos = i + 2
                     break
             else:
@@ -283,14 +334,16 @@ def rules(body):
     for line in body:
         s = re.sub(r'\s+', ' ', line.strip())
         indent = len(line) - len(line.lstrip())
-        if s in SECTIONS:
+        # Some PDFs (like 9075-2:2023) lose the spaces between words, so the
+        # headings are compared without them.
+        if squash(s) in SECTION_KEYS:
             if current:
                 yield current
                 current = None
-            section = SECTIONS[s]
+            section = SECTION_KEYS[squash(s)]
             stack = []
             continue
-        if s in OTHER_HEADINGS:
+        if squash(s) in OTHER_KEYS:
             if current:
                 yield current
                 current = None
@@ -335,7 +388,15 @@ def file_for(number):
 
 def index_rows(edition, text):
     """Yields (file, number, title, [(id, rule text)]) for each Subclause."""
+    toc = None
     for number, title, body in subclauses(clean_lines(text)):
+        # A title that has lost its spaces is taken from the table of
+        # contents, extracted another way.
+        if re.search(r'[a-z]{15}|[a-z]<|>[a-z]', title):
+            toc = toc if toc is not None else toc_titles(edition)
+            if squash(toc.get(number, '')) == squash(title) and \
+                    toc[number].count(' ') > title.count(' '):
+                title = toc[number]
         rows = [(number, None)]
         for section, rule, rule_text in rules(body):
             rows.append((f'{number}/{section}/{rule}', rule_text))

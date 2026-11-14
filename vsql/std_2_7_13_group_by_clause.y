@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 7.13, <group by clause>
+// ISO/IEC 9075-2:2023, 7.13, <group by clause>
 //
 // Specify a grouped table derived by the application of the <group by clause>
 // to the result of the previously specified clause.

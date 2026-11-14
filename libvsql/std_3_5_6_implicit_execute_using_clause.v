@@ -3,7 +3,7 @@ module main
 import encoding.utf8
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 5.6, Implicit EXECUTE USING and OPEN USING clauses
+// ISO/IEC 9075-3:2003, 5.6, Implicit EXECUTE USING and OPEN USING clauses
 //
 // The values of the dynamic parameters ("?") of a statement come from the APD,
 // which is the C value of each parameter, and the IPD, which is its SQL data
@@ -14,7 +14,7 @@ import vsql
 // dynamic parameters isn't an error, which is implementation-defined (General
 // Rules, 4.d).
 //
-// The APD must be valid (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI
+// The APD must be valid (ISO/IEC 9075-3:2003, 5.13, Description of CLI
 // item descriptor areas, Syntax Rules, 8 to 12). NULL is true if the indicator
 // is SQL NULL DATA (whether or not it's shared with the length), and DEFERRED
 // is true if the length is DATA AT EXEC. The length of a character string must
@@ -271,7 +271,7 @@ fn whole_characters(s string) string {
 // vsql.PreparedStmt.dynamic_parameter_type). That cast must also be allowed:
 // dynamic SQL error — restricted data type attribute violation.
 //
-// ISO/IEC 9075-3:2003(E), 5.6, Implicit EXECUTE USING and OPEN USING clauses, General Rules, 4.p.ii
+// ISO/IEC 9075-3:2003, 5.6, Implicit EXECUTE USING and OPEN USING clauses, General Rules, 4.p.ii
 fn parameter_value(stmt &Stmt, prepared vsql.PreparedStmt, i int, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 	tv := cast_parameter(stmt, sv, tdt)!
 	if udt := prepared.dynamic_parameter_type(i) {
@@ -297,7 +297,7 @@ fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 }
 
 // is_restricted_cast is true if a value of one type can't be CAST to the
-// other (ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, Syntax Rules, 6):
+// other (ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 6):
 // a number, datetime or BOOLEAN can only be cast to the same kind of type (or
 // a character string), and a DATE and a TIME can't be cast to each other.
 fn is_restricted_cast(from vsql.SQLType, to vsql.SQLType) bool {

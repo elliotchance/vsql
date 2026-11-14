@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>
+// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>
 //
 // Get exception or completion condition information from a diagnostics area.
 // The concept is described by ISO/IEC 9075-1:2003(E), 4.8.4, Diagnostic
@@ -12,7 +12,7 @@ module vsql
 //
 // The concept is also described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.36, Diagnostics area
+// ISO/IEC 9075-2:2023, 4.38, Diagnostics area
 
 // The C constant (in libvsql.h, or the C runtime) of each <statement
 // information item name> and <condition information item name>. An empty
@@ -72,8 +72,8 @@ const exact_numeric_diagnostics_items = ['NUMBER', 'COMMAND_FUNCTION_CODE', 'DYN
 // diagnostics area. An item that's always 0 (zero) or a zero-length string is
 // still valid. ALL (F123) isn't supported.
 //
-// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 6
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2, 4, 4.a, 4.h.i.2 and 5
+// ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 7
+// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 2, 4, 4.a, 4.h.i.2 and 5
 fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	mut sections := []string{}
 	mut used := []string{}
@@ -84,7 +84,7 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 	// The condition number must be the number of a condition in the
 	// diagnostics area: invalid condition number.
 	//
-	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 3
+	// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 3
 	if t.accept('CONDITION') {
 		c += '  long long vsql_m_n = ${t.condition_number(p, mut used)!};\n'
 		c += '  if (vsql_m_n < 1 || vsql_m_n > vsql_m_da.number) {\n    vsql_m_sqlstate(SQLSTATE, "35000");\n    return;\n  }\n'
@@ -114,9 +114,9 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 		// strings. A target that's approximate numeric (REAL or DOUBLE
 		// PRECISION) has a different declared type, which needs F122.
 		//
-		// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, Syntax Rules, 1
-		// ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
-		// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, Conformance Rules, 3
+		// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
+		// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, Conformance Rules, 3
 		typ := target.typ or { HostParameterType{} }
 		if name in exact_numeric_diagnostics_items {
 			if !typ.is_exact_numeric() {
@@ -171,7 +171,7 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 // condition_number reads a <condition number>, which is an unsigned integer or
 // a host parameter that is exact numeric.
 //
-// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, Syntax Rules, 3
 fn (mut t ModuleTokens) condition_number(p ExternallyInvokedProcedure, mut used []string) !string {
 	return t.exact_numeric_value(p, mut used, 'condition number', false)
 }

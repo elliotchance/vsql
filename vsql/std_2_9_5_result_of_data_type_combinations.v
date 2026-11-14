@@ -2,7 +2,7 @@ module vsql
 
 import math
 
-// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations
+// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations
 //
 // Specify the declared type of the result of certain combinations of values of
 // compatible data types, such as the rows of a VALUES or the arguments to
@@ -19,14 +19,14 @@ const timestamp_types = [SQLType.is_timestamp_without_time_zone, .is_timestamp_w
 //
 // A dynamic parameter has the type of its value, so no type is undefined.
 //
-// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 2 and 3
+// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 2 and 3
 fn combine_types(t1 Type, t2 Type) ?Type {
 	match true {
 		// The longest character string, which is only fixed-length if all of
 		// them are. A size of 0 means there is no maximum length. There's only
 		// one character set (UTF8) and collation.
 		//
-		// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 3.a
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.a
 		t1.typ.is_string() && t2.typ.is_string() {
 			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
 			if t1.typ == .is_character && t2.typ == .is_character {
@@ -38,7 +38,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		// Approximate numeric if any of them are. It's REAL if they're all REAL,
 		// otherwise DOUBLE PRECISION.
 		//
-		// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 3.c.ii.2
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.c.ii.2
 		t1.typ.is_number() && t2.typ.is_number() && (t1.typ in approximate_types
 			|| t2.typ in approximate_types) {
 			if t1.typ == .is_real && t2.typ == .is_real {
@@ -52,7 +52,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		// scale, up to the maximum precision. Integers are the largest integer
 		// type.
 		//
-		// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 3.c.i and 3.c.ii.3
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.c.i and 3.c.ii.3
 		t1.typ.is_number() && t2.typ.is_number() {
 			if t1.typ !in fractional_types && t2.typ !in fractional_types {
 				return most_specific_type(t1, t2) or { return none }
@@ -77,14 +77,14 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		}
 		// All BOOLEAN.
 		//
-		// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 3.f
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.f
 		t1.typ == .is_boolean && t2.typ == .is_boolean {
 			return Type{.is_boolean, 0, 0, false}
 		}
 		// The same datetime type (DATE, TIME or TIMESTAMP), with the largest
 		// fractional seconds precision. It has a time zone if any of them do.
 		//
-		// ISO/IEC 9075-2:2016(E), 9.5, Result of data type combinations, Syntax Rules, 3.d
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.d
 		t1.typ == .is_date && t2.typ == .is_date {
 			return Type{.is_date, 0, 0, false}
 		}

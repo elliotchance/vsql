@@ -1,4 +1,4 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023
 # id status code tests note (see docs/standard-index.rst)
 # 7, Query expressions
 7                        container    - -
@@ -42,8 +42,7 @@
 7.3                      implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
 7.3/SR/1                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
 7.3/SR/2                 implemented  vsql/std_2_14_11_insert_statement.v tests/std_2_14_11_insert.sql
-7.3/SR/3                 definition   - -
-7.3/SR/4                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
+7.3/SR/3                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
 7.3/GR/1                 n/a          - - row types (T051); a row can't be NULL
 7.3/GR/2                 implemented  vsql/std_2_7_3_table_value_constructor.v tests/std_2_7_3_values.sql
 7.3/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/std_1_8_5_flagging.sql
@@ -72,23 +71,22 @@
 7.5/SR/4.b.ii.3.B        implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_5_from_comma.sql
 7.5/SR/5                 implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.5/SR/5.a               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.a.i             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.a.ii            implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.a.iii           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.a.iv            n/a          - - periods (T180)
-7.5/SR/5.a.v             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.5/SR/5.b               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.5/SR/5.c               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.c.i             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.c.i.1           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.c.i.2           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.c.ii            implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.c.ii.1          implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.c.ii.2          implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.5/SR/5.d               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.e               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.f               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.5/SR/5.g               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6                 implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.a               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.a.i             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.a.ii            implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.a.iii           implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.a.iv            n/a          - - periods (T180)
+7.5/SR/6.a.v             implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.b               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.c               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.d               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.e               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.f               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.5/SR/6.g               implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
 7.5/GR/1                 implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
 7.5/GR/1.a               implemented  vsql/std_2_7_5_from_clause.y tests/std_2_7_12_select_where.sql
 7.5/GR/1.b               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_from_comma.sql
@@ -101,187 +99,182 @@
 7.6/SR/2                 n/a          - - sampling (T613)
 7.6/SR/3                 definition   - -
 7.6/SR/4                 n/a          - - sampling (T613) and row pattern recognition (R010)
-7.6/SR/5                 n/a          - - table functions (T326)
-7.6/SR/5.a               n/a          - - table functions (T326)
-7.6/SR/5.b               n/a          - - table functions (T326)
-7.6/SR/5.c               n/a          - - table functions (T326)
-7.6/SR/5.d               container    - -
-7.6/SR/5.d.i             n/a          - - table functions (T326)
-7.6/SR/5.d.ii            n/a          - - table functions (T326)
-7.6/SR/5.e               n/a          - - table functions (T326)
-7.6/SR/6                 n/a          - - polymorphic table functions (B200)
-7.6/SR/6.a               n/a          - - polymorphic table functions (B200)
-7.6/SR/6.b               n/a          - - polymorphic table functions (B200)
-7.6/SR/6.c               n/a          - - polymorphic table functions (B200)
+7.6/SR/5                 n/a          - - JSON data type (T801)
+7.6/SR/6                 n/a          - - table functions (T326)
+7.6/SR/6.a               n/a          - - table functions (T326)
+7.6/SR/6.b               n/a          - - table functions (T326)
+7.6/SR/6.c               n/a          - - table functions (T326)
 7.6/SR/6.d               container    - -
-7.6/SR/6.d.i             n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii            n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.1          n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.2          n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.3          container    - -
-7.6/SR/6.d.ii.3.A        n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.3.A.I      n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.3.A.II     n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.3.A.III    n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.3.B        n/a          - - polymorphic table functions (B200)
-7.6/SR/6.d.ii.4          n/a          - - polymorphic table functions (B200)
-7.6/SR/7                 n/a          - - UNNEST (S301)
-7.6/SR/7.a               n/a          - - UNNEST (S301)
-7.6/SR/7.b               n/a          - - UNNEST (S301)
-7.6/SR/7.c               n/a          - - UNNEST (S301)
-7.6/SR/7.d               n/a          - - UNNEST (S301)
-7.6/SR/7.e               n/a          - - UNNEST (S301)
-7.6/SR/7.e.i             n/a          - - UNNEST (S301)
-7.6/SR/7.e.ii            n/a          - - UNNEST (S301)
-7.6/SR/7.f               n/a          - - UNNEST (S301)
-7.6/SR/7.g               n/a          - - UNNEST (S301)
-7.6/SR/7.h               n/a          - - UNNEST (S301)
-7.6/SR/7.i               n/a          - - UNNEST (S301)
-7.6/SR/7.j               n/a          - - UNNEST (S301)
-7.6/SR/7.k               n/a          - - UNNEST (S301)
-7.6/SR/7.l               n/a          - - UNNEST (S301)
-7.6/SR/7.m               container    - -
-7.6/SR/7.m.i             n/a          - - UNNEST (S301)
-7.6/SR/7.m.i.1           n/a          - - UNNEST (S301)
-7.6/SR/7.m.i.1.A         n/a          - - UNNEST (S301)
-7.6/SR/7.m.i.1.B         n/a          - - UNNEST (S301)
-7.6/SR/7.m.i.2           container    - -
-7.6/SR/7.m.i.2.A         n/a          - - UNNEST (S301)
-7.6/SR/7.m.i.2.B         n/a          - - UNNEST (S301)
-7.6/SR/7.m.i.3           n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii            n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1          n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1.A        n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1.A.I      n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1.A.II     n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1.B        n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1.C        container    - -
-7.6/SR/7.m.ii.1.C.I      n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.1.C.II     n/a          - - UNNEST (S301)
-7.6/SR/7.m.ii.2          n/a          - - UNNEST (S301)
-7.6/SR/7.n               n/a          - - UNNEST (S301)
-7.6/SR/7.n.i             n/a          - - UNNEST (S301)
-7.6/SR/7.n.ii            n/a          - - UNNEST (S301)
-7.6/SR/7.o               n/a          - - UNNEST (S301)
-7.6/SR/8                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/8.a               container    - -
-7.6/SR/8.a.i             n/a          - - WITH (T121)
-7.6/SR/8.a.ii            n/a          - - triggers (T211)
-7.6/SR/8.a.iii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_select_from.sql
-7.6/SR/8.b               n/a          - - ONLY (S111)
-7.6/SR/8.c               n/a          - - system-versioned tables (T180)
-7.6/SR/8.d               n/a          - - system-versioned tables (T180)
-7.6/SR/8.d.i             n/a          - - system-versioned tables (T180)
-7.6/SR/8.d.ii            n/a          - - system-versioned tables (T180)
-7.6/SR/8.d.iii           n/a          - - system-versioned tables (T180)
-7.6/SR/9                 n/a          - - LATERAL (T491)
-7.6/SR/10                n/a          - - data change delta tables (T495)
-7.6/SR/10.a              container    - -
-7.6/SR/10.a.i            n/a          - - data change delta tables (T495)
-7.6/SR/10.a.ii           n/a          - - data change delta tables (T495)
-7.6/SR/10.a.iii          n/a          - - data change delta tables (T495)
-7.6/SR/10.a.iv           n/a          - - data change delta tables (T495)
-7.6/SR/10.b              n/a          - - data change delta tables (T495)
-7.6/SR/10.b.i            n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii           n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii.1         n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii.2         n/a          - - data change delta tables (T495)
-7.6/SR/10.b.ii.3         n/a          - - data change delta tables (T495)
-7.6/SR/10.c              n/a          - - data change delta tables (T495)
-7.6/SR/11                implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.a              n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.i            n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.i.1          n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.i.2          n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.ii           container    - -
-7.6/SR/11.a.ii.1         n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.ii.2         n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iii          n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iv           n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iv.1         n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iv.2         n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iv.2.A       container    - -
-7.6/SR/11.a.iv.2.A.I     n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iv.2.A.II    n/a          - - polymorphic table functions (B200)
-7.6/SR/11.a.iv.2.B       n/a          - - polymorphic table functions (B200)
-7.6/SR/11.b              implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.i            n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.1          n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.2          n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.3          container    - -
-7.6/SR/11.b.i.3.A        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.3.A.I      n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.3.A.II     n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.3.B        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.4          container    - -
-7.6/SR/11.b.i.4.A        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.4.B        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.4.C        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.4.D        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.5          n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.6          container    - -
-7.6/SR/11.b.i.6.A        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.6.A.I      n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.6.A.II     n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.6.B        n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.i.7          n/a          - - row pattern recognition (R010)
-7.6/SR/11.b.ii           container    - -
-7.6/SR/11.b.ii.1         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.1.A       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.1.B       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.2         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.3         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.3.A       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.3.B       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.b.ii.4         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/11.c              implemented  vsql/planner.v tests/std_2_7_10_nested_join.sql
-7.6/SR/12                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/13                container    - -
-7.6/SR/13.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/13.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
+7.6/SR/6.d.i             n/a          - - table functions (T326)
+7.6/SR/6.d.ii            n/a          - - table functions (T326)
+7.6/SR/6.e               n/a          - - table functions (T326)
+7.6/SR/7                 n/a          - - polymorphic table functions (B200)
+7.6/SR/7.a               n/a          - - polymorphic table functions (B200)
+7.6/SR/7.b               n/a          - - polymorphic table functions (B200)
+7.6/SR/7.c               n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d               container    - -
+7.6/SR/7.d.i             n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii            n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.1          n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.2          n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.3          container    - -
+7.6/SR/7.d.ii.3.A        n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.3.A.I      n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.3.A.II     n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.3.A.III    n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.3.B        n/a          - - polymorphic table functions (B200)
+7.6/SR/7.d.ii.4          n/a          - - polymorphic table functions (B200)
+7.6/SR/8                 n/a          - - UNNEST (S301)
+7.6/SR/8.a               n/a          - - UNNEST (S301)
+7.6/SR/8.b               n/a          - - UNNEST (S301)
+7.6/SR/8.c               n/a          - - UNNEST (S301)
+7.6/SR/8.d               n/a          - - UNNEST (S301)
+7.6/SR/8.e               n/a          - - UNNEST (S301)
+7.6/SR/8.e.i             n/a          - - UNNEST (S301)
+7.6/SR/8.e.ii            n/a          - - UNNEST (S301)
+7.6/SR/8.f               n/a          - - UNNEST (S301)
+7.6/SR/8.g               n/a          - - UNNEST (S301)
+7.6/SR/8.h               n/a          - - UNNEST (S301)
+7.6/SR/8.i               n/a          - - UNNEST (S301)
+7.6/SR/8.j               n/a          - - UNNEST (S301)
+7.6/SR/8.k               n/a          - - UNNEST (S301)
+7.6/SR/8.l               n/a          - - UNNEST (S301)
+7.6/SR/8.m               container    - -
+7.6/SR/8.m.i             n/a          - - UNNEST (S301)
+7.6/SR/8.m.i.1           n/a          - - UNNEST (S301)
+7.6/SR/8.m.i.1.A         n/a          - - UNNEST (S301)
+7.6/SR/8.m.i.1.B         n/a          - - UNNEST (S301)
+7.6/SR/8.m.i.2           container    - -
+7.6/SR/8.m.i.2.A         n/a          - - UNNEST (S301)
+7.6/SR/8.m.i.2.B         n/a          - - UNNEST (S301)
+7.6/SR/8.m.i.3           n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii            n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1          n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1.A        n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1.A.I      n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1.A.II     n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1.B        n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1.C        container    - -
+7.6/SR/8.m.ii.1.C.I      n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.1.C.II     n/a          - - UNNEST (S301)
+7.6/SR/8.m.ii.2          n/a          - - UNNEST (S301)
+7.6/SR/8.n               n/a          - - UNNEST (S301)
+7.6/SR/8.n.i             n/a          - - UNNEST (S301)
+7.6/SR/8.n.ii            n/a          - - UNNEST (S301)
+7.6/SR/8.o               n/a          - - UNNEST (S301)
+7.6/SR/9                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/9.a               container    - -
+7.6/SR/9.a.i             n/a          - - WITH (T121)
+7.6/SR/9.a.ii            n/a          - - triggers (T211)
+7.6/SR/9.a.iii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_select_from.sql
+7.6/SR/9.b               n/a          - - ONLY (S111)
+7.6/SR/9.c               n/a          - - system-versioned tables (T180)
+7.6/SR/9.d               n/a          - - system-versioned tables (T180)
+7.6/SR/9.d.i             n/a          - - system-versioned tables (T180)
+7.6/SR/9.d.ii            n/a          - - system-versioned tables (T180)
+7.6/SR/9.d.iii           n/a          - - system-versioned tables (T180)
+7.6/SR/10                n/a          - - LATERAL (T491)
+7.6/SR/11                n/a          - - data change delta tables (T495)
+7.6/SR/11.a              container    - -
+7.6/SR/11.a.i            n/a          - - data change delta tables (T495)
+7.6/SR/11.a.ii           n/a          - - data change delta tables (T495)
+7.6/SR/11.a.iii          n/a          - - data change delta tables (T495)
+7.6/SR/11.a.iv           n/a          - - data change delta tables (T495)
+7.6/SR/11.b              n/a          - - data change delta tables (T495)
+7.6/SR/11.b.i            n/a          - - data change delta tables (T495)
+7.6/SR/11.b.ii           n/a          - - data change delta tables (T495)
+7.6/SR/11.b.ii.1         n/a          - - data change delta tables (T495)
+7.6/SR/11.b.ii.2         n/a          - - data change delta tables (T495)
+7.6/SR/11.b.ii.3         n/a          - - data change delta tables (T495)
+7.6/SR/11.c              n/a          - - data change delta tables (T495)
+7.6/SR/12                implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.a              n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.i            n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.i.1          n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.i.2          n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.ii           container    - -
+7.6/SR/12.a.ii.1         n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.ii.2         n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iii          n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iv           n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iv.1         n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iv.2         n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iv.2.A       container    - -
+7.6/SR/12.a.iv.2.A.I     n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iv.2.A.II    n/a          - - polymorphic table functions (B200)
+7.6/SR/12.a.iv.2.B       n/a          - - polymorphic table functions (B200)
+7.6/SR/12.b              implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.i            n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.1          n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.2          n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.3          container    - -
+7.6/SR/12.b.i.3.A        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.3.A.I      n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.3.A.II     n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.3.B        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.4          container    - -
+7.6/SR/12.b.i.4.A        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.4.B        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.4.C        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.4.D        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.5          n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.6          container    - -
+7.6/SR/12.b.i.6.A        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.6.A.I      n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.6.A.II     n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.6.B        n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.i.7          n/a          - - row pattern recognition (R010)
+7.6/SR/12.b.ii           container    - -
+7.6/SR/12.b.ii.1         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.1.A       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.1.B       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.2         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.3         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.3.A       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.3.B       implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.b.ii.4         implemented  vsql/planner.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/12.c              implemented  vsql/planner.v tests/std_2_7_10_nested_join.sql
+7.6/SR/13                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/14                container    - -
-7.6/SR/14.a              n/a          - - polymorphic table functions (B200)
-7.6/SR/14.a.i            n/a          - - polymorphic table functions (B200)
-7.6/SR/14.a.ii           n/a          - - polymorphic table functions (B200)
-7.6/SR/14.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/14.b.i            container    - -
-7.6/SR/14.b.i.1          n/a          - - row pattern recognition (R010)
-7.6/SR/14.b.i.2          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/14.b.i.3          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/14.b.ii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/14.b.iii          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/14.b.iv           container    - -
-7.6/SR/14.b.iv.1         n/a          - - periods (T180)
-7.6/SR/14.b.iv.2         definition   - -
-7.6/SR/14.c              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
-7.6/SR/15                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/16                container    - -
-7.6/SR/16.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/SR/16.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
-7.6/SR/17                definition   - -
-7.6/SR/18                container    - -
-7.6/SR/18.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
-7.6/SR/18.b              definition   - -
-7.6/SR/19                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
+7.6/SR/14.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/14.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
+7.6/SR/15                container    - -
+7.6/SR/15.a              n/a          - - polymorphic table functions (B200)
+7.6/SR/15.a.i            n/a          - - polymorphic table functions (B200)
+7.6/SR/15.a.ii           n/a          - - polymorphic table functions (B200)
+7.6/SR/15.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/15.b.i            container    - -
+7.6/SR/15.b.i.1          n/a          - - row pattern recognition (R010)
+7.6/SR/15.b.i.2          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/15.b.i.3          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/15.b.ii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/15.b.iii          implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/15.b.iv           container    - -
+7.6/SR/15.b.iv.1         n/a          - - periods (T180)
+7.6/SR/15.b.iv.2         definition   - -
+7.6/SR/15.c              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
+7.6/SR/16                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/17                container    - -
+7.6/SR/17.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
+7.6/SR/17.b              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
+7.6/SR/18                definition   - -
+7.6/SR/19                container    - -
 7.6/SR/19.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
-7.6/SR/19.b              n/a          - - MERGE (F312)
-7.6/SR/20                container    - -
-7.6/SR/20.a              n/a          - - table functions (T326), collection derived tables (S301), JSON (T811), data change delta tables (T495) and row pattern recognition (R010)
-7.6/SR/20.b              container    - -
-7.6/SR/20.b.i            n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/20.b.ii           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/20.b.iii          n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/20.b.iv           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/21                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
-7.6/SR/21.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
-7.6/SR/21.b              n/a          - - views (F031-02, #731)
-7.6/SR/21.c              n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
-7.6/SR/22                n/a          - - views (F031-02, #731)
-7.6/SR/23                n/a          - - WITH (T121)
-7.6/SR/24                definition   - -
-7.6/SR/25                n/a          - - data change delta tables (T495)
-7.6/SR/26                definition   - -
-7.6/SR/27                definition   - -
+7.6/SR/19.b              definition   - -
+7.6/SR/20                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
+7.6/SR/20.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_inner_join.sql
+7.6/SR/20.b              n/a          - - MERGE (F312)
+7.6/SR/21                container    - -
+7.6/SR/21.a              n/a          - - table functions (T326), collection derived tables (S301), JSON (T811), data change delta tables (T495) and row pattern recognition (R010)
+7.6/SR/21.b              container    - -
+7.6/SR/21.b.i            n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
+7.6/SR/21.b.ii           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
+7.6/SR/21.b.iii          n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
+7.6/SR/21.b.iv           n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
+7.6/SR/22                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
+7.6/SR/22.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
+7.6/SR/22.b              n/a          - - views (F031-02, #731)
+7.6/SR/22.c              n/a          - - a derived table can't be updated, there are no views (F031-02, #731)
 7.6/AR/1                 n/a          - - privileges (E081, #732)
 7.6/AR/1.a               n/a          - - privileges (E081, #732)
 7.6/AR/1.b               container    - -
@@ -340,6 +333,7 @@
 7.6/GR/5.c               n/a          - - data change delta tables (T495)
 7.6/GR/5.c.i             n/a          - - data change delta tables (T495)
 7.6/GR/5.c.ii            n/a          - - data change delta tables (T495)
+7.6/GR/5.d               n/a          - - data change delta tables (T495)
 7.6/GR/6                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_10_nested_join.sql
 7.6/GR/7                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/7.a               n/a          - - sampling (T613)
@@ -353,7 +347,9 @@
 7.6/GR/7.b               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/8                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/CR/1                 n/a          - - row pattern recognition (R010)
-7.6/CR/2                 n/a          - - arrays (S091) and multisets (S271)
+7.6/CR/2                 n/a          - - arrays (S091)
+7.6/CR/2.a               n/a          - - arrays (S091)
+7.6/CR/2.b               n/a          - - arrays (S091) and multisets (S271)
 7.6/CR/3                 n/a          - - LATERAL (T491)
 7.6/CR/4                 n/a          - - WITH (T121)
 7.6/CR/5                 n/a          - - ONLY (S111)
@@ -557,31 +553,26 @@
 7.10/SR/11.c             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
 7.10/SR/11.d             definition   - -
 7.10/SR/11.e             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_nested_join.sql
-7.10/SR/12               definition   - -
-7.10/SR/12.a             definition   - -
-7.10/SR/12.b             definition   - -
-7.10/SR/12.c             definition   - -
-7.10/SR/12.d             n/a          - - partitioned join tables (F403)
-7.10/SR/13               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
+7.10/SR/12               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
+7.10/SR/13               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
+7.10/SR/13.a             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
+7.10/SR/13.b             n/a          - - NATURAL (F401)
+7.10/SR/13.c             n/a          - - partitioned join tables (F403)
+7.10/SR/13.d             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
 7.10/SR/14               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
 7.10/SR/14.a             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
-7.10/SR/14.b             n/a          - - NATURAL (F401)
-7.10/SR/14.c             n/a          - - partitioned join tables (F403)
-7.10/SR/14.d             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
-7.10/SR/15               implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
-7.10/SR/15.a             implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql
-7.10/SR/15.b             n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.i           n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.i.1         n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.i.2         n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.ii          n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.ii.1        n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.ii.2        n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.iii         n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.iii.1       n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.iii.2       n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.b.iv          n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.c             impl-defined vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING is the same as 15.b.iii
+7.10/SR/14.b             n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.i           n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.i.1         n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.i.2         n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.ii          n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.ii.1        n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.ii.2        n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.iii         n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.iii.1       n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.iii.2       n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.b.iv          n/a          - - enhanced nullability determination (T101)
+7.10/SR/14.c             impl-defined vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING is the same as 15.b.iii
 7.10/AR/1                n/a          - - privileges (E081, #732)
 7.10/AR/1.a              n/a          - - privileges (E081, #732)
 7.10/AR/1.a.i            n/a          - - privileges (E081, #732)
@@ -678,6 +669,8 @@
 7.11/SR/1.f              n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.i            n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.ii           n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.ii.1         n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.ii.2         n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.iii          n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.iv           n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.v            n/a          - - JSON_TABLE (T824)
@@ -685,12 +678,14 @@
 7.11/SR/1.f.vii          n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.viii         n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.ix           n/a          - - JSON_TABLE (T824)
-7.11/SR/1.f.ix.1         n/a          - - JSON_TABLE (T824)
-7.11/SR/1.f.ix.2         n/a          - - JSON_TABLE (T824)
-7.11/SR/1.f.x            container    - -
-7.11/SR/1.f.x.1          n/a          - - JSON_TABLE (T824)
-7.11/SR/1.f.x.2          n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.x            n/a          - - JSON_TABLE (T824)
 7.11/SR/1.f.xi           n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.xi.1         n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.xi.2         n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.xii          container    - -
+7.11/SR/1.f.xii.1        n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.xii.2        n/a          - - JSON_TABLE (T824)
+7.11/SR/1.f.xiii         n/a          - - JSON_TABLE (T824)
 7.11/SR/1.g              n/a          - - JSON_TABLE (T824)
 7.11/SR/1.g.i            n/a          - - JSON_TABLE (T824)
 7.11/SR/1.g.ii           n/a          - - JSON_TABLE (T824)
@@ -748,12 +743,11 @@
 7.11/SR/1.l              n/a          - - JSON_TABLE (T824)
 7.11/SR/1.m              n/a          - - JSON_TABLE (T824)
 7.11/SR/2                n/a          - - JSON_TABLE (T824)
-7.11/SR/3                n/a          - - JSON_TABLE (T824)
-7.11/SR/3.a              n/a          - - JSON_TABLE (T824)
-7.11/SR/3.b              container    - -
-7.11/SR/3.b.i            n/a          - - JSON_TABLE (T824)
-7.11/SR/3.b.ii           n/a          - - JSON_TABLE (T824)
-7.11/SR/3.b.iii          n/a          - - JSON_TABLE (T824)
+7.11/SR/2.a              n/a          - - JSON_TABLE (T824)
+7.11/SR/2.b              container    - -
+7.11/SR/2.b.i            n/a          - - JSON_TABLE (T824)
+7.11/SR/2.b.ii           n/a          - - JSON_TABLE (T824)
+7.11/SR/2.b.iii          n/a          - - JSON_TABLE (T824)
 7.11/GR/1                n/a          - - JSON_TABLE (T824)
 7.11/GR/1.a              n/a          - - JSON_TABLE (T824)
 7.11/GR/1.b              n/a          - - JSON_TABLE (T824)
@@ -773,12 +767,16 @@
 7.11/GR/1.e.ii.3         n/a          - - JSON_TABLE (T824)
 7.11/GR/1.e.ii.3.A       n/a          - - JSON_TABLE (T824)
 7.11/GR/1.e.ii.3.B       n/a          - - JSON_TABLE (T824)
-7.11/GR/1.e.ii.3.C       n/a          - - JSON_TABLE (T824)
+7.11/GR/1.e.ii.3.C       container    - -
+7.11/GR/1.e.ii.3.C.I     n/a          - - JSON_TABLE (T824)
+7.11/GR/1.e.ii.3.C.II    n/a          - - JSON_TABLE (T824)
 7.11/GR/1.e.ii.3.D       n/a          - - JSON_TABLE (T824)
 7.11/GR/1.e.ii.4         n/a          - - JSON_TABLE (T824)
-7.11/GR/1.e.ii.4.A       n/a          - - JSON_TABLE (T824)
+7.11/GR/1.e.ii.4.A       container    - -
 7.11/GR/1.e.ii.4.A.I     n/a          - - JSON_TABLE (T824)
 7.11/GR/1.e.ii.4.A.II    n/a          - - JSON_TABLE (T824)
+7.11/GR/1.e.ii.4.A.II.1  n/a          - - JSON_TABLE (T824)
+7.11/GR/1.e.ii.4.A.II.2  n/a          - - JSON_TABLE (T824)
 7.11/GR/1.e.ii.4.B       n/a          - - JSON_TABLE (T824)
 7.11/CR/1                n/a          - - JSON_TABLE (T824)
 7.11/CR/2                n/a          - - JSON_TABLE (T824)
@@ -788,6 +786,8 @@
 7.11/CR/6                n/a          - - JSON_TABLE (T824)
 7.11/CR/7                n/a          - - JSON_TABLE (T824)
 7.11/CR/8                n/a          - - JSON_TABLE (T824)
+7.11/CR/9                n/a          - - JSON_TABLE (T824)
+7.11/CR/10               n/a          - - JSON_TABLE (T824)
 # 7.12, <where clause>
 7.12                     implemented  vsql/std_2_7_12_where_clause.y tests/std_2_7_12_select_where.sql
 7.12/SR/1                implemented  vsql/planner.v tests/std_2_7_19_correlated_subquery.sql
@@ -795,7 +795,7 @@
 7.12/GR/1                implemented  vsql/std_2_7_12_where_clause.y tests/std_2_7_12_select_where.sql
 7.12/GR/2                implemented  vsql/std_2_8_21_search_condition.v tests/std_2_7_12_select_where.sql
 7.12/CR/1                partial      vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging_name_resolution.sql not after a dynamic parameter, or in the VALUES of an INSERT, or when the aggregate function is only in a subquery of the derived column
-# 7.13, <group by clause>
+# 7.13, <groupbyclause>
 7.13                     implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql only grouping column references (T431)
 7.13/SR/1                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_6_6_ambiguous_column.sql
 7.13/SR/2                implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_7_13_group_by.sql
@@ -926,17 +926,12 @@
 7.15/SR/6                n/a          - - window functions (T611)
 7.15/SR/7                n/a          - - window functions (T611)
 7.15/SR/8                n/a          - - window functions (T611)
-7.15/SR/8.a              n/a          - - window functions (T611)
-7.15/SR/8.b              n/a          - - window functions (T611)
-7.15/SR/8.c              n/a          - - window functions (T611)
-7.15/SR/8.d              n/a          - - window functions (T611)
 7.15/SR/9                n/a          - - window functions (T611)
 7.15/SR/10               n/a          - - window functions (T611)
 7.15/SR/10.a             n/a          - - window functions (T611)
 7.15/SR/10.b             n/a          - - window functions (T611)
 7.15/SR/10.c             n/a          - - window functions (T611)
 7.15/SR/10.d             n/a          - - window functions (T611)
-7.15/SR/10.e             n/a          - - window functions (T611)
 7.15/SR/11               n/a          - - window functions (T611)
 7.15/SR/12               n/a          - - window functions (T611)
 7.15/SR/12.a             n/a          - - window functions (T611)
@@ -945,20 +940,27 @@
 7.15/SR/12.d             n/a          - - window functions (T611)
 7.15/SR/12.e             n/a          - - window functions (T611)
 7.15/SR/13               n/a          - - window functions (T611)
-7.15/SR/13.a             n/a          - - window functions (T611)
-7.15/SR/13.a.i           container    - -
-7.15/SR/13.a.i.1         n/a          - - window functions (T611)
-7.15/SR/13.a.i.2         n/a          - - window functions (T611)
-7.15/SR/13.a.ii          n/a          - - window functions (T611)
-7.15/SR/13.a.iii         n/a          - - window functions (T611)
-7.15/SR/13.b             n/a          - - window functions (T611)
-7.15/SR/13.c             n/a          - - window functions (T611)
-7.15/SR/13.c.i           n/a          - - window functions (T611)
-7.15/SR/13.c.ii          n/a          - - window functions (T611)
 7.15/SR/14               n/a          - - window functions (T611)
+7.15/SR/14.a             n/a          - - window functions (T611)
+7.15/SR/14.b             n/a          - - window functions (T611)
+7.15/SR/14.c             n/a          - - window functions (T611)
+7.15/SR/14.d             n/a          - - window functions (T611)
+7.15/SR/14.e             n/a          - - window functions (T611)
 7.15/SR/15               n/a          - - window functions (T611)
 7.15/SR/15.a             n/a          - - window functions (T611)
+7.15/SR/15.a.i           container    - -
+7.15/SR/15.a.i.1         n/a          - - window functions (T611)
+7.15/SR/15.a.i.2         n/a          - - window functions (T611)
+7.15/SR/15.a.ii          n/a          - - window functions (T611)
+7.15/SR/15.a.iii         n/a          - - window functions (T611)
 7.15/SR/15.b             n/a          - - window functions (T611)
+7.15/SR/15.c             n/a          - - window functions (T611)
+7.15/SR/15.c.i           n/a          - - window functions (T611)
+7.15/SR/15.c.ii          n/a          - - window functions (T611)
+7.15/SR/16               n/a          - - window functions (T611)
+7.15/SR/17               n/a          - - window functions (T611)
+7.15/SR/17.a             n/a          - - window functions (T611)
+7.15/SR/17.b             n/a          - - window functions (T611)
 7.15/GR/1                n/a          - - window functions (T611)
 7.15/GR/1.a              n/a          - - window functions (T611)
 7.15/GR/1.b              n/a          - - window functions (T611)
@@ -1108,147 +1110,108 @@
 # 7.16, <query specification>
 7.16                     implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_12_select_where.sql
 7.16/SR/1                definition   - -
-7.16/SR/1.a              definition   - -
-7.16/SR/1.b              definition   - -
 7.16/SR/2                definition   - -
 7.16/SR/3                definition   - -
-7.16/SR/4                container    - -
-7.16/SR/4.a              implemented  vsql/std_2_7_16_query_specification.y tests/std_2_8_10_exists_predicate.sql
-7.16/SR/4.b              implemented  vsql/std_2_7_16_query_specification.y tests/std_2_7_16_select_list_asterisk.sql
-7.16/SR/5                implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
-7.16/SR/6                implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
-7.16/SR/7                n/a          - - row types (T051); there is no <all fields reference>
-7.16/SR/8                implemented  vsql/std_2_7_16_query_specification.y tests/std_2_7_16_select_list_asterisk.sql
-7.16/SR/8.a              definition   - -
-7.16/SR/8.b              definition   - -
-7.16/SR/8.c              definition   - -
-7.16/SR/8.d              definition   - -
-7.16/SR/8.e              definition   - -
-7.16/SR/8.f              implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
-7.16/SR/8.f.i            n/a          - - SQL parameters (T321)
-7.16/SR/8.f.ii           n/a          - - SQL parameters (T321)
-7.16/SR/8.f.iii          n/a          - - SQL parameters (T321)
-7.16/SR/8.f.iv           n/a          - - row types (T051)
-7.16/SR/8.f.v            n/a          - - row types (T051)
-7.16/SR/8.f.vi           implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
-7.16/SR/8.f.vii          implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
-7.16/SR/8.g              container    - -
-7.16/SR/8.g.i            implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
-7.16/SR/8.g.ii           n/a          - - row types (T051)
-7.16/SR/8.g.ii.1         n/a          - - row types (T051)
-7.16/SR/8.g.ii.2         n/a          - - row types (T051)
-7.16/SR/9                n/a          - - row types (T051)
-7.16/SR/9.a              n/a          - - row types (T051)
-7.16/SR/9.b              n/a          - - row types (T051)
-7.16/SR/10               definition   - -
+7.16/SR/4                implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/SR/5                definition   - -
+7.16/SR/5.a              definition   - -
+7.16/SR/5.b              definition   - -
+7.16/SR/6                n/a          - - window functions (T611)
+7.16/SR/7                container    - -
+7.16/SR/7.a              implemented  vsql/std_2_7_16_query_specification.y tests/std_2_8_10_exists_predicate.sql
+7.16/SR/7.b              implemented  vsql/std_2_7_16_query_specification.y tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/8                implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
+7.16/SR/9                n/a          - - row types (T051); there is no <all fields reference>
+7.16/SR/10               implemented  vsql/std_2_7_16_query_specification.y tests/std_2_7_16_select_list_asterisk.sql
 7.16/SR/10.a             definition   - -
 7.16/SR/10.b             definition   - -
-7.16/SR/11               n/a          - - window functions (T611)
+7.16/SR/10.c             definition   - -
+7.16/SR/10.d             definition   - -
+7.16/SR/10.e             definition   - -
+7.16/SR/10.f             implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/10.f.i           n/a          - - SQL parameters (T321)
+7.16/SR/10.f.ii          n/a          - - SQL parameters (T321)
+7.16/SR/10.f.iii         n/a          - - SQL parameters (T321)
+7.16/SR/10.f.iv          n/a          - - row types (T051)
+7.16/SR/10.f.v           n/a          - - row types (T051)
+7.16/SR/10.f.vi          implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/10.f.vii         implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/10.g             container    - -
+7.16/SR/10.g.i           implemented  vsql/planner.v tests/std_2_7_16_select_list_asterisk.sql
+7.16/SR/10.g.ii          n/a          - - row types (T051)
+7.16/SR/10.g.ii.1        n/a          - - row types (T051)
+7.16/SR/10.g.ii.2        n/a          - - row types (T051)
+7.16/SR/11               n/a          - - row types (T051)
+7.16/SR/11.a             n/a          - - row types (T051)
+7.16/SR/11.b             n/a          - - row types (T051)
 7.16/SR/12               n/a          - - window functions (T611)
 7.16/SR/12.a             n/a          - - window functions (T611)
 7.16/SR/12.b             n/a          - - window functions (T611)
-7.16/SR/13               n/a          - - window functions (T611)
-7.16/SR/13.a             container    - -
-7.16/SR/13.a.i           n/a          - - window functions (T611)
-7.16/SR/13.a.i.1         n/a          - - window functions (T611)
-7.16/SR/13.a.i.2         n/a          - - window functions (T611)
-7.16/SR/13.a.i.2.A       n/a          - - window functions (T611)
-7.16/SR/13.a.i.2.B       n/a          - - window functions (T611)
-7.16/SR/13.a.ii          n/a          - - window functions (T611)
+7.16/SR/13               container    - -
+7.16/SR/13.a             n/a          - - window functions (T611)
 7.16/SR/13.b             n/a          - - window functions (T611)
-7.16/SR/13.c             n/a          - - window functions (T611)
-7.16/SR/13.d             n/a          - - window functions (T611)
-7.16/SR/13.e             n/a          - - window functions (T611)
-7.16/SR/13.f             n/a          - - window functions (T611)
-7.16/SR/13.g             n/a          - - window functions (T611)
-7.16/SR/13.h             n/a          - - window functions (T611)
-7.16/SR/13.i             n/a          - - window functions (T611)
-7.16/SR/13.j             n/a          - - window functions (T611)
-7.16/SR/13.k             n/a          - - window functions (T611)
-7.16/SR/13.l             n/a          - - window functions (T611)
-7.16/SR/13.m             n/a          - - window functions (T611)
-7.16/SR/13.n             n/a          - - window functions (T611)
-7.16/SR/13.o             n/a          - - window functions (T611)
-7.16/SR/13.o.i           n/a          - - window functions (T611)
-7.16/SR/13.o.ii          n/a          - - window functions (T611)
-7.16/SR/13.o.iii         n/a          - - window functions (T611)
-7.16/SR/13.p             n/a          - - window functions (T611)
-7.16/SR/13.q             n/a          - - window functions (T611)
-7.16/SR/13.r             n/a          - - window functions (T611)
-7.16/SR/13.s             n/a          - - window functions (T611)
-7.16/SR/13.t             n/a          - - window functions (T611)
-7.16/SR/13.u             n/a          - - window functions (T611)
-7.16/SR/14               definition   - -
-7.16/SR/15               definition   - -
-7.16/SR/15.a             definition   - -
-7.16/SR/15.b             definition   - -
-7.16/SR/15.c             definition   - -
-7.16/SR/15.d             definition   - -
-7.16/SR/15.e             definition   - -
-7.16/SR/15.f             definition   - -
-7.16/SR/15.g             definition   - -
-7.16/SR/16               implemented  vsql/planner.v tests/std_2_10_9_set_functions.sql
-7.16/SR/17               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_13_group_by.sql
-7.16/SR/18               implemented  vsql/planner.v tests/std_11_5_21_columns.sql
-7.16/SR/19               container    - -
-7.16/SR/19.a             implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
-7.16/SR/19.b             implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
-7.16/SR/19.c             n/a          - - SQL parameters (T321)
-7.16/SR/19.d             impl-defined vsql/planner.v tests/std_2_7_3_values.sql COL1, COL2, etc, by the position of the column
-7.16/SR/20               implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
-7.16/SR/21               implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
-7.16/SR/21.a             implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
-7.16/SR/21.b             n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.i           n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.ii          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.iii         n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.iv          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.v           n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.vi          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.vii         n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.viii        n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.ix          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.x           n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xi          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xii         n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xiii        n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xiv         n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xv          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xvi         n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xvii        n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xviii       n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xix         n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.b.xx          n/a          - - enhanced nullability determination (T101)
-7.16/SR/21.c             impl-defined - - there are no other rules
-7.16/SR/22               definition   - -
-7.16/SR/23               n/a          - - updatable joins (T111)
-7.16/SR/23.a             n/a          - - updatable joins (T111)
+7.16/SR/14               implemented  vsql/planner.v tests/std_2_10_9_set_functions.sql
+7.16/SR/15               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_13_group_by.sql
+7.16/SR/16               implemented  vsql/planner.v tests/std_11_5_21_columns.sql
+7.16/SR/17               container    - -
+7.16/SR/17.a             implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/SR/17.b             implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/SR/17.c             n/a          - - SQL parameters (T321)
+7.16/SR/17.d             impl-defined vsql/planner.v tests/std_2_7_3_values.sql COL1, COL2, etc, by the position of the column
+7.16/SR/18               implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
+7.16/SR/19               implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
+7.16/SR/19.a             implemented  vsql/planner.v tests/std_2_7_16_result_column_nullability.sql
+7.16/SR/19.b             n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.i           n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.ii          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.iii         n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.iv          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.v           n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.vi          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.vii         n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.viii        n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.ix          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.x           n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xi          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xii         n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xiii        n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xiv         n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xv          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xvi         n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xvii        n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xviii       n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xix         n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.b.xx          n/a          - - enhanced nullability determination (T101)
+7.16/SR/19.c             impl-defined - - there are no other rules
+7.16/SR/20               definition   - -
+7.16/SR/21               n/a          - - updatable joins (T111)
+7.16/SR/21.a             n/a          - - updatable joins (T111)
+7.16/SR/21.b             n/a          - - updatable joins (T111)
+7.16/SR/21.c             n/a          - - updatable joins (T111)
+7.16/SR/22               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/22.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/22.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/22.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/22.d             n/a          - - system-versioned tables (T180)
+7.16/SR/22.e             n/a          - - data change delta tables (T495)
+7.16/SR/23               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/23.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/23.b             n/a          - - updatable joins (T111)
-7.16/SR/23.c             n/a          - - updatable joins (T111)
 7.16/SR/24               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/24.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/24.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/24.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/24.d             n/a          - - system-versioned tables (T180)
-7.16/SR/24.e             n/a          - - data change delta tables (T495)
 7.16/SR/25               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/25.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/25.b             n/a          - - updatable joins (T111)
-7.16/SR/26               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/27               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/27.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/27.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/27.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/27.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/28               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable joins (T111)
-7.16/SR/29               definition   - -
-7.16/SR/29.a             definition   - -
+7.16/SR/25.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/25.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/25.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/26               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable joins (T111)
+7.16/SR/27               definition   - -
+7.16/SR/27.a             definition   - -
+7.16/SR/27.b             n/a          - - updatable joins (T111)
+7.16/SR/28               n/a          - - INSERT through a cursor or view (F031-02, #731)
+7.16/SR/29               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/29.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/29.b             n/a          - - updatable joins (T111)
-7.16/SR/30               n/a          - - INSERT through a cursor or view (F031-02, #731)
-7.16/SR/31               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/31.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/31.b             n/a          - - updatable joins (T111)
-7.16/SR/32               implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
+7.16/SR/30               implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
 7.16/GR/1                container    - -
 7.16/GR/1.a              implemented  vsql/planner.v tests/std_2_7_12_select_where.sql
 7.16/GR/1.b              implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_13_group_by.sql
@@ -1394,67 +1357,52 @@
 7.17/SR/20               definition   - -
 7.17/SR/21               definition   - -
 7.17/SR/22               definition   - -
-7.17/SR/23               n/a          - - views (F031-02, #731) and WITH (T121)
-7.17/SR/23.a             n/a          - - views (F031-02, #731)
-7.17/SR/23.b             n/a          - - WITH (T121)
+7.17/SR/23               definition   - -
+7.17/SR/23.a             definition   - -
+7.17/SR/23.b             definition   - -
+7.17/SR/23.c             definition   - -
+7.17/SR/23.d             definition   - -
+7.17/SR/23.e             definition   - -
 7.17/SR/24               definition   - -
 7.17/SR/24.a             definition   - -
 7.17/SR/24.b             definition   - -
 7.17/SR/24.c             definition   - -
 7.17/SR/24.d             definition   - -
-7.17/SR/24.e             definition   - -
-7.17/SR/24.f             definition   - -
-7.17/SR/24.f.i           definition   - -
-7.17/SR/24.f.ii          definition   - -
-7.17/SR/24.f.ii.1        definition   - -
-7.17/SR/24.f.ii.2        definition   - -
-7.17/SR/24.f.ii.3        definition   - -
-7.17/SR/25               definition   - -
-7.17/SR/25.a             definition   - -
-7.17/SR/25.b             definition   - -
-7.17/SR/25.c             definition   - -
-7.17/SR/25.d             definition   - -
-7.17/SR/25.e             definition   - -
-7.17/SR/26               definition   - -
+7.17/SR/24.d.i           n/a          - - updatable unions (T111)
+7.17/SR/24.d.ii          definition   - -
+7.17/SR/25               n/a          - - SQL-invoked routines (T321)
+7.17/SR/26               implemented  vsql/planner.v tests/std_2_7_17_order.sql
 7.17/SR/26.a             definition   - -
-7.17/SR/26.b             definition   - -
+7.17/SR/26.b             implemented  vsql/planner.v tests/std_2_7_17_order.sql a sort key without a column reference, or with a subquery or an aggregate function, is also allowed (V202-01, V202-02, V202-03)
 7.17/SR/26.c             definition   - -
-7.17/SR/26.d             definition   - -
-7.17/SR/26.d.i           n/a          - - updatable unions (T111)
-7.17/SR/26.d.ii          definition   - -
-7.17/SR/27               n/a          - - SQL-invoked routines (T321)
-7.17/SR/28               implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.a             definition   - -
-7.17/SR/28.b             implemented  vsql/planner.v tests/std_2_7_17_order.sql a sort key without a column reference, or with a subquery or an aggregate function, is also allowed (V202-01, V202-02, V202-03)
-7.17/SR/28.c             definition   - -
-7.17/SR/28.d             container    - -
-7.17/SR/28.d.i           implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.1         implemented  vsql/planner.v tests/std_2_7_17_union_except.sql
-7.17/SR/28.d.i.2         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.3         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.4         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.5         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.6         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.6.A       container    - -
-7.17/SR/28.d.i.6.A.I     implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.6.A.II    implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.6.B       implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.7         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.8         implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.9         container    - -
-7.17/SR/28.d.i.9.A       implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.9.B       container    - -
-7.17/SR/28.d.i.9.B.I     implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.9.B.II    implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.9.B.III   implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.10        implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.i.11        implemented  vsql/planner.v tests/std_2_7_17_order.sql
-7.17/SR/28.d.ii          implemented  vsql/planner.v tests/std_2_7_17_union_except.sql
-7.17/SR/28.e             definition   - -
-7.17/SR/29               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
-7.17/SR/30               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
-7.17/SR/31               n/a          - - FETCH FIRST PERCENT (F866)
-7.17/SR/32               n/a          - - FETCH FIRST WITH TIES (F867)
+7.17/SR/26.d             container    - -
+7.17/SR/26.d.i           implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.1         implemented  vsql/planner.v tests/std_2_7_17_union_except.sql
+7.17/SR/26.d.i.2         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.3         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.4         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.5         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.6         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.6.A       container    - -
+7.17/SR/26.d.i.6.A.I     implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.6.A.II    implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.6.B       implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.7         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.8         implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.9         container    - -
+7.17/SR/26.d.i.9.A       implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.9.B       container    - -
+7.17/SR/26.d.i.9.B.I     implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.9.B.II    implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.9.B.III   implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.10        implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.i.11        implemented  vsql/planner.v tests/std_2_7_17_order.sql
+7.17/SR/26.d.ii          implemented  vsql/planner.v tests/std_2_7_17_union_except.sql
+7.17/SR/26.e             definition   - -
+7.17/SR/27               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/SR/28               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
+7.17/SR/29               n/a          - - FETCH FIRST PERCENT (F866)
+7.17/SR/30               n/a          - - FETCH FIRST WITH TIES (F867)
 7.17/GR/1                n/a          - - WITH (T121)
 7.17/GR/1.a              n/a          - - WITH (T121)
 7.17/GR/1.b              n/a          - - WITH (T121)
@@ -1488,8 +1436,6 @@
 7.17/GR/3.b.iii.1        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/GR/3.b.iii.2        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/GR/3.b.iii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
-7.17/GR/3.b.iii.2.A.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
-7.17/GR/3.b.iii.2.A.II   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/GR/3.b.iii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/GR/3.b.iii.2.B.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/GR/3.b.iii.2.B.II   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
@@ -1539,10 +1485,10 @@
 7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
 7.17/CR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
-7.17/CR/8                n/a          - - CORRESPONDING (F301)
-7.17/CR/9                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql,tests/std_2_7_17_intersect.sql
-7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
-7.17/CR/11               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/8                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
+7.17/CR/9                n/a          - - CORRESPONDING (F301)
+7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql,tests/std_2_7_17_intersect.sql
+7.17/CR/11               implemented  vsql/std_2_7_17_query_expression.y tests/std_1_8_5_flagging.sql
 7.17/CR/12               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.17/CR/13               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.17/CR/14               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
@@ -1553,35 +1499,38 @@
 7.17/CR/19               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.17/CR/20               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
 7.17/CR/21               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
-7.17/CR/22               n/a          - - FETCH FIRST PERCENT (F866)
-7.17/CR/23               n/a          - - FETCH FIRST WITH TIES (F867)
+7.17/CR/22               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_1_8_5_flagging.sql
+7.17/CR/23               n/a          - - FETCH FIRST PERCENT (F866)
+7.17/CR/24               n/a          - - FETCH FIRST WITH TIES (F867)
+7.17/CR/25               n/a          - - ORDER BY in grouped table (F868, #1187)
 # 7.18, <search or cycle clause>
 7.18                     n/a          - - recursive queries (T131)
 7.18/SR/1                n/a          - - recursive queries (T131)
 7.18/SR/2                n/a          - - recursive queries (T131)
-7.18/SR/2.a              n/a          - - recursive queries (T131)
-7.18/SR/2.a.i            n/a          - - recursive queries (T131)
-7.18/SR/2.a.ii           n/a          - - recursive queries (T131)
-7.18/SR/2.b              container    - -
-7.18/SR/2.b.i            n/a          - - recursive queries (T131)
-7.18/SR/2.b.i.1          n/a          - - recursive queries (T131)
-7.18/SR/2.b.i.2          n/a          - - recursive queries (T131)
-7.18/SR/2.b.i.3          container    - -
-7.18/SR/2.b.i.3.A        n/a          - - recursive queries (T131)
-7.18/SR/2.b.i.3.B        n/a          - - recursive queries (T131)
-7.18/SR/2.b.ii           n/a          - - recursive queries (T131)
-7.18/SR/2.b.ii.1         n/a          - - recursive queries (T131)
-7.18/SR/2.b.ii.2         n/a          - - recursive queries (T131)
-7.18/SR/2.b.ii.3         n/a          - - recursive queries (T131)
-7.18/SR/2.b.ii.4         n/a          - - recursive queries (T131)
-7.18/SR/2.b.iii          container    - -
-7.18/SR/2.b.iii.1        n/a          - - recursive queries (T131)
-7.18/SR/2.b.iii.2        n/a          - - recursive queries (T131)
-7.18/SR/2.b.iii.3        n/a          - - recursive queries (T131)
-7.18/SR/2.b.iii.3.A      n/a          - - recursive queries (T131)
-7.18/SR/2.b.iii.3.B      n/a          - - recursive queries (T131)
-7.18/SR/2.b.iii.3.C      n/a          - - recursive queries (T131)
-7.18/SR/2.c              n/a          - - recursive queries (T131)
+7.18/SR/3                n/a          - - recursive queries (T131)
+7.18/SR/4                n/a          - - recursive queries (T131)
+7.18/SR/4.a              n/a          - - recursive queries (T131)
+7.18/SR/4.b              n/a          - - recursive queries (T131)
+7.18/SR/5                n/a          - - recursive queries (T131)
+7.18/SR/5.a              n/a          - - recursive queries (T131)
+7.18/SR/5.b              n/a          - - recursive queries (T131)
+7.18/SR/5.c              container    - -
+7.18/SR/5.c.i            n/a          - - recursive queries (T131)
+7.18/SR/5.c.ii           n/a          - - recursive queries (T131)
+7.18/SR/6                n/a          - - recursive queries (T131)
+7.18/SR/6.a              n/a          - - recursive queries (T131)
+7.18/SR/6.b              n/a          - - recursive queries (T131)
+7.18/SR/6.c              n/a          - - recursive queries (T131)
+7.18/SR/6.d              n/a          - - recursive queries (T131)
+7.18/SR/7                container    - -
+7.18/SR/7.a              n/a          - - recursive queries (T131)
+7.18/SR/7.b              n/a          - - recursive queries (T131)
+7.18/SR/7.c              n/a          - - recursive queries (T131)
+7.18/SR/7.c.i            n/a          - - recursive queries (T131)
+7.18/SR/7.c.ii           n/a          - - recursive queries (T131)
+7.18/SR/7.c.iii          n/a          - - recursive queries (T131)
+7.18/SR/8                n/a          - - recursive queries (T131)
+7.18/CR/1                n/a          - - recursive queries (T131)
 # 7.19, <subquery>
 7.19                     implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
 7.19/SR/1                n/a          - - data change delta tables (T495)

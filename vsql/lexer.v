@@ -183,8 +183,8 @@ fn tokenize(sql_stmt string) ![]Token {
 // character literal, F393 for a Unicode character string literal and T351 for a
 // bracketed comment.
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 3
-// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Conformance Rules, 6 and 11
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Conformance Rules, 3
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 6 and 11
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
@@ -215,7 +215,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		start_tokens := tokens.len
 		first_position := offset + i
 
-		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target
+		// ISO/IEC 9075-2:2023, 6.4, <value specification> and <target
 		// specification>
 		//
 		// Each <dynamic parameter specification> ("?") is named by its
@@ -350,7 +350,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 
 		// A character that doesn't start a token must be a separator.
 		//
-		// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 3
+		// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Syntax Rules, 3
 		if word == '' {
 			if !is_white_space(cs[i]) {
 				return sqlstate_42601('invalid character: ${cs[i]}')
@@ -563,7 +563,7 @@ fn is_limit_clause(tokens []Token, i int) bool {
 // features of a string with more than one part (a compound literal), including
 // the separators between the parts. See tokenize_with_features.
 //
-// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 1, 2 and 7
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 1, 2 and 7
 fn read_string_literal(cs []rune, start int) !(string, int, []string) {
 	mut word := ''
 	mut i := start + 1
@@ -619,8 +619,8 @@ fn read_string_literal(cs []rune, start int) !(string, int, []string) {
 // "1--1" is 1 followed by a comment, a subtraction of a negative number needs a
 // separator ("1 - -1").
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
-// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 4
 fn is_comment(cs []rune, i int) bool {
 	return i + 1 < cs.len && ((cs[i] == `-` && cs[i + 1] == `-`)
 		|| (cs[i] == `/` && cs[i + 1] == `*`))
@@ -663,7 +663,7 @@ fn skip_comment(cs []rune, start int) !int {
 // skip_separators returns the position after the white space and comments that
 // start at cs[i], which may be none of them.
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>
 fn skip_separators(cs []rune, start int) !int {
 	mut i := start
 	for i < cs.len {
@@ -683,7 +683,7 @@ fn skip_separators(cs []rune, start int) !int {
 // string, from the optional UESCAPE '<character>' after the string at cs[i],
 // and the position after it. Otherwise, the escape character is a backslash.
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 16 to 18
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Syntax Rules, 17 to 18
 fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
 	mut i := skip_separators(cs, start)!
 	if i + 7 > cs.len || cs[i..i + 7].string().to_upper() != 'UESCAPE'
@@ -709,7 +709,7 @@ fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
 // (such as \+01F600), or another escape character (for the escape character
 // itself).
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 19 to 23
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Syntax Rules, 20 to 23
 fn unescape_unicode(s string, escape rune) !string {
 	cs := s.runes()
 	mut result := []rune{}
@@ -767,7 +767,7 @@ fn is_exponent(cs []rune, i int) bool {
 }
 
 // is_identifier_char is true if c can be in a <regular identifier>. It's only
-// ASCII, rather than the Unicode letters and digits (ISO/IEC 9075-2:2016(E),
+// ASCII, rather than the Unicode letters and digits (ISO/IEC 9075-2:2023,
 // 5.2, <token> and <separator>, Syntax Rules, 1 and 2), which is #761.
 @[inline]
 fn is_identifier_char(c rune, is_not_first bool) bool {

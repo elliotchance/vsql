@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 5.3, Implicit set connection
+// ISO/IEC 9075-3:2003, 5.3, Implicit set connection
 //
 // Specify the rules for an implicit SET CONNECTION statement.
 //
@@ -33,14 +33,14 @@ fn implicit_set_connection(dc i64) ! {
 		return
 	}
 
-	// ISO/IEC 9075-3:2003(E), 5.3, Implicit set connection, General Rules, 2:
+	// ISO/IEC 9075-3:2003, 5.3, Implicit set connection, General Rules, 2:
 	// the current SQL-connection can't have an active SQL-transaction, since
 	// vsql doesn't support transactions over more than one SQL-server.
 	if current != 0 && connection_active(current) {
 		return cli_error('0A001', 'multiple server transactions')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 5.3, Implicit set connection, General Rules, 4-6:
+	// ISO/IEC 9075-3:2003, 5.3, Implicit set connection, General Rules, 4-6:
 	// the current SQL-connection becomes dormant, and DC becomes the current
 	// SQL-connection. Each connection keeps its own SQL-session (and server).
 	// Selecting a connection can't fail (General Rules, 3).

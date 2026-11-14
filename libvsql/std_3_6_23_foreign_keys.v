@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.23, ForeignKeys
+// ISO/IEC 9075-3:2003, 6.23, ForeignKeys
 //
 // Return a result set that contains information about foreign keys either in or
 // referencing a single specified table stored in the Information Schema of the

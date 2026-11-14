@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.15, DescribeCol
+// ISO/IEC 9075-3:2003, 6.15, DescribeCol
 //
 // Get column attributes.
 //
@@ -20,7 +20,7 @@ fn sql_describe_col(statement_handle SQLInteger, column_number i16, column_name 
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 

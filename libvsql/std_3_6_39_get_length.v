@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.39, GetLength
+// ISO/IEC 9075-3:2003, 6.39, GetLength
 //
 // Retrieve the length of the string value represented by a Large Object locator.
 //
@@ -25,9 +25,9 @@ fn sql_get_length(statement_handle SQLInteger, locator_type i16, locator SQLInte
 // invalid_locator is the exception condition that GetLength, GetPosition and
 // GetSubString raise:
 //
-// ISO/IEC 9075-3:2003(E), 6.39, GetLength, General Rules, 2, 3 and 5
-// ISO/IEC 9075-3:2003(E), 6.41, GetPosition, General Rules, 2, 3 and 5
-// ISO/IEC 9075-3:2003(E), 6.44, GetSubString, General Rules, 2, 3 and 5
+// ISO/IEC 9075-3:2003, 6.39, GetLength, General Rules, 2, 3 and 5
+// ISO/IEC 9075-3:2003, 6.41, GetPosition, General Rules, 2, 3 and 5
+// ISO/IEC 9075-3:2003, 6.44, GetSubString, General Rules, 2, 3 and 5
 //
 // type_error is the exception condition for a LocatorType that isn't a locator
 // type, which isn't the same for each routine.

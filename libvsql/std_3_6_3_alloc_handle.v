@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.3, AllocHandle
+// ISO/IEC 9075-3:2003, 6.3, AllocHandle
 //
 // Allocate a resource and assign a handle to it.
 //

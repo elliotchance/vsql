@@ -1,6 +1,6 @@
 // funcs.v registers all the inbuilt SQL functions. They aren't SQL-invoked
 // routines (there's no CREATE FUNCTION), but they have some of their
-// characteristics (ISO/IEC 9075-2:2016(E), 4.33, SQL-invoked routines).
+// characteristics (ISO/IEC 9075-2:2023, 4.35, SQL-invoked routines).
 
 module vsql
 
@@ -17,15 +17,15 @@ struct Func {
 	// function, this is the case for all builtin functions. Custom functions are
 	// always called because SQL defaults to CALLED ON NULL INPUT.
 	//
-	// ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked routine>
+	// ISO/IEC 9075-2:2023, 11.60, <SQL-invoked routine>
 	called_on_null_input bool
 	// is_deterministic is true when the function always returns the same result
 	// for the same arguments, so it can be used in a CHECK constraint. That's
 	// all builtin functions. Custom functions can't be declared DETERMINISTIC,
-	// so they're NOT DETERMINISTIC (the SQL default, see ISO/IEC 9075-2:2016(E),
-	// 4.22, Determinism).
+	// so they're NOT DETERMINISTIC (the SQL default, see ISO/IEC 9075-2:2023,
+	// 4.24, Determinism).
 	//
-	// ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked routine>
+	// ISO/IEC 9075-2:2023, 11.60, <SQL-invoked routine>
 	is_deterministic bool
 	// features are flagged when the function is called (see
 	// register_flagged_function). It's only used by the SQL Flagger.
@@ -99,9 +99,9 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// implementation-defined), and so do FLOOR and CEIL of an approximate number.
 	// None of them are called with a NULL argument, the result is NULL.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 13.b, 14.b and 16-18
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 20.b
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 1.b
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 13.b, 14.b and 16-18
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 20.b
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 1.b
 	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false, true, []})!
 	conn.register_func(Func{'ABS', [numeric], false, func_abs_numeric, numeric, false, true, []})!
 	conn.register_func(Func{'ABS', [decimal], false, func_abs_decimal, decimal, false, true, []})!
@@ -132,7 +132,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// The result of MOD has the type of the divisor, so there is one for each
 	// combination of integer types.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12.b
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 12.b
 	for dividend in [smallint, integer, bigint] {
 		for divisor in [smallint, integer, bigint] {
 			conn.register_func(Func{'MOD', [dividend, divisor], false, func_mod_integer, divisor, false, true, []})!
@@ -151,7 +151,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// (DOUBLE PRECISION). The result has the type of the count, which must be an
 	// exact numeric (see numeric_function_type), so there's one for each.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 21
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 21
 	for operand in [numeric, double_precision] {
 		for count in [smallint, integer, bigint, numeric] {
 			conn.register_func(Func{'WIDTH_BUCKET', [operand, operand, operand, count], false, func_width_bucket, count, false, true, []})!
@@ -178,8 +178,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// on the argument (see set_function_type) and the result is calculated by
 	// eval_set_function.
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e, 7.g.i and 7.h
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.i
+	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e, 7.g.i and 7.h
+	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
 			arg := Type{typ.value, 0, 0, false}
@@ -205,7 +205,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// PRECISION (see eval_binary_set_function), so they're the only aggregate
 	// functions with arguments that are implicitly cast (see find_function).
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Format
+	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Format
 	for name in binary_set_functions {
 		conn.register_func(Func{
 			name:        name

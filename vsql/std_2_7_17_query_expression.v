@@ -2,13 +2,13 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>
+// ISO/IEC 9075-2:2023, 7.17, <query expression>
 //
 // Specify a table.
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.15.3, Derived tables
+// ISO/IEC 9075-2:2023, 4.17.3, Derived tables
 
 struct QueryExpression {
 	body   SimpleTable
@@ -181,8 +181,8 @@ fn new_order_operation(order []SortSpecification, params map[string]Value, conn 
 // Without a query specification, the sort keys are only compiled against the
 // columns of the result, so the expression is just the name.
 //
-// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.a.i and 8.c
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28
+// ISO/IEC 9075-2:2023, 6.6, <identifier chain>, Syntax Rules, 9.a.i and 9.c
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 26
 fn (mut c Compiler) set_result_columns(body SimpleTable, columns Columns) ! {
 	mut exprs := columns.map(column_derived_column(Column{
 		name: Identifier{
@@ -300,8 +300,8 @@ fn sort_keys_cmp(conn &Connection, left []Value, right []Value, specs []SortSpec
 	// implementation-dependent order, which is the order they were read in since
 	// the merge sort in OrderOperation.execute is stable.
 	//
-	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>, Syntax Rules, 2 and 3
-	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 10.10, <sort specification list>, Syntax Rules, 2 and 3
+	// ISO/IEC 9075-2:2023, 10.10, <sort specification list>, General Rules, 1
 	for i, spec in specs {
 		if left[i].is_null && right[i].is_null {
 			continue
@@ -434,7 +434,7 @@ fn exact_integer(what string, value Value) !i64 {
 // INTERSECT. Each column has the combined type of that column in both queries
 // (9.5), and the name of that column in the left query.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16.b, 18 and 19.b
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 16.b, 18 and 19.b
 struct SetOperationOperation {
 	op      string
 	all     bool
@@ -497,7 +497,7 @@ fn (o &SetOperationOperation) columns() Columns {
 // Rows are duplicates when every value is equal, where NULLs are equal to each
 // other (4.1.5).
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, General Rules, 3.b
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 3.b
 fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
 	left := o.values(o.left.execute([]Row{})!, o.left.columns())!
 	right := o.values(o.right.execute([]Row{})!, o.right.columns())!

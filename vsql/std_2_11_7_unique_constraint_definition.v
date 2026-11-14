@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>
 //
 // Specify a uniqueness constraint for a table.
 //
@@ -10,7 +10,7 @@ module vsql
 //
 // The concept is described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.23.3.2, Unique constraints
+// ISO/IEC 9075-2:2023, 4.25.3.2, Unique constraints
 
 // The name is empty when the constraint doesn't have a <constraint name
 // definition> (see Table.name_constraints).
@@ -40,8 +40,8 @@ fn (c UniqueConstraint) str() string {
 // must be called from inside an isolation block. A PRIMARY KEY column can't be
 // NULL (see Column.not_null).
 //
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.e.i
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, General Rules, 3
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 6.e.i
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 3
 fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 	if t.primary_key.len == 0 {
 		return
@@ -78,9 +78,9 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 // Only the entries of the index of the constraint (see constraint_index) that
 // have the same values are read.
 //
-// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.d.ii
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, General Rules, 3
+// ISO/IEC 9075-2:2023, 4.25.2, Checking of constraints
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 6.d.ii
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 3
 fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 	if rows.len == 0 {
 		return
@@ -163,7 +163,7 @@ fn key_type_value(value Value, typ SQLType, time_zone i16) Value {
 // Otherwise, a change to a row that it can't see (or can still see after it
 // was deleted) would be lost, or a constraint would be checked against rows
 // that aren't the latest, which isn't allowed at any isolation level
-// (ISO/IEC 9075-2:2016(E), 4.41.4, Isolation levels of SQL-transactions).
+// (ISO/IEC 9075-2:2023, 4.43.4, Isolation levels of SQL-transactions).
 fn (mut f Storage) is_concurrent_write(object PageObject) bool {
 	if f.snapshot_isolation {
 		return (object.tid != f.transaction_id

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 10.4, <routine invocation>
+// ISO/IEC 9075-2:2023, 10.4, <routine invocation>
 //
 // Invoke an SQL-invoked routine.
 //
@@ -70,7 +70,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	}
 
 	if found_func.is_agg {
-		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2023, 6.9, <set function specification>, Syntax Rules, 1
 		for arg in e.args {
 			if arg.compile(mut c)!.contains_agg {
 				return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
@@ -85,7 +85,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			arg_types[0]), in_aggregate)!
 	}
 
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 21
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 21
 	if func_name == 'WIDTH_BUCKET' && arg_types[3].scale != 0 {
 		return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
 	}
@@ -101,7 +101,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 
 	// UPPER and LOWER have the declared type of their operand (see fold_result).
 	//
-	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 9
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 9
 	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
 	mut return_type := if is_fold {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false}
@@ -151,7 +151,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			// The bucket after the range (count + 1) may not fit in the type of
 			// the count, which is a 22003 error.
 			//
-			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 17.d.ii and 17.e.ii
+			// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 17.d.ii and 17.e.ii
 			if func_name == 'WIDTH_BUCKET' {
 				return cast(mut conn, 'WIDTH_BUCKET', result, return_type)!
 			}
@@ -177,8 +177,8 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 // maximum length is truncated, with a warning if any of the removed characters
 // aren't spaces. A type that doesn't have a length never truncates.
 //
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.g.i
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.g.ii
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 7.g.i
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 7.g.ii
 fn fold_result(mut conn Connection, result Value, typ Type) Value {
 	if typ.size == 0 {
 		return result.with_type(typ)

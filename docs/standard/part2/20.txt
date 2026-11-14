@@ -1,6 +1,6 @@
-# ISO/IEC 9075-2:2016(E)
+# ISO/IEC 9075-2:2023
 # id status code tests note (see docs/standard-index.rst)
-# 20, Dynamic SQL
+# 20, DynamicSQL
 20                       container    - -
 # 20.1, Description of SQL descriptor areas
 20.1                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c only the data types that vsql has, so LEVEL is always 0 (zero)
@@ -26,12 +26,13 @@
 20.1/SR/6.j              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.k              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.l              n/a          - - intervals (F052)
-20.1/SR/6.m              n/a          - - user-defined types (S023)
-20.1/SR/6.n              n/a          - - reference types (S041)
-20.1/SR/6.o              n/a          - - row types (T051)
-20.1/SR/6.p              n/a          - - arrays (S091)
-20.1/SR/6.q              n/a          - - multisets (S271)
-20.1/SR/6.r              n/a          - - there are no implementation-defined data types
+20.1/SR/6.m              n/a          - - JSON data type (T801)
+20.1/SR/6.n              n/a          - - user-defined types (S023)
+20.1/SR/6.o              n/a          - - reference types (S041)
+20.1/SR/6.p              n/a          - - row types (T051)
+20.1/SR/6.q              n/a          - - arrays (S091)
+20.1/SR/6.r              n/a          - - multisets (S271)
+20.1/SR/6.s              n/a          - - there are no implementation-defined data types
 20.1/SR/7                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c the character set isn't checked, since it's always UTF8
 20.1/SR/7.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -53,19 +54,20 @@
 20.1/SR/7.n              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.o              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.p              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.1/SR/7.q              n/a          - - user-defined types (S023)
-20.1/SR/7.r              n/a          - - reference types (S041)
-20.1/SR/7.s              n/a          - - row types (T051)
-20.1/SR/7.t              n/a          - - arrays (S091)
-20.1/SR/7.t.i            n/a          - - arrays (S091)
-20.1/SR/7.t.ii           n/a          - - arrays (S091)
+20.1/SR/7.q              n/a          - - JSON data type (T801)
+20.1/SR/7.r              n/a          - - user-defined types (S023)
+20.1/SR/7.s              n/a          - - reference types (S041)
+20.1/SR/7.t              n/a          - - row types (T051)
 20.1/SR/7.u              n/a          - - arrays (S091)
 20.1/SR/7.u.i            n/a          - - arrays (S091)
 20.1/SR/7.u.ii           n/a          - - arrays (S091)
-20.1/SR/7.v              n/a          - - multisets (S271)
+20.1/SR/7.v              n/a          - - arrays (S091)
+20.1/SR/7.v.i            n/a          - - arrays (S091)
+20.1/SR/7.v.ii           n/a          - - arrays (S091)
 20.1/SR/7.w              n/a          - - multisets (S271)
-20.1/SR/7.x              impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c a DOUBLE PRECISION matches a FLOAT, and a character string matches a NUMERIC, DECIMAL or datetime
-20.1/SR/7.y              n/a          - - there are no implementation-defined data types
+20.1/SR/7.x              n/a          - - multisets (S271)
+20.1/SR/7.y              impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c a DOUBLE PRECISION matches a FLOAT, and a character string matches a NUMERIC, DECIMAL or datetime
+20.1/SR/7.z              n/a          - - there are no implementation-defined data types
 20.1/SR/8                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/GR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c the codes of the SQL/CLI
 20.1/GR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
@@ -131,57 +133,57 @@
 20.5/SR/3.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/module_test.v
 20.5/SR/3.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/module_test.v
 20.5/SR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/module_test.v
-20.5/GR/1                definition   - -
+20.5/GR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.5/GR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.5/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.a.i            n/a          - - arrays (S091) and multisets (S271)
+20.5/GR/4.a.ii           n/a          - - row types (T051)
+20.5/GR/4.a.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.a.iv           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
+20.5/GR/4.b.ii.1         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
+20.5/GR/4.b.ii.2         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
+20.5/GR/4.b.ii.3         n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.5/GR/4.b.ii.3.A       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.5/GR/4.b.ii.3.B       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.5/GR/4.b.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.c.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.c.ii           impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c they are 0 (zero) or the zero-length string
+20.5/GR/4.c.iii          container    - -
+20.5/GR/4.c.iii.1        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c UTF8
+20.5/GR/4.c.iii.2        n/a          - - LOBs (T041)
+20.5/GR/4.c.iii.3        n/a          - - binary strings (T021)
+20.5/GR/4.c.iii.4        n/a          - - LOBs (T041)
+20.5/GR/4.c.iii.5        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.c.iii.6        n/a          - - intervals (F052)
+20.5/GR/4.c.iii.7        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 18
+20.5/GR/4.c.iii.8        n/a          - - DECFLOAT (T076)
+20.5/GR/4.c.iii.9        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 53
+20.5/GR/4.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.d.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.d.i.1          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.d.i.2          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.d.i.3          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.d.ii           n/a          - - intervals (F052)
+20.5/GR/4.d.ii.1         n/a          - - intervals (F052)
+20.5/GR/4.d.ii.2         n/a          - - intervals (F052)
+20.5/GR/4.d.ii.3         n/a          - - intervals (F052)
+20.5/GR/4.d.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/5                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.a.i            n/a          - - arrays (S091) and multisets (S271)
-20.5/GR/5.a.ii           n/a          - - row types (T051)
-20.5/GR/5.a.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.a.iv           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
-20.5/GR/5.b.ii.1         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
-20.5/GR/5.b.ii.2         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
-20.5/GR/5.b.ii.3         n/a          - - row types (T051), arrays (S091) and multisets (S271)
-20.5/GR/5.b.ii.3.A       n/a          - - row types (T051), arrays (S091) and multisets (S271)
-20.5/GR/5.b.ii.3.B       n/a          - - row types (T051), arrays (S091) and multisets (S271)
-20.5/GR/5.b.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.c.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.c.ii           impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c they are 0 (zero) or the zero-length string
-20.5/GR/5.c.iii          container    - -
-20.5/GR/5.c.iii.1        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c UTF8
-20.5/GR/5.c.iii.2        n/a          - - LOBs (T041)
-20.5/GR/5.c.iii.3        n/a          - - binary strings (T021)
-20.5/GR/5.c.iii.4        n/a          - - LOBs (T041)
-20.5/GR/5.c.iii.5        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.c.iii.6        n/a          - - intervals (F052)
-20.5/GR/5.c.iii.7        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 18
-20.5/GR/5.c.iii.8        n/a          - - DECFLOAT (T076)
-20.5/GR/5.c.iii.9        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 53
-20.5/GR/5.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.d.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.d.i.1          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.d.i.2          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.d.i.3          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.d.ii           n/a          - - intervals (F052)
-20.5/GR/5.d.ii.1         n/a          - - intervals (F052)
-20.5/GR/5.d.ii.2         n/a          - - intervals (F052)
-20.5/GR/5.d.ii.3         n/a          - - intervals (F052)
-20.5/GR/5.d.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/5.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/6                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/7                n/a          - - polymorphic table functions (B200)
-20.5/GR/8                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c - a component that was set before the exception condition keeps its value
-20.5/GR/9                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c there are no restrictions
+20.5/GR/6                n/a          - - polymorphic table functions (B200)
+20.5/GR/7                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c - a component that was set before the exception condition keeps its value
+20.5/GR/8                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c there are no restrictions
 20.5/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v vsql/module_test.v
 20.5/CR/2                n/a          - - polymorphic table functions (B200)
 # 20.6, <copy descriptor statement>
 20.6                     n/a          - - polymorphic table functions (B200)
+20.6/SR/1                n/a          - - polymorphic table functions (B200)
 20.6/GR/1                n/a          - - polymorphic table functions (B200)
 20.6/GR/2                n/a          - - polymorphic table functions (B200)
 20.6/GR/3                n/a          - - polymorphic table functions (B200)
@@ -333,21 +335,24 @@
 20.7/GR/5.a.xxviii       n/a          - - SET TIME ZONE (F411)
 20.7/GR/5.a.xxix         n/a          - - SQL-invoked routines (T321)
 20.7/GR/5.a.xxx          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
-20.7/GR/5.a.xxxi         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
-20.7/GR/5.a.xxxi.1       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.xxxi.2       n/a          - - row types (T051)
-20.7/GR/5.a.xxxii        n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.1      n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.2      n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.2.A    n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.2.B    n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.2.C    n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.2.D    n/a          - - window functions (T611)
-20.7/GR/5.a.xxxii.2.E    n/a          - - window functions (T611)
-20.7/GR/5.a.xxxiii       n/a          - - row pattern recognition (R010)
-20.7/GR/5.a.xxxiv        n/a          - - nested window functions (T619) and locators (T561)
-20.7/GR/5.a.xxxv         n/a          - - regular expressions (F841)
+20.7/GR/5.a.xxx.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
+20.7/GR/5.a.xxx.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
+20.7/GR/5.a.xxx.2.A      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxx.2.B      n/a          - - row types (T051)
+20.7/GR/5.a.xxxi         n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.1       n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2       n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2.A     n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2.B     n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2.C     n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2.D     n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2.E     n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii        n/a          - - row pattern recognition (R010)
+20.7/GR/5.a.xxxiii       n/a          - - nested window functions (T619) and locators (T561)
+20.7/GR/5.a.xxxiv        n/a          - - regular expressions (F841)
+20.7/GR/5.a.xxxv         n/a          - - locators (T561)
 20.7/GR/5.a.xxxvi        n/a          - - regular expressions (F841) and row pattern recognition (R010)
+20.7/GR/5.a.xxxvii       n/a          - - regular expressions (F841)
 20.7/GR/5.b              implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/6                implemented  vsql/std_2_20_7_prepare_statement.c,vsql/prepare.v libvsql/module/test_main.c,vsql/api_test.v
 20.7/GR/6.a              n/a          - - extended dynamic cursors (B032)
@@ -397,7 +402,7 @@
 20.10/SR/1.b             implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.10/SR/2               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.10/SR/3               n/a          - - DESCRIBE CURSOR (T472)
-20.10/SR/4               n/a          - - DESCRIBE INPUT (B032-01)
+20.10/SR/4               n/a          - - DESCRIBE INPUT (B036)
 20.10/GR/1               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/2               n/a          - - DESCRIBE CURSOR (T472)
 20.10/GR/2.a             n/a          - - DESCRIBE CURSOR (T472)
@@ -405,7 +410,7 @@
 20.10/GR/3               implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.10/GR/4               definition   - -
 20.10/GR/5               container    - -
-20.10/GR/5.a             n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/5.a             n/a          - - DESCRIBE INPUT (B036)
 20.10/GR/5.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/5.c             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters, so it's always 0 (zero)
 20.10/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
@@ -419,7 +424,7 @@
 20.10/GR/6.e             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.10/GR/6.f.i.1         n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/6.f.i.1         n/a          - - DESCRIBE INPUT (B036)
 20.10/GR/6.f.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters
 20.10/GR/6.f.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
@@ -434,10 +439,10 @@
 20.10/GR/7.c.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,vsql/api_test.v
-20.10/GR/7.c.ii          n/a          - - DESCRIBE INPUT (B032-01)
-20.10/GR/7.c.ii.1        n/a          - - DESCRIBE INPUT (B032-01)
-20.10/GR/7.c.ii.2        n/a          - - DESCRIBE INPUT (B032-01)
-20.10/GR/7.c.ii.3        n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/7.c.ii          n/a          - - DESCRIBE INPUT (B036)
+20.10/GR/7.c.ii.1        n/a          - - DESCRIBE INPUT (B036)
+20.10/GR/7.c.ii.2        n/a          - - DESCRIBE INPUT (B036)
+20.10/GR/7.c.ii.3        n/a          - - DESCRIBE INPUT (B036)
 20.10/GR/7.c.iii         container    - -
 20.10/GR/7.c.iii.1       n/a          - - row types (T051), arrays (S091) and multisets (S271)
 20.10/GR/7.c.iii.2       container    - -
@@ -790,6 +795,8 @@
 20.26/SR/1.a.ii          n/a          - - extended dynamic SQL (B032)
 20.26/SR/1.b             n/a          - - extended dynamic SQL (B032)
 20.26/SR/1.b.i           n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b.i.1         n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b.i.2         n/a          - - extended dynamic SQL (B032)
 20.26/SR/1.b.ii          container    - -
 20.26/SR/1.b.ii.1        n/a          - - extended dynamic SQL (B032)
 20.26/SR/1.b.ii.2        n/a          - - extended dynamic SQL (B032)

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>
+// ISO/IEC 9075-2:2023, 11.12, <alter column definition>
 //
 // Change a column and its definition.
 
@@ -19,12 +19,12 @@ struct AlterColumnDefinition {
 // table. Only the definition of the table is changed, the existing rows keep
 // their values.
 //
-// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rules, 4
-// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, General Rules, 1
+// ISO/IEC 9075-2:2023, 11.12, <alter column definition>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023, 11.12, <alter column definition>, General Rules, 1
 fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	column := table.column(d.column_name.sub_entity_name)!
 
-	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rules, 6 and 7
+	// ISO/IEC 9075-2:2023, 11.12, <alter column definition>, Syntax Rules, 6 and 7
 	is_identity := column.identity != none
 	if is_identity != (d.action is AlterIdentityColumnSpecification) {
 		return sqlstate_42601(if is_identity {
@@ -34,7 +34,7 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 		})
 	}
 
-	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rules, 9
+	// ISO/IEC 9075-2:2023, 11.12, <alter column definition>, Syntax Rules, 9
 	if column.generated != none && d.action is SetColumnDefaultClause {
 		return sqlstate_42601('cannot set the default of generated column ${column.name.sub_entity_name}')
 	}

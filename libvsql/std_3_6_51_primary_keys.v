@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.51, PrimaryKeys
+// ISO/IEC 9075-3:2003, 6.51, PrimaryKeys
 //
 // Return a result set that contains a list of the column names that comprise
 // the primary key for a single specified table stored in the information

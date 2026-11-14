@@ -2,7 +2,7 @@ module main
 
 import encoding.utf8
 
-// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName
+// ISO/IEC 9075-3:2003, 6.55, SetCursorName
 //
 // Set a cursor name.
 //
@@ -26,18 +26,18 @@ fn sql_set_cursor_name(statement_handle SQLInteger, cursor_name &char, name_leng
 }
 
 fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
-	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 1 and 2: the
+	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 1 and 2: the
 	// statement can't have an open cursor.
 	if stmt.cursor != none {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
+	// ISO/IEC 9075-3:2003, 4.4.3, Null pointers
 	if cursor_name == unsafe { nil } {
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 3-5: the
+	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 3-5: the
 	// name can't be empty, and must be whole characters.
 	cv := input_string(cursor_name, i64(name_length))!
 	if cv.len == 0 {
@@ -47,7 +47,7 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 		return cli_error('34000', 'invalid cursor name')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 6 and 7: a
+	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 6 and 7: a
 	// name longer than an identifier can be (128 characters) is truncated
 	// with a warning.
 	mut cn := cv.trim(' ')
@@ -56,7 +56,7 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 		stmt.diag.warning('01004', 'string data, right truncation')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 8 and 9: CN
+	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 8 and 9: CN
 	// must be an <identifier>, it can't start with SQL_CUR or SQLCUR (which
 	// are the generated names), and it can't be the name of the cursor of
 	// another statement of the connection. The names are compared as the
@@ -72,7 +72,7 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 		}
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 10: a cursor
+	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 10: a cursor
 	// always has the name of its statement, so a closed cursor with another
 	// name doesn't exist any more.
 	if normalized != normalize_cursor_name(stmt.cursor_name) {

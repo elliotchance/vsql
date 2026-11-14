@@ -25,11 +25,11 @@
 # 4.2.7, Routine mapping concepts
 4.2.7                    n/a          - - routine mappings are SQL/MED (Part 9)
 # 4.2.8, Catalogs and schemas
-4.2.8                    implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_5_4_catalogs.sql
+4.2.8                    implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_5_4_catalogs.sql
 # 4.2.8.1, Catalogs
 4.2.8.1                  implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_5_4_catalogs.sql
 # 4.2.8.2, SQL-schemas
-4.2.8.2                  implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_11_1_create_schema.sql
+4.2.8.2                  implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
 # 4.2.8.3, The Information Schema
 4.2.8.3                  partial      vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql only some of the views (F021)
 # 4.2.8.4, The Definition Schema
@@ -55,7 +55,7 @@
 # 4.4.3.2, Character string types
 4.4.3.2                  implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 # 4.4.3.3, Boolean type
-4.4.3.3                  implemented  vsql/std_2_6_39_boolean_value_expression.v tests/std_2_6_1_boolean.sql BOOLEAN (T031)
+4.4.3.3                  implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_1_boolean.sql BOOLEAN (T031)
 # 4.4.3.4, Datetime types
 4.4.3.4                  implemented  vsql/time.v tests/std_2_6_1_date.sql
 # 4.4.3.5, Interval types
@@ -83,9 +83,9 @@
 # 4.5.3, Nullability
 4.5.3                    implemented  vsql/std_2_11_4_column_definition.v tests/std_2_11_3_create_table.sql
 # 4.6, SQL-schema objects
-4.6                      implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_11_1_create_schema.sql
+4.6                      implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
 # 4.6.1, General SQL-schema object information
-4.6.1                    implemented  vsql/std_2_4_26_sql_schemas.v tests/std_2_11_1_create_schema.sql
+4.6.1                    implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_11_1_create_schema.sql
 # 4.6.2, Descriptors relating to character sets
 4.6.2                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only the UTF8 character set and its default collation
 # 4.6.2.1, Character sets
@@ -127,7 +127,7 @@
 # 4.6.10, Schema routines
 4.6.10                   missing      - - SQL-invoked routines aren't supported (T321, #733)
 # 4.6.11, Sequence generators
-4.6.11                   implemented  vsql/std_2_4_27_sequence_generators.v tests/std_2_11_72_create_sequence.sql
+4.6.11                   implemented  vsql/std_2_4_29_sequence_generators.v tests/std_2_11_72_create_sequence.sql
 # 4.6.12, Privileges
 4.6.12                   missing      - - privileges aren't supported (E081, #732)
 # 4.6.13, Roles

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.18, Error
+// ISO/IEC 9075-3:2003, 6.18, Error
 //
 // Return diagnostic information.
 //
@@ -17,7 +17,7 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 	ch := i64(connection_handle)
 	eh := i64(environment_handle)
 
-	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 1.a-c: the
+	// ISO/IEC 9075-3:2003, 6.18, Error, General Rules, 1.a-c: the
 	// StatementHandle is used if it identifies an allocated SQL-statement,
 	// otherwise the ConnectionHandle is used if the StatementHandle is zero,
 	// otherwise the EnvironmentHandle is used if the ConnectionHandle is zero.
@@ -28,12 +28,12 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 	} else if ch == 0 && eh in envs {
 		sql_handle_env, eh
 	} else {
-		// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 1.d
+		// ISO/IEC 9075-3:2003, 6.18, Error, General Rules, 1.d
 		return sql_invalid_handle
 	}
 	mut diag := handle_diagnostics(ht, ih) or { return sql_invalid_handle }
 
-	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 2 and 3: the status
+	// ISO/IEC 9075-3:2003, 6.18, Error, General Rules, 2 and 3: the status
 	// records are of the last routine (other than Error, GetDiagField and
 	// GetDiagRec) for the handle. When they've all been returned, it's no data
 	// with an Sqlstate of 00000.
@@ -44,12 +44,12 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 		return sql_no_data
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 4: the first status
+	// ISO/IEC 9075-3:2003, 6.18, Error, General Rules, 4: the first status
 	// record that hasn't been returned is returned by GetDiagRec.
 	rc := sql_get_diag_rec(ht, SQLInteger(ih), i16(diag.processed + 1), sqlstate, native_error,
 		message_text, buffer_length, text_length)
 
-	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 5
+	// ISO/IEC 9075-3:2003, 6.18, Error, General Rules, 5
 	if rc != sql_error {
 		diag.processed++
 	}

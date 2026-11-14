@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.20, Execute
+// ISO/IEC 9075-3:2003, 6.20, Execute
 //
 // Execute a prepared statement.
 
@@ -20,19 +20,19 @@ fn sql_execute(statement_handle SQLInteger) i16 {
 fn execute(mut stmt Stmt) !i16 {
 	stmt.invoke(false)!
 
-	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 1 and 2: there must
+	// ISO/IEC 9075-3:2003, 6.20, Execute, General Rules, 1 and 2: there must
 	// be a prepared statement.
 	mut prepared := stmt.prepared or { return cli_error('HY010', 'function sequence error') }
 	stmt.diag.dynamic_function = stmt.prepared_function
 	stmt.diag.dynamic_function_code = stmt.prepared_function_code
 
-	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 3: there can't be
+	// ISO/IEC 9075-3:2003, 6.20, Execute, General Rules, 3: there can't be
 	// an open cursor.
 	if stmt.cursor != none {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 4-8: P is executed
+	// ISO/IEC 9075-3:2003, 6.20, Execute, General Rules, 4-8: P is executed
 	// with the values of its dynamic parameters. P only becomes the executed
 	// statement if it's successful, otherwise any statement that was already
 	// executed still is.

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 5.1, <CLI routine>
+// ISO/IEC 9075-3:2003, 5.1, <CLI routine>
 //
 // The routines are for C (Syntax Rule 1), and are declared in libvsql.h. Each
 // one is a CLI function (that returns its return code as an SQLRETURN, rather

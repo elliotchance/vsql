@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.35, GetEnvAttr
+// ISO/IEC 9075-3:2003, 6.35, GetEnvAttr
 //
 // Get the value of an SQL-environment attribute.
 
@@ -17,24 +17,24 @@ fn sql_get_env_attr(environment_handle SQLInteger, attribute SQLInteger, value v
 	defer {
 		entry.leave()
 	}
-	// ISO/IEC 9075-3:2003(E), 6.35, GetEnvAttr, General Rules, 1. vsql never
+	// ISO/IEC 9075-3:2003, 6.35, GetEnvAttr, General Rules, 1. vsql never
 	// has a skeleton SQL-environment.
 	mut env := envs[i64(environment_handle)] or { return sql_invalid_handle }
 	env.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 6.35, GetEnvAttr, General Rules, 2 and 3: the
+	// ISO/IEC 9075-3:2003, 6.35, GetEnvAttr, General Rules, 2 and 3: the
 	// attribute must be one of the codes in Table 15. There are no
 	// implementation-defined environment attributes (General Rules, 5).
 	if attribute != sql_attr_output_nts {
 		return env.diag.error(cli_error('HY092', 'invalid attribute identifier'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
+	// ISO/IEC 9075-3:2003, 4.4.3, Null pointers
 	if value == unsafe { nil } {
 		return env.diag.error(cli_error('HY009', 'invalid use of null pointer'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.35, GetEnvAttr, General Rules, 4
+	// ISO/IEC 9075-3:2003, 6.35, GetEnvAttr, General Rules, 4
 	unsafe {
 		*&SQLInteger(value) = if env.null_termination { sql_true } else { sql_false }
 	}

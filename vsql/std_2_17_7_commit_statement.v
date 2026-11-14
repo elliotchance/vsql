@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>
+// ISO/IEC 9075-2:2023, 17.7, <commit statement>
 //
 // Terminate the current SQL-transaction with commit.
 //
@@ -14,7 +14,7 @@ import time
 struct CommitStatement {
 	// chain is AND CHAIN. Without it, or with AND NO CHAIN, it's false.
 	//
-	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 17.7, <commit statement>, Syntax Rules, 1
 	chain bool
 }
 
@@ -32,7 +32,7 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 	characteristics := conn.current_characteristics()
 	constraint_modes := conn.commit_transaction()!
 
-	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 10.a
+	// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 10.a
 	if stmt.chain {
 		conn.end_transaction(true)
 		conn.chain_transaction(characteristics, constraint_modes)!
@@ -57,14 +57,14 @@ fn (mut conn Connection) commit_transaction() !map[string]map[string]bool {
 	// IMMEDIATE, so that nothing is committed if one isn't satisfied. The
 	// transaction is then rolled back, see commit_error.
 	//
-	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 5 and 6.a
+	// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 5 and 6.a
 	for _, mut catalog in conn.catalogs {
 		catalog.storage.set_all_constraint_modes(false)
 	}
 	conn.check_deferred_constraints()!
 	constraint_modes := conn.constraint_modes()
 
-	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.c and 9
+	// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 6.c and 9
 	for _, mut catalog in conn.catalogs {
 		catalog.commit_transaction()!
 	}
@@ -77,8 +77,8 @@ fn (mut conn Connection) commit_transaction() !map[string]map[string]bool {
 // when another connection has a SERIALIZABLE transaction, see isolation.v) is
 // already a transaction rollback, so it's kept as it is.
 //
-// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.a and 6.b
-// ISO/IEC 9075-3:2003(E), 6.17, EndTran, General Rules, 12.d.i and 12.d.iii
+// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 6.a and 6.b
+// ISO/IEC 9075-3:2003, 6.17, EndTran, General Rules, 12.d.i and 12.d.iii
 fn commit_error(err IError) IError {
 	sqlstate := sqlstate_from_int(err.code())
 	return if sqlstate.starts_with('23') {

@@ -32,7 +32,7 @@ Coffee |  4.50
 Why vsql?
 ---------
 
-- **Standard SQL.** vsql follows the SQL:2016 standard rather than one
+- **Standard SQL.** vsql follows the SQL:2023 standard rather than one
   database's dialect, so your queries, your skills and your schema carry over
   to other databases. Errors have the standard SQLSTATE codes, and the
   [compliance tables](https://vsql.readthedocs.io/en/latest/sql-compliance.html)

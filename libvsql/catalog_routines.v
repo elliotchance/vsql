@@ -9,7 +9,7 @@ module main
 // identifier, which is case insensitive unless it's quoted.
 //
 // There are no privileges, so feature C041 isn't supported and every row of
-// the INFORMATION_SCHEMA is described (for example ISO/IEC 9075-3:2003(E),
+// the INFORMATION_SCHEMA is described (for example ISO/IEC 9075-3:2003,
 // 6.63, Tables, General Rules, 6.b.ii).
 
 // The search pattern escape (see GetInfo).

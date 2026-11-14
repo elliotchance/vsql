@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo
+// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo
 //
 // Get information about <general value specification>s supported by the
 // implementation.
@@ -33,7 +33,7 @@ fn sql_get_session_info(connection_handle SQLInteger, info_type i16, info_value 
 	defer {
 		entry.leave()
 	}
-	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 1
+	// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo, General Rules, 1
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
@@ -42,24 +42,24 @@ fn sql_get_session_info(connection_handle SQLInteger, info_type i16, info_value 
 }
 
 fn get_session_info(mut dbc Dbc, h i64, info_type i16, info_value voidptr, buffer_length i16, string_length &i16) !i16 {
-	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 2: the
+	// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo, General Rules, 2: the
 	// connection must be established.
 	if dbc.conn == none {
 		return cli_error('08003', 'connection does not exist')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 3: if it
+	// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo, General Rules, 3: if it
 	// isn't the current SQL-connection, then the General Rules of Subclause
 	// 5.3, "Implicit set connection", are applied.
 	implicit_set_connection(h)!
 
-	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 4-6: the
+	// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo, General Rules, 4-6: the
 	// InfoType must be one of the codes in Table 29.
 	gvs := session_info[int(info_type)] or {
 		return cli_error('HY096', 'invalid information type')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 7-10: V is
+	// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo, General Rules, 7-10: V is
 	// the value selected by an implicit ExecDirect on a statement handle
 	// allocated for it (DISTINCT is the same as UNIQUE in the standard's
 	// query). Any exception condition that it raises is returned on the
@@ -76,12 +76,12 @@ fn get_session_info(mut dbc Dbc, h i64, info_type i16, info_value voidptr, buffe
 	}
 	value := stmt.rows[0].get_column(cursor.columns[0])!
 
-	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
+	// ISO/IEC 9075-3:2003, 4.4.3, Null pointers
 	if info_value == unsafe { nil } {
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 11 and 12
+	// ISO/IEC 9075-3:2003, 6.42, GetSessionInfo, General Rules, 11 and 12
 	retrieve_string(mut dbc.diag, null_termination(dbc.env), info_value, value.str(),
 		buffer_length, string_length, 2)!
 

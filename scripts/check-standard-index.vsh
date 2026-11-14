@@ -4,7 +4,7 @@
 // (see docs/standard-index.rst) and every citation of the standard in the
 // code. A citation looks like:
 //
-//   ISO/IEC 9075-2:2016(E), 8.8, <null predicate>, General Rules, 2.a
+//   ISO/IEC 9075-2:2023, 8.8, <null predicate>, General Rules, 2.a
 //
 // The edition must be the one in docs/standard/editions.txt, the Subclause
 // and its title must be in the index, and so must each rule. The title and
@@ -41,7 +41,7 @@ struct Row {
 
 struct Index {
 mut:
-	// citation is "ISO/IEC 9075-2:2016(E)" for part "2".
+	// citation is "ISO/IEC 9075-2:2023" for part "2".
 	citation map[string]string
 	// rows is by part, then row ID.
 	rows map[string]map[string]Row
@@ -53,7 +53,7 @@ struct Citation {
 	path string
 	line int
 	part string
-	// edition is ":2016(E)", or empty when it's missing.
+	// edition is ":2023", or empty when it's missing.
 	edition string
 	ids     []string
 }

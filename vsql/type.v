@@ -146,7 +146,7 @@ fn (t SQLType) supertype() (i16, i16) {
 // result, up to the maximum precision. It's 0 (the maximum) if either precision
 // is unknown.
 //
-// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, Syntax Rules, 1.c
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1.c
 fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 	typ := if t1.typ == .is_decimal || t2.typ == .is_decimal {
 		SQLType.is_decimal

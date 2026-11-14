@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 5.8, Implicit FETCH USING clause
+// ISO/IEC 9075-3:2003, 5.8, Implicit FETCH USING clause
 //
 // Specify the rules for an implicit FETCH USING clause.
 //
@@ -19,7 +19,7 @@ import vsql
 // 3.h.viii.2.B.II.1.a).
 
 // Codes from Table 25, "Multi-row fetch status codes", for the status of each
-// row of a rowset (ISO/IEC 9075-3:2003(E), 4.4.8, Obtaining diagnostics during
+// row of a rowset (ISO/IEC 9075-3:2003, 4.4.8, Obtaining diagnostics during
 // multi-row fetch).
 const sql_row_success = i16(0)
 const sql_row_no_row = i16(3)
@@ -39,7 +39,7 @@ struct BoundTarget {
 }
 
 // bound_targets returns the bound targets of the ARD of a statement, which
-// must be valid (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI item
+// must be valid (ISO/IEC 9075-3:2003, 5.13, Description of CLI item
 // descriptor areas, Syntax Rules, 13), otherwise an exception condition is
 // raised: dynamic SQL error — using clause does not match target
 // specifications.

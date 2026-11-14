@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.5, <contextually typed value specification>
+// ISO/IEC 9075-2:2023, 6.5, <contextually typed value specification>
 //
 // Specify a value whose data type is to be inferred from its context.
 
@@ -46,7 +46,7 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 // the column doesn't have one. An identity column gets the next value of its
 // sequence instead.
 //
-// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, General Rules, 3.a, 3.b and 3.e
+// ISO/IEC 9075-2:2023, 11.5, <default clause>, General Rules, 3.a, 3.b and 3.e
 struct DefaultSpecification {}
 
 fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {

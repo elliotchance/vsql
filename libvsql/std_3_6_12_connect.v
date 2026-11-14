@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.12, Connect
+// ISO/IEC 9075-3:2003, 6.12, Connect
 //
 // Establish a connection.
 //

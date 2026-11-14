@@ -7,7 +7,7 @@ module vsql
 // applies to (Description, 1 to 4). The items are the ones that SQL/CLI
 // defines, and there are no implementation-defined items:
 //
-//   ISO/IEC 9075-3:2003(E), 7.2, SQL_SIZING base table
+//   ISO/IEC 9075-3:2003, 7.2, SQL_SIZING base table
 //
 // A name is an <identifier>, which can have up to max_identifier_length
 // characters, and a table can have up to max_columns columns. SQLGetInfo

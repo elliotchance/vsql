@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions
+// ISO/IEC 9075-3:2003, 6.37, GetFunctions
 //
 // Determine whether a CLI routine is supported.
 
@@ -142,31 +142,31 @@ fn sql_get_functions(connection_handle SQLInteger, function_id i16, supported &i
 	defer {
 		entry.leave()
 	}
-	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 1
+	// ISO/IEC 9075-3:2003, 6.37, GetFunctions, General Rules, 1
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 2: the
+	// ISO/IEC 9075-3:2003, 6.37, GetFunctions, General Rules, 2: the
 	// connection must be established.
 	if dbc.conn == none {
 		return dbc.diag.error(cli_error('08003', 'connection does not exist'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 3
+	// ISO/IEC 9075-3:2003, 6.37, GetFunctions, General Rules, 3
 	implicit_set_connection(i64(connection_handle)) or { return dbc.diag.error(err) }
 
-	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 4 and 5: the
+	// ISO/IEC 9075-3:2003, 6.37, GetFunctions, General Rules, 4 and 5: the
 	// FunctionId must be one of the codes in Table 27 (cli_routines).
 	is_supported := cli_routines[int(function_id)] or {
 		return dbc.diag.error(cli_error('HY095', 'invalid FunctionId specified'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
+	// ISO/IEC 9075-3:2003, 4.4.3, Null pointers
 	if supported == unsafe { nil } {
 		return dbc.diag.error(cli_error('HY009', 'invalid use of null pointer'))
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 6
+	// ISO/IEC 9075-3:2003, 6.37, GetFunctions, General Rules, 6
 	unsafe {
 		*supported = if is_supported { 1 } else { 0 }
 	}

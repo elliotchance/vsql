@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>
+// ISO/IEC 9075-2:2023, 6.32, <string value expression>
 //
 // Specify a character string value or a binary string value.
 
@@ -56,7 +56,7 @@ fn (e Concatenation) pstr(params map[string]Value) string {
 }
 
 fn (e Concatenation) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.ix
+	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.ix
 	compiled_left, compiled_right := c.with_pair_types(e.left.compile(mut c)!, e.right.compile(mut c)!,
 		character_type)
 	typ := concatenation_type(compiled_left.typ, compiled_right.typ)!
@@ -68,7 +68,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 
 			if (left.typ.typ == .is_character || left.typ.typ == .is_varchar)
 				&& (right.typ.typ == .is_character || right.typ.typ == .is_varchar) {
-				// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General Rules, 1 and 2.b.i
+				// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 1 and 2.b.i
 				if left.is_null || right.is_null {
 					return new_null_value(.is_varchar).with_type(typ)
 				}
@@ -88,7 +88,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 // combined length of both operands. It's only fixed-length (CHARACTER) when
 // both operands are.
 //
-// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3
+// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3
 fn concatenation_type(left Type, right Type) !Type {
 	if !left.typ.is_string() || !right.typ.is_string() {
 		return new_type('CHARACTER VARYING', 0, 0)
@@ -97,7 +97,7 @@ fn concatenation_type(left Type, right Type) !Type {
 	// A size of 0 means the length is unknown, so the result is too.
 	size := if left.size > 0 && right.size > 0 { left.size + right.size } else { 0 }
 	if left.typ == .is_character && right.typ == .is_character && size > 0 {
-		// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3.b.iii
+		// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3.b.iii
 		if size > max_character_length {
 			return sqlstate_42601('CHARACTER(${size}) is longer than the maximum length of ${max_character_length}')
 		}
@@ -105,7 +105,7 @@ fn concatenation_type(left Type, right Type) !Type {
 		return new_type('CHARACTER', size, 0)
 	}
 
-	// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3.b.ii
+	// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3.b.ii
 	return new_type('CHARACTER VARYING', if size > max_character_length {
 		max_character_length
 	} else {
@@ -118,7 +118,7 @@ fn concatenation_type(left Type, right Type) !Type {
 // would've been rejected. Only spaces can be removed from the end of the result,
 // otherwise it's an error.
 //
-// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General Rules, 2.b.ii.3.B
+// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 2.b.ii.3.B
 fn limit_concatenation(s string) !string {
 	// The number of characters can't be more than the number of bytes.
 	if s.len <= max_character_length {

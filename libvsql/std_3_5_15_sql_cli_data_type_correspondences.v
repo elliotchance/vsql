@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 5.15, SQL/CLI data type correspondences
+// ISO/IEC 9075-3:2003, 5.15, SQL/CLI data type correspondences
 //
 // The codes for SQL data types (Table 6 and Table 40) and application data
 // types (Table 7), and the C type for each (Table 45).
@@ -80,8 +80,8 @@ fn c_type(code i16) ?vsql.SQLType {
 // here. A datetime or BOOLEAN can't be cast to a number: dynamic SQL error —
 // restricted data type attribute violation.
 //
-// ISO/IEC 9075-3:2003(E), 5.8, General Rules, 3.h.iii.1
-// ISO/IEC 9075-3:2003(E), 6.30, General Rules, 24.a
+// ISO/IEC 9075-3:2003, 5.8, General Rules, 3.h.iii.1
+// ISO/IEC 9075-3:2003, 6.30, General Rules, 24.a
 fn cast_value(stmt &Stmt, value vsql.Value, column vsql.Column, typ vsql.SQLType) !vsql.Value {
 	if typ != .is_varchar && column.typ.typ in [.is_date, .is_time_without_time_zone,
 		.is_time_with_time_zone, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone,

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation
+// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation
 //
 // Specify the rules for invocation of a <CLI routine>.
 //

@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 8.11, <unique predicate>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, Conformance Rules, 1
 unique_predicate:
   UNIQUE table_subquery {
     flag(mut yylex, 'F291')

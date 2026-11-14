@@ -2,7 +2,7 @@
  * test_returned_length_main.c tests RETURNED_LENGTH and RETURNED_OCTET_LENGTH
  * after an <output using clause> sets an item descriptor area.
  *
- * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 5.d.ii.2.B and 5.e.i.2.B.III
+ * ISO/IEC 9075-2:2023, 20.12, <output using clause>, General Rules, 5.d.ii.2.B and 5.e.i.2.B.III
  */
 
 #include <stdio.h>

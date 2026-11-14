@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 11.4, <column definition>
+// ISO/IEC 9075-2:2023, 11.4, <column definition>
 //
 // Define a column of a base table.
 

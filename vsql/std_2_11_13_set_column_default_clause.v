@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 11.13, <set column default clause>
+// ISO/IEC 9075-2:2023, 11.13, <set column default clause>
 //
 // Set the default clause for a column.
 
@@ -11,7 +11,7 @@ struct SetColumnDefaultClause {
 // execute returns the column with the new default, which is checked the same
 // way as the default of a column of a CREATE TABLE.
 //
-// ISO/IEC 9075-2:2016(E), 11.13, <set column default clause>, General Rules, 2
+// ISO/IEC 9075-2:2023, 11.13, <set column default clause>, General Rules, 2
 fn (c SetColumnDefaultClause) execute(mut conn Connection, column Column) !Column {
 	new_column := Column{
 		...column

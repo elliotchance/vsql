@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.40, GetParamData
+// ISO/IEC 9075-3:2003, 6.40, GetParamData
 //
 // Retrieve the value of a dynamic output parameter.
 //

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.41, GetPosition
+// ISO/IEC 9075-3:2003, 6.41, GetPosition
 //
 // Retrieve the starting position of a string value within another string value,
 // where the second string value is represented by a Large Object locator.

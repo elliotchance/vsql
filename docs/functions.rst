@@ -125,6 +125,12 @@ Each function also has a **Compatibility** section:
    * - ``FLOOR``
      - Rounding
      - T621
+   * - ``GREATEST``
+     - Conditional
+     - T054
+   * - ``LEAST``
+     - Conditional
+     - T054
    * - ``LISTAGG``
      - Aggregate
      - T625
@@ -1101,6 +1107,46 @@ The values are checked in order, and the values after the first one that is not
 - **Other databases:** ``COALESCE`` in all of them. There are also two
   argument versions: ``IFNULL`` (MySQL, SQLite), ``ISNULL`` (SQL Server) and
   ``NVL`` (Oracle).
+
+GREATEST and LEAST
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   GREATEST(ANY, ANY, ...) ANY
+   LEAST(ANY, ANY, ...) ANY
+
+``GREATEST`` returns the greatest of the values, and ``LEAST`` returns the
+least. If any of the values is ``NULL`` then the result is ``NULL``.
+
+It needs at least two values and they must be comparable with each other,
+otherwise it's a ``42883`` error. Like ``COALESCE``, the result has a type that
+can hold any of them, so ``GREATEST(1, 2.5)`` is a ``NUMERIC``.
+
+Strings that are only different in their trailing spaces are equal, such as
+``'a'`` and ``'a '``, so either one could be the result. That's why
+``GREATEST`` and ``LEAST`` of strings (or of times with a time zone) can't be
+used in a ``CHECK`` constraint or a generated column.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES GREATEST(1, 3, 2);
+  -- COL1: 3
+
+  VALUES LEAST('b', 'a', 'c');
+  -- COL1: a
+
+  VALUES GREATEST(1, CAST(NULL AS INT));
+  -- COL1: NULL
+
+**Compatibility**
+
+- **SQL standard:** Optional feature T054.
+- **Other databases:** ``GREATEST`` and ``LEAST`` in MySQL, PostgreSQL and
+  SQL Server, but PostgreSQL ignores ``NULL`` values instead. SQLite uses
+  ``MAX`` and ``MIN`` with more than one argument.
 
 NULLIF
 ^^^^^^

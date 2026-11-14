@@ -474,7 +474,7 @@ fn starts_value(token Token, reserved []string) bool {
 	}
 
 	return name !in reserved || name in ['CASE', 'CAST', 'COALESCE', 'CURRENT_CATALOG', 'CURRENT_SCHEMA',
-		'LOWER', 'MAX', 'MIN', 'NULLIF', 'SUBSTRING', 'TRIM', 'UPPER']
+		'GREATEST', 'LEAST', 'LOWER', 'MAX', 'MIN', 'NULLIF', 'SUBSTRING', 'TRIM', 'UPPER']
 }
 
 // is_limit_clause returns true if tokens[i] is the regular identifier LIMIT and

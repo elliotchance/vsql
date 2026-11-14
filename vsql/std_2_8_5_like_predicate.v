@@ -59,9 +59,9 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Syntax Rules, 1
 fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
-	compiled_right := e.right.compile(mut c)!
-	compiled_l := e.left.compile(mut c)!
-	compiled_escape := if escape := e.escape {
+	mut compiled_right := e.right.compile(mut c)!
+	mut compiled_l := e.left.compile(mut c)!
+	mut compiled_escape := if escape := e.escape {
 		escape.compile(mut c)!
 	} else {
 		CompileResult{
@@ -71,6 +71,8 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	has_escape := e.escape != none
+	compiled_l, compiled_right, compiled_escape = c.with_pattern_types(compiled_l, compiled_right,
+		compiled_escape, has_escape)
 	check_string_operands(e.operator(), compiled_l, compiled_right)!
 	if has_escape {
 		check_string_operands(e.operator(), compiled_l, compiled_escape)!

@@ -20,19 +20,104 @@ UTEST_F(db, 6_50_prepare_describe) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
 }
 
-/* A parameter's type is from the IPD. */
+/* The IPD describes each parameter, with the type from where it's used. */
 UTEST_F(db, 6_50_prepare_describe_parameter) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
   struct column col;
-  SQLINTEGER x;
+
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"VALUES ROW(CAST(? AS BIGINT), "
+                                  "CAST(? AS VARCHAR(7)), "
+                                  "CAST(? AS NUMERIC(5, 2)), CAST(? AS DATE))",
+                       SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 4);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_TOP_LEVEL_COUNT), 4);
+  for (SQLSMALLINT i = 1; i <= 4; i++) {
+    EXPECT_EQ(desc_short(ipd, i, SQL_DESC_NULLABLE), SQL_NULLABLE);
+    EXPECT_EQ(desc_short(ipd, i, SQL_DESC_UNNAMED), SQL_UNNAMED);
+    EXPECT_EQ(desc_short(ipd, i, SQL_DESC_PARAMETER_MODE), SQL_PARAM_MODE_IN);
+  }
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_BIGINT);
+  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_TYPE), SQL_VARCHAR);
+  EXPECT_EQ(desc_int(ipd, 2, SQL_DESC_LENGTH), 7);
+  EXPECT_EQ(desc_short(ipd, 3, SQL_DESC_TYPE), SQL_NUMERIC);
+  EXPECT_EQ(desc_short(ipd, 3, SQL_DESC_PRECISION), 5);
+  EXPECT_EQ(desc_short(ipd, 3, SQL_DESC_SCALE), 2);
+  EXPECT_EQ(desc_short(ipd, 4, SQL_DESC_TYPE), SQL_DATETIME);
+  EXPECT_EQ(desc_short(ipd, 4, SQL_DESC_DATETIME_INTERVAL_CODE),
+            SQL_CODE_DATE);
+
+  /* The IRD has the types of the parameters. */
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.type, SQL_BIGINT);
+}
+
+/* The IPD has as many item descriptor areas as there are parameters. */
+UTEST_F(db, 6_50_prepare_describe_parameter_count) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLINTEGER x = 0;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 2);
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES 1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 0);
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"VALUES ROW(1 = ?, 'a' = ?, ? = TRUE)",
+                       SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 3);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_SMALLINT);
+  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_TYPE), SQL_CHAR);
+  EXPECT_EQ(desc_int(ipd, 2, SQL_DESC_LENGTH), 1);
+  EXPECT_EQ(desc_short(ipd, 3, SQL_DESC_TYPE), SQL_BOOLEAN);
+}
+
+/* A parameter can be executed with only the APD, since the IPD is populated.
+ * The value is cast to the type of the parameter. */
+UTEST_F(db, 6_50_prepare_populated_ipd) {
+  SQLHDESC apd = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC);
+  char s[] = "42";
+  SQLINTEGER y = 0;
+
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES 1 + ?", SQL_NTS),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(apd, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_CHAR), 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(apd, 1, SQL_DESC_DATA_POINTER, s, 0), SQL_SUCCESS);
+  ASSERT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &y, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(y, 43);
+}
+
+/* A parameter whose type can't be determined is a syntax error. */
+UTEST_F(db, 6_50_prepare_undetermined_parameter) {
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES ? + ?", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42601");
+}
+
+/* A parameter whose type isn't known until the statement is executed (because
+ * it's not a query, INSERT, UPDATE or DELETE) keeps the IPD that the
+ * application set. */
+UTEST_F(db, 6_50_prepare_unknown_parameter_type) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLINTEGER x = 5;
 
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
                              SQL_INTEGER, SQL_BIGINT, 0, 0, &x, sizeof(x),
                              NULL),
             SQL_SUCCESS);
-  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES ?", SQL_NTS),
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"SET SCHEMA ?", SQL_NTS),
             SQL_SUCCESS);
-  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
-  EXPECT_EQ(col.type, SQL_BIGINT);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 1);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_BIGINT);
 }
 
 UTEST_F(db, 6_50_prepare_syntax_error) {

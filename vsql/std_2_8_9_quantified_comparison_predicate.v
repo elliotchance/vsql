@@ -21,8 +21,11 @@ fn (e QuantifiedComparisonPredicate) pstr(params map[string]Value) string {
 
 // plan_compared_subquery plans a subquery whose rows are compared with expr,
 // which is a row or a single value (see compile_fields).
-fn plan_compared_subquery(mut c Compiler, subquery Subquery, expr []CompileResult) !SubqueryPlan {
+fn plan_compared_subquery(mut c Compiler, subquery Subquery, mut expr []CompileResult) !SubqueryPlan {
 	plan := subquery.plan_row(mut c, expr.len)!
+
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xxii and 5.a.xxiii
+	expr = c.with_field_types(expr, plan.plan.columns().map(it.typ))
 	c.check_row_comparison(expr.map(it.typ), plan.plan.columns().map(it.typ), null_parameters(expr,
 		[]))!
 
@@ -30,8 +33,8 @@ fn plan_compared_subquery(mut c Compiler, subquery Subquery, expr []CompileResul
 }
 
 fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
-	compiled_expr := e.expr.compile_fields(mut c)!
-	plan := plan_compared_subquery(mut c, e.subquery, compiled_expr)!
+	mut compiled_expr := e.expr.compile_fields(mut c)!
+	plan := plan_compared_subquery(mut c, e.subquery, mut compiled_expr)!
 
 	return CompileResult{
 		run:          fn [e, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {

@@ -116,7 +116,7 @@ UTEST_F(db, 6_6_bind_parameter_null) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &ind),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? IS NULL"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER) IS NULL"), SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, value, sizeof(value), NULL),
@@ -133,11 +133,11 @@ UTEST_F(db, 6_6_bind_parameter_cast) {
                              SQL_CHAR, SQL_TYPE_DATE, 10, 0, s, sizeof(s),
                              NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS DATE)"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22007");
 
   s[10] = 0;
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS DATE)"), SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
@@ -153,7 +153,7 @@ UTEST_F(db, 6_6_bind_parameter_out_of_range) {
                              SQL_BIGINT, SQL_SMALLINT, 0, 0, &x, sizeof(x),
                              NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS SMALLINT)"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22003");
 }
 
@@ -165,8 +165,35 @@ UTEST_F(db, 6_6_bind_parameter_restricted) {
                              SQL_INTEGER, SQL_TYPE_DATE, 10, 0, &x, sizeof(x),
                              NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS DATE)"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
+}
+
+/* The value is cast again to the type of the parameter, which must also be
+ * allowed. */
+UTEST_F(db, 6_6_bind_parameter_restricted_parameter_type) {
+  SQLINTEGER x = 1, y = 0;
+  char s[] = "2026-10-26";
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_TYPE_DATE, 10, 0, s, sizeof(s),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
+
+  /* The IPD type can be different, as long as it can be cast. */
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_DOUBLE, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS SMALLINT) + 1"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &y, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(y, 2);
 }
 
 /* A string with a length in octets is the characters wholly contained in
@@ -180,7 +207,7 @@ UTEST_F(db, 6_6_bind_parameter_partial_character) {
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
                              SQL_CHAR, SQL_VARCHAR, 5, 0, s, sizeof(s), &len),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
@@ -199,7 +226,7 @@ UTEST_F(db, 6_6_bind_parameter_partial_character) {
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
 
   len = 2;
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
@@ -209,13 +236,13 @@ UTEST_F(db, 6_6_bind_parameter_partial_character) {
 
   strcpy(s, "a\xffz");
   len = 3;
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 
   /* A null terminated string can't end with part of a character. */
   strcpy(s, "a\xc3");
   len = SQL_NTS;
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(5))"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 }
 

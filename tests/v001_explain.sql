@@ -61,7 +61,7 @@ OFFSET 3 ROWS FETCH FIRST 2 ROWS ONLY;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T1.X INTEGER)
 
 -- # A dynamic parameter is shown with its value in place. A number in params
--- # is a DOUBLE PRECISION, so 2 is 2e0.
+-- # is a DOUBLE PRECISION, but it's cast to the INTEGER of x.
 /* extensions V001-01 */
 CREATE TABLE t1 (x INT);
 /* params 2 */
@@ -69,7 +69,7 @@ EXPLAIN SELECT * FROM t1 WHERE x = ?;
 -- msg: CREATE TABLE 1
 -- sql: EXPLAIN SELECT * FROM t1 WHERE x = 2.0e0
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER)
--- EXPLAIN: WHERE X = 2e0
+-- EXPLAIN: WHERE X = 2
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T1.X INTEGER)
 
 -- # Only a query, DELETE or UPDATE can be explained. Any other statement is a
@@ -199,12 +199,12 @@ EXPLAIN VALUES ROW('a' SIMILAR TO 'b', 'a' NOT SIMILAR TO 'b');
 EXPLAIN VALUES CAST(NULL AS INT);
 -- EXPLAIN: VALUES (COL1 INTEGER) = ROW(CAST(NULL AS INTEGER))
 
--- # A string parameter is shown as a literal, which decides the type.
+-- # A string parameter is shown as a literal.
 /* params 'abc' */
 /* extensions V001-01 */
-EXPLAIN VALUES ?;
--- sql: EXPLAIN VALUES 'abc'
--- EXPLAIN: VALUES (COL1 CHARACTER(3)) = ROW('abc')
+EXPLAIN VALUES CAST(? AS VARCHAR(5));
+-- sql: EXPLAIN VALUES CAST('abc' AS VARCHAR(5))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(5)) = ROW(CAST('abc' AS CHARACTER VARYING(5)))
 
 -- # A derived table is planned first, under its name, and is then read like a
 -- # table.

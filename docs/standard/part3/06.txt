@@ -647,7 +647,7 @@
 6.18/GR/4                implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 6.18/GR/5                implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 # 6.19, ExecDirect
-6.19                     partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c see #649
+6.19                     implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/1                definition   - -
 6.19/GR/2                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/3                definition   - -
@@ -659,11 +659,11 @@
 6.19/GR/5.a              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/5.b              definition   - -
 6.19/GR/6                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
-6.19/GR/7                partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c 7.c (#649)
+6.19/GR/7                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/7.a              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/7.b              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
-6.19/GR/7.c              missing      libvsql/std_3_6_19_exec_direct.v - the type of a dynamic parameter isn't determined (#649)
-6.19/GR/8                missing      libvsql/std_3_6_19_exec_direct.v - the type of a dynamic parameter isn't determined (#649)
+6.19/GR/7.c              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_50_prepare_test.c
+6.19/GR/8                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_50_prepare_test.c
 6.19/GR/9                n/a          - - there are no user-defined types
 6.19/GR/10               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/10.a             implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
@@ -1075,11 +1075,11 @@
 6.28/GR/1.b.ii           implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c
 6.28/GR/2                definition   - -
 6.28/GR/3                implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c
-6.28/GR/4                implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
-6.28/GR/4.a              implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
-6.28/GR/4.b              implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
-6.28/GR/4.b.i            implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
-6.28/GR/4.b.ii           implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
+6.28/GR/4                implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
+6.28/GR/4.a              implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
+6.28/GR/4.b              implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
+6.28/GR/4.b.i            implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
+6.28/GR/4.b.ii           implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
 6.28/GR/5                implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c
 6.28/GR/5.a              implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c
 6.28/GR/5.b              implemented  libvsql/std_3_6_28_get_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c
@@ -1950,13 +1950,13 @@
 6.49/GR/14.b.i.2.A       untested     libvsql/std_3_6_49_param_data.v - there's no test for it
 6.49/GR/14.b.i.2.B       untested     libvsql/std_3_6_49_param_data.v - there's no test for it
 6.49/GR/14.b.i.2.C       implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
-6.49/GR/14.b.ii          unclear      libvsql/std_3_6_49_param_data.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+6.49/GR/14.b.ii          implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c the same as 5.6/GR/4.p.ii
 6.49/GR/14.b.iii         container    - -
-6.49/GR/14.b.iii.1       unclear      libvsql/std_3_6_49_param_data.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+6.49/GR/14.b.iii.1       n/a          - - there are no implementation-defined conversions
 6.49/GR/14.b.iii.2       container    - -
-6.49/GR/14.b.iii.2.A     unclear      libvsql/std_3_6_49_param_data.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-6.49/GR/14.b.iii.2.B     unclear      libvsql/std_3_6_49_param_data.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-6.49/GR/14.b.iii.2.C     unclear      libvsql/std_3_6_49_param_data.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+6.49/GR/14.b.iii.2.A     implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c the same as 5.6/GR/4.p.ii
+6.49/GR/14.b.iii.2.B     implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c the same as 5.6/GR/4.p.ii
+6.49/GR/14.b.iii.2.C     implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c the same as 5.6/GR/4.p.ii
 6.49/GR/15               definition   - -
 6.49/GR/16               implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/16.a             definition   - -
@@ -2007,7 +2007,7 @@
 6.49/GR/17.d             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_53_row_count_test.c same as ExecDirect
 6.49/GR/17.e             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 # 6.50, Prepare
-6.50                     partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c see #649
+6.50                     implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/1                definition   - -
 6.50/GR/2                implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/3                definition   - -
@@ -2019,11 +2019,11 @@
 6.50/GR/5.a              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_19_exec_direct_test.c
 6.50/GR/5.b              definition   - -
 6.50/GR/6                implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
-6.50/GR/7                partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c 7.c (#649)
+6.50/GR/7                implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/7.a              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/7.b              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_19_exec_direct_test.c
-6.50/GR/7.c              missing      libvsql/std_3_6_50_prepare.v - the type of a dynamic parameter isn't determined (#649)
-6.50/GR/8                missing      libvsql/std_3_6_50_prepare.v - the type of a dynamic parameter isn't determined (#649)
+6.50/GR/7.c              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
+6.50/GR/8                implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/9                n/a          - - there are no user-defined types
 6.50/GR/10               implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/10.a             implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c

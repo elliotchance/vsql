@@ -56,8 +56,9 @@ fn (e Concatenation) pstr(params map[string]Value) string {
 }
 
 fn (e Concatenation) compile(mut c Compiler) !CompileResult {
-	compiled_left := e.left.compile(mut c)!
-	compiled_right := e.right.compile(mut c)!
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.ix
+	compiled_left, compiled_right := c.with_pair_types(e.left.compile(mut c)!, e.right.compile(mut c)!,
+		character_type)
 	typ := concatenation_type(compiled_left.typ, compiled_right.typ)!
 
 	return CompileResult{

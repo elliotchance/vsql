@@ -48,6 +48,17 @@ fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
 		return sqlstate_42601('parameter ${e.name} cannot be used in ${c.restricted}')
 	}
 
+	// While the statement is being prepared, its type is determined from where
+	// it's used (see describe_parameters).
+	if c.conn.describing && e.name !in c.params {
+		c.conn.compiled_parameters[e.name] = true
+		if typ := c.conn.parameter_types[e.name] {
+			return parameter_result('', typ)
+		}
+
+		return parameter_result(e.name, untyped_parameter_type)
+	}
+
 	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
 
 	// ISO/IEC 9075-2:2016(E), 6.1, <data type>, General Rules, 2

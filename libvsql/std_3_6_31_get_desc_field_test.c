@@ -179,7 +179,7 @@ UTEST_F(db, 6_31_get_desc_field_identifier_before_deferred) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   EXPECT_EQ(SQLGetDescField(ipd, 1, 9999, &n, 0, NULL), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY091");
   EXPECT_EQ(SQLGetDescField(ipd, 1, SQL_DESC_TYPE, &n, 0, NULL), SQL_ERROR);

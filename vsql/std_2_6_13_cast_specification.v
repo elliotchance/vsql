@@ -61,7 +61,8 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	compiled_expr := e.expr.compile(mut c)!
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xv
+	compiled_expr := c.with_type(e.expr.compile(mut c)!, e.target)
 
 	// A datetime without a time zone gets the time zone of the session, and a
 	// TIME becomes a TIMESTAMP on the CURRENT_DATE (General Rules 18 and 19).

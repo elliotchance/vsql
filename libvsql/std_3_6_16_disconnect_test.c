@@ -74,7 +74,7 @@ UTEST_F(db, 6_16_disconnect_deferred_parameter) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
   EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_INVALID_HANDLE);
 }
@@ -90,7 +90,7 @@ UTEST_F(db, 6_16_disconnect_deferred_parameter_active_transaction) {
                              SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
                              &at_exec),
             SQL_SUCCESS);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"), SQL_NEED_DATA);
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY010");
 

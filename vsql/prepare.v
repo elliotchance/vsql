@@ -69,6 +69,10 @@ pub struct PreparedStmt {
 	// dynamic_parameters is the number of <dynamic parameter specification>s
 	// ("?") in the statement.
 	dynamic_parameters int
+	// parameter_types is the data type of each dynamic parameter that's
+	// determined by where it's used (see describe_parameters). The value of
+	// each of them is cast to its type when the statement is executed.
+	parameter_types map[string]Type
 	// features are the features outside of Core SQL that the statement uses,
 	// see features.
 	features []string
@@ -90,14 +94,30 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 			cancel_state.store(statement_idle)
 		}
 	}
-	// A statement run by another statement (or from a thread the lifetime
-	// doesn't belong to) keeps its closures.
-	if c.frame_active || isnil(c.frame_work) {
+	c.frame_stmt = unsafe { p }
+	c.frame_params = params
+	ran := c.run_frame()
+	c.frame_stmt = unsafe { nil }
+	if !ran {
 		return p.query_statement(params)
 	}
 
-	c.frame_stmt = unsafe { p }
-	c.frame_params = params
+	if c.frame_err !is none {
+		return c.frame_err
+	}
+
+	return c.frame_result
+}
+
+// run_frame runs frame_work in a frame of the lifetime, so the closures it
+// makes are released when it ends. It's false if frame_work wasn't run, so the
+// caller must do the work itself. A statement run by another statement (or
+// from a thread the lifetime doesn't belong to) keeps its closures.
+fn (mut c Connection) run_frame() bool {
+	if c.frame_active || isnil(c.frame_work) {
+		return false
+	}
+
 	c.frame_active = true
 	c.frame_ran = false
 	c.frame_err = none
@@ -110,17 +130,11 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 		}
 	}
 	c.frame_active = false
-	c.frame_stmt = unsafe { nil }
-	if !c.frame_ran {
-		return p.query_statement(params)
-	}
-	c.lifetime.reclaim_all() or {}
-
-	if c.frame_err !is none {
-		return c.frame_err
+	if c.frame_ran {
+		c.lifetime.reclaim_all() or {}
 	}
 
-	return c.frame_result
+	return c.frame_ran
 }
 
 fn (mut p PreparedStmt) query_statement(params map[string]Value) !Result {
@@ -151,6 +165,39 @@ fn (mut p PreparedStmt) query_statement(params map[string]Value) !Result {
 // statement. Their values are the params "?1", "?2", etc.
 pub fn (p PreparedStmt) dynamic_parameter_count() int {
 	return p.dynamic_parameters
+}
+
+// dynamic_parameter_type is the data type of the dynamic parameter at a
+// position (starting at 1), which is determined by where it's used, such as
+// the type of the column in "x = ?". The value it's given is cast to that type.
+// It's none if the type isn't known until it has a value, which is the type of
+// that value.
+pub fn (p PreparedStmt) dynamic_parameter_type(position int) ?Type {
+	return p.parameter_types['?${position}'] or { return none }
+}
+
+// with_parameters returns the parameters merged with the params of the
+// statement, where each dynamic parameter is cast to its type (see
+// parameter_types). A value that can't be cast has the error of the CAST
+// (rather than a restricted data type attribute violation), which libvsql
+// checks for itself.
+//
+// ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, General Rules, 6.a, 6.c.ii, 6.c.ii.2.A and 6.c.ii.2.B
+fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Value {
+	mut all_params := params.clone()
+	for k, v in p.params {
+		if k !in all_params {
+			all_params[k] = v
+		}
+	}
+
+	for name, typ in p.parameter_types {
+		if value := all_params[name] {
+			all_params[name] = cast_specification(mut p.c, value, typ)!
+		}
+	}
+
+	return all_params
 }
 
 // command_function returns the identifier and code of the statement, from
@@ -222,12 +269,8 @@ pub fn (mut p PreparedStmt) columns(params map[string]Value) ![]Column {
 		return []Column{}
 	}
 
-	mut all_params := params.clone()
-	for k, v in p.params {
-		if k !in all_params {
-			all_params[k] = v
-		}
-	}
+	p.c.set_statement_timestamp()
+	all_params := p.with_parameters(params)!
 
 	if p.explain {
 		return stmt.explain(mut p.c, all_params, p.elapsed_parse)!.columns
@@ -265,9 +308,10 @@ fn is_name_resolution_error(err IError) bool {
 // still valid if a table is dropped and created again (or raises the same
 // error, if it's gone).
 //
-// The type of a dynamic parameter is only known once it has a value, so each
-// one is a NULL here. Any other error (such as for a type) may depend on that
-// value, so it's left for when the statement is executed. A schema statement
+// Each dynamic parameter is a NULL here, of its type if that's been determined
+// (see describe_parameters), or otherwise CHARACTER VARYING. Any other error
+// (such as for a type) may depend on the values of the dynamic parameters, so
+// it's left for when the statement is executed. A schema statement
 // (such as CREATE TABLE or DROP TABLE) is only checked when it's executed. A
 // positioned UPDATE or DELETE also uses a cursor, which may not be open yet.
 //
@@ -277,7 +321,8 @@ fn is_name_resolution_error(err IError) bool {
 pub fn (mut p PreparedStmt) resolve_names() ! {
 	mut params := map[string]Value{}
 	for i in 1 .. p.dynamic_parameters + 1 {
-		params['?${i}'] = new_null_value(.is_varchar)
+		typ := p.dynamic_parameter_type(i) or { untyped_parameter_type }
+		params['?${i}'] = new_null_value(typ.typ)
 	}
 
 	mut c := p.c
@@ -389,15 +434,9 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 }
 
 fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
-	mut all_params := params.clone()
-	for k, v in p.params {
-		if k !in all_params {
-			all_params[k] = v
-		}
-	}
-
 	p.c.begin_row()
 	p.c.set_statement_timestamp()
+	all_params := p.with_parameters(params)!
 	p.c.subquery_results = map[voidptr]SubqueryResult{}
 
 	// - 17.2 GR 7. A statement that isn't in an SQL-transaction is in one of its

@@ -429,10 +429,12 @@ fn (desc &Desc) field_index() int {
 }
 
 // describe sets the IRD and IPD of a statement after it's prepared or executed
-// (ISO/IEC 9075-3:2003(E), 5.5, Implicit DESCRIBE USING clause). The IPD isn't
-// populated, since POPULATE IPD is False (General Rules, 7). There are no
-// nested descriptors, since there are no ROW, ARRAY or MULTISET types, so the
-// item descriptor areas are the columns in order (General Rules, 5.b).
+// (ISO/IEC 9075-3:2003(E), 5.5, Implicit DESCRIBE USING clause). The item
+// descriptor areas of the IPD are only set by Prepare (see
+// describe_parameters), so that the IPD that's set by BindParameter is still
+// used when the statement is executed again. There are no nested descriptors,
+// since there are no ROW, ARRAY or MULTISET types, so the item descriptor areas
+// are the columns in order (General Rules, 5.b).
 fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	mut ird := descs[stmt.ird] or { return }
 	mut ipd := descs[stmt.ipd] or { return }
@@ -468,10 +470,62 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	}
 }
 
+// describe_parameters sets the IPD of a statement after it's prepared to an
+// item descriptor area for each dynamic parameter, since POPULATE IPD is True
+// (ISO/IEC 9075-3:2003(E), 5.5, Implicit DESCRIBE USING clause, General Rules,
+// 7 and 8). Every dynamic parameter is an input parameter, at LEVEL 0 (zero).
+// A dynamic parameter whose type is only known once it has a value (see
+// vsql.PreparedStmt.dynamic_parameter_type) keeps the item descriptor area that
+// the application set, if any.
+fn describe_parameters(stmt &Stmt, prepared vsql.PreparedStmt, catalog string) {
+	mut ipd := descs[stmt.ipd] or { return }
+
+	// - 8.a, 8.b. COUNT and TOP_LEVEL_COUNT are the number of dynamic
+	// parameters.
+	ipd.set_count(prepared.dynamic_parameter_count())
+
+	// - 8.c, 8.d. The i-th item descriptor area describes the i-th dynamic
+	// parameter. Like a column, the fields that aren't applicable to its type
+	// are 0 (zero) or a zero-length string.
+	for i in 1 .. prepared.dynamic_parameter_count() + 1 {
+		typ := prepared.dynamic_parameter_type(i) or { continue }
+
+		// - 8.d.iii, 8.d.v. It's nullable, and it's unnamed.
+		mut record := describe_type(typ, catalog)
+		record[sql_desc_nullable] = i64(sql_nullable)
+		record[sql_desc_name] = ''
+		record[sql_desc_unnamed] = i64(sql_unnamed)
+
+		// - 7.b.ii. Every dynamic parameter is an input parameter. Its ordinal
+		// position and the specific name are only for a <call statement>, so
+		// they're 0 (zero) and zero-length strings (5.13, Syntax Rules, 5.c.x).
+		record[sql_desc_parameter_mode] = i64(sql_param_mode_in)
+		record[sql_desc_parameter_ordinal_position] = i64(0)
+		record[sql_desc_parameter_specific_catalog] = ''
+		record[sql_desc_parameter_specific_schema] = ''
+		record[sql_desc_parameter_specific_name] = ''
+		ipd.records[i - 1] = record
+	}
+}
+
 // describe_column is the item descriptor area of an IRD for a column.
 fn describe_column(column vsql.Column, catalog string) map[int]DescValue {
-	typ := column.typ
+	mut record := describe_type(column.typ, catalog)
 
+	// - 5.c.iii.1.B. If the column name is implementation-dependent (such as
+	// COL1 for an expression without an AS), then UNNAMED is set to 1 (one).
+	record[sql_desc_nullable] = i64(if column.not_null { sql_no_nulls } else { sql_nullable })
+	record[sql_desc_name] = column.name.sub_entity_name
+	record[sql_desc_unnamed] = i64(if column.unnamed { sql_unnamed } else { sql_named })
+	record[sql_desc_key_member] = i64(if column.key_type > 0 { 1 } else { 0 })
+
+	return record
+}
+
+// describe_type is an item descriptor area (of an IRD or IPD) for a data type,
+// at LEVEL 0 (zero). The fields for a column or dynamic parameter are set by
+// describe_column and describe_parameters.
+fn describe_type(typ vsql.Type, catalog string) map[int]DescValue {
 	// Fields that aren't applicable to the data type are implementation-
 	// dependent values (zero, or a zero-length string).
 	mut record := map[int]DescValue{}
@@ -481,14 +535,9 @@ fn describe_column(column vsql.Column, catalog string) map[int]DescValue {
 		}
 	}
 
-	// - 5.c.iii.1.B. If the column name is implementation-dependent (such as
-	// COL1 for an expression without an AS), then UNNAMED is set to 1 (one).
 	record[sql_desc_level] = i64(0)
 	record[sql_desc_type] = i64(implementation_type_code(typ))
-	record[sql_desc_nullable] = i64(if column.not_null { sql_no_nulls } else { sql_nullable })
-	record[sql_desc_name] = column.name.sub_entity_name
-	record[sql_desc_unnamed] = i64(if column.unnamed { sql_unnamed } else { sql_named })
-	record[sql_desc_key_member] = i64(if column.key_type > 0 { 1 } else { 0 })
+	record[sql_desc_key_member] = i64(0)
 
 	// - 5.c.iv. Other fields depend on the TYPE.
 	match typ.typ {

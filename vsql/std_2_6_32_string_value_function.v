@@ -70,10 +70,15 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 	return s + ' USING ${e.using})'
 }
 
+// A dynamic parameter that is the start position or string length has the type
+// position_parameter_type.
+//
+// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.vi
 fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	compiled_value := e.value.compile(mut c)!
 	compiled_from := if f := e.from {
-		check_substring_argument('SUBSTRING', 'start position', f, f.compile(mut c)!.typ)!
+		check_substring_argument('SUBSTRING', 'start position', f, c.with_type(f.compile(mut c)!,
+			position_parameter_type).typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{
@@ -83,7 +88,8 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	compiled_for := if f := e.@for {
-		check_substring_argument('SUBSTRING', 'string length', f, f.compile(mut c)!.typ)!
+		check_substring_argument('SUBSTRING', 'string length', f, c.with_type(f.compile(mut c)!,
+			position_parameter_type).typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{
@@ -139,8 +145,10 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 // check_substring_argument returns an error if the start position or string
 // length of a SUBSTRING (or OVERLAY, which is made of SUBSTRINGs) isn't an exact
-// numeric with scale 0. A dynamic parameter ("?") may be any number that's a
-// whole number (see substring_position).
+// numeric with scale 0. A dynamic parameter ("?") is NUMERIC(1000, 0) (see
+// position_parameter_type), unless its type isn't known when the statement is
+// prepared (see describe_parameters). Then it may be any number that's a whole
+// number (see substring_position).
 //
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 3
 fn check_substring_argument(function_name string, name string, e NumericValueExpression, typ Type) ! {
@@ -257,12 +265,14 @@ fn (e OverlayFunction) pstr(params map[string]Value) string {
 }
 
 fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
-	compiled_value := e.value.compile(mut c)!
-	compiled_placing := e.placing.compile(mut c)!
-	compiled_from := e.from.compile(mut c)!
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.viii
+	compiled_value, compiled_placing := c.with_pair_types(e.value.compile(mut c)!, e.placing.compile(mut c)!,
+		character_type)
+	compiled_from := c.with_type(e.from.compile(mut c)!, position_parameter_type)
 	check_substring_argument('OVERLAY', 'start position', e.from, compiled_from.typ)!
 	compiled_for := if f := e.@for {
-		check_substring_argument('OVERLAY', 'string length', f, f.compile(mut c)!.typ)!
+		check_substring_argument('OVERLAY', 'string length', f, c.with_type(f.compile(mut c)!,
+			position_parameter_type).typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{

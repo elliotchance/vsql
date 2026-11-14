@@ -137,7 +137,7 @@ check_out '[
   {
     "V": null
   }
-]' -format json -query 'SELECT ? AS v FROM baz'
+]' -format json -query 'SELECT CAST(? AS VARCHAR(10)) AS v FROM baz'
 export P1=7
 check_out '7~' -format csv -no-header -query 'SELECT x FROM baz WHERE x = CAST(? AS INT)'
 unset P1

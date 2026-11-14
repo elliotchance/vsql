@@ -62,6 +62,9 @@ Each function also has a **Compatibility** section:
    * - ``AVG``
      - Aggregate
      - Core (E091-01)
+   * - ``BTRIM``
+     - String
+     - T056
    * - ``CEIL``
      - Rounding
      - T621
@@ -152,6 +155,12 @@ Each function also has a **Compatibility** section:
    * - ``LOWER``
      - String
      - Core (E021-08)
+   * - ``LPAD``
+     - String
+     - T055
+   * - ``LTRIM``
+     - String
+     - T056
    * - ``MAX``
      - Aggregate
      - Core (E091-03)
@@ -215,6 +224,12 @@ Each function also has a **Compatibility** section:
    * - ``REGR_SYY``
      - Statistical
      - T621
+   * - ``RPAD``
+     - String
+     - T055
+   * - ``RTRIM``
+     - String
+     - T056
    * - ``SIN``
      - Trigonometric
      - T622
@@ -2414,6 +2429,45 @@ Lengths and positions are counted in characters, where a multibyte character
 (such as ``😊``) counts as one, unless the function says otherwise. The first
 character is at position 1.
 
+BTRIM, LTRIM and RTRIM
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: text
+
+  BTRIM(STRING [, CHARACTERS ])
+  LTRIM(STRING [, CHARACTERS ])
+  RTRIM(STRING [, CHARACTERS ])
+
+.. code-block:: sql
+
+   BTRIM(CHARACTER VARYING(n), CHARACTER VARYING) CHARACTER VARYING(n)
+
+Removes any of the ``CHARACTERS`` from the start (``LTRIM``), the end
+(``RTRIM``) or both ends (``BTRIM``) of ``STRING``. Unlike ``TRIM``,
+``CHARACTERS`` can be any number of characters, and each one is removed
+wherever it is in that part of the string. If it isn't provided, it's a space.
+The result is a ``CHARACTER VARYING`` with the maximum length of ``STRING``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LTRIM('  hello  ') || '|';
+  -- COL1: hello  |
+
+  VALUES BTRIM('xyxhelloyx', 'xy');
+  -- COL1: hello
+
+  VALUES RTRIM('hello!?!', '?!');
+  -- COL1: hello
+
+**Compatibility**
+
+- **SQL standard:** Optional feature T056.
+- **Other databases:** ``BTRIM``, ``LTRIM`` and ``RTRIM`` in PostgreSQL.
+  ``LTRIM`` and ``RTRIM`` in SQLite and Oracle. MySQL and SQL Server only
+  remove spaces with ``LTRIM`` and ``RTRIM``.
+
 CHAR_LENGTH
 ^^^^^^^^^^^
 
@@ -2491,6 +2545,46 @@ spaces. See ``UPPER`` for an example.
 - **SQL standard:** Core SQL (E021-08).
 - **Other databases:** ``LOWER`` in all of them, and ``LCASE`` in MySQL. SQLite
   only converts ASCII letters (unless it's built with ICU).
+
+LPAD and RPAD
+^^^^^^^^^^^^^
+
+.. code-block:: text
+
+  LPAD(STRING, LENGTH [, PADDING ])
+  RPAD(STRING, LENGTH [, PADDING ])
+
+.. code-block:: sql
+
+   LPAD(CHARACTER VARYING, INTEGER, CHARACTER VARYING) CHARACTER VARYING
+
+Pads ``STRING`` to ``LENGTH`` characters, at the start (``LPAD``) or the end
+(``RPAD``). ``PADDING`` is repeated as many times as it fits, and the last one is
+cut short. If it isn't provided, it's a space, and if it's empty, nothing is
+added.
+
+If ``STRING`` is already longer, it's cut to ``LENGTH`` characters by removing
+characters from the end (for both ``LPAD`` and ``RPAD``). A ``LENGTH`` of less
+than 1 is an empty string. ``LENGTH`` must be an exact number without a scale,
+such as an ``INTEGER``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LPAD('42', 5, '0');
+  -- COL1: 00042
+
+  VALUES RPAD('abc', 8, 'xy');
+  -- COL1: abcxyxyx
+
+  VALUES LPAD('abcdef', 3);
+  -- COL1: abc
+
+**Compatibility**
+
+- **SQL standard:** Optional feature T055.
+- **Other databases:** ``LPAD`` and ``RPAD`` in PostgreSQL, MySQL and Oracle.
 
 OCTET_LENGTH
 ^^^^^^^^^^^^

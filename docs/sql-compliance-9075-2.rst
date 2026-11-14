@@ -1265,10 +1265,10 @@ Optional Features
    * - ✅ **T054**
      - **GREATEST and LEAST**
 
-   * - ❌ **T055**
+   * - ✅ **T055**
      - **String padding functions**
 
-   * - ❌ **T056**
+   * - ✅ **T056**
      - **Multi-character TRIM function**
 
    * - ❌ **T061**

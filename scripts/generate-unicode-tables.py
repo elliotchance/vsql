@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """generate-unicode-tables.py writes the data behind normalize_nfc (in
-vsql/unicode_normalization.v) to stdout from Python's unicodedata. To move to a
-newer version of Unicode:
+vsql/unicode_normalization.v) and is_source_language_character (in
+vsql/lexer.v) to stdout from Python's unicodedata. To move to a newer version of
+Unicode:
 
   scripts/generate-unicode-tables.py > vsql/unicode_tables.v
   v fmt -w vsql/unicode_tables.v
@@ -17,11 +18,22 @@ def table(name, comment, entries):
     return '\n'.join(lines)
 
 
+# The General Categories that ISO/IEC 9075-1:2023, 4.10.2 doesn't allow in an
+# identifier.
+EXCLUDED_CATEGORIES = {'Cc', 'Cf', 'Cn', 'Cs', 'Zl', 'Zp'}
+
 classes = []
 decompositions = []
 compositions = []
+excluded = []
 for code_point in range(0x110000):
     char = chr(code_point)
+    if unicodedata.category(char) in EXCLUDED_CATEGORIES:
+        if excluded and excluded[-1][1] == code_point - 1:
+            excluded[-1][1] = code_point
+        else:
+            excluded.append([code_point, code_point])
+
     if unicodedata.combining(char):
         classes.append(code_point << 8 | unicodedata.combining(char))
 
@@ -55,3 +67,8 @@ print(table('unicode_compositions', [
     'unicode_compositions has every pair that composes, sorted as:',
     'first << 42 | second << 21 | composite',
 ], sorted(compositions)))
+print()
+print(table('unicode_excluded_identifier_characters', [
+    'unicode_excluded_identifier_characters has every range of code points in the',
+    'General Categories Cc, Cf, Cn, Cs, Zl and Zp, sorted as: first << 21 | last',
+], [first << 21 | last for first, last in excluded]))

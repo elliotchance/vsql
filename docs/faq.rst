@@ -25,9 +25,11 @@ etc). So, using delimited identifiers also allows you to control the alias, for
 example: ``SELECT 1 + 2 AS "the Total"`` will keep the column name
 ``the Total``.
 
-A delimited identifier can contain any character. A double-quote is written
-twice, so ``"say ""hi"""`` is the name ``say "hi"``. It can't be empty
-(``""``).
+A delimited identifier can contain any character, except for control and
+format characters (such as a tab or a zero width space), unassigned code points,
+and line and paragraph separators (the Unicode General Categories Cc, Cf, Cn,
+Cs, Zl and Zp). A double-quote is written twice, so ``"say ""hi"""`` is the
+name ``say "hi"``. It can't be empty (``""``).
 
 Where can I find the SQL standard?
 ----------------------------------

@@ -80,6 +80,26 @@ CREATE TABLE foo ("" INT);
 CREATE TABLE "foo (x INT);
 -- error 42601: syntax error: unterminated delimited identifier: "foo (x INT)
 
+-- # A delimited identifier can have any character other than the ones in the
+-- # Unicode General Categories Cc, Cf, Cn, Cs, Zl and Zp (5.2, Syntax Rules, 7,
+-- # and Part 1, 4.10.2): here a tab, a zero width space (U+200B), an
+-- # unassigned code point (U+0378) and a line separator (U+2028). Private use
+-- # characters and other spaces are allowed.
+CREATE TABLE "a	b" (x INT);
+-- error 42601: syntax error: invalid character in delimited identifier: U+0009
+
+CREATE TABLE "a​b" (x INT);
+-- error 42601: syntax error: invalid character in delimited identifier: U+200B
+
+CREATE TABLE foo ("a͸b" INT);
+-- error 42601: syntax error: invalid character in delimited identifier: U+0378
+
+CREATE TABLE foo ("a b" INT);
+-- error 42601: syntax error: invalid character in delimited identifier: U+2028
+
+CREATE TABLE "a b" (x INT);
+-- msg: CREATE TABLE 1
+
 -- # A doubled quote is a quote character in the name.
 CREATE TABLE "a""b" ("x""y" INT, "ü""ö" INT);
 INSERT INTO "a""b" ("x""y", "ü""ö") VALUES (1, 2);

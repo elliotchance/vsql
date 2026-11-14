@@ -283,12 +283,11 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			}
 		}
 
-		// Delimited identifiers. The body must have at least one character (5.2).
-		// Any character is allowed, although ISO/IEC 9075-1:2023, 4.10.2,
-		// Source language character set, doesn't allow some of them (#1504).
-		// A doubled quote ("") is a quote character in the name, but it's kept
-		// doubled here so that split_identifier_parts can find the end of each
-		// part of the chain.
+		// Delimited identifiers. The body must have at least one character (5.2),
+		// and each one must be a source language character (see
+		// is_source_language_character). A doubled quote ("") is a quote
+		// character in the name, but it's kept doubled here so that
+		// split_identifier_parts can find the end of each part of the chain.
 		if cs[i] == `"` {
 			start := i
 			mut word := ''
@@ -304,6 +303,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 						continue
 					}
 					break
+				}
+				if !is_source_language_character(cs[i]) {
+					return sqlstate_42601('invalid character in delimited identifier: U+${u32(cs[i]):04X}')
 				}
 				word += '${cs[i]}'
 				i++
@@ -915,4 +917,33 @@ fn new_keyword_tokens() map[string]int {
 	}
 
 	return tokens
+}
+
+// is_source_language_character reports whether ch can be in an identifier. The
+// characters in the Unicode General Categories Cc, Cf, Cn, Cs, Zl and Zp
+// (controls, format characters, unassigned code points, surrogates, and line and
+// paragraph separators) can't be. The private use characters (Co) and the space
+// separators (Zs) other than the space, which an identifier shouldn't contain,
+// are allowed.
+//
+// ISO/IEC 9075-1:2023, 4.10.2, Source language character set
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Syntax Rules, 7
+fn is_source_language_character(ch rune) bool {
+	code_point := u64(ch)
+	mut low := 0
+	mut high := unicode_excluded_identifier_characters.len - 1
+	for low <= high {
+		mid := (low + high) / 2
+		first := unicode_excluded_identifier_characters[mid] >> 21
+		last := unicode_excluded_identifier_characters[mid] & 0x1fffff
+		if code_point < first {
+			high = mid - 1
+		} else if code_point > last {
+			low = mid + 1
+		} else {
+			return false
+		}
+	}
+
+	return true
 }

@@ -10,7 +10,7 @@ module vsql
 // the table definitions when it's read. The INFORMATION_SCHEMA can't be
 // changed, and isn't stored in the file.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.2.8.3, The Information
+// The concept is described by ISO/IEC 9075-1:2023, 4.4.9.3, Information
 // Schema.
 //
 // Each INFORMATION_SCHEMA only describes the schemas of its own catalog, which

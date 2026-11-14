@@ -11,7 +11,7 @@
 17.1/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.1/GR/4                implemented  vsql/std_2_17_1_start_transaction_statement.v,vsql/std_2_13_1_sql_client_module_definition.c tests/std_2_17_2_set_transaction.sql,libvsql/module/test_more_main.c
 17.1/GR/5                implemented  vsql/std_2_17_1_start_transaction_statement.v tests/std_2_17_1_transaction.sql
-17.1/CR/1                implemented  vsql/std_2_17_1_start_transaction_statement.y tests/std_1_8_5_flagging.sql
+17.1/CR/1                implemented  vsql/std_2_17_1_start_transaction_statement.y tests/std_1_9_6_flagging.sql
 # 17.2, <set transaction statement>
 17.2                     implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/SR/1                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql
@@ -45,10 +45,10 @@
 17.3/SR/5.b              implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_1_transaction.sql every SQL-transaction is read-write
 17.3/SR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.3/SR/7                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql it's 100
-17.3/CR/1                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
-17.3/CR/2                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
-17.3/CR/3                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
-17.3/CR/4                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_8_5_flagging.sql
+17.3/CR/1                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_9_6_flagging.sql
+17.3/CR/2                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_9_6_flagging.sql
+17.3/CR/3                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_9_6_flagging.sql
+17.3/CR/4                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_1_9_6_flagging.sql
 17.3/CR/5                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/std_2_17_2_set_transaction.sql
 # 17.4, <set constraints mode statement>
 17.4                     implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
@@ -61,7 +61,7 @@
 17.4/GR/3                implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
 17.4/GR/3.a              implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_17_4_set_constraints.sql
 17.4/GR/3.b              implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/std_2_17_4_set_constraints.sql
-17.4/CR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.y tests/std_1_8_5_flagging.sql
+17.4/CR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.y tests/std_1_9_6_flagging.sql
 # 17.5, <savepoint statement>
 17.5                     implemented  vsql/std_2_17_5_savepoint_statement.v tests/std_2_17_5_savepoints.sql
 17.5/GR/1                definition   - -

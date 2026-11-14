@@ -284,6 +284,8 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		}
 
 		// Delimited identifiers. The body must have at least one character (5.2).
+		// Any character is allowed, although ISO/IEC 9075-1:2023, 4.10.2,
+		// Source language character set, doesn't allow some of them (#1504).
 		// A doubled quote ("") is a quote character in the name, but it's kept
 		// doubled here so that split_identifier_parts can find the end of each
 		// part of the chain.

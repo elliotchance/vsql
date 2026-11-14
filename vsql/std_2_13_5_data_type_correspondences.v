@@ -7,11 +7,11 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.8.2, Parameter passing and data type
+// ISO/IEC 9075-1:2023, 4.10.3, Parameter passing and data type
 // correspondences
-// ISO/IEC 9075-1:2003(E), 4.8.2.1, General parameter passing and data type
+// ISO/IEC 9075-1:2023, 4.10.3.1, General parameter passing and data type
 // correspondence information
-// ISO/IEC 9075-1:2003(E), 4.8.2.2, Data type correspondences
+// ISO/IEC 9075-1:2023, 4.10.3.2, Data type correspondences
 // ISO/IEC 9075-2:2023, 4.2.3, Host language data types
 
 // max_utf8_octets is k, the maximum number of octets of a character in the

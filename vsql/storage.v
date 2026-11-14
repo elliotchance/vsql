@@ -74,6 +74,10 @@ mut:
 	// file_pager is the pager of btree when the database is a file. It holds
 	// the pages changed by the current statement until commit.
 	file_pager &FilePager = unsafe { nil }
+	// pager_wal is where the write-ahead log was (its salt and tail) when the
+	// pages in the cache of file_pager were last known to be the same as the
+	// file, see open. It's none when that isn't known.
+	pager_wal ?WalPosition
 	// snapshot is the state before the current statement that changes the
 	// database, see begin_statement.
 	snapshot StatementSnapshot
@@ -271,8 +275,16 @@ fn (mut f Storage) finish_commit(path string) ! {
 
 	mut prepared := f.wal_prepared or { WalPrepared{} }
 	f.wal_prepared = none
-	wal_finish(mut f.file, path, mut prepared) or { return io_error(err) }
+	wal_finish(mut f.file, path, mut prepared) or {
+		f.pager_wal = none
+		return io_error(err)
+	}
 	f.log.finished(prepared)
+
+	// The pages are in the file now, so the cache has them too, and the log
+	// has moved on by this statement (see open).
+	f.file_pager.committed()
+	f.pager_wal = WalPosition{prepared.salt, prepared.tail + prepared.size}
 }
 
 // discard_statement forgets the changes made by the current statement, because
@@ -285,6 +297,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 	// The frames already in the log are ignored without a commit frame, and
 	// the log stays open for the next statement.
 	f.wal_prepared = none
+	f.pager_wal = none
 
 	f.header = f.snapshot.header
 	if f.snapshot.schema_saved {
@@ -350,8 +363,20 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive
 
-	f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page,
-		f.cache_size)!
+	// Every change to the file is committed through the log, which moves its
+	// tail (or starts a new log, with a new salt). So if the log is where it
+	// was after the last statement on this connection, no other connection has
+	// changed the file since, and the pages it cached are still the same. That
+	// saves reading them again for each statement.
+	wal := f.log.position(header.page_size)
+	if f.file_pager != unsafe { nil } && wal != none && f.pager_wal == wal
+		&& f.file_pager.page_size == header.page_size {
+		f.file_pager.root_page = header.root_page
+	} else {
+		f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page,
+			f.cache_size)!
+	}
+	f.pager_wal = wal
 	f.btree = new_btree(f.file_pager, header.page_size)
 
 	if exclusive && f.other_transaction_ids(header).len > 0 {
@@ -506,6 +531,7 @@ fn (mut f Storage) schema_changed() ! {
 fn (mut f Storage) close_files() {
 	f.file.close()
 	f.log.file.close()
+	f.pager_wal = none
 }
 
 // table returns the definition of a table, which the caller has already found

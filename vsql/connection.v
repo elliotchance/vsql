@@ -1275,12 +1275,12 @@ pub mut:
 	// include rows that it can't see yet), before it fails with a 55P03 lock
 	// not available. The default is 60 seconds.
 	create_index_timeout time.Duration
-	// cache_size is the number of pages of a file that are kept in memory while
-	// a statement runs, so that a page that's used again (such as by a scan or
-	// a search of the B-tree) doesn't need to be read from the file again. The
-	// default is 2000 (8 MiB with the default page_size). 0 doesn't keep any.
-	// Pages are only kept for one statement, since another connection may
-	// change the file between statements.
+	// cache_size is the number of pages of a file that are kept in memory, so
+	// that a page that's used again (such as by a scan or a search of the
+	// B-tree) doesn't need to be read from the file again. The default is 2000
+	// (8 MiB with the default page_size). 0 doesn't keep any. The pages are
+	// kept for the next statement, unless another connection changed the file
+	// in between.
 	cache_size int
 	// lock_timeout is how long a SERIALIZABLE transaction (including a statement
 	// that changes the database outside of a transaction) waits for another

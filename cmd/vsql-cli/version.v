@@ -24,8 +24,8 @@ fn version_command(cmd cli.Command) ! {
 		return
 	}
 
-	// These are the same as the BUILD items that SQL_IMPLEMENTATION_INFO will
-	// have.
+	// These are the BUILD items of SQL_IMPLEMENTATION_INFO, read directly so
+	// that no database has to be opened.
 	commit := vsql.build_commit()
 	mut lines := [
 		shell_variable('BUILD VERSION', if vsql.build_version() == '' {

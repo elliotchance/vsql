@@ -58,6 +58,16 @@ const sql_cursor_sensitivity = 10001
 const sql_describe_parameter = 10002
 const sql_catalog_name = 10003
 const sql_collating_sequence = 10004
+const sql_vsql_build_version = 11000
+const sql_vsql_build_commit = 11001
+const sql_vsql_build_date = 11002
+const sql_vsql_build_v_version = 11003
+const sql_vsql_build_v_commit = 11004
+const sql_vsql_build_c_compiler = 11005
+const sql_vsql_operating_system = 11006
+const sql_vsql_machine = 11007
+const sql_vsql_file_read_version = 11008
+const sql_vsql_file_write_version = 11009
 const sql_maximum_identifier_length = 10005
 const sql_maximum_stmt_octets = 20000
 const sql_maximum_stmt_octets_data = 20001
@@ -193,12 +203,22 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 	// and SQL_NC_LOW is 2, see Annex A). DEFAULT TRANSACTION ISOLATION is the
 	// level that SET SESSION CHARACTERISTICS chose, rather than the view's, see
 	// default_isolation_level.
-	for item in vsql.sql_implementation_info(dbc.server_name) {
+	// An item without a value is an empty string (such as BUILD VERSION, when
+	// vsql wasn't built for a release), or 0 for the FILE READ VERSION and FILE
+	// WRITE VERSION of ":memory:". get_info has already checked that there's a
+	// connection.
+	mut conn := dbc.conn or { return none }
+	for item in vsql.sql_implementation_info(dbc.server_name, conn.catalog()) {
 		if item.id == code {
 			if s := item.character_value {
 				return InfoValue(s)
 			}
-			v := item.integer_value or { 0 }
+			v := item.integer_value or {
+				if code in [sql_vsql_file_read_version, sql_vsql_file_write_version] {
+					return InfoValue(i16(0))
+				}
+				return InfoValue('')
+			}
 			return match code {
 				sql_default_transaction_isolation { InfoValue(default_isolation_level(dbc)) }
 				sql_null_collation { InfoValue(i16(v + 1)) }

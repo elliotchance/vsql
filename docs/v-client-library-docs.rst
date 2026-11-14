@@ -93,7 +93,7 @@ fn compile_module
 
 compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C source includes the header as name + ".h", so name is usually the file name of the module without its extension. The C source must be compiled with libvsql.h and linked with libvsql.
 
-ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Conformance Rules, 6
+ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Conformance Rules, 6
 
 fn condition_table
 ------------------
@@ -105,7 +105,7 @@ fn condition_table
 
 condition_table is the table that a condition identifies, for the CATALOG_NAME, SCHEMA_NAME and TABLE_NAME of a diagnostics area, with the column (for its COLUMN_NAME) as the sub_entity_name. It's the table that contains the violated constraint, for an integrity constraint violation (class 23) or a transaction rollback because of one (40002). It's the table that doesn't exist, for no such table (42P01), or the table (if there's one) and the column, for no such column (42703) or a syntax error (42601) of an unknown column. It's none for any other error, and its parts are empty if the condition doesn't know them.
 
-ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii ISO/IEC 9075-3:2003(E), 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
+ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii ISO/IEC 9075-3:2003, 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
 
 fn conflicting_cursor
 ---------------------
@@ -137,7 +137,7 @@ fn direct_features
 
 direct_features returns the Feature IDs outside of Core SQL that a <direct SQL statement> of Connection.direct or Agent.direct uses (see the SQL Flagging docs), sorted and without duplicates. The statement is only parsed, not executed.
 
-ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Conformance Rules, 1
+ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, Conformance Rules, 1
 
 fn extension_keywords
 ---------------------
@@ -571,7 +571,7 @@ enum IsolationLevel
 
 IsolationLevel is the <level of isolation>. An SQL-implementation may use a stricter level than the one that is asked for, so READ UNCOMMITTED runs as READ COMMITTED. REPEATABLE READ uses snapshot isolation (see Storage.take_snapshot). See isolation.v.
 
-ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 6
+ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 6
 
 enum SQLType
 ------------
@@ -606,9 +606,9 @@ struct Agent
 .. code-block:: v
 
    pub struct Agent {
-   	// ISO/IEC 9075-2:2016(E), 4.42, SQL-connections
-   	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 9.a
-   	// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 4
+   	// ISO/IEC 9075-2:2023, 4.44, SQL-connections
+   	// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 9.a
+   	// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 4
    	default_server string
    	options        AgentOptions
    mut:
@@ -844,7 +844,7 @@ struct Connection
    	// more_conditions is true if a warning has been dropped from warnings since
    	// the last clear_warnings(), because there were more than the limit.
    	//
-   	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+   	// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 2.b
    	more_conditions bool
    }
 
@@ -1121,8 +1121,8 @@ struct PreparedStmt
 .. code-block:: v
 
    pub struct PreparedStmt {
-   	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 11
-   	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.f
+   	// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 11
+   	// ISO/IEC 9075-2:2023, 17.8, <rollback statement>, General Rules, 2.f
    	stmt Stmt
    	// params can be set on the statement and will be merged with the extra
    	// params at execution time. If name collisions occur, the params provided
@@ -1132,7 +1132,7 @@ struct PreparedStmt
    	// removed from the query before parsing since this keyword is not part of
    	// the SQL standard. It's a <direct implementation-defined statement>.
    	//
-   	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 3
+   	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, Syntax Rules, 2
    	explain bool
    	// writes is true if a query modifies the database, even though it would
    	// otherwise be read only. At the moment this is only when it contains a
@@ -1262,7 +1262,7 @@ struct Sequence
 
 A SEQUENCE definition, which is the sequence generator descriptor. The current base value is current_value plus increment_by when the sequence is unused, otherwise the next value after current_value.
 
-ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, General Rules, 2
+ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, General Rules, 2
 
 struct Server
 -------------

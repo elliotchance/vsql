@@ -849,7 +849,7 @@ location of each failed test:
 .. code-block:: text
 
    SQL tests: 1549 passed, 1 failed, 1550 total, 3120 statements
-     FAILED tests/std_2_6_29_arithmetic.sql:3 (in memory through server, on disk through server)
+     FAILED tests/std_2_6_30_arithmetic.sql:3 (in memory through server, on disk through server)
 
 The "Summary for running V tests" line printed by V counts all of the SQL
 tests as the one V test ``test_all``, so check the SQL tests summary to see

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.34, GetDiagRec
+// ISO/IEC 9075-3:2003, 6.34, GetDiagRec
 //
 // Get commonly-used information from a CLI diagnostics area.
 //

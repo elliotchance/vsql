@@ -5,7 +5,7 @@
  * one constraint was violated, the first WHENEVER CONSTRAINT (that applies) is
  * chosen.
  *
- * ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1.c.i to 1.c.iii
+ * ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, General Rules, 1.c.i.1 to 1.c.iii
  */
 static int vsql_m_violated(const char *catalog, const char *schema,
                            const char *name) {

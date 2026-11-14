@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>
+// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>
 //
 // Start an SQL-transaction and set its characteristics.
 //
@@ -10,7 +10,7 @@ import time
 //
 // The concept is also described by:
 //
-// ISO/IEC 9075-2:2016(E), 4.41, SQL-transactions
+// ISO/IEC 9075-2:2023, 4.43, SQL-transactions
 
 struct StartTransactionStatement {
 	// modes is empty when there are no <transaction characteristics>.
@@ -26,14 +26,14 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 
 	check_transaction_modes(stmt.modes)!
 
-	// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 1
 	if conn.in_transaction() {
 		return sqlstate_25001()
 	}
 
 	// A SET TRANSACTION before doesn't change the characteristics (NOTE 710).
 	//
-	// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 2 to 5
+	// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 2 to 5
 	characteristics := stmt.implicit or {
 		new_transaction_characteristics(mut conn, params, stmt.modes)!
 	}

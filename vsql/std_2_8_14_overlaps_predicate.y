@@ -10,7 +10,7 @@ overlaps_predicate:
 
 overlaps_predicate_part_2:
   OVERLAPS row_value_predicand {
-    // ISO/IEC 9075-2:2016(E), 8.14, <overlaps predicate>, Conformance Rules, 1
+    // ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, Conformance Rules, 1
     flag(mut yylex, 'F053')
     $$.v = $2.v
   }

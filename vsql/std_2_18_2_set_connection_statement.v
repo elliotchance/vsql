@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>
+// ISO/IEC 9075-2:2023, 18.2, <set connection statement>
 //
 // Select an SQL-connection from the available SQL-connections.
 
@@ -14,10 +14,10 @@ struct SetConnectionStatement {
 fn (stmt SetConnectionStatement) execute(mut a Agent, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 1
 	a.check_multiple_server_transactions()!
 
-	// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 2, 4 and 5
+	// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 2, 4 and 5
 	a.current = a.connection(stmt.connection_name)!
 
 	return new_result_msg('SET CONNECTION', elapsed_parse, t.elapsed())
@@ -26,8 +26,8 @@ fn (stmt SetConnectionStatement) execute(mut a Agent, elapsed_parse time.Duratio
 // connection is the SQL-connection that is identified by a <connection object>,
 // which is a <connection name>, or none for DEFAULT.
 //
-// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 2.a and 2.b
-// ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, General Rules, 1 and 2
+// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 2.a and 2.b
+// ISO/IEC 9075-2:2023, 18.3, <disconnect statement>, General Rules, 1 and 2
 fn (a Agent) connection(object ?ValueSpecification) !&Connection {
 	name := object or {
 		if a.default_connection == unsafe { nil } {

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-2:2016(E), 4.26, SQL-schemas
+// ISO/IEC 9075-2:2023, 4.28, SQL-schemas
 //
 // The concepts are described by:
 //
@@ -8,7 +8,7 @@ module vsql
 // ISO/IEC 9075-1:2003(E), 4.2.8.2, SQL-schemas
 // ISO/IEC 9075-1:2003(E), 4.6, SQL-schema objects
 // ISO/IEC 9075-1:2003(E), 4.6.1, General SQL-schema object information
-// ISO/IEC 9075-2:2016(E), 4.15.5, Unique identification of tables
+// ISO/IEC 9075-2:2023, 4.17.5, Unique identification of tables
 
 // Represents a schema.
 pub struct Schema {

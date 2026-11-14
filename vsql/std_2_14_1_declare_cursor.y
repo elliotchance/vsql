@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 14.1, <declare cursor>
+// ISO/IEC 9075-2:2023, 14.1, <declare cursor>
 //
 // Declare a standing cursor.
 

@@ -35,7 +35,7 @@ rollback_statement:
     $$.v = yy_box(Stmt(RollbackStatement{}))
   }
 
-// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 17.8, <rollback statement>, Conformance Rules, 1
 
 savepoint_clause:
   TO SAVEPOINT savepoint_name {

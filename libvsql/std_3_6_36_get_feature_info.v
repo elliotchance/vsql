@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.36, GetFeatureInfo
+// ISO/IEC 9075-3:2003, 6.36, GetFeatureInfo
 //
 // Get information about features supported by the CLI implementation.
 //

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.44, GetSubString
+// ISO/IEC 9075-3:2003, 6.44, GetSubString
 //
 // Either retrieve a portion of a string value that is represented by a Large
 // Object locator or create a Large Object value at the server and retrieve a

@@ -1,6 +1,6 @@
 module main
 
-// ISO/IEC 9075-3:2003(E), 6.26, FreeHandle
+// ISO/IEC 9075-3:2003, 6.26, FreeHandle
 //
 // Free a resource.
 //

@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.38, GetInfo
+// ISO/IEC 9075-3:2003, 6.38, GetInfo
 //
 // Get information about the implementation.
 //

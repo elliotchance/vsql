@@ -1,7 +1,7 @@
 -- # There's one row for each SQL-implementation information item, with the
 -- # value in either INTEGER_VALUE or CHARACTER_VALUE (6.44, Description, 1 to
 -- # 3). The items and the codes of the integer values are the ones of SQL/CLI
--- # (ISO/IEC 9075-3:2003(E), 7.1), and the ID is a character string.
+-- # (ISO/IEC 9075-3:2003, 7.1), and the ID is a character string.
 SELECT implementation_info_id, implementation_info_name, integer_value, character_value FROM information_schema.sql_implementation_info WHERE implementation_info_id NOT IN ('2', '13') AND CAST(implementation_info_id AS INT) < 11000;
 -- IMPLEMENTATION_INFO_ID: 14 IMPLEMENTATION_INFO_NAME: SEARCH PATTERN ESCAPE INTEGER_VALUE: NULL CHARACTER_VALUE: \
 -- IMPLEMENTATION_INFO_ID: 17 IMPLEMENTATION_INFO_NAME: DBMS NAME INTEGER_VALUE: NULL CHARACTER_VALUE: vsql
@@ -25,7 +25,7 @@ SELECT comments FROM information_schema.sql_implementation_info WHERE implementa
 -- COMMENTS: 1: NULLs sort before every other value.
 
 -- # A value is found by its ID, the same way that SQLGetInfo does
--- # (ISO/IEC 9075-3:2003(E), 6.38, General Rules, 10.b and 10.c).
+-- # (ISO/IEC 9075-3:2003, 6.38, General Rules, 10.b and 10.c).
 SELECT character_value FROM information_schema.sql_implementation_info WHERE implementation_info_id = '17';
 SELECT integer_value FROM information_schema.sql_implementation_info WHERE implementation_info_id = '28';
 -- CHARACTER_VALUE: vsql
@@ -37,7 +37,7 @@ SELECT CHAR_LENGTH(character_value) FROM information_schema.sql_implementation_i
 -- COL1: 10
 
 -- # vsql's own (implementation-defined) items have IDs from 11000 (ISO/IEC
--- # 9075-3:2003(E), 7.1, Description, 2). The BUILD items were set when vsql
+-- # 9075-3:2003, 7.1, Description, 2). The BUILD items were set when vsql
 -- # was compiled, and the others are read when they're used. The release and
 -- # its commit are NULL until it's built for a release, and the others depend
 -- # on the build and the machine, so only whether they have a value is shown.

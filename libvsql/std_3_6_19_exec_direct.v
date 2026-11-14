@@ -2,7 +2,7 @@ module main
 
 import vsql
 
-// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect
+// ISO/IEC 9075-3:2003, 6.19, ExecDirect
 //
 // Execute a statement directly.
 //
@@ -28,7 +28,7 @@ fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_lengt
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// ISO/IEC 9075-3:2003, 5.2, <CLI routine> invocation, General Rules,
 	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 	stmt.diag.is_execute = true
@@ -122,7 +122,7 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 
 	// - 7.a. If P doesn't conform to a <preparable statement>, then an
 	// exception condition is raised: syntax error or access rule violation
-	// (see ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, Format). A cursor
+	// (see ISO/IEC 9075-2:2023, 20.7, <prepare statement>, Format). A cursor
 	// is opened by executing a query, and a connection is made by SQLConnect.
 	if stmt.diag.dynamic_function in ['DECLARE CURSOR', 'OPEN', 'FETCH', 'CLOSE CURSOR', 'CONNECT',
 		'SET CONNECTION', 'DISCONNECT'] {
@@ -137,7 +137,7 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 // EXECUTE USING and OPEN USING clauses"). If any of them are deferred, the
 // first one becomes the deferred parameter number, and the statement isn't
 // executed until their values are provided by ParamData and PutData (ISO/IEC
-// 9075-3:2003(E), 5.6, Implicit EXECUTE USING and OPEN USING clauses, General
+// 9075-3:2003, 5.6, Implicit EXECUTE USING and OPEN USING clauses, General
 // Rules, 4.q).
 fn execute_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt) !i16 {
 	params, deferred := parameter_values(mut stmt, prepared)!
@@ -158,7 +158,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	mut conn := stmt_connection(stmt)!
 	conn.clear_warnings()
 
-	// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 10: a
+	// ISO/IEC 9075-3:2003, 5.4, Implicit cursor, General Rules, 10: a
 	// cursor is always a copy of the result (General Rules, 8.e.i), so it can't
 	// be SENSITIVE: cursor sensitivity exception — request rejected. It's
 	// always INSENSITIVE, which can be guaranteed (General Rules, 9).
@@ -170,8 +170,8 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// started in the first connection that executes a statement. It's active,
 	// so it can't be changed by a <set transaction statement>.
 	//
-	// ISO/IEC 9075-3:2003(E), 6.61, StartTran, General Rules, 10
-	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i
+	// ISO/IEC 9075-3:2003, 6.61, StartTran, General Rules, 10
+	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.i
 	if stmt.diag.dynamic_function == 'SET TRANSACTION' && !conn.in_transaction()
 		&& start_tran_pending(handle_env(sql_handle_stmt, stmt.handle)) {
 		return cli_error('25001', 'active SQL-transaction')
@@ -181,13 +181,13 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// A <set transaction statement> doesn't initiate an SQL-transaction, it sets
 	// the characteristics of the next one, which is started here.
 	//
-	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i and 7
+	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.i and 7
 	if !conn.in_transaction() && stmt.diag.dynamic_function != 'SET TRANSACTION' {
 		db_query(mut conn, 'START TRANSACTION ${conn.next_transaction_characteristics()}')!
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
 		dbc.autocommit_transaction = dbc.autocommit
 	}
-	// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 2 and 7:
+	// ISO/IEC 9075-3:2003, 5.4, Implicit cursor, General Rules, 2 and 7:
 	// the cursor of a query is also a cursor of the connection, with the
 	// cursor name of S (which is generated if it doesn't have one), so that it
 	// can be the cursor of a positioned DELETE or UPDATE. It's WITH HOLD if
@@ -213,7 +213,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 			stmt.diag.transactions_rolled_back++
 		}
 		autocommit(mut stmt.diag, stmt.dbc, false) or {}
-		// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect, General Rules, 13 to 15 (and
+		// ISO/IEC 9075-3:2003, 6.19, ExecDirect, General Rules, 13 to 15 (and
 		// 6.20, Execute, General Rules, 6 to 8): a statement that fails has no
 		// rows, and doesn't become the executed statement.
 		stmt.row_count = 0

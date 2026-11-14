@@ -9,12 +9,12 @@ import os
 // comment of our own (Description, 1 to 4). The items, and what their values
 // mean, are the ones that SQL/CLI defines:
 //
-//   ISO/IEC 9075-3:2003(E), 7.1, SQL_IMPLEMENTATION_INFO base table
+//   ISO/IEC 9075-3:2003, 7.1, SQL_IMPLEMENTATION_INFO base table
 //
 // That list doesn't have SEARCH PATTERN ESCAPE (14), but GetInfo reads it from
 // this table too, so it's here as well:
 //
-//   ISO/IEC 9075-3:2003(E), 6.38, GetInfo, General Rules, 10.b
+//   ISO/IEC 9075-3:2003, 6.38, GetInfo, General Rules, 10.b
 //
 // The implementation-defined items have IDs from 11000 (Description, 2 of
 // 7.1). The ones with a name that starts with BUILD were set when vsql was
@@ -220,7 +220,7 @@ fn implementation_info_view_row(item ImplementationInfo) []Value {
 
 // dbms_version is the DBMS VERSION for a version (such as "v1.2.3"): two
 // digits, a period, two digits, a period and four digits (ISO/IEC
-// 9075-3:2003(E), 7.1, SQL_IMPLEMENTATION_INFO base table). It's "00.00.0000"
+// 9075-3:2003, 7.1, SQL_IMPLEMENTATION_INFO base table). It's "00.00.0000"
 // when vsql wasn't built for a release (see set_version.sh). The release is
 // also BUILD VERSION, so it isn't added on the end.
 fn dbms_version(version string) string {

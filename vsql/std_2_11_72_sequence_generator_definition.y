@@ -1,6 +1,6 @@
 %%
 
-// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Conformance Rules, 1
+// ISO/IEC 9075-2:2023, 11.72, <sequence generator definition>, Conformance Rules, 1
 sequence_generator_definition:
   CREATE SEQUENCE sequence_generator_name {
     flag(mut yylex, 'T176')
@@ -54,7 +54,7 @@ sequence_generator_data_type_option:
     }))
   }
 
-// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 2
+// ISO/IEC 9075-2:2023, 9.36, Creation of a sequence generator, Syntax Rules, 2
 common_sequence_generator_options:
   common_sequence_generator_option { $$.v = yy_box([$1.v as SequenceGeneratorOption]) }
 | common_sequence_generator_options common_sequence_generator_option {

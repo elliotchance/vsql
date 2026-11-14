@@ -2,7 +2,7 @@ module vsql
 
 import time
 
-// ISO/IEC 9075-2:2016(E), 19.7, <set names statement>
+// ISO/IEC 9075-2:2023, 19.7, <set names statement>
 //
 // Set the default character set name for <character string literal>s in
 // <preparable statement>s that are prepared in the current SQL-session by an
@@ -24,11 +24,11 @@ fn (stmt SetNamesStatement) execute(mut conn Connection, params map[string]Value
 		params: params
 	}
 
-	// ISO/IEC 9075-2:2016(E), 19.7, <set names statement>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2016(E), 19.7, <set names statement>, General Rules, 1
+	// ISO/IEC 9075-2:2023, 19.7, <set names statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2023, 19.7, <set names statement>, General Rules, 1
 	value := session_name_value(mut conn, mut c, stmt.value, 'SET NAMES')!
 
-	// ISO/IEC 9075-2:2016(E), 19.7, <set names statement>, General Rules, 2
+	// ISO/IEC 9075-2:2023, 19.7, <set names statement>, General Rules, 2
 	name := normalize_identifier(value) or { return sqlstate_2c000(value) }
 	if name != 'UTF8' {
 		return sqlstate_2c000(value)

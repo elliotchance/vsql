@@ -192,7 +192,7 @@
 8.6/SR/4                 impl-defined vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql only the default collation
 8.6/SR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
 8.6/SR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql
-8.6/SR/7                 unclear      - - new in 2023: an underscore can't be a range bound (#1502)
+8.6/SR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql
 8.6/SR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql checked when evaluated (2201B), since the pattern is a value
 8.6/GR/1                 definition   - -
 8.6/GR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/std_2_8_6_similar.sql,tests/std_2_8_6_similar_escape.sql

@@ -12,11 +12,13 @@ type Predicate = BetweenPredicate
 	| NullPredicate
 	| QuantifiedComparisonPredicate
 	| SimilarPredicate
+	| UniquePredicate
 
 fn (e Predicate) pstr(params map[string]Value) string {
 	return match e {
 		ComparisonPredicate, BetweenPredicate, InPredicate, CharacterLikePredicate,
-		SimilarPredicate, NullPredicate, QuantifiedComparisonPredicate, ExistsPredicate {
+		SimilarPredicate, NullPredicate, QuantifiedComparisonPredicate, ExistsPredicate,
+		UniquePredicate {
 			e.pstr(params)
 		}
 	}
@@ -40,7 +42,7 @@ fn (e Predicate) compile(mut c Compiler) !CompileResult {
 			return e.compile_between(mut c, retrospective)!
 		}
 		InPredicate, CharacterLikePredicate, SimilarPredicate, NullPredicate,
-		QuantifiedComparisonPredicate, ExistsPredicate {
+		QuantifiedComparisonPredicate, ExistsPredicate, UniquePredicate {
 			return e.compile(mut c)!
 		}
 	}

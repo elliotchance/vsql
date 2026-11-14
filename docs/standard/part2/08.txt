@@ -254,12 +254,12 @@
 8.10/GR/2                implemented  vsql/std_2_8_10_exists_predicate.v tests/std_2_8_10_exists_predicate.sql
 8.10/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_2_8_10_exists_predicate.sql
 # 8.11, <unique predicate>
-8.11                     n/a          - - the UNIQUE predicate (F291)
-8.11/SR/1                n/a          - - the UNIQUE predicate (F291)
-8.11/SR/2                n/a          - - the UNIQUE predicate (F291)
-8.11/GR/1                n/a          - - the UNIQUE predicate (F291)
-8.11/GR/2                n/a          - - the UNIQUE predicate (F291)
-8.11/CR/1                n/a          - - the UNIQUE predicate (F291)
+8.11                     implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/SR/1                n/a          - - user-defined types (S023)
+8.11/SR/2                implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/GR/1                definition   - -
+8.11/GR/2                implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/CR/1                implemented  vsql/std_2_8_11_unique_predicate.y tests/std_2_8_11_unique_predicate.sql
 # 8.12, <normalized predicate>
 8.12                     n/a          - - IS NORMALIZED (T061)
 8.12/SR/1                n/a          - - IS NORMALIZED (T061)

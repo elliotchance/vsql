@@ -1045,7 +1045,9 @@ fn test_create_index_waits() ! {
 	file.close()
 	assert header.read_version == 1 && header.write_version == 1 && header.index_id == 0
 
-	db2.query('START TRANSACTION')!
+	// A SERIALIZABLE transaction would make CREATE INDEX wait for it to end
+	// instead (see Storage.prepare_commit).
+	db2.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
 	db2.query('INSERT INTO t (a) VALUES (1)')!
 	t := start_timer()
 	if _ := db1.query('CREATE INDEX t_a ON t (a)') {

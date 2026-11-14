@@ -91,6 +91,14 @@ mut:
 	// pages in the cache of file_pager were last known to be the same as the
 	// file, see open. It's none when that isn't known.
 	pager_wal ?WalPosition
+	// deferred is true while file_pager has pages that statements of the
+	// current SERIALIZABLE transaction changed, which haven't been written to
+	// the file yet, see prepare_commit.
+	deferred bool
+	// rollback_needs_pages is true once the current transaction has written a
+	// page to the file, or changed a sequence (which a rollback must keep), so
+	// that ROLLBACK can't just drop the pages it kept, see drop_kept_pages.
+	rollback_needs_pages bool
 	// snapshot is the state before the current statement that changes the
 	// database, see begin_statement.
 	snapshot StatementSnapshot
@@ -120,6 +128,13 @@ mut:
 	// commit_locked is true when the current statement has checked that it can
 	// commit, see lock_commit.
 	commit_locked bool
+	// deferral is locked exclusively while this connection is keeping pages in
+	// memory (see prepare_commit), and shared by a statement on another
+	// connection that changes the database, see
+	// CatalogConnection.open_write_connection. statement_deferral is true when
+	// it's held for the current statement.
+	deferral           IsolationLock
+	statement_deferral bool
 	// wal_prepared is the current statement once it has been added to the
 	// write-ahead log, but not committed yet, see prepare_commit.
 	wal_prepared ?WalPrepared
@@ -204,6 +219,9 @@ fn (mut f Storage) begin_statement() {
 	f.btree.written_pages = map[int]bool{}
 	f.btree.written_keys = map[string]bool{}
 	f.sequence_values = map[string]PageObject{}
+	if f.file_pager != unsafe { nil } {
+		f.file_pager.begin()
+	}
 }
 
 // save_schema must be called before tables, schemas or indexes are changed, so
@@ -305,10 +323,91 @@ fn (mut f Storage) prepare_commit(path string) ! {
 	}
 
 	f.header.root_page = f.btree.pager.root_page()
+
+	// A SERIALIZABLE transaction that changes the database holds the isolation
+	// lock exclusively until it ends, and no other connection can change the
+	// file while it's held (see CatalogConnection.open_write_connection). So the
+	// pages that its statements change (and the header) can be kept in memory,
+	// and written to the file once, when it ends. They're written sooner if
+	// they add up to more than max_kept_pages_size.
+	//
+	// That's only while no other transaction is active, because one that's
+	// already active may still need to change the file (if only to roll back)
+	// before this one ends. One that starts later waits for this one instead.
+	// It starts with the first statement that changes a page, so that starting
+	// the transaction (which only changes the header) doesn't make others wait.
+	if f.transaction_state == .active && f.isolation.state == .exclusive
+		&& f.file_pager.dirty.len > 0
+		&& i64(f.file_pager.dirty.len) * f.header.page_size <= max_kept_pages_size
+		&& f.is_only_transaction()
+		&& f.lock_deferral() {
+		f.deferred = true
+		return
+	}
+
 	f.wal_prepared = wal_prepare(mut f.file, path, mut f.log, f.header, f.file_pager,
 		f.transaction_state == .active) or {
+		f.must_undo_pages()
 		return io_error(err)
 	}
+}
+
+// must_undo_pages is for when writing the kept pages to the log failed. Some
+// of them may be in the log already (without a commit frame), so a ROLLBACK
+// must undo the changes and commit that, rather than drop the pages, see
+// drop_kept_pages. The pages are still kept, since the transaction may still be
+// active.
+fn (mut f Storage) must_undo_pages() {
+	f.rollback_needs_pages = true
+}
+
+// max_kept_pages_size is the most memory that the pages a transaction keeps
+// until it ends can take up (see prepare_commit), so that a transaction that
+// changes a lot of rows doesn't need as much memory. Once they get bigger, they
+// are written to the file, and it starts keeping them again.
+const max_kept_pages_size = i64(64 * 1024 * 1024)
+
+// lock_deferral returns true if the deferral lock is held exclusively, which
+// it tries to get without waiting, see prepare_commit.
+fn (mut f Storage) lock_deferral() bool {
+	if f.deferral.state == .exclusive {
+		return true
+	}
+	f.deferral.acquire(.exclusive, 0, '') or { return false }
+
+	return f.deferral.state == .exclusive
+}
+
+// drop_kept_pages forgets every change that the transaction kept in memory
+// (see prepare_commit), when none of its changes are in the file (see
+// rollback_needs_pages), so that a ROLLBACK doesn't have to undo them. The
+// header is read from the file again, which still has the transaction as
+// active. The IDs that the transaction used are still used up, so they're
+// never used again (like a ROLLBACK that undoes its changes).
+fn (mut f Storage) drop_kept_pages() ! {
+	mut header := read_header(mut f.file)!
+	f.file_pager.drop_dirty(header.root_page)
+	header.row_id = f.header.row_id
+	header.table_id = f.header.table_id
+	header.index_id = f.header.index_id
+	f.header = header
+
+	// The pages and keys that the transaction changed aren't in the file.
+	f.save_transaction_pages()
+	f.transaction_pages = map[int]bool{}
+	f.transaction_keys = map[string]bool{}
+}
+
+// is_only_transaction is true if no transaction other than the current one is
+// active.
+fn (f Storage) is_only_transaction() bool {
+	for tid in f.header.active_transaction_ids.tids {
+		if tid != 0 && tid != f.transaction_id {
+			return false
+		}
+	}
+
+	return true
 }
 
 // finish_commit is the second half of commit_statement, after prepare_commit.
@@ -323,18 +422,27 @@ fn (mut f Storage) finish_commit(path string) ! {
 		return
 	}
 
-	mut prepared := f.wal_prepared or { WalPrepared{} }
+	mut prepared := f.wal_prepared or {
+		// The pages are kept until the transaction ends, see prepare_commit.
+		return
+	}
 	f.wal_prepared = none
 	wal_finish(mut f.file, path, mut prepared) or {
 		f.pager_wal = none
+		f.must_undo_pages()
 		return io_error(err)
 	}
 	f.log.finished(prepared)
 
 	// The pages are in the file now, so the cache has them too, and the log
 	// has moved on by this statement (see open).
+	if f.transaction_state == .active && prepared.pages.len > 0 {
+		f.rollback_needs_pages = true
+	}
 	f.file_pager.committed()
 	f.pager_wal = WalPosition{prepared.salt, prepared.tail + prepared.size}
+	f.deferred = false
+	f.deferral.release()
 }
 
 // discard_statement forgets the changes made by the current statement, because
@@ -347,7 +455,11 @@ fn (mut f Storage) discard_statement(path string) ! {
 	// The frames already in the log are ignored without a commit frame, and
 	// the log stays open for the next statement.
 	f.wal_prepared = none
-	f.pager_wal = none
+	// The pages that earlier statements of the transaction kept are still the
+	// newest, see FilePager.discard.
+	if !f.deferred {
+		f.pager_wal = none
+	}
 
 	f.header = f.snapshot.header
 	if f.snapshot.schema_saved {
@@ -425,6 +537,14 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	fault_point('read_header')!
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive
+
+	// The header and pages in memory are newer than the file, which no other
+	// connection can have changed (see prepare_commit).
+	if f.deferred {
+		f.btree = new_btree(f.file_pager, f.header.page_size)
+		f.btree.undo = f.undo
+		return
+	}
 
 	// Every change to the file is committed through the log, which moves its
 	// tail (or starts a new log, with a new salt). So if the log is where it
@@ -830,6 +950,7 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	value_object := f.sequence_value_object(name.storage_id())!
 	new_value := next_sequence.value_bytes()
 	f.btree.replace_value(value_object, new_value)!
+	f.rollback_needs_pages = true
 	f.sequence_values['${value_object.key.bytestr()}:${value_object.tid}'] = PageObject{
 		...value_object
 		value: new_value
@@ -931,6 +1052,7 @@ fn (mut f Storage) identity_next_value(table Table) !i64 {
 	value_object := f.identity_value_object(table.id)!
 	new_value := next_sequence.value_bytes()
 	f.btree.replace_value(value_object, new_value)!
+	f.rollback_needs_pages = true
 	f.sequence_values['${value_object.key.bytestr()}:${value_object.tid}'] = PageObject{
 		...value_object
 		value: new_value

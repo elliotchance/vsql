@@ -132,6 +132,15 @@ fn test_direct_query_isolation() ! {
 	b.query('COMMIT')!
 	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
 
+	// One that was active when the first query read the file. That's a READ
+	// COMMITTED one, since a SERIALIZABLE one keeps its pages and the header in
+	// memory until it ends (see Storage.prepare_commit). A rollback counts too.
+	b.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	b.query('INSERT INTO t (x) VALUES (5)')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 4
+	b.query('ROLLBACK')!
+	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
+
 	// A rollback looks the same in the file. (A transaction that hasn't
 	// changed anything doesn't change the file, see TransactionState.)
 	a.direct('SELECT * FROM t;')!
@@ -735,4 +744,38 @@ fn test_isolation_waits() ! {
 	db.query('COMMIT')!
 	quick.query('START TRANSACTION')!
 	quick.query('COMMIT')!
+}
+
+// A SERIALIZABLE transaction keeps its pages in memory only while it holds the
+// deferral lock exclusively (see Storage.prepare_commit). A statement on
+// another connection that changes the database holds it shared, so until it
+// ends, the pages are written for each statement instead.
+fn test_kept_pages_need_deferral_lock() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-kept-pages-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+
+	mut db := open_database(path, isolation_test_options(0))!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE t (x INT)')!
+
+	mut other := IsolationLock{
+		path: deferral_path(path)
+	}
+	other.acquire(.shared, 0, 'busy')!
+	db.query('START TRANSACTION ISOLATION LEVEL SERIALIZABLE')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	assert !db.catalog().storage.deferred
+	other.close()
+
+	db.query('INSERT INTO t (x) VALUES (2)')!
+	assert db.catalog().storage.deferred
+	db.query('COMMIT')!
+	assert db.query('SELECT * FROM t')!.rows.len == 2
 }

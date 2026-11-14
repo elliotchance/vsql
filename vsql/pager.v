@@ -126,6 +126,18 @@ mut:
 	cache       map[int][]u8
 	cache_order []int
 	cache_next  int
+	// undo has each page that the current statement changed as it was before
+	// the statement (or is in undo_new if it wasn't dirty), and the total
+	// pages and root page before it, so that discard can put back what was
+	// there before the statement. That's only more than nothing when a
+	// transaction keeps its pages until it ends, see Storage.prepare_commit.
+	undo             map[int][]u8
+	undo_new         map[int]bool
+	undo_total_pages int
+	undo_root_page   int
+	// file_total_pages is the number of pages in the file, which is less than
+	// total_pages while new pages haven't been written yet.
+	file_total_pages int
 }
 
 // new_file_pager requires that the path already exists and has already been
@@ -137,13 +149,14 @@ fn new_file_pager(mut file os.File, page_size int, root_page int, cache_size int
 	file_len := file.tell() or { return sqlstate_58030('unable to get file length: ${err}') }
 
 	return &FilePager{
-		file:        file
-		page_size:   page_size
-		root_page:   root_page
+		file:             file
+		page_size:        page_size
+		root_page:        root_page
 		// The first page is reserved for header information. We do not include
 		// this in the pages.
-		total_pages: int((file_len - header_size) / i64(page_size))
-		cache_size:  cache_size
+		total_pages:      int((file_len - header_size) / i64(page_size))
+		file_total_pages: int((file_len - header_size) / i64(page_size))
+		cache_size:       cache_size
 	}
 }
 
@@ -152,13 +165,13 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 }
 
 fn (mut p FilePager) read_page(page_number int) !Page {
+	// Any read can fail, even of a page that's in memory, so that a test can
+	// fail a read wherever the page is.
+	fault_point('read_page')!
+
 	if data := p.dirty[page_number] {
 		return page_view(data)
 	}
-
-	// A page that's read from the cache can still fail, so that a test can
-	// fail any read, whether or not the page was cached.
-	fault_point('read_page')!
 
 	if data := p.cache[page_number] {
 		return page_view(data)
@@ -226,11 +239,37 @@ fn (page Page) bytes() []u8 {
 }
 
 fn (mut p FilePager) store_page(page_number int, page Page) ! {
+	if page_number !in p.undo && page_number !in p.undo_new {
+		if data := p.dirty[page_number] {
+			p.undo[page_number] = data
+		} else {
+			p.undo_new[page_number] = true
+		}
+	}
 	p.dirty[page_number] = page.bytes()
 }
 
+// begin must be called at the start of each statement that changes the
+// database, so that discard knows what to put back.
+fn (mut p FilePager) begin() {
+	p.undo = map[int][]u8{}
+	p.undo_new = map[int]bool{}
+	p.undo_total_pages = p.total_pages
+	p.undo_root_page = p.root_page
+}
+
+// discard forgets the changes of the current statement. The pages that earlier
+// statements of the transaction changed are kept, see begin.
 fn (mut p FilePager) discard() {
-	p.dirty = map[int][]u8{}
+	for page_number, _ in p.undo_new {
+		p.dirty.delete(page_number)
+	}
+	for page_number, data in p.undo {
+		p.dirty[page_number] = data
+	}
+	p.total_pages = p.undo_total_pages
+	p.root_page = p.undo_root_page
+	p.begin()
 
 	// A page that was committed before (see wal_prepare) may be different to the
 	// cached one, which was read before it was changed.
@@ -250,6 +289,21 @@ fn (mut p FilePager) committed() {
 		}
 	}
 	p.dirty = map[int][]u8{}
+	p.file_total_pages = p.total_pages
+}
+
+// drop_dirty forgets every page that hasn't been written to the file, so it's
+// read from the file again, see Storage.drop_kept_pages. They're put back if
+// the statement fails, like any other change (see discard).
+fn (mut p FilePager) drop_dirty(root_page int) {
+	for page_number, data in p.dirty {
+		if page_number !in p.undo && page_number !in p.undo_new {
+			p.undo[page_number] = data
+		}
+	}
+	p.dirty = map[int][]u8{}
+	p.total_pages = p.file_total_pages
+	p.root_page = root_page
 }
 
 fn (mut p FilePager) total_pages() int {

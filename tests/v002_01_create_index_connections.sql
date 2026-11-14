@@ -8,7 +8,7 @@
 CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1);
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (a) VALUES (2);
 /* connection 1 */
 CREATE INDEX t_a ON t (a);
@@ -36,13 +36,13 @@ SELECT * FROM t;
 CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1);
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 DELETE FROM t;
 /* connection 1 */
 CREATE INDEX t_a ON t (a);
 /* connection 2 */
 ROLLBACK;
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 ALTER TABLE t ADD COLUMN b INT;
 /* connection 1 */
 CREATE INDEX t_a ON t (a);
@@ -97,7 +97,7 @@ COMMIT;
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1
--- 1: error 40001: serialization failure: cannot commit while another connection has a SERIALIZABLE transaction
+-- 1: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: msg: INSERT 1
 -- 2: msg: COMMIT
 
@@ -363,7 +363,7 @@ SELECT * FROM t;
 /* connection 1 */
 CREATE TABLE t (a INT);
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (a) VALUES (1);
 /* connection 1 */
 CREATE INDEX IF NOT EXISTS t_a ON t (a);
@@ -372,7 +372,7 @@ COMMIT;
 /* connection 1 */
 CREATE INDEX IF NOT EXISTS t_a ON t (a);
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (a) VALUES (2);
 /* connection 1 */
 CREATE INDEX IF NOT EXISTS t_a ON t (a);

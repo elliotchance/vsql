@@ -24,7 +24,9 @@ first time a ``SERIALIZABLE`` transaction (the default) is started (see
 it's always empty, is only used for locking, and can be deleted whenever there
 are no open connections to the database. The same goes for a fifth file, with
 that name followed by ``.queue``, which is created the first time a connection
-waits for a transaction to start.
+waits for a transaction to start, and a sixth, followed by ``.deferred``, which
+is created the first time a ``SERIALIZABLE`` transaction keeps its changes in
+memory until it ends.
 
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero

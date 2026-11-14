@@ -128,9 +128,9 @@ SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
 -- 1: msg: CREATE SEQUENCE 1
 -- 1: msg: START TRANSACTION
 -- 1: msg: ALTER SEQUENCE 1
--- 2: COL1: 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: ROLLBACK
--- 2: COL1: 2
+-- 2: COL1: 1
 
 -- # Connections share the sequence, so each one gets the next values, in a
 -- # transaction or not, and whether it's committed, rolled back or still open.
@@ -285,11 +285,9 @@ COMMIT;
 -- 1: COL1: 1
 -- 1: COL1: 2
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
--- 2: COL1: 3
--- 2: COL1: 4
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 3: error 40001: serialization failure: another connection has a transaction that must finish first
--- 3: COL1: 5
--- 3: COL1: 6
+-- 3: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 2: msg: COMMIT
 -- 3: msg: COMMIT

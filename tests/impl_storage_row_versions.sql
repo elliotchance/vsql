@@ -38,7 +38,7 @@ INSERT INTO t (id, s) VALUES (1, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 /* connection 2 */
 /* connection 3 */
 /* connection 1 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 UPDATE t SET s = 'b' WHERE id = 1;
 /* disconnect 1 */
 /* connection 2 */

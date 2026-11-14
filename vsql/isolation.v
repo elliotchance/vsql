@@ -45,6 +45,13 @@
 // lock is held. They just can't commit. If the isolation file doesn't exist, no
 // transaction can be holding a lock on it, so it isn't created just to commit.
 //
+// A SERIALIZABLE transaction that changes the database while no other
+// transaction is active keeps the pages it changed in memory until it ends (see
+// Storage.prepare_commit). It holds a third lock (the isolation file followed by
+// ".deferred") exclusively while it does, and every statement on another
+// connection that changes the database waits for a shared lock on it, see
+// CatalogConnection.open_write_connection.
+//
 // A query through Connection.direct that starts an SQL-transaction doesn't take
 // the lock, since that isn't possible for a database that can only be read. It
 // also means that readers don't wait for each other, or stop anything from
@@ -68,6 +75,13 @@ enum IsolationLockState {
 // database at path.
 fn isolation_path(path string) string {
 	return '${path}.isolation'
+}
+
+// deferral_path is the file that is locked while a SERIALIZABLE transaction on
+// the database at path keeps the pages it changed in memory, see
+// Storage.prepare_commit.
+fn deferral_path(path string) string {
+	return '${path}.isolation.deferred'
 }
 
 // isolation_queue_path is the file that is locked by the connection that's next
@@ -218,6 +232,10 @@ fn (mut conn Connection) unlock_transactions() {
 		catalog.storage.commit_locked = false
 		if catalog.storage.transaction_state == .not_active {
 			catalog.storage.isolation.release()
+		}
+		if catalog.storage.statement_deferral {
+			catalog.storage.deferral.release()
+			catalog.storage.statement_deferral = false
 		}
 	}
 }

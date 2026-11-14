@@ -70,8 +70,17 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 		catalog.release_write_connection()
 	}
 
+	// None of the transaction's changes are in the file (see
+	// Storage.prepare_commit), so they're dropped rather than undone. The schema
+	// it changed (if any) was only in memory, so it's read from the file again.
+	dropped := catalog.storage.deferred && !catalog.storage.rollback_needs_pages
+	if dropped {
+		catalog.storage.drop_kept_pages()!
+	}
+
 	mut schema_changed := false
-	for page_number in catalog.storage.transaction_page_numbers()! {
+	page_numbers := if dropped { []int{} } else { catalog.storage.transaction_page_numbers()! }
+	for page_number in page_numbers {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			if (obj.tid == catalog.storage.transaction_id
@@ -97,6 +106,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
 	catalog.storage.transaction_state = .not_active
+	catalog.storage.rollback_needs_pages = false
 	catalog.storage.isolation_end()!
 
 	// We can erase these now.
@@ -113,7 +123,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	if schema_changed {
 		catalog.storage.schema_changed()!
 	}
-	if schema_changed || reload {
+	if schema_changed || reload || dropped {
 		catalog.storage.load_schema(catalog.catalog_name)!
 	}
 }

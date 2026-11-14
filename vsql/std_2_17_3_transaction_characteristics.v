@@ -64,9 +64,11 @@ pub fn (conn Connection) transaction_isolation_level() string {
 // that a SET TRANSACTION set for the next SQL-transaction, such as
 // "ISOLATION LEVEL READ COMMITTED, DIAGNOSTICS SIZE 1", or an empty string if
 // there wasn't one. A client that starts each SQL-transaction itself (such as
-// libvsql) uses this, so that its START TRANSACTION has them.
+// libvsql) uses this, so that its START TRANSACTION has them. When the next
+// SQL-transaction is a branch (see set_branch_of) and there wasn't a SET
+// LOCAL TRANSACTION, they're the characteristics of the SQL-transaction.
 pub fn (conn Connection) next_transaction_characteristics() string {
-	next := conn.next_transaction or { return '' }
+	next := conn.next_transaction or { conn.branch_of or { return '' } }
 	mut modes := ['ISOLATION LEVEL ${next.isolation_level}']
 	// READ UNCOMMITTED is always READ ONLY.
 	if next.read_only && next.isolation_level != .read_uncommitted {
@@ -77,6 +79,25 @@ pub fn (conn Connection) next_transaction_characteristics() string {
 	}
 
 	return modes.join(', ')
+}
+
+// set_branch_of makes the next SQL-transaction of conn a branch of the
+// SQL-transaction that's active on other (T262), with the same characteristics
+// (unless a SET LOCAL TRANSACTION changes them). It stops being one when other
+// is conn, or doesn't have an active SQL-transaction. It's for a client that has
+// more than one SQL-connection in an SQL-agent (such as libvsql), like Agent,
+// before each statement. While it's a branch, START TRANSACTION and SET
+// TRANSACTION are 25001, so a client that starts each SQL-transaction itself
+// gets next_transaction_characteristics first, then calls set_branch_of with
+// conn.
+//
+// ISO/IEC 9075-2:2023, 4.43.7.2, Encompassing transaction belonging to the SQL-agent
+pub fn (mut conn Connection) set_branch_of(other &Connection) {
+	conn.branch_of = if voidptr(other) != voidptr(conn) && other.is_active() {
+		other.current_characteristics()
+	} else {
+		none
+	}
 }
 
 // next_diagnostics_size returns the <number of conditions> of the DIAGNOSTICS

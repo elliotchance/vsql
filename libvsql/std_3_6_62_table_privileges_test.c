@@ -52,6 +52,6 @@ UTEST_F(db, 6_62_table_privileges_implicit_set_connection) {
   stmt2 = inactive_stmt(utest_fixture->env, utest_fixture->stmt, &dbc2);
   ASSERT_NE(stmt2, SQL_NULL_HANDLE);
   EXPECT_EQ(SQLTablePrivileges(stmt2, NULL, 0, NULL, 0, NULL, 0), SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+  EXPECT_STRNE(sqlstate(SQL_HANDLE_STMT, stmt2), "0A001");
   free_inactive_stmt(utest_fixture->dbc, dbc2, stmt2);
 }

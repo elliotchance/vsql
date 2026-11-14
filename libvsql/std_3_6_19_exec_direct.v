@@ -172,6 +172,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	//
 	// ISO/IEC 9075-3:2003, 6.61, StartTran, General Rules, 10
 	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.i
+	set_branch(mut conn, stmt.dbc)
 	if stmt.diag.dynamic_function == 'SET TRANSACTION' && !conn.in_transaction()
 		&& start_tran_pending(handle_env(sql_handle_stmt, stmt.handle)) {
 		return cli_error('25001', 'active SQL-transaction')
@@ -179,13 +180,19 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	join_start_tran(mut conn, stmt.dbc)!
 
 	// A <set transaction statement> doesn't initiate an SQL-transaction, it sets
-	// the characteristics of the next one, which is started here.
+	// the characteristics of the next one, which is started here. A branch of
+	// an SQL-transaction that's active on another connection has its
+	// characteristics (see set_branch), and isn't committed by AUTOCOMMIT, since
+	// it's part of a longer SQL-transaction.
 	//
 	// ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.i and 7
 	if !conn.in_transaction() && stmt.diag.dynamic_function != 'SET TRANSACTION' {
-		db_query(mut conn, 'START TRANSACTION ${conn.next_transaction_characteristics()}')!
+		is_branch := active_branches(stmt.dbc).len > 0
+		characteristics := conn.next_transaction_characteristics()
+		conn.set_branch_of(conn)
+		db_query(mut conn, 'START TRANSACTION ${characteristics}')!
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
-		dbc.autocommit_transaction = dbc.autocommit
+		dbc.autocommit_transaction = dbc.autocommit && !is_branch
 	}
 	// ISO/IEC 9075-3:2003, 5.4, Implicit cursor, General Rules, 2 and 7:
 	// the cursor of a query is also a cursor of the connection, with the
@@ -204,13 +211,17 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		stmt.remove_dynamic_cursor()
 	}
 	conn.clear_warnings()
+	was_active := conn.in_transaction()
 	result := query_statement(mut prepared, name, stmt.cursor_holdable == sql_holdable,
 		params) or {
 		stmt.diag.statement_warnings(conn, true)
 		// An error that is a transaction rollback (such as a serialization
-		// failure) also ends the SQL-transaction.
+		// failure) also ends the SQL-transaction, including its other branches.
 		if !conn.in_transaction() {
 			stmt.diag.transactions_rolled_back++
+			if was_active {
+				rollback_branches(mut stmt.diag, stmt.dbc)
+			}
 		}
 		autocommit(mut stmt.diag, stmt.dbc, false) or {}
 		// ISO/IEC 9075-3:2003, 6.19, ExecDirect, General Rules, 13 to 15 (and

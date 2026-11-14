@@ -6,11 +6,20 @@ import vsql
 //
 // Terminate an SQL-transaction.
 //
-// Each SQL-connection has its own SQL-transaction, so ending the transactions
-// of an SQL-environment ends the SQL-transaction of each of its connections.
-// L1 is every established SQL-connection, and a connection that doesn't have
-// an active SQL-transaction only has its cursors closed (General Rules
-// 3.c.ii.3 and 3.d.ii.3).
+// Each SQL-connection has its own branch of the SQL-transaction of its
+// SQL-environment (ISO/IEC 9075-2:2023, Feature T262), so ending the
+// transactions of an SQL-environment ends the branch of each of its
+// connections. L1 is every established SQL-connection, and a connection that
+// doesn't have an active SQL-transaction only has its cursors closed (General
+// Rules 3.c.ii.3 and 3.d.ii.3). Ending the transaction of a connection ends the
+// SQL-transaction, so L1 also has the other connections of its
+// SQL-environment that have an active branch.
+//
+// Before a commit of more than one branch, the deferred constraints of each are
+// checked, so that if any of them aren't satisfied, every branch is rolled
+// back. Committing more than one SQL-server isn't atomic, though: if committing
+// one of them fails after that (which can only be because of the SQL-server,
+// such as a disk error), the ones before it stay committed.
 //
 // A COMMIT or ROLLBACK is executed on each connection, so its General Rules
 // apply: deferred constraints are checked, and if any constraint (or anything
@@ -81,16 +90,38 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 	// - 9. If any statement of the connections has a deferred parameter number,
 	// then an exception condition is raised: CLI-specific condition — function
 	// sequence error.
+	mut branches := l1.clone()
+	if handle_type == sql_handle_dbc {
+		branches << active_branches(l1[0])
+	}
 	for _, stmt in stmts {
-		if stmt.dbc in l1 {
+		if stmt.dbc in branches {
 			stmt.check_deferred()!
 		}
 	}
 
 	is_commit := completion_type in [sql_commit, sql_commit_and_chain]
 	is_chain := completion_type in [sql_commit_and_chain, sql_rollback_and_chain]
+	if is_commit && branches.filter(connection_active(it)).len > 1 {
+		for dh in branches {
+			mut conn := (dbcs[dh] or { continue }).conn or { continue }
+			if !conn.in_transaction() {
+				continue
+			}
+			db_query(mut conn, 'SET CONSTRAINTS ALL IMMEDIATE') or {
+				for other in branches {
+					mut c := (dbcs[other] or { continue }).conn or { continue }
+					close_cursors(other, false)
+					if c.in_transaction() {
+						end_transaction(mut diag, mut c, other, false, false) or {}
+					}
+				}
+				return err
+			}
+		}
+	}
 	mut errors := []IError{}
-	for dh in l1 {
+	for dh in branches {
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
 
@@ -123,6 +154,16 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 	}
 
 	return sql_success
+}
+
+// rollback_branches rolls back the other branches of the SQL-transaction of the
+// connection dh, after its own branch was rolled back by an error.
+fn rollback_branches(mut diag Diagnostics, dh i64) {
+	for h in active_branches(dh) {
+		mut conn := (dbcs[h] or { continue }).conn or { continue }
+		close_cursors(h, false)
+		end_transaction(mut diag, mut conn, h, false, false) or {}
+	}
 }
 
 // end_savepoint releases, or rolls back to, the savepoint in the SAVEPOINT NAME

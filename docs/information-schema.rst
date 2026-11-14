@@ -369,16 +369,76 @@ information that ``SQLGetInfo`` of the C API returns (see
 
   * - ``IMPLEMENTATION_INFO_ID``, ``IMPLEMENTATION_INFO_NAME``
     - The code (as text) and name of the item, which are the ones from the SQL
-      standard, such as ``17`` for ``DBMS NAME``.
+      standard, such as ``17`` for ``DBMS NAME``, or vsql's own items below.
 
   * - ``INTEGER_VALUE``, ``CHARACTER_VALUE``
-    - The value, which is in one of them (the other one is ``NULL``). The
-      ``DBMS VERSION`` is ``00.00.0000`` unless vsql was built for a release,
-      when it's followed by the version and its date. The ``DATA SOURCE NAME``
-      and ``SERVER NAME`` are the path of the database file (or ``:memory:``).
+    - The value, which is in one of them (the other one is ``NULL``, or both
+      are when there's no value). The ``DBMS VERSION`` is the number of the
+      release, such as ``01.02.0003`` for ``v1.2.3``, or ``00.00.0000`` when
+      vsql wasn't built for a release. The ``DATA SOURCE NAME`` and ``SERVER
+      NAME`` are the path of the database file (or ``:memory:``).
 
   * - ``COMMENTS``
     - What the value means.
+
+vsql also has its own items, with IDs from ``11000`` (the standard leaves 11000
+to 14999 for them). The ``BUILD`` items are set when vsql is compiled, and the
+others are read when they're used. Each one is a single value, so it never has
+to be split apart:
+
+.. list-table::
+  :header-rows: 1
+
+  * - ID
+    - Name
+    - Value
+
+  * - ``11000``
+    - ``BUILD VERSION``
+    - The release, such as ``v1.2.3``, or ``NULL`` when vsql wasn't built for a
+      release.
+
+  * - ``11001``
+    - ``BUILD COMMIT``
+    - The git commit of the release, or ``NULL`` when vsql wasn't built for a
+      release.
+
+  * - ``11002``
+    - ``BUILD DATE``
+    - The date (in UTC) that vsql was compiled, such as ``2026-11-12``.
+
+  * - ``11003``
+    - ``BUILD V VERSION``
+    - The version of V that compiled vsql, such as ``0.5.2``.
+
+  * - ``11004``
+    - ``BUILD V COMMIT``
+    - The commit of V that compiled vsql, such as ``5634a1f``.
+
+  * - ``11005``
+    - ``BUILD C COMPILER``
+    - The C compiler that compiled vsql, such as ``clang``.
+
+  * - ``11006``
+    - ``OPERATING SYSTEM``
+    - The operating system that vsql is running on, such as ``macos``.
+
+  * - ``11007``
+    - ``MACHINE``
+    - The hardware that vsql is running on, such as ``arm64``.
+
+  * - ``11008``
+    - ``FILE READ VERSION``
+    - (``INTEGER_VALUE``) The oldest file format that can read the database
+      file, or ``NULL`` for ``:memory:``. See :doc:`file-format`.
+
+  * - ``11009``
+    - ``FILE WRITE VERSION``
+    - (``INTEGER_VALUE``) The oldest file format that can change the database
+      file, or ``NULL`` for ``:memory:``.
+
+``SQLGetInfo`` of the C API returns them too, with the ``SQL_VSQL_`` constants
+(such as ``SQL_VSQL_BUILD_DATE``).
 
 ``SQL_SIZING``
 --------------

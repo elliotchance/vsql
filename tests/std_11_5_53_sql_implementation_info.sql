@@ -2,7 +2,7 @@
 -- # value in either INTEGER_VALUE or CHARACTER_VALUE (6.44, Description, 1 to
 -- # 3). The items and the codes of the integer values are the ones of SQL/CLI
 -- # (ISO/IEC 9075-3:2003(E), 7.1), and the ID is a character string.
-SELECT implementation_info_id, implementation_info_name, integer_value, character_value FROM information_schema.sql_implementation_info WHERE implementation_info_id NOT IN ('2', '13');
+SELECT implementation_info_id, implementation_info_name, integer_value, character_value FROM information_schema.sql_implementation_info WHERE implementation_info_id NOT IN ('2', '13') AND CAST(implementation_info_id AS INT) < 11000;
 -- IMPLEMENTATION_INFO_ID: 14 IMPLEMENTATION_INFO_NAME: SEARCH PATTERN ESCAPE INTEGER_VALUE: NULL CHARACTER_VALUE: \
 -- IMPLEMENTATION_INFO_ID: 17 IMPLEMENTATION_INFO_NAME: DBMS NAME INTEGER_VALUE: NULL CHARACTER_VALUE: vsql
 -- IMPLEMENTATION_INFO_ID: 18 IMPLEMENTATION_INFO_NAME: DBMS VERSION INTEGER_VALUE: NULL CHARACTER_VALUE: 00.00.0000
@@ -31,7 +31,34 @@ SELECT integer_value FROM information_schema.sql_implementation_info WHERE imple
 -- CHARACTER_VALUE: vsql
 -- INTEGER_VALUE: 1
 
--- # The DBMS VERSION is 00.00.0000 until it's built for a release, when it's
--- # followed by the version and date, such as "01.02.0003 v1.2.3 2026-11-11".
+-- # The DBMS VERSION is only the number of the release, such as "01.02.0003"
+-- # for v1.2.3, and it's 00.00.0000 until it's built for a release.
 SELECT CHAR_LENGTH(character_value) FROM information_schema.sql_implementation_info WHERE implementation_info_name = 'DBMS VERSION';
 -- COL1: 10
+
+-- # vsql's own (implementation-defined) items have IDs from 11000 (ISO/IEC
+-- # 9075-3:2003(E), 7.1, Description, 2). The BUILD items were set when vsql
+-- # was compiled, and the others are read when they're used. The release and
+-- # its commit are NULL until it's built for a release, and the others depend
+-- # on the build and the machine, so only whether they have a value is shown.
+SELECT implementation_info_id, implementation_info_name, integer_value IS NULL AS no_integer, character_value IS NULL AS no_character FROM information_schema.sql_implementation_info WHERE CAST(implementation_info_id AS INT) BETWEEN 11000 AND 11007;
+-- IMPLEMENTATION_INFO_ID: 11000 IMPLEMENTATION_INFO_NAME: BUILD VERSION NO_INTEGER: TRUE NO_CHARACTER: TRUE
+-- IMPLEMENTATION_INFO_ID: 11001 IMPLEMENTATION_INFO_NAME: BUILD COMMIT NO_INTEGER: TRUE NO_CHARACTER: TRUE
+-- IMPLEMENTATION_INFO_ID: 11002 IMPLEMENTATION_INFO_NAME: BUILD DATE NO_INTEGER: TRUE NO_CHARACTER: FALSE
+-- IMPLEMENTATION_INFO_ID: 11003 IMPLEMENTATION_INFO_NAME: BUILD V VERSION NO_INTEGER: TRUE NO_CHARACTER: FALSE
+-- IMPLEMENTATION_INFO_ID: 11004 IMPLEMENTATION_INFO_NAME: BUILD V COMMIT NO_INTEGER: TRUE NO_CHARACTER: FALSE
+-- IMPLEMENTATION_INFO_ID: 11005 IMPLEMENTATION_INFO_NAME: BUILD C COMPILER NO_INTEGER: TRUE NO_CHARACTER: FALSE
+-- IMPLEMENTATION_INFO_ID: 11006 IMPLEMENTATION_INFO_NAME: OPERATING SYSTEM NO_INTEGER: TRUE NO_CHARACTER: FALSE
+-- IMPLEMENTATION_INFO_ID: 11007 IMPLEMENTATION_INFO_NAME: MACHINE NO_INTEGER: TRUE NO_CHARACTER: FALSE
+
+-- # The FILE READ VERSION and FILE WRITE VERSION are of the database file,
+-- # which a new file has as 1 until it uses something that needs a newer
+-- # version of vsql (see the file format docs). They're NULL for :memory:,
+-- # which has no file (the tests are run both ways).
+SELECT implementation_info_name, COALESCE(integer_value, 1) AS integer_value FROM information_schema.sql_implementation_info WHERE implementation_info_name LIKE 'FILE %';
+-- IMPLEMENTATION_INFO_NAME: FILE READ VERSION INTEGER_VALUE: 1
+-- IMPLEMENTATION_INFO_NAME: FILE WRITE VERSION INTEGER_VALUE: 1
+
+-- # The BUILD DATE is a date, such as 2026-11-12.
+SELECT CHAR_LENGTH(character_value), CAST(character_value AS DATE) IS NOT NULL FROM information_schema.sql_implementation_info WHERE implementation_info_name = 'BUILD DATE';
+-- COL1: 10 COL2: TRUE

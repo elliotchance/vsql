@@ -323,7 +323,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_SERVER_NAME                   13    /* the ServerName */
 #define SQL_SEARCH_PATTERN_ESCAPE         14    /* "\\" */
 #define SQL_DBMS_NAME                     17    /* "vsql" */
-#define SQL_DBMS_VERSION                  18    /* "01.02.0003 v1.2.3 ..." */
+#define SQL_DBMS_VERSION                  18    /* "01.02.0003" */
 #define SQL_CURSOR_COMMIT_BEHAVIOR        23    /* SMALLINT, SQL_CB_* */
 #define SQL_DATA_SOURCE_READ_ONLY         25    /* "N" */
 #define SQL_DEFAULT_TRANSACTION_ISOLATION 26    /* INTEGER, SQL_TRANSACTION_* */
@@ -355,6 +355,16 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_CATALOG_NAME                  10003 /* "Y" */
 #define SQL_COLLATING_SEQUENCE            10004 /* "" */
 #define SQL_MAXIMUM_IDENTIFIER_LENGTH     10005 /* SMALLINT, 128 */
+#define SQL_VSQL_BUILD_VERSION            11000 /* "v1.2.3", "" if not a release */
+#define SQL_VSQL_BUILD_COMMIT             11001 /* git commit, "" if not a release */
+#define SQL_VSQL_BUILD_DATE               11002 /* "2026-11-12" (UTC) */
+#define SQL_VSQL_BUILD_V_VERSION          11003 /* "0.5.2" */
+#define SQL_VSQL_BUILD_V_COMMIT           11004 /* "5634a1f" */
+#define SQL_VSQL_BUILD_C_COMPILER         11005 /* "clang" */
+#define SQL_VSQL_OPERATING_SYSTEM         11006 /* "macos" */
+#define SQL_VSQL_MACHINE                  11007 /* "arm64" */
+#define SQL_VSQL_FILE_READ_VERSION        11008 /* SMALLINT, 0 for :memory: */
+#define SQL_VSQL_FILE_WRITE_VERSION       11009 /* SMALLINT, 0 for :memory: */
 #define SQL_MAXIMUM_STMT_OCTETS           20000 /* SMALLINT, 0 (no limit) */
 #define SQL_MAXIMUM_STMT_OCTETS_DATA      20001 /* SMALLINT, 0 (no limit) */
 #define SQL_MAXIMUM_STMT_OCTETS_SCHEMA    20002 /* SMALLINT, 0 (no limit) */

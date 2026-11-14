@@ -5,7 +5,7 @@
 # 7.1, SQL_IMPLEMENTATION_INFO base table
 7.1                      implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
 7.1/DE/1                 implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
-7.1/DE/2                 n/a          - - there are no implementation-defined items
+7.1/DE/2                 implemented  vsql/std_11_6_44_sql_implementation_info.v tests/std_11_5_53_sql_implementation_info.sql
 # 7.2, SQL_SIZING base table
 7.2                      implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql
 7.2/DE/1                 implemented  vsql/std_11_6_45_sql_sizing.v tests/std_11_5_56_sql_sizing.sql

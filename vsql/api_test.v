@@ -315,7 +315,8 @@ fn test_information_schema_truncated_check_clause() {
 
 // The DATA SOURCE NAME and SERVER NAME of SQL_IMPLEMENTATION_INFO are the path
 // of the database (which the SQL tests can't show, since it's different for
-// each one), and the DBMS VERSION for a release (which a test build isn't).
+// each one), and the DBMS VERSION and BUILD VERSION for a release (which a test
+// build isn't).
 fn test_sql_implementation_info() ! {
 	mut db := open(':memory:')!
 	defer {
@@ -327,9 +328,11 @@ fn test_sql_implementation_info() ! {
 	}
 	assert names == [':memory:', ':memory:']
 
-	assert dbms_version('', '') == '00.00.0000'
-	assert dbms_version('v1.2.3', '2026-11-11') == '01.02.0003 v1.2.3 2026-11-11'
-	assert dbms_version('v12', '2026-11-11') == '12.00.0000 v12 2026-11-11'
+	assert dbms_version('') == '00.00.0000'
+	assert dbms_version('v1.2.3') == '01.02.0003'
+	assert dbms_version('v12') == '12.00.0000'
+	assert release_info('') == none
+	assert release_info('v1.2.3')? == 'v1.2.3'
 }
 
 // column_names is only used by vorm, so it's tested directly.

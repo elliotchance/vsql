@@ -43,6 +43,12 @@ character_string_type:
     flag(mut yylex, 'T081')
     $$.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
   }
+// TEXT is the same as a CHARACTER VARYING without a length, as in most
+// databases (V601-01).
+| TEXT {
+    flag(mut yylex, vsql_text)
+    $$.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
+  }
 
 numeric_type:
   exact_numeric_type { $$.v = $1.v }

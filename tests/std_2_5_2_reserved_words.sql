@@ -22,6 +22,9 @@ CREATE TABLE AND (x INT);
 CREATE TABLE ANY (x INT);
 -- error 42601: syntax error: unexpected ANY at line 1, column 14 near "CREATE TABLE ANY ("; hint: ANY is a reserved word, so it must be quoted to be used as a name, such as "ANY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
+CREATE TABLE ANY_VALUE (x INT);
+-- error 42601: syntax error: unexpected ANY_VALUE at line 1, column 14 near "CREATE TABLE ANY_VALUE ("; hint: ANY_VALUE is a reserved word, so it must be quoted to be used as a name, such as "ANY_VALUE" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+
 CREATE TABLE ARE (x INT);
 -- error 42601: syntax error: unexpected ARE at line 1, column 14 near "CREATE TABLE ARE ("; hint: ARE is a reserved word, so it must be quoted to be used as a name, such as "ARE" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 

@@ -54,7 +54,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			// something. Until then, it's isolated by check_direct_query rather
 			// than a lock.
 			if !conn.direct_query_transaction {
-				conn.initiate_transaction(conn.next_transaction or { conn.enduring_characteristics() })
+				conn.initiate_transaction(conn.next_transaction or { conn.branch_of or { conn.enduring_characteristics() } })
 				conn.direct_query_headers = map[string]Header{}
 			}
 			conn.direct_query_transaction = true
@@ -72,7 +72,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			characteristics := if conn.direct_query_transaction {
 				conn.current_characteristics()
 			} else {
-				conn.next_transaction or { conn.enduring_characteristics() }
+				conn.next_transaction or { conn.branch_of or { conn.enduring_characteristics() } }
 			}
 			mut start := PreparedStmt{
 				stmt: Stmt(StartTransactionStatement{

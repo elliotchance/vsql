@@ -26,8 +26,11 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 
 	check_transaction_modes(stmt.modes)!
 
+	// An SQL-transaction that's active on another SQL-connection (T262) is
+	// active too, unless this is the start of a branch of it.
+	//
 	// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 1
-	if conn.in_transaction() {
+	if conn.in_transaction() || (stmt.implicit == none && conn.branch_of != none) {
 		return sqlstate_25001()
 	}
 

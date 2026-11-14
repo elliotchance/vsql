@@ -20,13 +20,13 @@
 17.2/GR/1.a.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/1.a.ii           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_levels.sql only when the statement has a <level of isolation>
 17.2/GR/1.b              container    - -
-17.2/GR/1.b.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql
-17.2/GR/1.b.ii           n/a          - - 1.b.i always raises 0A001 first
-17.2/GR/1.b.iii          n/a          - - 1.b.i always raises 0A001 first
-17.2/GR/1.b.iv           n/a          - - 1.b.i always raises 0A001 first
-17.2/GR/1.b.v            n/a          - - 1.b.i always raises 0A001 first
-17.2/GR/1.b.vi           n/a          - - 1.b.i always raises 0A001 first
-17.2/GR/1.b.vii          n/a          - - 1.b.i always raises 0A001 first
+17.2/GR/1.b.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql T262 is supported, so there's no exception
+17.2/GR/1.b.ii           implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql,vsql/api_test.v
+17.2/GR/1.b.iii          implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql,vsql/api_test.v
+17.2/GR/1.b.iv           implemented  vsql/std_2_17_2_set_transaction_statement.v vsql/api_test.v
+17.2/GR/1.b.v            implemented  vsql/std_2_17_2_set_transaction_statement.v vsql/api_test.v
+17.2/GR/1.b.vi           implemented  vsql/std_2_17_2_set_transaction_statement.v vsql/api_test.v
+17.2/GR/1.b.vii          implemented  vsql/std_2_17_2_set_transaction_statement.v vsql/api_test.v
 17.2/GR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql the most is 100
 17.2/GR/4                definition   - -

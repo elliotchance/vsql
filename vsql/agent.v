@@ -23,9 +23,12 @@ pub:
 // keeps its own SQL-session context.
 //
 // Each SQL-connection is to a different SQL-server (a database file, or a new
-// in-memory database), and vsql doesn't support transactions that affect more
-// than one SQL-server. So only the current SQL-connection can have an active
-// SQL-transaction.
+// in-memory database). An SQL-transaction can affect more than one SQL-server
+// (T262): the part of it on each SQL-connection is a branch, which is started
+// with the same characteristics (unless SET LOCAL TRANSACTION changes them), and
+// a COMMIT or ROLLBACK on any of them ends every branch.
+//
+// ISO/IEC 9075-2:2023, 4.43.7.2, Encompassing transaction belonging to the SQL-agent
 pub struct Agent {
 	// ISO/IEC 9075-2:2023, 4.44, SQL-connections
 	// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 9.a
@@ -94,10 +97,116 @@ pub fn (mut a Agent) direct(sql_stmt string, options DirectOptions) !Result {
 
 	mut conn := a.current
 	conn.clear_warnings()
-	result := conn.direct(sql_stmt, options)!
+	conn.branch_of = a.active_transaction(conn)
+
+	// A COMMIT or ROLLBACK ends every branch of the SQL-transaction.
+	if conn.branch_of != none || conn.is_active() {
+		if stmt := parse_transaction_end(sql_stmt) {
+			if a.active_branches(conn).len > 0 {
+				result := a.end_transaction(stmt, sql_stmt, options)!
+				a.warnings = conn.warnings.clone()
+				return result
+			}
+		}
+	}
+
+	was_active := conn.is_active()
+	result := conn.direct(sql_stmt, options) or {
+		a.warnings = conn.warnings.clone()
+		// An error that rolled back the branch (such as a serialization
+		// failure) rolls back the whole SQL-transaction.
+		if was_active && !conn.is_active() {
+			a.rollback_branches(conn)
+		}
+		return err
+	}
 	a.warnings = conn.warnings.clone()
 
 	return result
+}
+
+// active_transaction is the characteristics of the SQL-transaction when it's
+// active on an SQL-connection other than conn, so that a transaction of conn
+// is a branch of it.
+fn (a Agent) active_transaction(conn &Connection) ?TransactionCharacteristics {
+	for other in a.active_branches(conn) {
+		return other.current_characteristics()
+	}
+
+	return none
+}
+
+// active_branches are the SQL-connections other than conn that have an active
+// branch of the SQL-transaction.
+fn (a Agent) active_branches(conn &Connection) []&Connection {
+	return a.all_connections().filter(voidptr(it) != voidptr(conn) && it.is_active())
+}
+
+// parse_transaction_end returns the statement if sql_stmt is one COMMIT, or
+// one ROLLBACK that isn't TO SAVEPOINT.
+fn parse_transaction_end(sql_stmt string) ?Stmt {
+	statements, rest := split_terminated_statements(sql_stmt)
+	if statements.len != 1 || rest != '' {
+		return none
+	}
+
+	stmt := parse_tokens(tokenize(statements[0]) or { return none }) or { return none }
+	if stmt is CommitStatement || (stmt is RollbackStatement && stmt.savepoint == '') {
+		return stmt
+	}
+
+	return none
+}
+
+// end_transaction ends every branch of the SQL-transaction with a COMMIT or
+// ROLLBACK (with or without AND CHAIN) that's run on the current
+// SQL-connection.
+//
+// For a COMMIT, the deferred constraints of the other branches are checked
+// first, so that if any of them aren't satisfied, every branch is rolled back,
+// like the COMMIT of one SQL-connection. Then the current branch is committed,
+// and the others after it. Committing more than one SQL-server isn't atomic: if
+// committing one of the others fails (which can only be because of the
+// SQL-server, such as a disk error), the branches before it stay committed.
+//
+// ISO/IEC 9075-2:2023, 17.7, <commit statement>, General Rules, 10.a
+// ISO/IEC 9075-2:2023, 17.8, <rollback statement>, General Rules, 2.h.i
+fn (mut a Agent) end_transaction(stmt Stmt, sql_stmt string, options DirectOptions) !Result {
+	mut current := a.current
+	mut others := a.active_branches(current)
+	chain := if stmt is CommitStatement { stmt.chain } else { (stmt as RollbackStatement).chain }
+	end := if stmt is CommitStatement { 'COMMIT' } else { 'ROLLBACK' } + if chain {
+		' AND CHAIN'
+	} else {
+		''
+	}
+
+	if stmt is CommitStatement {
+		for mut other in others {
+			other.query('SET CONSTRAINTS ALL IMMEDIATE') or {
+				a.rollback_branches(unsafe { nil })
+				return err
+			}
+		}
+	}
+
+	result := current.direct(sql_stmt, options) or {
+		a.rollback_branches(current)
+		return err
+	}
+	for mut other in others {
+		other.query(end)!
+	}
+
+	return result
+}
+
+// rollback_branches rolls back every branch of the SQL-transaction other than
+// except, which may be nil.
+fn (mut a Agent) rollback_branches(except &Connection) {
+	for mut other in a.active_branches(except) {
+		other.query('ROLLBACK') or {}
+	}
 }
 
 // connect_default makes the default SQL-connection the current SQL-connection,
@@ -131,10 +240,10 @@ fn parse_connection_statement(sql_stmt string) ?Stmt {
 	return none
 }
 
-// in_transaction is true when the current SQL-connection has an active
+// in_transaction is true when any SQL-connection has an active branch of the
 // SQL-transaction (see Connection.in_transaction).
 pub fn (a Agent) in_transaction() bool {
-	return a.current != unsafe { nil } && a.current.in_transaction()
+	return a.all_connections().any(it.in_transaction())
 }
 
 // close terminates every SQL-connection, which is the end of the SQL-session.
@@ -144,7 +253,10 @@ pub fn (a Agent) in_transaction() bool {
 pub fn (mut a Agent) close(commit bool) ! {
 	// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 3.a and 3.c
 	if commit && a.in_transaction() {
-		a.current.query('COMMIT')!
+		if a.current == unsafe { nil } {
+			a.connect_default()!
+		}
+		a.direct('COMMIT;')!
 	}
 
 	for conn in a.all_connections() {
@@ -198,17 +310,5 @@ fn (mut a Agent) disconnect(conn &Connection) {
 	}
 	if voidptr(a.current) == voidptr(conn) {
 		a.current = unsafe { nil }
-	}
-}
-
-// check_multiple_server_transactions raises 0A001 if the current SQL-connection
-// is active, since vsql doesn't support transactions that affect more than one
-// SQL-server.
-//
-// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 1
-// ISO/IEC 9075-2:2023, 18.2, <set connection statement>, General Rules, 1
-fn (a Agent) check_multiple_server_transactions() ! {
-	if a.current != unsafe { nil } && a.current.is_active() {
-		return sqlstate_0a001()
 	}
 }

@@ -5,7 +5,7 @@
 # 18.1, <connect statement>
 18.1                     implemented  vsql/std_2_18_1_connect_statement.v vsql/module_test.v,vsql/api_test.v
 18.1/SR/1                impl-defined vsql/std_2_18_1_connect_statement.v - the user name isn't used
-18.1/GR/1                implemented  vsql/agent.v vsql/api_test.v
+18.1/GR/1                implemented  vsql/std_2_18_1_connect_statement.v vsql/api_test.v T262 is supported, so there's no exception
 18.1/GR/2                implemented  vsql/std_2_18_1_connect_statement.v vsql/module_test.v,vsql/api_test.v
 18.1/GR/3                implemented  vsql/std_2_18_1_connect_statement.v vsql/module_test.v,vsql/api_test.v
 18.1/GR/4                impl-defined vsql/std_2_18_1_connect_statement.v - there aren't any other restrictions
@@ -41,7 +41,7 @@
 18.1/CR/1                implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/std_2_18_1_connections.sql
 # 18.2, <set connection statement>
 18.2                     implemented  vsql/std_2_18_2_set_connection_statement.v vsql/module_test.v,vsql/api_test.v
-18.2/GR/1                implemented  vsql/agent.v vsql/api_test.v
+18.2/GR/1                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/api_test.v T262 is supported, so there's no exception
 18.2/GR/2                container    - -
 18.2/GR/2.a              implemented  vsql/std_2_18_2_set_connection_statement.v vsql/module_test.v,vsql/api_test.v
 18.2/GR/2.b              implemented  vsql/std_2_18_2_set_connection_statement.v vsql/module_test.v,vsql/api_test.v

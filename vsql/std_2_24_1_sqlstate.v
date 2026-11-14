@@ -949,18 +949,6 @@ fn sqlstate_08003(msg string) IError {
 	}
 }
 
-// feature not supported: multiple server transactions
-struct SQLState0A001 {
-	SQLState
-}
-
-fn sqlstate_0a001() IError {
-	return SQLState0A001{
-		code: sqlstate_to_int('0A001')
-		msg:  'feature not supported: multiple server transactions'
-	}
-}
-
 // invalid authorization specification
 struct SQLState2C000 {
 	SQLState
@@ -1030,6 +1018,54 @@ fn sqlstate_25001() IError {
 	return SQLState25001{
 		code: sqlstate_to_int('25001')
 		msg:  'invalid transaction state: active sql transaction'
+	}
+}
+
+// invalid transaction state: branch transaction already active
+struct SQLState25002 {
+	SQLState
+}
+
+fn sqlstate_25002() IError {
+	return SQLState25002{
+		code: sqlstate_to_int('25002')
+		msg:  'invalid transaction state: branch transaction already active'
+	}
+}
+
+// invalid transaction state: inappropriate access mode for branch transaction
+struct SQLState25003 {
+	SQLState
+}
+
+fn sqlstate_25003() IError {
+	return SQLState25003{
+		code: sqlstate_to_int('25003')
+		msg:  'invalid transaction state: inappropriate access mode for branch transaction'
+	}
+}
+
+// invalid transaction state: inappropriate isolation level for branch transaction
+struct SQLState25004 {
+	SQLState
+}
+
+fn sqlstate_25004() IError {
+	return SQLState25004{
+		code: sqlstate_to_int('25004')
+		msg:  'invalid transaction state: inappropriate isolation level for branch transaction'
+	}
+}
+
+// invalid transaction state: no active sql transaction for branch transaction
+struct SQLState25005 {
+	SQLState
+}
+
+fn sqlstate_25005() IError {
+	return SQLState25005{
+		code: sqlstate_to_int('25005')
+		msg:  'invalid transaction state: no active sql transaction for branch transaction'
 	}
 }
 

@@ -105,7 +105,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			referenced_columns = referenced.primary_key.clone()
 		}
 
-		// This is also the assertion of ISO/IEC 9075-11:2008(E), 6.2,
+		// This is also the assertion of ISO/IEC 9075-11:2006(E), 6.2,
 		// EQUAL_KEY_DEGREES assertion.
 		//
 		// ISO/IEC 9075-2:2023(E), 11.8, <referential constraint definition>, Syntax Rules, 11

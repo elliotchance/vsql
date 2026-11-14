@@ -2,7 +2,7 @@ module vsql
 
 import os
 
-// ISO/IEC 9075-11:2008(E), 6.44, SQL_IMPLEMENTATION_INFO base table
+// ISO/IEC 9075-11:2006(E), 6.44, SQL_IMPLEMENTATION_INFO base table
 //
 // There's one row for each SQL-implementation information item, with its value
 // in either INTEGER_VALUE or CHARACTER_VALUE (the other one is NULL), and a

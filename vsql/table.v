@@ -334,7 +334,7 @@ fn (t Table) constraint_names() []string {
 // wasn't given a name. A constraint name must be unique in the schema, so it's
 // an error if a name is used by more than one constraint of the table, or is
 // one of the other_names (the names of the constraints of the other tables in
-// the schema). That's also the assertion of ISO/IEC 9075-11:2008(E), 6.4,
+// the schema). That's also the assertion of ISO/IEC 9075-11:2006(E), 6.4,
 // UNIQUE_CONSTRAINT_NAME assertion (there are no domains or assertions).
 //
 // A constraint without a name gets an implementation-dependent name like its

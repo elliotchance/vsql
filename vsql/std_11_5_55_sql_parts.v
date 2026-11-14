@@ -1,10 +1,10 @@
 module vsql
 
-// ISO/IEC 9075-11:2008(E), 5.55, SQL_PARTS view
+// ISO/IEC 9075-11:2006(E), 5.55, SQL_PARTS view
 //
 // The SQL_PARTS view lists the parts of the standard, and whether vsql supports
 // them. It's the PART rows of the SQL_CONFORMANCE base table (ISO/IEC
-// 9075-11:2008(E), 6.43), which only exists as this view, SQL_FEATURES and
+// 9075-11:2006(E), 6.43), which only exists as this view, SQL_FEATURES and
 // SQL_PACKAGES.
 //
 // The parts are the ones in ISO/IEC 9075-1:2023(E), 5.2 to 5.10, with their
@@ -65,7 +65,7 @@ fn is_core_sql_supported() bool {
 // sql_parts_view_row is a row of the SQL_PARTS view. Nothing is verified by a
 // conformance test, so IS_VERIFIED_BY is NULL.
 //
-// ISO/IEC 9075-11:2008(E), 6.43, SQL_CONFORMANCE base table, Description, 1-8
+// ISO/IEC 9075-11:2006(E), 6.43, SQL_CONFORMANCE base table, Description, 1-8
 fn sql_parts_view_row(part SqlPart) []Value {
 	mut is_supported := false
 	mut comments := new_null_value(.is_varchar)

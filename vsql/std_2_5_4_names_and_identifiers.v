@@ -176,7 +176,7 @@ fn new_identifier3(s string) !Identifier {
 }
 
 // check_schema_name returns an error for a schema name that can't be used. The
-// Definition Schema has this name (ISO/IEC 9075-11:2008(E), 4.1), so nothing
+// Definition Schema has this name (ISO/IEC 9075-11:2006(E), 4.1), so nothing
 // else can.
 //
 // ISO/IEC 9075-2:2023(E), 5.4, Names and identifiers, Syntax Rules, 10

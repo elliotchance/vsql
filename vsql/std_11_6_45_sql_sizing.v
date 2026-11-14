@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-11:2008(E), 6.45, SQL_SIZING base table
+// ISO/IEC 9075-11:2006(E), 6.45, SQL_SIZING base table
 //
 // There's one row for each sizing item, with the size that vsql supports: 0
 // (zero) for no limit, or NULL if vsql doesn't support anything that the item

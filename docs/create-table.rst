@@ -20,7 +20,7 @@ Syntax
                [ <characteristics> ]
 
   <table_constraint> := PRIMARY KEY ( <column_name> , ... )
-                      | UNIQUE ( <column_name> , ... )
+                      | UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <column_name> , ... )
                       | FOREIGN KEY ( <column_name> , ... ) <references>
                       | CHECK ( <condition> )
 
@@ -210,6 +210,12 @@ the same in the same way. A row with a ``NULL`` in any of the columns never
 conflicts, so a ``UNIQUE`` column can have any number of ``NULL`` values. This
 is ``NULLS DISTINCT``, which the SQL standard leaves for each database to choose
 when it isn't given (``NULLS [NOT] DISTINCT`` can't be given yet).
+
+With ``NULLS NOT DISTINCT``, a ``NULL`` is the same as another ``NULL``, so two
+rows conflict when they have the same values and ``NULL`` in the same columns
+(including when they're all ``NULL``). ``NULLS DISTINCT`` is the same as not
+having either. A ``PRIMARY KEY`` can't have either, since its columns can't be
+``NULL``.
 
 A ``UNIQUE`` of a single column can also be written on the column, so
 ``code INTEGER UNIQUE`` is the same as ``code INTEGER, UNIQUE (code)``. A table

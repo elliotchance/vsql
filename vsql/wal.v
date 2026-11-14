@@ -30,7 +30,13 @@ const wal_tail_checksum_offset = 24
 
 // wal_max_size is the size that a log starts again at, because everything in the
 // log has to be copied after the power fails. A single statement can be larger.
-const wal_max_size = 4 * 1024 * 1024
+//
+// Starting again syncs the database file and the new log, and then each page
+// that a statement in an explicit transaction changes has to be synced in the
+// new log before that statement can skip syncing (see WalLog.can_skip_sync).
+// So a bigger log is synced less often, at the cost of the space it takes up
+// (the log isn't made smaller when it starts again).
+const wal_max_size = 16 * 1024 * 1024
 
 const wal_state_committed = u8(0)
 

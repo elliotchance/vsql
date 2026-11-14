@@ -98,6 +98,27 @@ fn (mut l WalLog) create() ! {
 	l.opened()
 }
 
+// A WalPosition is where the end of the log is, see WalLog.position.
+struct WalPosition {
+	salt u32
+	tail int
+}
+
+// position returns where the end of the log is. It's none when there's no log,
+// or it isn't valid (so the next statement starts a new one).
+fn (mut l WalLog) position(page_size int) ?WalPosition {
+	if !l.file.is_opened {
+		return none
+	}
+	l.file.seek(0, .start) or { return none }
+	salt, tail, _ := wal_tail(mut l.file, page_size)
+	if tail == 0 {
+		return none
+	}
+
+	return WalPosition{salt, tail}
+}
+
 // can_skip_sync returns true if the statement can be committed without syncing
 // the log, which is only allowed for a statement in an explicit transaction
 // (see wal_prepare). Its pages are copied into the database file straight

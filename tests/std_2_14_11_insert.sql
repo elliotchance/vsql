@@ -192,3 +192,11 @@ SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- X: NULL
+
+-- # A column of another table isn't in scope in the values of an INSERT.
+CREATE TABLE other (y INT);
+CREATE TABLE t2 (x INT);
+INSERT INTO t2 (x) VALUES (y);
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y

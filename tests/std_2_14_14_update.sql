@@ -363,3 +363,13 @@ SELECT * FROM foo;
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 1: X: NULL Y: 1
+
+-- # An UPDATE of no rows uses the column of its own table, even if another table
+-- # has a column with the same name.
+CREATE TABLE other (x INT, b INT);
+CREATE TABLE foo (x INT, b INT, d INT);
+UPDATE foo SET d = b * 2;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- warning 02000: no data
+-- msg: UPDATE 0

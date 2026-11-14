@@ -208,17 +208,17 @@
 5.53/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql -
 5.53/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view, as well as the long INFORMATION_SCHEMA name (#738)
 # 5.54, SQL_PACKAGES view
-5.54                     n/a          - - enhanced documentation tables (F502)
-5.54/CR/1                n/a          - - enhanced documentation tables (F502)
+5.54                     implemented  vsql/std_11_5_54_sql_packages.v tests/std_11_5_54_sql_packages.sql the packages of ISO/IEC 9075-1:2003(E), 8.4
+5.54/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.55, SQL_PARTS view
-5.55                     n/a          - - enhanced documentation tables (F502)
-5.55/CR/1                n/a          - - enhanced documentation tables (F502)
+5.55                     implemented  vsql/std_11_5_55_sql_parts.v tests/std_11_5_55_sql_parts.sql
+5.55/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.56, SQL_SIZING view
 5.56                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_56_sql_sizing.sql
 # 5.57, SQL_SIZING_PROFILES view
-5.57                     n/a          - - enhanced documentation tables (F502)
-5.57/CR/1                n/a          - - enhanced documentation tables (F502)
-5.57/CR/2                n/a          - - enhanced documentation tables (F502)
+5.57                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_57_sql_sizing_profiles.sql empty, since no profiles are defined
+5.57/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.57/CR/2                implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.58, TABLE_CONSTRAINTS view
 5.58                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_58_table_constraints.sql every table, since there are no privileges (#732), and with ENFORCED from a later edition
 # 5.59, TABLE_METHOD_PRIVILEGES view
@@ -290,7 +290,7 @@
 # 5.76, VIEWS view
 5.76                     missing      - - views (#731)
 # 5.77, Short name views
-5.77                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_77_short_name_views.sql COLUMNS_S, KEY_COLUMN_USAGE_S, REF_CONSTRAINTS and TABLES_S; the others need their views (#733, #736, #655) or are for features vsql does not have
+5.77                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_77_short_name_views.sql COLUMNS_S, KEY_COLUMN_USAGE_S, REF_CONSTRAINTS, SQL_IMPL_INFO, SQL_SIZING_PROFS and TABLES_S; the others need their views (#733, #736) or are for features vsql does not have
 5.77/CR/1                n/a          - - ROLE_ROUT_GRANTS: roles (T331)
 5.77/CR/2                n/a          - - DOMAINS_S: domains (F251)
 5.77/CR/3                n/a          - - COL_DOMAIN_USAGE (COL_DOMAINS_USAGE in the rule): domains (F251)
@@ -309,8 +309,8 @@
 5.77/CR/16               n/a          - - TRIG_COLUMN_USAGE: triggers (T211)
 5.77/CR/17               n/a          - - TRIG_SEQ_USAGE_S: triggers (T211)
 5.77/CR/18               missing      - - COL_COL_USAGE: after COLUMN_COLUMN_USAGE (#736)
-5.77/CR/19               missing      - - SQL_IMPL_INFO: after SQL_IMPLEMENTATION_INFO (#655)
-5.77/CR/20               n/a          - - SQL_SIZING_PROFS: enhanced documentation tables (F502)
+5.77/CR/19               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.77/CR/20               implemented  vsql/std_1_8_5_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/21               n/a          - - COLLATIONS_S: collations (F690)
 5.77/CR/22               n/a          - - TRANSLATIONS_S: translations (F695)
 5.77/CR/23               n/a          - - TRANSLATIONS_S: translations (F695)

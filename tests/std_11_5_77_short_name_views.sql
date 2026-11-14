@@ -69,3 +69,18 @@ JOIN information_schema.columns AS l ON l.ordinal_position = s.ordinal_position 
 -- # be changed.
 DELETE FROM information_schema.tables_s;
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
+
+-- # SQL_IMPL_INFO is SQL_IMPLEMENTATION_INFO, with shorter column names.
+SELECT * FROM information_schema.sql_impl_info WHERE impl_info_id = '17';
+-- IMPL_INFO_ID: 17 IMPL_INFO_NAME: DBMS NAME INTEGER_VALUE: NULL CHARACTER_VALUE: vsql COMMENTS: The name of the software.
+
+-- # SQL_SIZING_PROFS is SQL_SIZING_PROFILES (which is empty), and has the same
+-- # column names.
+SELECT * FROM information_schema.sql_sizing_profs;
+SELECT column_name FROM information_schema.columns WHERE table_name = 'SQL_SIZING_PROFS';
+-- COLUMN_NAME: SIZING_ID
+-- COLUMN_NAME: SIZING_NAME
+-- COLUMN_NAME: PROFILE_ID
+-- COLUMN_NAME: PROFILE_NAME
+-- COLUMN_NAME: REQUIRED_VALUE
+-- COLUMN_NAME: COMMENTS

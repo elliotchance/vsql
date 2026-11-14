@@ -100,7 +100,7 @@ here.
    * - ⭕ **F391**
      - **Long identifiers**
 
-   * - ⭕ **F502**
+   * - ✅ **F502**
      - **Enhanced documentation tables**
 
    * - ❌ **F521**

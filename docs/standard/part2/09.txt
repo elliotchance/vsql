@@ -632,7 +632,7 @@
 9.16/SR/1.am             implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 9.16/SR/1.an             n/a          - - polymorphic table functions (B200)
 9.16/SR/1.ao             implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
-9.16/SR/1.ap             n/a          - - ANY_VALUE (T626)
+9.16/SR/1.ap             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_any_value.sql an aggregate can't be in a CHECK constraint or a generated column
 9.16/SR/1.aq             n/a          - - multisets (S271)
 9.16/SR/1.ar             n/a          - - arrays (S091)
 9.16/SR/1.as             implemented  vsql/compiler.v tests/std_2_10_9_listagg.sql

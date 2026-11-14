@@ -59,6 +59,9 @@ Each function also has a **Compatibility** section:
    * - ``ANY``
      - Aggregate
      - T031
+   * - ``ANY_VALUE``
+     - Aggregate
+     - T626
    * - ``AVG``
      - Aggregate
      - Core (E091-01)
@@ -325,6 +328,31 @@ The examples use this table:
     ('New York', 8.05e0), ('New York', 18.05e0),
     ('San Francisco', 7.5e0), ('San Francisco', 17.5e0),
     ('San Francisco', NULL);
+
+ANY_VALUE
+^^^^^^^^^
+
+.. code-block:: sql
+
+   ANY_VALUE(ANY) ANY
+
+Returns any one of the values that isn't ``NULL``, or ``NULL`` if they all are
+(or there are no rows). Which one isn't defined, so it's useful for a column
+that has the same value in every row of a group, without adding it to the
+``GROUP BY``. The result has the same type as the values.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT city, ANY_VALUE(country) FROM stores GROUP BY city;
+  -- CITY: Paris COL2: France
+
+**Compatibility**
+
+- **SQL standard:** Optional feature T626.
+- **Other databases:** ``ANY_VALUE`` in PostgreSQL (16 and later), MySQL and
+  Oracle. SQLite returns a value from any row for a column that isn't grouped.
 
 ANY
 ^^^

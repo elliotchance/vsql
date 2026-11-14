@@ -29,7 +29,9 @@ for example: ``15:12:47+05:30``.
 The hours, minutes and seconds must be two digits each. Seconds may be ``60`` or
 ``61`` to allow for leap seconds, but these will roll over into the next minute
 (so ``TIME '23:59:60'`` is ``00:00:00``).
-The time zone must be between ``-14:00`` and ``+14:00``.
+The time zone must be between ``-14:00`` and ``+14:00`` (the SQL standard leaves
+the range for each database to choose, as long as it reaches ``-12:00`` and
+``+14:00``).
 
 The ``(n)`` describes the sub-second resolution to be stored. It must be
 inclusively between 0 (whole seconds) and 6 (microseconds). If omitted, 0 is
@@ -127,9 +129,10 @@ Casting From Strings
 A character string can be cast to any of the date and time types. Leading and
 trailing spaces are ignored, and the rest must be in the same format as the
 literal for that type, either with or without its keyword and quotes, otherwise
-an ``22007`` invalid datetime format error is raised. The keyword must be the
-one for the target type, so a ``DATE`` literal can't be cast to a
-``TIMESTAMP``:
+an ``22007`` invalid datetime format error is raised. A time zone that's out of
+range is a ``22009`` invalid time zone displacement value error instead. The
+keyword must be the one for the target type, so a ``DATE`` literal can't be cast
+to a ``TIMESTAMP``:
 
 .. code-block:: sql
 

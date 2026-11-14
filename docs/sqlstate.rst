@@ -306,6 +306,20 @@ type.
   VALUES CAST('2022-02-30' AS DATE);
   -- error 22007: invalid datetime format
 
+``22009`` invalid time zone displacement value
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A character string cast to a time or timestamp has a time zone that's outside
+of ``-14:00`` to ``+14:00``, or that has more than 59 minutes. In a literal, it's
+a syntax error (``42601``) instead.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CAST('2022-06-30 12:34:56+15:00' AS TIMESTAMP WITH TIME ZONE);
+  -- error 22009: invalid time zone displacement value
+
 ``2200B`` escape character conflict
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

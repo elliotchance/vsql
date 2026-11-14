@@ -97,11 +97,11 @@
 6.1/GR/4.a               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_date.sql
 6.1/GR/4.b               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_time.sql
 6.1/GR/4.c               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql
-6.1/GR/4.d               unclear      vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql changed in 2023 (#1499)
+6.1/GR/4.d               implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql
 6.1/GR/5                 implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_datetime_precision.sql
-6.1/GR/6                 unclear      vsql/time.v tests/std_2_6_1_timestamp.sql changed in 2023 (#1499)
+6.1/GR/6                 impl-defined vsql/time.v tests/std_2_6_1_timestamp.sql a time zone is -14:00 to +14:00
 6.1/GR/7                 unclear      vsql/time.v tests/std_2_6_1_timestamp.sql datetime fields out of range raise 22008
-6.1/GR/8                 unclear      - - mixed signs and the range are new in 2023 (#1499)
+6.1/GR/8                 implemented  vsql/time.v tests/std_2_6_1_time.sql,tests/std_2_6_1_timestamp.sql there's only one sign, so the hours and minutes can't have opposite signs
 6.1/GR/9                 n/a          - - intervals (F052)
 6.1/GR/10                n/a          - - intervals (F052)
 6.1/GR/10.a              n/a          - - intervals (F052)

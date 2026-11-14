@@ -200,12 +200,26 @@ fn cast_boolean_to_character(mut conn Connection, v Value, to Type) !Value {
 // TIMESTAMP. Leading and trailing spaces are ignored, then the string must be a
 // valid unquoted datetime string (such as "2022-06-30") or a datetime literal
 // (such as "DATE '2022-06-30'") for the target type. A time zone is added or
-// removed in the same way as casting between the datetime types.
+// removed in the same way as casting between the datetime types. A time zone
+// that's out of range is an invalid time zone displacement value (22009) rather
+// than an invalid datetime format (22007).
 //
+// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 8
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 14.a, 16.a,
 // 17.a, 18.a and 19.a
 fn cast_string_to_datetime(mut conn Connection, v Value, to Type) !Value {
 	s := v.string_value().trim(' ')
+	if to.typ != .is_date {
+		keyword := if to.typ in [.is_time_with_time_zone, .is_time_without_time_zone] {
+			'TIME'
+		} else {
+			'TIMESTAMP'
+		}
+		unquoted := unquote_datetime_literal(s, keyword)
+		if has_time_zone(unquoted) {
+			time_zone_displacement(unquoted)!
+		}
+	}
 	value := match to.typ {
 		.is_date {
 			new_date_value(unquote_datetime_literal(s, 'DATE')) or { return sqlstate_22007() }

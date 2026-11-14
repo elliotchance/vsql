@@ -7,6 +7,7 @@ module vsql
 type Predicate = BetweenPredicate
 	| CharacterLikePredicate
 	| ComparisonPredicate
+	| DistinctPredicate
 	| ExistsPredicate
 	| InPredicate
 	| NullPredicate
@@ -18,7 +19,7 @@ fn (e Predicate) pstr(params map[string]Value) string {
 	return match e {
 		ComparisonPredicate, BetweenPredicate, InPredicate, CharacterLikePredicate,
 		SimilarPredicate, NullPredicate, QuantifiedComparisonPredicate, ExistsPredicate,
-		UniquePredicate {
+		UniquePredicate, DistinctPredicate {
 			e.pstr(params)
 		}
 	}
@@ -42,7 +43,7 @@ fn (e Predicate) compile(mut c Compiler) !CompileResult {
 			return e.compile_between(mut c, retrospective)!
 		}
 		InPredicate, CharacterLikePredicate, SimilarPredicate, NullPredicate,
-		QuantifiedComparisonPredicate, ExistsPredicate, UniquePredicate {
+		QuantifiedComparisonPredicate, ExistsPredicate, UniquePredicate, DistinctPredicate {
 			return e.compile(mut c)!
 		}
 	}

@@ -11,7 +11,14 @@ For the tables below:
 
 If any operand is ``NULL`` the result is also ``NULL`` (or ``UNKNOWN`` for
 comparisons, ``LIKE`` and ``SIMILAR TO``). The exceptions are ``IS NULL``,
-``IS NOT NULL`` and the logical operators (``AND``, ``OR``, etc).
+``IS NOT NULL``, ``IS DISTINCT FROM``, ``IS NOT DISTINCT FROM`` and the logical
+operators (``AND``, ``OR``, etc).
+
+``IS DISTINCT FROM`` is like ``<>`` and ``IS NOT DISTINCT FROM`` is like ``=``,
+except that two ``NULL`` values are not distinct and a ``NULL`` is distinct from
+any other value, so the result is always ``TRUE`` or ``FALSE``. Either side can
+be a row, such as ``(x, y) IS NOT DISTINCT FROM (1, 2)``, in which case the rows
+are distinct if any of their fields are.
 
 ``!=`` is the same as ``<>`` everywhere that a comparison operator is allowed.
 It's a vsql extension and not standard SQL, so it's flagged with ``V301-01`` (see
@@ -91,6 +98,14 @@ Binary Operations
    * - ``text <= text``
      - 4
      - Less than or equal
+
+   * - ``any IS DISTINCT FROM any``
+     - 4
+     - Not equal, where ``NULL`` is a value
+
+   * - ``any IS NOT DISTINCT FROM any``
+     - 4
+     - Equal, where ``NULL`` is a value
 
    * - ``boolean AND boolean``
      - 6

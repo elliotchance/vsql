@@ -849,19 +849,19 @@
 6.14/GR/1.c              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/CR/1                implemented  vsql/std_2_6_14_next_value_expression.y tests/std_1_8_5_flagging.sql
 # 6.15, <greatest or least function>
-6.15                     n/a          - - GREATEST and LEAST (T054)
-6.15/SR/1                n/a          - - GREATEST and LEAST (T054)
-6.15/SR/2                n/a          - - GREATEST and LEAST (T054)
-6.15/SR/3                n/a          - - GREATEST and LEAST (T054)
-6.15/SR/4                n/a          - - GREATEST and LEAST (T054)
-6.15/SR/5                n/a          - - GREATEST and LEAST (T054)
-6.15/SR/6                n/a          - - GREATEST and LEAST (T054)
-6.15/SR/7                n/a          - - GREATEST and LEAST (T054)
-6.15/GR/1                n/a          - - GREATEST and LEAST (T054)
-6.15/GR/2                n/a          - - GREATEST and LEAST (T054)
-6.15/GR/3                n/a          - - GREATEST and LEAST (T054)
-6.15/GR/4                n/a          - - GREATEST and LEAST (T054)
-6.15/CR/1                n/a          - - GREATEST and LEAST (T054)
+6.15                     implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/1                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/2                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/3                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/4                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/5                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/6                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/SR/7                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/GR/1                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/GR/2                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/GR/3                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/GR/4                implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
+6.15/CR/1                implemented  vsql/std_2_6_15_greatest_or_least_function.y tests/std_2_6_15_greatest_or_least.sql
 # 6.16, <field reference>
 6.16                     n/a          - - row types (T051)
 6.16/SR/1                n/a          - - row types (T051)

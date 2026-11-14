@@ -41,6 +41,9 @@ nonparenthesized_value_expression_primary:
 | pg_cast {
     $$.v = yy_box(NonparenthesizedValueExpressionPrimary($1.v as CastSpecification))
   }
+| greatest_or_least_function {
+    $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as GreatestOrLeastFunction)))
+  }
 | next_value_expression {
     $$.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref($1.v as NextValueExpression)))
   }

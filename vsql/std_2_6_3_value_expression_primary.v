@@ -54,6 +54,7 @@ fn new_ref[T](v T) &T {
 // contains it) is small. The parser copies each node of the syntax tree several
 // times as it's built.
 type NonparenthesizedValueExpressionPrimary = &AggregateFunction
+	| &GreatestOrLeastFunction
 	| &Identifier
 	| &NextValueExpression
 	| &RoutineInvocation
@@ -66,7 +67,7 @@ type NonparenthesizedValueExpressionPrimary = &AggregateFunction
 fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) string {
 	return match e {
 		ValueSpecification, &Identifier, &AggregateFunction, &RoutineInvocation, CaseExpression,
-		CaseOperand, CastSpecification, &NextValueExpression, Subquery {
+		CaseOperand, CastSpecification, &GreatestOrLeastFunction, &NextValueExpression, Subquery {
 			e.pstr(params)
 		}
 	}
@@ -75,7 +76,8 @@ fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) stri
 fn (e NonparenthesizedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
 		ValueSpecification, &Identifier, &AggregateFunction, CaseExpression, CaseOperand,
-		CastSpecification, &NextValueExpression, &RoutineInvocation, Subquery {
+		CastSpecification, &GreatestOrLeastFunction, &NextValueExpression, &RoutineInvocation,
+		Subquery {
 			return e.compile(mut c)!
 		}
 	}

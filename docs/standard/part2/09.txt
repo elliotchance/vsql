@@ -553,7 +553,7 @@
 9.14/SR/1.e              definition   - -
 9.14/SR/1.f              definition   - -
 9.14/SR/1.g              definition   - -
-9.14/SR/1.h              n/a          - - GREATEST and LEAST (T054)
+9.14/SR/1.h              definition   - -
 9.14/SR/2                definition   - -
 9.14/SR/2.a              definition   - -
 9.14/SR/2.b              definition   - -
@@ -563,7 +563,7 @@
 9.14/SR/2.f              definition   - -
 9.14/SR/2.g              definition   - -
 9.14/SR/2.h              definition   - -
-9.14/SR/2.i              n/a          - - GREATEST and LEAST (T054)
+9.14/SR/2.i              implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
 9.14/SR/3                n/a          - - there are no LOBs, arrays, multisets, reference types or user-defined types
 9.14/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.14/CR/1                n/a          - - structured types (S024)
@@ -591,7 +591,7 @@
 9.16/SR/1.d.i            implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 9.16/SR/1.d.ii           n/a          - - arrays (S091) and multisets (S271)
 9.16/SR/1.e              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
-9.16/SR/1.f              n/a          - - GREATEST and LEAST (T054)
+9.16/SR/1.f              implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
 9.16/SR/1.g              n/a          - - JSON data type (T801)
 9.16/SR/1.h              n/a          - - JSON data type (T801)
 9.16/SR/1.i              n/a          - - AT TIME ZONE isn't supported (F411)

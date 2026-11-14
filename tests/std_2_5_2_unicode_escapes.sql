@@ -85,30 +85,30 @@ VALUES U&'x' UESCAPEX;
 
 -- # A noncharacter can't be in a character string.
 VALUES U&'\FFFF';
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 VALUES U&'\FFFE';
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 VALUES U&'\FDD0';
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 VALUES U&'\FDEF';
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 VALUES CHAR_LENGTH(U&'\+10FFFF');
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 VALUES CHAR_LENGTH(U&'\+01FFFE');
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 VALUES '<U+FFFF>';
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 /* params '￿' */
 VALUES CAST(? AS VARCHAR(10));
 -- sql: VALUES CAST('￿' AS VARCHAR(10))
--- error 22029: noncharacter in UCS string
+-- error 22029: non-character in character string
 
 -- # The characters around them are allowed.
 VALUES CHAR_LENGTH(U&'\FDCF\FDF0\FFFD\+01FFFD');

@@ -947,12 +947,12 @@ last statement that was synced. Any other statement (including the ``COMMIT``)
 syncs the log, which also syncs the statements before it.
 
 A new log is started (with a new *Salt*) when the statement wouldn't fit in the
-4 MiB limit, unless the log is empty. The database file is synced first, because
+16 MiB limit, unless the log is empty. The database file is synced first, because
 the statements in the log are about to be lost. Then the new log header is
 synced before any frames are written, otherwise frames from the new log could
 replace some of the old ones while the old header is still on the disk, which
 would look like a log containing only the oldest statements. A statement larger
-than 4 MiB gets a log of its own.
+than 16 MiB gets a log of its own.
 
 The whole log is copied into the database file, the file is synced and the log
 is emptied (with a *Tail* of 0) in these two cases:

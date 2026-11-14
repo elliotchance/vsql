@@ -229,7 +229,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					primary_key = unique_columns.clone()
 					primary_key_name = name
 				} else {
-					unique_constraints << UniqueConstraint{name, unique_columns, table_element.characteristics}
+					unique_constraints << UniqueConstraint{name, unique_columns, table_element.characteristics, table_element.nulls_not_distinct}
 				}
 			}
 			ReferentialConstraintDefinition {

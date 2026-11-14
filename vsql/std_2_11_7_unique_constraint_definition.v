@@ -19,6 +19,9 @@ struct UniqueConstraintDefinition {
 	columns         []Identifier
 	is_primary_key  bool
 	characteristics ConstraintCharacteristics
+	// nulls_not_distinct is NULLS NOT DISTINCT (F292). Without a <unique null
+	// treatment> it's NULLS DISTINCT.
+	nulls_not_distinct bool
 }
 
 // A UniqueConstraint is a UNIQUE (other than the PRIMARY KEY) of a table, with
@@ -27,12 +30,16 @@ struct UniqueConstraint {
 	name            string
 	columns         []string
 	characteristics ConstraintCharacteristics
+	// nulls_not_distinct is UNIQUE NULLS NOT DISTINCT, where NULLs are the same
+	// as each other (see check_unique_constraints).
+	nulls_not_distinct bool
 }
 
 // str is how the constraint is stored in the file as part of the CREATE TABLE
 // (see Table.bytes).
 fn (c UniqueConstraint) str() string {
-	return 'UNIQUE (${c.columns.map(delimit_identifier(it)).join(', ')})${c.characteristics}'
+	null_treatment := if c.nulls_not_distinct { ' NULLS NOT DISTINCT' } else { '' }
+	return 'UNIQUE${null_treatment} (${c.columns.map(delimit_identifier(it)).join(', ')})${c.characteristics}'
 }
 
 // check_primary_key returns an error if a row with the same PRIMARY KEY as r
@@ -81,6 +88,14 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 // ISO/IEC 9075-2:2023, 4.25.2, Checking of constraints
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 6.d.ii
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 3
+//
+// With NULLS NOT DISTINCT, a NULL is the same as another NULL, so a row with a
+// NULL conflicts with another row that has the same values, including NULLs in
+// the same columns. That's also true when every value is NULL, which is
+// implementation-defined.
+//
+// ISO/IEC 9075-2:2023, 4.25.3.2, Unique constraints
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 2.d
 fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 	if rows.len == 0 {
 		return
@@ -93,7 +108,7 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 
 		index := f.constraint_index(t, constraint)!
 		for row in rows {
-			if f.has_duplicate_entry(index, t, row)! {
+			if f.has_duplicate_entry(index, t, row, !constraint.nulls_not_distinct)! {
 				return sqlstate_23505('UNIQUE (${constraint.columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
 					t.constraint_identifier(constraint.name), t.name)
 			}

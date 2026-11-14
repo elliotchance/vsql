@@ -166,6 +166,15 @@ The precision and scale of a ``NUMERIC`` literal are taken directly from the
 literal, so ``1.0`` (a ``NUMERIC(2, 1)``) and ``1.00`` (a ``NUMERIC(3, 2)``)
 are equal in value but have different types.
 
+An integer can also be hexadecimal (``0x``), octal (``0o``) or binary (``0b``),
+in either case, such as ``0xFF``, ``0o17`` and ``0b1010``. It has the same type
+as the decimal integer with the same value, and can't have a ``.`` or an
+exponent.
+
+An underscore can be put between the digits of any number to make it easier to
+read, such as ``1_000_000``, ``3.141_592`` or ``0xFFFF_FFFF``. It can't be at
+the end, or next to another underscore.
+
 Formatting integers (representing as a string) are always shown as integers (of
 any size) and a ``NUMERIC`` will always be shown with the number of digits
 after the decimal point given by its scale, even if that requires padding more

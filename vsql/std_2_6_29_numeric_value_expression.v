@@ -23,10 +23,13 @@ fn (e NumericValueExpression) pstr(params map[string]Value) string {
 }
 
 fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
-	compiled_term := e.term.compile(mut c)!
+	mut compiled_term := e.term.compile(mut c)!
 
 	if n := e.n {
-		compiled_n := n.compile(mut c)!
+		mut compiled_n := n.compile(mut c)!
+
+		// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xi
+		compiled_n, compiled_term = c.with_pair_types(compiled_n, compiled_term, same_type)
 
 		return CompileResult{
 			run:          fn [e, compiled_n, compiled_term] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -59,10 +62,14 @@ fn (e Term) pstr(params map[string]Value) string {
 }
 
 fn (e Term) compile(mut c Compiler) !CompileResult {
-	compiled_factor := e.factor.compile(mut c)!
+	mut compiled_factor := e.factor.compile(mut c)!
 
 	if term := e.term {
-		compiled_term := term.compile(mut c)!
+		mut compiled_term := term.compile(mut c)!
+
+		// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.x
+		compiled_term, compiled_factor = c.with_pair_types(compiled_term, compiled_factor,
+			same_type)
 
 		return CompileResult{
 			run:          fn [e, compiled_term, compiled_factor] (mut conn Connection, data Row, params map[string]Value) !Value {

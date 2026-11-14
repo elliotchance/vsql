@@ -58,8 +58,9 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 
 	match e {
 		CaseExpressionNullIf {
-			compiled_a := e.a.compile(mut c)!
-			compiled_b := e.b.compile(mut c)!
+			// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xvi
+			compiled_a, compiled_b := c.with_pair_types(e.a.compile(mut c)!, e.b.compile(mut c)!,
+				same_type)
 
 			// NULLIF(V1, V2) is CASE WHEN V1 = V2 THEN NULL ELSE V1 END, so the
 			// values only need to be comparable, such as an INTEGER and a SMALLINT.
@@ -87,7 +88,8 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			}
 		}
 		CaseExpressionCoalesce {
-			compiled_exprs := e.exprs.map(it.compile(mut c)!)
+			// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xvi
+			compiled_exprs := c.with_types(e.exprs.map(it.compile(mut c)!), same_type)
 
 			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 5: the
 			// result has the combined type of all the arguments (9.5).
@@ -173,7 +175,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			mut contains_agg := false
 			mut compiled_conditions := []CompileResult{}
 			for when in e.whens {
-				compiled_condition := when.condition.compile(mut c)!
+				compiled_condition := c.with_boolean_type(when.condition.compile(mut c)!)
 				if compiled_condition.typ.typ != .is_boolean {
 					return sqlstate_42804('in CASE WHEN', 'BOOLEAN', compiled_condition.typ.str())
 				}
@@ -214,21 +216,26 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 	results << else_result
 
 	mut compiled := []CompileResult{}
-	mut typ := ?Type(none)
-	mut contains_agg := false
 	for result in results {
 		if result is ValueExpression {
-			compiled_result := result.compile(mut c)!
-			compiled << compiled_result
-			contains_agg = contains_agg || compiled_result.contains_agg
+			compiled << result.compile(mut c)!
+		}
+	}
 
-			if t := typ {
-				typ = combine_types(t, compiled_result.typ) or {
-					return sqlstate_42804('in CASE', t.str(), compiled_result.typ.str())
-				}
-			} else {
-				typ = Type{compiled_result.typ.typ, compiled_result.typ.size, compiled_result.typ.scale, false}
+	// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 5.a.xvii
+	compiled = c.with_types(compiled, same_type)
+
+	mut typ := ?Type(none)
+	mut contains_agg := false
+	for compiled_result in compiled {
+		contains_agg = contains_agg || compiled_result.contains_agg
+
+		if t := typ {
+			typ = combine_types(t, compiled_result.typ) or {
+				return sqlstate_42804('in CASE', t.str(), compiled_result.typ.str())
 			}
+		} else {
+			typ = Type{compiled_result.typ.typ, compiled_result.typ.size, compiled_result.typ.scale, false}
 		}
 	}
 

@@ -1,6 +1,6 @@
 -- # The start position and string length of SUBSTRING must be an exact numeric
--- # with scale 0 (Syntax Rules, 3). A dynamic parameter's value is checked
--- # instead, so it only has to be a whole number.
+-- # with scale 0 (Syntax Rules, 3). A dynamic parameter is a NUMERIC with scale
+-- # 0 (see std_2_20_7_dynamic_parameter_types.sql).
 VALUES SUBSTRING('hello' FROM 2.5);
 -- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got NUMERIC(2, 1)
 
@@ -24,12 +24,13 @@ VALUES SUBSTRING('hello' FROM ?);
 -- sql: VALUES SUBSTRING('hello' FROM 2.0e0)
 -- COL1: ello
 
-/* params 1.5 */
+-- # The value of a dynamic parameter is cast to a whole number.
+/* params 2.5 */
 VALUES SUBSTRING('hello' FROM ?);
--- sql: VALUES SUBSTRING('hello' FROM 1.5e0)
--- error 42601: syntax error: SUBSTRING start position must be a whole number, got 1.5e0
+-- sql: VALUES SUBSTRING('hello' FROM 2.5e0)
+-- COL1: ello
 
 /* params 2.5e0 */
 VALUES SUBSTRING('hello' FROM 1 FOR ?);
 -- sql: VALUES SUBSTRING('hello' FROM 1 FOR 2.5e0)
--- error 42601: syntax error: SUBSTRING string length must be a whole number, got 2.5e0
+-- COL1: he

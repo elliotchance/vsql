@@ -110,11 +110,8 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 			sv = character_value(sv, q != sql_nts) or { return using_clause_error() }
 		}
 
-		// - 4.p. The value of the parameter is CAST ( SV AS TDT ). vsql doesn't
-		// determine the type of a dynamic parameter (there's no POPULATE IPD),
-		// so there's no second cast to that type (General Rules, 4.p.ii.2 and
-		// 4.p.ii.3).
-		params['?${i}'] = cast_parameter(stmt, sv, tdt)!
+		// - 4.p. The value of the parameter is CAST ( SV AS TDT ).
+		params['?${i}'] = parameter_value(stmt, prepared, i, sv, tdt)!
 	}
 
 	return params, deferred
@@ -268,6 +265,24 @@ fn whole_characters(s string) string {
 	return s
 }
 
+// parameter_value is the value of the i-th dynamic parameter, which is CAST (
+// SV AS TDT ). The statement casts it again to the data type of the dynamic
+// parameter (UDT) when it's executed, if it's known (see
+// vsql.PreparedStmt.dynamic_parameter_type). That cast must also be allowed:
+// dynamic SQL error — restricted data type attribute violation.
+//
+// ISO/IEC 9075-3:2003(E), 5.6, Implicit EXECUTE USING and OPEN USING clauses, General Rules, 4.p.ii
+fn parameter_value(stmt &Stmt, prepared vsql.PreparedStmt, i int, sv vsql.Value, tdt vsql.Type) !vsql.Value {
+	tv := cast_parameter(stmt, sv, tdt)!
+	if udt := prepared.dynamic_parameter_type(i) {
+		if !tv.is_null && is_restricted_cast(tv.typ.typ, udt.typ) {
+			return cli_error('07006', 'restricted data type attribute violation')
+		}
+	}
+
+	return tv
+}
+
 // cast_parameter is CAST ( SV AS TDT ). A number can't be cast to a datetime
 // or BOOLEAN: dynamic SQL error — restricted data type attribute violation.
 fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
@@ -279,4 +294,28 @@ fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 	mut conn := stmt_connection(stmt)!
 
 	return conn.cast(sv, tdt)!
+}
+
+// is_restricted_cast is true if a value of one type can't be CAST to the
+// other (ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, Syntax Rules, 6):
+// a number, datetime or BOOLEAN can only be cast to the same kind of type (or
+// a character string), and a DATE and a TIME can't be cast to each other.
+fn is_restricted_cast(from vsql.SQLType, to vsql.SQLType) bool {
+	kind := fn (t vsql.SQLType) int {
+		return match t {
+			.is_character, .is_varchar { 0 }
+			.is_boolean { 1 }
+			.is_date { 2 }
+			.is_time_without_time_zone, .is_time_with_time_zone { 3 }
+			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone { 4 }
+			else { 5 }
+		}
+	}
+	f, t := kind(from), kind(to)
+	if f == 0 || t == 0 || f == t {
+		return false
+	}
+
+	// A TIMESTAMP can be cast to a DATE or TIME, and the other way around.
+	return !((f == 4 && t in [2, 3]) || (t == 4 && f in [2, 3]))
 }

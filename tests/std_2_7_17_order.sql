@@ -196,8 +196,7 @@ VALUES 3, 1 ORDER BY 1;
 /* extensions V202-01 */
 /* flags */
 SELECT y FROM foo ORDER BY ?;
--- flags: B031, V202-01
--- error 42P02: parameter does not exist: ?1
+-- error 42601: syntax error: the data type of ?1 cannot be determined
 
 /* extensions V202-02 */
 /* flags */

@@ -639,11 +639,17 @@ INSERT INTO ids OVERRIDING USER VALUE SELECT x, x FROM t;
 -- flags: S043
 -- msg: INSERT 2
 
--- # A dynamic parameter in the query.
+-- # A dynamic parameter in the query. It doesn't take the type of the column
+-- # (only in a VALUES), so it needs a CAST.
 /* params 5 */
 INSERT INTO t (x) SELECT ? FROM t WHERE x = 1;
-SELECT x FROM t;
 -- sql: INSERT INTO t (x) SELECT 5.0e0 FROM t WHERE x = 1
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+
+/* params 5 */
+INSERT INTO t (x) SELECT CAST(? AS INT) FROM t WHERE x = 1;
+SELECT x FROM t;
+-- sql: INSERT INTO t (x) SELECT CAST(5.0e0 AS INT) FROM t WHERE x = 1
 -- msg: INSERT 1
 -- X: 1
 -- X: 2

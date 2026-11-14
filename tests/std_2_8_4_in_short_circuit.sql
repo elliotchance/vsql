@@ -74,17 +74,15 @@ SELECT d FROM t WHERE d IN (DATE '2020-01-02', DATE '2020-01-05');
 VALUES ROW(2 = ANY (VALUES 1, 2, 3), 2 = ALL (VALUES 2, 3, 2), 2 = ANY (VALUES 1, CAST(NULL AS INTEGER)));
 -- COL1: TRUE COL2: FALSE COL3: UNKNOWN
 
--- # A dynamic parameter has the type of its value. A NULL one compares with any
--- # type, as it did when each pair of values was checked, so a prepared
--- # statement can be described with a NULL for each parameter whose type isn't
--- # known yet.
+-- # A dynamic parameter has the type of the value it's compared with, so a
+-- # NULL of any type can be compared.
 /* params NULL VARCHAR NULL VARCHAR NULL VARCHAR NULL VARCHAR NULL VARCHAR */
 VALUES ROW(1 = ?, ? < 1, 1 IN (2, ?), ? IN (VALUES 1), ? = ANY (VALUES 1));
 -- sql: VALUES ROW(1 = CAST(NULL AS CHARACTER VARYING), CAST(NULL AS CHARACTER VARYING) < 1, 1 IN (2, CAST(NULL AS CHARACTER VARYING)), CAST(NULL AS CHARACTER VARYING) IN (VALUES 1), CAST(NULL AS CHARACTER VARYING) = ANY (VALUES 1))
 -- COL1: UNKNOWN COL2: UNKNOWN COL3: UNKNOWN COL4: UNKNOWN COL5: UNKNOWN
 
--- # A value that isn't NULL must be comparable.
+-- # A value that isn't NULL must be cast to the type it's compared with.
 /* params 'a' */
 VALUES 1 = ?;
 -- sql: VALUES 1 = 'a'
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 22018: invalid character value for cast

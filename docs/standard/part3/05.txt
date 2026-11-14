@@ -189,40 +189,40 @@
 5.5/GR/5.c.iv.9          n/a          - - there are no row types (T051)
 5.5/GR/5.c.iv.10         n/a          - - there are no arrays (S091)
 5.5/GR/6                 definition   - -
-5.5/GR/7                 implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
-5.5/GR/8                 n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.a               n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.a.i             n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.a.ii            n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.b               n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.c               n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.c.i             n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.c.ii            n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.c.iii           n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d               n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.i             n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.ii            n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.iii           n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.iv            n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.v             n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi            n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.1          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.2          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.3          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.4          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.5          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.6          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.7          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.8          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.9          n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/8.d.vi.10         n/a          - - POPULATE IPD is False (General Rules, 7)
-5.5/GR/9                 n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
-5.5/GR/9.a               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
-5.5/GR/9.b               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
-5.5/GR/9.c               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
-5.5/GR/9.d               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
-5.5/GR/9.e               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
-5.5/GR/9.f               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/7                 implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always True
+5.5/GR/8                 implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c only by Prepare, the IPD of a statement that's executed by ExecDirect is the one set by the application; a parameter whose type isn't known until it has a value keeps the item descriptor area set by the application
+5.5/GR/8.a               implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.a.i             n/a          - - there are no subordinate descriptors
+5.5/GR/8.a.ii            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.b               implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.c               implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.c.i             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.c.ii            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.c.iii           n/a          - - there are no subordinate descriptors
+5.5/GR/8.d               implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.i             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.ii            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.iii           implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.iv            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.v             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.vi            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.vi.1          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.vi.2          n/a          - - there are no binary strings (T021)
+5.5/GR/8.d.vi.3          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.vi.4          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.vi.5          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
+5.5/GR/8.d.vi.6          n/a          - - there are no intervals
+5.5/GR/8.d.vi.7          n/a          - - there are no reference types (S041)
+5.5/GR/8.d.vi.8          n/a          - - there are no user-defined types (S023)
+5.5/GR/8.d.vi.9          n/a          - - there are no row types (T051)
+5.5/GR/8.d.vi.10         n/a          - - there are no arrays (S091)
+5.5/GR/9                 n/a          - - there's no <call statement> (#733)
+5.5/GR/9.a               n/a          - - there's no <call statement> (#733)
+5.5/GR/9.b               n/a          - - there's no <call statement> (#733)
+5.5/GR/9.c               n/a          - - there's no <call statement> (#733)
+5.5/GR/9.d               n/a          - - there's no <call statement> (#733)
+5.5/GR/9.e               n/a          - - there's no <call statement> (#733)
+5.5/GR/9.f               n/a          - - there's no <call statement> (#733)
 # 5.6, Implicit EXECUTE USING and OPEN USING clauses
 5.6                      implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/1                 definition   - -
@@ -282,13 +282,13 @@
 5.6/GR/4.p.ii.1.B.I      implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c a number can't be cast to a datetime or BOOLEAN
 5.6/GR/4.p.ii.1.B.II     implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.p.ii.1.B.III    implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
-5.6/GR/4.p.ii.2          unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-5.6/GR/4.p.ii.3          unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-5.6/GR/4.p.ii.3.A        unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-5.6/GR/4.p.ii.3.B        unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-5.6/GR/4.p.ii.3.B.I      unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-5.6/GR/4.p.ii.3.B.II     unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
-5.6/GR/4.p.ii.3.B.III    unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.2          implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.3          implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c UDT is only known if the statement can be compiled when it's prepared, otherwise the value is TV
+5.6/GR/4.p.ii.3.A        n/a          - - there are no implementation-defined conversions
+5.6/GR/4.p.ii.3.B        implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.3.B.I      implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.3.B.II     implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.3.B.III    implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.p.iii           n/a          - - there are no user-defined types (S023)
 5.6/GR/4.p.iii.1         n/a          - - there are no user-defined types (S023)
 5.6/GR/4.p.iii.2         n/a          - - there are no user-defined types (S023)

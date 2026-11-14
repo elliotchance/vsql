@@ -8,7 +8,7 @@ UTEST_F(db, 6_28_get_connect_attr_auto_ipd) {
   EXPECT_EQ(
       SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_AUTO_IPD, &value, 0, NULL),
       SQL_SUCCESS);
-  EXPECT_EQ(value, SQL_FALSE);
+  EXPECT_EQ(value, SQL_TRUE);
 }
 
 UTEST_F(env, 6_28_get_connect_attr_auto_ipd_not_connected) {

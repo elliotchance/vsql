@@ -64,8 +64,47 @@ A statement can have many dynamic parameters. This is also what
    	'?2': vsql.new_integer_value(42)
    })!
 
-The data type of a dynamic parameter is the data type of its value. A missing
-value is an error ``42P02``.
+A missing value is an error ``42P02``.
 
 A dynamic parameter can't be used where SQL only allows a literal, such as the
 row count of ``OFFSET`` and ``FETCH FIRST``.
+
+Data Types
+----------
+
+The data type of each dynamic parameter is determined from where it's used
+when the statement is prepared, and the value it's given is cast to that type
+(like a ``CAST``). For example:
+
+- ``x = ?``, ``x IN (?, ?)`` and ``x BETWEEN ? AND ?`` have the type of ``x``.
+- ``INSERT INTO t (x) VALUES (?)`` and ``UPDATE t SET x = ?`` have the type of
+  the column ``x``.
+- ``CAST(? AS INTEGER)`` is an ``INTEGER``.
+- ``x + ?`` (or ``-``, ``*``, ``/``) has the type of ``x``.
+- ``x || ?``, ``x LIKE ?`` and the argument of ``CHAR_LENGTH`` are a
+  ``CHARACTER VARYING``.
+- An operand of ``AND``, ``OR`` and ``NOT``, and a ``WHERE`` or ``HAVING``, is
+  a ``BOOLEAN``.
+- A value in a ``VALUES``, ``CASE``, ``COALESCE`` or ``NULLIF`` has the type of
+  the other values.
+- The argument of a function has the type of its parameter, if it's the only
+  function with that name and number of arguments.
+
+So ``'42'`` can be the value for ``x = ?`` when ``x`` is an ``INTEGER``, and a
+value that can't be cast (such as ``'abc'``) is an error. The type of a
+dynamic parameter is returned by ``dynamic_parameter_type()``:
+
+.. code-block:: v
+
+   mut stmt := db.prepare('SELECT * FROM people WHERE age > ?')!
+   println(stmt.dynamic_parameter_type(1)?) // INTEGER
+
+A dynamic parameter whose type can't be determined is a syntax error (``42601``)
+when the statement is prepared, such as ``VALUES ?``, ``SELECT ?``, ``ABS(?)``
+or both of the dynamic parameters in ``? + ?``. Use a ``CAST`` to give it a
+type, such as ``SELECT CAST(? AS INTEGER)``.
+
+Only a query, ``INSERT``, ``UPDATE`` and ``DELETE`` are checked like this when
+they're prepared. A dynamic parameter in any other statement, or in a
+statement that can't be checked yet (such as one from ``parse()`` that uses a
+table that doesn't exist yet), has the data type of its value.

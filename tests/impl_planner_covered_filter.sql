@@ -138,8 +138,8 @@ SELECT * FROM t WHERE (id = 1 OR id = 2) AND id >= 2;
 -- ID: 2 NAME: two
 -- ID: 2 NAME: two
 
--- # A constant expression is covered, including a parameter that's cast to an
--- # integer. A parameter that isn't an integer is still checked.
+-- # A constant expression is covered, including a parameter, since its value is
+-- # cast to the type that it's compared with (an integer).
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id = 1 + 1;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = 1 + 1
@@ -150,7 +150,7 @@ EXPLAIN SELECT * FROM t WHERE id = 1 + 1;
 EXPLAIN SELECT * FROM t WHERE id = CAST(? AS INT);
 SELECT * FROM t WHERE id = CAST(? AS INT);
 -- sql: EXPLAIN SELECT * FROM t WHERE id = CAST(3.0e0 AS INT)
--- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = CAST(3e0 AS INTEGER)
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = CAST(3 AS INTEGER)
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.NAME CHARACTER VARYING(10))
 -- sql: SELECT * FROM t WHERE id = CAST(3.0e0 AS INT)
 -- ID: 3 NAME: three
@@ -160,8 +160,7 @@ SELECT * FROM t WHERE id = CAST(? AS INT);
 EXPLAIN SELECT * FROM t WHERE id = ?;
 SELECT * FROM t WHERE id = ?;
 -- sql: EXPLAIN SELECT * FROM t WHERE id = 3.0e0
--- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = 3e0
--- EXPLAIN: WHERE ID = 3e0
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = 3
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.NAME CHARACTER VARYING(10))
 -- sql: SELECT * FROM t WHERE id = 3.0e0
 -- ID: 3 NAME: three

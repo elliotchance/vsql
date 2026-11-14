@@ -700,16 +700,18 @@ struct Connection
    	// V never frees a closure on its own, and every expression that's compiled
    	// makes some (see CompileResult). So each statement runs in a frame of
    	// lifetime, and the closures it made are released when it ends, see
-   	// PreparedStmt.query. frame_work runs frame_stmt, it's made once so that it
-   	// isn't a closure that's leaked for each statement.
-   	lifetime     closure.Lifetime
-   	frame_work   fn () = unsafe { nil }
-   	frame_active bool
-   	frame_ran    bool
-   	frame_stmt   &PreparedStmt = unsafe { nil }
-   	frame_params map[string]Value
-   	frame_result Result
-   	frame_err    IError = none
+   	// PreparedStmt.query. frame_work runs frame_stmt (or describes
+   	// frame_describe, see describe_parameters), it's made once so that it isn't
+   	// a closure that's leaked for each statement.
+   	lifetime       closure.Lifetime
+   	frame_work     fn () = unsafe { nil }
+   	frame_active   bool
+   	frame_ran      bool
+   	frame_stmt     &PreparedStmt = unsafe { nil }
+   	frame_describe ?Stmt
+   	frame_params   map[string]Value
+   	frame_result   Result
+   	frame_err      IError = none
    	// parser_stack is kept between statements, see parse_statement.
    	parser_stack []YYSymType
    	// statement_cache has the statements that have been parsed, by their text,
@@ -737,6 +739,13 @@ struct Connection
    	// errors (such as an UPDATE that matched no rows). Expressions must not have
    	// side effects, like advancing a sequence.
    	dry_run bool
+   	// describing is set while a prepared statement is compiled to find the data
+   	// type of each dynamic parameter, which are collected in parameter_types (see
+   	// describe_parameters). compiled_parameters are the dynamic parameters that
+   	// have been compiled, whether or not their type could be determined.
+   	describing          bool
+   	parameter_types     map[string]Type
+   	compiled_parameters map[string]bool
    	// subquery_scopes has one scope for each subquery (in an expression, such as
    	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
    	// can refer to the columns of the queries that contain it, see SubqueryScope.
@@ -1126,6 +1135,10 @@ struct PreparedStmt
    	// dynamic_parameters is the number of <dynamic parameter specification>s
    	// ("?") in the statement.
    	dynamic_parameters int
+   	// parameter_types is the data type of each dynamic parameter that's
+   	// determined by where it's used (see describe_parameters). The value of
+   	// each of them is cast to its type when the statement is executed.
+   	parameter_types map[string]Type
    	// features are the features outside of Core SQL that the statement uses,
    	// see features.
    	features []string

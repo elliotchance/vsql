@@ -1,5 +1,6 @@
 -- # A ? without a value is an error. A number is bound as a DOUBLE
--- # PRECISION, so it can be stored in the FLOAT column.
+-- # PRECISION, and the value of a ? is cast to the type of the column that it's
+-- # stored in.
 /* setup */
 CREATE TABLE t1 (x FLOAT);
 
@@ -15,21 +16,28 @@ SELECT * FROM t1;
 
 /* types */
 /* params 2 */
-VALUES ?;
--- sql: VALUES 2.0e0
+VALUES CAST(? AS DOUBLE PRECISION);
+-- sql: VALUES CAST(2.0e0 AS DOUBLE PRECISION)
 -- COL1: 2e0 (DOUBLE PRECISION)
 
--- # A string is a CHARACTER, so it can't be stored in a FLOAT, but can in a
--- # VARCHAR.
+-- # A string is cast to the FLOAT of the column, so it must be a number. It
+-- # can be stored in a VARCHAR.
 /* params 'hello' */
 INSERT INTO t1 (x) VALUES (?);
 -- sql: INSERT INTO t1 (x) VALUES ('hello')
--- error 42846: cannot coerce CHARACTER(5) to DOUBLE PRECISION
+-- error 22018: invalid character value for cast
+
+/* params '1.5' */
+INSERT INTO t1 (x) VALUES (?);
+SELECT * FROM t1;
+-- sql: INSERT INTO t1 (x) VALUES ('1.5')
+-- msg: INSERT 1
+-- X: 1.5e0
 
 /* types */
 /* params 'hello' */
-VALUES ?;
--- sql: VALUES 'hello'
+VALUES CAST(? AS CHAR(5));
+-- sql: VALUES CAST('hello' AS CHAR(5))
 -- COL1: hello (CHARACTER(5))
 
 CREATE TABLE t2 (x VARCHAR(10));
@@ -89,9 +97,9 @@ SELECT * FROM t1;
 
 /* types */
 /* params NULL INT */
-VALUES ?;
--- sql: VALUES CAST(NULL AS INTEGER)
--- COL1: NULL (INTEGER)
+VALUES CAST(? AS BIGINT);
+-- sql: VALUES CAST(CAST(NULL AS INTEGER) AS BIGINT)
+-- COL1: NULL (BIGINT)
 
 CREATE TABLE t2 (x INT NOT NULL);
 /* params NULL INT */

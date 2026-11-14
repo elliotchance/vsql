@@ -10,10 +10,11 @@ import vsql
 // (see vsql.PreparedStmt.resolve_names), so a syntax error or a table that
 // doesn't exist is raised by Prepare. Other errors are only raised by Execute
 // (and ExecDirect raises them all when it's executed, like a statement that's
-// executed directly). The IRD describes the result columns of a query if they can be known before
-// it's executed (the data type of a dynamic parameter isn't known until it has
-// a value, so the IPD type is used if it's set, and otherwise it may only be
-// known after the statement is executed).
+// executed directly). The data type of each dynamic parameter is determined from where it's used, and
+// one that can't be determined (such as in "? + ?") is a syntax error (General
+// Rules 7.c and 8). The IPD describes each dynamic parameter, and the IRD
+// describes the result columns of a query if they can be known before it's
+// executed.
 //
 // The cursor name of a query is generated when it's first needed (General Rules
 // 12.b, see Stmt.get_cursor_name). A prepared statement stays valid in later
@@ -52,7 +53,11 @@ fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 	stmt.prepared_function_code = stmt.diag.dynamic_function_code
 
 	// - 13. The statement is described (see 5.5, "Implicit DESCRIBE USING
-	// clause"), with a NULL for each dynamic parameter.
+	// clause"), with a NULL for each dynamic parameter. A dynamic parameter
+	// whose type isn't known until it has a value (see describe_parameters)
+	// has the type of the IPD if it's set.
+	mut conn := stmt_connection(stmt)!
+	describe_parameters(stmt, prepared, conn.current_catalog_name())
 	ipd := descs[stmt.ipd] or { return cli_error('HY010', 'function sequence error') }
 	mut params := map[string]vsql.Value{}
 	for i in 1 .. prepared.dynamic_parameter_count() + 1 {
@@ -66,7 +71,6 @@ fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 		params['?${i}'] = vsql.new_null_value(typ.typ)
 	}
 	columns := prepared.columns(params) or { []vsql.Column{} }
-	mut conn := stmt_connection(stmt)!
 	describe(stmt, mut conn, columns)
 
 	return sql_success

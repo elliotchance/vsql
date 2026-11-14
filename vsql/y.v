@@ -1395,7 +1395,7 @@ const yy_eof_code = 1
 const yy_err_code = 2
 const yy_initial_stack_size = 16
 
-// line vsql/y.y:6059
+// line vsql/y.y:6075
 
 // line yacctab:1
 const yy_exca = [
@@ -1408,41 +1408,41 @@ const yy_exca = [
 	-1,
 	69,
 	1,
-	1147,
+	1150,
 	414,
-	1147,
+	1150,
 	-2,
-	1187,
+	1190,
 	-1,
 	74,
 	1,
-	1170,
+	1173,
 	414,
-	1170,
+	1173,
 	661,
-	1170,
+	1173,
 	-2,
-	1186,
+	1189,
 	-1,
 	75,
 	1,
-	1171,
+	1174,
 	414,
-	1171,
+	1174,
 	661,
-	1171,
+	1174,
 	-2,
-	1175,
+	1178,
 	-1,
 	76,
 	1,
-	1172,
+	1175,
 	414,
-	1172,
+	1175,
 	661,
-	1172,
+	1175,
 	-2,
-	1182,
+	1185,
 	-1,
 	405,
 	685,
@@ -1476,261 +1476,261 @@ const yy_exca = [
 	-1,
 	502,
 	418,
-	1135,
+	1138,
 	-2,
-	1132,
+	1135,
 	-1,
 	512,
 	312,
-	1226,
+	1229,
 	433,
-	1226,
+	1229,
 	446,
-	1226,
+	1229,
 	466,
-	1226,
+	1229,
 	501,
-	1226,
+	1229,
 	522,
-	1226,
+	1229,
 	585,
-	1226,
+	1229,
 	659,
-	1226,
+	1229,
 	669,
-	1226,
+	1229,
 	670,
-	1226,
+	1229,
 	672,
-	1226,
+	1229,
 	673,
-	1226,
+	1229,
 	675,
-	1226,
+	1229,
 	676,
-	1226,
+	1229,
 	679,
-	1226,
+	1229,
 	-2,
-	918,
+	921,
 	-1,
 	514,
 	680,
-	1141,
+	1144,
 	-2,
-	1108,
+	1111,
 	-1,
 	515,
 	662,
-	1042,
+	1045,
 	664,
-	1042,
+	1045,
 	665,
-	1042,
+	1045,
 	667,
-	1042,
+	1045,
 	671,
-	1042,
+	1045,
 	674,
-	1042,
+	1045,
 	-2,
-	920,
+	923,
 	-1,
 	517,
 	671,
-	995,
+	998,
 	-2,
-	922,
+	925,
 	-1,
 	518,
 	671,
-	1000,
+	1003,
 	-2,
-	923,
+	926,
 	-1,
 	521,
 	660,
 	814,
 	-2,
-	1106,
+	1109,
 	-1,
 	543,
 	662,
-	942,
+	945,
 	664,
-	942,
+	945,
 	665,
-	942,
+	945,
 	667,
-	942,
+	945,
 	-2,
-	932,
+	935,
 	-1,
 	570,
 	671,
-	999,
+	1002,
 	-2,
-	941,
+	944,
 	-1,
 	578,
 	312,
-	1227,
+	1230,
 	433,
-	1227,
+	1230,
 	446,
-	1227,
+	1230,
 	466,
-	1227,
+	1230,
 	501,
-	1227,
+	1230,
 	522,
-	1227,
+	1230,
 	585,
-	1227,
+	1230,
 	659,
-	1227,
+	1230,
 	669,
-	1227,
+	1230,
 	670,
-	1227,
+	1230,
 	672,
-	1227,
+	1230,
 	673,
-	1227,
+	1230,
 	675,
-	1227,
+	1230,
 	676,
-	1227,
+	1230,
 	679,
-	1227,
+	1230,
 	-2,
-	1088,
+	1091,
 	-1,
 	596,
 	662,
-	1043,
+	1046,
 	664,
-	1043,
+	1046,
 	665,
-	1043,
+	1046,
 	667,
-	1043,
+	1046,
 	671,
-	1043,
+	1046,
 	674,
-	1043,
+	1046,
 	-2,
-	1089,
+	1092,
 	-1,
 	597,
 	662,
-	1044,
+	1047,
 	664,
-	1044,
+	1047,
 	665,
-	1044,
+	1047,
 	667,
-	1044,
+	1047,
 	671,
-	1044,
+	1047,
 	674,
-	1044,
+	1047,
 	-2,
-	1090,
+	1093,
 	-1,
 	722,
 	1,
-	1211,
+	1214,
 	401,
-	1211,
+	1214,
 	409,
-	1211,
+	1214,
 	414,
-	1211,
+	1214,
 	442,
-	1211,
+	1214,
 	510,
-	1211,
+	1214,
 	518,
-	1211,
+	1214,
 	633,
-	1211,
+	1214,
 	661,
-	1211,
+	1214,
 	663,
-	1211,
+	1214,
 	686,
-	1211,
+	1214,
 	-2,
-	1226,
+	1229,
 	-1,
 	724,
 	1,
-	1213,
+	1216,
 	401,
-	1213,
+	1216,
 	409,
-	1213,
+	1216,
 	414,
-	1213,
+	1216,
 	442,
-	1213,
+	1216,
 	510,
-	1213,
+	1216,
 	518,
-	1213,
+	1216,
 	633,
-	1213,
+	1216,
 	661,
-	1213,
+	1216,
 	663,
-	1213,
+	1216,
 	686,
-	1213,
+	1216,
 	-2,
-	1228,
+	1231,
 	-1,
 	851,
 	418,
-	1135,
+	1138,
 	-2,
-	1133,
+	1136,
 	-1,
 	861,
 	663,
-	918,
+	921,
 	-2,
-	1226,
+	1229,
 	-1,
 	863,
 	401,
-	1187,
+	1190,
 	409,
-	1187,
+	1190,
 	442,
-	1187,
+	1190,
 	510,
-	1187,
+	1190,
 	518,
-	1187,
+	1190,
 	633,
-	1187,
+	1190,
 	686,
-	1187,
+	1190,
 	-2,
-	1210,
+	1213,
 	-1,
 	880,
 	662,
-	940,
+	943,
 	664,
-	940,
+	943,
 	665,
-	940,
+	943,
 	667,
-	940,
+	943,
 	-2,
-	931,
+	934,
 	-1,
 	1021,
 	1,
@@ -1770,49 +1770,49 @@ const yy_exca = [
 	-1,
 	1150,
 	664,
-	934,
-	665,
-	934,
-	-2,
-	926,
-	-1,
-	1152,
-	664,
-	935,
-	665,
-	935,
-	-2,
-	927,
-	-1,
-	1156,
-	662,
-	937,
-	664,
 	937,
 	665,
-	937,
-	667,
 	937,
 	-2,
 	929,
 	-1,
-	1157,
-	662,
-	938,
+	1152,
 	664,
 	938,
 	665,
 	938,
-	667,
-	938,
 	-2,
 	930,
 	-1,
+	1156,
+	662,
+	940,
+	664,
+	940,
+	665,
+	940,
+	667,
+	940,
+	-2,
+	932,
+	-1,
+	1157,
+	662,
+	941,
+	664,
+	941,
+	665,
+	941,
+	667,
+	941,
+	-2,
+	933,
+	-1,
 	1170,
 	661,
-	1026,
+	1029,
 	-2,
-	1039,
+	1042,
 	-1,
 	1318,
 	1,
@@ -1822,29 +1822,29 @@ const yy_exca = [
 	-1,
 	1328,
 	1,
-	1216,
+	1219,
 	401,
-	1216,
+	1219,
 	409,
-	1216,
+	1219,
 	442,
-	1216,
+	1219,
 	510,
-	1216,
+	1219,
 	518,
-	1216,
+	1219,
 	633,
-	1216,
+	1219,
 	663,
-	1216,
+	1219,
 	686,
-	1216,
+	1219,
 	-2,
-	1226,
+	1229,
 	-1,
 	1536,
 	674,
-	1104,
+	1107,
 	-2,
 	848,
 	-1,
@@ -1862,47 +1862,47 @@ const yy_exca = [
 	-1,
 	1827,
 	1,
-	1221,
+	1224,
 	401,
-	1221,
+	1224,
 	409,
-	1221,
+	1224,
 	442,
-	1221,
+	1224,
 	510,
-	1221,
+	1224,
 	518,
-	1221,
+	1224,
 	633,
-	1221,
+	1224,
 	663,
-	1221,
+	1224,
 	686,
-	1221,
+	1224,
 	-2,
-	1215,
+	1218,
 	-1,
 	1887,
 	1,
-	1220,
+	1223,
 	401,
-	1220,
+	1223,
 	409,
-	1220,
+	1223,
 	442,
-	1220,
+	1223,
 	510,
-	1220,
+	1223,
 	518,
-	1220,
+	1223,
 	633,
-	1220,
+	1223,
 	663,
-	1220,
+	1223,
 	686,
-	1220,
+	1223,
 	-2,
-	1214,
+	1217,
 ]
 
 const yy_private = 57344
@@ -34938,6 +34938,9 @@ const yy_r1 = [
 	306,
 	306,
 	306,
+	306,
+	306,
+	306,
 	307,
 	307,
 	311,
@@ -36275,6 +36278,9 @@ const yy_r2 = [
 	5,
 	5,
 	4,
+	2,
+	2,
+	1,
 	1,
 	1,
 	1,
@@ -38778,7 +38784,7 @@ const yy_def = [
 	427,
 	0,
 	0,
-	1146,
+	1149,
 	-2,
 	0,
 	0,
@@ -38787,18 +38793,18 @@ const yy_def = [
 	-2,
 	-2,
 	-2,
-	1173,
+	1176,
 	0,
-	1190,
-	1191,
-	1192,
+	1193,
+	1194,
+	1195,
 	0,
-	1174,
+	1177,
 	464,
 	0,
 	0,
 	0,
-	1181,
+	1184,
 	0,
 	822,
 	805,
@@ -39107,7 +39113,7 @@ const yy_def = [
 	441,
 	442,
 	819,
-	1099,
+	1102,
 	769,
 	770,
 	777,
@@ -39195,67 +39201,67 @@ const yy_def = [
 	379,
 	380,
 	0,
-	1187,
-	1148,
+	1190,
+	1151,
 	0,
-	1149,
-	1150,
 	1152,
-	1156,
+	1153,
+	1155,
+	1159,
 	0,
 	0,
-	1177,
-	1179,
+	1180,
+	1182,
 	0,
 	0,
 	0,
-	1184,
+	1187,
 	0,
 	0,
 	-2,
-	1134,
+	1137,
 	60,
 	61,
-	1136,
-	466,
-	1138,
 	1139,
+	466,
+	1141,
 	1142,
+	1145,
 	0,
 	-2,
-	919,
-	-2,
-	-2,
-	921,
+	922,
 	-2,
 	-2,
 	924,
-	1074,
+	-2,
+	-2,
+	927,
+	1077,
 	-2,
 	0,
-	925,
-	0,
-	0,
-	1001,
-	1056,
-	1076,
 	928,
-	933,
-	996,
-	1002,
-	1003,
+	0,
+	0,
 	1004,
+	1059,
+	1079,
+	931,
+	936,
+	999,
 	1005,
 	1006,
 	1007,
 	1008,
-	1057,
-	1078,
+	1009,
+	1010,
+	1011,
+	1060,
+	1081,
 	0,
 	0,
 	-2,
-	936,
-	998,
+	939,
+	1001,
 	0,
 	0,
 	0,
@@ -39263,11 +39269,8 @@ const yy_def = [
 	0,
 	0,
 	0,
-	1058,
-	1080,
-	943,
-	944,
-	945,
+	1061,
+	1083,
 	946,
 	947,
 	948,
@@ -39279,20 +39282,23 @@ const yy_def = [
 	954,
 	955,
 	956,
-	939,
+	957,
+	958,
+	959,
+	942,
 	-2,
-	1029,
-	1030,
-	1031,
+	1032,
+	1033,
 	1034,
-	1035,
-	1059,
-	1087,
+	1037,
+	1038,
+	1062,
+	1090,
 	-2,
 	637,
-	957,
-	961,
-	962,
+	960,
+	964,
+	965,
 	0,
 	0,
 	0,
@@ -39308,14 +39314,11 @@ const yy_def = [
 	0,
 	-2,
 	-2,
-	1060,
-	1061,
-	1062,
 	1063,
 	1064,
-	1277,
-	1278,
-	1279,
+	1065,
+	1066,
+	1067,
 	1280,
 	1281,
 	1282,
@@ -39324,22 +39327,22 @@ const yy_def = [
 	1285,
 	1286,
 	1287,
+	1288,
+	1289,
+	1290,
 	0,
 	0,
 	0,
 	0,
-	971,
-	972,
-	973,
 	974,
 	975,
 	976,
 	977,
 	978,
 	979,
-	1046,
-	1047,
-	1048,
+	980,
+	981,
+	982,
 	1049,
 	1050,
 	1051,
@@ -39347,32 +39350,35 @@ const yy_def = [
 	1053,
 	1054,
 	1055,
-	1065,
-	1066,
-	1070,
+	1056,
+	1057,
+	1058,
 	1068,
-	1072,
+	1069,
+	1073,
+	1071,
+	1075,
 	0,
-	1311,
+	1314,
 	0,
 	0,
-	1094,
-	1095,
-	1109,
-	1110,
+	1097,
+	1098,
+	1112,
+	1113,
 	0,
 	823,
 	824,
 	0,
 	0,
 	0,
-	1208,
-	1231,
+	1211,
+	1234,
 	771,
 	772,
-	1096,
-	1097,
-	1098,
+	1099,
+	1100,
+	1101,
 	93,
 	38,
 	40,
@@ -39383,12 +39389,12 @@ const yy_def = [
 	0,
 	827,
 	828,
-	1104,
+	1107,
 	864,
 	865,
-	1210,
-	1228,
-	1100,
+	1213,
+	1231,
+	1103,
 	0,
 	0,
 	0,
@@ -39429,15 +39435,15 @@ const yy_def = [
 	92,
 	94,
 	95,
+	1235,
+	1236,
 	1232,
-	1233,
-	1229,
 	-2,
-	1212,
+	1215,
 	-2,
-	1108,
-	1193,
-	1265,
+	1111,
+	1196,
+	1268,
 	0,
 	343,
 	0,
@@ -39459,8 +39465,8 @@ const yy_def = [
 	438,
 	0,
 	451,
-	1092,
-	1093,
+	1095,
+	1096,
 	448,
 	450,
 	778,
@@ -39526,61 +39532,61 @@ const yy_def = [
 	0,
 	0,
 	0,
-	1188,
+	1191,
 	465,
+	1192,
+	1179,
+	1185,
 	1189,
-	1176,
-	1182,
-	1186,
-	1187,
-	1151,
-	1153,
-	1157,
-	0,
-	0,
-	1155,
+	1190,
+	1154,
+	1156,
 	1160,
 	0,
-	1158,
-	1199,
 	0,
-	1164,
-	1204,
-	1198,
-	1205,
-	1178,
-	1180,
+	1158,
+	1163,
+	0,
+	1161,
+	1202,
+	0,
+	1167,
+	1207,
+	1201,
+	1208,
+	1181,
+	1183,
 	20,
 	0,
-	1201,
-	1202,
-	1183,
-	1185,
-	1130,
-	1238,
-	1240,
+	1204,
+	1205,
+	1186,
+	1188,
+	1133,
+	1241,
+	1243,
 	0,
 	0,
 	-2,
 	0,
+	1146,
+	0,
+	1148,
+	815,
 	1143,
 	0,
-	1145,
-	815,
-	1140,
-	0,
 	0,
 	0,
 	-2,
-	919,
+	922,
 	-2,
 	0,
-	1224,
-	1225,
-	1101,
-	1102,
-	1103,
+	1227,
+	1228,
+	1104,
 	1105,
+	1106,
+	1108,
 	0,
 	0,
 	0,
@@ -39588,28 +39594,28 @@ const yy_def = [
 	0,
 	0,
 	471,
-	1079,
-	1226,
-	-2,
-	941,
-	942,
-	1042,
-	1043,
-	1044,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	1081,
 	1082,
-	1083,
+	1229,
+	-2,
+	944,
+	945,
+	1045,
+	1046,
+	1047,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 	1084,
 	1085,
 	1086,
+	1087,
+	1088,
+	1089,
 	0,
 	0,
 	0,
@@ -39637,32 +39643,32 @@ const yy_def = [
 	0,
 	0,
 	0,
-	1272,
-	1274,
-	1289,
-	1297,
-	1304,
-	1312,
-	1321,
-	1327,
-	1330,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	1291,
+	1275,
+	1277,
 	1292,
-	1293,
+	1300,
+	1307,
+	1315,
+	1324,
+	1330,
+	1333,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
 	1294,
 	1295,
 	1296,
-	1300,
-	1317,
-	1318,
+	1297,
+	1298,
+	1299,
+	1303,
+	1320,
+	1321,
 	473,
 	481,
 	482,
@@ -39670,9 +39676,9 @@ const yy_def = [
 	474,
 	484,
 	483,
-	1270,
-	1209,
-	1271,
+	1273,
+	1212,
+	1274,
 	23,
 	0,
 	0,
@@ -39697,7 +39703,7 @@ const yy_def = [
 	836,
 	854,
 	0,
-	1227,
+	1230,
 	0,
 	0,
 	0,
@@ -39814,78 +39820,78 @@ const yy_def = [
 	234,
 	235,
 	236,
-	1154,
-	1161,
-	1159,
-	1165,
-	1198,
-	1198,
-	1200,
+	1157,
+	1164,
 	1162,
-	1166,
-	1195,
-	1206,
-	1207,
+	1168,
+	1201,
+	1201,
+	1203,
+	1165,
+	1169,
+	1198,
+	1209,
+	1210,
 	0,
-	1194,
+	1197,
 	15,
 	17,
 	0,
 	0,
 	0,
-	1203,
-	1239,
-	0,
-	1241,
+	1206,
 	1242,
-	0,
 	0,
 	1244,
 	1245,
+	0,
+	0,
 	1247,
 	1248,
-	1249,
-	1254,
-	1111,
-	0,
-	1255,
+	1250,
+	1251,
+	1252,
 	1257,
-	1264,
-	1131,
-	1137,
-	1144,
-	1075,
-	1107,
-	1077,
-	1045,
-	1091,
+	1114,
+	0,
+	1258,
+	1260,
+	1267,
+	1134,
+	1140,
+	1147,
+	1078,
+	1110,
+	1080,
+	1048,
+	1094,
 	0,
 	-2,
 	0,
 	-2,
-	997,
-	999,
 	1000,
+	1002,
+	1003,
 	-2,
 	-2,
-	1226,
+	1229,
 	0,
 	0,
-	995,
+	998,
 	0,
 	0,
 	0,
 	0,
-	1021,
+	1024,
 	0,
 	0,
 	0,
 	-2,
-	1036,
-	1037,
-	1038,
+	1039,
+	1040,
+	1041,
 	0,
-	1026,
+	1029,
 	0,
 	860,
 	859,
@@ -39896,78 +39902,78 @@ const yy_def = [
 	870,
 	871,
 	873,
-	0,
-	878,
-	879,
-	903,
-	904,
-	905,
-	909,
 	880,
+	881,
+	882,
+	906,
+	907,
+	908,
+	912,
 	883,
 	886,
 	889,
-	890,
-	891,
 	892,
 	893,
+	894,
 	895,
+	896,
+	898,
 	0,
 	0,
 	0,
-	933,
+	936,
 	0,
-	968,
-	0,
-	0,
-	981,
+	971,
 	0,
 	0,
-	0,
-	0,
-	987,
-	0,
+	984,
 	0,
 	0,
 	0,
 	0,
-	0,
-	959,
-	0,
+	990,
 	0,
 	0,
-	994,
+	0,
+	0,
+	0,
+	0,
+	962,
+	0,
+	0,
+	0,
+	997,
 	47,
 	0,
 	0,
 	0,
-	915,
-	917,
+	918,
+	920,
 	0,
-	916,
-	0,
-	0,
-	1273,
+	919,
 	0,
 	0,
-	1328,
-	1290,
+	1276,
 	0,
 	0,
+	1331,
+	1293,
 	0,
 	0,
 	0,
-	1302,
-	1303,
+	0,
+	0,
 	1305,
-	1307,
+	1306,
+	1308,
+	1310,
 	0,
-	1301,
+	1304,
 	0,
 	0,
 	0,
-	1313,
-	1319,
+	1316,
+	1322,
 	0,
 	0,
 	26,
@@ -40004,10 +40010,10 @@ const yy_def = [
 	855,
 	0,
 	0,
-	1288,
+	1291,
 	0,
-	1222,
-	1234,
+	1225,
+	1237,
 	341,
 	349,
 	350,
@@ -40031,16 +40037,16 @@ const yy_def = [
 	-2,
 	0,
 	329,
-	1267,
+	1270,
 	326,
 	0,
 	0,
-	1235,
-	1236,
-	1230,
+	1238,
+	1239,
+	1233,
 	-2,
-	1217,
-	1218,
+	1220,
+	1221,
 	0,
 	0,
 	311,
@@ -40100,114 +40106,114 @@ const yy_def = [
 	0,
 	233,
 	0,
-	1163,
-	1167,
+	1166,
+	1170,
 	0,
-	1168,
+	1171,
 	20,
 	18,
 	21,
 	22,
 	19,
 	0,
-	1197,
-	1129,
-	1243,
-	1122,
+	1200,
+	1132,
+	1246,
+	1125,
 	0,
 	0,
 	0,
 	0,
-	1117,
-	1118,
 	1120,
 	1121,
-	1249,
-	1248,
+	1123,
+	1124,
+	1252,
+	1251,
 	0,
-	1256,
 	1259,
+	1262,
 	0,
 	0,
-	1258,
-	0,
-	0,
-	0,
-	940,
-	0,
-	0,
-	1014,
-	1015,
-	0,
-	1020,
-	1022,
-	0,
-	0,
-	1039,
-	0,
-	1027,
+	1261,
 	0,
 	0,
 	0,
+	943,
+	0,
+	0,
+	1017,
+	1018,
+	0,
+	1023,
+	1025,
+	0,
+	0,
+	1042,
+	0,
+	1030,
+	0,
+	0,
+	0,
+	878,
+	0,
+	879,
+	0,
+	0,
+	910,
+	0,
+	0,
+	0,
+	914,
 	0,
 	0,
 	0,
 	0,
-	0,
-	907,
-	0,
-	0,
-	0,
-	911,
-	0,
-	0,
-	0,
-	0,
-	896,
+	899,
 	862,
 	0,
 	0,
-	966,
+	969,
 	0,
-	970,
+	973,
 	0,
-	983,
-	984,
-	985,
+	986,
+	987,
+	988,
 	0,
-	989,
-	990,
-	991,
 	992,
+	993,
+	994,
+	995,
 	0,
 	0,
-	963,
-	964,
-	965,
+	966,
+	967,
+	968,
 	0,
 	0,
-	1067,
-	1071,
-	1069,
-	1073,
+	1070,
+	1074,
+	1072,
+	1076,
 	0,
-	0,
-	1329,
-	1331,
 	0,
 	1332,
+	1334,
 	0,
-	1333,
+	1335,
+	0,
+	1336,
 	0,
 	0,
 	0,
+	1312,
 	1309,
-	1306,
-	1314,
+	1317,
 	0,
 	0,
-	1322,
-	1326,
+	1325,
+	1329,
 	0,
 	27,
 	0,
@@ -40249,7 +40255,7 @@ const yy_def = [
 	-2,
 	849,
 	0,
-	1215,
+	1218,
 	0,
 	342,
 	0,
@@ -40268,7 +40274,7 @@ const yy_def = [
 	328,
 	0,
 	0,
-	1225,
+	1228,
 	0,
 	314,
 	317,
@@ -40323,76 +40329,76 @@ const yy_def = [
 	145,
 	237,
 	238,
-	1169,
+	1172,
 	16,
-	1196,
-	1123,
-	1124,
+	1199,
 	1126,
 	1127,
-	1128,
-	1106,
-	1246,
+	1129,
+	1130,
+	1131,
+	1109,
+	1249,
 	0,
 	0,
-	1119,
-	1250,
-	1251,
-	1261,
+	1122,
+	1253,
+	1254,
+	1264,
 	0,
-	1260,
 	1263,
-	1214,
-	937,
-	938,
+	1266,
+	1217,
+	940,
+	941,
 	0,
-	1040,
-	0,
-	0,
-	1023,
-	0,
-	1024,
+	1043,
 	0,
 	0,
+	1026,
 	0,
-	898,
-	897,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
+	1027,
 	0,
 	0,
 	0,
 	901,
+	900,
 	0,
 	0,
 	0,
-	934,
-	935,
-	0,
-	969,
-	0,
-	982,
-	0,
-	988,
 	0,
 	0,
-	960,
 	0,
 	0,
-	1275,
-	0,
-	1298,
-	0,
-	1308,
 	0,
 	0,
+	904,
+	0,
+	0,
+	0,
+	937,
+	938,
+	0,
+	972,
+	0,
+	985,
+	0,
+	991,
+	0,
+	0,
+	963,
+	0,
+	0,
+	1278,
+	0,
+	1301,
+	0,
+	1311,
+	0,
+	0,
+	1326,
+	1318,
 	1323,
-	1315,
-	1320,
 	0,
 	24,
 	29,
@@ -40417,7 +40423,7 @@ const yy_def = [
 	0,
 	0,
 	834,
-	1223,
+	1226,
 	435,
 	445,
 	0,
@@ -40431,10 +40437,10 @@ const yy_def = [
 	303,
 	0,
 	-2,
-	1268,
-	1237,
+	1271,
+	1240,
 	0,
-	1219,
+	1222,
 	0,
 	0,
 	9,
@@ -40472,53 +40478,53 @@ const yy_def = [
 	143,
 	146,
 	0,
-	1252,
-	1112,
-	1113,
+	1255,
+	1115,
+	1116,
 	0,
 	0,
 	0,
 	0,
-	1266,
-	1262,
-	1009,
+	1269,
+	1265,
+	1012,
 	0,
 	0,
 	0,
 	0,
-	1025,
 	1028,
-	1032,
+	1031,
+	1035,
 	0,
 	872,
 	0,
 	874,
 	0,
 	877,
-	906,
+	909,
+	916,
+	917,
 	913,
-	914,
-	910,
-	881,
-	0,
 	884,
 	0,
 	887,
 	0,
-	894,
-	967,
-	980,
-	986,
+	890,
 	0,
-	958,
+	897,
+	970,
+	983,
+	989,
+	0,
+	961,
 	48,
 	0,
-	1276,
-	1299,
-	1310,
-	1316,
+	1279,
+	1302,
+	1313,
+	1319,
 	0,
-	1324,
+	1327,
 	856,
 	0,
 	863,
@@ -40556,7 +40562,7 @@ const yy_def = [
 	191,
 	192,
 	193,
-	1103,
+	1106,
 	0,
 	0,
 	0,
@@ -40564,32 +40570,32 @@ const yy_def = [
 	0,
 	250,
 	264,
-	1125,
-	1114,
+	1128,
+	1117,
 	0,
-	1253,
-	1269,
+	1256,
+	1272,
 	0,
-	1041,
+	1044,
 	0,
-	899,
-	900,
+	902,
+	903,
 	0,
 	0,
 	0,
 	875,
 	876,
-	908,
-	912,
+	911,
+	915,
 	0,
-	902,
+	905,
 	0,
 	0,
 	0,
 	0,
 	78,
 	80,
-	1325,
+	1328,
 	851,
 	63,
 	0,
@@ -40616,18 +40622,18 @@ const yy_def = [
 	0,
 	0,
 	0,
-	1116,
-	1010,
-	0,
-	1011,
+	1119,
 	1013,
+	0,
+	1014,
 	1016,
+	1019,
 	0,
 	0,
-	1033,
-	882,
+	1036,
 	885,
 	888,
+	891,
 	0,
 	77,
 	0,
@@ -40648,7 +40654,7 @@ const yy_def = [
 	0,
 	0,
 	247,
-	1115,
+	1118,
 	0,
 	0,
 	0,
@@ -40666,11 +40672,11 @@ const yy_def = [
 	0,
 	184,
 	187,
-	1012,
-	1017,
+	1015,
+	1020,
 	0,
-	1018,
-	993,
+	1021,
+	996,
 	85,
 	87,
 	88,
@@ -40681,7 +40687,7 @@ const yy_def = [
 	183,
 	212,
 	0,
-	1019,
+	1022,
 	185,
 ]
 
@@ -43317,19 +43323,19 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_877(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		878 {
-			yy_action_878(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_878(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		879 {
-			yy_action_879(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_879(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		880 {
 			yy_action_880(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		881 {
-			yy_action_881(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_881(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		882 {
-			yy_action_882(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_882(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		883 {
 			yy_action_883(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43353,10 +43359,10 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_889(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		890 {
-			yy_action_890(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_890(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		891 {
-			yy_action_891(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_891(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		892 {
 			yy_action_892(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43365,22 +43371,22 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_893(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		894 {
-			yy_action_894(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_894(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		895 {
 			yy_action_895(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		896 {
-			yy_action_896(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_896(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		897 {
-			yy_action_897(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_897(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		898 {
 			yy_action_898(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		899 {
-			yy_action_899(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_899(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		900 {
 			yy_action_900(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43401,40 +43407,40 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_905(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		906 {
-			yy_action_906(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_906(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		907 {
-			yy_action_907(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_907(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		908 {
-			yy_action_908(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_908(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		909 {
-			yy_action_909(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_909(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		910 {
-			yy_action_910(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_910(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		911 {
-			yy_action_911(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_911(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		912 {
-			yy_action_912(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_912(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		913 {
-			yy_action_913(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_913(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		914 {
-			yy_action_914(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_914(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		915 {
-			yy_action_915(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_915(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		916 {
-			yy_action_916(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_916(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		917 {
-			yy_action_917(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_917(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		918 {
 			yy_action_918(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43461,10 +43467,10 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_925(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		926 {
-			yy_action_926(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_926(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		927 {
-			yy_action_927(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_927(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		928 {
 			yy_action_928(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43476,19 +43482,19 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_930(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		931 {
-			yy_action_931(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_931(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		932 {
-			yy_action_932(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_932(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		933 {
-			yy_action_933(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_933(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		934 {
-			yy_action_934(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_934(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		935 {
-			yy_action_935(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_935(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		936 {
 			yy_action_936(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43503,16 +43509,16 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_939(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		940 {
-			yy_action_940(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_940(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		941 {
-			yy_action_941(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_941(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		942 {
 			yy_action_942(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		943 {
-			yy_action_943(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_943(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		944 {
 			yy_action_944(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43557,7 +43563,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_957(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		958 {
-			yy_action_958(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_958(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		959 {
 			yy_action_959(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43566,34 +43572,34 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_960(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		961 {
-			yy_action_961(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_961(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		962 {
 			yy_action_962(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		963 {
-			yy_action_963(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_963(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		964 {
-			yy_action_964(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_964(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		965 {
-			yy_action_965(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_965(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		966 {
 			yy_action_966(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		967 {
-			yy_action_967(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_967(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		968 {
-			yy_action_968(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_968(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		969 {
-			yy_action_969(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_969(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		970 {
-			yy_action_970(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_970(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		971 {
 			yy_action_971(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43602,7 +43608,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_972(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		973 {
-			yy_action_973(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_973(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		974 {
 			yy_action_974(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43623,7 +43629,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_979(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		980 {
-			yy_action_980(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_980(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		981 {
 			yy_action_981(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43632,49 +43638,49 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_982(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		983 {
-			yy_action_983(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_983(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		984 {
-			yy_action_984(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_984(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		985 {
-			yy_action_985(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_985(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		986 {
-			yy_action_986(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_986(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		987 {
-			yy_action_987(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_987(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		988 {
-			yy_action_988(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_988(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		989 {
-			yy_action_989(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_989(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		990 {
-			yy_action_990(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_990(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		991 {
-			yy_action_991(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_991(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		992 {
 			yy_action_992(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		993 {
-			yy_action_993(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
+			yy_action_993(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		994 {
-			yy_action_994(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_994(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		995 {
-			yy_action_995(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_995(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		996 {
-			yy_action_996(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_996(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
 		}
 		997 {
-			yy_action_997(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_997(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		998 {
 			yy_action_998(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43683,7 +43689,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_999(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1000 {
-			yy_action_1000(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1000(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1001 {
 			yy_action_1001(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43710,88 +43716,88 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1008(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1009 {
-			yy_action_1009(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_1009(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1010 {
-			yy_action_1010(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
+			yy_action_1010(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1011 {
-			yy_action_1011(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
+			yy_action_1011(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1012 {
-			yy_action_1012(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
+			yy_action_1012(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		1013 {
 			yy_action_1013(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
 		}
 		1014 {
-			yy_action_1014(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1014(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
 		}
 		1015 {
-			yy_action_1015(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1015(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
 		}
 		1016 {
 			yy_action_1016(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
 		}
 		1017 {
-			yy_action_1017(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
+			yy_action_1017(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1018 {
-			yy_action_1018(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
+			yy_action_1018(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1019 {
-			yy_action_1019(mut yylex, mut yyrcvr, yy_s[yypt - 12..yypt + 1], mut yy_val)!
+			yy_action_1019(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
 		}
 		1020 {
-			yy_action_1020(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1020(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
 		}
 		1021 {
-			yy_action_1021(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1021(mut yylex, mut yyrcvr, yy_s[yypt - 10..yypt + 1], mut yy_val)!
 		}
 		1022 {
-			yy_action_1022(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1022(mut yylex, mut yyrcvr, yy_s[yypt - 12..yypt + 1], mut yy_val)!
 		}
 		1023 {
-			yy_action_1023(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1023(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1024 {
-			yy_action_1024(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1024(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1025 {
-			yy_action_1025(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1025(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1026 {
-			yy_action_1026(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1026(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1027 {
-			yy_action_1027(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1027(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1028 {
-			yy_action_1028(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_1028(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1029 {
 			yy_action_1029(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1030 {
-			yy_action_1030(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1030(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1031 {
-			yy_action_1031(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1031(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		1032 {
-			yy_action_1032(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_1032(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1033 {
-			yy_action_1033(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
+			yy_action_1033(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1034 {
 			yy_action_1034(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1035 {
-			yy_action_1035(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1035(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		1036 {
-			yy_action_1036(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1036(mut yylex, mut yyrcvr, yy_s[yypt - 8..yypt + 1], mut yy_val)!
 		}
 		1037 {
 			yy_action_1037(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43818,7 +43824,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1044(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1045 {
-			yy_action_1045(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1045(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1046 {
 			yy_action_1046(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43827,7 +43833,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1047(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1048 {
-			yy_action_1048(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1048(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1049 {
 			yy_action_1049(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43884,55 +43890,55 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1066(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1067 {
-			yy_action_1067(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1067(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1068 {
 			yy_action_1068(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1069 {
-			yy_action_1069(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1069(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1070 {
-			yy_action_1070(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1070(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1071 {
-			yy_action_1071(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1071(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1072 {
-			yy_action_1072(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1072(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1073 {
-			yy_action_1073(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1073(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1074 {
-			yy_action_1074(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1074(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1075 {
-			yy_action_1075(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1075(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1076 {
-			yy_action_1076(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1076(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1077 {
-			yy_action_1077(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1077(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1078 {
-			yy_action_1078(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1078(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1079 {
-			yy_action_1079(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1079(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1080 {
-			yy_action_1080(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1080(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1081 {
-			yy_action_1081(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1081(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1082 {
 			yy_action_1082(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1083 {
-			yy_action_1083(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1083(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1084 {
 			yy_action_1084(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
@@ -43944,19 +43950,19 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1086(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1087 {
-			yy_action_1087(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1087(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1088 {
-			yy_action_1088(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1088(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1089 {
-			yy_action_1089(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1089(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1090 {
 			yy_action_1090(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1091 {
-			yy_action_1091(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1091(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1092 {
 			yy_action_1092(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -43965,7 +43971,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1093(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1094 {
-			yy_action_1094(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1094(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1095 {
 			yy_action_1095(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44004,7 +44010,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1106(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1107 {
-			yy_action_1107(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1107(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1108 {
 			yy_action_1108(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44013,7 +44019,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1109(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1110 {
-			yy_action_1110(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1110(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1111 {
 			yy_action_1111(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44025,22 +44031,22 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1113(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1114 {
-			yy_action_1114(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1114(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1115 {
-			yy_action_1115(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1115(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1116 {
 			yy_action_1116(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1117 {
-			yy_action_1117(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1117(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1118 {
-			yy_action_1118(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1118(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1119 {
-			yy_action_1119(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1119(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1120 {
 			yy_action_1120(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44052,31 +44058,31 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1122(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1123 {
-			yy_action_1123(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1123(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1124 {
 			yy_action_1124(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1125 {
-			yy_action_1125(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1125(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1126 {
-			yy_action_1126(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1126(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1127 {
 			yy_action_1127(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1128 {
-			yy_action_1128(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1128(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1129 {
-			yy_action_1129(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1129(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1130 {
-			yy_action_1130(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1130(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1131 {
-			yy_action_1131(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1131(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1132 {
 			yy_action_1132(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
@@ -44085,16 +44091,16 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1133(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1134 {
-			yy_action_1134(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1134(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1135 {
-			yy_action_1135(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1135(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1136 {
-			yy_action_1136(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1136(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1137 {
-			yy_action_1137(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1137(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1138 {
 			yy_action_1138(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44103,7 +44109,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1139(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1140 {
-			yy_action_1140(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1140(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1141 {
 			yy_action_1141(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44115,19 +44121,19 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1143(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1144 {
-			yy_action_1144(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1144(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1145 {
 			yy_action_1145(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1146 {
-			yy_action_1146(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1146(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1147 {
-			yy_action_1147(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1147(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1148 {
-			yy_action_1148(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1148(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1149 {
 			yy_action_1149(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44142,64 +44148,64 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1152(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1153 {
-			yy_action_1153(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1153(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1154 {
-			yy_action_1154(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1154(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1155 {
-			yy_action_1155(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1155(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1156 {
-			yy_action_1156(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1156(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1157 {
-			yy_action_1157(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1157(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1158 {
 			yy_action_1158(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1159 {
-			yy_action_1159(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1159(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1160 {
 			yy_action_1160(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1161 {
-			yy_action_1161(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1161(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1162 {
 			yy_action_1162(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1163 {
-			yy_action_1163(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1163(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1164 {
-			yy_action_1164(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1164(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1165 {
 			yy_action_1165(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1166 {
-			yy_action_1166(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1166(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1167 {
-			yy_action_1167(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1167(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1168 {
-			yy_action_1168(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1168(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1169 {
-			yy_action_1169(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1169(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1170 {
-			yy_action_1170(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1170(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1171 {
-			yy_action_1171(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1171(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1172 {
-			yy_action_1172(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1172(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1173 {
 			yy_action_1173(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44211,97 +44217,97 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1175(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1176 {
-			yy_action_1176(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1176(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1177 {
 			yy_action_1177(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1178 {
-			yy_action_1178(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1178(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1179 {
-			yy_action_1179(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1179(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1180 {
-			yy_action_1180(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1180(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1181 {
-			yy_action_1181(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1181(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1182 {
 			yy_action_1182(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1183 {
-			yy_action_1183(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1183(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1184 {
 			yy_action_1184(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1185 {
-			yy_action_1185(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1185(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1186 {
-			yy_action_1186(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1186(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1187 {
 			yy_action_1187(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1188 {
-			yy_action_1188(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1188(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1189 {
-			yy_action_1189(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1189(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1190 {
 			yy_action_1190(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1191 {
-			yy_action_1191(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1191(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1192 {
-			yy_action_1192(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1192(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1193 {
-			yy_action_1193(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1193(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1194 {
-			yy_action_1194(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1194(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1195 {
-			yy_action_1195(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1195(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1196 {
-			yy_action_1196(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1196(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1197 {
-			yy_action_1197(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1197(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1198 {
-			yy_action_1198(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1198(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1199 {
-			yy_action_1199(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1199(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1200 {
-			yy_action_1200(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1200(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+		}
+		1201 {
+			yy_action_1201(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+		}
+		1202 {
+			yy_action_1202(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1203 {
-			yy_action_1203(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1203(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
-		1204 {
-			yy_action_1204(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+		1206 {
+			yy_action_1206(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
-		1205 {
-			yy_action_1205(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+		1207 {
+			yy_action_1207(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1208 {
 			yy_action_1208(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
-		}
-		1209 {
-			yy_action_1209(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
-		}
-		1210 {
-			yy_action_1210(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1211 {
 			yy_action_1211(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44313,43 +44319,43 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1213(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1214 {
-			yy_action_1214(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1214(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1215 {
-			yy_action_1215(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1215(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1216 {
 			yy_action_1216(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1217 {
-			yy_action_1217(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1217(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1218 {
-			yy_action_1218(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1218(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1219 {
-			yy_action_1219(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1219(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1220 {
-			yy_action_1220(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1220(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1221 {
-			yy_action_1221(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1221(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1222 {
-			yy_action_1222(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1222(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1223 {
-			yy_action_1223(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1223(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1224 {
-			yy_action_1224(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1224(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1225 {
 			yy_action_1225(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1226 {
-			yy_action_1226(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1226(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1227 {
 			yy_action_1227(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44367,13 +44373,13 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1231(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1232 {
-			yy_action_1232(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1232(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1233 {
 			yy_action_1233(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1234 {
-			yy_action_1234(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1234(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1235 {
 			yy_action_1235(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
@@ -44385,109 +44391,109 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1237(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1238 {
-			yy_action_1238(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1238(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1239 {
-			yy_action_1239(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1239(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1240 {
-			yy_action_1240(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1240(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1241 {
-			yy_action_1241(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1241(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1242 {
 			yy_action_1242(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1243 {
-			yy_action_1243(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1243(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1244 {
 			yy_action_1244(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1245 {
-			yy_action_1245(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1245(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1246 {
 			yy_action_1246(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1247 {
-			yy_action_1247(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1247(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1248 {
 			yy_action_1248(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1249 {
-			yy_action_1249(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1249(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1250 {
-			yy_action_1250(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1250(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1251 {
-			yy_action_1251(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1251(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1252 {
-			yy_action_1252(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1252(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1253 {
-			yy_action_1253(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1253(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1254 {
-			yy_action_1254(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1254(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1255 {
-			yy_action_1255(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1255(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1256 {
-			yy_action_1256(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1256(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1257 {
 			yy_action_1257(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1258 {
-			yy_action_1258(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1258(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1259 {
-			yy_action_1259(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1259(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1260 {
-			yy_action_1260(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1260(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1261 {
 			yy_action_1261(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1262 {
-			yy_action_1262(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1262(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1263 {
 			yy_action_1263(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1264 {
-			yy_action_1264(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1264(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1265 {
-			yy_action_1265(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1265(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1266 {
-			yy_action_1266(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1266(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1267 {
 			yy_action_1267(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1268 {
-			yy_action_1268(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1268(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1269 {
-			yy_action_1269(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1269(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1270 {
-			yy_action_1270(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1270(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1271 {
-			yy_action_1271(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1271(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1272 {
-			yy_action_1272(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1272(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1273 {
 			yy_action_1273(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
@@ -44496,19 +44502,19 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1274(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1275 {
-			yy_action_1275(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1275(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1276 {
-			yy_action_1276(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1276(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1277 {
-			yy_action_1277(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1277(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1278 {
-			yy_action_1278(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1278(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1279 {
-			yy_action_1279(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1279(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1280 {
 			yy_action_1280(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44538,19 +44544,19 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1288(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1289 {
-			yy_action_1289(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1289(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1290 {
-			yy_action_1290(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1290(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1291 {
 			yy_action_1291(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1292 {
-			yy_action_1292(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1292(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1293 {
-			yy_action_1293(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1293(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1294 {
 			yy_action_1294(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44562,22 +44568,22 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1296(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1297 {
-			yy_action_1297(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1297(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1298 {
-			yy_action_1298(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1298(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1299 {
-			yy_action_1299(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1299(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1300 {
-			yy_action_1300(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1300(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1301 {
-			yy_action_1301(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1301(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1302 {
-			yy_action_1302(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1302(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1303 {
 			yy_action_1303(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
@@ -44586,91 +44592,100 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_action_1304(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1305 {
-			yy_action_1305(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1305(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1306 {
-			yy_action_1306(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1306(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1307 {
-			yy_action_1307(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1307(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1308 {
-			yy_action_1308(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1308(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1309 {
-			yy_action_1309(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1309(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1310 {
-			yy_action_1310(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1310(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1311 {
-			yy_action_1311(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1311(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1312 {
-			yy_action_1312(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1312(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1313 {
-			yy_action_1313(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1313(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1314 {
-			yy_action_1314(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1314(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1315 {
-			yy_action_1315(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1315(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1316 {
-			yy_action_1316(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1316(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1317 {
-			yy_action_1317(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1317(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1318 {
-			yy_action_1318(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1318(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1319 {
-			yy_action_1319(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1319(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1320 {
 			yy_action_1320(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1321 {
-			yy_action_1321(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1321(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1322 {
-			yy_action_1322(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1322(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1323 {
-			yy_action_1323(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
+			yy_action_1323(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1324 {
-			yy_action_1324(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
+			yy_action_1324(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1325 {
-			yy_action_1325(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
+			yy_action_1325(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1326 {
-			yy_action_1326(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
+			yy_action_1326(mut yylex, mut yyrcvr, yy_s[yypt - 4..yypt + 1], mut yy_val)!
 		}
 		1327 {
-			yy_action_1327(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1327(mut yylex, mut yyrcvr, yy_s[yypt - 5..yypt + 1], mut yy_val)!
 		}
 		1328 {
-			yy_action_1328(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+			yy_action_1328(mut yylex, mut yyrcvr, yy_s[yypt - 6..yypt + 1], mut yy_val)!
 		}
 		1329 {
-			yy_action_1329(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1329(mut yylex, mut yyrcvr, yy_s[yypt - 1..yypt + 1], mut yy_val)!
 		}
 		1330 {
 			yy_action_1330(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1331 {
-			yy_action_1331(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1331(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
 		}
 		1332 {
 			yy_action_1332(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		1333 {
-			yy_action_1333(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+			yy_action_1333(mut yylex, mut yyrcvr, yy_s[yypt - 2..yypt + 1], mut yy_val)!
+		}
+		1334 {
+			yy_action_1334(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+		}
+		1335 {
+			yy_action_1335(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
+		}
+		1336 {
+			yy_action_1336(mut yylex, mut yyrcvr, yy_s[yypt - 3..yypt + 1], mut yy_val)!
 		}
 		else {}
 	}
@@ -49337,230 +49352,254 @@ fn yy_action_877(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 }
 
 fn yy_action_878(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3847
+	// line vsql/y.y:3849
 	{
-		yy_val.v = yy_dollar[1].v
+		flag(mut yylex, 'T081')
+		yy_val.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
 	}
 }
 
 fn yy_action_879(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3848
+	// line vsql/y.y:3853
+	{
+		flag(mut yylex, 'T081')
+		yy_val.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
+	}
+}
+
+fn yy_action_880(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3857
+	{
+		flag(mut yylex, 'T081')
+		yy_val.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
+	}
+}
+
+fn yy_action_881(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3863
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_880(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3851
+fn yy_action_882(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3864
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_883(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3867
 	{
 		yy_val.v = yy_box(new_type('NUMERIC', 0, 0))
 	}
 }
 
-fn yy_action_881(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3852
+fn yy_action_884(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3868
 	{
 		yy_val.v = yy_box(parse_type_with_precision('NUMERIC', yy_as[string](yy_dollar[3].v), '0')!)
 	}
 }
 
-fn yy_action_882(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3855
+fn yy_action_885(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3871
 	{
 		yy_val.v = yy_box(parse_type_with_precision('NUMERIC', yy_as[string](yy_dollar[3].v), yy_as[string](yy_dollar[5].v))!)
 	}
 }
 
-fn yy_action_883(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3858
-	{
-		yy_val.v = yy_box(new_type('DECIMAL', 0, 0))
-	}
-}
-
-fn yy_action_884(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3859
-	{
-		yy_val.v = yy_box(parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), '0')!)
-	}
-}
-
-fn yy_action_885(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3862
-	{
-		yy_val.v = yy_box(parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), yy_as[string](yy_dollar[5].v))!)
-	}
-}
-
 fn yy_action_886(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3865
+	// line vsql/y.y:3874
 	{
 		yy_val.v = yy_box(new_type('DECIMAL', 0, 0))
 	}
 }
 
 fn yy_action_887(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3866
+	// line vsql/y.y:3875
 	{
 		yy_val.v = yy_box(parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), '0')!)
 	}
 }
 
 fn yy_action_888(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3869
+	// line vsql/y.y:3878
 	{
 		yy_val.v = yy_box(parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), yy_as[string](yy_dollar[5].v))!)
 	}
 }
 
 fn yy_action_889(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3872
+	// line vsql/y.y:3881
+	{
+		yy_val.v = yy_box(new_type('DECIMAL', 0, 0))
+	}
+}
+
+fn yy_action_890(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3882
+	{
+		yy_val.v = yy_box(parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), '0')!)
+	}
+}
+
+fn yy_action_891(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3885
+	{
+		yy_val.v = yy_box(parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), yy_as[string](yy_dollar[5].v))!)
+	}
+}
+
+fn yy_action_892(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3888
 	{
 		yy_val.v = yy_box(new_type('SMALLINT', 0, 0))
 	}
 }
 
-fn yy_action_890(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3873
+fn yy_action_893(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3889
 	{
 		yy_val.v = yy_box(new_type('INTEGER', 0, 0))
 	}
 }
 
-fn yy_action_891(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3874
+fn yy_action_894(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3890
 	{
 		yy_val.v = yy_box(new_type('INTEGER', 0, 0))
 	}
 }
 
-fn yy_action_892(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3875
+fn yy_action_895(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3891
 	{
 		flag(mut yylex, 'T071')
 		yy_val.v = yy_box(new_type('BIGINT', 0, 0))
 	}
 }
 
-fn yy_action_893(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3881
+fn yy_action_896(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3897
 	{
 		yy_val.v = yy_box(new_type('FLOAT', 0, 0))
 	}
 }
 
-fn yy_action_894(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3882
+fn yy_action_897(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3898
 	{
 		yy_val.v = yy_box(parse_type_with_precision('FLOAT', yy_as[string](yy_dollar[3].v), '0')!)
 	}
 }
 
-fn yy_action_895(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3885
+fn yy_action_898(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3901
 	{
 		yy_val.v = yy_box(new_type('REAL', 0, 0))
 	}
 }
 
-fn yy_action_896(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3886
+fn yy_action_899(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3902
 	{
 		yy_val.v = yy_box(new_type('DOUBLE PRECISION', 0, 0))
 	}
 }
 
-fn yy_action_897(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3889
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_898(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3892
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_899(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3895
-	{
-		flag(mut yylex, 'T061')
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
 fn yy_action_900(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3899
-	{
-		flag(mut yylex, 'T061')
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_901(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3905
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
-fn yy_action_902(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+fn yy_action_901(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3908
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
-fn yy_action_903(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+fn yy_action_902(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3911
+	{
+		flag(mut yylex, 'T061')
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_903(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3915
+	{
+		flag(mut yylex, 'T061')
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_904(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3921
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_905(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3924
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_906(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3927
 	{
 		flag(mut yylex, 'T031')
 		yy_val.v = yy_box(new_type('BOOLEAN', 0, 0))
 	}
 }
 
-fn yy_action_904(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3917
+fn yy_action_907(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3933
 	{
 		yy_val.v = yy_box(new_type('DATE', 0, 0))
 	}
 }
 
-fn yy_action_905(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3918
+fn yy_action_908(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3934
 	{
 		yy_val.v = yy_box(parse_time_prec_tz_type('0', false)!)
 	}
 }
 
-fn yy_action_906(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3919
+fn yy_action_909(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3935
 	{
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() != 0, 'F555')
 		yy_val.v = yy_box(parse_time_prec_tz_type(yy_as[string](yy_dollar[3].v), false)!)
 	}
 }
 
-fn yy_action_907(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3923
+fn yy_action_910(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3939
 	{
 		yy_val.v = yy_box(parse_time_prec_tz_type('0', yy_as[bool](yy_dollar[2].v))!)
 	}
 }
 
-fn yy_action_908(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3926
+fn yy_action_911(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3942
 	{
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() != 0, 'F555')
 		yy_val.v = yy_box(parse_time_prec_tz_type(yy_as[string](yy_dollar[3].v), yy_as[bool](yy_dollar[5].v))!)
 	}
 }
 
-fn yy_action_909(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3930
+fn yy_action_912(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3946
 	{
 		// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 38: the default
 		// <timestamp precision> is 6.
@@ -49568,75 +49607,75 @@ fn yy_action_909(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_910(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3935
+fn yy_action_913(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3951
 	{
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() !in [0, 6], 'F555')
 		yy_val.v = yy_box(parse_timestamp_prec_tz_type(yy_as[string](yy_dollar[3].v), false)!)
 	}
 }
 
-fn yy_action_911(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3939
+fn yy_action_914(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3955
 	{
 		yy_val.v = yy_box(parse_timestamp_prec_tz_type('6', yy_as[bool](yy_dollar[2].v))!)
-	}
-}
-
-fn yy_action_912(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3943
-	{
-		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() !in [0, 6], 'F555')
-		yy_val.v = yy_box(parse_timestamp_prec_tz_type(yy_as[string](yy_dollar[3].v), yy_as[bool](yy_dollar[5].v))!)
-	}
-}
-
-fn yy_action_913(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3949
-	{
-		flag(mut yylex, 'F411')
-		yy_val.v = true
-	}
-}
-
-fn yy_action_914(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3953
-	{
-		flag(mut yylex, 'F411')
-		yy_val.v = false
 	}
 }
 
 fn yy_action_915(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3959
 	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
+		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() !in [0, 6], 'F555')
+		yy_val.v = yy_box(parse_timestamp_prec_tz_type(yy_as[string](yy_dollar[3].v), yy_as[bool](yy_dollar[5].v))!)
 	}
 }
 
 fn yy_action_916(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3962
+	// line vsql/y.y:3965
 	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
+		flag(mut yylex, 'F411')
+		yy_val.v = true
 	}
 }
 
 fn yy_action_917(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3965
+	// line vsql/y.y:3969
+	{
+		flag(mut yylex, 'F411')
+		yy_val.v = false
+	}
+}
+
+fn yy_action_918(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3975
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
-fn yy_action_918(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3974
+fn yy_action_919(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3978
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_920(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3981
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_921(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3990
 	{
 		yy_val.v = yy_box(ValueExpression(yy_unbox[CommonValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_919(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3977
+fn yy_action_922(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:3993
 	{
 		// ISO/IEC 9075-2:2023, 6.29, <value expression>, Conformance Rules, 1
 		// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Conformance Rules, 1
@@ -49645,262 +49684,230 @@ fn yy_action_919(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_920(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3992
+fn yy_action_923(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4008
 	{
 		yy_val.v = yy_box(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(yy_unbox[ParenthesizedValueExpression](yy_dollar[1].v)))))
 	}
 }
 
-fn yy_action_921(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3995
+fn yy_action_924(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4011
 	{
 		yy_val.v = yy_box(CommonValueExpression(yy_unbox[NumericValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_922(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:3998
+fn yy_action_925(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4014
 	{
 		yy_val.v = yy_box(CommonValueExpression(CharacterValueExpression(yy_unbox[Concatenation](yy_dollar[1].v))))
 	}
 }
 
-fn yy_action_923(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4001
+fn yy_action_926(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4017
 	{
 		yy_val.v = yy_box(CommonValueExpression(CharacterValueExpression(CharacterPrimary(yy_unbox[CharacterValueFunction](yy_dollar[1].v)))))
 	}
 }
 
-fn yy_action_924(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4004
+fn yy_action_927(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4020
 	{
 		yy_val.v = yy_box(CommonValueExpression(yy_unbox[DatetimePrimary](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_925(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4013
+fn yy_action_928(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4029
 	{
 		yy_val.v = yy_box(NumericValueExpression{ term: yy_unbox[Term](yy_dollar[1].v) })
-	}
-}
-
-fn yy_action_926(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4014
-	{
-		n := yy_unbox[NumericValueExpression](yy_dollar[1].v)
-		yy_val.v = yy_box(NumericValueExpression{&n, '+', yy_unbox[Term](yy_dollar[3].v)})
-	}
-}
-
-fn yy_action_927(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4018
-	{
-		n := yy_unbox[NumericValueExpression](yy_dollar[1].v)
-		yy_val.v = yy_box(NumericValueExpression{&n, '-', yy_unbox[Term](yy_dollar[3].v)})
-	}
-}
-
-fn yy_action_928(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4024
-	{
-		yy_val.v = yy_box(Term{ factor: yy_unbox[NumericPrimary](yy_dollar[1].v) })
 	}
 }
 
 fn yy_action_929(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4025
-	{
-		t := yy_unbox[Term](yy_dollar[1].v)
-		yy_val.v = yy_box(Term{&t, '*', yy_unbox[NumericPrimary](yy_dollar[3].v)})
-	}
-}
-
-fn yy_action_930(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4029
-	{
-		t := yy_unbox[Term](yy_dollar[1].v)
-		yy_val.v = yy_box(Term{&t, '/', yy_unbox[NumericPrimary](yy_dollar[3].v)})
-	}
-}
-
-fn yy_action_931(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4035
-	{
-		yy_val.v = yy_box(parse_factor_2(yy_as[string](yy_dollar[1].v), yy_unbox[NumericPrimary](yy_dollar[2].v))!)
-	}
-}
-
-fn yy_action_932(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4038
-	{
-		yy_val.v = yy_box(NumericPrimary(yy_unbox[RoutineInvocation](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_933(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4041
-	{
-		yy_val.v = yy_box(NumericValueExpression{ term: yy_unbox[Term](yy_dollar[1].v) })
-	}
-}
-
-fn yy_action_934(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4042
+	// line vsql/y.y:4030
 	{
 		n := yy_unbox[NumericValueExpression](yy_dollar[1].v)
 		yy_val.v = yy_box(NumericValueExpression{&n, '+', yy_unbox[Term](yy_dollar[3].v)})
 	}
 }
 
-fn yy_action_935(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4046
+fn yy_action_930(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4034
 	{
 		n := yy_unbox[NumericValueExpression](yy_dollar[1].v)
 		yy_val.v = yy_box(NumericValueExpression{&n, '-', yy_unbox[Term](yy_dollar[3].v)})
 	}
 }
 
-fn yy_action_936(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4052
+fn yy_action_931(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4040
 	{
 		yy_val.v = yy_box(Term{ factor: yy_unbox[NumericPrimary](yy_dollar[1].v) })
 	}
 }
 
-fn yy_action_937(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4053
+fn yy_action_932(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4041
 	{
 		t := yy_unbox[Term](yy_dollar[1].v)
 		yy_val.v = yy_box(Term{&t, '*', yy_unbox[NumericPrimary](yy_dollar[3].v)})
 	}
 }
 
-fn yy_action_938(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4057
+fn yy_action_933(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4045
 	{
 		t := yy_unbox[Term](yy_dollar[1].v)
 		yy_val.v = yy_box(Term{&t, '/', yy_unbox[NumericPrimary](yy_dollar[3].v)})
 	}
 }
 
-fn yy_action_939(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4063
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_940(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4064
+fn yy_action_934(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4051
 	{
 		yy_val.v = yy_box(parse_factor_2(yy_as[string](yy_dollar[1].v), yy_unbox[NumericPrimary](yy_dollar[2].v))!)
 	}
 }
 
-fn yy_action_941(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4069
-	{
-		yy_val.v = yy_box(NumericPrimary(yy_unbox[ValueExpressionPrimary](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_942(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4072
+fn yy_action_935(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4054
 	{
 		yy_val.v = yy_box(NumericPrimary(yy_unbox[RoutineInvocation](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_943(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4086
+fn yy_action_936(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4057
+	{
+		yy_val.v = yy_box(NumericValueExpression{ term: yy_unbox[Term](yy_dollar[1].v) })
+	}
+}
+
+fn yy_action_937(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4058
+	{
+		n := yy_unbox[NumericValueExpression](yy_dollar[1].v)
+		yy_val.v = yy_box(NumericValueExpression{&n, '+', yy_unbox[Term](yy_dollar[3].v)})
+	}
+}
+
+fn yy_action_938(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4062
+	{
+		n := yy_unbox[NumericValueExpression](yy_dollar[1].v)
+		yy_val.v = yy_box(NumericValueExpression{&n, '-', yy_unbox[Term](yy_dollar[3].v)})
+	}
+}
+
+fn yy_action_939(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4068
+	{
+		yy_val.v = yy_box(Term{ factor: yy_unbox[NumericPrimary](yy_dollar[1].v) })
+	}
+}
+
+fn yy_action_940(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4069
+	{
+		t := yy_unbox[Term](yy_dollar[1].v)
+		yy_val.v = yy_box(Term{&t, '*', yy_unbox[NumericPrimary](yy_dollar[3].v)})
+	}
+}
+
+fn yy_action_941(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4073
+	{
+		t := yy_unbox[Term](yy_dollar[1].v)
+		yy_val.v = yy_box(Term{&t, '/', yy_unbox[NumericPrimary](yy_dollar[3].v)})
+	}
+}
+
+fn yy_action_942(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4079
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_944(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4087
+fn yy_action_943(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4080
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_box(parse_factor_2(yy_as[string](yy_dollar[1].v), yy_unbox[NumericPrimary](yy_dollar[2].v))!)
+	}
+}
+
+fn yy_action_944(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4085
+	{
+		yy_val.v = yy_box(NumericPrimary(yy_unbox[ValueExpressionPrimary](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_945(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4088
 	{
-		flag(mut yylex, 'T441')
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_box(NumericPrimary(yy_unbox[RoutineInvocation](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_946(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4092
+	// line vsql/y.y:4102
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_947(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4103
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_948(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4104
 	{
 		flag(mut yylex, 'T441')
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_947(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4096
+fn yy_action_949(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4108
+	{
+		flag(mut yylex, 'T441')
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_950(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4112
 	{
 		flag(mut yylex, 'T622')
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_948(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4100
+fn yy_action_951(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4116
 	{
 		flag(mut yylex, 'T623')
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_949(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4104
+fn yy_action_952(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4120
 	{
 		flag(mut yylex, 'T624')
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_950(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4108
-	{
-		flag(mut yylex, 'T621')
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_951(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4112
-	{
-		flag(mut yylex, 'T621')
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_952(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4116
-	{
-		flag(mut yylex, 'T621')
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
 fn yy_action_953(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4120
-	{
-		flag(mut yylex, 'T621')
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_954(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4124
 	{
 		flag(mut yylex, 'T621')
@@ -49908,7 +49915,7 @@ fn yy_action_954(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_955(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+fn yy_action_954(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4128
 	{
 		flag(mut yylex, 'T621')
@@ -49916,23 +49923,55 @@ fn yy_action_955(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_956(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+fn yy_action_955(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4132
+	{
+		flag(mut yylex, 'T621')
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_956(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4136
+	{
+		flag(mut yylex, 'T621')
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_957(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4140
+	{
+		flag(mut yylex, 'T621')
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_958(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4144
+	{
+		flag(mut yylex, 'T621')
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_959(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4148
 	{
 		flag(mut yylex, 'T612')
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_957(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4138
+fn yy_action_960(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4154
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_958(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4142
+fn yy_action_961(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4158
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'POSITION'
@@ -49944,48 +49983,36 @@ fn yy_action_958(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_959(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4150
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_960(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4153
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_961(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4156
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
 fn yy_action_962(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4157
+	// line vsql/y.y:4166
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_963(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4160
+	// line vsql/y.y:4169
 	{
-		yy_val.v = yy_box(RoutineInvocation{
-			function_name: 'CHAR_LENGTH'
-			args:          [
-				ValueExpression(CommonValueExpression(yy_unbox[CharacterValueExpression](yy_dollar[3].v))),
-			]
-		})
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_964(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4165
+	// line vsql/y.y:4172
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_965(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4173
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_966(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4176
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'CHAR_LENGTH'
@@ -49996,8 +50023,20 @@ fn yy_action_964(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_965(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4172
+fn yy_action_967(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4181
+	{
+		yy_val.v = yy_box(RoutineInvocation{
+			function_name: 'CHAR_LENGTH'
+			args:          [
+				ValueExpression(CommonValueExpression(yy_unbox[CharacterValueExpression](yy_dollar[3].v))),
+			]
+		})
+	}
+}
+
+fn yy_action_968(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4188
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'OCTET_LENGTH'
@@ -50008,8 +50047,8 @@ fn yy_action_965(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_966(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4179
+fn yy_action_969(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4195
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'ABS'
@@ -50020,8 +50059,8 @@ fn yy_action_966(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_967(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4187
+fn yy_action_970(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4203
 	{
 		flag_mod_argument(mut yylex, yy_unbox[NumericValueExpression](yy_dollar[3].v))
 		flag_mod_argument(mut yylex, yy_unbox[NumericValueExpression](yy_dollar[5].v))
@@ -50035,22 +50074,22 @@ fn yy_action_967(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_968(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4197
+fn yy_action_971(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4213
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_969(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4200
+fn yy_action_972(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4216
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_970(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4203
+fn yy_action_973(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4219
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: yy_as[string](yy_dollar[1].v)
@@ -50061,71 +50100,71 @@ fn yy_action_970(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_971(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4210
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_972(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4211
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_973(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4212
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
 fn yy_action_974(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4213
+	// line vsql/y.y:4226
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_975(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4214
+	// line vsql/y.y:4227
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_976(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4215
+	// line vsql/y.y:4228
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_977(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4216
+	// line vsql/y.y:4229
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_978(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4217
+	// line vsql/y.y:4230
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_979(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4218
+	// line vsql/y.y:4231
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_980(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4222
+	// line vsql/y.y:4232
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_981(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4233
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_982(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4234
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_983(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4238
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'LOG'
@@ -50137,22 +50176,22 @@ fn yy_action_980(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_981(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4230
+fn yy_action_984(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4246
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_982(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4233
+fn yy_action_985(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4249
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_983(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4236
+fn yy_action_986(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4252
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'LOG10'
@@ -50163,8 +50202,8 @@ fn yy_action_983(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_984(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4243
+fn yy_action_987(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4259
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'LN'
@@ -50175,8 +50214,8 @@ fn yy_action_984(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_985(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4250
+fn yy_action_988(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4266
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'EXP'
@@ -50187,8 +50226,8 @@ fn yy_action_985(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_986(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4258
+fn yy_action_989(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4274
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'POWER'
@@ -50200,22 +50239,22 @@ fn yy_action_986(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_987(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4266
+fn yy_action_990(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4282
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_988(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4269
+fn yy_action_991(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4285
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_989(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4272
+fn yy_action_992(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4288
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'SQRT'
@@ -50226,8 +50265,8 @@ fn yy_action_989(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_990(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4279
+fn yy_action_993(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4295
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'FLOOR'
@@ -50238,8 +50277,8 @@ fn yy_action_990(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_991(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4286
+fn yy_action_994(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4302
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'CEILING'
@@ -50250,8 +50289,8 @@ fn yy_action_991(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_992(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4291
+fn yy_action_995(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4307
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'CEILING'
@@ -50262,8 +50301,8 @@ fn yy_action_992(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_993(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4300
+fn yy_action_996(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4316
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'WIDTH_BUCKET'
@@ -50277,86 +50316,86 @@ fn yy_action_993(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
-fn yy_action_994(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4312
+fn yy_action_997(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4328
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_995(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4315
+fn yy_action_998(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4331
 	{
 		yy_val.v = yy_box(CharacterValueExpression(yy_unbox[Concatenation](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_996(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4316
+fn yy_action_999(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4332
 	{
 		yy_val.v = yy_box(CharacterValueExpression(yy_unbox[CharacterPrimary](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_997(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4319
+fn yy_action_1000(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4335
 	{
 		yy_val.v = yy_box(new_concatenation(yy_unbox[CharacterValueExpression](yy_dollar[1].v),
 			yy_unbox[CharacterPrimary](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_998(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4325
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_999(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4328
-	{
-		yy_val.v = yy_box(CharacterPrimary(yy_unbox[ValueExpressionPrimary](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_1000(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4331
-	{
-		yy_val.v = yy_box(CharacterPrimary(yy_unbox[CharacterValueFunction](yy_dollar[1].v)))
-	}
-}
-
 fn yy_action_1001(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4343
+	// line vsql/y.y:4341
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1002(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4346
+	// line vsql/y.y:4344
+	{
+		yy_val.v = yy_box(CharacterPrimary(yy_unbox[ValueExpressionPrimary](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1003(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4347
+	{
+		yy_val.v = yy_box(CharacterPrimary(yy_unbox[CharacterValueFunction](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1004(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4359
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1005(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4362
 	{
 		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[CharacterSubstringFunction](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1003(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4349
+fn yy_action_1006(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4365
 	{
 		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[RegularExpressionSubstringFunction](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1004(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4352
+fn yy_action_1007(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4368
 	{
 		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[RoutineInvocation](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1005(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4353
+fn yy_action_1008(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4369
 	{
 		// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 3
 		flag(mut yylex, 'T312')
@@ -50364,49 +50403,24 @@ fn yy_action_1005(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1006(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4358
+fn yy_action_1009(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4374
 	{
 		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[TrimFunction](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_1007(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4359
-	{
-		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[MultiCharacterTrimFunction](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_1008(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4362
-	{
-		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[PadFunction](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_1009(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4370
-	{
-		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
-			yy_unbox[NumericValueExpression](yy_dollar[5].v), none, 'CHARACTERS'))
 	}
 }
 
 fn yy_action_1010(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4375
 	{
-		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
-			yy_unbox[NumericValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v),
-			'CHARACTERS'))
+		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[MultiCharacterTrimFunction](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1011(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4381
+	// line vsql/y.y:4378
 	{
-		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
-			yy_unbox[NumericValueExpression](yy_dollar[5].v), none, yy_as[string](yy_dollar[7].v)))
+		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[PadFunction](yy_dollar[1].v)))
 	}
 }
 
@@ -50414,13 +50428,38 @@ fn yy_action_1012(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	// line vsql/y.y:4386
 	{
 		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
+			yy_unbox[NumericValueExpression](yy_dollar[5].v), none, 'CHARACTERS'))
+	}
+}
+
+fn yy_action_1013(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4391
+	{
+		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
+			yy_unbox[NumericValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v),
+			'CHARACTERS'))
+	}
+}
+
+fn yy_action_1014(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4397
+	{
+		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
+			yy_unbox[NumericValueExpression](yy_dollar[5].v), none, yy_as[string](yy_dollar[7].v)))
+	}
+}
+
+fn yy_action_1015(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4402
+	{
+		yy_val.v = yy_box(new_character_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
 			yy_unbox[NumericValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v),
 			yy_as[string](yy_dollar[9].v)))
 	}
 }
 
-fn yy_action_1013(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4395
+fn yy_action_1016(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4411
 	{
 		flag(mut yylex, 'T581')
 		yy_val.v = yy_box(new_regular_expression_substring_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v), yy_unbox[CharacterValueExpression](yy_dollar[5].v),
@@ -50428,8 +50467,8 @@ fn yy_action_1013(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1014(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4403
+fn yy_action_1017(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4419
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'UPPER'
@@ -50440,8 +50479,8 @@ fn yy_action_1014(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1015(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4407
+fn yy_action_1018(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4423
 	{
 		yy_val.v = yy_box(RoutineInvocation{
 			function_name: 'LOWER'
@@ -50452,8 +50491,8 @@ fn yy_action_1015(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1016(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4418
+fn yy_action_1019(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4434
 	{
 		yy_val.v = yy_box(new_overlay_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
 			yy_unbox[CharacterValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v), none,
@@ -50461,8 +50500,8 @@ fn yy_action_1016(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1017(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4425
+fn yy_action_1020(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4441
 	{
 		yy_val.v = yy_box(new_overlay_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
 			yy_unbox[CharacterValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v),
@@ -50470,8 +50509,8 @@ fn yy_action_1017(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1018(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4432
+fn yy_action_1021(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4448
 	{
 		yy_val.v = yy_box(new_overlay_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
 			yy_unbox[CharacterValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v), none,
@@ -50479,8 +50518,8 @@ fn yy_action_1018(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1019(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4439
+fn yy_action_1022(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4455
 	{
 		yy_val.v = yy_box(new_overlay_function(yy_unbox[CharacterValueExpression](yy_dollar[3].v),
 			yy_unbox[CharacterValueExpression](yy_dollar[5].v), yy_unbox[NumericValueExpression](yy_dollar[7].v),
@@ -50488,23 +50527,23 @@ fn yy_action_1019(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1020(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4446
+fn yy_action_1023(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4462
 	{
 		yy_val.v = yy_dollar[3].v
 	}
 }
 
-fn yy_action_1021(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4454
+fn yy_action_1024(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4470
 	{
 		space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
 		yy_val.v = yy_box(new_trim_function('BOTH', space, yy_unbox[CharacterValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1022(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4458
+fn yy_action_1025(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4474
 	{
 		flag(mut yylex, vsql_trim_only_from)
 		space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
@@ -50512,37 +50551,37 @@ fn yy_action_1022(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1023(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4463
+fn yy_action_1026(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4479
 	{
 		space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
 		yy_val.v = yy_box(new_trim_function(yy_as[string](yy_dollar[1].v), space, yy_unbox[CharacterValueExpression](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_1024(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4467
+fn yy_action_1027(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4483
 	{
 		yy_val.v = yy_box(new_trim_function('BOTH', yy_unbox[CharacterValueExpression](yy_dollar[1].v), yy_unbox[CharacterValueExpression](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_1025(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4470
+fn yy_action_1028(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4486
 	{
 		yy_val.v = yy_box(new_trim_function(yy_as[string](yy_dollar[1].v), yy_unbox[CharacterValueExpression](yy_dollar[2].v), yy_unbox[CharacterValueExpression](yy_dollar[4].v)))
 	}
 }
 
-fn yy_action_1026(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4475
+fn yy_action_1029(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4491
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1027(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4482
+fn yy_action_1030(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4498
 	{
 		flag(mut yylex, 'T056')
 		yy_val.v = yy_box(new_multi_character_trim_function(yy_as[string](yy_dollar[1].v), yy_unbox[CharacterValueExpression](yy_dollar[3].v),
@@ -50550,8 +50589,8 @@ fn yy_action_1027(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1028(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4487
+fn yy_action_1031(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4503
 	{
 		flag(mut yylex, 'T056')
 		yy_val.v = yy_box(new_multi_character_trim_function(yy_as[string](yy_dollar[1].v), yy_unbox[CharacterValueExpression](yy_dollar[3].v),
@@ -50559,29 +50598,29 @@ fn yy_action_1028(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1029(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4494
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_1030(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4495
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_1031(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4496
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
 fn yy_action_1032(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4504
+	// line vsql/y.y:4510
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_1033(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4511
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_1034(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4512
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_1035(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4520
 	{
 		flag(mut yylex, 'T055')
 		yy_val.v = yy_box(new_pad_function(yy_as[string](yy_dollar[1].v), yy_unbox[CharacterValueExpression](yy_dollar[3].v),
@@ -50589,8 +50628,8 @@ fn yy_action_1032(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1033(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4510
+fn yy_action_1036(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4526
 	{
 		flag(mut yylex, 'T055')
 		yy_val.v = yy_box(new_pad_function(yy_as[string](yy_dollar[1].v), yy_unbox[CharacterValueExpression](yy_dollar[3].v),
@@ -50598,240 +50637,240 @@ fn yy_action_1033(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1034(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4517
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_1035(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4518
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
-fn yy_action_1036(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4521
-	{
-		yy_val.v = yy_as[string](yy_dollar[1].v)
-	}
-}
-
 fn yy_action_1037(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4522
+	// line vsql/y.y:4533
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_1038(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4523
+	// line vsql/y.y:4534
 	{
 		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_1039(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4526
+	// line vsql/y.y:4537
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_1040(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4529
+	// line vsql/y.y:4538
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_as[string](yy_dollar[1].v)
 	}
 }
 
 fn yy_action_1041(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4532
+	// line vsql/y.y:4539
+	{
+		yy_val.v = yy_as[string](yy_dollar[1].v)
+	}
+}
+
+fn yy_action_1042(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4542
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1042(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4537
-	{
-		yy_val.v = yy_box(ValueExpressionPrimary(yy_unbox[ParenthesizedValueExpression](yy_dollar[1].v)))
-	}
-}
-
 fn yy_action_1043(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4540
+	// line vsql/y.y:4545
 	{
-		yy_val.v = yy_box(ValueExpressionPrimary(new_parenthesized_value_expression(ValueExpression(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))))
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1044(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4543
+	// line vsql/y.y:4548
 	{
-		yy_val.v = yy_box(ValueExpressionPrimary(yy_unbox[NonparenthesizedValueExpressionPrimary](yy_dollar[1].v)))
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1045(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4551
+	// line vsql/y.y:4553
 	{
-		yy_val.v = yy_box(new_parenthesized_value_expression(ValueExpression(yy_unbox[CommonValueExpression](yy_dollar[2].v))))
+		yy_val.v = yy_box(ValueExpressionPrimary(yy_unbox[ParenthesizedValueExpression](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1046(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4556
 	{
-		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(yy_unbox[ValueSpecification](yy_dollar[1].v)))
+		yy_val.v = yy_box(ValueExpressionPrimary(new_parenthesized_value_expression(ValueExpression(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))))
 	}
 }
 
 fn yy_action_1047(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4559
 	{
-		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref(yy_unbox[Identifier](yy_dollar[1].v))))
+		yy_val.v = yy_box(ValueExpressionPrimary(yy_unbox[NonparenthesizedValueExpressionPrimary](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1048(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4562
+	// line vsql/y.y:4567
+	{
+		yy_val.v = yy_box(new_parenthesized_value_expression(ValueExpression(yy_unbox[CommonValueExpression](yy_dollar[2].v))))
+	}
+}
+
+fn yy_action_1049(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4572
+	{
+		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(yy_unbox[ValueSpecification](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1050(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4575
+	{
+		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref(yy_unbox[Identifier](yy_dollar[1].v))))
+	}
+}
+
+fn yy_action_1051(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4578
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref(yy_unbox[AggregateFunction](yy_dollar[1].v))))
 	}
 }
 
-fn yy_action_1049(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4565
+fn yy_action_1052(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4581
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref(yy_unbox[RoutineInvocation](yy_dollar[1].v))))
 	}
 }
 
-fn yy_action_1050(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4568
+fn yy_action_1053(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4584
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(yy_unbox[CaseExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1051(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4571
+fn yy_action_1054(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4587
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(yy_unbox[CastSpecification](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1052(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4574
+fn yy_action_1055(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4590
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(yy_unbox[CastSpecification](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1053(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4577
+fn yy_action_1056(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4593
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref(yy_unbox[GreatestOrLeastFunction](yy_dollar[1].v))))
 	}
 }
 
-fn yy_action_1054(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4580
+fn yy_action_1057(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4596
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(new_ref(yy_unbox[NextValueExpression](yy_dollar[1].v))))
 	}
 }
 
-fn yy_action_1055(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4583
+fn yy_action_1058(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4599
 	{
 		yy_val.v = yy_box(NonparenthesizedValueExpressionPrimary(yy_unbox[Subquery](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1056(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4596
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1057(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4599
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1058(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4602
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
 fn yy_action_1059(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4608
+	// line vsql/y.y:4612
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1060(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4615
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1061(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4618
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1062(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4624
 	{
 		yy_val.v = yy_box(DatetimePrimary(yy_unbox[DatetimeValueFunction](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1060(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4624
+fn yy_action_1063(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4640
 	{
 		yy_val.v = yy_box(DatetimeValueFunction(yy_unbox[CurrentDate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1061(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4627
+fn yy_action_1064(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4643
 	{
 		yy_val.v = yy_box(DatetimeValueFunction(yy_unbox[CurrentTime](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1062(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4630
+fn yy_action_1065(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4646
 	{
 		yy_val.v = yy_box(DatetimeValueFunction(yy_unbox[CurrentTimestamp](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1063(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4633
+fn yy_action_1066(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4649
 	{
 		yy_val.v = yy_box(DatetimeValueFunction(yy_unbox[LocalTime](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1064(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4636
+fn yy_action_1067(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4652
 	{
 		yy_val.v = yy_box(DatetimeValueFunction(yy_unbox[LocalTimestamp](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1065(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4641
+fn yy_action_1068(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4657
 	{
 		yy_val.v = yy_box(CurrentDate{})
 	}
 }
 
-fn yy_action_1066(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4644
+fn yy_action_1069(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4660
 	{
 		flag(mut yylex, 'F411')
 		yy_val.v = yy_box(CurrentTime{default_time_precision})
 	}
 }
 
-fn yy_action_1067(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4648
+fn yy_action_1070(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4664
 	{
 		flag(mut yylex, 'F411')
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() != 0, 'F555')
@@ -50839,31 +50878,31 @@ fn yy_action_1067(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1068(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4655
+fn yy_action_1071(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4671
 	{
 		yy_val.v = yy_box(LocalTime{0})
 	}
 }
 
-fn yy_action_1069(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4656
+fn yy_action_1072(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4672
 	{
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() != 0, 'F555')
 		yy_val.v = yy_box(LocalTime{(yy_as[string](yy_dollar[3].v)).int()})
 	}
 }
 
-fn yy_action_1070(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4662
+fn yy_action_1073(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4678
 	{
 		flag(mut yylex, 'F411')
 		yy_val.v = yy_box(CurrentTimestamp{default_timestamp_precision})
 	}
 }
 
-fn yy_action_1071(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4666
+fn yy_action_1074(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4682
 	{
 		flag(mut yylex, 'F411')
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() !in [0, 6], 'F555')
@@ -50871,75 +50910,75 @@ fn yy_action_1071(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1072(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4673
+fn yy_action_1075(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4689
 	{
 		yy_val.v = yy_box(LocalTimestamp{6})
 	}
 }
 
-fn yy_action_1073(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4674
+fn yy_action_1076(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4690
 	{
 		flag_if(mut yylex, (yy_as[string](yy_dollar[3].v)).int() !in [0, 6], 'F555')
 		yy_val.v = yy_box(LocalTimestamp{(yy_as[string](yy_dollar[3].v)).int()})
 	}
 }
 
-fn yy_action_1074(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4686
+fn yy_action_1077(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4702
 	{
 		yy_val.v = yy_box(BooleanValueExpression{ term: yy_unbox[BooleanTerm](yy_dollar[1].v) })
 	}
 }
 
-fn yy_action_1075(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4687
+fn yy_action_1078(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4703
 	{
 		expr := yy_unbox[BooleanValueExpression](yy_dollar[1].v)
 		yy_val.v = yy_box(BooleanValueExpression{&expr, yy_unbox[BooleanTerm](yy_dollar[3].v)})
 	}
 }
 
-fn yy_action_1076(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4693
+fn yy_action_1079(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4709
 	{
 		yy_val.v = yy_box(BooleanTerm{ factor: yy_unbox[BooleanTest](yy_dollar[1].v) })
 	}
 }
 
-fn yy_action_1077(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4694
+fn yy_action_1080(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4710
 	{
 		term := yy_unbox[BooleanTerm](yy_dollar[1].v)
 		yy_val.v = yy_box(BooleanTerm{&term, yy_unbox[BooleanTest](yy_dollar[3].v)})
 	}
 }
 
-fn yy_action_1078(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4700
+fn yy_action_1081(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4716
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1079(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4701
+fn yy_action_1082(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4717
 	{
 		b := yy_unbox[BooleanTest](yy_dollar[2].v)
 		yy_val.v = yy_box(BooleanTest{b.expr, b.not, b.value, !b.inverse})
 	}
 }
 
-fn yy_action_1080(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4712
+fn yy_action_1083(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4728
 	{
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), false, none, false))
 	}
 }
 
-fn yy_action_1081(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4713
+fn yy_action_1084(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4729
 	{
 		flag(mut yylex, 'F571')
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), false, new_boolean_value(true),
@@ -50947,8 +50986,8 @@ fn yy_action_1081(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1082(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4718
+fn yy_action_1085(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4734
 	{
 		flag(mut yylex, 'F571')
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), false, new_boolean_value(false),
@@ -50956,8 +50995,8 @@ fn yy_action_1082(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1083(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4723
+fn yy_action_1086(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4739
 	{
 		flag(mut yylex, 'F571')
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), false, new_unknown_value(),
@@ -50965,8 +51004,8 @@ fn yy_action_1083(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1084(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4728
+fn yy_action_1087(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4744
 	{
 		flag(mut yylex, 'F571')
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), true, new_boolean_value(true),
@@ -50974,8 +51013,8 @@ fn yy_action_1084(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1085(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4733
+fn yy_action_1088(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4749
 	{
 		flag(mut yylex, 'F571')
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), true, new_boolean_value(false),
@@ -50983,8 +51022,8 @@ fn yy_action_1085(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1086(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4738
+fn yy_action_1089(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4754
 	{
 		flag(mut yylex, 'F571')
 		yy_val.v = yy_box(new_boolean_test(yy_unbox[BooleanPrimary](yy_dollar[1].v), true, new_unknown_value(),
@@ -50992,313 +51031,313 @@ fn yy_action_1086(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1087(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4745
+fn yy_action_1090(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4761
 	{
 		yy_val.v = yy_box(BooleanPrimary(yy_unbox[Predicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1088(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4746
+fn yy_action_1091(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4762
 	{
 		yy_val.v = yy_box(BooleanPrimary(yy_unbox[BooleanPredicand](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1089(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4749
+fn yy_action_1092(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4765
 	{
 		yy_val.v = yy_box(BooleanPredicand(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1090(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4752
+fn yy_action_1093(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4768
 	{
 		yy_val.v = yy_box(BooleanPredicand(yy_unbox[NonparenthesizedValueExpressionPrimary](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1091(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4757
+fn yy_action_1094(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4773
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1092(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4762
-	{
-		yy_val.v = yy_box(ValueSpecification(yy_unbox[Value](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_1093(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4763
-	{
-		yy_val.v = yy_box(ValueSpecification(yy_unbox[GeneralValueSpecification](yy_dollar[1].v)))
-	}
-}
-
-fn yy_action_1094(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4768
-	{
-		yy_val.v = yy_box(ValueSpecification(yy_unbox[Value](yy_dollar[1].v)))
-	}
-}
-
 fn yy_action_1095(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4769
+	// line vsql/y.y:4778
 	{
-		yy_val.v = yy_box(ValueSpecification(yy_unbox[GeneralValueSpecification](yy_dollar[1].v)))
+		yy_val.v = yy_box(ValueSpecification(yy_unbox[Value](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1096(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4774
+	// line vsql/y.y:4779
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_box(ValueSpecification(yy_unbox[GeneralValueSpecification](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1097(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4777
+	// line vsql/y.y:4784
 	{
-		flag(mut yylex, 'F762')
-		yy_val.v = yy_box(GeneralValueSpecification(CurrentCatalog{}))
+		yy_val.v = yy_box(ValueSpecification(yy_unbox[Value](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1098(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4781
+	// line vsql/y.y:4785
 	{
-		flag(mut yylex, 'F763')
-		yy_val.v = yy_box(GeneralValueSpecification(CurrentSchema{}))
+		yy_val.v = yy_box(ValueSpecification(yy_unbox[GeneralValueSpecification](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1099(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4790
 	{
-		yy_val.v = yy_box(ValueSpecification(yy_unbox[Value](yy_dollar[1].v)))
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1100(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4795
+	// line vsql/y.y:4793
 	{
-		flag(mut yylex, 'B031')
-		yy_val.v = yy_box(GeneralValueSpecification(DynamicParameterSpecification{yy_as[string](yy_dollar[1].v)}))
+		flag(mut yylex, 'F762')
+		yy_val.v = yy_box(GeneralValueSpecification(CurrentCatalog{}))
 	}
 }
 
 fn yy_action_1101(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4803
+	// line vsql/y.y:4797
 	{
-		yy_val.v = yy_box(ContextuallyTypedValueSpecification(yy_unbox[NullSpecification](yy_dollar[1].v)))
+		flag(mut yylex, 'F763')
+		yy_val.v = yy_box(GeneralValueSpecification(CurrentSchema{}))
 	}
 }
 
 fn yy_action_1102(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4806
 	{
-		yy_val.v = yy_box(ContextuallyTypedValueSpecification(yy_unbox[DefaultSpecification](yy_dollar[1].v)))
+		yy_val.v = yy_box(ValueSpecification(yy_unbox[Value](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1103(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4811
 	{
-		yy_val.v = yy_dollar[1].v
+		flag(mut yylex, 'B031')
+		yy_val.v = yy_box(GeneralValueSpecification(DynamicParameterSpecification{yy_as[string](yy_dollar[1].v)}))
 	}
 }
 
 fn yy_action_1104(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4814
+	// line vsql/y.y:4819
 	{
-		yy_val.v = yy_box(NullSpecification{})
+		yy_val.v = yy_box(ContextuallyTypedValueSpecification(yy_unbox[NullSpecification](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1105(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4817
+	// line vsql/y.y:4822
 	{
-		yy_val.v = yy_box(DefaultSpecification{})
+		yy_val.v = yy_box(ContextuallyTypedValueSpecification(yy_unbox[DefaultSpecification](yy_dollar[1].v)))
 	}
 }
 
 fn yy_action_1106(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4822
+	// line vsql/y.y:4827
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1107(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4823
+	// line vsql/y.y:4830
+	{
+		yy_val.v = yy_box(NullSpecification{})
+	}
+}
+
+fn yy_action_1108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4833
+	{
+		yy_val.v = yy_box(DefaultSpecification{})
+	}
+}
+
+fn yy_action_1109(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4838
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4839
 	{
 		yy_val.v = yy_box(IdentifierChain{(yy_unbox[IdentifierChain](yy_dollar[1].v)).identifier + '.' + (yy_unbox[IdentifierChain](yy_dollar[3].v)).identifier})
 	}
 }
 
-fn yy_action_1108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4830
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1109(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4839
-	{
-		parsed_sort_key_part(mut yylex, .column_reference)
-		yy_val.v = yy_box(new_column_identifier((yy_unbox[IdentifierChain](yy_dollar[1].v)).identifier)!)
-	}
-}
-
-fn yy_action_1110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4851
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
 fn yy_action_1111(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4863
+	// line vsql/y.y:4846
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1112(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4866
+	// line vsql/y.y:4855
 	{
-		yy_val.v = yy_box(JoinSpecification(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))
+		parsed_sort_key_part(mut yylex, .column_reference)
+		yy_val.v = yy_box(new_column_identifier((yy_unbox[IdentifierChain](yy_dollar[1].v)).identifier)!)
 	}
 }
 
 fn yy_action_1113(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4867
 	{
-		yy_val.v = yy_box(JoinSpecification(yy_unbox[[]Identifier](yy_dollar[1].v)))
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1114(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4870
+	// line vsql/y.y:4879
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4882
+	{
+		yy_val.v = yy_box(JoinSpecification(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1116(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4883
+	{
+		yy_val.v = yy_box(JoinSpecification(yy_unbox[[]Identifier](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1117(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4886
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4873
+fn yy_action_1118(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4889
 	{
 		yy_val.v = yy_dollar[3].v
 	}
 }
 
-fn yy_action_1116(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4876
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1117(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4879
-	{
-		yy_val.v = yy_box(JoinType.inner)
-	}
-}
-
-fn yy_action_1118(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4880
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
 fn yy_action_1119(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4881
+	// line vsql/y.y:4892
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1120(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4884
+	// line vsql/y.y:4895
+	{
+		yy_val.v = yy_box(JoinType.inner)
+	}
+}
+
+fn yy_action_1121(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4896
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1122(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4897
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1123(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4900
 	{
 		yy_val.v = yy_box(JoinType.left)
 	}
 }
 
-fn yy_action_1121(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4885
+fn yy_action_1124(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4901
 	{
 		yy_val.v = yy_box(JoinType.right)
 	}
 }
 
-fn yy_action_1122(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4895
+fn yy_action_1125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4911
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1123(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4908
+fn yy_action_1126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4924
 	{
 		yy_val.v = yy_dollar[3].v
 	}
 }
 
-fn yy_action_1124(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4911
+fn yy_action_1127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4927
 	{
 		yy_val.v = yy_box([yy_unbox[Identifier](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4912
+fn yy_action_1128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4928
 	{
 		yy_val.v = yy_box(append_list(yy_unbox[[]Identifier](yy_dollar[1].v), yy_unbox[Identifier](yy_dollar[3].v)))
-	}
-}
-
-fn yy_action_1126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4917
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4920
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4923
-	{
-		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1129(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4933
 	{
-		yy_val.v = yy_dollar[2].v
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1130(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4942
+	// line vsql/y.y:4936
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4939
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1132(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4949
+	{
+		yy_val.v = yy_dollar[2].v
+	}
+}
+
+fn yy_action_1133(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4958
 	{
 		table_expression := yy_unbox[TableExpression](yy_dollar[3].v)
 		yy_val.v = yy_box(QuerySpecification{
@@ -51308,8 +51347,8 @@ fn yy_action_1130(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4949
+fn yy_action_1134(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4965
 	{
 		table_expression := yy_unbox[TableExpression](yy_dollar[4].v)
 		yy_val.v = yy_box(QuerySpecification{
@@ -51320,45 +51359,45 @@ fn yy_action_1131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1132(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4959
+fn yy_action_1135(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4975
 	{
 		flag(mut yylex, vsql_select_without_from)
 		yy_val.v = yy_box(new_query_specification_without_from(yy_unbox[[]SelectSublist](yy_dollar[2].v), false))
 	}
 }
 
-fn yy_action_1133(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4963
+fn yy_action_1136(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4979
 	{
 		flag(mut yylex, vsql_select_without_from)
 		yy_val.v = yy_box(new_query_specification_without_from(yy_unbox[[]SelectSublist](yy_dollar[3].v), yy_as[bool](yy_dollar[2].v)))
 	}
 }
 
-fn yy_action_1134(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4973
+fn yy_action_1137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4989
 	{
 		yy_val.v = yy_box(SelectList(AsteriskExpr(true)))
 	}
 }
 
-fn yy_action_1135(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4974
+fn yy_action_1138(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4990
 	{
 		yy_val.v = yy_box(SelectList(yy_unbox[[]SelectSublist](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1136(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4977
+fn yy_action_1139(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4993
 	{
 		yy_val.v = yy_box([yy_unbox[SelectSublist](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4978
+fn yy_action_1140(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:4994
 	{
 		mut new_select_list := (yy_unbox[[]SelectSublist](yy_dollar[1].v)).clone()
 		new_select_list << yy_unbox[SelectSublist](yy_dollar[3].v)
@@ -51366,78 +51405,78 @@ fn yy_action_1137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1138(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4985
+fn yy_action_1141(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5001
 	{
 		yy_val.v = yy_box(SelectSublist(yy_unbox[DerivedColumn](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1139(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4986
+fn yy_action_1142(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5002
 	{
 		yy_val.v = yy_box(SelectSublist(yy_unbox[QualifiedAsteriskExpr](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1140(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4990
+fn yy_action_1143(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5006
 	{
 		yy_val.v = yy_box(QualifiedAsteriskExpr{new_table_identifier((yy_unbox[IdentifierChain](yy_dollar[1].v)).identifier)!})
 	}
 }
 
-fn yy_action_1141(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:4998
+fn yy_action_1144(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5014
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1142(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5001
+fn yy_action_1145(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5017
 	{
 		yy_val.v = yy_box(DerivedColumn{yy_unbox[ValueExpression](yy_dollar[1].v), Identifier{}})
 	}
 }
 
-fn yy_action_1143(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5004
+fn yy_action_1146(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5020
 	{
 		yy_val.v = yy_box(DerivedColumn{yy_unbox[ValueExpression](yy_dollar[1].v), yy_unbox[Identifier](yy_dollar[2].v)})
 	}
 }
 
-fn yy_action_1144(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5009
+fn yy_action_1147(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5025
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1145(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5010
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1146(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5025
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1147(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+fn yy_action_1148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5026
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5029
+fn yy_action_1149(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5041
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1150(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5042
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1151(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5045
 	{
 		yy_val.v = yy_box(QueryExpression{
 			...yy_unbox[QueryExpression](yy_dollar[2].v)
@@ -51446,39 +51485,11 @@ fn yy_action_1148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1149(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5039
-	{
-		yy_val.v = yy_box(QueryExpression{
-			order: yy_unbox[[]SortSpecification](yy_dollar[1].v)
-		})
-	}
-}
-
-fn yy_action_1150(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5044
-	{
-		yy_val.v = yy_box(QueryExpression{
-			offset: yy_unbox[ValueSpecification](yy_dollar[1].v)
-		})
-	}
-}
-
-fn yy_action_1151(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5049
-	{
-		yy_val.v = yy_box(QueryExpression{
-			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
-			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
-		})
-	}
-}
-
 fn yy_action_1152(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5055
 	{
 		yy_val.v = yy_box(QueryExpression{
-			fetch: yy_unbox[ValueSpecification](yy_dollar[1].v)
+			order: yy_unbox[[]SortSpecification](yy_dollar[1].v)
 		})
 	}
 }
@@ -51487,14 +51498,42 @@ fn yy_action_1153(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	// line vsql/y.y:5060
 	{
 		yy_val.v = yy_box(QueryExpression{
+			offset: yy_unbox[ValueSpecification](yy_dollar[1].v)
+		})
+	}
+}
+
+fn yy_action_1154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5065
+	{
+		yy_val.v = yy_box(QueryExpression{
+			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
+			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
+		})
+	}
+}
+
+fn yy_action_1155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5071
+	{
+		yy_val.v = yy_box(QueryExpression{
+			fetch: yy_unbox[ValueSpecification](yy_dollar[1].v)
+		})
+	}
+}
+
+fn yy_action_1156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5076
+	{
+		yy_val.v = yy_box(QueryExpression{
 			fetch: yy_unbox[ValueSpecification](yy_dollar[2].v)
 			order: yy_unbox[[]SortSpecification](yy_dollar[1].v)
 		})
 	}
 }
 
-fn yy_action_1154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5066
+fn yy_action_1157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5082
 	{
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
@@ -51504,8 +51543,8 @@ fn yy_action_1154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5073
+fn yy_action_1158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5089
 	{
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[1].v)
@@ -51514,8 +51553,8 @@ fn yy_action_1155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5079
+fn yy_action_1159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5095
 	{
 		yy_val.v = yy_box(QueryExpression{
 			fetch: yy_unbox[ValueSpecification](yy_dollar[1].v)
@@ -51523,8 +51562,8 @@ fn yy_action_1156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5084
+fn yy_action_1160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5100
 	{
 		yy_val.v = yy_box(QueryExpression{
 			fetch: yy_unbox[ValueSpecification](yy_dollar[2].v)
@@ -51533,8 +51572,8 @@ fn yy_action_1157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5090
+fn yy_action_1161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5106
 	{
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
@@ -51543,8 +51582,8 @@ fn yy_action_1158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5096
+fn yy_action_1162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5112
 	{
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[3].v)
@@ -51554,8 +51593,8 @@ fn yy_action_1159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5103
+fn yy_action_1163(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5119
 	{
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[1].v)
@@ -51564,67 +51603,67 @@ fn yy_action_1160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5109
-	{
-		yy_val.v = yy_box(QueryExpression{
-			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
-			fetch:  yy_unbox[ValueSpecification](yy_dollar[3].v)
-			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
-		})
-	}
-}
-
-fn yy_action_1162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5116
-	{
-		flag(mut yylex, vsql_offset_without_rows)
-		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
-		yy_val.v = yy_box(QueryExpression{
-			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
-			fetch:  yy_unbox[ValueSpecification](yy_dollar[3].v)
-		})
-	}
-}
-
-fn yy_action_1163(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5124
-	{
-		flag(mut yylex, vsql_offset_without_rows)
-		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[3].v), 'F865')
-		yy_val.v = yy_box(QueryExpression{
-			offset: yy_unbox[ValueSpecification](yy_dollar[3].v)
-			fetch:  yy_unbox[ValueSpecification](yy_dollar[4].v)
-			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
-		})
-	}
-}
-
 fn yy_action_1164(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5133
+	// line vsql/y.y:5125
 	{
-		flag(mut yylex, vsql_offset_without_rows)
-		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
+			fetch:  yy_unbox[ValueSpecification](yy_dollar[3].v)
+			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
 		})
 	}
 }
 
 fn yy_action_1165(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5132
+	{
+		flag(mut yylex, vsql_offset_without_rows)
+		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
+		yy_val.v = yy_box(QueryExpression{
+			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
+			fetch:  yy_unbox[ValueSpecification](yy_dollar[3].v)
+		})
+	}
+}
+
+fn yy_action_1166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5140
 	{
 		flag(mut yylex, vsql_offset_without_rows)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[3].v), 'F865')
 		yy_val.v = yy_box(QueryExpression{
 			offset: yy_unbox[ValueSpecification](yy_dollar[3].v)
+			fetch:  yy_unbox[ValueSpecification](yy_dollar[4].v)
 			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
 		})
 	}
 }
 
-fn yy_action_1166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5148
+fn yy_action_1167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5149
+	{
+		flag(mut yylex, vsql_offset_without_rows)
+		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
+		yy_val.v = yy_box(QueryExpression{
+			offset: yy_unbox[ValueSpecification](yy_dollar[2].v)
+		})
+	}
+}
+
+fn yy_action_1168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5156
+	{
+		flag(mut yylex, vsql_offset_without_rows)
+		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[3].v), 'F865')
+		yy_val.v = yy_box(QueryExpression{
+			offset: yy_unbox[ValueSpecification](yy_dollar[3].v)
+			order:  yy_unbox[[]SortSpecification](yy_dollar[1].v)
+		})
+	}
+}
+
+fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5164
 	{
 		flag(mut yylex, vsql_offset_without_rows)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
@@ -51635,8 +51674,8 @@ fn yy_action_1166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5156
+fn yy_action_1170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5172
 	{
 		flag(mut yylex, vsql_offset_without_rows)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[3].v), 'F865')
@@ -51648,8 +51687,8 @@ fn yy_action_1167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5165
+fn yy_action_1171(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5181
 	{
 		flag(mut yylex, vsql_limit_offset_count)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
@@ -51661,8 +51700,8 @@ fn yy_action_1168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5174
+fn yy_action_1172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5190
 	{
 		flag(mut yylex, vsql_limit_offset_count)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[3].v), 'F865')
@@ -51675,103 +51714,50 @@ fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5188
-	{
-		yy_val.v = yy_box(QueryExpression{ body: yy_unbox[SimpleTable](yy_dollar[1].v) })
-	}
-}
-
-fn yy_action_1171(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5189
-	{
-		yy_val.v = yy_box(QueryExpression{ body: yy_unbox[SimpleTable](yy_dollar[1].v) })
-	}
-}
-
-fn yy_action_1172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5190
-	{
-		yy_val.v = yy_box(QueryExpression{ body: yy_unbox[SimpleTable](yy_dollar[1].v) })
-	}
-}
-
 fn yy_action_1173(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5191
+	// line vsql/y.y:5204
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_box(QueryExpression{ body: yy_unbox[SimpleTable](yy_dollar[1].v) })
 	}
 }
 
 fn yy_action_1174(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5194
+	// line vsql/y.y:5205
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_box(QueryExpression{ body: yy_unbox[SimpleTable](yy_dollar[1].v) })
 	}
 }
 
 fn yy_action_1175(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5195
+	// line vsql/y.y:5206
 	{
-		yy_val.v = yy_dollar[1].v
+		yy_val.v = yy_box(QueryExpression{ body: yy_unbox[SimpleTable](yy_dollar[1].v) })
 	}
 }
 
 fn yy_action_1176(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5203
+	// line vsql/y.y:5207
 	{
-		operator := yy_unbox[QuerySetOperator](yy_dollar[2].v)
-		yy_val.v = yy_box(new_set_operation(yy_unbox[SimpleTable](yy_dollar[1].v), operator.op, operator.all,
-			yy_unbox[SimpleTable](yy_dollar[3].v)))
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1177(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5210
 	{
-		yy_val.v = yy_box(QuerySetOperator{'UNION', false})
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1178(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5211
 	{
-		flag_if(mut yylex, yy_as[bool](yy_dollar[2].v), 'T551')
-		yy_val.v = yy_box(QuerySetOperator{'UNION', !(yy_as[bool](yy_dollar[2].v))})
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1179(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5215
-	{
-		yy_val.v = yy_box(QuerySetOperator{'EXCEPT', false})
-	}
-}
-
-fn yy_action_1180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5216
-	{
-		flag(mut yylex, if yy_as[bool](yy_dollar[2].v) { 'T551' } else { 'F304' })
-		yy_val.v = yy_box(QuerySetOperator{'EXCEPT', !(yy_as[bool](yy_dollar[2].v))})
-	}
-}
-
-fn yy_action_1181(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5222
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1182(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5223
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5228
+	// line vsql/y.y:5219
 	{
 		operator := yy_unbox[QuerySetOperator](yy_dollar[2].v)
 		yy_val.v = yy_box(new_set_operation(yy_unbox[SimpleTable](yy_dollar[1].v), operator.op, operator.all,
@@ -51779,16 +51765,69 @@ fn yy_action_1183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+fn yy_action_1180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5226
+	{
+		yy_val.v = yy_box(QuerySetOperator{'UNION', false})
+	}
+}
+
+fn yy_action_1181(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5227
+	{
+		flag_if(mut yylex, yy_as[bool](yy_dollar[2].v), 'T551')
+		yy_val.v = yy_box(QuerySetOperator{'UNION', !(yy_as[bool](yy_dollar[2].v))})
+	}
+}
+
+fn yy_action_1182(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5231
+	{
+		yy_val.v = yy_box(QuerySetOperator{'EXCEPT', false})
+	}
+}
+
+fn yy_action_1183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5232
+	{
+		flag(mut yylex, if yy_as[bool](yy_dollar[2].v) { 'T551' } else { 'F304' })
+		yy_val.v = yy_box(QuerySetOperator{'EXCEPT', !(yy_as[bool](yy_dollar[2].v))})
+	}
+}
+
 fn yy_action_1184(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5240
+	// line vsql/y.y:5238
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5239
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1186(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5244
+	{
+		operator := yy_unbox[QuerySetOperator](yy_dollar[2].v)
+		yy_val.v = yy_box(new_set_operation(yy_unbox[SimpleTable](yy_dollar[1].v), operator.op, operator.all,
+			yy_unbox[SimpleTable](yy_dollar[3].v)))
+	}
+}
+
+fn yy_action_1187(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5256
 	{
 		flag(mut yylex, 'F303')
 		yy_val.v = yy_box(QuerySetOperator{'INTERSECT', false})
 	}
 }
 
-fn yy_action_1185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5244
+fn yy_action_1188(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5260
 	{
 		flag(mut yylex, 'F303')
 		flag_if(mut yylex, !(yy_as[bool](yy_dollar[2].v)), 'F305')
@@ -51797,30 +51836,30 @@ fn yy_action_1185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1186(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5252
+fn yy_action_1189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5268
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1187(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5253
+fn yy_action_1190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5269
 	{
 		flag_query_expression(mut yylex, yy_unbox[QueryExpression](yy_dollar[1].v), .query_primary)
 		yy_val.v = yy_box(new_parenthesized_query_expression(yy_unbox[QueryExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1188(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5264
+fn yy_action_1191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5280
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5265
+fn yy_action_1192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5281
 	{
 		flag_query_expression(mut yylex, yy_unbox[QueryExpression](yy_dollar[2].v), .query_primary)
 		yy_val.v = yy_box(QueryExpression{
@@ -51829,15 +51868,15 @@ fn yy_action_1189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5273
+fn yy_action_1193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5289
 	{
 		yy_val.v = yy_box(SimpleTable(yy_unbox[QuerySpecification](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5274
+fn yy_action_1194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5290
 	{
 		// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 5
 		flag(mut yylex, 'F661')
@@ -51845,8 +51884,8 @@ fn yy_action_1191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5279
+fn yy_action_1195(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5295
 	{
 		// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 6
 		flag(mut yylex, 'F661')
@@ -51854,8 +51893,8 @@ fn yy_action_1192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5291
+fn yy_action_1196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5307
 	{
 		table_expression := TableExpression{TableReference(TablePrimary{
 			body: yy_unbox[Identifier](yy_dollar[2].v)
@@ -51867,38 +51906,38 @@ fn yy_action_1193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5302
+fn yy_action_1197(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5318
 	{
 		yy_val.v = yy_dollar[3].v
 	}
 }
 
-fn yy_action_1195(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5305
+fn yy_action_1198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5321
 	{
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5311
+fn yy_action_1199(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5327
 	{
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[3].v), 'F860')
 		yy_val.v = yy_dollar[3].v
 	}
 }
 
-fn yy_action_1197(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5318
+fn yy_action_1200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5334
 	{
 		yy_val.v = yy_box(ValueSpecification(new_integer_value(1)))
 	}
 }
 
-fn yy_action_1198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5324
+fn yy_action_1201(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5340
 	{
 		flag(mut yylex, vsql_limit)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F860')
@@ -51906,15 +51945,15 @@ fn yy_action_1198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1199(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5332
+fn yy_action_1202(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5348
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5333
+fn yy_action_1203(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5349
 	{
 		flag(mut yylex, vsql_offset_without_rows)
 		flag_row_count(mut yylex, yy_unbox[ValueSpecification](yy_dollar[2].v), 'F865')
@@ -51922,43 +51961,43 @@ fn yy_action_1200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1203(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5344
+fn yy_action_1206(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5360
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1204(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5347
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1205(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5350
+fn yy_action_1207(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5363
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1208(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5361
-	{
-		yy_val.v = yy_box(new_subquery((yy_unbox[TablePrimary](yy_dollar[1].v)).body as QueryExpression))
-	}
-}
-
-fn yy_action_1209(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5364
+	// line vsql/y.y:5366
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1210(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5373
+fn yy_action_1211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5377
+	{
+		yy_val.v = yy_box(new_subquery((yy_unbox[TablePrimary](yy_dollar[1].v)).body as QueryExpression))
+	}
+}
+
+fn yy_action_1212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5380
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1213(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5389
 	{
 		parsed_sort_key_part(mut yylex, .query_expression)
 		flag_query_expression(mut yylex, yy_unbox[QueryExpression](yy_dollar[1].v), .subquery)
@@ -51968,37 +52007,37 @@ fn yy_action_1210(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5388
+fn yy_action_1214(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5404
 	{
 		yy_val.v = yy_box(RowValueConstructor(yy_unbox[CommonValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5391
+fn yy_action_1215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5407
 	{
 		yy_val.v = yy_box(RowValueConstructor(yy_unbox[BooleanValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1213(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5394
+fn yy_action_1216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5410
 	{
 		yy_val.v = yy_box(RowValueConstructor(yy_unbox[ExplicitRowValueConstructor](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1214(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5404
+fn yy_action_1217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5420
 	{
 		yy_val.v = yy_box(new_explicit_row_value_constructor(push_list(yy_unbox[ContextuallyTypedRowValueConstructorElement](yy_dollar[2].v),
 			yy_unbox[[]ContextuallyTypedRowValueConstructorElement](yy_dollar[4].v)))!)
 	}
 }
 
-fn yy_action_1215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5410
+fn yy_action_1218(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5426
 	{
 		// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 1
 		flag(mut yylex, 'T051')
@@ -52006,8 +52045,8 @@ fn yy_action_1215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5421
+fn yy_action_1219(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5437
 	{
 		expr := yy_unbox[CommonValueExpression](yy_dollar[1].v)
 		flag_if(mut yylex, !is_parenthesized(expr), 'F641')
@@ -52015,8 +52054,8 @@ fn yy_action_1216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5426
+fn yy_action_1220(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5442
 	{
 		expr := yy_unbox[BooleanValueExpression](yy_dollar[1].v)
 		flag_if(mut yylex, !is_parenthesized_boolean(expr), 'F641')
@@ -52024,31 +52063,31 @@ fn yy_action_1217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1218(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5431
+fn yy_action_1221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5447
 	{
 		flag(mut yylex, 'F641')
 		yy_val.v = yy_box(ContextuallyTypedRowValueConstructor(yy_unbox[ContextuallyTypedValueSpecification](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1219(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5435
+fn yy_action_1222(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5451
 	{
 		yy_val.v = yy_box(ContextuallyTypedRowValueConstructor(yy_unbox[ContextuallyTypedValueSpecification](yy_dollar[2].v)))
 	}
 }
 
-fn yy_action_1220(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5439
+fn yy_action_1223(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5455
 	{
 		yy_val.v = yy_box(ContextuallyTypedRowValueConstructor(push_list(yy_unbox[ContextuallyTypedRowValueConstructorElement](yy_dollar[2].v),
 			yy_unbox[[]ContextuallyTypedRowValueConstructorElement](yy_dollar[4].v))))
 	}
 }
 
-fn yy_action_1221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5444
+fn yy_action_1224(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5460
 	{
 		// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 1
 		flag(mut yylex, 'T051')
@@ -52056,51 +52095,51 @@ fn yy_action_1221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1222(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5451
+fn yy_action_1225(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5467
 	{
 		yy_val.v = yy_box([yy_unbox[ContextuallyTypedRowValueConstructorElement](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1223(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5455
+fn yy_action_1226(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5471
 	{
 		yy_val.v = yy_box(append_list(yy_unbox[[]ContextuallyTypedRowValueConstructorElement](yy_dollar[1].v),
 			yy_unbox[ContextuallyTypedRowValueConstructorElement](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_1224(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5461
+fn yy_action_1227(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5477
 	{
 		yy_val.v = yy_box(ContextuallyTypedRowValueConstructorElement(yy_unbox[ValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1225(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5464
+fn yy_action_1228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5480
 	{
 		yy_val.v = yy_box(ContextuallyTypedRowValueConstructorElement(yy_unbox[ContextuallyTypedValueSpecification](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1226(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5469
+fn yy_action_1229(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5485
 	{
 		yy_val.v = yy_box(RowValueConstructorPredicand(yy_unbox[CommonValueExpression](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1227(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5472
+fn yy_action_1230(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5488
 	{
 		yy_val.v = yy_box(RowValueConstructorPredicand(yy_unbox[BooleanPredicand](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5475
+fn yy_action_1231(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5491
 	{
 		row := yy_unbox[ExplicitRowValueConstructor](yy_dollar[1].v)
 		// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 3
@@ -52109,29 +52148,29 @@ fn yy_action_1228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1229(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5489
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1230(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5492
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1231(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5497
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
 fn yy_action_1232(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5505
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1233(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5508
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1234(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5513
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1235(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5524
 	{
 		// ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 2
 		flag(mut yylex, 'F641')
@@ -52139,37 +52178,37 @@ fn yy_action_1232(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1233(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5515
+fn yy_action_1236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5531
 	{
 		yy_val.v = yy_box([yy_unbox[RowValueConstructor](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1234(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5516
+fn yy_action_1237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5532
 	{
 		yy_val.v = yy_box(append_list(yy_unbox[[]RowValueConstructor](yy_dollar[1].v),
 			yy_unbox[RowValueConstructor](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_1235(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5522
+fn yy_action_1238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5538
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5527
+fn yy_action_1239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5543
 	{
 		yy_val.v = yy_box([yy_unbox[ContextuallyTypedRowValueConstructor](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5531
+fn yy_action_1240(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5547
 	{
 		// ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 1
 		flag(mut yylex, 'F641')
@@ -52178,15 +52217,15 @@ fn yy_action_1237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5541
+fn yy_action_1241(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5557
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5542
+fn yy_action_1242(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5558
 	{
 		table_expression := yy_unbox[TableExpression](yy_dollar[1].v)
 		yy_val.v = yy_box(TableExpression{
@@ -52196,138 +52235,110 @@ fn yy_action_1239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1240(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5551
+fn yy_action_1243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5567
 	{
 		yy_val.v = yy_box(TableExpression{yy_unbox[TableReference](yy_dollar[1].v), none, []Identifier{}, none})
 	}
 }
 
-fn yy_action_1241(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5554
+fn yy_action_1244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5570
 	{
 		yy_val.v = yy_box(TableExpression{yy_unbox[TableReference](yy_dollar[1].v), yy_unbox[BooleanValueExpression](yy_dollar[2].v), []Identifier{}, none})
 	}
 }
 
-fn yy_action_1242(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5562
+fn yy_action_1245(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5578
 	{
 		yy_val.v = yy_box(TableExpression{yy_unbox[TableReference](yy_dollar[1].v), none, yy_unbox[[]Identifier](yy_dollar[2].v), none})
 	}
 }
 
-fn yy_action_1243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5565
-	{
-		yy_val.v = yy_box(TableExpression{yy_unbox[TableReference](yy_dollar[1].v), yy_unbox[BooleanValueExpression](yy_dollar[2].v), yy_unbox[[]Identifier](yy_dollar[3].v), none})
-	}
-}
-
-fn yy_action_1244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+fn yy_action_1246(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5581
 	{
-		yy_val.v = yy_dollar[2].v
-	}
-}
-
-fn yy_action_1245(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5584
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1246(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5585
-	{
-		yy_val.v = yy_box(TableReference(new_cross_join(yy_unbox[TableReference](yy_dollar[1].v),
-			yy_unbox[TableReference](yy_dollar[3].v))))
+		yy_val.v = yy_box(TableExpression{yy_unbox[TableReference](yy_dollar[1].v), yy_unbox[BooleanValueExpression](yy_dollar[2].v), yy_unbox[[]Identifier](yy_dollar[3].v), none})
 	}
 }
 
 fn yy_action_1247(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5597
 	{
-		yy_val.v = yy_box(TableReference(yy_unbox[TablePrimary](yy_dollar[1].v)))
+		yy_val.v = yy_dollar[2].v
 	}
 }
 
 fn yy_action_1248(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5598
+	// line vsql/y.y:5600
 	{
-		yy_val.v = yy_box(TableReference(yy_unbox[QualifiedJoin](yy_dollar[1].v)))
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1249(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5599
+	// line vsql/y.y:5601
+	{
+		yy_val.v = yy_box(TableReference(new_cross_join(yy_unbox[TableReference](yy_dollar[1].v),
+			yy_unbox[TableReference](yy_dollar[3].v))))
+	}
+}
+
+fn yy_action_1250(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5613
+	{
+		yy_val.v = yy_box(TableReference(yy_unbox[TablePrimary](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1251(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5614
 	{
 		yy_val.v = yy_box(TableReference(yy_unbox[QualifiedJoin](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1250(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5604
-	{
-		yy_val.v = yy_dollar[2].v
-	}
-}
-
-fn yy_action_1251(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5607
-	{
-		yy_val.v = yy_dollar[2].v
-	}
-}
-
 fn yy_action_1252(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5614
+	// line vsql/y.y:5615
+	{
+		yy_val.v = yy_box(TableReference(yy_unbox[QualifiedJoin](yy_dollar[1].v)))
+	}
+}
+
+fn yy_action_1253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5620
+	{
+		yy_val.v = yy_dollar[2].v
+	}
+}
+
+fn yy_action_1254(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5623
+	{
+		yy_val.v = yy_dollar[2].v
+	}
+}
+
+fn yy_action_1255(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5630
 	{
 		yy_val.v = yy_box(new_qualified_join(yy_unbox[TableReference](yy_dollar[1].v), JoinType.inner,
 			yy_unbox[TableReference](yy_dollar[3].v), yy_unbox[JoinSpecification](yy_dollar[4].v)))
 	}
 }
 
-fn yy_action_1253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5618
+fn yy_action_1256(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5634
 	{
 		yy_val.v = yy_box(new_qualified_join(yy_unbox[TableReference](yy_dollar[1].v), yy_unbox[JoinType](yy_dollar[2].v),
 			yy_unbox[TableReference](yy_dollar[4].v), yy_unbox[JoinSpecification](yy_dollar[5].v)))
 	}
 }
 
-fn yy_action_1254(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5624
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1255(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5627
-	{
-		yy_val.v = yy_box(TablePrimary{
-			body: yy_unbox[Identifier](yy_dollar[1].v)
-		})
-	}
-}
-
-fn yy_action_1256(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5632
-	{
-		yy_val.v = yy_box(TablePrimary{
-			body:        yy_unbox[Identifier](yy_dollar[1].v)
-			correlation: yy_unbox[Correlation](yy_dollar[2].v)
-		})
-	}
-}
-
 fn yy_action_1257(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5638
+	// line vsql/y.y:5640
 	{
-		// ISO/IEC 9075-2:2023, 7.6, <table reference>, Format
-		flag(mut yylex, vsql_derived_table_without_name)
 		yy_val.v = yy_dollar[1].v
 	}
 }
@@ -52336,36 +52347,36 @@ fn yy_action_1258(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	// line vsql/y.y:5643
 	{
 		yy_val.v = yy_box(TablePrimary{
-			body:        (yy_unbox[TablePrimary](yy_dollar[1].v)).body
-			correlation: yy_unbox[Correlation](yy_dollar[2].v)
+			body: yy_unbox[Identifier](yy_dollar[1].v)
 		})
 	}
 }
 
 fn yy_action_1259(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5651
+	// line vsql/y.y:5648
 	{
-		yy_val.v = yy_box(Correlation{
-			name: yy_unbox[Identifier](yy_dollar[1].v)
+		yy_val.v = yy_box(TablePrimary{
+			body:        yy_unbox[Identifier](yy_dollar[1].v)
+			correlation: yy_unbox[Correlation](yy_dollar[2].v)
 		})
 	}
 }
 
 fn yy_action_1260(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5656
+	// line vsql/y.y:5654
 	{
-		yy_val.v = yy_box(Correlation{
-			name: yy_unbox[Identifier](yy_dollar[2].v)
-		})
+		// ISO/IEC 9075-2:2023, 7.6, <table reference>, Format
+		flag(mut yylex, vsql_derived_table_without_name)
+		yy_val.v = yy_dollar[1].v
 	}
 }
 
 fn yy_action_1261(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5661
+	// line vsql/y.y:5659
 	{
-		yy_val.v = yy_box(Correlation{
-			name:    yy_unbox[Identifier](yy_dollar[1].v)
-			columns: yy_unbox[[]Identifier](yy_dollar[2].v)
+		yy_val.v = yy_box(TablePrimary{
+			body:        (yy_unbox[TablePrimary](yy_dollar[1].v)).body
+			correlation: yy_unbox[Correlation](yy_dollar[2].v)
 		})
 	}
 }
@@ -52374,14 +52385,42 @@ fn yy_action_1262(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	// line vsql/y.y:5667
 	{
 		yy_val.v = yy_box(Correlation{
+			name: yy_unbox[Identifier](yy_dollar[1].v)
+		})
+	}
+}
+
+fn yy_action_1263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5672
+	{
+		yy_val.v = yy_box(Correlation{
+			name: yy_unbox[Identifier](yy_dollar[2].v)
+		})
+	}
+}
+
+fn yy_action_1264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5677
+	{
+		yy_val.v = yy_box(Correlation{
+			name:    yy_unbox[Identifier](yy_dollar[1].v)
+			columns: yy_unbox[[]Identifier](yy_dollar[2].v)
+		})
+	}
+}
+
+fn yy_action_1265(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5683
+	{
+		yy_val.v = yy_box(Correlation{
 			name:    yy_unbox[Identifier](yy_dollar[2].v)
 			columns: yy_unbox[[]Identifier](yy_dollar[3].v)
 		})
 	}
 }
 
-fn yy_action_1263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5675
+fn yy_action_1266(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5691
 	{
 		yy_val.v = yy_box(Correlation{
 			name:    new_column_identifier('ILIKE')!
@@ -52390,8 +52429,8 @@ fn yy_action_1263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5683
+fn yy_action_1267(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5699
 	{
 		// ISO/IEC 9075-2:2023, 7.6, <table reference>, Conformance Rules, 6
 		flag(mut yylex, 'F591')
@@ -52399,59 +52438,59 @@ fn yy_action_1264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1265(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5690
+fn yy_action_1268(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5706
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1266(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5693
+fn yy_action_1269(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5709
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1267(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5696
+fn yy_action_1270(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5712
 	{
 		yy_val.v = yy_box([yy_unbox[Identifier](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1268(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5697
+fn yy_action_1271(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5713
 	{
 		yy_val.v = yy_box(append_list(yy_unbox[[]Identifier](yy_dollar[1].v), yy_unbox[Identifier](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_1269(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5702
+fn yy_action_1272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5718
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1270(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5707
+fn yy_action_1273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5723
 	{
 		flag_exists(mut yylex, (yy_unbox[TablePrimary](yy_dollar[2].v)).body as QueryExpression)
 		yy_val.v = yy_box(ExistsPredicate{new_subquery((yy_unbox[TablePrimary](yy_dollar[2].v)).body as QueryExpression)})
 	}
 }
 
-fn yy_action_1271(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5716
+fn yy_action_1274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5732
 	{
 		flag(mut yylex, 'F291')
 		yy_val.v = yy_box(UniquePredicate{new_subquery((yy_unbox[TablePrimary](yy_dollar[2].v)).body as QueryExpression)})
 	}
 }
 
-fn yy_action_1272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5724
+fn yy_action_1275(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5740
 	{
 		yy_val.v = yy_box(OverlapsPredicate{
 			left:  yy_unbox[RowValueConstructorPredicand](yy_dollar[1].v)
@@ -52460,8 +52499,8 @@ fn yy_action_1272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5732
+fn yy_action_1276(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5748
 	{
 		// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, Conformance Rules, 1
 		flag(mut yylex, 'F053')
@@ -52469,8 +52508,8 @@ fn yy_action_1273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5748
+fn yy_action_1277(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5764
 	{
 		flag(mut yylex, 'T151')
 		part2 := yy_unbox[DistinctPredicatePart2](yy_dollar[2].v)
@@ -52481,163 +52520,163 @@ fn yy_action_1274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1275(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5759
+fn yy_action_1278(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5775
 	{
 		yy_val.v = yy_box(DistinctPredicatePart2{yy_unbox[RowValueConstructorPredicand](yy_dollar[4].v), false})
 	}
 }
 
-fn yy_action_1276(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5762
+fn yy_action_1279(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5778
 	{
 		yy_val.v = yy_box(DistinctPredicatePart2{yy_unbox[RowValueConstructorPredicand](yy_dollar[5].v), true})
 	}
 }
 
-fn yy_action_1277(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5769
+fn yy_action_1280(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5785
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[ComparisonPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1278(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5770
+fn yy_action_1281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5786
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[BetweenPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1279(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5771
+fn yy_action_1282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5787
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[InPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1280(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5772
+fn yy_action_1283(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5788
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[CharacterLikePredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5773
+fn yy_action_1284(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5789
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[SimilarPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5774
+fn yy_action_1285(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5790
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[NullPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1283(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5775
+fn yy_action_1286(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5791
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[QuantifiedComparisonPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1284(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5778
+fn yy_action_1287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5794
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[ExistsPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1285(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5779
+fn yy_action_1288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5795
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[UniquePredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1286(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5780
+fn yy_action_1289(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5796
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[DistinctPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5781
+fn yy_action_1290(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5797
 	{
 		yy_val.v = yy_box(Predicate(yy_unbox[OverlapsPredicate](yy_dollar[1].v)))
 	}
 }
 
-fn yy_action_1288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5786
+fn yy_action_1291(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5802
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1289(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5791
+fn yy_action_1292(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5807
 	{
 		comp := yy_unbox[ComparisonPredicatePart2](yy_dollar[2].v)
 		yy_val.v = yy_box(ComparisonPredicate{yy_unbox[RowValueConstructorPredicand](yy_dollar[1].v), comp.op, comp.expr})
 	}
 }
 
-fn yy_action_1290(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5801
+fn yy_action_1293(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5817
 	{
 		yy_val.v = yy_box(ComparisonPredicatePart2{yy_unbox[ComparisonOperator](yy_dollar[1].v), yy_unbox[RowValueConstructorPredicand](yy_dollar[2].v)})
 	}
 }
 
-fn yy_action_1291(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5809
+fn yy_action_1294(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5825
 	{
 		yy_val.v = yy_box(ComparisonOperator.equal)
 	}
 }
 
-fn yy_action_1292(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5810
+fn yy_action_1295(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5826
 	{
 		yy_val.v = yy_box(ComparisonOperator.not_equal)
 	}
 }
 
-fn yy_action_1293(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5811
+fn yy_action_1296(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5827
 	{
 		yy_val.v = yy_box(ComparisonOperator.less_than)
 	}
 }
 
-fn yy_action_1294(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5812
+fn yy_action_1297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5828
 	{
 		yy_val.v = yy_box(ComparisonOperator.greater_than)
 	}
 }
 
-fn yy_action_1295(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5813
+fn yy_action_1298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5829
 	{
 		yy_val.v = yy_box(ComparisonOperator.less_than_or_equal)
 	}
 }
 
-fn yy_action_1296(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5814
+fn yy_action_1299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5830
 	{
 		yy_val.v = yy_box(ComparisonOperator.greater_than_or_equal)
 	}
 }
 
-fn yy_action_1297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5819
+fn yy_action_1300(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5835
 	{
 		between := yy_unbox[BetweenPredicate](yy_dollar[2].v)
 		yy_val.v = yy_box(BetweenPredicate{
@@ -52650,8 +52689,8 @@ fn yy_action_1297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5831
+fn yy_action_1301(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5847
 	{
 		yy_val.v = yy_box(BetweenPredicate{
 			not:       !(yy_as[bool](yy_dollar[1].v))
@@ -52662,8 +52701,8 @@ fn yy_action_1298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5840
+fn yy_action_1302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5856
 	{
 		yy_val.v = yy_box(BetweenPredicate{
 			not:       !(yy_as[bool](yy_dollar[1].v))
@@ -52674,22 +52713,22 @@ fn yy_action_1299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1300(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5850
+fn yy_action_1303(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5866
 	{
 		yy_val.v = true
 	}
 }
 
-fn yy_action_1301(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5851
+fn yy_action_1304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5867
 	{
 		yy_val.v = false
 	}
 }
 
-fn yy_action_1302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5854
+fn yy_action_1305(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5870
 	{
 		// ISO/IEC 9075-2:2023, 8.3, <between predicate>, Conformance Rules, 1
 		flag(mut yylex, 'T461')
@@ -52697,16 +52736,16 @@ fn yy_action_1302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1303(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5859
+fn yy_action_1306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5875
 	{
 		flag(mut yylex, 'T461')
 		yy_val.v = false
 	}
 }
 
-fn yy_action_1304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5867
+fn yy_action_1307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5883
 	{
 		part := yy_unbox[InPredicate](yy_dollar[2].v)
 		yy_val.v = yy_box(InPredicate{
@@ -52716,15 +52755,15 @@ fn yy_action_1304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1305(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5876
+fn yy_action_1308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5892
 	{
 		yy_val.v = yy_dollar[2].v
 	}
 }
 
-fn yy_action_1306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5877
+fn yy_action_1309(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5893
 	{
 		part := yy_unbox[InPredicate](yy_dollar[3].v)
 		yy_val.v = yy_box(InPredicate{
@@ -52734,8 +52773,8 @@ fn yy_action_1306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5886
+fn yy_action_1310(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5902
 	{
 		yy_val.v = yy_box(InPredicate{
 			subquery: new_subquery((yy_unbox[TablePrimary](yy_dollar[1].v)).body as QueryExpression)
@@ -52743,8 +52782,8 @@ fn yy_action_1307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5891
+fn yy_action_1311(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5907
 	{
 		// ISO/IEC 9075-2:2023, 8.4, <in predicate>, Conformance Rules, 1
 		flag_if(mut yylex, (yy_unbox[[]RowValueConstructorPredicand](yy_dollar[2].v)).any(!is_value_specification(it)),
@@ -52755,30 +52794,30 @@ fn yy_action_1308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1309(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5901
+fn yy_action_1312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5917
 	{
 		yy_val.v = yy_box([yy_unbox[RowValueConstructorPredicand](yy_dollar[1].v)])
 	}
 }
 
-fn yy_action_1310(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5902
+fn yy_action_1313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5918
 	{
 		yy_val.v = yy_box(append_list(yy_unbox[[]RowValueConstructorPredicand](yy_dollar[1].v),
 			yy_unbox[RowValueConstructorPredicand](yy_dollar[3].v)))
 	}
 }
 
-fn yy_action_1311(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5915
+fn yy_action_1314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5931
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5919
+fn yy_action_1315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5935
 	{
 		flag_if(mut yylex, !is_column_reference(yy_unbox[RowValueConstructorPredicand](yy_dollar[1].v)), 'F281')
 		like := yy_unbox[CharacterLikePredicatePart2](yy_dollar[2].v)
@@ -52786,8 +52825,8 @@ fn yy_action_1312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5933
+fn yy_action_1316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5949
 	{
 		flag_if(mut yylex, !is_character_value_specification(yy_unbox[CharacterValueExpression](yy_dollar[2].v)),
 			'F281')
@@ -52795,8 +52834,8 @@ fn yy_action_1313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5939
+fn yy_action_1317(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5955
 	{
 		flag_if(mut yylex, !is_character_value_specification(yy_unbox[CharacterValueExpression](yy_dollar[3].v)),
 			'F281')
@@ -52804,8 +52843,8 @@ fn yy_action_1314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5945
+fn yy_action_1318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5961
 	{
 		flag_if(mut yylex, !is_character_value_specification(yy_unbox[CharacterValueExpression](yy_dollar[2].v)),
 			'F281')
@@ -52815,8 +52854,8 @@ fn yy_action_1315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5953
+fn yy_action_1319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5969
 	{
 		flag_if(mut yylex, !is_character_value_specification(yy_unbox[CharacterValueExpression](yy_dollar[3].v)),
 			'F281')
@@ -52826,37 +52865,37 @@ fn yy_action_1316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1317(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5966
+fn yy_action_1320(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5982
 	{
 		yy_val.v = false
 	}
 }
 
-fn yy_action_1318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5967
+fn yy_action_1321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5983
 	{
 		flag(mut yylex, vsql_ilike)
 		yy_val.v = true
 	}
 }
 
-fn yy_action_1319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5973
+fn yy_action_1322(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5989
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1320(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5976
+fn yy_action_1323(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:5992
 	{
 		yy_val.v = yy_dollar[1].v
 	}
 }
 
-fn yy_action_1321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5984
+fn yy_action_1324(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6000
 	{
 		flag(mut yylex, 'T141')
 		like := yy_unbox[SimilarPredicatePart2](yy_dollar[2].v)
@@ -52864,64 +52903,64 @@ fn yy_action_1321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1322(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5992
+fn yy_action_1325(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6008
 	{
 		yy_val.v = yy_box(SimilarPredicatePart2{yy_unbox[CharacterValueExpression](yy_dollar[3].v), none, false})
 	}
 }
 
-fn yy_action_1323(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5995
+fn yy_action_1326(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6011
 	{
 		yy_val.v = yy_box(SimilarPredicatePart2{yy_unbox[CharacterValueExpression](yy_dollar[4].v), none, true})
 	}
 }
 
-fn yy_action_1324(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:5998
+fn yy_action_1327(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6014
 	{
 		yy_val.v = yy_box(SimilarPredicatePart2{yy_unbox[CharacterValueExpression](yy_dollar[3].v), ref_character_value_expression(yy_unbox[CharacterValueExpression](yy_dollar[5].v)), false})
-	}
-}
-
-fn yy_action_1325(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6002
-	{
-		yy_val.v = yy_box(SimilarPredicatePart2{yy_unbox[CharacterValueExpression](yy_dollar[4].v), ref_character_value_expression(yy_unbox[CharacterValueExpression](yy_dollar[6].v)), true})
-	}
-}
-
-fn yy_action_1326(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6008
-	{
-		yy_val.v = yy_dollar[1].v
-	}
-}
-
-fn yy_action_1327(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6013
-	{
-		yy_val.v = yy_box(NullPredicate{yy_unbox[RowValueConstructorPredicand](yy_dollar[1].v), !(yy_as[bool](yy_dollar[2].v))})
 	}
 }
 
 fn yy_action_1328(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6018
 	{
-		yy_val.v = true
+		yy_val.v = yy_box(SimilarPredicatePart2{yy_unbox[CharacterValueExpression](yy_dollar[4].v), ref_character_value_expression(yy_unbox[CharacterValueExpression](yy_dollar[6].v)), true})
 	}
 }
 
 fn yy_action_1329(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6019
+	// line vsql/y.y:6024
+	{
+		yy_val.v = yy_dollar[1].v
+	}
+}
+
+fn yy_action_1330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6029
+	{
+		yy_val.v = yy_box(NullPredicate{yy_unbox[RowValueConstructorPredicand](yy_dollar[1].v), !(yy_as[bool](yy_dollar[2].v))})
+	}
+}
+
+fn yy_action_1331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6034
+	{
+		yy_val.v = true
+	}
+}
+
+fn yy_action_1332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6035
 	{
 		yy_val.v = false
 	}
 }
 
-fn yy_action_1330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6024
+fn yy_action_1333(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6040
 	{
 		part := yy_unbox[QuantifiedComparisonPredicate](yy_dollar[2].v)
 		yy_val.v = yy_box(QuantifiedComparisonPredicate{
@@ -52931,8 +52970,8 @@ fn yy_action_1330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6038
+fn yy_action_1334(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6054
 	{
 		yy_val.v = yy_box(QuantifiedComparisonPredicate{
 			op:       yy_unbox[ComparisonOperator](yy_dollar[1].v)
@@ -52942,8 +52981,8 @@ fn yy_action_1331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6045
+fn yy_action_1335(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6061
 	{
 		yy_val.v = yy_box(QuantifiedComparisonPredicate{
 			op:       yy_unbox[ComparisonOperator](yy_dollar[1].v)
@@ -52953,8 +52992,8 @@ fn yy_action_1332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
-fn yy_action_1333(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
-	// line vsql/y.y:6052
+fn yy_action_1336(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
+	// line vsql/y.y:6068
 	{
 		yy_val.v = yy_box(QuantifiedComparisonPredicate{
 			op:       yy_unbox[ComparisonOperator](yy_dollar[1].v)

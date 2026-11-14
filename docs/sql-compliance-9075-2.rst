@@ -1556,7 +1556,7 @@ Optional Features
    * - ✅ **T625**
      - **LISTAGG**
 
-   * - ❌ **T626**
+   * - ✅ **T626**
      - **ANY_VALUE**
 
    * - ❌ **T627**

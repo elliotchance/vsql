@@ -3,6 +3,8 @@
 
 module vsql
 
+import math.big
+
 // YYSym is the value of a symbol on the parser's stack. Every node of the
 // syntax tree is kept in a YYBox (see below), so that YYSym stays small. Only a
 // string (the text of a token, like a keyword or a number) and a bool aren't
@@ -180,11 +182,12 @@ fn tokenize(sql_stmt string) ![]Token {
 
 // tokenize_with_features also returns the features outside of Core SQL that
 // the tokens use (see flag), which the parser can't see: F271 for a compound
-// character literal, F393 for a Unicode character string literal and T351 for a
-// bracketed comment.
+// character literal, F393 for a Unicode character string literal, T351 for a
+// bracketed comment, T661 for a hexadecimal, octal or binary integer and T662
+// for an underscore in a number.
 //
 // ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Conformance Rules, 3
-// ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 6 and 11
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 6, 11, 12 and 13
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
@@ -227,13 +230,34 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			continue
 		}
 
-		// Numbers
+		// Numbers. A hexadecimal, octal or binary integer (T661) is a number
+		// token of its decimal value, and can't be part of an exact numeric
+		// literal with a period or the mantissa of an approximate one.
+		//
+		// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 32
+		if radix := non_decimal_radix(cs, i) {
+			word, end := read_non_decimal_integer(cs, i, radix)!
+			if word.contains('_') {
+				features << 'T662'
+			}
+			features << 'T661'
+			i = end
+			if (i < cs.len && cs[i] == `.`) || is_exponent(cs, i) {
+				return sqlstate_42601('a non-decimal integer cannot have a period or exponent: ${cs[first_position - offset..i + 1].string()}')
+			}
+			tokens << Token{token_literal_number, non_decimal_integer_value(word, radix)!, 0, 0}
+			unsafe {
+				goto next
+			}
+		}
 		if cs[i] >= `0` && cs[i] <= `9` {
 			start := i
-			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
-				i++
+			i = end_of_decimal_integer(cs, i)
+			mut word := substring(text, cs, ascii, start, i)
+			if word.contains('_') {
+				features << 'T662'
+				word = word.replace('_', '')
 			}
-			word := substring(text, cs, ascii, start, i)
 			tokens << Token{token_literal_number, word, 0, 0}
 
 			// There is a special case for approximate numbers where 'E' is considered
@@ -745,6 +769,110 @@ fn unescape_unicode(s string, escape rune) !string {
 	}
 
 	return result.string()
+}
+
+// end_of_decimal_integer returns the position after the <unsigned decimal
+// integer> that starts at i. An underscore can be between two digits (T662),
+// but not at the end or next to another underscore, so "1_000" ends after the
+// last 0, and "1__0" and "1_" end after the 1.
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 22
+fn end_of_decimal_integer(cs []rune, start int) int {
+	mut i := start
+	for i < cs.len {
+		if cs[i] >= `0` && cs[i] <= `9` {
+			i++
+		} else if cs[i] == `_` && i + 1 < cs.len && cs[i + 1] >= `0` && cs[i + 1] <= `9` {
+			i += 2
+		} else {
+			break
+		}
+	}
+
+	return i
+}
+
+// non_decimal_radix returns the radix (16, 8 or 2) if an <unsigned hexadecimal
+// integer>, <unsigned octal integer> or <unsigned binary integer> starts at i.
+// That's "0X", "0O" or "0B" (in either case), directly followed by a digit of
+// the radix, or an underscore and a digit. Otherwise it's an ordinary 0, such as
+// "0x" (0 followed by the name x).
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 26 and 27
+fn non_decimal_radix(cs []rune, i int) ?u32 {
+	if cs[i] != `0` || i + 1 >= cs.len {
+		return none
+	}
+	radix := match cs[i + 1] {
+		`x`, `X` { u32(16) }
+		`o`, `O` { u32(8) }
+		`b`, `B` { u32(2) }
+		else { return none }
+	}
+	mut first := i + 2
+	if first < cs.len && cs[first] == `_` {
+		first++
+	}
+	if first < cs.len && is_radix_digit(cs[first], radix) {
+		return radix
+	}
+
+	return none
+}
+
+fn is_radix_digit(c rune, radix u32) bool {
+	return match radix {
+		16 { is_hexit(c) }
+		8 { c >= `0` && c <= `7` }
+		else { c == `0` || c == `1` }
+	}
+}
+
+// read_non_decimal_integer reads the digits of an integer after its radix
+// indicator (see non_decimal_radix), with the underscores, and returns them
+// and the position after them. Each underscore must be followed by a digit.
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Format
+fn read_non_decimal_integer(cs []rune, start int, radix u32) !(string, int) {
+	mut i := start + 2
+	for i < cs.len {
+		if is_radix_digit(cs[i], radix) {
+			i++
+		} else if cs[i] == `_` && i + 1 < cs.len && is_radix_digit(cs[i + 1], radix) {
+			i += 2
+		} else {
+			break
+		}
+	}
+
+	// A digit or letter straight after it isn't another token (such as "0b12"
+	// or "0xFG").
+	if i < cs.len && is_identifier_char(cs[i], true) && !is_exponent(cs, i) {
+		return sqlstate_42601('invalid ${radix_name(radix)} integer: ${cs[start..i + 1].string()}')
+	}
+
+	return cs[start + 2..i].string(), i
+}
+
+fn radix_name(radix u32) string {
+	return match radix {
+		16 { 'hexadecimal' }
+		8 { 'octal' }
+		else { 'binary' }
+	}
+}
+
+// non_decimal_integer_value is the decimal digits of the value of the digits of
+// a hexadecimal, octal or binary integer, without its underscores.
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 23 to 25
+// ISO/IEC 9075-2:2023, 5.3, <literal>, General Rules, 4 to 6
+fn non_decimal_integer_value(digits string, radix u32) !string {
+	value := big.integer_from_radix(digits.replace('_', '').to_lower(), radix) or {
+		return sqlstate_42601('invalid ${radix_name(radix)} integer: ${digits}')
+	}
+
+	return value.str()
 }
 
 fn is_hexit(c rune) bool {

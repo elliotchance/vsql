@@ -1580,10 +1580,10 @@ Optional Features
    * - ❌ **T655**
      - **Cyclically dependent routines**
 
-   * - ❌ **T661**
+   * - ✅ **T661**
      - **Non-decimal integer literals**
 
-   * - ❌ **T662**
+   * - ✅ **T662**
      - **Underscores in numeric literals**
 
    * - ❌ **T670**

@@ -80,17 +80,17 @@
 5.3/SR/19                implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql
 5.3/SR/20                n/a          - - binary strings (T021)
 5.3/SR/21                unclear      - - the maximum number of digits is implementation-defined; not documented yet
-5.3/SR/22                n/a          - - underscores in numeric literals (T662)
-5.3/SR/23                n/a          - - non-decimal integer literals (T661)
-5.3/SR/24                n/a          - - non-decimal integer literals (T661)
-5.3/SR/25                n/a          - - non-decimal integer literals (T661)
-5.3/SR/26                n/a          - - non-decimal integer literals (T661)
-5.3/SR/27                n/a          - - non-decimal integer literals (T661)
+5.3/SR/22                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/SR/23                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/SR/24                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/SR/25                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/SR/26                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/SR/27                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/SR/28                implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
 5.3/SR/29                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql the smallest of SMALLINT, INTEGER and BIGINT that holds an integer, otherwise NUMERIC (with at most 1000 digits)
 5.3/SR/30                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_approximate_literal_exact.sql DOUBLE PRECISION
 5.3/SR/31                implemented  vsql/lexer.v tests/std_2_5_3_approximate_literal_exact.sql
-5.3/SR/32                n/a          - - non-decimal integer literals (T661)
+5.3/SR/32                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/SR/33                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_date.sql
 5.3/SR/34                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_time.sql
 5.3/SR/35                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_timestamp.sql
@@ -109,9 +109,9 @@
 5.3/GR/1                 implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the source and the literal are both UTF8
 5.3/GR/2                 implemented  vsql/lexer.v tests/std_2_5_3_literal_normalization.sql
 5.3/GR/3                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
-5.3/GR/4                 n/a          - - non-decimal integer literals (T661)
-5.3/GR/5                 n/a          - - non-decimal integer literals (T661)
-5.3/GR/6                 n/a          - - non-decimal integer literals (T661)
+5.3/GR/4                 implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/GR/5                 implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/GR/6                 implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/GR/7                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
 5.3/GR/8                 implemented  vsql/std_2_5_3_literal.v tests/std_2_6_31_approximate_errors.sql
 5.3/GR/9                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
@@ -138,8 +138,8 @@
 5.3/CR/9                 n/a          - - binary strings (T021)
 5.3/CR/10                n/a          - - binary strings (T021)
 5.3/CR/11                implemented  vsql/lexer.v tests/std_1_8_5_flagging.sql
-5.3/CR/12                n/a          - - non-decimal integer literals (T661)
-5.3/CR/13                n/a          - - underscores in numeric literals (T662)
+5.3/CR/12                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
+5.3/CR/13                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 # 5.4, Names and identifiers
 5.4                      implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql
 5.4/SR/1                 n/a          - - named character sets (F461)

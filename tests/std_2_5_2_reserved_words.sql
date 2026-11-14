@@ -52,6 +52,7 @@ CREATE TABLE BINARY (x INT);
 CREATE TABLE BLOB (x INT);
 CREATE TABLE BOOLEAN (x INT);
 CREATE TABLE BOTH (x INT);
+CREATE TABLE BTRIM (x INT);
 CREATE TABLE BY (x INT);
 -- error 42601: syntax error: unexpected BEGIN at line 1, column 14 near "CREATE TABLE BEGIN ("; hint: BEGIN is a reserved word, so it must be quoted to be used as a name, such as "BEGIN" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected BEGIN_FRAME at line 1, column 14 near "CREATE TABLE BEGIN_FRAME ("; hint: BEGIN_FRAME is a reserved word, so it must be quoted to be used as a name, such as "BEGIN_FRAME" (see https://vsql.readthedocs.io/en/latest/keywords.html)
@@ -62,6 +63,7 @@ CREATE TABLE BY (x INT);
 -- error 42601: syntax error: unexpected BLOB at line 1, column 14 near "CREATE TABLE BLOB ("; hint: BLOB is a reserved word, so it must be quoted to be used as a name, such as "BLOB" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected BOOLEAN at line 1, column 14 near "CREATE TABLE BOOLEAN ("; hint: BOOLEAN is a reserved word, so it must be quoted to be used as a name, such as "BOOLEAN" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected BOTH at line 1, column 14 near "CREATE TABLE BOTH ("; hint: BOTH is a reserved word, so it must be quoted to be used as a name, such as "BOTH" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+-- error 42601: syntax error: unexpected BTRIM at line 1, column 14 near "CREATE TABLE BTRIM ("; hint: BTRIM is a reserved word, so it must be quoted to be used as a name, such as "BTRIM" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected BY at line 1, column 14 near "CREATE TABLE BY ("; hint: BY is a reserved word, so it must be quoted to be used as a name, such as "BY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 CREATE TABLE CALL (x INT);
@@ -392,6 +394,8 @@ CREATE TABLE LOCALTIMESTAMP (x INT);
 CREATE TABLE LOG (x INT);
 CREATE TABLE LOG10 (x INT);
 CREATE TABLE LOWER (x INT);
+CREATE TABLE LPAD (x INT);
+CREATE TABLE LTRIM (x INT);
 CREATE TABLE MATCH (x INT);
 CREATE TABLE MATCH_NUMBER (x INT);
 CREATE TABLE MATCH_RECOGNIZE (x INT);
@@ -402,6 +406,8 @@ CREATE TABLE MATCH_RECOGNIZE (x INT);
 -- error 42601: syntax error: unexpected LOG at line 1, column 14 near "CREATE TABLE LOG ("; hint: LOG is a reserved word, so it must be quoted to be used as a name, such as "LOG" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected LOG10 at line 1, column 14 near "CREATE TABLE LOG10 ("; hint: LOG10 is a reserved word, so it must be quoted to be used as a name, such as "LOG10" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected LOWER at line 1, column 14 near "CREATE TABLE LOWER ("; hint: LOWER is a reserved word, so it must be quoted to be used as a name, such as "LOWER" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+-- error 42601: syntax error: unexpected LPAD at line 1, column 14 near "CREATE TABLE LPAD ("; hint: LPAD is a reserved word, so it must be quoted to be used as a name, such as "LPAD" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+-- error 42601: syntax error: unexpected LTRIM at line 1, column 14 near "CREATE TABLE LTRIM ("; hint: LTRIM is a reserved word, so it must be quoted to be used as a name, such as "LTRIM" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected MATCH at line 1, column 14 near "CREATE TABLE MATCH ("; hint: MATCH is a reserved word, so it must be quoted to be used as a name, such as "MATCH" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected MATCH_NUMBER at line 1, column 14 near "CREATE TABLE MATCH_NUMBER ("; hint: MATCH_NUMBER is a reserved word, so it must be quoted to be used as a name, such as "MATCH_NUMBER" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected MATCH_RECOGNIZE at line 1, column 14 near "CREATE TABLE MATCH_RECOGNIZE ("; hint: MATCH_RECOGNIZE is a reserved word, so it must be quoted to be used as a name, such as "MATCH_RECOGNIZE" (see https://vsql.readthedocs.io/en/latest/keywords.html)
@@ -584,6 +590,8 @@ CREATE TABLE ROLLUP (x INT);
 CREATE TABLE ROW (x INT);
 CREATE TABLE ROW_NUMBER (x INT);
 CREATE TABLE ROWS (x INT);
+CREATE TABLE RPAD (x INT);
+CREATE TABLE RTRIM (x INT);
 -- error 42601: syntax error: unexpected RESULT at line 1, column 14 near "CREATE TABLE RESULT ("; hint: RESULT is a reserved word, so it must be quoted to be used as a name, such as "RESULT" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected RETURN at line 1, column 14 near "CREATE TABLE RETURN ("; hint: RETURN is a reserved word, so it must be quoted to be used as a name, such as "RETURN" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected RETURNS at line 1, column 14 near "CREATE TABLE RETURNS ("; hint: RETURNS is a reserved word, so it must be quoted to be used as a name, such as "RETURNS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
@@ -594,6 +602,8 @@ CREATE TABLE ROWS (x INT);
 -- error 42601: syntax error: unexpected ROW at line 1, column 14 near "CREATE TABLE ROW ("; hint: ROW is a reserved word, so it must be quoted to be used as a name, such as "ROW" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected ROW_NUMBER at line 1, column 14 near "CREATE TABLE ROW_NUMBER ("; hint: ROW_NUMBER is a reserved word, so it must be quoted to be used as a name, such as "ROW_NUMBER" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected ROWS at line 1, column 14 near "CREATE TABLE ROWS ("; hint: ROWS is a reserved word, so it must be quoted to be used as a name, such as "ROWS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+-- error 42601: syntax error: unexpected RPAD at line 1, column 14 near "CREATE TABLE RPAD ("; hint: RPAD is a reserved word, so it must be quoted to be used as a name, such as "RPAD" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+-- error 42601: syntax error: unexpected RTRIM at line 1, column 14 near "CREATE TABLE RTRIM ("; hint: RTRIM is a reserved word, so it must be quoted to be used as a name, such as "RTRIM" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 CREATE TABLE RUNNING (x INT);
 CREATE TABLE SAVEPOINT (x INT);

@@ -127,6 +127,13 @@ rows:
 A row of the first side with a ``NULL`` in one of those values can't match any
 row, so none are read for it.
 
+The ``WHERE`` clause is applied to the joined rows, but it's also used to read
+only some rows of a table in the join, like it is for a single table. For
+example, ``WHERE orders.order_id BETWEEN 10 AND 20`` reads only those orders
+with the ``PRIMARY KEY`` of ``orders``. That's only for a table whose rows are
+never ``NULL``-extended: either side of an ``INNER JOIN``, the left side of a
+``LEFT JOIN`` and the right side of a ``RIGHT JOIN``.
+
 See Also
 --------
 

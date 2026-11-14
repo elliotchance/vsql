@@ -37,6 +37,12 @@ Text Types
     - See ``CHARACTER(n)``.
     - Is an alias for ``CHARACTER(1)``.
 
+  * - ``TEXT``
+    - See ``CHARACTER VARYING(n)``.
+    - Is an alias for ``CHARACTER VARYING(10485760)``, the same as a
+      ``VARCHAR`` without a length. It's a vsql extension (``V601-01``, see
+      :doc:`sql-flagging`), so it isn't a reserved word.
+
 The length *n* must be from 1 to 10485760. A ``CHARACTER VARYING`` (or
 ``CHAR VARYING`` or ``VARCHAR``) without a length is a
 ``CHARACTER VARYING(10485760)``, the maximum length.

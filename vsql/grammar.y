@@ -259,6 +259,7 @@ module vsql
 %token TABLE_NAME
 %token TABLE_SEMANTICS
 %token TEMPORARY
+%token TEXT
 %token THROUGH
 %token TIES
 %token TOP_LEVEL_COUNT

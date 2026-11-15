@@ -44,11 +44,11 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 			generated_columns << generated_column
 		}
 	}
-	if table.columns.len - generated_columns.len == 1 {
-		return sqlstate_42601('cannot drop the only column of ${table.name}')
-	}
 	if generated_columns.len > 0 && d.behavior == 'RESTRICT' {
 		return sqlstate_2bp01('column ${requote_identifier(generated_columns[0].name.sub_entity_name)} on ${table.name}')
+	}
+	if table.columns.len - generated_columns.len == 1 {
+		return sqlstate_42601('cannot drop the only column of ${table.name}')
 	}
 	for generated_column in generated_columns {
 		DropColumnDefinition{generated_column.name, 'CASCADE'}.execute(mut conn, mut catalog,

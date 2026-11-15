@@ -1,6 +1,7 @@
 module vsql
 
 import math
+import math.bits
 
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>
 //
@@ -273,6 +274,17 @@ fn set_function_type(name string, t Type) Type {
 		return new_type('DOUBLE PRECISION', 0, 0)
 	}
 
+	// The product of integers is a BIGINT, like their sum. The product of exact
+	// numbers can't keep their scale, because its scale would be the sum of the
+	// scales of every value, so it's a DOUBLE PRECISION, like the product of
+	// approximate numbers (V405-02).
+	if name == 'PRODUCT' {
+		return match t.typ {
+			.is_smallint, .is_integer, .is_bigint { new_type('BIGINT', 0, 0) }
+			else { new_type('DOUBLE PRECISION', 0, 0) }
+		}
+	}
+
 	// The sum of exact numbers keeps the scale (SR 7.g.ii). It has no limit on the
 	// precision because the sum may need more digits than any of the values. The
 	// sum of integers is a BIGINT so that it's less likely to overflow.
@@ -352,6 +364,10 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 		return result
 	}
 
+	if name == 'PRODUCT' {
+		return eval_product(values, typ)!
+	}
+
 	// SUM or AVG. An approximate numeric is added as a DOUBLE PRECISION, and an
 	// exact numeric is added exactly before it's cast to the result type, which
 	// raises 22003 when the sum doesn't fit (GR 3.e and 7.d.v).
@@ -376,6 +392,60 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	}
 
 	return cast(mut conn, name, new_numeric_value_from_numeric(sum), typ)!
+}
+
+// named_aggregate_functions are the general set functions that are named by an
+// identifier rather than a reserved word, so they're a routine_invocation.
+const named_aggregate_functions = ['PRODUCT']
+
+// eval_product is the product of the (non-null) values of PRODUCT, where typ
+// is the result type (see set_function_type). A product of integers is exact,
+// and it's a 22003 error when it's out of the range of a BIGINT. That doesn't
+// depend on the order of the values: a value of zero makes the product zero,
+// and otherwise the magnitude can only grow, so it's out of range as soon as
+// the magnitude of a partial product is.
+fn eval_product(values []Value, typ Type) !Value {
+	if typ.typ in approximate_types {
+		mut product := 1.0
+		for value in values {
+			product *= value.as_f64()!
+		}
+
+		// A product of zero and a negative number is -0, but zero has no sign
+		// here, like the product of integers.
+		if product == 0 {
+			product = 0
+		}
+
+		return approximate_value(product, typ.typ)!
+	}
+
+	if values.any(it.int_value() == 0) {
+		return new_bigint_value(0)
+	}
+
+	mut negative := false
+	mut magnitude := u64(1)
+	for value in values {
+		x := value.int_value()
+		negative = negative != (x < 0)
+		// The magnitude of the smallest BIGINT doesn't fit in a BIGINT.
+		abs_x := if x < 0 { u64(-(x + 1)) + 1 } else { u64(x) }
+		hi, lo := bits.mul_64(magnitude, abs_x)
+		if hi != 0 || lo > u64(1) << 63 {
+			return sqlstate_22003()
+		}
+		magnitude = lo
+	}
+
+	if negative {
+		return new_bigint_value(-i64(magnitude - 1) - 1)
+	}
+	if magnitude > u64(max_i64) {
+		return sqlstate_22003()
+	}
+
+	return new_bigint_value(i64(magnitude))
 }
 
 // binary_set_functions are the names of every <binary set function type>.
@@ -802,9 +872,10 @@ fn listagg_result(values []string, separator string, overflow ListaggOverflow, m
 }
 
 // OrderedSetFunction is a <hypothetical set function>, such as
-// "RANK(5) WITHIN GROUP (ORDER BY x)", or an <inverse distribution function>,
-// such as "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY x)". name is the <rank
-// function type> or the <inverse distribution function type>.
+// "RANK(5) WITHIN GROUP (ORDER BY x)", an <inverse distribution function>,
+// such as "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY x)", or the vsql
+// extension "MODE() WITHIN GROUP (ORDER BY x)" (V405-01). name is the <rank
+// function type>, the <inverse distribution function type> or MODE.
 //
 // The args are non-aggregated arguments: they're evaluated once for each group,
 // like an expression of the select list, so a column must be a grouping column
@@ -816,6 +887,20 @@ struct OrderedSetFunction {
 	args   []ValueExpression
 	order  []SortSpecification
 	filter ?&BooleanValueExpression
+}
+
+// new_named_ordered_set_function is an ordered set function that's named by an
+// identifier, such as MODE, rather than by a reserved word. Any name can be
+// parsed, but only MODE (or the name of another ordered set function) can be
+// compiled.
+fn new_named_ordered_set_function(mut yylex YYLexer, e RoutineInvocation, order []SortSpecification) OrderedSetFunction {
+	flag_if(mut yylex, e.function_name == 'MODE', vsql_mode)
+
+	return OrderedSetFunction{
+		name:  e.function_name
+		args:  e.args
+		order: order
+	}
 }
 
 fn (e OrderedSetFunction) pstr(params map[string]Value) string {
@@ -884,6 +969,8 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 		return sqlstate_42601('nested set function: ${name}')
 	}
 
+	not_found := sqlstate_42883('function does not exist: ${e.name}(${arg_types.map(it.str()).join(', ')}) WITHIN GROUP (ORDER BY ${key_types.map(it.str()).join(', ')})')
+	mut typ := ordered_set_function_type(e.name)
 	if e.is_hypothetical() {
 		// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 10.b and 10.c
 		if arg_types.len != key_types.len {
@@ -891,24 +978,34 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 		}
 		for i, arg_type in arg_types {
 			if !comparable_types(arg_type.typ, key_types[i].typ) {
-				return sqlstate_42883('function does not exist: ${e.name}(${arg_types.map(it.str()).join(', ')}) WITHIN GROUP (ORDER BY ${key_types.map(it.str()).join(', ')})')
+				return not_found
 			}
 		}
-	} else {
+	} else if e.name in ['PERCENTILE_CONT', 'PERCENTILE_DISC', 'MODE'] {
 		// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 12.a, 12.c and 12.d
 		if key_types.len != 1 {
 			return sqlstate_42601('${e.name} must have one sort key')
 		}
-		if !arg_types[0].typ.is_number() || !key_types[0].typ.is_number() {
-			return sqlstate_42883('function does not exist: ${e.name}(${arg_types[0]}) WITHIN GROUP (ORDER BY ${key_types[0]})')
+
+		// MODE has no arguments, and its sort key can have any type, which is the
+		// type of the result, like MAX.
+		if e.name == 'MODE' {
+			if arg_types.len != 0 {
+				return not_found
+			}
+			typ = Type{key_types[0].typ, key_types[0].size, key_types[0].scale, false}
+		} else if arg_types.len != 1 || !arg_types[0].typ.is_number()
+			|| !key_types[0].typ.is_number() {
+			return not_found
 		}
+	} else {
+		return not_found
 	}
 
 	compile_filter(mut c, e.filter, name)!
 	c.flag_ordered_set_function(e)
 
-	return aggregate_result(mut c, AggregateFunction(e), ordered_set_function_type(e.name),
-		in_aggregate)!
+	return aggregate_result(mut c, AggregateFunction(e), typ, in_aggregate)!
 }
 
 // eval returns the result for the rows of a group (after its filter), and
@@ -942,8 +1039,45 @@ fn (e OrderedSetFunction) eval(mut c Compiler, group_row Row, rows []Row) !(Valu
 		return hypothetical_set_function(c.conn, e.name, args, keys, e.order)!, false
 	}
 
+	if e.name == 'MODE' {
+		return mode_function(c.conn, keys.map(it[0]), compiled[0].typ)!
+	}
+
 	return inverse_distribution_function(mut c.conn, e.name, args[0], keys.map(it[0]),
 		compiled[0].typ)!
+}
+
+// mode_function is the most frequent of the sorted values of the sort key (with
+// the type typ), after null values are eliminated. When several values are the
+// most frequent, it's the first of them in the order of the sort key, so it's
+// the smallest with ASC and the largest with DESC. Values are the same when
+// they're equal with =, and the first of them is the result.
+fn mode_function(conn &Connection, all_values []Value, typ Type) !(Value, bool) {
+	values := non_null_values(all_values)
+	null_eliminated := values.len < all_values.len
+	if values.len == 0 {
+		return Value{
+			typ:     Type{typ.typ, typ.size, typ.scale, false}
+			is_null: true
+		}, null_eliminated
+	}
+
+	// Equal values are next to each other, so each run of them is counted.
+	mut result := values[0]
+	mut result_count := 0
+	mut start := 0
+	for i in 1 .. values.len + 1 {
+		if i < values.len && compare(conn, values[i], values[start])! == .is_equal {
+			continue
+		}
+		if i - start > result_count {
+			result = values[start]
+			result_count = i - start
+		}
+		start = i
+	}
+
+	return result, null_eliminated
 }
 
 // hypothetical_set_function is the rank of a hypothetical row with the values

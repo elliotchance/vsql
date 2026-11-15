@@ -33,8 +33,8 @@ The statistical functions (see :doc:`functions-statistical`) are aggregate
 functions too.
 
 ``LISTAGG`` and the ordered set functions (``CUME_DIST``, ``DENSE_RANK``,
-``PERCENT_RANK``, ``PERCENTILE_CONT``, ``PERCENTILE_DISC`` and ``RANK``) are
-followed by ``WITHIN GROUP (ORDER BY sort_key [ASC | DESC], ...)``, which is
+``MODE``, ``PERCENT_RANK``, ``PERCENTILE_CONT``, ``PERCENTILE_DISC`` and
+``RANK``) are followed by ``WITHIN GROUP (ORDER BY sort_key [ASC | DESC], ...)``, which is
 the order of the rows of the group that they use. ``NULL`` is before any other
 value with ``ASC``, and after it with ``DESC``.
 
@@ -442,6 +442,54 @@ or a string. The result has the same type as the values.
 - **Other databases:** ``MIN`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_AND`` instead.
 
+.. _function-mode:
+
+MODE
+^^^^
+
+.. code-block:: sql
+
+   MODE() WITHIN GROUP (ORDER BY sort_key) ANY
+
+Returns the most frequent value of the sort key. When several values are the
+most frequent, the result is the first of them in the order of the sort key,
+so it's the smallest with ``ASC`` and the largest with ``DESC``. Values are the
+same if they are equal with ``=``.
+
+``MODE`` has no arguments (``MODE(x)`` is a ``42883`` error) and there must be
+one sort key. The sort key can be any type that can be compared with ``=``,
+such as a number, a string or a date, and the result has the same type.
+``NULL`` values are ignored, with a ``01003`` warning, and if there are no
+values the result is ``NULL``.
+
+``MODE`` is a vsql extension flagged by ``V405-01`` (see :doc:`sql-flagging`).
+It isn't a reserved word, so a column or a table can still be called ``mode``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT MODE() WITHIN GROUP (ORDER BY city) FROM products;
+  -- COL1: San Francisco
+
+  SELECT MODE() WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: 7.5e0
+
+  SELECT MODE() WITHIN GROUP (ORDER BY price DESC) FROM products;
+  -- COL1: 18.05e0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``MODE() WITHIN GROUP (ORDER BY x)``.
+  - Oracle: ``STATS_MODE(x)``, which returns any one of the most frequent
+    values when there's a tie.
+  - DuckDB: ``MODE(x)``.
+  - MySQL, SQLite and SQL Server: ``GROUP BY`` the value, sort the groups by
+    ``COUNT(*) DESC`` and keep the first row.
+
 .. _function-percent_rank:
 
 PERCENT_RANK
@@ -551,6 +599,60 @@ error.
 - **Other databases:** PostgreSQL, Oracle and SQL Server (only as a window
   function) have the same syntax, and return the type of the sort key. MySQL
   and SQLite don't have it.
+
+.. _function-product:
+
+PRODUCT
+^^^^^^^
+
+.. code-block:: sql
+
+   PRODUCT(SMALLINT) BIGINT
+   PRODUCT(INTEGER) BIGINT
+   PRODUCT(BIGINT) BIGINT
+   PRODUCT(NUMERIC(p, s)) DOUBLE PRECISION
+   PRODUCT(DECIMAL(p, s)) DOUBLE PRECISION
+   PRODUCT(REAL) DOUBLE PRECISION
+   PRODUCT(DOUBLE PRECISION) DOUBLE PRECISION
+
+Returns the product of all values (every value multiplied together). Values
+can be zero or negative.
+
+The product of integers is an exact ``BIGINT``, and a ``22003`` error is
+returned if it's out of range (larger than 9223372036854775807 or less than
+-9223372036854775808). Any other number gives an approximate ``DOUBLE
+PRECISION``. An exact product of ``NUMERIC`` or ``DECIMAL`` values would have
+the scales of all of them added together, so its scale would grow with the
+number of rows, and no ``NUMERIC`` type can hold that.
+
+The product of no rows (or only ``NULL`` values) is ``NULL``, not 1. Use
+``COALESCE(PRODUCT(x), 1)`` to get 1.
+
+A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
+
+``PRODUCT`` is a vsql extension flagged by ``V405-02`` (see
+:doc:`sql-flagging`). It isn't a reserved word, so a column or a table can
+still be called ``product``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT city, PRODUCT(price) FROM products GROUP BY city;
+  -- CITY: New York COL2: 145.3025e0
+  -- CITY: San Francisco COL2: 131.25e0
+
+  SELECT PRODUCT(x), PRODUCT(DISTINCT x) FROM (VALUES (2), (-3), (2)) AS t (x);
+  -- COL1: -12 COL2: -6
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - DuckDB: ``PRODUCT(x)``.
+  - PostgreSQL, MySQL, SQLite, SQL Server and Oracle don't have it.
+    ``EXP(SUM(LN(x)))`` is close when every value is positive.
 
 .. _function-rank:
 

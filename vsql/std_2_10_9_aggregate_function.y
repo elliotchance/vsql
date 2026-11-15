@@ -44,6 +44,26 @@ aggregate_function:
     $$.v = yy_box(with_filter(AggregateFunction($1.v as OrderedSetFunction),
       $2.v as BooleanValueExpression))
   }
+// An aggregate function that's named by an identifier, such as PRODUCT(x)
+// FILTER (WHERE x > 0) or MODE() WITHIN GROUP (ORDER BY x), so that the name
+// isn't a reserved word. Without a <filter clause> or a <within group
+// specification>, PRODUCT(x) is a routine_invocation. Whether the name is an
+// aggregate function is only known when it's compiled.
+| routine_invocation filter_clause {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = yy_box(with_filter(AggregateFunction($1.v as RoutineInvocation),
+      $2.v as BooleanValueExpression))
+  }
+| routine_invocation within_group_specification {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = yy_box(AggregateFunction(new_named_ordered_set_function(mut yylex, $1.v as RoutineInvocation,
+      $2.v as []SortSpecification)))
+  }
+| routine_invocation within_group_specification filter_clause {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = yy_box(with_filter(AggregateFunction(new_named_ordered_set_function(mut yylex,
+      $1.v as RoutineInvocation, $2.v as []SortSpecification)), $3.v as BooleanValueExpression))
+  }
 
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 14
 filter_clause:

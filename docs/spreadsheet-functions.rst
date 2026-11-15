@@ -404,14 +404,14 @@ Returns the most frequent value.
 .. code-block:: sql
 
   -- =MODE(number1)
-  SELECT /*number1*/ FROM /*table*/ GROUP BY /*number1*/ ORDER BY COUNT(*) DESC, /*number1*/ FETCH FIRST 1 ROW ONLY;
+  SELECT MODE() WITHIN GROUP (ORDER BY /*number1*/) FROM /*table*/;
   -- =MODE(1, 2, 2, 3)
-  SELECT v FROM (VALUES (1), (2), (2), (3)) AS t (v)
-  GROUP BY v ORDER BY COUNT(*) DESC, v
-  FETCH FIRST 1 ROW ONLY;
-  -- V: 2
+  SELECT MODE() WITHIN GROUP (ORDER BY v) FROM (VALUES (1), (2), (2), (3)) AS t (v);
+  -- COL1: 2
 
-On a tie this returns the smallest value, where the spreadsheet returns the one that comes first.
+On a tie this returns the first value in the ``ORDER BY`` order (the smallest
+with ``ASC``), where the spreadsheet returns the one that comes first in the
+sheet.
 
 NEGBINOMDIST
 ^^^^^^^^^^^^
@@ -866,12 +866,12 @@ Multiplies the values of a field over the rows that match the criteria.
 .. code-block:: sql
 
   -- =DPRODUCT(database, field, criteria)
-  SELECT EXP(SUM(LN(/*field*/))) FROM /*database*/ WHERE /*criteria*/;
+  SELECT PRODUCT(/*field*/) FROM /*database*/ WHERE /*criteria*/;
   -- =DPRODUCT(A1:D5, "price", F1:F2), with F1 = "price" and F2 = ">1"
-  SELECT EXP(SUM(LN(price))) FROM products WHERE price > 1;
+  SELECT PRODUCT(price) FROM products WHERE price > 1;
   -- COL1: 18e0
 
-The criteria range F1:F2 becomes the WHERE. There is no product aggregate, so this sums logarithms, which only works when every value is positive.
+The criteria range F1:F2 holds the header "price" and the condition ">1", which becomes the WHERE.
 
 DSTDEV
 ^^^^^^
@@ -2261,9 +2261,9 @@ Returns the future value of a principal after applying a series of interest rate
 .. code-block:: sql
 
   -- =FVSCHEDULE(principal, schedule)
-  SELECT ROUND(/*principal*/ * EXP(SUM(LN(1 + /*schedule*/))), 2) FROM /*table*/;
+  SELECT ROUND(/*principal*/ * PRODUCT(1 + /*schedule*/), 2) FROM /*table*/;
   -- =FVSCHEDULE(1000, {0.09, 0.11, 0.1})
-  SELECT ROUND(1000 * EXP(SUM(LN(1 + r))), 2)
+  SELECT ROUND(1000 * PRODUCT(1 + r), 2)
   FROM (VALUES (0.09e0), (0.11e0), (0.1e0)) AS s (r);
   -- COL1: 1330.89e0
 
@@ -4647,14 +4647,10 @@ Multiplies numbers together.
 .. code-block:: sql
 
   -- =PRODUCT(number1)
-  SELECT ROUND(EXP(SUM(LN(/*number1*/))), 6) FROM /*table*/ WHERE /*number1*/ IS NOT NULL;
+  SELECT PRODUCT(/*number1*/) FROM /*table*/ WHERE /*number1*/ IS NOT NULL;
   -- =PRODUCT(D2:D5)
-  SELECT ROUND(EXP(SUM(LN(qty))), 6) FROM products WHERE qty IS NOT NULL;
-  -- COL1: 2000e0
-
-This only works when every number is positive. Going through logarithms leaves
-a tiny error in the last digits (2000.000000000001 here), so the result is
-rounded.
+  SELECT PRODUCT(qty) FROM products WHERE qty IS NOT NULL;
+  -- COL1: 2000
 
 QUOTIENT
 ^^^^^^^^
@@ -6293,14 +6289,14 @@ Returns the most frequent value.
 .. code-block:: sql
 
   -- =MODE.SNGL(number1)
-  SELECT /*number1*/ FROM /*table*/ GROUP BY /*number1*/ ORDER BY COUNT(*) DESC, /*number1*/ FETCH FIRST 1 ROW ONLY;
+  SELECT MODE() WITHIN GROUP (ORDER BY /*number1*/) FROM /*table*/;
   -- =MODE.SNGL(1, 2, 2, 3)
-  SELECT v FROM (VALUES (1), (2), (2), (3)) AS t (v)
-  GROUP BY v ORDER BY COUNT(*) DESC, v
-  FETCH FIRST 1 ROW ONLY;
-  -- V: 2
+  SELECT MODE() WITHIN GROUP (ORDER BY v) FROM (VALUES (1), (2), (2), (3)) AS t (v);
+  -- COL1: 2
 
-On a tie this returns the smallest value, where the spreadsheet returns the one that comes first.
+On a tie this returns the first value in the ``ORDER BY`` order (the smallest
+with ``ASC``), where the spreadsheet returns the one that comes first in the
+sheet.
 
 NEGBINOM.DIST
 ^^^^^^^^^^^^^

@@ -145,6 +145,26 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1
 
+-- # CREATE INDEX and DROP INDEX change the database too, so the index isn't
+-- # created or dropped.
+/* extensions V002-01 V003-01 */
+CREATE TABLE t (x INT);
+CREATE INDEX t_x ON t (x);
+START TRANSACTION READ ONLY;
+CREATE INDEX t_x2 ON t (x);
+DROP INDEX t_x;
+COMMIT;
+DROP INDEX t_x2;
+DROP INDEX t_x;
+-- msg: CREATE TABLE 1
+-- msg: CREATE INDEX 1
+-- msg: START TRANSACTION
+-- error 25006: read-only sql transaction: cannot execute CREATE INDEX
+-- error 25006: read-only sql transaction: cannot execute DROP INDEX
+-- msg: COMMIT
+-- error 42704: no such index: ":memory:".PUBLIC.T_X2
+-- msg: DROP INDEX 1
+
 -- # The access mode only lasts for one transaction.
 CREATE TABLE t (x INT);
 START TRANSACTION READ ONLY;

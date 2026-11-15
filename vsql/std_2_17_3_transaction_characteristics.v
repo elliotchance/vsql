@@ -283,7 +283,9 @@ fn (p PreparedStmt) changes_database_name() string {
 	return match p.stmt {
 		AlterSequenceGeneratorStatement { 'ALTER SEQUENCE' }
 		AlterTableStatement { 'ALTER TABLE' }
+		CreateIndexStatement { 'CREATE INDEX' }
 		DeleteStatementPositioned, DeleteStatementSearched { 'DELETE' }
+		DropIndexStatement { 'DROP INDEX' }
 		DropSchemaStatement { 'DROP SCHEMA' }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE' }
 		DropTableStatement { 'DROP TABLE' }

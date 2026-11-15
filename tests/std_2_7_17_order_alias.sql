@@ -274,7 +274,7 @@ SELECT x FROM t WHERE x = (SELECT -w AS x FROM u ORDER BY x FETCH FIRST 1 ROW ON
 
 -- # A sort key can't contain a NEXT VALUE FOR, but it can be the name of a
 -- # column of the result that does. Each row uses one value, whatever the sort
--- # compares.
+-- # compares, including the rows that FETCH removes.
 /* extensions V202-01 */
 SELECT x FROM t ORDER BY NEXT VALUE FOR seq;
 SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY x FETCH FIRST 1 ROW ONLY;
@@ -286,14 +286,14 @@ SELECT DISTINCT NEXT VALUE FOR seq AS n FROM t ORDER BY n;
 SELECT NEXT VALUE FOR seq AS n FROM t GROUP BY x ORDER BY n;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in ORDER BY
 -- N: 1
+-- N: 6
+-- N: 5
 -- N: 4
--- N: 3
--- N: 2
+-- N: 9 M: 10
+-- N: 8 M: 9
 -- N: 7 M: 8
--- N: 6 M: 7
--- N: 5 M: 6
--- N: 9 X: 1
--- N: 11
+-- N: 11 X: 1
+-- N: 13
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in SELECT DISTINCT
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a grouped query
 

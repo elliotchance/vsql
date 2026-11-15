@@ -434,3 +434,20 @@ SELECT NEXT VALUE FOR a."B.S" FROM (VALUES 1) AS t;
 -- msg: CREATE SEQUENCE 1
 -- COL1: 1
 -- COL1: 10
+
+-- # Every row of the query specification gets a value, including those that
+-- # OFFSET and FETCH remove afterwards (General Rules, 1.a).
+CREATE SEQUENCE s1;
+CREATE TABLE t1 (a INTEGER);
+INSERT INTO t1 (a) VALUES (1), (2), (3);
+SELECT a, NEXT VALUE FOR s1 FROM t1 ORDER BY a FETCH FIRST 1 ROW ONLY;
+SELECT NEXT VALUE FOR s1 FROM t1 OFFSET 2 ROWS;
+SELECT NEXT VALUE FOR s1 AS n FROM t1 ORDER BY n DESC FETCH FIRST 1 ROW ONLY;
+SELECT NEXT VALUE FOR s1 FROM (VALUES 1) AS t;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- A: 1 COL2: 1
+-- COL1: 6
+-- N: 9
+-- COL1: 10

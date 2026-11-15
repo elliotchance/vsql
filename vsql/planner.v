@@ -793,6 +793,35 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		}
 	}
 
+	// The query specification takes a value of each NEXT VALUE FOR in its select
+	// list for every one of its rows, before OFFSET and FETCH (which belong to
+	// the query expression) remove some of them.
+	//
+	// ISO/IEC 9075-2:2023, 6.14, <next value expression>, General Rules, 1.a
+	mut next_value_exprs := []ValueExpression{}
+	if stmt.body is QuerySpecification && (stmt.fetch != none || stmt.offset != none) {
+		for expr in new_expr_operation(mut conn, params, stmt.body.exprs, tables)!.exprs {
+			mut c := Compiler{
+				conn:   conn
+				params: params
+				tables: tables
+			}
+			expr.expr.compile(mut c)!
+			if c.uses_next_value {
+				next_value_exprs << expr.expr
+			}
+		}
+	}
+	if next_value_exprs.len > 0 {
+		plan.operations << &SequenceValuesOperation{
+			params:  params
+			exprs:   next_value_exprs
+			columns: plan.columns()
+			tables:  tables
+			conn:    conn
+		}
+	}
+
 	if stmt.order.len > 0 {
 		// The expressions are only evaluated when rows are compared, so they're
 		// compiled here to catch errors (such as an ambiguous column) even when
@@ -836,7 +865,9 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			}
 		}
 
-		if c.next_value_sort_keys.len > 0 {
+		// The values of the sort keys were already taken with the rest of the
+		// select list above.
+		if c.next_value_sort_keys.len > 0 && next_value_exprs.len == 0 {
 			plan.operations << &SequenceValuesOperation{
 				params:  params
 				exprs:   c.next_value_sort_keys

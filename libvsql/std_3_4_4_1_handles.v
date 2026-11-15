@@ -359,7 +359,19 @@ fn (mut stmt Stmt) get_cursor_name() string {
 }
 
 // name_of_cursor is the name that get_cursor_name returns, without giving a
-// statement that doesn't have a name its generated one.
+// statement that doesn't have a name its generated one. Another statement can
+// have a name that is the same identifier as a generated one (sql_cur5 or
+// "SQL_CUR5"), so the generated name gets more underscores until it isn't in
+// use.
 fn (stmt &Stmt) name_of_cursor() string {
-	return if stmt.cursor_name == '' { 'SQL_CUR${stmt.handle}' } else { stmt.cursor_name }
+	if stmt.cursor_name != '' {
+		return stmt.cursor_name
+	}
+
+	mut name := 'SQL_CUR${stmt.handle}'
+	for stmt.cursor_name_in_use(name) {
+		name += '_'
+	}
+
+	return name
 }

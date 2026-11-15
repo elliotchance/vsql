@@ -76,8 +76,8 @@ Suites
 ``-suite`` chooses what the benchmark runs:
 
 - ``tpc-b-setup`` creates the ``TPC_B`` schema and its tables, and inserts the
-  rows (steps 1 to 5 of *Process*). It fails if the ``TPC_B`` schema already
-  exists.
+  rows (steps 1 to 5 of *Process*). The accounts are inserted 1,000 rows to a
+  transaction. It fails if the ``TPC_B`` schema already exists.
 
 - ``tpc-b-oltp`` reads every account and then runs the transactions (step 6 of
   *Process*) on a file that ``tpc-b-setup`` created. It needs ``-file``, since a

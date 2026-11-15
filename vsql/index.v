@@ -177,12 +177,13 @@ fn key_value_length(key []u8, typ SQLType, flip u8) int {
 		}
 		.is_bigint, .is_double_precision, .is_date, .is_time_with_time_zone,
 		.is_time_without_time_zone, .is_timestamp_with_time_zone,
-		.is_timestamp_without_time_zone {
+		.is_timestamp_without_time_zone, .is_interval_year_month, .is_interval_day_time {
 			8
 		}
-		.is_numeric, .is_decimal {
+		.is_numeric, .is_decimal, .is_decfloat {
 			// The sign, then (for a non-zero) the exponent and each digit until
-			// a 0, which is flipped for a negative number. See write_key_numeric.
+			// a 0, which is flipped for a negative number. See write_key_numeric
+			// and write_key_decfloat.
 			sign := key[0] ^ flip
 			if sign == 1 {
 				1
@@ -195,7 +196,22 @@ fn key_value_length(key []u8, typ SQLType, flip u8) int {
 				n + 1
 			}
 		}
-		.is_character, .is_varchar {
+		.is_binary, .is_varbinary, .is_blob {
+			// Each X'00' is followed by FF, and the end is 00 00, see
+			// write_key_binary.
+			mut n := 0
+			for {
+				n++
+				if key[n - 1] ^ flip == 0 {
+					n++
+					if key[n - 1] ^ flip == 0 {
+						break
+					}
+				}
+			}
+			n
+		}
+		.is_character, .is_varchar, .is_clob {
 			// Each space is followed by a byte that's only 1 at the end, see
 			// write_key_string.
 			mut n := 0
@@ -284,7 +300,8 @@ fn (mut f Storage) create_index(definition Index, t Table, check_unique bool) ! 
 	mut rows := []Row{}
 	mut seen := map[string]bool{}
 	for object in f.read_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))! {
-		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
+		mut decoded := new_row_from_bytes(t, object.value, object.tid)
+		row := f.resolve_row(mut decoded)!.for_storage()
 		if check_unique && definition.unique && !definition.has_null(row) {
 			values := definition.entry_values(t, row)!.bytestr()
 			if values in seen {
@@ -642,7 +659,8 @@ fn (mut f Storage) check_indexes() ! {
 		}
 		mut expected := []string{}
 		for object in f.read_objects(row_key_prefix(table.id), row_key_prefix(table.id + 1))! {
-			row := new_row_from_bytes(table, object.value, object.tid).for_storage()
+			mut decoded := new_row_from_bytes(table, object.value, object.tid)
+			row := f.resolve_row(mut decoded)!.for_storage()
 			expected << index.entry_key(table, row)!.hex()
 		}
 		expected.sort()
@@ -722,7 +740,13 @@ fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, bool, time.Du
 
 	mut seen := map[string]bool{}
 	for column in stmt.columns {
-		table.column(column.name)!
+		// A large object can't be ordered, so it can't be in an index.
+		//
+		// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 3
+		typ := table.column(column.name)!.typ
+		if typ.typ in [.is_clob, .is_blob] {
+			return sqlstate_42601('column ${requote_identifier(column.name)} in index ${name} cannot be a ${typ.typ}')
+		}
 		if column.name in seen {
 			return sqlstate_42601('column ${requote_identifier(column.name)} is in index ${name} more than once')
 		}

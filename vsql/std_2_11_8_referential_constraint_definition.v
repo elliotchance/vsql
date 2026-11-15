@@ -227,7 +227,8 @@ fn key_type(typ SQLType) SQLType {
 		.is_smallint, .is_integer, .is_bigint { .is_bigint }
 		.is_real, .is_double_precision { .is_double_precision }
 		.is_numeric, .is_decimal { .is_numeric }
-		.is_character, .is_varchar { .is_varchar }
+		.is_character, .is_varchar, .is_clob { .is_varchar }
+		.is_binary, .is_varbinary, .is_blob { .is_varbinary }
 		else { typ }
 	}
 }
@@ -1104,7 +1105,8 @@ fn (mut f Storage) matching_rows(mut conn Connection, key ForeignKey, referencin
 			mut row_key := row_key_prefix(referencing.id)
 			row_key << index.entry_row_id(referencing, entry.key)!
 			for object in f.read_existing_objects(row_key, row_key)! {
-				row := new_row_from_bytes(referencing, object.value, object.tid).for_storage()
+				mut decoded := new_row_from_bytes(referencing, object.value, object.tid)
+				row := f.resolve_row(mut decoded)!.for_storage()
 				if key_value(row, key.columns, types, time_zone).bytestr() in keys {
 					matching[row_key.bytestr()] = row
 				}

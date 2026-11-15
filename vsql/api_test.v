@@ -1123,6 +1123,47 @@ fn test_create_index_waits() ! {
 	assert header.write_version == 2
 }
 
+// A table with a column of a type from data_types_file_format_version raises
+// the Read Version and the Write Version, because an older version can't read
+// its rows. A table without one, or a type that's only another name for an
+// older type (such as NCHAR), doesn't.
+fn test_data_types_raise_file_format_version() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-sql-test-data-types-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(session_path(path)) or {}
+		os.rm(path + '.wal') or {}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (a INT, b NCHAR(2))')!
+	db.close()
+	mut file := os.open(path)!
+	mut header := read_header(mut file)!
+	file.close()
+	assert header.read_version == 1 && header.write_version == 1
+
+	db = open(path)!
+	db.query('ALTER TABLE t ADD COLUMN c INTERVAL DAY')!
+	db.query("INSERT INTO t (a, c) VALUES (1, INTERVAL '2' DAY)")!
+	db.close()
+	file = os.open(path)!
+	header = read_header(mut file)!
+	file.close()
+	assert header.read_version == data_types_file_format_version
+		&& header.write_version == data_types_file_format_version
+
+	// The values are read back from the file.
+	db = open(path)!
+	defer {
+		db.close()
+	}
+	result := db.query('SELECT c FROM t')!
+	for row in result {
+		assert row.get_string('C')! == '2'
+	}
+}
+
 // A connection that's used from a thread other than the one that opened it
 // still releases the closures of each statement (see PreparedStmt.query).
 fn test_query_from_another_thread() ! {

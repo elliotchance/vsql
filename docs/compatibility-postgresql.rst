@@ -66,11 +66,13 @@ statement and example. These are the other differences to watch for:
   in ascending order, where PostgreSQL puts it last, so add ``NULLS LAST``
   (or ``NULLS FIRST`` for a descending order) to an ``ORDER BY`` to get the
   same order as PostgreSQL.
-- There are no arrays, ``interval``, ``bytea``, ``json``, ``uuid``, geometric,
-  network, range or text search types, no window functions (``OVER``) and no
-  functions that return a set of rows, so the functions for them have no
-  equivalent. Functions that aren't built in can be added with
-  :doc:`custom-functions`.
+- There are no arrays, ``json``, ``uuid``, geometric, network, range or text
+  search types, no window functions (``OVER``) and no functions that return a
+  set of rows, so the functions for them have no equivalent. ``interval`` and
+  ``bytea`` have equivalent types (``INTERVAL``, and ``BINARY VARYING`` or
+  ``BINARY LARGE OBJECT``), but few functions for them yet, so most of the
+  ``interval`` and ``bytea`` forms below still have no equivalent. Functions
+  that aren't built in can be added with :doc:`custom-functions`.
 
 ``vsql server`` (see :doc:`server`) lets PostgreSQL clients connect to vsql.
 To list the schemas and tables, it gives them a few of PostgreSQL's system

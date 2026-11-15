@@ -111,6 +111,77 @@ time zone component.
 
 A ``TIMESTAMP WITHOUT TIME ZONE`` (with any precision) is stored as 8 bytes.
 
+INTERVAL
+^^^^^^^^
+
+An interval is a length of time. It has one or more fields, from the start
+field to the end field, in this order: ``YEAR``, ``MONTH``, ``DAY``, ``HOUR``,
+``MINUTE`` and ``SECOND``. An interval of ``YEAR`` and ``MONTH`` fields is a
+year-month interval, and any other interval is a day-time interval:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Type
+    - Example Literal
+
+  * - ``INTERVAL YEAR(p)``
+    - ``INTERVAL '3' YEAR``
+
+  * - ``INTERVAL YEAR(p) TO MONTH``
+    - ``INTERVAL '1-2' YEAR TO MONTH``
+
+  * - ``INTERVAL MONTH(p)``
+    - ``INTERVAL '15' MONTH``
+
+  * - ``INTERVAL DAY(p)``
+    - ``INTERVAL '3' DAY``
+
+  * - ``INTERVAL DAY(p) TO HOUR``
+    - ``INTERVAL '3 04' DAY TO HOUR``
+
+  * - ``INTERVAL DAY(p) TO MINUTE``
+    - ``INTERVAL '3 04:05' DAY TO MINUTE``
+
+  * - ``INTERVAL DAY(p) TO SECOND(f)``
+    - ``INTERVAL '3 04:05:06.5' DAY TO SECOND``
+
+  * - ``INTERVAL HOUR(p)``
+    - ``INTERVAL '4' HOUR``
+
+  * - ``INTERVAL HOUR(p) TO MINUTE``
+    - ``INTERVAL '4:05' HOUR TO MINUTE``
+
+  * - ``INTERVAL HOUR(p) TO SECOND(f)``
+    - ``INTERVAL '4:05:06' HOUR TO SECOND``
+
+  * - ``INTERVAL MINUTE(p)``
+    - ``INTERVAL '5' MINUTE``
+
+  * - ``INTERVAL MINUTE(p) TO SECOND(f)``
+    - ``INTERVAL '5:06.123' MINUTE TO SECOND``
+
+  * - ``INTERVAL SECOND(p, f)``
+    - ``INTERVAL '6.25' SECOND``
+
+*p* is the number of digits of the start field, from 1 to 8 (2 if it's not
+specified). Every other field has 2 digits. *f* is the number of digits after
+the decimal point of the seconds, from 0 to 6 (6 if it's not specified). A
+literal must have every field of its type, and nothing else. Extra digits after
+the decimal point are truncated. An interval is negative with a ``-`` before or
+inside the string, such as ``INTERVAL -'1-2' YEAR TO MONTH``.
+
+An interval is stored as 8 bytes: the number of months of a year-month
+interval, or the number of microseconds of a day-time interval. When an
+interval is stored in a column, the fields after the end field of the column
+are removed, and it's an error (``22015``) if the start field has more digits
+than the column allows. An interval can only be stored in a column of the same
+kind (year-month or day-time) of interval.
+
+Intervals can only be stored, compared as a ``PRIMARY KEY`` and cast to other
+intervals for now. Datetime arithmetic and the other operators that use
+intervals are not supported yet.
+
 Comparisons
 -----------
 

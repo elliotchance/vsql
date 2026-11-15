@@ -404,8 +404,8 @@ fn compare_numbers(xv Value, yv Value) !CompareResult {
 fn compare_strings(xv Value, yv Value) CompareResult {
 	// compare_strings is only invoked when both sides are known to use
 	// string_value.
-	mut x := unsafe { xv.v.string_value }
-	mut y := unsafe { yv.v.string_value }
+	mut x := xv.string_value()
+	mut y := yv.string_value()
 
 	// The collation is determined by 9.15, for an equality, grouping or
 	// ordering operation. Only the default collation is supported, which has

@@ -479,6 +479,8 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					if !stmt.has_column(column.sub_entity_name) {
 						return sqlstate_42601_table('unknown column ${column} in ${constraint}', table_name)
 					}
+					check_groupable_column(column.sub_entity_name, stmt.column_type(column.sub_entity_name),
+						constraint)!
 					unique_columns << column.sub_entity_name
 				}
 
@@ -514,6 +516,8 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					if !stmt.has_column(column.sub_entity_name) {
 						return sqlstate_42601_table('unknown column ${column} in FOREIGN KEY', table_name)
 					}
+					check_groupable_column(column.sub_entity_name, stmt.column_type(column.sub_entity_name),
+						'FOREIGN KEY')!
 					referencing_columns << column.sub_entity_name
 				}
 
@@ -629,6 +633,31 @@ fn table_constraint_name(name Identifier, table_name Identifier) !string {
 	}
 
 	return name.entity_name
+}
+
+// column_type is the type of a column of the table elements, which must exist
+// (see has_column).
+fn (stmt TableDefinition) column_type(name string) Type {
+	mut typ := Type{}
+	for e in stmt.table_elements {
+		if e is Column && e.name.sub_entity_name == name {
+			typ = e.typ
+		}
+	}
+
+	return typ
+}
+
+// check_groupable_column returns an error if a column of a PRIMARY KEY, UNIQUE
+// or FOREIGN KEY can't be compared as a key, because its type is a CHARACTER
+// LARGE OBJECT or BINARY LARGE OBJECT. Their values are stored outside of the
+// row, so that they're only read when they're needed.
+//
+// ISO/IEC 9075-2:2023, 9.12, Grouping operations, Syntax Rules, 3
+fn check_groupable_column(column string, typ Type, context string) ! {
+	if typ.typ in [.is_clob, .is_blob] {
+		return sqlstate_42601('column ${requote_identifier(column)} in ${context} cannot be a ${typ.typ}')
+	}
 }
 
 // has_column is true if one of the table elements is the column.

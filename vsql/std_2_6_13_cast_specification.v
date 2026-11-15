@@ -117,12 +117,16 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 		}
 	}
 
-	if value.typ.uses_string() && target.uses_time() {
+	if value.typ.typ.is_string() && target.uses_time() {
 		return cast_string_to_datetime(mut conn, value, target)!
 	}
 
 	if value.typ.typ.is_string() && target.typ.is_string() {
 		return cast_character_to_character(mut conn, value, target)
+	}
+
+	if value.typ.typ.is_string() && target.typ == .is_decfloat {
+		return cast_character_to_decfloat(value, target)!
 	}
 
 	if value.typ.typ.is_string() && target.typ == .is_boolean {
@@ -156,11 +160,17 @@ enum CastKind {
 	time
 	timestamp
 	boolean
+	binary
+	interval_year_month
+	interval_day_time
 }
 
 fn cast_kind(t SQLType) CastKind {
 	return match t {
-		.is_character, .is_varchar { .character }
+		.is_character, .is_varchar, .is_clob { .character }
+		.is_binary, .is_varbinary, .is_blob { .binary }
+		.is_interval_year_month { .interval_year_month }
+		.is_interval_day_time { .interval_day_time }
 		.is_date { .date }
 		.is_time_with_time_zone, .is_time_without_time_zone { .time }
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone { .timestamp }
@@ -178,6 +188,19 @@ fn cast_kind(t SQLType) CastKind {
 fn check_cast(from Type, to Type) ! {
 	from_kind := cast_kind(from.typ)
 	to_kind := cast_kind(to.typ)
+
+	// A binary string or an interval can only be cast to its own kind of type,
+	// and a DECFLOAT can only be cast to or from a number or a character string,
+	// until the other casts are supported.
+	if from_kind in [.binary, .interval_year_month, .interval_day_time]
+		|| to_kind in [.binary, .interval_year_month, .interval_day_time] {
+		if from_kind == to_kind {
+			return
+		}
+
+		return sqlstate_42846(from, to)
+	}
+
 	if from_kind == to_kind || from_kind == .character || to_kind == .character
 		|| (from_kind in [.date, .time] && to_kind == .timestamp)
 		|| (from_kind == .timestamp && to_kind in [.date, .time]) {
@@ -199,7 +222,7 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 		return cast_character_to_octets(mut conn, s, to)
 	}
 	chars := s.runes()
-	if chars.len > to.size {
+	if to.size > 0 && chars.len > to.size {
 		if !chars[to.size..].all(is_truncating_whitespace(it)) {
 			conn.add_warning(sqlstate_01004())
 		}
@@ -250,6 +273,19 @@ fn cast_character_to_octets(mut conn Connection, s string, to Type) Value {
 	}
 }
 
+// cast_character_to_decfloat casts a character string to a DECFLOAT. Leading
+// and trailing <truncating whitespace> is removed, and what's left must be a
+// <signed numeric literal>, which is rounded to the precision of the DECFLOAT.
+// Unlike other numbers, an approximate numeric literal keeps all of its digits.
+fn cast_character_to_decfloat(v Value, to Type) !Value {
+	s := trim_truncating_whitespace(v.string_value())
+	if numeric_literal_kind(s) == .invalid {
+		return sqlstate_22018()
+	}
+
+	return new_decfloat_value(to, new_decfloat_from_string(s.trim_left('+'), to.size)!)
+}
+
 // cast_character_to_boolean casts a character string to a BOOLEAN. Leading and
 // trailing spaces are ignored, then the string must be a <boolean literal>
 // (TRUE, FALSE or UNKNOWN, in any case). UNKNOWN is the null value.
@@ -271,7 +307,7 @@ fn cast_character_to_boolean(v Value) !Value {
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.f and 12.f
 fn cast_boolean_to_character(mut conn Connection, v Value, to Type) !Value {
 	s := if v.bool_value() == .is_true { 'TRUE' } else { 'FALSE' }
-	if s.len > to.size {
+	if to.size > 0 && s.len > to.size {
 		return sqlstate_22018()
 	}
 

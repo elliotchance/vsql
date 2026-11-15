@@ -4,49 +4,49 @@
 6                        container    - -
 # 6.1, <data type>
 6.1                      implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
-6.1/SR/1                 partial      vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql NCHAR, CLOB and NCLOB (F421, T041), VARBINARY and BLOB (T021, T041)
-6.1/SR/2                 n/a          - - national character (F421)
+6.1/SR/1                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
+6.1/SR/2                 impl-defined vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql the national character set is UTF8, so each national character string type is the character string type
 6.1/SR/3                 impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only collation is the character set collation of UTF8 (no F690)
 6.1/SR/3.a               n/a          - - collations (F690)
 6.1/SR/3.b               impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only collation is the character set collation of UTF8 (no F690)
 6.1/SR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql
 6.1/SR/5                 implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
-6.1/SR/6                 n/a          - - binary strings (T021)
+6.1/SR/6                 n/a          - - a BINARY VARYING must have a length (T081)
 6.1/SR/7                 impl-defined vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql 10485760, the maximum length
 6.1/SR/8                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql the character set is always UTF8, whose repertoire is UCS
 6.1/SR/9                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql
-6.1/SR/10                n/a          - - LOBs (T041)
-6.1/SR/11                n/a          - - LOBs (T041)
-6.1/SR/11.a              n/a          - - LOBs (T041)
-6.1/SR/11.b              n/a          - - LOBs (T041)
-6.1/SR/11.b.i            n/a          - - LOBs (T041)
-6.1/SR/11.b.ii           n/a          - - LOBs (T041)
-6.1/SR/11.b.iii          n/a          - - LOBs (T041)
-6.1/SR/11.b.iv           n/a          - - LOBs (T041)
-6.1/SR/11.b.v            n/a          - - LOBs (T041)
-6.1/SR/12                n/a          - - LOBs (T041)
-6.1/SR/13                n/a          - - LOBs (T041)
+6.1/SR/10                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_data_types.sql the maximum length, 2147483647
+6.1/SR/11                partial      vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql no K, M, G, T or P multipliers
+6.1/SR/11.a              implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql
+6.1/SR/11.b              n/a          - - large object length multipliers
+6.1/SR/11.b.i            n/a          - - large object length multipliers
+6.1/SR/11.b.ii           n/a          - - large object length multipliers
+6.1/SR/11.b.iii          n/a          - - large object length multipliers
+6.1/SR/11.b.iv           n/a          - - large object length multipliers
+6.1/SR/11.b.v            n/a          - - large object length multipliers
+6.1/SR/12                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_large_object.sql
+6.1/SR/13                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql
 6.1/SR/14                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 6.1/SR/15                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_33_substring.sql
 6.1/SR/16                container    - -
 6.1/SR/16.a              implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql
 6.1/SR/16.a.i            implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 6.1/SR/16.a.ii           implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql
-6.1/SR/16.a.iii          n/a          - - LOBs (T041)
+6.1/SR/16.a.iii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_large_object.sql
 6.1/SR/16.b              container    - -
 6.1/SR/16.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
 6.1/SR/16.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
-6.1/SR/16.b.iii          n/a          - - LOBs (T041)
-6.1/SR/17                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum length is 10485760 (there are no LOBs, T041)
+6.1/SR/16.b.iii          n/a          - - a large object length can't have char length units (T061)
+6.1/SR/17                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum length is 10485760, and the maximum large object length is 2147483647
 6.1/SR/18                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the character set is always UTF8
-6.1/SR/19                n/a          - - binary strings (T021, T041)
-6.1/SR/20                n/a          - - binary strings (T021, T041)
-6.1/SR/21                n/a          - - binary strings (T021, T041)
-6.1/SR/21.a              n/a          - - binary strings (T021, T041)
-6.1/SR/21.b              n/a          - - binary strings (T021, T041)
-6.1/SR/21.c              n/a          - - binary strings (T021, T041)
-6.1/SR/22                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql NUMERIC and DECIMAL are 1000, FLOAT is 53
-6.1/SR/23                implemented  vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql there's no DECFLOAT (T076)
+6.1/SR/19                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_binary.sql
+6.1/SR/20                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_binary.sql
+6.1/SR/21                implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+6.1/SR/21.a              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+6.1/SR/21.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+6.1/SR/21.c              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+6.1/SR/22                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql NUMERIC and DECIMAL are 1000, FLOAT is 53, DECFLOAT is 34
+6.1/SR/23                impl-defined vsql/decfloat.v tests/std_2_6_1_decfloat.sql the precision of a DECFLOAT is 16 or 34
 6.1/SR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/25                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_13_cast.sql
 6.1/SR/26                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the normal form of INT is INTEGER, and the others are their own normal form
@@ -65,8 +65,8 @@
 6.1/SR/32                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_real.sql IEEE 754 single precision (24 bits)
 6.1/SR/33                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_double_precision.sql IEEE 754 double precision (53 bits)
 6.1/SR/34                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_double_precision.sql the IEEE 754 exponents
-6.1/SR/35                n/a          - - DECFLOAT (T076)
-6.1/SR/36                n/a          - - DECFLOAT (T076)
+6.1/SR/35                implemented  vsql/decfloat.v tests/std_2_6_1_decfloat.sql
+6.1/SR/36                impl-defined vsql/decfloat.v tests/std_2_6_1_decfloat.sql the exponents of IEEE 754 decimal64 and decimal128: -383 to 384, and -6143 to 6144
 6.1/SR/37                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the normal form of FLOAT is DOUBLE PRECISION, and the others are their own normal form
 6.1/SR/37.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/37.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
@@ -74,8 +74,8 @@
 6.1/SR/39                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/40                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_datetime_precision.sql 6
 6.1/SR/41                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_13_cast.sql
-6.1/SR/42                n/a          - - intervals (F052)
-6.1/SR/43                n/a          - - intervals (F052)
+6.1/SR/42                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+6.1/SR/43                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 6.1/SR/44                n/a          - - reference types (S041)
 6.1/SR/44.a              n/a          - - reference types (S041)
 6.1/SR/44.b              n/a          - - reference types (S041)

@@ -19,6 +19,10 @@ import runtime
 import time
 import vsql
 
+// setup_batch_rows is the number of accounts that tpc-b-setup inserts in each
+// transaction.
+const setup_batch_rows = 1000
+
 struct Benchmark {
 mut:
 	conn         &vsql.Connection
@@ -58,13 +62,22 @@ fn (mut b Benchmark) setup() ! {
 	}
 	b.conn.query('CREATE TABLE tpc_b.accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ')!
 
+	// The accounts are inserted in transactions of setup_batch_rows, rather
+	// than committing each row, since a commit waits for the file to be written
+	// (which takes about 5 ms on Windows, so the setup took 9 minutes).
 	mut t := vsql.start_timer()
+	b.conn.query('START TRANSACTION')!
 	for aid in 1 .. b.account_rows + 1 {
 		b.conn.query('INSERT INTO tpc_b.accounts (aid, abalance) VALUES (${aid}, 0)')!
+		if aid % setup_batch_rows == 0 {
+			b.conn.query('COMMIT')!
+			b.conn.query('START TRANSACTION')!
+		}
 		if aid % 100 == 0 {
 			b.sample_memory()
 		}
 	}
+	b.conn.query('COMMIT')!
 	b.sample_memory()
 	println('')
 	println('# tpc-b-setup')

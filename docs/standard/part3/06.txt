@@ -46,7 +46,7 @@
 6.3/GR/3.c.x.4           implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_26_free_handle_test.c
 6.3/GR/3.c.xi            implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_26_free_handle_test.c
 6.3/GR/3.d               implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
-6.3/GR/3.d.i             untested     libvsql/std_3_6_3_alloc_handle.v - there's no test for it
+6.3/GR/3.d.i             implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
 6.3/GR/3.d.ii            definition   - -
 6.3/GR/3.d.iii           implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
 6.3/GR/3.d.iv            implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
@@ -469,7 +469,7 @@
 6.12/GR/14               container    - -
 6.12/GR/14.a             implemented  libvsql/std_3_6_12_connect.v libvsql/std_3_5_3_implicit_set_connection_test.c
 6.12/GR/14.b             implemented  libvsql/std_3_6_12_connect.v libvsql/std_3_5_3_implicit_set_connection_test.c
-6.12/GR/15               untested     libvsql/std_3_6_12_connect.v - there's no test for it
+6.12/GR/15               implemented  libvsql/std_3_6_12_connect.v libvsql/std_3_6_12_connect_test.c
 6.12/GR/16               n/a          - - there's no authentication (#732)
 6.12/GR/17               implemented  libvsql/std_3_6_12_connect.v libvsql/std_3_6_12_connect_test.c
 6.12/GR/18               missing      libvsql/std_3_6_12_connect.v - there are no users (#732)
@@ -567,10 +567,10 @@
 6.17/GR/2                implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3                container    - -
 6.17/GR/3.a              implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
-6.17/GR/3.a.i            untested     libvsql/std_3_6_17_end_tran.v - there's no test for it
+6.17/GR/3.a.i            implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3.a.ii           implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3.b              implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
-6.17/GR/3.b.i            untested     libvsql/std_3_6_17_end_tran.v - there's no test for it
+6.17/GR/3.b.i            implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3.b.ii           implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3.c              implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3.c.i            implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
@@ -579,7 +579,7 @@
 6.17/GR/3.c.ii.2         implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/3.c.ii.3         implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c every established connection; one without an active SQL-transaction only has its cursors closed
 6.17/GR/3.d              implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
-6.17/GR/3.d.i            untested     libvsql/std_3_6_17_end_tran.v - there's no test for it (and there's never a skeleton SQL-environment)
+6.17/GR/3.d.i            implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c there's never a skeleton SQL-environment
 6.17/GR/3.d.ii           container    - -
 6.17/GR/3.d.ii.1         definition   - -
 6.17/GR/3.d.ii.2         implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
@@ -1041,7 +1041,7 @@
 6.26/GR/3.d.iii          implemented  libvsql/std_3_6_26_free_handle.v libvsql/std_3_6_26_free_handle_test.c
 6.26/GR/3.d.iv           definition   - -
 6.26/GR/3.d.v            implemented  libvsql/std_3_6_26_free_handle.v libvsql/std_3_5_3_implicit_set_connection_test.c
-6.26/GR/3.d.vi           untested     libvsql/std_3_6_26_free_handle.v - there's no test for it
+6.26/GR/3.d.vi           implemented  libvsql/std_3_6_26_free_handle.v libvsql/std_3_6_26_free_handle_test.c
 6.26/GR/3.d.vii          definition   - -
 6.26/GR/3.d.viii         implemented  libvsql/std_3_6_26_free_handle.v libvsql/std_3_6_26_free_handle_test.c
 6.26/GR/3.d.ix           implemented  libvsql/std_3_6_26_free_handle.v libvsql/std_3_6_26_free_handle_test.c
@@ -1242,7 +1242,7 @@
 6.32/GR/8.e              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
 6.32/GR/8.f              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
 6.32/GR/8.g              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
-6.32/GR/8.g.i            untested     libvsql/std_3_6_32_get_desc_rec.v - BL of zero with null termination False isn't tested
+6.32/GR/8.g.i            implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
 6.32/GR/8.g.ii           implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
 6.32/GR/8.g.ii.1         implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
 6.32/GR/8.g.ii.2         definition   - -
@@ -1344,7 +1344,7 @@
 6.33/GR/12.j             container    - -
 6.33/GR/12.j.i           impl-defined libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c the CONNECTION_NAME is the SERVER_NAME
 6.33/GR/12.j.ii          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
-6.33/GR/12.j.iii         untested     libvsql/std_3_6_33_get_diag_field.v - the SERVER_NAME of the handle's connection, which is the dormant connection; there's no test for it
+6.33/GR/12.j.iii         implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c the SERVER_NAME of the handle's connection, which is the dormant connection
 6.33/GR/12.j.iv          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.j.v           implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.k             container    - -
@@ -1453,9 +1453,9 @@
 6.36/GR/13               definition   - -
 6.36/GR/14               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c the view has no FEATURE_SUBFEATURE_PACKAGE_CODE, so a feature is a SUB_FEATURE_ID of a space
 6.36/GR/15               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
-6.36/GR/16               untested     libvsql/std_3_6_36_get_feature_info.v - the query never raises a status condition
-6.36/GR/16.a             untested     libvsql/std_3_6_36_get_feature_info.v - the query never raises a status condition
-6.36/GR/16.b             untested     libvsql/std_3_6_36_get_feature_info.v - the query never raises a status condition
+6.36/GR/16               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
+6.36/GR/16.a             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
+6.36/GR/16.b             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/17               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 # 6.37, GetFunctions
 6.37                     implemented  libvsql/std_3_6_37_get_functions.v libvsql/std_3_6_37_get_functions_test.c
@@ -1947,8 +1947,8 @@
 6.49/GR/14.b.i           container    - -
 6.49/GR/14.b.i.1         implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_19_exec_direct_test.c the same as 5.6/GR/4.p
 6.49/GR/14.b.i.2         container    - -
-6.49/GR/14.b.i.2.A       untested     libvsql/std_3_6_49_param_data.v - there's no test for it
-6.49/GR/14.b.i.2.B       untested     libvsql/std_3_6_49_param_data.v - there's no test for it
+6.49/GR/14.b.i.2.A       implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
+6.49/GR/14.b.i.2.B       implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/14.b.i.2.C       implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/14.b.ii          implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c the same as 5.6/GR/4.p.ii
 6.49/GR/14.b.iii         container    - -
@@ -2118,7 +2118,7 @@
 6.52/GR/8.b.i            container    - -
 6.52/GR/8.b.i.1          definition   - -
 6.52/GR/8.b.i.2          implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
-6.52/GR/8.b.i.3          untested     libvsql/std_3_6_52_put_data.v - there's no test for it
+6.52/GR/8.b.i.3          implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/8.b.ii           implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/8.c              n/a          - - there are no large objects
 6.52/GR/8.c.i            container    - -
@@ -2138,10 +2138,10 @@
 6.52/GR/11.b             container    - -
 6.52/GR/11.b.i           definition   - -
 6.52/GR/11.b.ii          container    - -
-6.52/GR/11.b.ii.1        untested     libvsql/std_3_6_52_put_data.v - there's no test for it
-6.52/GR/11.b.ii.1.A      untested     libvsql/std_3_6_52_put_data.v - there's no test for it
-6.52/GR/11.b.ii.1.B      untested     libvsql/std_3_6_52_put_data.v - there's no test for it
-6.52/GR/11.b.ii.1.C      untested     libvsql/std_3_6_52_put_data.v - there's no test for it
+6.52/GR/11.b.ii.1        implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
+6.52/GR/11.b.ii.1.A      implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
+6.52/GR/11.b.ii.1.B      implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
+6.52/GR/11.b.ii.1.C      implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/11.b.ii.2        container    - -
 6.52/GR/11.b.ii.2.A      definition   - -
 6.52/GR/11.b.ii.2.B      implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
@@ -2190,7 +2190,7 @@
 6.55/GR/5.b              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/6                definition   - - ML is 128 (max_identifier_length)
 6.55/GR/7                container    - -
-6.55/GR/7.a              untested     libvsql/std_3_6_55_set_cursor_name.v - truncating a name over 128 characters isn't tested
+6.55/GR/7.a              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/7.b              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/8                implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/9                implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c the SQL_CUR and SQLCUR prefixes are checked on the string as written (so sql_curx is allowed, and a generated name skips it); another statement's name is the same if it's the same identifier (regular ones in upper case, delimited ones without quotes)
@@ -2483,14 +2483,14 @@
 # 6.61, StartTran
 6.61                     implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/1                definition   - -
-6.61/GR/2                untested     libvsql/std_3_6_61_start_tran.v - there's no test for it
+6.61/GR/2                implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3                container    - -
 6.61/GR/3.a              implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
-6.61/GR/3.a.i            untested     libvsql/std_3_6_61_start_tran.v - there's no test for it
+6.61/GR/3.a.i            implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3.a.ii           implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3.b              implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
-6.61/GR/3.b.i            untested     libvsql/std_3_6_61_start_tran.v - there's no test for it
-6.61/GR/3.b.ii           untested     libvsql/std_3_6_61_start_tran.v - there's no test for it
+6.61/GR/3.b.i            implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
+6.61/GR/3.b.ii           implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3.c              implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3.c.i            implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3.c.ii           container    - -
@@ -2501,7 +2501,7 @@
 6.61/GR/3.c.ii.3.B       definition   - -
 6.61/GR/3.c.ii.4         implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
 6.61/GR/3.d              implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c
-6.61/GR/3.d.i            untested     libvsql/std_3_6_61_start_tran.v - there's no test for it (and there's never a skeleton SQL-environment)
+6.61/GR/3.d.i            implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c there's never a skeleton SQL-environment
 6.61/GR/3.d.ii           container    - -
 6.61/GR/3.d.ii.1         definition   - -
 6.61/GR/3.d.ii.2         implemented  libvsql/std_3_6_61_start_tran.v libvsql/std_3_6_61_start_tran_test.c

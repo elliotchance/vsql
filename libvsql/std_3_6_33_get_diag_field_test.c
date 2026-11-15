@@ -494,3 +494,28 @@ UTEST_F(db, 6_33_get_diag_field_server_name_dormant) {
   EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
 }
+
+/* A condition raised by an implicit set connection (0A001, because the
+ * SQL-transaction of the current connection is active) has the SERVER_NAME and
+ * CONNECTION_NAME of the dormant connection, which is the one of the handle. */
+UTEST_F(db, 6_33_get_diag_field_server_name_implicit_set_connection) {
+  SQLHDBC dbc2;
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocConnect(utest_fixture->env, &dbc2), SQL_SUCCESS);
+  ASSERT_EQ(connect_default(dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(dbc2, &stmt2), SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, stmt2, SQL_DIAG_SERVER_NAME),
+               "DEFAULT");
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, stmt2, SQL_DIAG_CONNECTION_NAME),
+               "DEFAULT");
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
+}

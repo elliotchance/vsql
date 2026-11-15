@@ -55,7 +55,7 @@
 9.1/GR/7.o               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.o.i             implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.o.ii            impl-defined vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the value is cast by SQLGetData, which truncates an exact numeric (6.13)
-9.1/GR/7.o.iii           untested     vsql/std_2_14_7_select_statement_single_row.c - 22003 from the cast by SQLGetData
+9.1/GR/7.o.iii           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c 22003 from the cast by SQLGetData
 9.1/GR/7.p               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.q               n/a          - - there are no datetime host parameters (13.5)
 9.1/GR/7.q.i             n/a          - - there are no datetime host parameters (13.5)

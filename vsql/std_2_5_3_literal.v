@@ -29,9 +29,10 @@ fn signed_numeric_literal(sign string, v Value) !Value {
 }
 
 fn numeric_literal(x string) !Value {
-	// There must be an exact numeric type that can hold the literal (Syntax Rule
-	// 22), so it can't have more digits than the maximum precision. Leading
-	// zeros don't count.
+	// There must be an exact numeric type that can hold the literal, so it can't
+	// have more digits than the maximum precision. Leading zeros don't count.
+	//
+	// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 21 and 29
 	mut digits := 0
 	mut leading := true
 	mut has_point := false

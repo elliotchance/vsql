@@ -529,7 +529,7 @@
 20.11/GR/6.c.iii.3.B     n/a          - - user-defined types (S023)
 20.11/CR/1               implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 # 20.12, <output using clause>
-20.12                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c a string in an item descriptor area isn't cut to LENGTH (#928)
+20.12                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
 20.12/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.12/GR/1               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.12/GR/2               container    - -
@@ -563,7 +563,7 @@
 20.12/GR/5.d.ii.1        impl-defined vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the conversions of SQLGetData
 20.12/GR/5.d.ii.2        container    - -
 20.12/GR/5.d.ii.2.A      implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.12/GR/5.d.ii.2.B      partial      vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c a string in an item descriptor area isn't cut to LENGTH (#928)
+20.12/GR/5.d.ii.2.B      implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_returned_length_main.c
 20.12/GR/5.d.iii         n/a          - - user-defined types (S023)
 20.12/GR/5.d.iii.1       n/a          - - user-defined types (S023)
 20.12/GR/5.d.iii.2       n/a          - - user-defined types (S023)

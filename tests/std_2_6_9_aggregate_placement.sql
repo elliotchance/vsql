@@ -81,6 +81,14 @@ SELECT z FROM t2 WHERE z = 3;
 SELECT (VALUES MAX(t1.x)) AS m FROM t1;
 -- M: 3
 
+-- # Even without a column reference, since the VALUES has no aggregation query
+-- # of its own, so it's the outer query (Syntax Rules, 6.a).
+SELECT (VALUES (COUNT(*))) FROM t1;
+-- COL1: 4
+
+SELECT (VALUES (COUNT(*) + 1)) FROM t1;
+-- COL1: 5
+
 -- # ORDER BY can only have an aggregate function if the query is grouped.
 /* extensions V202-03 */
 SELECT x FROM t1 ORDER BY MAX(x);

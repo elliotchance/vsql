@@ -27,8 +27,9 @@ pub:
 struct SQLClientModule {
 	// The schema is the default schema of the module's statements. vsql has no
 	// authorization identifiers, so AUTHORIZATION only gives the schema when
-	// there isn't a SCHEMA. There's no catalog, and the SQL-path only has the
-	// schema, since there are no SQL-invoked routines.
+	// there isn't a SCHEMA. The catalog is always the current catalog of the
+	// SQL-session, since the schema name can't be qualified by a catalog. The
+	// SQL-path only has the schema, since there are no SQL-invoked routines.
 	//
 	// ISO/IEC 9075-2:2023, 13.1, <SQL-client module definition>, Syntax Rules, 2 to 7
 	schema     string

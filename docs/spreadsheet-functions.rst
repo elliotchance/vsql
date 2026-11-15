@@ -1067,13 +1067,18 @@ where a spreadsheet returns 0.
 ISOWEEKNUM
 ^^^^^^^^^^
 
-.. code-block:: text
-
-  =ISOWEEKNUM(date)
-
 Returns the ISO week number of the year for a date.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =ISOWEEKNUM(date)
+  VALUES EXTRACT(WEEK FROM /*date*/);
+  -- =ISOWEEKNUM(DATE(2027, 1, 1))
+  VALUES EXTRACT(WEEK FROM DATE '2027-01-01');
+  -- COL1: 53
+
+A week starts on a Monday and is in the year that has its Thursday, so January
+1, 2027 is in the last week of 2026. ``EXTRACT(ISOYEAR FROM date)`` is that year.
 
 MINUTE
 ^^^^^^
@@ -1212,24 +1217,52 @@ There are no parentheses after ``CURRENT_DATE``.
 WEEKDAY
 ^^^^^^^
 
-.. code-block:: text
-
-  =WEEKDAY(serial_number, [return_type])
-
 Returns the day of the week of a date as a number.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =WEEKDAY(serial_number)
+  VALUES EXTRACT(DOW FROM /*serial_number*/) + 1;
+  -- =WEEKDAY(DATE(2026, 11, 15))
+  VALUES EXTRACT(DOW FROM DATE '2026-11-15') + 1;
+  -- COL1: 1
+
+  -- =WEEKDAY(serial_number, 2)
+  VALUES EXTRACT(ISODOW FROM /*serial_number*/);
+  -- =WEEKDAY(DATE(2026, 11, 15), 2)
+  VALUES EXTRACT(ISODOW FROM DATE '2026-11-15');
+  -- COL1: 7
+
+  -- =WEEKDAY(serial_number, 3)
+  VALUES EXTRACT(ISODOW FROM /*serial_number*/) - 1;
+  -- =WEEKDAY(DATE(2026, 11, 15), 3)
+  VALUES EXTRACT(ISODOW FROM DATE '2026-11-15') - 1;
+  -- COL1: 6
+
+2026-11-15 is a Sunday. ``DOW`` and ``ISODOW`` aren't in the SQL standard.
 
 WEEKNUM
 ^^^^^^^
 
-.. code-block:: text
-
-  =WEEKNUM(serial_number, [return_type])
-
 Returns the week number of the year for a date.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =WEEKNUM(serial_number)
+  VALUES (EXTRACT(DOY FROM /*serial_number*/) - 1 + MOD(MOD(EXTRACT(DOW FROM /*serial_number*/) - EXTRACT(DOY FROM /*serial_number*/) + 1, 7) + 7, 7)) / 7 + 1;
+  -- =WEEKNUM(DATE(2026, 11, 15))
+  VALUES (EXTRACT(DOY FROM DATE '2026-11-15') - 1 + MOD(MOD(EXTRACT(DOW FROM DATE '2026-11-15') - EXTRACT(DOY FROM DATE '2026-11-15') + 1, 7) + 7, 7)) / 7 + 1;
+  -- COL1: 47
+
+  -- =WEEKNUM(serial_number, 21)
+  VALUES EXTRACT(WEEK FROM /*serial_number*/);
+  -- =WEEKNUM(DATE(2027, 1, 1), 21)
+  VALUES EXTRACT(WEEK FROM DATE '2027-01-01');
+  -- COL1: 53
+
+The first week is the one with January 1, and a week starts on a Sunday. The
+``MOD`` is the day of the week of January 1. With 21, it's the ISO 8601 week,
+which is ``WEEK``.
 
 WORKDAY
 ^^^^^^^

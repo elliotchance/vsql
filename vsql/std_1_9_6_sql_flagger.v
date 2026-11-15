@@ -202,6 +202,18 @@ const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
 const vsql_double_colon_cast = 'V303-01'
 const vsql_now = 'V402-01'
+
+// vsql_extract_fields are the fields of EXTRACT that aren't in the standard.
+const vsql_extract_fields = {
+	'DOW':     'V402-02'
+	'ISODOW':  'V402-03'
+	'DOY':     'V402-04'
+	'WEEK':    'V402-05'
+	'ISOYEAR': 'V402-06'
+	'QUARTER': 'V402-07'
+	'EPOCH':   'V402-08'
+}
+
 const vsql_mod_not_integer = 'V403-01'
 const vsql_round = 'V403-02'
 const vsql_trunc = 'V403-03'

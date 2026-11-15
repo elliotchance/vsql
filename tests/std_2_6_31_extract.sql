@@ -55,8 +55,8 @@ VALUES EXTRACT(TIMEZONE_HOUR FROM TIMESTAMP '2026-01-02 03:04:05');
 VALUES EXTRACT(YEAR FROM 2026);
 -- error 42804: data type mismatch in EXTRACT(YEAR FROM ...): expected DATE or TIMESTAMP but got SMALLINT
 
-VALUES EXTRACT(WEEK FROM DATE '2026-11-14');
--- error 42601: syntax error: unexpected identifier at line 1, column 16 near "VALUES EXTRACT(WEEK FROM"
+VALUES EXTRACT(FORTNIGHT FROM DATE '2026-11-14');
+-- error 42601: syntax error: EXTRACT has no field FORTNIGHT
 
 -- # EXTRACT of a NULL is NULL.
 /* types */

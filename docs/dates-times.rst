@@ -161,8 +161,9 @@ Fields
 
 ``EXTRACT`` returns one field (``YEAR``, ``MONTH``, ``DAY``, ``HOUR``,
 ``MINUTE``, ``SECOND``, ``TIMEZONE_HOUR`` or ``TIMEZONE_MINUTE``) of a date,
-time or timestamp, such as ``EXTRACT(YEAR FROM d)``. See *EXTRACT* in
-:doc:`functions`.
+time or timestamp, such as ``EXTRACT(YEAR FROM d)``. It also has fields that
+aren't in the standard: ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``,
+``QUARTER`` and ``EPOCH``. See *EXTRACT* in :doc:`functions`.
 
 Casting
 -------

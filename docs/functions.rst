@@ -1255,6 +1255,13 @@ EXTRACT
    EXTRACT(SECOND FROM TIME(p) or TIMESTAMP(p)) NUMERIC(p + 2, p)
    EXTRACT(TIMEZONE_HOUR FROM TIME or TIMESTAMP WITH TIME ZONE) INTEGER
    EXTRACT(TIMEZONE_MINUTE FROM TIME or TIMESTAMP WITH TIME ZONE) INTEGER
+   EXTRACT(DOW FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(ISODOW FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(DOY FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(WEEK FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(ISOYEAR FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(QUARTER FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(EPOCH FROM DATE or TIMESTAMP(p)) NUMERIC(p + 12, p)
 
 Returns one field of a date, time or timestamp, with or without a time zone.
 The field must be part of the type: a ``DATE`` has no ``HOUR``, and only a
@@ -1277,15 +1284,43 @@ value. The time zone fields have the sign of the time zone, so ``-05:30`` is
   VALUES EXTRACT(TIMEZONE_HOUR FROM TIME '15:45:55-05:30');
   -- COL1: -5
 
-There are no intervals, so the source can't be an ``INTERVAL``, and fields that
-other databases have (such as ``WEEK``, ``DOW`` or ``EPOCH``) are a syntax
-error.
+These fields aren't in the standard, and have the same meaning as in
+PostgreSQL:
+
+- ``DOW``: the day of the week, from ``0`` (Sunday) to ``6`` (Saturday).
+- ``ISODOW``: the ISO 8601 day of the week, from ``1`` (Monday) to ``7``
+  (Sunday).
+- ``DOY``: the day of the year, from ``1`` to ``366``.
+- ``WEEK``: the ISO 8601 week, from ``1`` to ``53``. A week starts on a Monday
+  and is in the year that has its Thursday, so ``2027-01-01`` is in week 53 of
+  2026.
+- ``ISOYEAR``: the ISO 8601 year that ``WEEK`` is in, which is the year before
+  or after for some days at the start or end of a year.
+- ``QUARTER``: the quarter of the year, from ``1`` to ``4``.
+- ``EPOCH``: the seconds since ``1970-01-01 00:00:00`` UTC, with the fraction
+  of a second. A ``DATE`` or a ``TIMESTAMP`` without a time zone is taken to be
+  UTC.
+
+They aren't keywords, so any other name is a ``42601`` error when the statement
+is compiled.
+
+.. code-block:: sql
+
+  VALUES EXTRACT(DOW FROM DATE '2026-11-15');
+  -- COL1: 0
+
+  VALUES EXTRACT(WEEK FROM DATE '2027-01-01');
+  -- COL1: 53
+
+There are no intervals, so the source can't be an ``INTERVAL``.
 
 **Compatibility**
 
 - **SQL standard:** F052 (intervals and datetime arithmetic), and F411 (time
   zone specification) for ``TIMEZONE_HOUR`` and ``TIMEZONE_MINUTE``. vsql
   doesn't support all of F052, which is mostly intervals.
+- **vsql:** ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``, ``QUARTER``
+  and ``EPOCH`` are ``V402-02`` to ``V402-08`` (see :doc:`sql-flagging`).
 - **Other databases:**
 
   - PostgreSQL, MySQL and Oracle: ``EXTRACT``. PostgreSQL returns a

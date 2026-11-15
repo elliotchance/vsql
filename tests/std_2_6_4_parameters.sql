@@ -101,6 +101,19 @@ VALUES CAST(? AS BIGINT);
 -- sql: VALUES CAST(CAST(NULL AS INTEGER) AS BIGINT)
 -- COL1: NULL (BIGINT)
 
+-- # The type of a ? is the target of the CAST, so a null value of any type can
+-- # be bound to it, but a value must be able to be cast to the target.
+/* types */
+/* params NULL INT */
+VALUES CAST(? AS DATE);
+-- sql: VALUES CAST(CAST(NULL AS INTEGER) AS DATE)
+-- COL1: NULL (DATE)
+
+/* params 2 */
+VALUES CAST(? AS DATE);
+-- sql: VALUES CAST(2.0e0 AS DATE)
+-- error 42846: cannot coerce DOUBLE PRECISION to DATE
+
 CREATE TABLE t2 (x INT NOT NULL);
 /* params NULL INT */
 UPDATE t2 SET x = ?;

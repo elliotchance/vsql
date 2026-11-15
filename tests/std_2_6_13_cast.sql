@@ -248,6 +248,40 @@ SELECT * FROM t;
 -- error 42846: cannot coerce DATE to INTEGER
 -- error 42846: cannot coerce BOOLEAN to INTEGER
 
+-- # Whether the types can be cast is a Syntax Rule (7), so an invalid CAST is
+-- # an error even when there are no rows, or every value is the null value.
+CREATE TABLE cn1 (d DATE, t TIME, ts TIMESTAMP, b BOOLEAN, i INT, c VARCHAR(10));
+SELECT CAST(d AS INTEGER) FROM cn1;
+INSERT INTO cn1 VALUES (NULL, NULL, NULL, NULL, NULL, NULL);
+SELECT CAST(d AS INTEGER) FROM cn1;
+SELECT CAST(b AS DATE) FROM cn1;
+SELECT CAST(i AS BOOLEAN) FROM cn1;
+SELECT CAST(d AS TIME) FROM cn1;
+SELECT CAST(t AS DATE) FROM cn1;
+SELECT CAST(ts AS BOOLEAN) FROM cn1;
+-- msg: CREATE TABLE 1
+-- error 42846: cannot coerce DATE to INTEGER
+-- msg: INSERT 1
+-- error 42846: cannot coerce DATE to INTEGER
+-- error 42846: cannot coerce BOOLEAN to DATE
+-- error 42846: cannot coerce INTEGER to BOOLEAN
+-- error 42846: cannot coerce DATE to TIME(0) WITHOUT TIME ZONE
+-- error 42846: cannot coerce TIME(0) WITHOUT TIME ZONE to DATE
+-- error 42846: cannot coerce TIMESTAMP(6) WITHOUT TIME ZONE to BOOLEAN
+
+VALUES CAST(CAST(NULL AS BOOLEAN) AS DATE);
+-- error 42846: cannot coerce BOOLEAN to DATE
+
+-- # The valid casts of null values are still the null value.
+CREATE TABLE cn2 (d DATE, t TIME, ts TIMESTAMP, b BOOLEAN, i INT, c VARCHAR(10));
+INSERT INTO cn2 VALUES (NULL, NULL, NULL, NULL, NULL, NULL);
+SELECT CAST(d AS TIMESTAMP), CAST(t AS TIMESTAMP), CAST(ts AS DATE), CAST(ts AS TIME) FROM cn2;
+SELECT CAST(b AS VARCHAR(10)), CAST(i AS REAL), CAST(c AS BOOLEAN), CAST(c AS DATE), CAST(d AS CHAR(20)) FROM cn2;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
+-- COL1: NULL COL2: NULL COL3: UNKNOWN COL4: NULL COL5: NULL
+
 -- # A number too large for the target is out of range (General Rules, 8.a.ii),
 -- # and an exact number cast to a VARCHAR must fit (General Rules, 12.a.iii.3).
 VALUES CAST(60000 AS SMALLINT);

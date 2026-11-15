@@ -571,16 +571,34 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 		seen[column.sub_entity_name] = true
 	}
 
+	// Without a derived column list, two columns can have the same name (such as
+	// "SELECT a.id, b.id"). Each of them is kept in the row under a key for its
+	// position, and a reference to the name is ambiguous (see is_ambiguous_in).
+	//
+	// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 12.b.ii.3
+	subplan_columns := subplan.columns()
+	mut names := map[string]int{}
+	for col in subplan_columns {
+		names[col.name.sub_entity_name]++
+	}
+
 	mut columns := []Column{}
-	for i, col in subplan.columns() {
+	for i, col in subplan_columns {
+		name := if correlation_columns.len > 0 {
+			correlation_columns[i].sub_entity_name
+		} else {
+			col.name.sub_entity_name
+		}
 		columns << Column{
 			name:           Identifier{
 				entity_name:     table_name.id()
-				sub_entity_name: if correlation_columns.len > 0 {
-					correlation_columns[i].sub_entity_name
+				sub_entity_name: name
+				custom_id:       if correlation_columns.len == 0 && names[name] > 1 {
+					'${table_name.id()}.${name}\x00${i + 1}'
 				} else {
-					col.name.sub_entity_name
+					''
 				}
+				custom_typ:      col.typ
 			}
 			typ:            col.typ
 			not_null:       col.not_null
@@ -1087,7 +1105,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 	match select_list {
 		AsteriskExpr {
 			for _, table in tables {
-				columns << table.columns
+				columns << star_columns(table)
 				for column in table.columns {
 					exprs << DerivedColumn{ValueExpression(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(new_ref(column.name)))))), Identifier{
 						sub_entity_name: column.name.sub_entity_name
@@ -1100,7 +1118,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				match item {
 					QualifiedAsteriskExpr {
 						table := qualified_asterisk_table(item, mut conn, tables)!
-						columns << table.columns
+						columns << star_columns(table)
 						for column in table.columns {
 							exprs << column_derived_column(column)
 						}
@@ -1234,6 +1252,19 @@ fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables
 }
 
 // column_derived_column is the select list item for one column of "t.*".
+// star_columns are the columns of a table in the result of "*" or "t.*". A
+// column of a derived table with a name that's not unique has a key for its
+// position (see add_correlation_plan), which isn't the key in the result.
+fn star_columns(table Table) []Column {
+	return table.columns.map(Column{
+		...it
+		name: Identifier{
+			...it.name
+			custom_id: ''
+		}
+	})
+}
+
 fn column_derived_column(column Column) DerivedColumn {
 	return DerivedColumn{ValueExpression(BooleanValueExpression{
 		term: BooleanTerm{

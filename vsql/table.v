@@ -630,41 +630,31 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 
 		// The columns may have been renamed by a derived column list, such as
 		// "(SELECT a FROM t) AS x (b)". A row of a table (such as "t AS x (b)")
-		// uses the fully qualified column name, but a subquery may not.
+		// uses the fully qualified column name, but a subquery may not. Two
+		// columns of a subquery can have the same name, then the key of each one
+		// is its id (see new_expr_operation), and the column of the same position
+		// is used.
 		mut names := map[string]string{}
 		for i, column in subplan.columns() {
-			names[column.name.sub_entity_name] = o.table.columns[i].name.sub_entity_name
-			names[column.name.id()] = o.table.columns[i].name.sub_entity_name
+			key := o.table.columns[i].name.id()
+			names[column.name.id()] = key
+			if column.name.sub_entity_name !in names {
+				names[column.name.sub_entity_name] = key
+			}
 		}
 
 		// The new keys are only made again when the keys of a row are different
-		// to the row before it. Two keys can get the same name, then the value of
-		// the last one is kept (slots is the position of each one).
+		// to the row before it.
 		mut from_keys := []string{}
 		mut keys := []string{}
-		mut slots := []int{}
 		for row in subplan.execute([]Row{})! {
 			if keys.len == 0 || row.data.keys != from_keys {
 				from_keys = row.data.keys
-				keys = []string{}
-				slots = []int{}
-				for k in row.data.keys {
-					key := '${o.table_name.id()}.${names[k] or { k }}'
-					mut slot := keys.index(key)
-					if slot < 0 {
-						slot = keys.len
-						keys << key
-					}
-					slots << slot
-				}
-			}
-			mut values := []Value{len: keys.len}
-			for i, v in row.data.values {
-				values[slots[i]] = v
+				keys = row.data.keys.map(names[it] or { '${o.table_name.id()}.${it}' })
 			}
 
 			// The id is kept for a cursor, see ExprOperation.execute.
-			rows << Row{row.id, row.tid, RowData{keys, values}}
+			rows << Row{row.id, row.tid, RowData{keys, row.data.values}}
 		}
 	} else {
 		mut catalog := o.conn.catalogs[o.table_name.catalog_name] or {

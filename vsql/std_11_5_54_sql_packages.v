@@ -1,10 +1,10 @@
 module vsql
 
-// ISO/IEC 9075-11:2008(E), 5.54, SQL_PACKAGES view
+// ISO/IEC 9075-11:2006, 5.54, SQL_PACKAGES view
 //
 // The SQL_PACKAGES view lists the packages of the standard, and whether vsql
 // supports them. It's the PACKAGE rows of the SQL_CONFORMANCE base table
-// (ISO/IEC 9075-11:2008(E), 6.43), which only exists as this view, SQL_FEATURES
+// (ISO/IEC 9075-11:2006, 6.43), which only exists as this view, SQL_FEATURES
 // and SQL_PARTS.
 //
 // The packages are the ones of SQL:2003 (Part 1, Subclause 8.4, Conformance to
@@ -68,7 +68,7 @@ const sql_packages = [
 // sql_packages_view_rows are the rows of the SQL_PACKAGES view. Nothing is
 // verified by a conformance test, so IS_VERIFIED_BY is NULL.
 //
-// ISO/IEC 9075-11:2008(E), 6.43, SQL_CONFORMANCE base table, Description, 1-8
+// ISO/IEC 9075-11:2006, 6.43, SQL_CONFORMANCE base table, Description, 1-8
 fn sql_packages_view_rows(features []SqlFeature) [][]Value {
 	mut supported := map[string]bool{}
 	for feature in features {

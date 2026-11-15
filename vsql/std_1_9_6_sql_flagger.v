@@ -1089,15 +1089,15 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // an asterisk resolves to it (see Column.features). A view that isn't here can
 // be referenced in Core SQL.
 //
-// ISO/IEC 9075-11:2008(E), 5.21, COLUMNS view, Conformance Rules, 1, 2, 3 and 4
-// ISO/IEC 9075-11:2008(E), 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
-// ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
-// ISO/IEC 9075-11:2008(E), 5.53, SQL_IMPLEMENTATION_INFO view, Conformance Rules, 1 and 2
-// ISO/IEC 9075-11:2008(E), 5.54, SQL_PACKAGES view, Conformance Rules, 1
-// ISO/IEC 9075-11:2008(E), 5.55, SQL_PARTS view, Conformance Rules, 1
-// ISO/IEC 9075-11:2008(E), 5.57, SQL_SIZING_PROFILES view, Conformance Rules, 1 and 2
-// ISO/IEC 9075-11:2008(E), 5.61, TABLES view, Conformance Rules, 1
-// ISO/IEC 9075-11:2008(E), 5.77, Short name views, Conformance Rules, 19 and 20
+// ISO/IEC 9075-11:2006, 5.21, COLUMNS view, Conformance Rules, 1, 2, 3 and 4
+// ISO/IEC 9075-11:2006, 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2006, 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.53, SQL_IMPLEMENTATION_INFO view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2006, 5.54, SQL_PACKAGES view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.55, SQL_PARTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.57, SQL_SIZING_PROFILES view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2006, 5.61, TABLES view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 19 and 20
 const information_schema_features = {
 	'COLUMNS':                       ['F391']
 	'COLUMNS.IS_GENERATED':          ['T175']

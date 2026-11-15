@@ -1281,6 +1281,9 @@ struct Server
    	mutex    &sync.Mutex = sync.new_mutex()
    	stopping bool
    	serving  bool
+   	// stopped is set by serve when it stops waiting for clients, so that stop
+   	// doesn't have to wake it up.
+   	stopped bool
    }
 
 Server accepts connections from PostgreSQL clients, see new_server.

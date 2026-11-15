@@ -59,6 +59,9 @@ mut:
 	mutex    &sync.Mutex = sync.new_mutex()
 	stopping bool
 	serving  bool
+	// stopped is set by serve when it stops waiting for clients, so that stop
+	// doesn't have to wake it up.
+	stopped bool
 }
 
 // new_server creates a server that can be started with start(), or with
@@ -156,6 +159,9 @@ pub fn (mut s Server) serve() ! {
 	// The listener is closed here, not in stop, because its file descriptor could
 	// be reused by a new listener while this is about to wait for a client. It
 	// would then accept the clients of the new listener.
+	s.mutex.lock()
+	s.stopped = true
+	s.mutex.unlock()
 	s.listener.close()!
 }
 
@@ -187,6 +193,7 @@ pub fn (mut s Server) stop() ! {
 	s.mutex.lock()
 	s.stopping = true
 	serving := s.serving
+	stopped := s.stopped
 	s.mutex.unlock()
 
 	if !serving {
@@ -194,10 +201,14 @@ pub fn (mut s Server) stop() ! {
 		return
 	}
 
-	// Connecting wakes up serve, which closes the listener. It can't connect if
-	// serve has already seen that it's stopping and closed it.
-	if mut wake := net.dial_tcp(address.replace('0.0.0.0:', '127.0.0.1:').replace('[::]:', '[::1]:')) {
-		wake.close()!
+	// Connecting wakes up serve, which closes the listener. It isn't needed if
+	// serve has already seen that it's stopping (a client woke it up), which is
+	// worth checking since a connection that's refused takes about 2 seconds on
+	// Windows. It still can't connect if serve closes the listener after that.
+	if !stopped {
+		if mut wake := net.dial_tcp(address.replace('0.0.0.0:', '127.0.0.1:').replace('[::]:', '[::1]:')) {
+			wake.close()!
+		}
 	}
 }
 

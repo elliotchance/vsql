@@ -15,9 +15,9 @@ row_value_constructor:
     $$.v = yy_box(RowValueConstructor($1.v as ExplicitRowValueConstructor))
   }
 
-// A row in parentheses is parsed with the contextually typed elements of a
-// VALUES row (which allow NULL and DEFAULT), so that the parser doesn't have to
-// choose between them before it sees what follows the row.
+// A row in parentheses, or after ROW, is parsed with the contextually typed
+// elements of a VALUES row (which allow NULL and DEFAULT), so that the parser
+// doesn't have to choose between them before it sees what follows the row.
 // new_explicit_row_value_constructor rejects a NULL or DEFAULT.
 explicit_row_value_constructor:
   left_paren contextually_typed_row_value_constructor_element comma
@@ -26,20 +26,12 @@ explicit_row_value_constructor:
       $2.v as ContextuallyTypedRowValueConstructorElement,
       $4.v as []ContextuallyTypedRowValueConstructorElement))!)
   }
-| ROW left_paren row_value_constructor_element_list right_paren {
+| ROW left_paren contextually_typed_row_value_constructor_element_list
+  right_paren {
     // ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 1
     flag(mut yylex, 'T051')
-    $$.v = yy_box(ExplicitRowValueConstructor{$3.v as []ValueExpression})
+    $$.v = yy_box(new_explicit_row_value_constructor($3.v as []ContextuallyTypedRowValueConstructorElement)!)
   }
-
-row_value_constructor_element_list:
-  row_value_constructor_element { $$.v = yy_box([$1.v as ValueExpression]) }
-| row_value_constructor_element_list comma row_value_constructor_element {
-    $$.v = yy_box(append_list($1.v as []ValueExpression, $3.v as ValueExpression))
-  }
-
-row_value_constructor_element:
-  value_expression { $$.v = $1.v }
 
 // Without F641, a VALUES of an INSERT can only have one row, in parentheses.
 //
@@ -68,6 +60,11 @@ contextually_typed_row_value_constructor:
     $$.v = yy_box(ContextuallyTypedRowValueConstructor(push_list(
       $2.v as ContextuallyTypedRowValueConstructorElement,
       $4.v as []ContextuallyTypedRowValueConstructorElement)))
+  }
+| ROW left_paren contextually_typed_row_value_constructor_element_list right_paren {
+    // ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 1
+    flag(mut yylex, 'T051')
+    $$.v = yy_box(ContextuallyTypedRowValueConstructor($3.v as []ContextuallyTypedRowValueConstructorElement))
   }
 
 contextually_typed_row_value_constructor_element_list:

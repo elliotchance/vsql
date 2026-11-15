@@ -66,6 +66,13 @@ insert_query_expression:
       body: SimpleTable($1.v as QuerySpecification)
     })
   }
+| explicit_table {
+    // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 6
+    flag(mut yylex, 'F661')
+    $$.v = yy_box(QueryExpression{
+      body: SimpleTable($1.v as QuerySpecification)
+    })
+  }
 | parenthesized_query_expression { $$.v = $1.v }
 | insert_query_set_operation {
     $$.v = yy_box(QueryExpression{
@@ -111,6 +118,11 @@ insert_query_primary:
 | parenthesized_query_expression {
     flag_query_expression(mut yylex, $1.v as QueryExpression, .query_primary)
     $$.v = yy_box(new_parenthesized_query_expression($1.v as QueryExpression))
+  }
+| explicit_table {
+    // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 6
+    flag(mut yylex, 'F661')
+    $$.v = yy_box(SimpleTable($1.v as QuerySpecification))
   }
 | contextually_typed_table_value_constructor {
     // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 5

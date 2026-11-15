@@ -27,7 +27,8 @@ module vsql
 //   ISO/IEC 9075-11:2006, 4.2, Introduction to the Information Schema
 //
 // The schema is always there, and can't be created or dropped. There are no
-// authorization identifiers (#732), so it doesn't have an owner:
+// authorization identifiers (#732), so it's owned by _SYSTEM, like every other
+// schema (see SCHEMATA), rather than by itself:
 //
 //   ISO/IEC 9075-11:2006, 5.1, INFORMATION_SCHEMA Schema
 
@@ -329,7 +330,27 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
+	catalog.register_information_schema_catalog_name_table()!
+	catalog.register_character_sets_view()!
+	catalog.register_column_column_usage_view()!
+	catalog.register_constraint_column_usage_view()!
+	catalog.register_constraint_table_usage_view()!
+	catalog.register_schemata_view()!
+	catalog.register_sequences_view()!
+
 	// ISO/IEC 9075-11:2006, 5.77, Short name views
+	catalog.add_short_name_view('CATALOG_NAME', 'INFORMATION_SCHEMA_CATALOG_NAME', map[string]string{})!
+	catalog.add_short_name_view('CHARACTER_SETS_S', 'CHARACTER_SETS', {
+		'CHARACTER_SET_CATALOG':   'CHAR_SET_CATALOG'
+		'CHARACTER_SET_SCHEMA':    'CHAR_SET_SCHEMA'
+		'CHARACTER_REPERTOIRE':    'CHAR_REPERTOIRE'
+		'DEFAULT_COLLATE_CATALOG': 'DEF_COLLATE_CAT'
+		'DEFAULT_COLLATE_SCHEMA':  'DEF_COLLATE_SCHEMA'
+		'DEFAULT_COLLATE_NAME':    'DEF_COLLATE_NAME'
+	})!
+	catalog.add_short_name_view('COL_COL_USAGE', 'COLUMN_COLUMN_USAGE', map[string]string{})!
+	catalog.add_short_name_view('CONSTR_COL_USAGE', 'CONSTRAINT_COLUMN_USAGE', map[string]string{})!
+	catalog.add_short_name_view('CONSTR_TABLE_USAGE', 'CONSTRAINT_TABLE_USAGE', map[string]string{})!
 	catalog.add_short_name_view('COLUMNS_S', 'COLUMNS', {
 		'CHARACTER_MAXIMUM_LENGTH': 'CHAR_MAX_LENGTH'
 		'CHARACTER_OCTET_LENGTH':   'CHAR_OCTET_LENGTH'
@@ -358,6 +379,14 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		'UNIQUE_CONSTRAINT_CATALOG': 'UNIQUE_CONSTR_CAT'
 		'UNIQUE_CONSTRAINT_SCHEMA':  'UNIQUE_CONSTR_SCH'
 		'UNIQUE_CONSTRAINT_NAME':    'UNIQUE_CONSTR_NAME'
+	})!
+	catalog.add_short_name_view('SCHEMATA_S', 'SCHEMATA', {
+		'DEFAULT_CHARACTER_SET_CATALOG': 'DEF_CHAR_SET_CAT'
+		'DEFAULT_CHARACTER_SET_SCHEMA':  'DEF_CHAR_SET_SCH'
+		'DEFAULT_CHARACTER_SET_NAME':    'DEF_CHAR_SET_NAME'
+	})!
+	catalog.add_short_name_view('SEQUENCES_S', 'SEQUENCES', {
+		'NUMERIC_PRECISION_RADIX': 'NUMERIC_PREC_RADIX'
 	})!
 	catalog.add_short_name_view('TABLES_S', 'TABLES', {
 		'SELF_REFERENCING_COLUMN_NAME': 'SELF_REF_COL_NAME'

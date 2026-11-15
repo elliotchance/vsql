@@ -27,37 +27,37 @@
 6.7                      missing      - - authorization identifiers and privileges (#732)
 6.7/DE/1                 missing      - - authorization identifiers and privileges (#732)
 # 6.8, CATALOG_NAMES base table
-6.8                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.8/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.8                      implemented  vsql/std_11_5_2_information_schema_catalog_name.v tests/std_11_5_2_information_schema_catalog_name.sql each catalog only describes itself
+6.8/DE/1                 implemented  vsql/std_11_5_2_information_schema_catalog_name.v tests/std_11_5_2_information_schema_catalog_name.sql
 # 6.9, CHARACTER_ENCODING_FORMS base table
-6.9                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.9/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.9/DE/2                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.9/DE/3                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.9                      implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql only in CHARACTER_SETS
+6.9/DE/1                 implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UTF8
+6.9/DE/2                 implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UCS
+6.9/DE/3                 implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UTF8 is the only one
 # 6.10, CHARACTER_REPERTOIRES base table
-6.10                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.10/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.10/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.10/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.10                     implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql only in CHARACTER_SETS
+6.10/DE/1                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UCS_BASIC in the INFORMATION_SCHEMA
+6.10/DE/2                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UCS
+6.10/DE/3                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UCS is the only one
 # 6.11, CHARACTER_SETS base table
-6.11                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/5                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/5.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/5.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/6                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/6.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/6.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/7                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/7.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.11/DE/7.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11                     implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql only UTF8
+6.11/DE/1                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql
+6.11/DE/2                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql
+6.11/DE/3                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql
+6.11/DE/4                implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UCS_BASIC, which is PAD SPACE
+6.11/DE/5                n/a          - - named character sets (F461)
+6.11/DE/5.a              n/a          - - named character sets (F461)
+6.11/DE/5.b              n/a          - - named character sets (F461)
+6.11/DE/6                n/a          - - named character sets (F461)
+6.11/DE/6.a              n/a          - - named character sets (F461)
+6.11/DE/6.b              n/a          - - named character sets (F461)
+6.11/DE/7                n/a          - - named character sets (F461)
+6.11/DE/7.a              n/a          - - named character sets (F461)
+6.11/DE/7.b              n/a          - - named character sets (F461)
 # 6.12, CHECK_COLUMN_USAGE base table
-6.12                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.12/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.12/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.12                     implemented  vsql/std_11_5_22_constraint_column_usage.v tests/std_11_5_22_constraint_column_usage.sql only in CONSTRAINT_COLUMN_USAGE
+6.12/DE/1                implemented  vsql/std_11_5_22_constraint_column_usage.v tests/std_11_5_22_constraint_column_usage.sql
+6.12/DE/2                implemented  vsql/std_11_5_22_constraint_column_usage.v tests/std_11_5_22_constraint_column_usage.sql
 # 6.13, CHECK_CONSTRAINT_ROUTINE_USAGE base table
 6.13                     missing      - - SQL-invoked routines (#733)
 6.13/DE/1                missing      - - SQL-invoked routines (#733)
@@ -70,9 +70,9 @@
 6.14/DE/2.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_14_check_constraints.sql
 6.14/DE/2.b              untested     vsql/std_11_5_information_schema.v - a search condition longer than 10485760 characters
 # 6.15, CHECK_TABLE_USAGE base table
-6.15                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.15/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.15/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.15                     implemented  vsql/std_11_5_23_constraint_table_usage.v tests/std_11_5_23_constraint_table_usage.sql always empty, since a CHECK cannot have a subquery (F671)
+6.15/DE/1                n/a          - - subqueries in check constraints (F671)
+6.15/DE/2                n/a          - - subqueries in check constraints (F671)
 # 6.16, COLLATIONS base table
 6.16                     n/a          - - collations (F690)
 6.16/DE/1                n/a          - - collations (F690)
@@ -83,9 +83,9 @@
 6.17/DE/1                n/a          - - collations (F690)
 6.17/DE/2                n/a          - - collations (F690)
 # 6.18, COLUMN_COLUMN_USAGE base table
-6.18                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.18/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.18/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.18                     implemented  vsql/std_11_5_17_column_column_usage.v tests/std_11_5_17_column_column_usage.sql
+6.18/DE/1                implemented  vsql/std_11_5_17_column_column_usage.v tests/std_11_5_17_column_column_usage.sql
+6.18/DE/2                implemented  vsql/std_11_5_17_column_column_usage.v tests/std_11_5_17_column_column_usage.sql
 # 6.19, COLUMN_PRIVILEGES base table
 6.19                     missing      - - authorization identifiers and privileges (#732)
 6.19/DE/1                missing      - - authorization identifiers and privileges (#732)
@@ -335,20 +335,20 @@
 6.40/DE/24               missing      - - SQL-invoked routines (#733)
 6.40/DE/25               missing      - - SQL-invoked routines (#733)
 # 6.41, SCHEMATA base table
-6.41                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/5                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/5.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.41/DE/5.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41                     implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql
+6.41/DE/1                implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql
+6.41/DE/2                implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql
+6.41/DE/3                impl-defined vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql _SYSTEM, the only user until there are authorization identifiers (#732)
+6.41/DE/4                implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql UTF8
+6.41/DE/5                container    - -
+6.41/DE/5.a              n/a          - - SQL paths (S071)
+6.41/DE/5.b              implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql
 # 6.42, SEQUENCES base table
-6.42                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.42/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.42/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.42/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-6.42/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.42                     implemented  vsql/std_11_5_51_sequences.v tests/std_11_5_51_sequences.sql
+6.42/DE/1                implemented  vsql/std_11_5_51_sequences.v tests/std_11_5_51_sequences.sql
+6.42/DE/2                implemented  vsql/std_11_5_51_sequences.v tests/std_11_5_51_sequences.sql the data type is described like the data type of a column
+6.42/DE/3                implemented  vsql/std_11_5_51_sequences.v tests/std_11_5_51_sequences.sql
+6.42/DE/4                implemented  vsql/std_11_5_51_sequences.v tests/std_11_5_51_sequences.sql
 # 6.43, SQL_CONFORMANCE base table
 6.43                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views
 6.43/DE/1                implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql only as the SQL_FEATURES, SQL_PACKAGES and SQL_PARTS views

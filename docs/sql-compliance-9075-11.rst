@@ -14,9 +14,9 @@ set of read-only tables that describe the schemas, tables and other objects in
 a database. The features
 below are the ones that Part 11 adds to, or extends from, Part 2.
 
-The short name views (5.77) of the views that vsql has (``COLUMNS_S``,
-``KEY_COLUMN_USAGE_S``, ``REF_CONSTRAINTS`` and ``TABLES_S``) are there too.
-They aren't a feature of their own.
+The short name views (5.77) of the views that vsql has (such as ``COLUMNS_S``,
+``REF_CONSTRAINTS`` and ``CONSTR_COL_USAGE``) are there too. They aren't a
+feature of their own.
 
 Mandatory Features
 ------------------
@@ -106,7 +106,7 @@ here.
    * - ❌ **F521**
      - **Assertions**
 
-   * - ❌ **F651**
+   * - ✅ **F651**
      - **Catalog name qualifiers**
 
    * - ❌ **F690**
@@ -148,7 +148,7 @@ here.
    * - ⭕ **T175**
      - **Generated columns**
 
-   * - ❌ **T176**
+   * - ⭕ **T176**
      - **Sequence generator support**
 
    * - ❌ **T211**

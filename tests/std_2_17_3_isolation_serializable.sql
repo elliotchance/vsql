@@ -80,8 +80,10 @@ SELECT COUNT(*) FROM t;
 
 -- # The lock is held from START TRANSACTION, before anything is read, and
 -- # changes to the schema have to wait too.
+/* extensions V002-01 V003-01 */
 /* connection 1 */
 CREATE TABLE t (x INT);
+CREATE INDEX t_x0 ON t (x);
 CREATE SEQUENCE seq;
 START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 /* connection 2 */
@@ -92,13 +94,18 @@ CREATE SCHEMA s;
 CREATE SEQUENCE seq2;
 ALTER SEQUENCE seq RESTART WITH 10;
 DROP SEQUENCE seq RESTRICT;
+CREATE INDEX t_x ON t (x);
+DROP INDEX t_x0;
 /* connection 1 */
 COMMIT;
 /* connection 2 */
 CREATE TABLE t2 (x INT);
 -- 1: msg: CREATE TABLE 1
+-- 1: msg: CREATE INDEX 1
 -- 1: msg: CREATE SEQUENCE 1
 -- 1: msg: START TRANSACTION
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first

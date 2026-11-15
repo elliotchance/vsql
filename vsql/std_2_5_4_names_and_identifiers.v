@@ -396,6 +396,15 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	compiled := e.compile_column(mut c)!
 	c.flag_column_reference(e)
 
+	// A sort key of a grouped query that references a column that isn't a
+	// column of the result (one that isn't in the select list, including in an
+	// aggregate function) needs F868.
+	//
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 25
+	if c.in_sort_key && e.custom_id == '' && c.grouping_columns != none {
+		c.conn.flagged_features << 'F868'
+	}
+
 	// A column of this query, rather than an outer reference (which is added by
 	// compile_outer).
 	if c.in_aggregate && e.custom_id == '' && c.aggregated_columns.len == aggregated_columns {

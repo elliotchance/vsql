@@ -1049,7 +1049,7 @@ Optional Features
    * - ❌ **F867**
      - **FETCH FIRST clause: WITH TIES option**
 
-   * - ❌ **F868**
+   * - ⭕ **F868**
      - **ORDER BY in grouped table**
 
    * - ❌ **R010**

@@ -380,6 +380,22 @@ value must be valid for the result or an error is returned:
    VALUES CAST(123456789 AS DOUBLE PRECISION);
    -- COL1: 1.23456789e+08
 
+Casting an exact number between -1 and 1 to a string keeps the ``0`` before the
+period, unless the string only fits in the ``CHARACTER`` or ``CHARACTER
+VARYING`` without it. The SQL standard always leaves it out, as the shortest
+literal for the number:
+
+.. code-block:: sql
+
+   VALUES CAST(-0.5 AS VARCHAR(10));
+   -- COL1: -0.5
+
+   VALUES CAST(-0.5 AS VARCHAR(3));
+   -- COL1: -.5
+
+   VALUES CAST(-0.5 AS VARCHAR(2));
+   -- error 22001: string data right truncation for CHARACTER VARYING(2)
+
 Casting an approximate number to a string gives the shortest form that has a
 single non-zero digit before the period and an exponent. This isn't the same as
 how the number is shown:

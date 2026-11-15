@@ -72,10 +72,10 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// all the same requirements.
 			// The characters are only counted, rather than decoded with runes()
 			// (which needs 4 bytes for each byte of s), unless it's too long.
-			s := cast_character_source(v)
+			l := t.size
+			s := cast_character_source(v, l)
 			m := s.len_utf8()
 
-			l := t.size
 			if l == m {
 				return new_character_value(s)
 			}
@@ -103,12 +103,12 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// than L.
 			//
 			// See note above about using v.str() instead of string_value().
-			s := cast_character_source(v)
-
+			//
 			// A CHARACTER VARYING without a length (such as the declared type of an
 			// expression) has no maximum length. Like CHARACTER, the characters
 			// are only decoded when it's too long.
 			l := t.size
+			s := cast_character_source(v, l)
 			m := s.len_utf8()
 			if l == 0 || m <= l {
 				return new_varchar_value(s)
@@ -194,11 +194,12 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 }
 
 // cast_character_source returns the string representation of v used when the
-// target is a character string. For datetimes, the shortest <literal> (such as
-// "DATE '2022-06-30'") is required rather than just the formatted value.
+// target is a character string of length l (0 for no maximum). For datetimes,
+// the shortest <literal> (such as "DATE '2022-06-30'") is required rather than
+// just the formatted value.
 //
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.e and 12.e
-fn cast_character_source(v Value) string {
+fn cast_character_source(v Value, l int) string {
 	return match v.typ.typ {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
@@ -210,10 +211,32 @@ fn cast_character_source(v Value) string {
 		.is_real {
 			approximate_character_string(f32(v.f64_value()).str())
 		}
+		.is_numeric, .is_decimal {
+			exact_character_string(v.str(), l)
+		}
 		else {
 			v.str()
 		}
 	}
+}
+
+// exact_character_string is the string of an exact number (such as "-0.5") for
+// a character string of length l (0 for no maximum). The shortest literal
+// wouldn't have the 0 before the period (such as "-.5"), but vsql keeps it
+// unless that's the only way the number fits in l characters.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.a.i and 12.a.i
+fn exact_character_string(s string, l int) string {
+	if l > 0 && s.len > l {
+		if s.starts_with('0.') {
+			return s[1..]
+		}
+		if s.starts_with('-0.') {
+			return '-' + s[2..]
+		}
+	}
+
+	return s
 }
 
 // approximate_character_string converts the shortest representation of an

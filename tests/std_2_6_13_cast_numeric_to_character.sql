@@ -20,6 +20,39 @@ VALUES CAST(-12 AS VARCHAR(5));
 VALUES CAST(-12 AS VARCHAR(2));
 -- error 22001: string data right truncation for CHARACTER VARYING(2)
 
+-- # An exact number between -1 and 1 keeps its 0 before the period, unless the
+-- # string would only fit without it. The shortest literal never has that 0, so
+-- # this deviates from General Rules 11.a.i and 12.a.i.
+VALUES CAST(0.5 AS VARCHAR(10));
+-- COL1: 0.5
+
+VALUES CAST(-0.5 AS VARCHAR(10));
+-- COL1: -0.5
+
+/* types */
+VALUES CAST(0.5 AS CHARACTER(3));
+-- COL1: 0.5 (CHARACTER(3))
+
+/* types */
+VALUES CAST(0.5 AS CHARACTER(2));
+-- COL1: .5 (CHARACTER(2))
+
+/* types */
+VALUES CAST(-0.5 AS VARCHAR(3));
+-- COL1: -.5 (CHARACTER VARYING(3))
+
+VALUES CAST(-0.5 AS CHARACTER(3));
+-- COL1: -.5
+
+VALUES CAST(CAST(0 AS NUMERIC(3, 2)) AS VARCHAR(3));
+-- COL1: .00
+
+VALUES CAST(-0.5 AS CHARACTER(2));
+-- error 22001: string data right truncation for CHARACTER(2)
+
+VALUES CAST(1.5 AS VARCHAR(2));
+-- error 22001: string data right truncation for CHARACTER VARYING(2)
+
 -- # An approximate number is cast as an approximate literal such as 1.5E0, with
 -- # a minus sign when it's negative (General Rules, 11.b and 12.b).
 /* types */

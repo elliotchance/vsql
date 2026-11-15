@@ -653,7 +653,7 @@
 6.13/GR/10.b.ii          n/a          - - DECFLOAT (T076)
 6.13/GR/11               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/GR/11.a.i           implemented  vsql/value.v tests/std_2_6_13_cast.sql
+6.13/GR/11.a.i           deviates     vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql the 0 before the period is kept (0.5, not .5) unless the result only fits without it (#1543)
 6.13/GR/11.a.ii          container    - -
 6.13/GR/11.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
@@ -698,7 +698,7 @@
 6.13/GR/11.f.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/GR/12.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
+6.13/GR/12.a.i           deviates     vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql the 0 before the period is kept (0.5, not .5) unless the result only fits without it (#1543)
 6.13/GR/12.a.ii          container    - -
 6.13/GR/12.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/12.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql

@@ -707,6 +707,13 @@ The SQL is written so that it means the same thing in any version of vsql:
 - Data types are written in full, such as ``TIMESTAMP(0) WITHOUT TIME ZONE``,
   rather than relying on defaults.
 
+The exceptions are the ``DEFAULT`` of a column and the expression of a
+generated column, which are kept exactly as they were written (including any
+comments and new lines in them), because that's how the ``INFORMATION_SCHEMA``
+shows them. They're still SQL, so this didn't change the layout. A table that
+was created by an older version of vsql has them in the form that vsql printed
+them in, since the text as it was written wasn't kept.
+
 Schema Object
 -------------
 

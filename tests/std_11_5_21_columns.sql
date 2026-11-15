@@ -47,6 +47,49 @@ SELECT column_name, column_default, is_nullable FROM information_schema.columns 
 -- COLUMN_NAME: F COLUMN_DEFAULT: NULL IS_NULLABLE: NO
 -- COLUMN_NAME: G COLUMN_DEFAULT: NULL IS_NULLABLE: NO
 
+-- # COLUMN_DEFAULT and GENERATION_EXPRESSION are the text as it was written
+-- # (Description, 7.c and 18), not the value or the expression after it's
+-- # parsed. That includes any comments and new lines in it, and the parentheses
+-- # of the generation expression.
+CREATE TABLE t (h INT DEFAULT -0, i DECIMAL(4, 1) DEFAULT +.5, l TIME DEFAULT localtime, m REAL DEFAULT 1.5E+2, n VARCHAR(10) DEFAULT 'a' -- one
+ 'b' NOT NULL, a INT, b DOUBLE PRECISION GENERATED ALWAYS AS (cast(a as int) + 1.5E+2 - -0), c INT GENERATED ALWAYS AS ( ( a ) /* it's */ + 1 ));
+SELECT column_name, column_default, generation_expression FROM information_schema.columns WHERE table_name = 'T';
+-- msg: CREATE TABLE 1
+-- COLUMN_NAME: H COLUMN_DEFAULT: -0 GENERATION_EXPRESSION: NULL
+-- COLUMN_NAME: I COLUMN_DEFAULT: +.5 GENERATION_EXPRESSION: NULL
+-- COLUMN_NAME: L COLUMN_DEFAULT: localtime GENERATION_EXPRESSION: NULL
+-- COLUMN_NAME: M COLUMN_DEFAULT: 1.5E+2 GENERATION_EXPRESSION: NULL
+-- COLUMN_NAME: N COLUMN_DEFAULT: 'a' -- one
+--  'b' GENERATION_EXPRESSION: NULL
+-- COLUMN_NAME: A COLUMN_DEFAULT: NULL GENERATION_EXPRESSION: NULL
+-- COLUMN_NAME: B COLUMN_DEFAULT: NULL GENERATION_EXPRESSION: (cast(a as int) + 1.5E+2 - -0)
+-- COLUMN_NAME: C COLUMN_DEFAULT: NULL GENERATION_EXPRESSION: ( ( a ) /* it's */ + 1 )
+
+-- # The text is stored with the table, so it's the same when the table is read
+-- # from the file by another connection. That's also the text of a default
+-- # from ALTER TABLE, and a default at the end of the statement.
+/* connection 1 */
+CREATE TABLE t (a INT DEFAULT +1, b INT GENERATED ALWAYS AS (a  +  1));
+ALTER TABLE t ADD COLUMN c VARCHAR(10) DEFAULT 'x' -- one
+ 'y';
+ALTER TABLE t ADD COLUMN d DATE DEFAULT date '2020-01-02';
+ALTER TABLE t ALTER COLUMN a SET DEFAULT -2;
+/* connection 2 */
+SELECT column_name, column_default, generation_expression FROM information_schema.columns WHERE table_name = 'T';
+INSERT INTO t (a) VALUES (DEFAULT);
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: ALTER TABLE 1
+-- 1: msg: ALTER TABLE 1
+-- 1: msg: ALTER TABLE 1
+-- 2: COLUMN_NAME: A COLUMN_DEFAULT: -2 GENERATION_EXPRESSION: NULL
+-- 2: COLUMN_NAME: B COLUMN_DEFAULT: NULL GENERATION_EXPRESSION: (a  +  1)
+-- 2: COLUMN_NAME: C COLUMN_DEFAULT: 'x' -- one
+--  'y' GENERATION_EXPRESSION: NULL
+-- 2: COLUMN_NAME: D COLUMN_DEFAULT: date '2020-01-02' GENERATION_EXPRESSION: NULL
+-- 2: msg: INSERT 1
+-- 2: A: -2 B: -1 C: xy D: 2020-01-02
+
 -- # A column without a default has a null COLUMN_DEFAULT, which isn't the same
 -- # as DEFAULT NULL.
 CREATE TABLE t (a INT DEFAULT NULL, b INT);

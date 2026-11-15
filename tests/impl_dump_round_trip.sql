@@ -763,7 +763,7 @@ SELECT * FROM t;
 -- msg: INSERT 2
 -- out: CREATE TABLE "PUBLIC"."T" (
 -- out:   "X" INTEGER,
--- out:   "Y" INTEGER GENERATED ALWAYS AS (X * 10),
+-- out:   "Y" INTEGER GENERATED ALWAYS AS (x * 10),
 -- out:   "Z" CHARACTER VARYING(10)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."T" ("X", "Z") VALUES (1, 'a');
@@ -786,7 +786,7 @@ SELECT * FROM t;
 -- out:   "first name" CHARACTER VARYING(10),
 -- out:   "X" INTEGER,
 -- out:   "GREETING" CHARACTER VARYING(13) GENERATED ALWAYS AS ('Hi ' || "first name"),
--- out:   "y" INTEGER GENERATED ALWAYS AS (X + 1)
+-- out:   "y" INTEGER GENERATED ALWAYS AS (x + 1)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."T" ("first name", "X") VALUES ('Bob', 1);
 -- first name: Bob X: 1 GREETING: Hi Bob y: 2
@@ -803,7 +803,7 @@ SELECT * FROM t;
 -- out: CREATE TABLE "PUBLIC"."T" (
 -- out:   "ID" INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647) NOT NULL,
 -- out:   "X" INTEGER,
--- out:   "Y" INTEGER GENERATED ALWAYS AS (ID + X)
+-- out:   "Y" INTEGER GENERATED ALWAYS AS (id + x)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."T" ("ID", "X") OVERRIDING SYSTEM VALUE VALUES (1, 10);
 -- out: INSERT INTO "PUBLIC"."T" ("ID", "X") OVERRIDING SYSTEM VALUE VALUES (2, 20);

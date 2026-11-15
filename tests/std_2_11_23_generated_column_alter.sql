@@ -53,7 +53,7 @@ SELECT * FROM t;
 -- msg: UPDATE 1
 -- out: CREATE TABLE "PUBLIC"."T" (
 -- out:   "X" INTEGER,
--- out:   "Y" INTEGER GENERATED ALWAYS AS (X * 10),
+-- out:   "Y" INTEGER GENERATED ALWAYS AS (x * 10),
 -- out:   "Z" CHARACTER VARYING(10)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."T" ("X", "Z") VALUES (1, 'a');
@@ -97,7 +97,7 @@ SELECT * FROM t;
 -- msg: ALTER TABLE 1
 -- out: CREATE TABLE "PUBLIC"."T" (
 -- out:   "X" INTEGER,
--- out:   "Z" INTEGER GENERATED ALWAYS AS (X * 2)
+-- out:   "Z" INTEGER GENERATED ALWAYS AS (x * 2)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."T" ("X") VALUES (2);
 -- msg: INSERT 1

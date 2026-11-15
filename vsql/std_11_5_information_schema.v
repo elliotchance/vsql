@@ -548,7 +548,7 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 fn generation_expression(column Column) Value {
 	generated := column.generated or { return new_null_value(.is_varchar) }
 
-	return new_varchar_value(generated.expr.pstr(map[string]Value{}))
+	return new_varchar_value(generated.text)
 }
 
 // identity_descriptor is IS_IDENTITY to IDENTITY_CYCLE of the COLUMNS view,
@@ -765,12 +765,14 @@ fn check_constraints_view_row(catalog_name string, table Table, name string, che
 	]
 }
 
-// column_default is the text of the DEFAULT of a column, or NULL if it doesn't
-// have one. A default that's longer than CHARACTER_DATA can hold is
-// "TRUNCATED" (6.20, Description 7).
+// column_default is the text of the DEFAULT of a column as it was written, or
+// NULL if it doesn't have one. A default that's longer than CHARACTER_DATA can
+// hold is "TRUNCATED" (6.20, Description 7).
 fn column_default(column Column) Value {
-	default_value := column.default_value or { return new_null_value(.is_varchar) }
-	s := (*default_value).str()
+	if column.default_value == none {
+		return new_null_value(.is_varchar)
+	}
+	s := column.default_text
 	if s.runes().len > max_character_length {
 		return new_varchar_value('TRUNCATED')
 	}

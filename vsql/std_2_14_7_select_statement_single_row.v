@@ -80,7 +80,7 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 	targets := select_target_list(targets_text, p)!
 
 	text_sql, references := rewrite_host_parameters(query, p)!
-	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
+	stmt := parse_tokens(tokenize(text_sql)!, text_sql) or { return procedure_error(p, err) }
 
 	// The query must be a <query specification>, which can't have ORDER BY,
 	// OFFSET or FETCH. The statement starts with SELECT, so it's a query.

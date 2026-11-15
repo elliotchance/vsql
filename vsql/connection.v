@@ -885,7 +885,7 @@ fn parse_sql(sql_stmt string, mut stack []YYSymType) !(Stmt, bool, []Token, []st
 		}
 	}
 
-	stmt, mut features := parse_statement(tokens, sql_stmt, mut stack)!
+	stmt, mut features := parse_statement(tokens, sql_stmt, sql_stmt, mut stack)!
 	features << lexical_features
 	// Only a query, searched DELETE or searched UPDATE can be explained, any
 	// other statement is an error when it's executed (so isn't flagged).
@@ -901,23 +901,27 @@ fn parse_sql(sql_stmt string, mut stack []YYSymType) !(Stmt, bool, []Token, []st
 	return stmt, explain, tokens, features
 }
 
-fn parse_tokens(tokens []Token) !Stmt {
+// parse_tokens parses the tokens of text, without saying where a syntax error
+// is.
+fn parse_tokens(tokens []Token, text string) !Stmt {
 	mut stack := []YYSymType{}
-	stmt, _ := parse_statement(tokens, '', mut stack)!
+	stmt, _ := parse_statement(tokens, text, '', mut stack)!
 
 	return stmt
 }
 
 // parse_statement parses a statement, and also returns the features outside of
-// Core SQL that it uses (see flag). source is the text of the tokens, if a syntax
-// error should say where it is (see describe_syntax_error).
+// Core SQL that it uses (see flag). text is the text of the tokens, and source is
+// also the text if a syntax error should say where it is (see
+// describe_syntax_error).
 //
 // stack is the stack of the parser, which is kept by a connection so that it's
 // only made once.
-fn parse_statement(tokens []Token, source string, mut stack []YYSymType) !(Stmt, []string) {
+fn parse_statement(tokens []Token, text string, source string, mut stack []YYSymType) !(Stmt, []string) {
 	mut lexer := Lexer{
 		tokens: tokens
 		source: source
+		text:   text
 	}
 	mut parser := YYParserImpl{
 		stack: stack
@@ -1171,6 +1175,7 @@ fn (mut conn Connection) register_flagged_virtual_table(create_table string, dat
 	mut lexer := Lexer{
 		tokens: tokens
 		source: create_table
+		text:   create_table
 	}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!

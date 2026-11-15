@@ -20,6 +20,12 @@ pub:
 	// default_value is the ``DEFAULT`` of the column, if there is one. A column
 	// without a default has a default of ``NULL``.
 	default_value ?&DefaultOption
+	// default_text is the <default option> of default_value as it was written.
+	// It's how the default is stored in the file (see Table.bytes) and shown by
+	// the COLUMN_DEFAULT of the INFORMATION_SCHEMA.COLUMNS view.
+	//
+	// ISO/IEC 9075-11:2006, 6.20, COLUMNS base table, Description, 7.c
+	default_text string
 	// identity is set when the column is the identity column of the table (see
 	// Table.identity_column).
 	identity ?&IdentityColumn
@@ -184,8 +190,8 @@ fn (t Table) bytes() []u8 {
 	mut elements := []string{}
 	for i, col in t.columns {
 		mut element := '${delimit_identifier(col.name.sub_entity_name)} ${col.typ}'
-		if default_value := col.default_value {
-			element += ' DEFAULT ${*default_value}'
+		if col.default_value != none {
+			element += ' DEFAULT ${col.default_text}'
 		}
 		if identity := col.identity {
 			element += ' ${*identity}'

@@ -16,7 +16,8 @@ column_definition:
       TableElement(Column{
         name:          $1.v as Identifier
         typ:           $2.v as Type
-        default_value: new_ref($3.v as DefaultOption)
+        default_value: new_ref(($3.v as DefaultClause).option)
+        default_text:  ($3.v as DefaultClause).text
       }),
     ])
   }
@@ -119,7 +120,10 @@ identity_column_specification:
 // would conflict with the <identity column specification>.
 generation_clause:
   GENERATED ALWAYS AS generation_expression {
-    $$.v = yy_box(GenerationClause{expr: $4.v as ValueExpression})
+    $$.v = yy_box(GenerationClause{
+      expr: $4.v as ValueExpression
+      text: written_generation_expression(mut yylex, yyrcvr.char >= 0)
+    })
   }
 
 generation_expression:

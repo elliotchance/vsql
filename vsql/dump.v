@@ -4,7 +4,6 @@
 module vsql
 
 import io
-import strings
 
 @[params]
 pub struct DumpOptions {
@@ -61,43 +60,20 @@ fn (o DumpOptions) output_foreign_key(key ForeignKey) ForeignKey {
 }
 
 // output_definition is the definition of a table as it's written. A column in a CHECK
-// or generated column can be qualified with the schema. A string isn't changed.
-fn (o DumpOptions) output_definition(definition string, name Identifier) string {
+// or generated column can be qualified with the schema, which is removed (see
+// without_qualifiers).
+fn (o DumpOptions) output_definition(definition string, name Identifier) !string {
 	if !o.no_schema {
 		return definition
 	}
 
-	mut prefixes := map[string]string{}
-	for schema in [name.schema_name, delimit_identifier(name.schema_name)] {
-		for table in [name.entity_name, delimit_identifier(name.entity_name)] {
-			prefixes['${schema}.${table}.'] = '${table}.'
+	return without_qualifiers(definition, fn [name] (parts []string) int {
+		return if parts.len >= 3 && parts[0] == name.schema_name && parts[1] == name.entity_name {
+			1
+		} else {
+			0
 		}
-	}
-
-	mut sb := strings.new_builder(definition.len)
-	mut in_string := false
-	mut i := 0
-	outer: for i < definition.len {
-		c := definition[i]
-		if c == `'` {
-			in_string = !in_string
-		}
-		is_start := i == 0 || !(definition[i - 1].is_letter() || definition[i - 1].is_digit()
-			|| definition[i - 1] in [`_`, `.`, `"`])
-		if !in_string && is_start {
-			for prefix, replacement in prefixes {
-				if definition[i..].starts_with(prefix) {
-					sb.write_string(replacement)
-					i += prefix.len
-					continue outer
-				}
-			}
-		}
-		sb.write_u8(c)
-		i++
-	}
-
-	return sb.str()
+	})
 }
 
 // DumpPattern is a "schema.name" pattern for an object, or an empty schema if
@@ -455,7 +431,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 					...table
 					name:         options.output_name(table.name)
 					foreign_keys: dump_table.foreign_keys.map(options.output_foreign_key(it))
-				}.str()), table.name) + '\n')!
+				}.str())!, table.name)! + '\n')!
 				if is_schema_needed {
 					write_line(mut w, "SET SCHEMA '${default_schema_name}';\n")!
 				}

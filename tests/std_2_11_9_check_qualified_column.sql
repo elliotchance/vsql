@@ -183,7 +183,7 @@ INSERT INTO "it's".u (a) VALUES (0);
 -- out: SET SCHEMA '"it''s"';
 -- out: CREATE TABLE "it's"."U" (
 -- out:   "A" INTEGER,
--- out:   "B" INTEGER GENERATED ALWAYS AS (U.A + 1),
+-- out:   "B" INTEGER GENERATED ALWAYS AS (u.a + 1),
 -- out:   CHECK (U.A > 0)
 -- out: );
 -- out: SET SCHEMA 'PUBLIC';

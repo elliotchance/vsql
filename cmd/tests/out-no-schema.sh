@@ -39,7 +39,7 @@ $VSQL out -no-schema $VSQL_FILE > $SQL_FILE
 check_no_schema vsql
 grep -F 'CREATE SEQUENCE "Q" START WITH 5' $SQL_FILE
 grep -F 'CREATE TABLE "T" (' $SQL_FILE
-grep -F 'GENERATED ALWAYS AS (T.X + 1)' $SQL_FILE
+grep -F 'GENERATED ALWAYS AS (t.x + 1)' $SQL_FILE
 grep -F 'CHECK (T.Y > 0)' $SQL_FILE
 grep -F 'INSERT INTO "T" (' $SQL_FILE
 grep -F 'REFERENCES "T" ("ID")' $SQL_FILE

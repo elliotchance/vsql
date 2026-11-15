@@ -11,12 +11,29 @@ INSERT INTO t (a) VALUES (0);
 -- msg: INSERT 1
 -- out: CREATE TABLE "PUBLIC"."T" (
 -- out:   "A" INTEGER,
--- out:   "B" INTEGER GENERATED ALWAYS AS (PUBLIC.T.A + 1),
+-- out:   "B" INTEGER GENERATED ALWAYS AS (public.t.a + 1),
 -- out:   CHECK (PUBLIC.T.A > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."T" ("A") VALUES (1);
 -- A: 1 B: 2
 -- error 23514: violates check constraint: CHECK (PUBLIC.T.A > 0) on ":memory:".PUBLIC.T
+
+-- # A generation expression is dumped as it was written, so a name with a
+-- # catalog can be in any case, be a non-reserved word, or have spaces and
+-- # comments around its periods. A comment isn't changed.
+CREATE TABLE t (name INT, b INT GENERATED ALWAYS AS (":memory:" . public.t /* it's ":memory:".public.t.name */ . name + 1));
+INSERT INTO t (name) VALUES (1);
+/* out */
+/* in */
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "NAME" INTEGER,
+-- out:   "B" INTEGER GENERATED ALWAYS AS (public.t /* it's ":memory:".public.t.name */ . name + 1)
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("NAME") VALUES (1);
+-- NAME: 1 B: 2
 
 -- # In another schema, where every name in the chain is delimited and contains
 -- # a dot or a doubled quote.

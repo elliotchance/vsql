@@ -27,6 +27,12 @@ VALUES CAST('hello' AS VARCHAR(2));
 -- warning 01004: string data, right truncation
 -- COL1: he
 
+-- # Only the space is <truncating whitespace> (5.2, Syntax Rules, 4), so losing
+-- # a tab is a warning.
+VALUES CAST(U&'ab\0009' AS VARCHAR(2));
+-- warning 01004: string data, right truncation
+-- COL1: ab
+
 -- # A string cast to a longer CHAR is padded with spaces (General Rules,
 -- # 11.d.iii).
 /* types */
@@ -164,6 +170,14 @@ VALUES CAST(' 12 ' AS INT);
 
 VALUES CAST(' 1.5 ' AS NUMERIC(5, 2));
 -- COL1: 1.50
+
+-- # Only the space is <truncating whitespace> (5.2, Syntax Rules, 4), so a tab
+-- # isn't removed.
+VALUES CAST(U&'\000912' AS INT);
+-- error 22018: invalid character value for cast
+
+VALUES CAST(U&'1.5\0009' AS DOUBLE PRECISION);
+-- error 22018: invalid character value for cast
 
 VALUES CAST('-12' AS INT);
 -- COL1: -12

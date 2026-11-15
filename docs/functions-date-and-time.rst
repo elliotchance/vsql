@@ -6,10 +6,11 @@ Date and Time Functions
    :depth: 1
 
 These functions return the current date and time (see :doc:`dates-times` for
-the types), except for ``EXTRACT``, which returns a part of a date or time.
-The time is taken once for each statement, so every use in the same statement
-has the same value, even if the statement takes a while. Each execution of a
-prepared statement has a new time.
+the types), build one from its fields (``MAKE_DATE``, ``MAKE_TIME``,
+``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``), or return a part of one
+(``EXTRACT``). The current time is taken once for each statement, so every use
+in the same statement has the same value, even if the statement takes a while
+(except ``NOW()``). Each execution of a prepared statement has a new time.
 
 The time zone is the time zone of the session.
 
@@ -250,6 +251,187 @@ date and time, but also includes the time zone.
   - PostgreSQL, MySQL and Oracle: ``LOCALTIMESTAMP``.
   - SQL Server: ``SYSDATETIME()``.
   - SQLite: ``DATETIME('now', 'localtime')``.
+
+.. _function-make_date:
+
+MAKE_DATE
+^^^^^^^^^
+
+.. code-block:: sql
+
+   MAKE_DATE(year BIGINT, month BIGINT, day BIGINT) DATE
+
+Builds a ``DATE`` from its year, month and day. Each one is any integer
+(``SMALLINT``, ``INTEGER`` or ``BIGINT``), another number is a ``42883`` error.
+
+Each field must be valid on its own, the year from 1 to 9999, the month from 1
+to 12, and the day must be in that month (including February 29 in a leap
+year). Otherwise it's a ``22007`` error (invalid datetime format), the same as
+a ``CAST`` of a string that isn't a valid date. Unlike the ``DATE`` function of
+a spreadsheet, a field out of range never rolls over into the next unit, so
+``MAKE_DATE(2024, 13, 1)`` is an error, not January 2025.
+
+``MAKE_DATE`` is a vsql extension flagged by ``V402-09`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MAKE_DATE(2024, 2, 29);
+  -- COL1: 2024-02-29
+
+  VALUES MAKE_DATE(2023, 2, 29);
+  -- error 22007: invalid datetime format
+
+**Compatibility**
+
+- **SQL standard:** not standard. ``CAST`` a string, such as
+  ``CAST('2024-02-29' AS DATE)``.
+- **Other databases:**
+
+  - PostgreSQL: ``MAKE_DATE``. A negative year is BC.
+  - MySQL: ``STR_TO_DATE(CONCAT_WS('-', y, m, d), '%Y-%m-%d')``
+    (``MAKEDATE`` takes the day of the year).
+  - SQL Server: ``DATEFROMPARTS``.
+  - SQLite: ``DATE(PRINTF('%04d-%02d-%02d', y, m, d))``.
+  - Oracle: ``TO_DATE``, which also has a time.
+
+.. _function-make_time:
+
+MAKE_TIME
+^^^^^^^^^
+
+.. code-block:: sql
+
+   MAKE_TIME(hour BIGINT, minute BIGINT, second NUMERIC) TIME(6) WITHOUT TIME ZONE
+   MAKE_TIME(hour BIGINT, minute BIGINT, second DOUBLE PRECISION) TIME(6) WITHOUT TIME ZONE
+
+Builds a ``TIME(6) WITHOUT TIME ZONE`` from its hour, minute and second. The
+hour and minute are any integer, the second is any number and can have a
+fraction. A fraction past 6 digits is truncated (not rounded), the same as a
+``CAST`` to ``TIME(6)``, so ``MAKE_TIME(1, 2, 3.0000009)`` is
+``01:02:03.000000``.
+
+The hour must be from 0 to 23, the minute from 0 to 59 and the second at least
+0 and less than 60, otherwise it's a ``22007`` error, they never roll over.
+Like a ``TIME`` literal, a leap second (60 up to, but not including, 62) is
+also accepted. vsql can't store a leap second, so it becomes the next minute,
+the same as ``TIME '23:59:60'`` (``00:00:00``).
+
+``MAKE_TIME`` is a vsql extension flagged by ``V402-10`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MAKE_TIME(12, 34, 56.789);
+  -- COL1: 12:34:56.789000
+
+  VALUES MAKE_TIME(24, 0, 0);
+  -- error 22007: invalid datetime format
+
+**Compatibility**
+
+- **SQL standard:** not standard. ``CAST`` a string, such as
+  ``CAST('12:34:56.789' AS TIME(6))``.
+- **Other databases:**
+
+  - PostgreSQL: ``MAKE_TIME``. PostgreSQL allows ``24:00:00``.
+  - MySQL: ``MAKETIME``, which allows hours past 23.
+  - SQL Server: ``TIMEFROMPARTS``.
+  - SQLite: ``TIME(PRINTF('%02d:%02d:%02d', h, m, s))``.
+  - Oracle has no ``TIME`` type.
+
+.. _function-make_timestamp:
+
+MAKE_TIMESTAMP
+^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   MAKE_TIMESTAMP(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second NUMERIC) TIMESTAMP(6) WITHOUT TIME ZONE
+   MAKE_TIMESTAMP(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second DOUBLE PRECISION) TIMESTAMP(6) WITHOUT TIME ZONE
+
+Builds a ``TIMESTAMP(6) WITHOUT TIME ZONE`` from its fields. The date fields
+are the same as ``MAKE_DATE`` and the time fields are the same as
+``MAKE_TIME``, including a leap second, which can roll over into the next day
+(but not past 9999-12-31, a ``22007`` error).
+
+``MAKE_TIMESTAMP`` is a vsql extension flagged by ``V402-11`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MAKE_TIMESTAMP(2024, 2, 29, 12, 34, 56.5e0);
+  -- COL1: 2024-02-29T12:34:56.500000
+
+  VALUES MAKE_TIMESTAMP(2016, 12, 31, 23, 59, 60);
+  -- COL1: 2017-01-01T00:00:00.000000
+
+**Compatibility**
+
+- **SQL standard:** not standard. ``CAST`` a string, such as
+  ``CAST('2024-02-29 12:34:56.5' AS TIMESTAMP(6))``.
+- **Other databases:**
+
+  - PostgreSQL: ``MAKE_TIMESTAMP``.
+  - MySQL: ``TIMESTAMP(MAKEDATE(y, 1) + INTERVAL m - 1 MONTH + INTERVAL d - 1
+    DAY, MAKETIME(h, mi, s))``.
+  - SQL Server: ``DATETIME2FROMPARTS``.
+  - SQLite: ``DATETIME(PRINTF('%04d-%02d-%02d %02d:%02d:%02d', y, m, d, h, mi, s))``.
+  - Oracle: ``TO_TIMESTAMP``.
+
+.. _function-make_timestamptz:
+
+MAKE_TIMESTAMPTZ
+^^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   MAKE_TIMESTAMPTZ(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second NUMERIC) TIMESTAMP(6) WITH TIME ZONE
+   MAKE_TIMESTAMPTZ(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second NUMERIC, time_zone VARCHAR) TIMESTAMP(6) WITH TIME ZONE
+
+(and the same with a ``DOUBLE PRECISION`` second).
+
+Builds a ``TIMESTAMP(6) WITH TIME ZONE`` from its fields, with the same rules
+as ``MAKE_TIMESTAMP``. The fields are the local time in the time zone, which is
+the time zone of the session, or the ``time_zone`` string. That's an offset
+from UTC written the same way as in a ``TIMESTAMP`` literal, a sign followed by
+two digit hours and minutes, from ``-14:00`` to ``+14:00`` (such as
+``'+05:30'``). Any other string is a ``22007`` error. Named time zones (such as
+``'America/New_York'`` in PostgreSQL) aren't supported.
+
+Without a time zone, the result depends on the time zone of the session, so it
+isn't deterministic and can't be used in a ``CHECK`` constraint (a ``42601``
+error).
+
+``MAKE_TIMESTAMPTZ`` is a vsql extension flagged by ``V402-12`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MAKE_TIMESTAMPTZ(2024, 6, 30, 12, 34, 56, '-08:00');
+  -- COL1: 2024-06-30T12:34:56.000000-0800
+
+  VALUES MAKE_TIMESTAMPTZ(2024, 6, 30, 12, 34, 56, '+14:01');
+  -- error 22007: invalid datetime format
+
+**Compatibility**
+
+- **SQL standard:** not standard. ``CAST`` a string, such as
+  ``CAST('2024-06-30 12:34:56-08:00' AS TIMESTAMP(6) WITH TIME ZONE)``.
+- **Other databases:**
+
+  - PostgreSQL: ``MAKE_TIMESTAMPTZ``, which also accepts a named time zone.
+  - SQL Server: ``DATETIMEOFFSETFROMPARTS``.
+  - Oracle: ``TO_TIMESTAMP_TZ``.
+  - MySQL and SQLite have no type with a time zone.
 
 .. _function-now:
 

@@ -328,6 +328,18 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V402-08``
      - ``EXTRACT(EPOCH FROM ...)``.
 
+   * - ``V402-09``
+     - ``MAKE_DATE``.
+
+   * - ``V402-10``
+     - ``MAKE_TIME``.
+
+   * - ``V402-11``
+     - ``MAKE_TIMESTAMP``.
+
+   * - ``V402-12``
+     - ``MAKE_TIMESTAMPTZ``.
+
    * - ``V403``
      - Mathematical functions: the arithmetic, exponent and logarithm, rounding
        and trigonometric functions (see :doc:`functions`).

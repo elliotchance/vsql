@@ -216,6 +216,18 @@ Every function:
    * - :ref:`LTRIM <function-ltrim>`
      - :doc:`String <functions-string>`
      - T056
+   * - :ref:`MAKE_DATE <function-make_date>`
+     - :doc:`Date and Time <functions-date-and-time>`
+     - Not standard
+   * - :ref:`MAKE_TIME <function-make_time>`
+     - :doc:`Date and Time <functions-date-and-time>`
+     - Not standard
+   * - :ref:`MAKE_TIMESTAMP <function-make_timestamp>`
+     - :doc:`Date and Time <functions-date-and-time>`
+     - Not standard
+   * - :ref:`MAKE_TIMESTAMPTZ <function-make_timestamptz>`
+     - :doc:`Date and Time <functions-date-and-time>`
+     - Not standard
    * - :ref:`MAX <function-max>`
      - :doc:`Aggregate <functions-aggregate>`
      - Core (E091-03)

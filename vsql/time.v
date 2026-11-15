@@ -168,6 +168,26 @@ fn new_timestamp_from_string(s string) !Time {
 	}}
 }
 
+// parse_time_zone is the time zone (in minutes from UTC) of a time zone
+// interval, such as "+05:30", or none if it's not valid. The sign applies to
+// both the hours and minutes, so "-00:30" is 30 minutes behind UTC.
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 43
+fn parse_time_zone(s string) ?i16 {
+	if s.len != 6 || !matches_datetime_pattern(s, '+00:00') {
+		return none
+	}
+
+	hours := i16(s[1..3].int())
+	minutes := i16(s[4..6].int())
+	time_zone := hours * 60 + minutes
+	if minutes > 59 || time_zone > max_time_zone_displacement {
+		return none
+	}
+
+	return if s[0] == `-` { -time_zone } else { time_zone }
+}
+
 // parse_timestamp_components parses a string that has already been validated
 // by is_unquoted_timestamp_string. Each component must be within the valid
 // range for a Gregorian date and time.

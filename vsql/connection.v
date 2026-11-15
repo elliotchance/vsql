@@ -444,10 +444,11 @@ fn (mut conn Connection) add_catalog_now(catalog_name string, path string, optio
 	}
 	conn.catalogs[catalog_name] = catalog
 
+	// A new catalog in memory needs its PUBLIC schema. The schema name includes
+	// the catalog, so the current catalog doesn't change. The catalog name is
+	// delimited because it's the exact name, which can be lower case.
 	if path == ':memory:' {
-		conn.query("SET CATALOG '${catalog_name}'")!
-		conn.query('CREATE SCHEMA public')!
-		conn.query("SET CATALOG '${conn.current_catalog}'")!
+		conn.query('CREATE SCHEMA "${catalog_name.replace('"', '""')}".public')!
 	}
 
 	// It joins the SQL-transaction without changing anything (unless it's

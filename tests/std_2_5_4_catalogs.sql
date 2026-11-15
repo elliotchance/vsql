@@ -45,8 +45,7 @@ SET CATALOG ':memory:';
 -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
 -- msg: SET CATALOG 1
 
--- # CURRENT_CATALOG starts as :memory:. Adding a catalog makes it current,
--- # which is a bug (#1099).
+-- # CURRENT_CATALOG starts as :memory:. Adding a catalog doesn't change it.
 -- # Each catalog has its own tables, so baz in BAR isn't found from FOO, and
 -- # FOO can have its own, different baz.
 VALUES CURRENT_CATALOG;
@@ -70,7 +69,7 @@ SELECT * FROM public.baz;
 SET CATALOG 'BAR';
 SELECT * FROM public.baz;
 -- COL1: :memory:
--- COL1: BAR
+-- COL1: :memory:
 -- msg: SET CATALOG 1
 -- COL1: FOO
 -- msg: SET CATALOG 1
@@ -87,3 +86,14 @@ SELECT * FROM public.baz;
 -- NUM2: 456
 -- msg: SET CATALOG 1
 -- NUM1: 123
+
+-- # A catalog's name can be lower case, and its PUBLIC schema is in that
+-- # catalog.
+/* create_catalog lower */
+VALUES CURRENT_CATALOG;
+CREATE TABLE "lower".public.t (x INTEGER);
+SET CATALOG 'lower';
+SELECT * FROM public.t;
+-- COL1: :memory:
+-- msg: CREATE TABLE 1
+-- msg: SET CATALOG 1

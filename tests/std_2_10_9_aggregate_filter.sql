@@ -1,6 +1,8 @@
 /* setup */
 CREATE TABLE t (g INT, x INT);
 INSERT INTO t (g, x) VALUES (1, 1), (1, 2), (1, NULL), (2, 5), (2, -3);
+
+/* define products */
 CREATE TABLE products (city VARCHAR(20), price FLOAT);
 INSERT INTO products (city, price) VALUES ('New York', 8.05e0), ('New York', 18.05e0), ('San Francisco', 7.5e0), ('San Francisco', 17.5e0), ('San Francisco', NULL);
 
@@ -68,6 +70,7 @@ SELECT (SELECT SUM(t1.x) FILTER (WHERE t2.x > 1) FROM t t2) FROM t t1;
 -- COL1: -6
 
 -- # A NULL price is in neither filter.
+/* include products */
 SELECT city, COUNT(*) FILTER (WHERE price > 10e0), AVG(price) FILTER (WHERE price < 10e0) FROM products GROUP BY city;
 -- CITY: New York COL2: 1 COL3: 8.05e0
 -- CITY: San Francisco COL2: 1 COL3: 7.5e0
@@ -82,37 +85,29 @@ EXPLAIN SELECT COUNT(*) FILTER (WHERE x > 1), SUM(x) FILTER (WHERE x > 1) FROM t
 -- # The filter must be a boolean, and can't contain an aggregate function (6.9,
 -- # Syntax Rules, 5), a subquery or an outer reference (Syntax Rules, 8).
 SELECT COUNT(*) FILTER (WHERE x) FROM t;
--- error 42804: data type mismatch in FILTER: expected BOOLEAN but got INTEGER
-
 SELECT SUM(x) FILTER (WHERE COUNT(*) > 1) FROM t;
--- error 42601: syntax error: nested set function: SUM(X) FILTER (WHERE COUNT(*) > 1)
-
 SELECT COUNT(*) FILTER (WHERE SUM(x) > 1) FROM t;
--- error 42601: syntax error: nested set function: COUNT(*) FILTER (WHERE SUM(X) > 1)
-
 SELECT SUM(x) FILTER (WHERE x IN (SELECT x FROM t)) FROM t;
--- error 42601: syntax error: a subquery cannot be used in an aggregate function
-
 SELECT (SELECT COUNT(*) FILTER (WHERE t1.x > 1) FROM t t2) FROM t t1;
--- error 42601: syntax error: outer reference in FILTER: T1.X
-
 SELECT (SELECT MAX(t2.x) FILTER (WHERE t1.x > 1) FROM t t2) FROM t t1;
+-- error 42804: data type mismatch in FILTER: expected BOOLEAN but got INTEGER
+-- error 42601: syntax error: nested set function: SUM(X) FILTER (WHERE COUNT(*) > 1)
+-- error 42601: syntax error: nested set function: COUNT(*) FILTER (WHERE SUM(X) > 1)
+-- error 42601: syntax error: a subquery cannot be used in an aggregate function
+-- error 42601: syntax error: outer reference in FILTER: T1.X
 -- error 42601: syntax error: outer reference in FILTER: T1.X
 
 -- # Only an aggregate function can have a FILTER, and it needs WHERE.
 SELECT x FILTER (WHERE x > 1) FROM t;
--- error 42601: syntax error: unexpected FILTER at line 1, column 10 near "SELECT x FILTER ("
-
 SELECT ABS(x) FILTER (WHERE x > 1) FROM t;
--- error 42601: syntax error: unexpected FILTER at line 1, column 15 near "(x) FILTER ("
-
 SELECT COUNT(*) FILTER (x > 1) FROM t;
+-- error 42601: syntax error: unexpected FILTER at line 1, column 10 near "SELECT x FILTER ("
+-- error 42601: syntax error: unexpected FILTER at line 1, column 15 near "(x) FILTER ("
 -- error 42601: syntax error: unexpected identifier at line 1, column 25 near ") FILTER (x >", expecting WHERE
 
 -- # A filtered function is still an aggregate function: it can't be in WHERE,
 -- # and the query is grouped, so other columns must be grouping columns.
 SELECT x FROM t WHERE COUNT(*) FILTER (WHERE x > 1) > 0;
--- error 42601: syntax error: an aggregate function cannot be used in WHERE
-
 SELECT g, COUNT(*) FILTER (WHERE x > 0) FROM t;
+-- error 42601: syntax error: an aggregate function cannot be used in WHERE
 -- error 42803: column G must be in the GROUP BY clause or used in an aggregate function

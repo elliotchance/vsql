@@ -2,15 +2,12 @@
 -- # character repertoire is UCS (General Rules, 2).
 
 VALUES U&'\0065\0301' = U&'\00E9';
--- COL1: TRUE
-
 VALUES CHAR_LENGTH(U&'\0065\0301');
--- COL1: 1
-
 VALUES CHAR_LENGTH(U&'\00E9');
--- COL1: 1
-
 VALUES U&'\0065\0301' <> U&'\00E9';
+-- COL1: TRUE
+-- COL1: 1
+-- COL1: 1
 -- COL1: FALSE
 
 -- # The characters don't need to be escapes, and the type counts the characters
@@ -21,9 +18,8 @@ VALUES 'e<U+0301>';
 -- COL1: é (CHARACTER(1))
 
 VALUES 'e<U+0301>' = 'é';
--- COL1: TRUE
-
 VALUES U&'e!0301' UESCAPE '!' = U&'\00E9';
+-- COL1: TRUE
 -- COL1: TRUE
 
 -- # A compound literal is normalized after it's put together.
@@ -35,12 +31,10 @@ VALUES CHAR_LENGTH('e'
 -- # Text that's already NFC stays the same.
 
 VALUES 'plain';
--- COL1: plain
-
 VALUES 'é';
--- COL1: é
-
 VALUES 'ぁ';
+-- COL1: plain
+-- COL1: é
 -- COL1: ぁ
 
 -- # A character can decompose to a single other one, or more than one level.
@@ -56,12 +50,10 @@ VALUES U&'\1E61\0323' = U&'\1E69', U&'\0073\0323\0307' = U&'\1E69';
 -- # Some characters are never composed, so they always stay as two.
 
 VALUES CHAR_LENGTH(U&'\0958');
--- COL1: 2
-
 VALUES U&'\0958' = U&'\0915\093C';
--- COL1: TRUE
-
 VALUES CHAR_LENGTH(U&'\+01D15E');
+-- COL1: 2
+-- COL1: TRUE
 -- COL1: 2
 
 -- # Combining marks are put in order of their combining classes.
@@ -81,17 +73,15 @@ VALUES U&'\0061\0301\0300' = U&'\0061\0300\0301';
 -- # A mark is blocked by a mark of the same class, but not of a lower one.
 
 VALUES CHAR_LENGTH(U&'\0061\0300\0301');
--- COL1: 2
-
 VALUES U&'\0061\0323\0300' = U&'\1EA1\0300';
+-- COL1: 2
 -- COL1: TRUE
 
 -- # A mark can't combine across another starter, or when there is no starter.
 
 VALUES CHAR_LENGTH(U&'\0061\0062\0301');
--- COL1: 3
-
 VALUES CHAR_LENGTH(U&'\0301\0065');
+-- COL1: 3
 -- COL1: 2
 
 -- # Two starters can combine.

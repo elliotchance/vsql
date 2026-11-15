@@ -108,19 +108,14 @@ SET SCHEMA 'S2';
 -- # A catalog that doesn't exist is an invalid catalog name, not a missing
 -- # table or schema. A name can't have more than three parts.
 SELECT * FROM nope.public.t1;
--- error 3D000: invalid catalog name: NOPE
-
 CREATE TABLE nope.public.t1 (x INT);
--- error 3D000: invalid catalog name: NOPE
-
 CREATE SCHEMA nope.s1;
--- error 3D000: invalid catalog name: NOPE
-
 SELECT NEXT VALUE FOR nope.public.seq FROM (VALUES 1) AS t;
--- error 3D000: invalid catalog name: NOPE
-
 CREATE TABLE "my catalog".public.t1 (x INT);
--- error 3D000: invalid catalog name: my catalog
-
 SELECT * FROM a.b.c.d;
+-- error 3D000: invalid catalog name: NOPE
+-- error 3D000: invalid catalog name: NOPE
+-- error 3D000: invalid catalog name: NOPE
+-- error 3D000: invalid catalog name: NOPE
+-- error 3D000: invalid catalog name: my catalog
 -- error 42601: syntax error: unexpected "." at line 1, column 20 near "b.c.d"

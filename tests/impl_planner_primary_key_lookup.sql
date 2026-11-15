@@ -3,6 +3,8 @@ CREATE TABLE t (id INT PRIMARY KEY, name VARCHAR(10));
 INSERT INTO t (id, name) VALUES (1, 'one');
 INSERT INTO t (id, name) VALUES (2, 'two');
 INSERT INTO t (id, name) VALUES (3, 'three');
+
+/* define s */
 CREATE TABLE s (code VARCHAR(10) PRIMARY KEY);
 INSERT INTO s (code) VALUES ('a');
 
@@ -33,9 +35,8 @@ EXPLAIN SELECT * FROM t AS x WHERE x.id = 1;
 -- EXPLAIN: EXPR (X.ID INTEGER NOT NULL, X.NAME CHARACTER VARYING(10))
 
 SELECT * FROM t AS x WHERE x.id = 1;
--- ID: 1 NAME: one
-
 SELECT name FROM t x WHERE id = 3;
+-- ID: 1 NAME: one
 -- NAME: three
 
 SELECT * FROM t AS x WHERE x.id = 4;
@@ -116,6 +117,7 @@ EXPLAIN SELECT * FROM t WHERE name = '1';
 -- EXPLAIN: WHERE NAME = '1'
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.NAME CHARACTER VARYING(10))
 
+/* include s */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM s WHERE code = 'a';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.S (CODE CHARACTER VARYING(10) NOT NULL) RANGE CODE = 'a'

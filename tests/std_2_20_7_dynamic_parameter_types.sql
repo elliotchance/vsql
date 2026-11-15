@@ -72,21 +72,16 @@ VALUES ? + ?;
 -- error 42601: syntax error: the data type of ?1 cannot be determined
 
 VALUES ?;
--- error 42601: syntax error: the data type of ?1 cannot be determined
-
 SELECT ? FROM t;
--- error 42601: syntax error: the data type of ?1 cannot be determined
-
 VALUES -?;
--- error 42601: syntax error: the data type of ?1 cannot be determined
-
 VALUES ? IS NULL;
--- error 42601: syntax error: the data type of ?1 cannot be determined
-
 VALUES ABS(?);
--- error 42601: syntax error: the data type of ?1 cannot be determined
-
 VALUES COUNT(?);
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+-- error 42601: syntax error: the data type of ?1 cannot be determined
 -- error 42601: syntax error: the data type of ?1 cannot be determined
 
 -- # A dynamic parameter in parentheses is the same. The error is only for the

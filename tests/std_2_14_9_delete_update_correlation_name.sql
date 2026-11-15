@@ -1,9 +1,11 @@
 /* setup */
 CREATE TABLE t (id INT PRIMARY KEY, x INT);
-CREATE TABLE s (id INT, y INT);
 INSERT INTO t (id, x) VALUES (1, 10);
 INSERT INTO t (id, x) VALUES (2, 20);
 INSERT INTO t (id, x) VALUES (3, 30);
+
+/* define s */
+CREATE TABLE s (id INT, y INT);
 INSERT INTO s (id, y) VALUES (2, 200);
 INSERT INTO s (id, y) VALUES (9, 900);
 
@@ -16,6 +18,7 @@ SELECT * FROM t;
 -- ID: 3 X: 30
 
 -- # Without a WHERE every row is deleted.
+/* include s */
 DELETE FROM t AS u;
 DELETE FROM s v;
 SELECT * FROM t;
@@ -40,45 +43,37 @@ SELECT * FROM t;
 -- # The correlation name is the only exposed name (Syntax Rules, 9.a, and
 -- # 14.14, Syntax Rules, 9.a), so it hides the name of the table.
 DELETE FROM t AS u WHERE t.x = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
-
 DELETE FROM t u WHERE t.x = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
-
 DELETE FROM t AS u WHERE public.t.x = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
-
 DELETE FROM t AS u WHERE t.id = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
-
 UPDATE t AS u SET x = 1 WHERE t.x = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
-
 UPDATE t AS u SET x = t.x + 1;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 
 -- # It's the same in a subquery.
+/* include s */
 DELETE FROM t AS u WHERE EXISTS (SELECT * FROM s WHERE s.id = t.id);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
-
 UPDATE t AS u SET x = (SELECT y FROM s WHERE s.id = t.id);
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
 
 -- # An unknown column of the correlation name.
 DELETE FROM t AS u WHERE u.nope = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
-
 UPDATE t AS u SET x = u.nope;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
 
 -- # The set clauses are still checked when no row is found.
 UPDATE t AS u SET x = u.nope WHERE u.id = 99;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
-
 UPDATE t AS u SET x = t.x WHERE u.id = 99;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
-
 UPDATE t AS u SET x = 'a' WHERE u.id = 99;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 -- error 42846: cannot coerce CHARACTER(1) to INTEGER
 
 UPDATE t AS u SET x = u.x + 1 WHERE u.id = 99;
@@ -90,6 +85,7 @@ SELECT * FROM t;
 -- ID: 3 X: 30
 
 -- # The correlation name can be the name of the table, or of another table.
+/* include s */
 DELETE FROM t AS t WHERE t.x = 10;
 DELETE FROM t AS s WHERE s.x = 20;
 UPDATE t AS s SET x = s.x + 1;
@@ -243,12 +239,14 @@ SELECT * FROM child;
 -- msg: DELETE 1
 
 -- # A correlated subquery in the WHERE.
+/* include s */
 DELETE FROM t AS u WHERE EXISTS (SELECT * FROM s WHERE s.id = u.id);
 SELECT * FROM t;
 -- msg: DELETE 1
 -- ID: 1 X: 10
 -- ID: 3 X: 30
 
+/* include s */
 UPDATE t AS u SET x = 0 WHERE u.id IN (SELECT id FROM s WHERE s.id = u.id);
 SELECT * FROM t;
 -- msg: UPDATE 1
@@ -257,6 +255,7 @@ SELECT * FROM t;
 -- ID: 3 X: 30
 
 -- # A correlated subquery in a set clause.
+/* include s */
 UPDATE t AS u SET x = (SELECT y + u.x FROM s WHERE s.id = u.id);
 SELECT * FROM t;
 -- msg: UPDATE 3
@@ -280,20 +279,17 @@ SELECT * FROM t;
 
 -- # A derived column list isn't allowed.
 DELETE FROM t AS u (a, b);
--- error 42601: syntax error: unexpected "(" at line 1, column 20 near "t AS u (a"
-
 UPDATE t AS u (a, b) SET a = 1;
+-- error 42601: syntax error: unexpected "(" at line 1, column 20 near "t AS u (a"
 -- error 42601: syntax error: unexpected "(" at line 1, column 15 near "t AS u (a", expecting SET
 
 -- # A reserved word can't be the correlation name, and neither can a qualified
 -- # name.
 DELETE FROM t AS WHERE x = 1;
--- error 42601: syntax error: unexpected WHERE at line 1, column 18 near "FROM t AS WHERE x"
-
 UPDATE t AS SET x = 1;
--- error 42601: syntax error: unexpected SET at line 1, column 13 near "UPDATE t AS SET x"
-
 DELETE FROM t AS a.b;
+-- error 42601: syntax error: unexpected WHERE at line 1, column 18 near "FROM t AS WHERE x"
+-- error 42601: syntax error: unexpected SET at line 1, column 13 near "UPDATE t AS SET x"
 -- error 42601: syntax error: unexpected "." at line 1, column 19 near "t AS a.b"
 
 -- # EXPLAIN.
@@ -334,6 +330,7 @@ COMMIT;
 -- msg: COMMIT
 
 -- # A positioned UPDATE.
+/* include s */
 /* extensions V108-01 V109-01 V110-01 V111-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -374,6 +371,7 @@ UPDATE t AS u SET x = t.x + 1 WHERE CURRENT OF c;
 
 -- # The cursor is matched by the table name, not the correlation name (14.8,
 -- # Syntax Rules, 6, and 14.13, Syntax Rules, 6).
+/* include s */
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -386,6 +384,7 @@ DELETE FROM s AS t WHERE CURRENT OF c;
 -- ID: 1 X: 10
 -- error 42601: syntax error: table S is not the table of cursor C
 
+/* include s */
 /* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -413,6 +412,7 @@ UPDATE t AS u SET id = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column ID is not updatable by cursor C
 
 -- # Another catalog.
+/* include s */
 /* create_catalog FOO */
 SET CATALOG 'FOO';
 CREATE TABLE foo.public.bar (baz INTEGER);

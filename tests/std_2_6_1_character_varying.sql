@@ -26,9 +26,8 @@ SELECT CAST(x AS CHAR(10)), CHARACTER_LENGTH(CAST(x AS CHAR(10))) FROM foo;
 
 -- # A CHAR and a VARCHAR of the same length compare by their characters.
 VALUES CAST('ABC' AS CHAR(3)) = CAST('ABC' AS VARCHAR(3));
--- COL1: TRUE
-
 VALUES CAST('ABC' AS CHAR(3)) = CAST('DEF' AS VARCHAR(3));
+-- COL1: TRUE
 -- COL1: FALSE
 
 -- # A value that's too long can only lose spaces, which is the only <truncating

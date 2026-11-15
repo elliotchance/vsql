@@ -7,14 +7,24 @@
 /* setup */
 CREATE TABLE t (id INT PRIMARY KEY, name VARCHAR(10));
 INSERT INTO t (id, name) VALUES (-2, 'minus two'), (1, 'one'), (2, 'two'), (3, 'three'), (5, 'five'), (6, 'six');
+
+/* define c */
 CREATE TABLE c (a INT, b INT, x INT, PRIMARY KEY (a, b));
 INSERT INTO c (a, b, x) VALUES (1, 1, 1), (1, 2, 2), (1, 3, 3), (2, 1, 4), (2, 2, 5), (3, 1, 6);
+
+/* define si */
 CREATE TABLE si (id SMALLINT PRIMARY KEY);
 INSERT INTO si (id) VALUES (1), (2), (32767);
+
+/* define bi */
 CREATE TABLE bi (id BIGINT PRIMARY KEY);
 INSERT INTO bi (id) VALUES (9007199254740992), (9007199254740993), (9007199254740994);
+
+/* define s */
 CREATE TABLE s (code VARCHAR(10) PRIMARY KEY);
 INSERT INTO s (code) VALUES ('a'), ('a b'), ('b');
+
+/* define n */
 CREATE TABLE n (id INT PRIMARY KEY, v INT, w INT);
 INSERT INTO n (id, v, w) VALUES (1, 1, 1), (2, 2, NULL), (3, NULL, 2), (4, 3, 3), (5, 2, 4), (6, NULL, NULL);
 
@@ -184,12 +194,14 @@ SELECT * FROM t WHERE id = 3e0;
 
 -- # A value that the column can't hold isn't used for the range, so it's still
 -- # checked.
+/* include si */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM si WHERE id <= 100000 AND id >= 2;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.SI (ID SMALLINT NOT NULL) RANGE ID <= 100000 AND ID >= 2
 -- EXPLAIN: WHERE ID <= 100000
 -- EXPLAIN: EXPR (":memory:".PUBLIC.SI.ID SMALLINT NOT NULL)
 
+/* include si */
 SELECT * FROM si WHERE id <= 100000 AND id >= 2;
 SELECT * FROM si WHERE id = 100000;
 SELECT * FROM si WHERE id = 32767;
@@ -222,16 +234,19 @@ SELECT * FROM t WHERE id = ?;
 -- sql: SELECT * FROM t WHERE id = CAST(NULL AS INTEGER)
 
 -- # A value that isn't constant is still checked.
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id = (SELECT MAX(x) FROM c);
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = (SELECT MAX(X) FROM C)
 -- EXPLAIN: WHERE ID = (SELECT MAX(X) FROM C)
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.NAME CHARACTER VARYING(10))
 
+/* include c */
 SELECT * FROM t WHERE id = (SELECT MAX(x) FROM c);
 -- ID: 6 NAME: six
 
 -- # BIGINT is compared exactly.
+/* include bi */
 SELECT * FROM bi WHERE id = 9007199254740993;
 SELECT * FROM bi WHERE id >= 9007199254740993;
 -- ID: 9007199254740993
@@ -240,12 +255,14 @@ SELECT * FROM bi WHERE id >= 9007199254740993;
 
 -- # A string can be compared differently than its key (such as with trailing
 -- # spaces), so it's still checked.
+/* include s */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM s WHERE code = 'a';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.S (CODE CHARACTER VARYING(10) NOT NULL) RANGE CODE = 'a'
 -- EXPLAIN: WHERE CODE = 'a'
 -- EXPLAIN: EXPR (":memory:".PUBLIC.S.CODE CHARACTER VARYING(10) NOT NULL)
 
+/* include s */
 SELECT * FROM s WHERE code = 'a';
 SELECT * FROM s WHERE code = 'a ';
 -- CODE: a
@@ -253,34 +270,40 @@ SELECT * FROM s WHERE code = 'a ';
 
 -- # Each column of the key before the one with a range has to be covered by =,
 -- # otherwise the columns after it aren't used for the range.
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE a = 1 AND b = 2;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.C (A INTEGER NOT NULL, B INTEGER NOT NULL, X INTEGER) RANGE A = 1 AND B = 2
 -- EXPLAIN: EXPR (":memory:".PUBLIC.C.A INTEGER NOT NULL, ":memory:".PUBLIC.C.B INTEGER NOT NULL, ":memory:".PUBLIC.C.X INTEGER)
 
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE a = 1 AND b >= 2;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.C (A INTEGER NOT NULL, B INTEGER NOT NULL, X INTEGER) RANGE A = 1 AND B >= 2
 -- EXPLAIN: EXPR (":memory:".PUBLIC.C.A INTEGER NOT NULL, ":memory:".PUBLIC.C.B INTEGER NOT NULL, ":memory:".PUBLIC.C.X INTEGER)
 
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE a >= 2 AND b = 1;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.C (A INTEGER NOT NULL, B INTEGER NOT NULL, X INTEGER) RANGE A >= 2 AND B = 1
 -- EXPLAIN: WHERE B = 1
 -- EXPLAIN: EXPR (":memory:".PUBLIC.C.A INTEGER NOT NULL, ":memory:".PUBLIC.C.B INTEGER NOT NULL, ":memory:".PUBLIC.C.X INTEGER)
 
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE a = 1.5 AND b = 1;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.C (A INTEGER NOT NULL, B INTEGER NOT NULL, X INTEGER) RANGE A = 1.5 AND B = 1
 -- EXPLAIN: WHERE A = 1.5 AND B = 1
 -- EXPLAIN: EXPR (":memory:".PUBLIC.C.A INTEGER NOT NULL, ":memory:".PUBLIC.C.B INTEGER NOT NULL, ":memory:".PUBLIC.C.X INTEGER)
 
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE b = 1;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.C (A INTEGER NOT NULL, B INTEGER NOT NULL, X INTEGER)
 -- EXPLAIN: WHERE B = 1
 -- EXPLAIN: EXPR (":memory:".PUBLIC.C.A INTEGER NOT NULL, ":memory:".PUBLIC.C.B INTEGER NOT NULL, ":memory:".PUBLIC.C.X INTEGER)
 
+/* include c */
 SELECT x FROM c WHERE a = 1 AND b = 2;
 SELECT x FROM c WHERE a = 1 AND b >= 2;
 SELECT x FROM c WHERE a = 1 AND b BETWEEN 2 AND 2;
@@ -298,6 +321,7 @@ SELECT x FROM c WHERE a = 2;
 
 -- # An index is the same. NULL is never in a range, so it doesn't need to be
 -- # checked either.
+/* include n */
 /* extensions V001-01 V002-01 */
 CREATE INDEX n_v ON n (v);
 EXPLAIN SELECT id FROM n WHERE v = 2;
@@ -305,6 +329,7 @@ EXPLAIN SELECT id FROM n WHERE v = 2;
 -- EXPLAIN: INDEX ":memory:".PUBLIC.N_V ON ":memory:".PUBLIC.N (ID INTEGER NOT NULL, V INTEGER, W INTEGER) RANGE V = 2
 -- EXPLAIN: EXPR (ID INTEGER NOT NULL)
 
+/* include n */
 /* extensions V002-01 */
 CREATE INDEX n_v ON n (v);
 CREATE INDEX n_w ON n (w DESC);

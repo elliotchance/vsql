@@ -85,12 +85,10 @@ SELECT * FROM t1 JOIN t2 JOIN t3 ON a = y ON a = x;
 -- # A table or correlation name can only be used once in the same FROM, even
 -- # further along a chain of joins.
 SELECT * FROM t1 JOIN t1 ON TRUE;
--- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
-
 SELECT * FROM t1 JOIN t2 ON a = x LEFT JOIN t1 ON TRUE;
--- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
-
 SELECT * FROM (SELECT a FROM t1) AS s JOIN (SELECT x FROM t2) AS s ON TRUE;
+-- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
+-- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
 -- error 42601: syntax error: table name S specified more than once
 
 -- # As an extension, a derived table can leave out its correlation name, but

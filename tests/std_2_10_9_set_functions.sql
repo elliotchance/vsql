@@ -55,9 +55,8 @@ SELECT SUM(i), AVG(n), MIN(s), MAX(d), COUNT(f) FROM nums WHERE i > 1000;
 
 -- # The average of an exact number is truncated to the scale of the argument.
 SELECT AVG(i), AVG(n) FROM nums WHERE i > 0;
--- COL1: 25 COL2: -0.93
-
 SELECT AVG(n) FROM nums WHERE n > 0;
+-- COL1: 25 COL2: -0.93
 -- COL1: 1.87
 
 -- # The sum of integers is a BIGINT, so it can be larger than the values.

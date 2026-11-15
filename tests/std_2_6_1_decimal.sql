@@ -33,30 +33,22 @@ SELECT -bar FROM foo;
 -- # General Rules, 8.a.i), but losing a digit before the point is out of range
 -- # (6.13, General Rules, 8.a.ii).
 VALUES CAST(1.23 AS DECIMAL(10, 6));
--- COL1: 1.230000
-
 VALUES CAST(1.23 AS DECIMAL(10, 2));
--- COL1: 1.23
-
 VALUES CAST(1.23 AS DECIMAL(10, 1));
--- COL1: 1.2
-
 VALUES CAST(1234.5 AS DECIMAL(3, 0));
--- error 22003: numeric value out of range
-
 VALUES CAST(-1.23 AS DECIMAL);
--- COL1: -1
-
 VALUES CAST(-12.34 AS DECIMAL(4, 2));
--- COL1: -12.34
-
 VALUES CAST(-12.34 AS DECIMAL(4, 1));
--- COL1: -12.3
-
 VALUES CAST(-12.34 AS DECIMAL(2, 0));
--- COL1: -12
-
 VALUES CAST(-12.34 AS DECIMAL(3, 2));
+-- COL1: 1.230000
+-- COL1: 1.23
+-- COL1: 1.2
+-- error 22003: numeric value out of range
+-- COL1: -1
+-- COL1: -12.34
+-- COL1: -12.3
+-- COL1: -12
 -- error 22003: numeric value out of range
 
 -- # Adding or subtracting gives the larger scale (6.29, Syntax Rules, 1.c.ii)
@@ -65,27 +57,20 @@ VALUES CAST(-12.34 AS DECIMAL(3, 2));
 -- # rest (6.29, General Rules, 5.b), so 1.24 / 1.5 is 0.82666 and a SMALLINT
 -- # divisor counts as a scale of 0.
 VALUES CAST(1.23 AS DECIMAL(6, 2)) + CAST(1.5 AS DECIMAL(6, 3));
--- COL1: 2.730
-
 VALUES CAST(1.23 AS DECIMAL(6, 2)) - CAST(1.5 AS DECIMAL(6, 3));
--- COL1: -0.270
-
 VALUES CAST(1.23 AS DECIMAL(6, 2)) - CAST(-1.5 AS DECIMAL(6, 3));
--- COL1: 2.730
-
 VALUES CAST(1.23 AS DECIMAL(6, 2)) * CAST(1.5 AS DECIMAL(6, 3));
--- COL1: 1.84500
-
 VALUES CAST(CAST(1.23 AS DECIMAL(6, 2)) * CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(6, 4));
--- COL1: 1.8450
-
 VALUES CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3));
--- COL1: 0.82666
-
 VALUES CAST(1.24 AS DECIMAL(6, 3)) / CAST(1.5 AS DECIMAL(6, 2));
--- COL1: 0.82666
-
 VALUES CAST(CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(6, 4));
+-- COL1: 2.730
+-- COL1: -0.270
+-- COL1: 2.730
+-- COL1: 1.84500
+-- COL1: 1.8450
+-- COL1: 0.82666
+-- COL1: 0.82666
 -- COL1: 0.8266
 
 /* types */
@@ -125,9 +110,8 @@ VALUES CAST(10.24 AS DECIMAL(4,2)) * CAST(12.123 AS DECIMAL(8,3));
 -- # 1 / 3 with two scale-1 operands keeps two places, and casting to a larger
 -- # scale doesn't bring the dropped digits back.
 VALUES CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1));
--- COL1: 0.33
-
 VALUES CAST(CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1)) AS DECIMAL(10, 8));
+-- COL1: 0.33
 -- COL1: 0.33000000
 
 -- # DECIMAL and NUMERIC give the same values.
@@ -138,27 +122,20 @@ VALUES CAST(CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1)) AS NUMERIC(10, 8))
 -- # and with approximate numbers (8.2, General Rules, 2). It can also be cast
 -- # or assigned to REAL or DOUBLE PRECISION.
 VALUES CAST(8.25 AS DECIMAL(5,2)) > 1;
--- COL1: TRUE
-
 VALUES 1 < CAST(8.25 AS DECIMAL(5,2));
--- COL1: TRUE
-
 VALUES CAST(8 AS DECIMAL(5,2)) = 8;
--- COL1: TRUE
-
 VALUES CAST(100.5 AS DECIMAL(5,1)) > 99;
--- COL1: TRUE
-
 VALUES CAST(9223372036854775807 AS DECIMAL(19,0)) > CAST(9223372036854775806 AS BIGINT);
--- COL1: TRUE
-
 VALUES CAST(8.25 AS DECIMAL(5,2)) > 1e0;
--- COL1: TRUE
-
 VALUES CAST(CAST(8.25 AS DECIMAL(5,2)) AS DOUBLE PRECISION);
--- COL1: 8.25e0
-
 VALUES CAST(CAST(8.25 AS DECIMAL(5,2)) AS REAL);
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: 8.25e0
 -- COL1: 8.25e0
 
 CREATE TABLE t (d DOUBLE PRECISION, x DECIMAL(5,2));

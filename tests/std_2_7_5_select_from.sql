@@ -145,7 +145,6 @@ SELECT * FROM a."B.C";
 -- # A derived table's correlation name doesn't need AS, and can rename the
 -- # columns.
 SELECT * FROM (VALUES 1) t;
--- COL1: 1
-
 SELECT * FROM (VALUES 1) t (x);
+-- COL1: 1
 -- X: 1

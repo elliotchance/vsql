@@ -63,10 +63,8 @@ CREATE TABLE t (id INT PRIMARY KEY);
 
 -- # A table still has only one PRIMARY KEY.
 CREATE TABLE t (id INT PRIMARY KEY, x INT PRIMARY KEY);
--- error 42601: syntax error: only one PRIMARY KEY can be defined
-
 CREATE TABLE t (id INT PRIMARY KEY, PRIMARY KEY (id));
--- error 42601: syntax error: only one PRIMARY KEY can be defined
-
 CREATE TABLE t (id INT PRIMARY KEY PRIMARY KEY);
+-- error 42601: syntax error: only one PRIMARY KEY can be defined
+-- error 42601: syntax error: only one PRIMARY KEY can be defined
 -- error 42601: syntax error: only one PRIMARY KEY can be defined

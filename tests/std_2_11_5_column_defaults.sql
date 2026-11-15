@@ -153,12 +153,10 @@ CREATE TABLE t (a INT NOT NULL DEFAULT 3);
 -- # A default can only be a literal, NULL, a datetime value function,
 -- # CURRENT_CATALOG or CURRENT_SCHEMA, not an expression or a parameter.
 CREATE TABLE t (a INT DEFAULT 1 + 2);
--- error 42601: syntax error: unexpected "+" at line 1, column 33 near "INT DEFAULT 1 + 2", expecting ")" or ","
-
 CREATE TABLE t (a INT DEFAULT (1));
--- error 42601: syntax error: unexpected "(" at line 1, column 31 near "a INT DEFAULT (1"
-
 CREATE TABLE t (a INT DEFAULT ?);
+-- error 42601: syntax error: unexpected "+" at line 1, column 33 near "INT DEFAULT 1 + 2", expecting ")" or ","
+-- error 42601: syntax error: unexpected "(" at line 1, column 31 near "a INT DEFAULT (1"
 -- error 42601: syntax error: unexpected "?" at line 1, column 31 near "a INT DEFAULT ?)"
 
 -- # A literal must suit the type of the column (Syntax Rules, 4.a). A string
@@ -167,52 +165,42 @@ CREATE TABLE t (a INT DEFAULT ?);
 -- # lose any digits, so 1.0 is allowed for an INTEGER, but 1.5 and 1e2 aren't
 -- # (Syntax Rules, 4.a.iii).
 CREATE TABLE t (a INT DEFAULT 'foo');
--- error 42601: syntax error: DEFAULT 'foo' is not valid for column A INTEGER
-
 CREATE TABLE t (a VARCHAR(10) DEFAULT 1);
--- error 42601: syntax error: DEFAULT 1 is not valid for column A CHARACTER VARYING(10)
-
 CREATE TABLE t (a VARCHAR(2) DEFAULT 'abc');
--- error 42601: syntax error: DEFAULT 'abc' is not valid for column A CHARACTER VARYING(2)
-
 CREATE TABLE t (a CHAR(2) DEFAULT 'ab ');
--- error 42601: syntax error: DEFAULT 'ab ' is not valid for column A CHARACTER(2)
-
 CREATE TABLE t (a INT DEFAULT 1.5);
+-- error 42601: syntax error: DEFAULT 'foo' is not valid for column A INTEGER
+-- error 42601: syntax error: DEFAULT 1 is not valid for column A CHARACTER VARYING(10)
+-- error 42601: syntax error: DEFAULT 'abc' is not valid for column A CHARACTER VARYING(2)
+-- error 42601: syntax error: DEFAULT 'ab ' is not valid for column A CHARACTER(2)
 -- error 42601: syntax error: DEFAULT 1.5 is not valid for column A INTEGER
 
 CREATE TABLE t (a INT DEFAULT 1.0);
 -- msg: CREATE TABLE 1
 
 CREATE TABLE t (a SMALLINT DEFAULT 32768);
--- error 42601: syntax error: DEFAULT 32768 is not valid for column A SMALLINT
-
 CREATE TABLE t (a NUMERIC(5, 1) DEFAULT 1.55);
--- error 42601: syntax error: DEFAULT 1.55 is not valid for column A NUMERIC(5, 1)
-
 CREATE TABLE t (a INT DEFAULT 1e2);
+-- error 42601: syntax error: DEFAULT 32768 is not valid for column A SMALLINT
+-- error 42601: syntax error: DEFAULT 1.55 is not valid for column A NUMERIC(5, 1)
 -- error 42601: syntax error: DEFAULT 100.0e0 is not valid for column A INTEGER
 
 -- # A boolean literal is only valid for a BOOLEAN (Syntax Rules, 4.a.vii), and
 -- # a BOOLEAN can't have a number. UNKNOWN is shown as NULL in the error.
 CREATE TABLE t (a DOUBLE PRECISION DEFAULT TRUE);
--- error 42601: syntax error: DEFAULT TRUE is not valid for column A DOUBLE PRECISION
-
 CREATE TABLE t (a BOOLEAN DEFAULT 1);
--- error 42601: syntax error: DEFAULT 1 is not valid for column A BOOLEAN
-
 CREATE TABLE t (a INT DEFAULT UNKNOWN);
+-- error 42601: syntax error: DEFAULT TRUE is not valid for column A DOUBLE PRECISION
+-- error 42601: syntax error: DEFAULT 1 is not valid for column A BOOLEAN
 -- error 42601: syntax error: DEFAULT NULL is not valid for column A INTEGER
 
 -- # A datetime column needs a datetime literal with the same fields and time
 -- # zone, not a string (Syntax Rules, 4.a.v).
 CREATE TABLE t (a DATE DEFAULT '2020-01-02');
--- error 42601: syntax error: DEFAULT '2020-01-02' is not valid for column A DATE
-
 CREATE TABLE t (a DATE DEFAULT TIMESTAMP '2020-01-02 03:04:05');
--- error 42601: syntax error: DEFAULT TIMESTAMP '2020-01-02 03:04:05' is not valid for column A DATE
-
 CREATE TABLE t (a TIMESTAMP WITH TIME ZONE DEFAULT TIMESTAMP '2020-01-02 03:04:05');
+-- error 42601: syntax error: DEFAULT '2020-01-02' is not valid for column A DATE
+-- error 42601: syntax error: DEFAULT TIMESTAMP '2020-01-02 03:04:05' is not valid for column A DATE
 -- error 42601: syntax error: DEFAULT TIMESTAMP '2020-01-02 03:04:05' is not valid for column A TIMESTAMP(6) WITH TIME ZONE
 
 CREATE TABLE t (a TIME WITH TIME ZONE DEFAULT TIME '03:04:05+05:00');
@@ -222,18 +210,14 @@ CREATE TABLE t (a TIME WITH TIME ZONE DEFAULT TIME '03:04:05+05:00');
 -- # Rules, 4.d), and CURRENT_CATALOG and CURRENT_SCHEMA need a character string
 -- # (Syntax Rules, 4.b). A precision over 6 is too large for vsql.
 CREATE TABLE t (a DATE DEFAULT CURRENT_TIMESTAMP);
--- error 42601: syntax error: DEFAULT CURRENT_TIMESTAMP(6) is not valid for column A DATE
-
 CREATE TABLE t (a INT DEFAULT CURRENT_DATE);
--- error 42601: syntax error: DEFAULT CURRENT_DATE is not valid for column A INTEGER
-
 CREATE TABLE t (a TIME DEFAULT CURRENT_TIME(7));
--- error 42601: syntax error: CURRENT_TIME(7): cannot have precision greater than 6
-
 CREATE TABLE t (a INT DEFAULT CURRENT_CATALOG);
--- error 42601: syntax error: DEFAULT CURRENT_CATALOG is not valid for column A INTEGER
-
 CREATE TABLE t (a BOOLEAN DEFAULT CURRENT_SCHEMA);
+-- error 42601: syntax error: DEFAULT CURRENT_TIMESTAMP(6) is not valid for column A DATE
+-- error 42601: syntax error: DEFAULT CURRENT_DATE is not valid for column A INTEGER
+-- error 42601: syntax error: CURRENT_TIME(7): cannot have precision greater than 6
+-- error 42601: syntax error: DEFAULT CURRENT_CATALOG is not valid for column A INTEGER
 -- error 42601: syntax error: DEFAULT CURRENT_SCHEMA is not valid for column A BOOLEAN
 
 -- # The default is part of the table definition in the file.

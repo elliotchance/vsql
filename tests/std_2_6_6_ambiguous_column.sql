@@ -7,18 +7,14 @@ INSERT INTO a (id, x) VALUES (1, 10);
 INSERT INTO b (id, y) VALUES (2, 20);
 
 SELECT id FROM a JOIN b ON TRUE;
--- error 42702: ambiguous column: ID
-
 SELECT x FROM a JOIN b ON TRUE WHERE id = 1;
--- error 42702: ambiguous column: ID
-
 SELECT x FROM a JOIN b ON id = 1;
--- error 42702: ambiguous column: ID
-
 SELECT x FROM a JOIN b ON TRUE ORDER BY id;
--- error 42702: ambiguous column: ID
-
 SELECT COUNT(*) FROM a JOIN b ON TRUE GROUP BY id;
+-- error 42702: ambiguous column: ID
+-- error 42702: ambiguous column: ID
+-- error 42702: ambiguous column: ID
+-- error 42702: ambiguous column: ID
 -- error 42702: ambiguous column: ID
 
 -- # Qualifying each column with its table makes it unambiguous.

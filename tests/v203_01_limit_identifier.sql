@@ -55,15 +55,12 @@ SELECT limit limit FROM limit;
 -- LIMIT: 3
 
 SELECT limit + 1 limit FROM limit WHERE limit = 1;
--- LIMIT: 2
-
 SELECT limit.a FROM (SELECT limit AS a FROM limit) limit WHERE a = 1;
--- A: 1
-
 SELECT limit.a FROM (SELECT limit AS a FROM limit) limit (a) WHERE a = 1;
--- A: 1
-
 SELECT limit.a FROM limit limit (a) WHERE a = 1;
+-- LIMIT: 2
+-- A: 1
+-- A: 1
 -- A: 1
 
 -- # Next to the clause.
@@ -121,45 +118,33 @@ SELECT limit -1 AS a FROM limit;
 -- A: 2
 
 SELECT limit + 1, limit - 1 FROM limit WHERE limit = 1;
--- COL1: 2 COL2: 0
-
 SELECT ALL limit - 1 FROM limit WHERE limit = 1;
--- COL1: 0
-
 SELECT DISTINCT limit - 1 FROM limit WHERE limit = 1;
--- COL1: 0
-
 SELECT limit.limit - 1 FROM limit WHERE limit = 1;
--- COL1: 0
-
 SELECT - limit - 1, + limit - 1 FROM limit WHERE limit = 1;
--- COL1: -2 COL2: 0
-
 SELECT 2 * limit - 1, 2 / limit - 1 FROM limit WHERE limit = 1;
--- COL1: 1 COL2: 1
-
 SELECT (limit - 1) FROM limit WHERE limit = 1;
--- COL1: 0
-
 SELECT limit FROM limit WHERE limit - 1 = 0;
--- LIMIT: 1
-
 SELECT limit FROM limit WHERE NOT limit - 1 > 0;
--- LIMIT: 1
-
 SELECT limit FROM limit WHERE TRUE AND limit - 1 = 0;
+-- COL1: 2 COL2: 0
+-- COL1: 0
+-- COL1: 0
+-- COL1: 0
+-- COL1: -2 COL2: 0
+-- COL1: 1 COL2: 1
+-- COL1: 0
+-- LIMIT: 1
+-- LIMIT: 1
 -- LIMIT: 1
 
 SELECT limit FROM limit WHERE FALSE OR limit - 1 = 0;
--- LIMIT: 1
-
 SELECT limit FROM limit WHERE 0 = limit - 1;
--- LIMIT: 1
-
 SELECT limit FROM limit WHERE 0 <> limit - 1 AND 2 > limit - 1;
--- LIMIT: 2
-
 SELECT limit FROM limit WHERE 0 >= limit - 1;
+-- LIMIT: 1
+-- LIMIT: 1
+-- LIMIT: 2
 -- LIMIT: 1
 
 SELECT limit FROM limit WHERE 0 < limit - 1 AND 1 <= limit - 1;
@@ -183,18 +168,14 @@ SELECT limit FROM limit ORDER BY limit - 1 DESC;
 -- LIMIT: 1
 
 SELECT l1.limit FROM limit l1 JOIN limit l2 ON l1.limit - 1 = l2.limit AND l2.limit = 1;
--- LIMIT: 2
-
 SELECT limit FROM limit GROUP BY limit HAVING limit - 1 = 0;
--- LIMIT: 1
-
 SELECT CASE limit - 1 WHEN limit - 1 THEN limit - 1 END FROM limit WHERE limit = 1;
--- COL1: 0
-
 SELECT CASE WHEN limit - 1 = 0 THEN 1 ELSE limit - 1 END FROM limit WHERE limit = 2;
--- COL1: 1
-
 SELECT SUBSTRING('abc' FROM limit - 1 + 1 FOR limit - 1 + 1) FROM limit WHERE limit = 2;
+-- LIMIT: 2
+-- LIMIT: 1
+-- COL1: 0
+-- COL1: 1
 -- COL1: bc
 
 UPDATE limit SET limit = limit - 1 WHERE limit = 3;
@@ -229,9 +210,8 @@ SELECT * FROM limit limit - 1;
 
 -- # A delimited identifier isn't the clause.
 SELECT * FROM limit "limit" 1;
--- error 42601: syntax error: unexpected number at line 1, column 29 near "FROM limit "limit" 1"
-
 SELECT * FROM limit "LIMIT" 1;
+-- error 42601: syntax error: unexpected number at line 1, column 29 near "FROM limit "limit" 1"
 -- error 42601: syntax error: unexpected number at line 1, column 29 near "FROM limit "LIMIT" 1"
 
 -- # At the start of the statement, it can't be either of them.

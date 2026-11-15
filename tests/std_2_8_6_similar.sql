@@ -6,243 +6,180 @@ EXPLAIN VALUES 'a' SIMILAR TO 'a';
 -- # The whole string must match, including its case. _ and % are the same
 -- # as in LIKE.
 VALUES 'a' SIMILAR TO 'a';
--- COL1: TRUE
-
 VALUES 'a' SIMILAR TO 'A';
--- COL1: FALSE
-
 VALUES 'a' SIMILAR TO 'aa';
--- COL1: FALSE
-
 VALUES 'ab' SIMILAR TO 'a_';
--- COL1: TRUE
-
 VALUES 'ab' NOT SIMILAR TO 'a_';
--- COL1: FALSE
-
 VALUES 'abc' SIMILAR TO 'a_';
--- COL1: FALSE
-
 VALUES 'abc' SIMILAR TO '_b_';
--- COL1: TRUE
-
 VALUES 'abc' SIMILAR TO '%';
--- COL1: TRUE
-
 VALUES 'abc' SIMILAR TO 'a%';
--- COL1: TRUE
-
 VALUES 'abc' NOT SIMILAR TO 'a%';
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
 -- COL1: FALSE
 
 VALUES 'a' SIMILAR TO 'a%';
--- COL1: TRUE
-
 VALUES 'ba' SIMILAR TO 'a%';
--- COL1: FALSE
-
 VALUES 'ab' SIMILAR TO 'a%b';
--- COL1: TRUE
-
 VALUES 'acb' SIMILAR TO 'a%b';
--- COL1: TRUE
-
 VALUES 'acdeb' SIMILAR TO 'a%b';
--- COL1: TRUE
-
 VALUES 'ab' NOT SIMILAR TO 'a%b';
--- COL1: FALSE
-
 VALUES 'acb' NOT SIMILAR TO 'a%b';
--- COL1: FALSE
-
 VALUES 'acdeb' NOT SIMILAR TO 'a%b';
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: FALSE
 -- COL1: FALSE
 
 -- # Unlike LIKE, a pattern can have alternatives, groups and repetition.
 VALUES 'abd' SIMILAR TO 'a(b|c)d';
--- COL1: TRUE
-
 VALUES 'abb' SIMILAR TO 'ab*';
--- COL1: TRUE
-
 VALUES 'abb' SIMILAR TO 'ab+';
--- COL1: TRUE
-
 VALUES 'abb' SIMILAR TO 'ab{2}';
--- COL1: TRUE
-
 VALUES 'abab' SIMILAR TO '%b';
--- COL1: TRUE
-
 VALUES 'abab' SIMILAR TO '%a%b';
--- COL1: TRUE
-
 VALUES 'abab' SIMILAR TO '[ab]*b';
--- COL1: TRUE
-
 VALUES 'abab' SIMILAR TO '%a';
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
 -- COL1: FALSE
 
 -- # The value is compared with PAD SPACE (see std_2_8_6_similar_pad_space.sql),
 -- # so an empty string can match a pattern that needs one character, as a
 -- # space. It's one character, not one byte.
 VALUES '' SIMILAR TO '_';
--- COL1: TRUE
-
 VALUES '' SIMILAR TO '%';
--- COL1: TRUE
-
 VALUES '' SIMILAR TO '';
--- COL1: TRUE
-
 VALUES 'a' SIMILAR TO '';
--- COL1: FALSE
-
 VALUES 'é' SIMILAR TO '_';
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
 -- COL1: TRUE
 
 -- # Repetition with bounds, and an optional item.
 VALUES 'aaa' SIMILAR TO 'a{2,}';
--- COL1: TRUE
-
 VALUES 'a' SIMILAR TO 'a{2,}';
--- COL1: FALSE
-
 VALUES 'aaa' SIMILAR TO 'a{2,3}';
--- COL1: TRUE
-
 VALUES 'aaaa' SIMILAR TO 'a{2,3}';
--- COL1: FALSE
-
 VALUES 'ac' SIMILAR TO 'ab?c';
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: FALSE
 -- COL1: TRUE
 
 -- # Every alternative is tried, not just the first that matches.
 VALUES 'ab' SIMILAR TO '(a|ab)b';
--- COL1: TRUE
-
 VALUES 'abb' SIMILAR TO '(a|ab)b';
--- COL1: TRUE
-
 VALUES 'x' SIMILAR TO 'abc|x';
+-- COL1: TRUE
+-- COL1: TRUE
 -- COL1: TRUE
 
 -- # Character sets, negated with ^ only at the start, and with character
 -- # classes, whose names can be in any case.
 VALUES 'b' SIMILAR TO '[^a]';
--- COL1: TRUE
-
 VALUES 'a' SIMILAR TO '[^a]';
--- COL1: FALSE
-
 VALUES 'x' SIMILAR TO '[a-z^x]';
--- COL1: FALSE
-
 VALUES 'y' SIMILAR TO '[a-z^x]';
--- COL1: TRUE
-
 VALUES 'A1' SIMILAR TO '[[:UPPER:]][[:DIGIT:]]';
--- COL1: TRUE
-
 VALUES 'a1' SIMILAR TO '[[:UPPER:]][[:DIGIT:]]';
--- COL1: FALSE
-
 VALUES 'a 1' SIMILAR TO '[[:ALPHA:]][[:SPACE:]][[:ALNUM:]]';
--- COL1: TRUE
-
 VALUES 'a' SIMILAR TO '[[:lower:]]';
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
 -- COL1: TRUE
 
 -- # Characters that are special in other regular expressions are themselves.
 VALUES 'a.b$}' SIMILAR TO 'a.b$}';
--- COL1: TRUE
-
 VALUES 'a\b' SIMILAR TO 'a\b';
+-- COL1: TRUE
 -- COL1: TRUE
 
 -- # Patterns that take exponential time to backtrack still finish.
 VALUES 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' SIMILAR TO '(a|aa)*c';
--- COL1: FALSE
-
 VALUES 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab' SIMILAR TO '(a*)*b';
+-- COL1: FALSE
 -- COL1: TRUE
 
 -- # A pattern that isn't a valid regular expression is an error, including
 -- # an empty alternative, a repetition of nothing or of zero, and ^ outside
 -- # of a character set.
 VALUES 'a' SIMILAR TO '(a';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO 'a)';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO '*a';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO 'a**';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO '[a';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO 'a{0}';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO 'a{3,2}';
--- error 2201B: invalid regular expression
-
 VALUES 'aab' SIMILAR TO 'a{,2}b';
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
 -- error 2201B: invalid regular expression
 
 -- # A <low value> or <high value> can't have an underscore.
 VALUES 'aaaaaaaaaa' SIMILAR TO 'a{1_0}';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO 'a{1,1_0}';
--- error 2201B: invalid regular expression
-
 VALUES 'a(' SIMILAR TO 'a(';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO '[[:FOO:]]';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO 'a|';
--- error 2201B: invalid regular expression
-
 VALUES 'a' SIMILAR TO '^a';
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
+-- error 2201B: invalid regular expression
 -- error 2201B: invalid regular expression
 
 -- # Patterns that combine everything above.
 VALUES 'abc' SIMILAR TO 'abc';
--- COL1: TRUE
-
 VALUES 'abc' SIMILAR TO '_b_';
--- COL1: TRUE
-
 VALUES 'abc' SIMILAR TO '_A_';
--- COL1: FALSE
-
 VALUES 'abc' SIMILAR TO '%(b|d)%';
--- COL1: TRUE
-
 VALUES 'abc' SIMILAR TO '(b|c)%';
--- COL1: FALSE
-
 VALUES 'AbcAbcdefgefg12efgefg12' SIMILAR TO '((Ab)?c)+d((efg)+(12))+';
--- COL1: TRUE
-
 VALUES 'aaaaaab11111xy' SIMILAR TO 'a{6}_[0-9]{5}(x|y){2}';
--- COL1: TRUE
-
 VALUES '$0.87' SIMILAR TO '$[0-9]+(.[0-9][0-9])?';
--- COL1: TRUE
-
 VALUES 'abc' SIMILAR TO 'a.c';
--- COL1: FALSE
-
 VALUES 'a' SIMILAR TO '(a*){3}';
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
 -- COL1: TRUE
 
 VALUES 'a b' SIMILAR TO 'a[[:WHITESPACE:]]b';

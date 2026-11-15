@@ -43,10 +43,9 @@ FETCH FIRST 2 ROWS ONLY;
 
 SELECT * FROM t1
 FETCH FIRST ROW ONLY;
--- X: 1
-
 SELECT * FROM t1
 FETCH FIRST ROWS ONLY;
+-- X: 1
 -- X: 1
 
 -- # NEXT means the same as FIRST.

@@ -9,12 +9,10 @@ VALUES ROW(ABS(1.2e0), ABS(-1.23e0));
 
 -- # ABS takes exactly one numeric argument.
 VALUES ABS('hello');
--- error 42883: function does not exist: ABS(CHARACTER(5))
-
 VALUES ABS();
--- error 42601: syntax error: unexpected ")" at line 1, column 12 near "VALUES ABS()"
-
 VALUES ABS(1, 2);
+-- error 42883: function does not exist: ABS(CHARACTER(5))
+-- error 42601: syntax error: unexpected ")" at line 1, column 12 near "VALUES ABS()"
 -- error 42601: syntax error: unexpected "," at line 1, column 13 near "ABS(1, 2", expecting ")" or "+" or "-"
 
 -- # MOD of numbers with a scale is a vsql extension (V403-01). The result keeps
@@ -157,12 +155,10 @@ VALUES ROW(ABS(CAST(-1.5 AS REAL)), ABS(CAST(-1.25 AS DECIMAL(4, 2))));
 -- COL1: 1.5e0 (REAL) COL2: 1.25 (DECIMAL(4, 2))
 
 VALUES ABS(-32768);
--- error 22003: numeric value out of range
-
 VALUES ABS(CAST(-2147483648 AS INTEGER));
--- error 22003: numeric value out of range
-
 VALUES ABS(-9223372036854775808);
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 -- # Exact and REAL arguments are fine too. FLOOR and CEIL of an exact number

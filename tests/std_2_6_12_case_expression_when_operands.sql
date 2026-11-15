@@ -5,6 +5,8 @@
 /* setup */
 CREATE TABLE t (x INT, y VARCHAR(10));
 INSERT INTO t (x, y) VALUES (1, 'apple'), (5, 'banana'), (10, 'cherry'), (NULL, NULL);
+
+/* define u */
 CREATE TABLE u (z INT);
 INSERT INTO u (z) VALUES (2), (5);
 
@@ -38,6 +40,7 @@ SELECT x, CASE x WHEN IN (1, 10) THEN 'a' WHEN NOT IN (5) THEN 'b' ELSE 'c' END 
 -- X: 10 COL2: a
 -- X: NULL COL2: c
 
+/* include u */
 SELECT x, CASE x WHEN IN (SELECT z FROM u) THEN 'in u' ELSE 'not in u' END FROM t;
 -- X: 1 COL2: not in u
 -- X: 5 COL2: in u
@@ -75,6 +78,7 @@ SELECT x, CASE x WHEN IS NULL THEN 'yes' ELSE 'not' END, CASE x WHEN IS NOT NULL
 -- X: NULL COL2: yes COL3: NULL
 
 -- # <quantified comparison predicate part 2>
+/* include u */
 SELECT x, CASE x WHEN > ALL (SELECT z FROM u) THEN 'all' WHEN = ANY (SELECT z FROM u) THEN 'any' WHEN < SOME (SELECT z FROM u) THEN 'some' END FROM t;
 -- X: 1 COL2: some
 -- X: 5 COL2: any
@@ -131,15 +135,12 @@ VALUES CASE (5, 5) WHEN IN ((1, 1), (5, 5)) THEN 'a' END;
 -- # The <when operand> must be comparable with the case operand (8.2, Syntax
 -- # Rules, 3), including a row of the same degree (8.2, Syntax Rules, 1).
 VALUES CASE 1 WHEN > 'a' THEN 1 END;
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
-
 VALUES CASE 1 WHEN 2, 'a' THEN 1 END;
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
-
 VALUES CASE (1, 2) WHEN (1, 2, 3) THEN 1 END;
--- error 42601: syntax error: cannot compare a row of degree 2 with a row of degree 3
-
 VALUES CASE (1, 2) WHEN 1 THEN 1 END;
+-- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42601: syntax error: cannot compare a row of degree 2 with a row of degree 3
 -- error 42601: syntax error: cannot compare a row of degree 2 with a row of degree 1
 
 -- # A row can't be the case operand of a predicate that needs a single value.

@@ -24,10 +24,11 @@ VALUES CAST('12' AS INT);
 VALUES ROW(-'1'::INT, '7.9'::NUMERIC(3, 1)::INT :: BIGINT, ('2' || '3')::INT * 2);
 -- COL1: -1 (INTEGER) COL2: 7 (BIGINT) COL3: 46 (INTEGER)
 
-/* setup */
+/* define t */
 CREATE TABLE t (x VARCHAR(10));
 INSERT INTO t (x) VALUES ('5');
 
+/* include t */
 /* extensions V303-01 */
 SELECT x::INT + 1 AS y, t.x::INT AS z, COUNT(*)::SMALLINT AS n FROM t GROUP BY x;
 -- Y: 6 Z: 5 N: 1
@@ -37,9 +38,8 @@ VALUES 'a'::INT;
 -- error 22018: invalid character value for cast
 
 VALUES 1::NOPE;
--- error 42601: syntax error: unexpected identifier at line 1, column 11 near "VALUES 1::NOPE"
-
 VALUES 1::;
+-- error 42601: syntax error: unexpected identifier at line 1, column 11 near "VALUES 1::NOPE"
 -- error 42601: syntax error: unexpected $end at line 1, column 11 near "VALUES 1::"
 
 -- # A single colon is still a colon.

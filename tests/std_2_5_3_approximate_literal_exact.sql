@@ -8,7 +8,6 @@ VALUES ROW(1.7976931348623157e+308, 1e+20, 1.E2, .5e2);
 -- # is above zero, 0.1e0 + 0.2e0 is the double just above 0.3e0, and digits
 -- # past the precision of a double are lost, so 2^53 + 1 is the same as 2^53.
 VALUES ROW(5e-324 > 0e0, 0.30000000000000004e0 = 0.1e0 + 0.2e0, 0.3e0 = 0.1e0 + 0.2e0);
--- COL1: TRUE COL2: TRUE COL3: FALSE
-
 VALUES ROW(1.2345678901234568e+17 = 123456789012345678e0, 9007199254740993e0 = 9007199254740992e0);
+-- COL1: TRUE COL2: TRUE COL3: FALSE
 -- COL1: TRUE COL2: TRUE

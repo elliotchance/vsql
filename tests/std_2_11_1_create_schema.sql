@@ -83,9 +83,8 @@ SELECT NEXT VALUE FOR foo.seq FROM (VALUES 1) AS t;
 -- COL1: 1
 
 CREATE SCHEMA foo CREATE SEQUENCE public.seq;
--- error 42601: syntax error: PUBLIC.SEQ must be in schema FOO
-
 CREATE SCHEMA foo CREATE SEQUENCE seq CREATE SEQUENCE seq;
+-- error 42601: syntax error: PUBLIC.SEQ must be in schema FOO
 -- error 42P07: duplicate sequence: ":memory:".FOO.SEQ
 
 -- # The names used inside a table are also in the new schema (5.4, Syntax

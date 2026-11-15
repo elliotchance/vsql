@@ -25,33 +25,24 @@ COMMIT;
 -- msg: COMMIT
 
 EXPLAIN SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
--- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
-
 EXPLAIN START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
--- error 42601: syntax error: Cannot EXPLAIN START TRANSACTION
-
 SET TRANSACTION ISOLATION LEVEL;
--- error 42601: syntax error: unexpected $end at line 1, column 32 near "SET TRANSACTION ISOLATION LEVEL", expecting READ or REPEATABLE or SERIALIZABLE
-
 SET TRANSACTION ISOLATION LEVEL READ;
--- error 42601: syntax error: unexpected $end at line 1, column 37 near "TRANSACTION ISOLATION LEVEL READ", expecting COMMITTED or UNCOMMITTED
-
 SET TRANSACTION ISOLATION SERIALIZABLE;
--- error 42601: syntax error: unexpected SERIALIZABLE at line 1, column 27 near "SET TRANSACTION ISOLATION SERIALIZABLE", expecting LEVEL
-
 SET TRANSACTION SERIALIZABLE;
--- error 42601: syntax error: unexpected SERIALIZABLE at line 1, column 17 near "SET TRANSACTION SERIALIZABLE"
-
 SET TRANSACTION ISOLATION LEVEL REPEATABLE;
--- error 42601: syntax error: unexpected $end at line 1, column 43 near "TRANSACTION ISOLATION LEVEL REPEATABLE", expecting READ
-
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE READ ONLY;
--- error 42601: syntax error: unexpected READ at line 1, column 46 near "ISOLATION LEVEL SERIALIZABLE READ ONLY"
-
 SET TRANSACTION ISOLATION LEVEL SERIALIZABLE,;
--- error 42601: syntax error: unexpected $end at line 1, column 46 near "ISOLATION LEVEL SERIALIZABLE,", expecting DIAGNOSTICS or ISOLATION or READ; hint: remove the "," at the end
-
 START TRANSACTION ISOLATION LEVEL SNAPSHOT;
+-- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
+-- error 42601: syntax error: Cannot EXPLAIN START TRANSACTION
+-- error 42601: syntax error: unexpected $end at line 1, column 32 near "SET TRANSACTION ISOLATION LEVEL", expecting READ or REPEATABLE or SERIALIZABLE
+-- error 42601: syntax error: unexpected $end at line 1, column 37 near "TRANSACTION ISOLATION LEVEL READ", expecting COMMITTED or UNCOMMITTED
+-- error 42601: syntax error: unexpected SERIALIZABLE at line 1, column 27 near "SET TRANSACTION ISOLATION SERIALIZABLE", expecting LEVEL
+-- error 42601: syntax error: unexpected SERIALIZABLE at line 1, column 17 near "SET TRANSACTION SERIALIZABLE"
+-- error 42601: syntax error: unexpected $end at line 1, column 43 near "TRANSACTION ISOLATION LEVEL REPEATABLE", expecting READ
+-- error 42601: syntax error: unexpected READ at line 1, column 46 near "ISOLATION LEVEL SERIALIZABLE READ ONLY"
+-- error 42601: syntax error: unexpected $end at line 1, column 46 near "ISOLATION LEVEL SERIALIZABLE,", expecting DIAGNOSTICS or ISOLATION or READ; hint: remove the "," at the end
 -- error 42601: syntax error: unexpected identifier at line 1, column 35 near "TRANSACTION ISOLATION LEVEL SNAPSHOT", expecting READ or REPEATABLE or SERIALIZABLE
 
 -- # Several modes are separated by commas, in any order.

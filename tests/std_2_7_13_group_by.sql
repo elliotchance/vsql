@@ -164,21 +164,16 @@ EXPLAIN SELECT count(*) FROM foo;
 -- EXPLAIN: EXPR (COL1 INTEGER)
 
 SELECT count(*) FROM foo;
--- COL1: 5
-
 SELECT count(x) FROM foo;
--- COL1: 5
-
 SELECT min(x) FROM foo;
--- COL1: 1.234e0
-
 SELECT max(x) FROM foo;
--- COL1: 12.34e0
-
 SELECT avg(x) FROM foo;
--- COL1: 5.2016e0
-
 SELECT sum(x) FROM foo;
+-- COL1: 5
+-- COL1: 5
+-- COL1: 1.234e0
+-- COL1: 12.34e0
+-- COL1: 5.2016e0
 -- COL1: 26.008e0
 
 /* extensions V001-01 */
@@ -277,9 +272,8 @@ SELECT y, min(x) * avg(x) FROM foo GROUP BY y;
 -- Y: world COL2: 5.114518666667e0
 
 SELECT count(*) + 1, max(x) - min(x) FROM foo;
--- COL1: 6 COL2: 11.106e0
-
 SELECT sum(min(x)) FROM foo;
+-- COL1: 6 COL2: 11.106e0
 -- error 42601: syntax error: nested set function: SUM(MIN(X))
 
 -- # Without a GROUP BY the whole table is one group, even when it's empty.
@@ -296,9 +290,8 @@ SELECT x, count(*) FROM t2 GROUP BY x;
 
 -- # Without a GROUP BY, a WHERE that removes every row still leaves one group.
 SELECT count(*), sum(x) FROM foo WHERE x > 100e0;
--- COL1: 0 COL2: NULL
-
 SELECT count(*) + 1 FROM foo WHERE x > 100e0;
+-- COL1: 0 COL2: NULL
 -- COL1: 1
 
 -- # A column that isn't grouped can only be used in an aggregate, qualified or

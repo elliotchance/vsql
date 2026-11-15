@@ -1,8 +1,6 @@
 /* setup */
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1), (2), (3);
-CREATE TABLE t2 (x INT);
-CREATE SEQUENCE seq;
 
 -- # A constant expression is only evaluated once, but it's still the value of
 -- # each row and keeps its type.
@@ -26,14 +24,17 @@ SELECT x + (1 + 2) * 2 FROM t;
 -- COL1: 9
 
 -- # An error is only raised if there's a row.
+CREATE TABLE t2 (x INT);
 SELECT x FROM t2 WHERE x = 1 / 0;
+-- msg: CREATE TABLE 1
 
+CREATE TABLE t2 (x INT);
 SELECT 1 / 0 FROM t2;
+-- msg: CREATE TABLE 1
 
 SELECT x FROM t WHERE x = 1 / 0;
--- error 22012: division by zero
-
 SELECT CAST('a' AS INT) FROM t;
+-- error 22012: division by zero
 -- error 22018: invalid character value for cast
 
 -- # A parameter is constant.
@@ -43,7 +44,9 @@ SELECT x FROM t WHERE x = ? + 1;
 -- X: 3
 
 -- # NEXT VALUE FOR is never constant.
+CREATE SEQUENCE seq;
 SELECT NEXT VALUE FOR seq + 1 FROM t;
+-- msg: CREATE SEQUENCE 1
 -- COL1: 2
 -- COL1: 3
 -- COL1: 4

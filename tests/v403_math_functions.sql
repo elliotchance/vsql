@@ -2,7 +2,7 @@
 -- # extensions (V403-02 to V403-10), the mathematical functions that most other
 -- # databases have but the standard doesn't.
 
-/* setup */
+/* define t */
 CREATE TABLE t (x INT, n NUMERIC(5, 3), d DOUBLE PRECISION, p INT);
 INSERT INTO t (x, n, d, p) VALUES (1, 12.345, 1.5e0, 1);
 
@@ -30,16 +30,19 @@ VALUES ROW(ROUND(1.256, 10), ROUND(5, 9223372036854775807), ROUND(5, -9223372036
 
 -- # Decimal places that aren't a constant can't be the scale, so the scale of
 -- # the number is kept.
+/* include t */
 /* types */
 SELECT ROUND(n, p), ROUND(n, 2), ROUND(n, -1), ROUND(n) FROM t;
 -- COL1: 12.300 (NUMERIC(5, 3)) COL2: 12.35 (NUMERIC(5, 2)) COL3: 10 (NUMERIC(3)) COL4: 12 (NUMERIC(3))
 
 -- # An integer is converted to a NUMERIC, and a DECIMAL returns a NUMERIC.
+/* include t */
 /* types */
 SELECT ROUND(x), ROUND(CAST(n AS DECIMAL(5, 3)), 1), ROUND(CAST(9.99 AS NUMERIC(3, 2)), 1) FROM t;
 -- COL1: 1 (NUMERIC(10)) COL2: 12.3 (NUMERIC(4, 1)) COL3: 10.0 (NUMERIC(3, 1))
 
 -- # A NUMERIC without a precision has no precision after rounding.
+/* include t */
 /* types */
 SELECT ROUND(CAST(n AS NUMERIC), 1) FROM t;
 -- COL1: 12 (NUMERIC)
@@ -51,13 +54,12 @@ VALUES ROW(ROUND(1.5e0), ROUND(-2.5e0), ROUND(1.2345e0, 2), ROUND(12345e0, -2));
 
 -- # A DOUBLE PRECISION that is too large to have a fraction, or decimal places
 -- # beyond what it can hold, doesn't change.
+/* include t */
 SELECT ROUND(d, 400), ROUND(d, -400), ROUND(1e300, 20) FROM t;
--- COL1: 1.5e0 COL2: 0e0 COL3: 1e+300
-
 SELECT ROUND(1e300, -300) FROM t;
--- COL1: 1e+300
-
 SELECT ROUND(1.7e308, -308) FROM t;
+-- COL1: 1.5e0 COL2: 0e0 COL3: 1e+300
+-- COL1: 1e+300
 -- error 22003: numeric value out of range
 
 -- # TRUNC truncates towards zero.
@@ -70,17 +72,19 @@ VALUES ROW(TRUNC(-1.99e0), TRUNC(1.99e0, 1), TRUNC(1999e0, -3));
 -- COL1: -1e0 (DOUBLE PRECISION) COL2: 1.9e0 (DOUBLE PRECISION) COL3: 1000e0 (DOUBLE PRECISION)
 
 -- # The decimal places must be an integer, and NULL decimal places are NULL.
+/* include t */
 SELECT ROUND(1.5, 1.5) FROM t;
 -- error 42883: function does not exist: ROUND(NUMERIC(2, 1), NUMERIC(2, 1))
 
+/* include t */
 /* types */
 SELECT ROUND(1.5, CAST(NULL AS INT)), ROUND(CAST(NULL AS INT)) FROM t;
 -- COL1: NULL (NUMERIC(2, 1)) COL2: NULL (NUMERIC(10))
 
+/* include t */
 SELECT ROUND(1, 2, 3) FROM t;
--- error 42883: function does not exist: ROUND(SMALLINT, SMALLINT, SMALLINT)
-
 SELECT TRUNC('a') FROM t;
+-- error 42883: function does not exist: ROUND(SMALLINT, SMALLINT, SMALLINT)
 -- error 42883: function does not exist: TRUNC(CHARACTER(1))
 
 -- # SIGN is -1, 0 or 1. An integer keeps its type.
@@ -101,11 +105,13 @@ VALUES ROW(SIGN(-2.5e0), SIGN(0e0), SIGN(2.5e0), SIGN(CAST(1 AS REAL)));
 VALUES PI();
 -- COL1: 3.14159265359e0 (DOUBLE PRECISION)
 
+/* include t */
 SELECT PI(1) FROM t;
 -- error 42883: function does not exist: PI(SMALLINT)
 
 -- # RANDOM is at least 0 and less than 1. It's a different value each time, so
 -- # it can't be in a CHECK.
+/* include t */
 /* types */
 SELECT RANDOM() >= 0 AND RANDOM() < 1 AS ok FROM t;
 -- OK: TRUE (BOOLEAN)
@@ -144,6 +150,7 @@ SELECT round, cbrt FROM round;
 -- ROUND: 1 CBRT: 9
 
 -- # The flagger.
+/* include t */
 /* flags */
 SELECT ROUND(n), TRUNC(n), SIGN(n), PI(), RANDOM() < 1, ATAN2(d, d), DEGREES(d), RADIANS(d), CBRT(d) FROM t;
 -- flags: T031, V403-02, V403-03, V403-04, V403-05, V403-06, V403-07, V403-08, V403-09, V403-10

@@ -2,7 +2,6 @@
 -- # Rules, 3), which is NULL for a column that doesn't have one.
 /* setup */
 CREATE TABLE t1 (x INT, y VARCHAR(10));
-CREATE TABLE t2 (x INT, y VARCHAR(10) NOT NULL);
 
 INSERT INTO t1 (x, y) VALUES (1, DEFAULT);
 SELECT * FROM t1;
@@ -28,11 +27,15 @@ SELECT * FROM t1;
 
 -- # So a NOT NULL column without a default can't be DEFAULT. vsql finds this
 -- # from the statement, so it's an error even when no rows are updated.
+CREATE TABLE t2 (x INT, y VARCHAR(10) NOT NULL);
 INSERT INTO t2 (x, y) VALUES (1, DEFAULT);
+-- msg: CREATE TABLE 1
 -- error 23502: violates non-null constraint: column Y
 
+CREATE TABLE t2 (x INT, y VARCHAR(10) NOT NULL);
 INSERT INTO t2 (x, y) VALUES (1, 'foo'), (2, DEFAULT);
 SELECT * FROM t2;
+-- msg: CREATE TABLE 1
 -- error 23502: violates non-null constraint: column Y
 
 INSERT INTO t1 (x, y) VALUES (1, 'foo'), (2, 'bar');
@@ -50,12 +53,16 @@ SELECT * FROM t1;
 -- msg: UPDATE 1
 -- X: NULL Y: NULL
 
+CREATE TABLE t2 (x INT, y VARCHAR(10) NOT NULL);
 INSERT INTO t2 (x, y) VALUES (1, 'foo');
 UPDATE t2 SET y = DEFAULT;
+-- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- error 23502: violates non-null constraint: column Y
 
+CREATE TABLE t2 (x INT, y VARCHAR(10) NOT NULL);
 UPDATE t2 SET y = DEFAULT;
+-- msg: CREATE TABLE 1
 -- error 23502: violates non-null constraint: column Y
 
 -- # With no rows to update, a nullable column is fine.
@@ -66,19 +73,14 @@ UPDATE t1 SET x = DEFAULT;
 -- # DEFAULT can only be a whole value of an INSERT or UPDATE, not part of an
 -- # expression or anywhere else.
 INSERT INTO t1 (x) VALUES (DEFAULT + 1);
--- error 42601: syntax error: unexpected "+" at line 1, column 36 near "VALUES (DEFAULT + 1", expecting ","
-
 UPDATE t1 SET x = DEFAULT + 1;
--- error 42601: syntax error: unexpected "+" at line 1, column 27 near "x = DEFAULT + 1"
-
 SELECT DEFAULT FROM t1;
--- error 42601: syntax error: unexpected DEFAULT at line 1, column 8 near "SELECT DEFAULT FROM"
-
 SELECT * FROM t1 WHERE x = DEFAULT;
--- error 42601: syntax error: unexpected DEFAULT at line 1, column 28 near "WHERE x = DEFAULT"
-
 VALUES (DEFAULT);
--- error 42601: syntax error: unexpected ")" at line 1, column 16 near "VALUES (DEFAULT)", expecting ","
-
 VALUES CAST(DEFAULT AS INT);
+-- error 42601: syntax error: unexpected "+" at line 1, column 36 near "VALUES (DEFAULT + 1", expecting ","
+-- error 42601: syntax error: unexpected "+" at line 1, column 27 near "x = DEFAULT + 1"
+-- error 42601: syntax error: unexpected DEFAULT at line 1, column 8 near "SELECT DEFAULT FROM"
+-- error 42601: syntax error: unexpected DEFAULT at line 1, column 28 near "WHERE x = DEFAULT"
+-- error 42601: syntax error: unexpected ")" at line 1, column 16 near "VALUES (DEFAULT)", expecting ","
 -- error 42601: syntax error: unexpected DEFAULT at line 1, column 13 near "VALUES CAST(DEFAULT AS"

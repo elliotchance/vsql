@@ -4,9 +4,8 @@
 -- # spaces on the end, must still be found.
 
 VALUES (SELECT COUNT(*) FROM (SELECT DISTINCT * FROM (VALUES (1), (1.0), (CAST(1 AS DOUBLE PRECISION)), (2), (CAST(NULL AS INT)), (CAST(NULL AS INT))) AS t (x)) AS d);
--- COL1: 3
-
 VALUES (SELECT COUNT(*) FROM (SELECT DISTINCT * FROM (VALUES (CAST(0 AS DOUBLE PRECISION)), (CAST(-0.0 AS DOUBLE PRECISION)), (0.0)) AS t (x)) AS d);
+-- COL1: 3
 -- COL1: 1
 
 SELECT DISTINCT x FROM (VALUES ('a'), ('a  '), (CAST('a' AS CHAR(3))), ('b')) AS t (x);

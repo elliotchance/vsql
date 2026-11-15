@@ -2,7 +2,6 @@
 CREATE TABLE t1 (a INT, x INT);
 CREATE TABLE t2 (b INT, x INT);
 CREATE TABLE t3 (c INT);
-CREATE TABLE empty_t (e INT);
 INSERT INTO t1 (a, x) VALUES (1, 10);
 INSERT INTO t1 (a, x) VALUES (2, 20);
 INSERT INTO t2 (b, x) VALUES (3, 10);
@@ -42,12 +41,10 @@ SELECT a FROM t1, t2 WHERE b = 4;
 -- A: 2
 
 SELECT x FROM t1, t2;
--- error 42702: ambiguous column: X
-
 SELECT a FROM t1, t2 WHERE x = 10;
--- error 42702: ambiguous column: X
-
 SELECT a FROM t1, t2 ORDER BY x;
+-- error 42702: ambiguous column: X
+-- error 42702: ambiguous column: X
 -- error 42702: ambiguous column: X
 
 SELECT t1.x, t2.x FROM t1, t2 WHERE t2.b = 3;
@@ -56,65 +53,59 @@ SELECT t1.x, t2.x FROM t1, t2 WHERE t2.b = 3;
 
 -- # WHERE is the join condition.
 SELECT a, b FROM t1, t2 WHERE t1.x = t2.x;
--- A: 1 B: 3
-
 SELECT a, b, c FROM t1, t2, t3 WHERE t1.x = t2.x AND c = 5;
+-- A: 1 B: 3
 -- A: 1 B: 3 C: 5
 
 SELECT a, b FROM t1, t2 WHERE t1.x = t2.x AND a = 2;
 
 -- # A table without rows has no combinations (General Rules, 1.b).
+CREATE TABLE empty_t (e INT);
 SELECT * FROM t1, empty_t;
+-- msg: CREATE TABLE 1
 
+CREATE TABLE empty_t (e INT);
 SELECT * FROM empty_t, t1;
+-- msg: CREATE TABLE 1
 
+CREATE TABLE empty_t (e INT);
 SELECT COUNT(*) AS n FROM t1, empty_t;
+-- msg: CREATE TABLE 1
 -- N: 0
 
 -- # Correlation names.
 SELECT p.a, q.b FROM t1 AS p, t2 q WHERE p.x = q.x;
--- A: 1 B: 3
-
 SELECT p.c1, q.c3 FROM t1 AS p (c1, c2), t2 AS q (c3, c4) WHERE c2 = c4;
--- C1: 1 C3: 3
-
 SELECT t1.a FROM t1 AS p, t2;
+-- A: 1 B: 3
+-- C1: 1 C3: 3
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.A
 
 -- # The same table with different correlation names.
 SELECT p.a AS p, q.a AS q FROM t1 AS p, t1 AS q WHERE p.a < q.a;
--- P: 1 Q: 2
-
 SELECT p.a AS p, q.a AS q FROM t1 AS p, t1 AS q, t1 AS r WHERE p.a = 1 AND q.a = 2 AND r.a = 1;
+-- P: 1 Q: 2
 -- P: 1 Q: 2
 
 -- # A range variable can only be exposed once (Syntax Rules, 5.c), whether
 -- # it's a table name or a correlation name.
 SELECT * FROM t1, t1;
--- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
-
 SELECT * FROM t1, t2, t1;
--- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
-
 SELECT * FROM t1, PUBLIC.t1;
--- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
-
 SELECT * FROM t1 AS p, t2 AS p;
--- error 42601: syntax error: table name P specified more than once
-
 SELECT * FROM t1 AS t2, t2;
--- error 42601: syntax error: table name T2 specified more than once
-
 SELECT * FROM t2, t1 AS t2;
--- error 42601: syntax error: table name T2 specified more than once
-
 SELECT * FROM t1, t2 JOIN t1 ON TRUE;
--- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
-
 SELECT * FROM t1 AS p, t2 JOIN t3 AS p ON TRUE;
--- error 42601: syntax error: table name P specified more than once
-
 SELECT * FROM (SELECT a FROM t1) AS d, t2 AS d;
+-- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
+-- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
+-- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
+-- error 42601: syntax error: table name P specified more than once
+-- error 42601: syntax error: table name T2 specified more than once
+-- error 42601: syntax error: table name T2 specified more than once
+-- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
+-- error 42601: syntax error: table name P specified more than once
 -- error 42601: syntax error: table name D specified more than once
 
 -- # Without correlation names, two derived tables would have the same name.
@@ -128,9 +119,8 @@ SELECT a, b, c FROM t1, t2 JOIN t3 ON b = 3;
 -- A: 2 B: 3 C: 5
 
 SELECT a, b, c FROM t1 JOIN t2 ON t1.x = t2.x, t3;
--- A: 1 B: 3 C: 5
-
 SELECT * FROM t3, t1 JOIN t2 ON t1.x = t2.x;
+-- A: 1 B: 3 C: 5
 -- C: 5 A: 1 X: 10 B: 3 X: 10
 
 SELECT a, b, c FROM t3, t1 LEFT JOIN t2 ON t1.x = t2.x;
@@ -151,18 +141,14 @@ SELECT a, b, c FROM t1, t2 JOIN t3 ON b = 3 WHERE t1.x = t2.x;
 -- # A join condition can't see the tables on the other side of a comma
 -- # (7.6, Syntax Rules, 18.a).
 SELECT * FROM t1, t2 JOIN t3 ON a = c;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
-
 SELECT * FROM t1, t2 JOIN t3 ON t1.a = c;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.A
-
 SELECT * FROM t1 JOIN t2 ON c = 5, t3;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
-
 SELECT * FROM t1 JOIN t2 ON t3.c = 5, t3;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T3.C
-
 SELECT * FROM t3 AS p, t1 JOIN t2 ON p.c = a;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.A
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T3.C
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.P.C
 
 -- # Nor can a condition in parentheses see the rest of the join.
@@ -205,12 +191,10 @@ SELECT * FROM (SELECT c FROM t3), t3 AS q;
 -- # A derived table can't see the other tables in FROM, because only a
 -- # LATERAL one could (7.6, Syntax Rules, 19.a).
 SELECT * FROM t3, (SELECT a FROM t1 WHERE a = c) AS d;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
-
 SELECT * FROM t3, (SELECT a FROM t1 WHERE a = t3.c) AS d;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T3.C
-
 SELECT * FROM (SELECT a FROM t1 WHERE a = c) AS d, t3;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T3.C
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
 
 -- # Any part of the query can use the tables.
@@ -219,25 +203,20 @@ SELECT a, COUNT(*) AS n FROM t1, t2 GROUP BY a HAVING a > 0 ORDER BY a DESC;
 -- A: 1 N: 2
 
 SELECT DISTINCT c FROM t1, t3;
--- C: 5
-
 SELECT a, b FROM t1, t2 ORDER BY b DESC, a DESC FETCH FIRST 1 ROW ONLY;
--- A: 2 B: 4
-
 SELECT COUNT(*) AS n FROM t1, t2, t3;
+-- C: 5
+-- A: 2 B: 4
 -- N: 4
 
 -- # In a subquery, and as a correlated subquery that sees the outer query.
 SELECT c, (SELECT COUNT(*) FROM t1, t2) AS n FROM t3;
--- C: 5 N: 4
-
 SELECT a FROM t1 WHERE EXISTS (SELECT 1 FROM t2, t3 WHERE t2.x = t1.x);
--- A: 1
-
 SELECT a FROM t1 WHERE EXISTS (SELECT 1 FROM t2 JOIN t3 ON t2.x = t1.x, t1 AS q);
--- A: 1
-
 SELECT a FROM t1 WHERE a IN (SELECT 1 FROM t2, t3);
+-- C: 5 N: 4
+-- A: 1
+-- A: 1
 -- A: 1
 
 SELECT a, b FROM t1, t2 WHERE t1.x = t2.x UNION ALL SELECT a, c FROM t1, t3 WHERE a = 2;
@@ -273,7 +252,6 @@ DELETE FROM t1 WHERE CURRENT OF c;
 
 -- # There must be a table on both sides of the comma.
 SELECT * FROM t1, ;
--- error 42601: syntax error: unexpected $end at line 1, column 18 near "* FROM t1,"; hint: remove the "," at the end
-
 SELECT * FROM , t1;
+-- error 42601: syntax error: unexpected $end at line 1, column 18 near "* FROM t1,"; hint: remove the "," at the end
 -- error 42601: syntax error: unexpected "," at line 1, column 15 near "SELECT * FROM , t1"

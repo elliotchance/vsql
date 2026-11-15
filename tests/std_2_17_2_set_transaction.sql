@@ -95,9 +95,8 @@ SET TRANSACTION READ ONLY;
 -- error 25001: invalid transaction state: active sql transaction
 
 EXPLAIN SET TRANSACTION READ ONLY;
--- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
-
 SET TRANSACTION READ ONLY, READ WRITE;
+-- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
 -- error 42601: syntax error: transaction access mode is specified more than once
 
 -- # A read-only transaction can read, but not change, the database.

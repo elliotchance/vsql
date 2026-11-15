@@ -3,10 +3,14 @@
 /* setup */
 CREATE TABLE t (g INT, x VARCHAR(10), y INT);
 INSERT INTO t (g, x, y) VALUES (1, 'b', 2), (1, 'a', 3), (1, NULL, 1), (2, 'c', NULL), (1, 'a', 1), (2, 'd', 5);
+
+/* define products */
 CREATE TABLE products (city VARCHAR(20), name VARCHAR(20));
+INSERT INTO products (city, name) VALUES ('New York', 'pen'), ('New York', 'cup'), ('San Francisco', 'hat'), ('San Francisco', 'pen'), ('San Francisco', NULL);
+
+/* define padded */
 CREATE TABLE padded (x VARCHAR(5));
 INSERT INTO padded (x) VALUES ('a'), ('a  '), ('b');
-INSERT INTO products (city, name) VALUES ('New York', 'pen'), ('New York', 'cup'), ('San Francisco', 'hat'), ('San Francisco', 'pen'), ('San Francisco', NULL);
 
 /* types */
 SELECT LISTAGG(x, ', ') WITHIN GROUP (ORDER BY x) FROM t;
@@ -27,9 +31,8 @@ SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY y DESC) FROM t;
 -- COL1: d,a,b,a,c
 
 SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY 1) FROM t WHERE g = 2;
--- COL1: c,d
-
 SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY UPPER(x) || 'z' DESC) FROM t WHERE g = 2;
+-- COL1: c,d
 -- COL1: d,c
 
 SELECT LISTAGG(DISTINCT x, ',') WITHIN GROUP (ORDER BY x) FROM t;
@@ -57,37 +60,34 @@ SELECT g, LISTAGG(x, ',') WITHIN GROUP (ORDER BY x) FROM t WHERE x IS NULL OR g 
 -- G: 2 COL2: c,d
 
 SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY x) FILTER (WHERE y > 1) FROM t;
--- COL1: a,b,d
-
 SELECT LISTAGG(x || '!', ' ') WITHIN GROUP (ORDER BY x) FROM t WHERE g = 2;
--- COL1: c! d!
-
 SELECT LISTAGG(CAST(x AS CHAR(3)), ',') WITHIN GROUP (ORDER BY x) FROM t WHERE g = 2;
+-- COL1: a,b,d
+-- COL1: c! d!
 -- COL1: c  ,d
 
+/* include padded */
 SELECT '[' || LISTAGG(DISTINCT x, ',') WITHIN GROUP (ORDER BY x) || ']' FROM padded;
 -- COL1: [a,b]
 
 SELECT LISTAGG(x, ' ☃ ') WITHIN GROUP (ORDER BY x) FROM (VALUES 'ü', 'ß') AS v (x);
--- COL1: ß ☃ ü
-
 SELECT LISTAGG(x, 'it''s') WITHIN GROUP (ORDER BY x) FROM t WHERE g = 2;
--- COL1: cit'sd
-
 SELECT LISTAGG(x, ',' ON OVERFLOW ERROR) WITHIN GROUP (ORDER BY x) FROM t WHERE g = 2;
--- COL1: c,d
-
 SELECT LISTAGG(x, ',' ON OVERFLOW TRUNCATE WITH COUNT) WITHIN GROUP (ORDER BY x) FROM t WHERE g = 2;
--- COL1: c,d
-
 SELECT LISTAGG(x, ',' ON OVERFLOW TRUNCATE '~' WITHOUT COUNT) WITHIN GROUP (ORDER BY x) FROM t WHERE g = 2;
+-- COL1: ß ☃ ü
+-- COL1: cit'sd
+-- COL1: c,d
+-- COL1: c,d
 -- COL1: c,d
 
+/* include products */
 SELECT city, LISTAGG(name, ', ') WITHIN GROUP (ORDER BY name) FROM products GROUP BY city;
 -- warning 01003: null value eliminated in set function
 -- CITY: New York COL2: cup, pen
 -- CITY: San Francisco COL2: hat, pen
 
+/* include products */
 SELECT name, LISTAGG(city, '; ') WITHIN GROUP (ORDER BY city DESC) FROM products WHERE name IS NOT NULL GROUP BY name HAVING COUNT(*) > 1;
 -- NAME: pen COL2: San Francisco; New York
 
@@ -123,15 +123,12 @@ EXPLAIN SELECT LISTAGG(x, ',' ON OVERFLOW TRUNCATE WITHOUT COUNT) WITHIN GROUP (
 -- EXPLAIN: EXPR (COL1 CHARACTER VARYING(10485760))
 
 SELECT LISTAGG(y, ',') WITHIN GROUP (ORDER BY y) FROM t;
--- error 42883: function does not exist: LISTAGG(INTEGER)
-
 SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY COUNT(*)) FROM t;
--- error 42601: syntax error: nested set function: LISTAGG(X, ',') WITHIN GROUP (ORDER BY COUNT(*) ASC)
-
 SELECT LISTAGG(MAX(x), ',') WITHIN GROUP (ORDER BY 1) FROM t;
--- error 42601: syntax error: nested set function: LISTAGG(MAX(X), ',') WITHIN GROUP (ORDER BY 1 ASC)
-
 SELECT MAX(LISTAGG(x, ',') WITHIN GROUP (ORDER BY x)) FROM t;
+-- error 42883: function does not exist: LISTAGG(INTEGER)
+-- error 42601: syntax error: nested set function: LISTAGG(X, ',') WITHIN GROUP (ORDER BY COUNT(*) ASC)
+-- error 42601: syntax error: nested set function: LISTAGG(MAX(X), ',') WITHIN GROUP (ORDER BY 1 ASC)
 -- error 42601: syntax error: nested set function: MAX(LISTAGG(X, ',') WITHIN GROUP (ORDER BY X ASC))
 
 /* extensions V201-01 */
@@ -143,19 +140,14 @@ SELECT LISTAGG((SELECT 'a'), ',') WITHIN GROUP (ORDER BY x) FROM t;
 -- error 42601: syntax error: a subquery cannot be used in an aggregate function
 
 SELECT x FROM t WHERE LISTAGG(x, ',') WITHIN GROUP (ORDER BY x) = 'a';
--- error 42601: syntax error: an aggregate function cannot be used in WHERE
-
 SELECT LISTAGG(x, ',') WITHIN GROUP (ORDER BY x) FILTER (WHERE COUNT(*) > 1) FROM t;
--- error 42601: syntax error: nested set function: LISTAGG(X, ',') WITHIN GROUP (ORDER BY X ASC) FILTER (WHERE COUNT(*) > 1)
-
 SELECT LISTAGG(x, ',') FROM t;
--- error 42601: syntax error: unexpected FROM at line 1, column 24 near ", ',') FROM t", expecting WITHIN
-
 SELECT LISTAGG(x) WITHIN GROUP (ORDER BY x) FROM t;
--- error 42601: syntax error: unexpected ")" at line 1, column 17 near "LISTAGG(x) WITHIN", expecting "," or "||"
-
 SELECT LISTAGG(x, x) WITHIN GROUP (ORDER BY x) FROM t;
--- error 42601: syntax error: unexpected identifier at line 1, column 19 near "(x, x)", expecting string
-
 CREATE TABLE c (x VARCHAR(10) CHECK (LISTAGG(x, ',') WITHIN GROUP (ORDER BY x) <> ''));
+-- error 42601: syntax error: an aggregate function cannot be used in WHERE
+-- error 42601: syntax error: nested set function: LISTAGG(X, ',') WITHIN GROUP (ORDER BY X ASC) FILTER (WHERE COUNT(*) > 1)
+-- error 42601: syntax error: unexpected FROM at line 1, column 24 near ", ',') FROM t", expecting WITHIN
+-- error 42601: syntax error: unexpected ")" at line 1, column 17 near "LISTAGG(x) WITHIN", expecting "," or "||"
+-- error 42601: syntax error: unexpected identifier at line 1, column 19 near "(x, x)", expecting string
 -- error 42601: syntax error: an aggregate function cannot be used in a CHECK constraint

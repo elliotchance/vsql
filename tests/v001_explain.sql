@@ -75,12 +75,10 @@ EXPLAIN SELECT * FROM t1 WHERE x = ?;
 -- # Only a query, DELETE or UPDATE can be explained. Any other statement is a
 -- # syntax error.
 EXPLAIN CREATE TABLE t1 (x INT);
--- error 42601: syntax error: Cannot EXPLAIN CREATE TABLE
-
 EXPLAIN DROP TABLE t1 RESTRICT;
--- error 42601: syntax error: Cannot EXPLAIN DROP TABLE
-
 EXPLAIN INSERT INTO t1 (x) VALUES (0);
+-- error 42601: syntax error: Cannot EXPLAIN CREATE TABLE
+-- error 42601: syntax error: Cannot EXPLAIN DROP TABLE
 -- error 42601: syntax error: Cannot EXPLAIN INSERT
 
 -- # EXPLAIN DELETE (V001-02) and EXPLAIN UPDATE (V001-03) show how the rows
@@ -146,12 +144,10 @@ EXPLAIN SELECT * FROM t1 WHERE x = 10 AND b = 20;
 
 -- # Transaction statements can't be explained either.
 EXPLAIN START TRANSACTION;
--- error 42601: syntax error: Cannot EXPLAIN START TRANSACTION
-
 EXPLAIN COMMIT;
--- error 42601: syntax error: Cannot EXPLAIN COMMIT
-
 EXPLAIN ROLLBACK;
+-- error 42601: syntax error: Cannot EXPLAIN START TRANSACTION
+-- error 42601: syntax error: Cannot EXPLAIN COMMIT
 -- error 42601: syntax error: Cannot EXPLAIN ROLLBACK
 
 -- # Expressions are shown as SQL, and VALUES shows the type of each column.

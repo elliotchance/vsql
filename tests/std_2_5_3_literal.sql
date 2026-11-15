@@ -30,9 +30,8 @@ VALUES 1E2;
 -- COL1: 100e0 (DOUBLE PRECISION)
 
 VALUES 1 E 2;
--- error 42601: syntax error: unexpected identifier at line 1, column 10 near "VALUES 1 E 2"
-
 VALUES 1E 2;
+-- error 42601: syntax error: unexpected identifier at line 1, column 10 near "VALUES 1 E 2"
 -- error 42601: syntax error: unexpected identifier at line 1, column 9 near "VALUES 1E 2"
 
 -- # A sign is a monadic operator on the literal (General Rules, 6), and the
@@ -82,12 +81,10 @@ VALUES 'it''s';
 -- COL1: it's (CHARACTER(4))
 
 VALUES '''';
--- COL1: '
-
 VALUES ROW('a''''b', '''x''');
--- COL1: a''b COL2: 'x'
-
 VALUES CHARACTER_LENGTH('it''s');
+-- COL1: '
+-- COL1: a''b COL2: 'x'
 -- COL1: 4
 
 -- # EXPLAIN prints the literal back as SQL, so the quote is doubled again.
@@ -98,13 +95,11 @@ EXPLAIN VALUES 'it''s';
 -- # A literal must end with a quote. A doubled quote doesn't end it, and each
 -- # part of a compound literal needs its own closing quote.
 VALUES 'abc;
--- error 42601: syntax error: unterminated string: 'abc
-
 VALUES 'it'';
--- error 42601: syntax error: unterminated string: 'it''
-
 VALUES 'a'
 'b;
+-- error 42601: syntax error: unterminated string: 'abc
+-- error 42601: syntax error: unterminated string: 'it''
 -- error 42601: syntax error: unterminated string: 'b
 
 -- # Each literal in a row has its own type, and the usual precedence applies to

@@ -2,18 +2,18 @@
 CREATE TABLE foo (x INT, y INT);
 INSERT INTO foo (x, y) VALUES (3, 4);
 INSERT INTO foo (x, y) VALUES (3, 6);
+
+/* define bar */
 CREATE TABLE bar (z INT);
 INSERT INTO bar (z) VALUES (5);
 
 -- # A plain * must be the whole select list, so it can't be mixed with other
 -- # columns or repeated.
 SELECT *, 1 FROM foo;
--- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, 1", expecting FROM
-
 SELECT 1, * FROM foo;
--- error 42601: syntax error: unexpected "*" at line 1, column 11 near "SELECT 1, * FROM"
-
 SELECT *, * FROM foo;
+-- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, 1", expecting FROM
+-- error 42601: syntax error: unexpected "*" at line 1, column 11 near "SELECT 1, * FROM"
 -- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, *", expecting FROM
 
 -- # A qualified asterisk is all the columns of its table, in order (Syntax
@@ -35,6 +35,7 @@ SELECT foo.*, foo.* FROM foo;
 -- X: 3 Y: 4 X: 3 Y: 4
 -- X: 3 Y: 6 X: 3 Y: 6
 
+/* include bar */
 SELECT bar.*, foo.*, x FROM foo JOIN bar ON TRUE;
 -- Z: 5 X: 3 Y: 4 X: 3
 -- Z: 5 X: 3 Y: 6 X: 3
@@ -66,6 +67,7 @@ SELECT t.* FROM (SELECT x FROM foo) AS t;
 SELECT t.*, 1 FROM (VALUES 1) AS t (x);
 -- X: 1 COL2: 1
 
+/* include bar */
 SELECT 1, t.*, bar.* FROM (VALUES 2) AS t (x) JOIN bar ON TRUE;
 -- COL1: 1 X: 2 Z: 5
 
@@ -74,6 +76,7 @@ SELECT u.* FROM (VALUES 1) AS t (x);
 -- error 42P01: no such table: ":memory:".PUBLIC.U
 
 -- # It also works for a table that another connection created.
+/* include bar */
 /* connection 1 */
 CREATE TABLE foo (x INT);
 INSERT INTO foo (x) VALUES (1);

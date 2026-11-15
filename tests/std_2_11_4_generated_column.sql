@@ -77,16 +77,14 @@ SELECT COLUMN_NAME, DATA_TYPE, IS_GENERATED, GENERATION_EXPRESSION FROM INFORMAT
 -- # The type of the expression must be assignable to the type of the column
 -- # (Syntax Rules, 13.a), which is checked when the table is created.
 CREATE TABLE foo (x VARCHAR(10), y INT GENERATED ALWAYS AS (x));
--- error 42846: cannot coerce CHARACTER VARYING(10) to INTEGER
-
 CREATE TABLE foo (x INT, y DATE GENERATED ALWAYS AS (x));
+-- error 42846: cannot coerce CHARACTER VARYING(10) to INTEGER
 -- error 42846: cannot coerce INTEGER to DATE
 
 -- # The expression can only use base columns of the table.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2), z INT GENERATED ALWAYS AS (y + 1));
--- error 42601: syntax error: generation expression of Z cannot use generated column Y
-
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (y + 1));
+-- error 42601: syntax error: generation expression of Z cannot use generated column Y
 -- error 42601: syntax error: generation expression of Y cannot use generated column Y
 
 -- # A column that doesn't exist, or a column of another table, can't be used.
@@ -108,9 +106,8 @@ CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS ((SELECT w FROM bar)));
 -- error 42601: syntax error: a subquery cannot be used in a generation expression
 
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (COUNT(x)));
--- error 42601: syntax error: an aggregate function cannot be used in a generation expression
-
 CREATE TABLE foo (x INT, y TIMESTAMP(0) GENERATED ALWAYS AS (CURRENT_TIMESTAMP(0)));
+-- error 42601: syntax error: an aggregate function cannot be used in a generation expression
 -- error 42601: syntax error: CURRENT_TIMESTAMP(0) cannot be used in a generation expression
 
 CREATE SEQUENCE seq;

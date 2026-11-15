@@ -235,37 +235,30 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 -- # than MINVALUE, not equal (9.30, Syntax Rules, 11), and START WITH must be
 -- # between them (9.30, Syntax Rules, 12).
 CREATE SEQUENCE seq1 INCREMENT BY 0;
--- error 42601: syntax error: INCREMENT BY must not be 0
-
 CREATE SEQUENCE seq1 MINVALUE 10 MAXVALUE 5;
--- error 42601: syntax error: MAXVALUE (5) must be greater than MINVALUE (10)
-
 CREATE SEQUENCE seq1 MINVALUE 10 MAXVALUE 10;
--- error 42601: syntax error: MAXVALUE (10) must be greater than MINVALUE (10)
-
 CREATE SEQUENCE seq1 START WITH 100 MAXVALUE 50;
--- error 42601: syntax error: START WITH (100) must not be greater than MAXVALUE (50)
-
 CREATE SEQUENCE seq1 START WITH 1 MINVALUE 5;
+-- error 42601: syntax error: INCREMENT BY must not be 0
+-- error 42601: syntax error: MAXVALUE (5) must be greater than MINVALUE (10)
+-- error 42601: syntax error: MAXVALUE (10) must be greater than MINVALUE (10)
+-- error 42601: syntax error: START WITH (100) must not be greater than MAXVALUE (50)
 -- error 42601: syntax error: START WITH (1) must not be less than MINVALUE (5)
 
 -- # Each option can be given only once (Syntax Rules, 5). CYCLE and NO CYCLE
 -- # are the same option, as are MAXVALUE and NO MAXVALUE.
 CREATE SEQUENCE seq1 START WITH 1 START WITH 2;
--- error 42601: syntax error: START WITH is specified more than once
-
 CREATE SEQUENCE seq1 CYCLE NO CYCLE;
--- error 42601: syntax error: CYCLE is specified more than once
-
 CREATE SEQUENCE seq1 MAXVALUE 10 NO MAXVALUE;
+-- error 42601: syntax error: START WITH is specified more than once
+-- error 42601: syntax error: CYCLE is specified more than once
 -- error 42601: syntax error: MAXVALUE is specified more than once
 
 -- # Each value must be an integer (9.30, Syntax Rules, 10), but it can be
 -- # written as any number with an integer value, such as -1e2 or 2.0.
 CREATE SEQUENCE seq1 INCREMENT BY 1.5;
--- error 42601: syntax error: INCREMENT BY must be an integer: 1.5
-
 CREATE SEQUENCE seq1 START WITH 1.5;
+-- error 42601: syntax error: INCREMENT BY must be an integer: 1.5
 -- error 42601: syntax error: START WITH must be an integer: 1.5
 
 CREATE SEQUENCE seq1 START WITH -1e2 INCREMENT BY -1;

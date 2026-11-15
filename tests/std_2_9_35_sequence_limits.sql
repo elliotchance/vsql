@@ -98,9 +98,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2, 3) AS t;
 -- # Without a MINVALUE, the minimum value of an ascending sequence is 1, so a
 -- # START WITH below it is out of range, and a CYCLE starts again at 1.
 CREATE SEQUENCE seq1 START WITH -5 MAXVALUE -3 CYCLE;
--- error 42601: syntax error: MAXVALUE (-3) must be greater than MINVALUE (1)
-
 CREATE SEQUENCE seq1 START WITH -5;
+-- error 42601: syntax error: MAXVALUE (-3) must be greater than MINVALUE (1)
 -- error 42601: syntax error: START WITH (-5) must not be less than MINVALUE (1)
 
 CREATE SEQUENCE seq1 START WITH 2 MAXVALUE 3 CYCLE;
@@ -122,9 +121,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2, 3, 4) AS t;
 -- COL1: -1
 
 CREATE SEQUENCE seq1 INCREMENT BY -1 START WITH 5 MINVALUE 3 CYCLE;
--- error 42601: syntax error: MAXVALUE (-1) must be greater than MINVALUE (3)
-
 CREATE SEQUENCE seq1 INCREMENT BY -1 START WITH 5;
+-- error 42601: syntax error: MAXVALUE (-1) must be greater than MINVALUE (3)
 -- error 42601: syntax error: START WITH (5) must not be greater than MAXVALUE (-1)
 
 CREATE SEQUENCE seq1 INCREMENT BY -1 START WITH 5 MINVALUE 3 MAXVALUE 5 CYCLE;

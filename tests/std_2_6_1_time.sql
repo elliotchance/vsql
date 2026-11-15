@@ -1,8 +1,7 @@
 -- # A TIME literal is only a time of day, so it can't have a date.
 VALUES TIME '2022-06-30 21:47:32';
--- error 42601: syntax error: TIME '2022-06-30 21:47:32' is not valid
-
 VALUES TIME '2022-06-30 21:47:32+05:12';
+-- error 42601: syntax error: TIME '2022-06-30 21:47:32' is not valid
 -- error 42601: syntax error: TIME '2022-06-30 21:47:32+05:12' is not valid
 
 -- # Each field has two digits and must make a valid time of day (5.3, Syntax
@@ -13,24 +12,18 @@ VALUES TIME '21:47:32';
 -- COL1: 21:47:32 (TIME(0) WITHOUT TIME ZONE)
 
 VALUES TIME '25:00:00';
--- error 42601: syntax error: TIME '25:00:00' is not valid
-
 VALUES TIME '21:60:00';
--- error 42601: syntax error: TIME '21:60:00' is not valid
-
 VALUES TIME '1:2:3';
--- error 42601: syntax error: TIME '1:2:3' is not valid
-
 VALUES TIME '21:47:32+14:00';
--- COL1: 21:47:32+1400
-
 VALUES TIME '21:47:32-00:30';
--- COL1: 21:47:32-0030
-
 VALUES TIME 'a21:47:32';
--- error 42601: syntax error: TIME 'a21:47:32' is not valid
-
 VALUES TIME '21:47:32T';
+-- error 42601: syntax error: TIME '25:00:00' is not valid
+-- error 42601: syntax error: TIME '21:60:00' is not valid
+-- error 42601: syntax error: TIME '1:2:3' is not valid
+-- COL1: 21:47:32+1400
+-- COL1: 21:47:32-0030
+-- error 42601: syntax error: TIME 'a21:47:32' is not valid
 -- error 42601: syntax error: TIME '21:47:32T' is not valid
 
 -- # A period with no fraction digits after it is allowed (5.3, <seconds value>),
@@ -100,27 +93,20 @@ VALUES TIME '21:47:32.123+05:12';
 
 -- # Anything with a date, or that isn't a time of day, isn't a TIME literal.
 VALUES TIME '2022-06-30 21:47:32-11:30';
--- error 42601: syntax error: TIME '2022-06-30 21:47:32-11:30' is not valid
-
 VALUES TIME '2022-06-30 00:00:00';
--- error 42601: syntax error: TIME '2022-06-30 00:00:00' is not valid
-
 VALUES TIME '2022-06-30 21:47:32.123';
--- error 42601: syntax error: TIME '2022-06-30 21:47:32.123' is not valid
-
 VALUES TIME '2022-06-30 21:47:32.456000+05:12';
--- error 42601: syntax error: TIME '2022-06-30 21:47:32.456000+05:12' is not valid
-
 VALUES TIME '2022-06-30T21:47:32';
--- error 42601: syntax error: TIME '2022-06-30T21:47:32' is not valid
-
 VALUES TIME 'a2022-06-30 21:47:32';
--- error 42601: syntax error: TIME 'a2022-06-30 21:47:32' is not valid
-
 VALUES TIME '2022-06-30 21:47:32a';
--- error 42601: syntax error: TIME '2022-06-30 21:47:32a' is not valid
-
 VALUES TIME '2022-06-30';
+-- error 42601: syntax error: TIME '2022-06-30 21:47:32-11:30' is not valid
+-- error 42601: syntax error: TIME '2022-06-30 00:00:00' is not valid
+-- error 42601: syntax error: TIME '2022-06-30 21:47:32.123' is not valid
+-- error 42601: syntax error: TIME '2022-06-30 21:47:32.456000+05:12' is not valid
+-- error 42601: syntax error: TIME '2022-06-30T21:47:32' is not valid
+-- error 42601: syntax error: TIME 'a2022-06-30 21:47:32' is not valid
+-- error 42601: syntax error: TIME '2022-06-30 21:47:32a' is not valid
 -- error 42601: syntax error: TIME '2022-06-30' is not valid
 
 /* types */
@@ -128,21 +114,16 @@ VALUES TIME '21:47:32';
 -- COL1: 21:47:32 (TIME(0) WITHOUT TIME ZONE)
 
 VALUES TIME 'FOO BAR';
--- error 42601: syntax error: TIME 'FOO BAR' is not valid
-
 VALUES TIME '2022-06-30 21:47:75';
--- error 42601: syntax error: TIME '2022-06-30 21:47:75' is not valid
-
 VALUES TIME '10000-06-30T21:47:32';
--- error 42601: syntax error: TIME '10000-06-30T21:47:32' is not valid
-
 VALUES TIME '-1-06-30T21:47:32';
--- error 42601: syntax error: TIME '-1-06-30T21:47:32' is not valid
-
 VALUES TIME '2022-06-30 21:47:32+12:00';
--- error 42601: syntax error: TIME '2022-06-30 21:47:32+12:00' is not valid
-
 VALUES TIME '2022-06-30 21:47:32-12:00';
+-- error 42601: syntax error: TIME 'FOO BAR' is not valid
+-- error 42601: syntax error: TIME '2022-06-30 21:47:75' is not valid
+-- error 42601: syntax error: TIME '10000-06-30T21:47:32' is not valid
+-- error 42601: syntax error: TIME '-1-06-30T21:47:32' is not valid
+-- error 42601: syntax error: TIME '2022-06-30 21:47:32+12:00' is not valid
 -- error 42601: syntax error: TIME '2022-06-30 21:47:32-12:00' is not valid
 
 -- # Storing a TIME in a column of the other kind casts it (9.2, General Rules,
@@ -368,12 +349,10 @@ SELECT CAST(f1 AS TIMESTAMP(0) WITHOUT TIME ZONE) FROM foo;
 -- COL1: 2022-07-04T21:47:32
 
 VALUES CAST(TIME '01:02:03-11:30' AS TIMESTAMP WITH TIME ZONE);
--- COL1: 2022-07-04T01:02:03.000000-1130
-
 VALUES CAST(TIME '01:02:03.456' AS TIMESTAMP(3) WITH TIME ZONE);
--- COL1: 2022-07-04T01:02:03.456+0500
-
 VALUES CAST(TIME '01:02:03.456' AS TIMESTAMP(3) WITHOUT TIME ZONE);
+-- COL1: 2022-07-04T01:02:03.000000-1130
+-- COL1: 2022-07-04T01:02:03.456+0500
 -- COL1: 2022-07-04T01:02:03.456
 
 -- # A string is trimmed, then read as a time (6.13, General Rules, 16.a.ii).
@@ -410,19 +389,16 @@ VALUES CAST('23:59:60+02:00' AS TIME WITH TIME ZONE) = TIME '00:00:00+02:00';
 -- COL1: TRUE
 
 VALUES CAST('25:00:00' AS TIME);
--- error 22007: invalid datetime format
-
 VALUES CAST('2022-06-30 12:34:56' AS TIME);
+-- error 22007: invalid datetime format
 -- error 22007: invalid datetime format
 
 -- # A time literal is also accepted, but the keyword must be TIME.
 VALUES CAST('TIME ''12:34:56+03:00''' AS TIME WITH TIME ZONE);
--- COL1: 12:34:56+0300
-
 VALUES CAST(CAST(TIME '12:34:56' AS VARCHAR(30)) AS TIME);
--- COL1: 12:34:56
-
 VALUES CAST('TIMESTAMP ''2022-06-30 12:34:56''' AS TIME);
+-- COL1: 12:34:56+0300
+-- COL1: 12:34:56
 -- error 22007: invalid datetime format
 
 -- # A time zone out of the range of -14:00 to +14:00 is an invalid time zone
@@ -437,13 +413,10 @@ VALUES CAST('12:34:56-14:30' AS TIME WITH TIME ZONE);
 -- # (8.2, General Rules, 6). A time without one is taken to be in the session
 -- # time zone.
 VALUES TIME '10:00:00+01:00' = TIME '09:00:00+00:00';
--- COL1: TRUE
-
 VALUES TIME '10:00:00+01:00' > TIME '09:30:00+00:00';
--- COL1: FALSE
-
 VALUES TIME '00:30:00+01:00' = TIME '23:30:00+00:00';
--- COL1: TRUE
-
 VALUES TIME '10:00:00' = TIME '05:00:00+00:00';
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
 -- COL1: TRUE

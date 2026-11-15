@@ -36,9 +36,8 @@ SELECT * FROM pk1 WHERE id = 5;
 -- # weren't declared that way (Syntax Rules, 7), so a missing value is an error
 -- # too. A failed UPDATE leaves the table unchanged.
 INSERT INTO pk1 (id) VALUES (2);
--- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
-
 INSERT INTO pk1 (id) VALUES (NULL);
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
 -- error 23502: violates non-null constraint: column ID
 
 CREATE TABLE pk2 (id INT, x INT, PRIMARY KEY (id));
@@ -228,12 +227,11 @@ CREATE TABLE pk2 (
     PRIMARY KEY (id),
     PRIMARY KEY (id)
 );
--- error 42601: syntax error: only one PRIMARY KEY can be defined
-
 CREATE TABLE pk2 (
     id INT,
     PRIMARY KEY (id, id)
 );
+-- error 42601: syntax error: only one PRIMARY KEY can be defined
 -- error 42601: syntax error: column ID appears more than once in PRIMARY KEY
 
 -- # With several columns, only the whole key must be unique, and every column

@@ -1,42 +1,47 @@
 -- # ROLLBACK TRANSACTION (V116-01) and ABORT (V116-02) are vsql extensions
 -- # for ROLLBACK.
 
-/* setup */
-CREATE TABLE t (x INT);
-
 -- # ROLLBACK TRANSACTION and ABORT are ROLLBACK.
+CREATE TABLE t (x INT);
 /* extensions V116-01 */
 START TRANSACTION;
 INSERT INTO t (x) VALUES (1);
 ROLLBACK TRANSACTION;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: ROLLBACK
 
+CREATE TABLE t (x INT);
 /* extensions V116-02 */
 START TRANSACTION;
 INSERT INTO t (x) VALUES (1);
 ABORT;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: ROLLBACK
 
+CREATE TABLE t (x INT);
 /* extensions V116-02 */
 START TRANSACTION;
 INSERT INTO t (x) VALUES (1);
 ABORT TRANSACTION;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: ROLLBACK
 
+CREATE TABLE t (x INT);
 /* extensions V116-02 */
 START TRANSACTION;
 INSERT INTO t (x) VALUES (1);
 abort work;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: ROLLBACK
@@ -51,6 +56,7 @@ ABORT;
 -- msg: ROLLBACK
 
 -- # A whole transaction with only the aliases.
+CREATE TABLE t (x INT);
 /* extensions V114-01 V115-02 V116-02 */
 BEGIN;
 INSERT INTO t (x) VALUES (1);
@@ -59,6 +65,7 @@ BEGIN;
 INSERT INTO t (x) VALUES (2);
 ABORT;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: COMMIT

@@ -1,7 +1,6 @@
 SELECT 1 AS operator_plus FROM (VALUES 1) AS t;
--- OPERATOR_PLUS: 1
-
 SELECT 1 AS literal_string FROM (VALUES 1) AS t;
+-- OPERATOR_PLUS: 1
 -- LITERAL_STRING: 1
 
 CREATE TABLE literal_number (operator_bang_equals INT);

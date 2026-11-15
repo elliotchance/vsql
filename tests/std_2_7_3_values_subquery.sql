@@ -4,9 +4,8 @@ INSERT INTO t (a) VALUES (123);
 
 -- # A subquery in VALUES is a scalar subquery (F471).
 VALUES (SELECT a FROM t FETCH FIRST 1 ROW ONLY);
--- COL1: 123
-
 VALUES (VALUES 1);
+-- COL1: 123
 -- COL1: 1
 
 VALUES 1, (SELECT a FROM t);
@@ -27,7 +26,6 @@ VALUES (SELECT a, a FROM t);
 -- # A scalar subquery can be one field of a ROW, and a subquery in FROM is a
 -- # derived table.
 VALUES ROW((SELECT a FROM t), 2);
--- COL1: 123 COL2: 2
-
 SELECT * FROM (SELECT a FROM t) AS x;
+-- COL1: 123 COL2: 2
 -- A: 123

@@ -10,18 +10,14 @@ VALUES LOWER(CAST('STRAẞE' AS VARCHAR(10)));
 -- COL1: straße (CHARACTER VARYING(10))
 
 VALUES UPPER(CAST('ﬃ' AS VARCHAR(3)));
--- COL1: FFI
-
 VALUES CHARACTER_LENGTH(UPPER(CAST('ΐ' AS VARCHAR(3))));
--- COL1: 3
-
 VALUES CHARACTER_LENGTH(LOWER(CAST('İ' AS VARCHAR(2))));
--- COL1: 2
-
 VALUES UPPER('hello ñandú');
--- COL1: HELLO ÑANDÚ
-
 VALUES LOWER('HELLO ÑANDÚ');
+-- COL1: FFI
+-- COL1: 3
+-- COL1: 2
+-- COL1: HELLO ÑANDÚ
 -- COL1: hello ñandú
 
 -- # Characters outside the Basic Multilingual Plane are mapped too.

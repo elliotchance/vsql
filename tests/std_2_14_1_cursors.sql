@@ -2,7 +2,6 @@
 CREATE TABLE t (x INTEGER, y INTEGER);
 INSERT INTO t (x, y) VALUES (1, 10);
 INSERT INTO t (x, y) VALUES (2, 20);
-CREATE TABLE u (x INTEGER);
 
 -- # FETCH, FETCH FROM and FETCH NEXT FROM are the same (14.5, Syntax Rules,
 -- # 2). After the last row it's no data, and the cursor stays after the last
@@ -100,10 +99,12 @@ FETCH c;
 
 -- # Cursor names are compared like other names, so c and C are the same
 -- # cursor, but "c" is another one.
+CREATE TABLE u (x INTEGER);
 /* extensions V108-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 DECLARE c CURSOR FOR SELECT * FROM u;
 DECLARE "c" CURSOR FOR SELECT * FROM u;
+-- msg: CREATE TABLE 1
 -- msg: DECLARE CURSOR
 -- error 42P03: duplicate cursor: C
 -- msg: DECLARE CURSOR
@@ -215,12 +216,14 @@ DELETE FROM t WHERE CURRENT OF c;
 DELETE FROM t WHERE CURRENT OF c;
 -- error 34000: invalid cursor name: cursor C does not exist
 
+CREATE TABLE u (x INTEGER);
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
 FETCH c;
 DELETE FROM u WHERE CURRENT OF c;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: DECLARE CURSOR
 -- msg: OPEN
@@ -376,6 +379,7 @@ SELECT * FROM t;
 -- # a query specification of one base table (7.16, Syntax Rules, 27), so not
 -- # VALUES, FETCH FIRST, a join, a derived table, an aggregate, DISTINCT or
 -- # INFORMATION_SCHEMA.
+CREATE TABLE u (x INTEGER);
 /* extensions V108-01 */
 DECLARE c1 CURSOR FOR VALUES 1 FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT * FROM t FETCH FIRST 1 ROW ONLY FOR UPDATE;
@@ -384,6 +388,7 @@ DECLARE c4 CURSOR FOR SELECT * FROM (SELECT * FROM t) AS d FOR UPDATE;
 DECLARE c5 CURSOR FOR SELECT COUNT(*) FROM t FOR UPDATE;
 DECLARE c6 CURSOR FOR SELECT DISTINCT x FROM t FOR UPDATE;
 DECLARE c7 CURSOR FOR SELECT * FROM information_schema.tables FOR UPDATE;
+-- msg: CREATE TABLE 1
 -- error 42601: syntax error: cursor C1 is not updatable
 -- error 42601: syntax error: cursor C2 is not updatable
 -- error 42601: syntax error: cursor C3 is not updatable
@@ -428,6 +433,7 @@ DECLARE c5 CURSOR FOR SELECT t.*, t.* FROM t FOR UPDATE;
 
 -- # A subquery in WHERE can't read the table of the cursor (7.16, Syntax
 -- # Rules, 27.d), however deeply it's nested.
+CREATE TABLE u (x INTEGER);
 /* extensions V108-01 */
 DECLARE c1 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM t) FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT x FROM t WHERE EXISTS (SELECT * FROM t AS a WHERE a.x = t.x) FOR UPDATE;
@@ -436,6 +442,7 @@ DECLARE c4 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT u.x FROM u JOIN t AS a 
 DECLARE c5 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM (SELECT x FROM t) AS d) FOR UPDATE;
 DECLARE c6 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u WHERE x IN (SELECT x FROM t)) FOR UPDATE;
 DECLARE c7 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u UNION SELECT x FROM t) FOR UPDATE;
+-- msg: CREATE TABLE 1
 -- error 42601: syntax error: cursor C1 is not updatable
 -- error 42601: syntax error: cursor C2 is not updatable
 -- error 42601: syntax error: cursor C3 is not updatable
@@ -448,6 +455,7 @@ DECLARE c7 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u UNION SELECT x
 -- # other names, and a subquery of another table, even one with the same name
 -- # in another schema. Without FOR UPDATE they're updatable (14.3, Syntax
 -- # Rules, 4.b).
+CREATE TABLE u (x INTEGER);
 /* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
 CREATE SCHEMA s;
 CREATE TABLE s.t (x INTEGER);
@@ -464,6 +472,7 @@ OPEN c5;
 FETCH c5;
 DELETE FROM t WHERE CURRENT OF c5;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
 -- msg: START TRANSACTION

@@ -63,9 +63,8 @@ VALUES CAST(53 AS SMALLINT) + CAST(123 AS SMALLINT);
 -- COL1: 176 (SMALLINT)
 
 VALUES CAST(30000 AS SMALLINT) + CAST(20000 AS SMALLINT);
--- error 22003: numeric value out of range
-
 VALUES CAST(30000 AS SMALLINT) + CAST(20000 AS SMALLINT);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 /* types */
@@ -77,9 +76,8 @@ VALUES CAST(53 AS SMALLINT) - CAST(123 AS SMALLINT);
 -- COL1: -70 (SMALLINT)
 
 VALUES CAST(-30000 AS SMALLINT) - CAST(20000 AS SMALLINT);
--- error 22003: numeric value out of range
-
 VALUES CAST(-30000 AS SMALLINT) - CAST(20000 AS SMALLINT);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 /* types */
@@ -91,9 +89,8 @@ VALUES CAST(-53 AS SMALLINT) * CAST(123 AS SMALLINT);
 -- COL1: -6519 (SMALLINT)
 
 VALUES CAST(-30000 AS SMALLINT) * CAST(20000 AS SMALLINT);
--- error 22003: numeric value out of range
-
 VALUES CAST(-30000 AS SMALLINT) * CAST(20000 AS SMALLINT);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 -- # Division of SMALLINTs truncates toward zero (6.29, General Rules, 5.b).
@@ -108,15 +105,13 @@ VALUES CAST(-123 AS SMALLINT) / CAST(53 AS SMALLINT);
 -- COL1: -2 (SMALLINT)
 
 VALUES CAST(-30000 AS SMALLINT) / CAST(0 AS SMALLINT);
--- error 22012: division by zero
-
 VALUES CAST(-30000 AS SMALLINT) / CAST(0.1 AS SMALLINT);
+-- error 22012: division by zero
 -- error 22012: division by zero
 
 -- # -32768 has no positive SMALLINT, so negating it or dividing it by -1 is out
 -- # of range (6.29, General Rules, 5.a and 5.b).
 VALUES -CAST(-32768 AS SMALLINT);
--- error 22003: numeric value out of range
-
 VALUES CAST(-32768 AS SMALLINT) / CAST(-1 AS SMALLINT);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range

@@ -49,9 +49,8 @@ EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- EXPLAIN: EXPR (T1.ABC SMALLINT, T1.COL2 CHARACTER(3), T1."f" BOOLEAN)
 
 SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
--- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
-
 SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
 -- ABC: 1 COL2: foo f: TRUE
 
 -- # A string literal is CHARACTER of its length, even when it looks like a
@@ -142,9 +141,8 @@ SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4)) AS t1 (foo, bar);
 -- FOO: 3 BAR: 4
 
 SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4)) AS t1 (foo);
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
-
 SELECT * FROM (VALUES ROW(1), ROW(3, 4)) AS t1 (foo, bar);
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
 -- error 42601: syntax error: VALUES rows must have the same number of columns
 
 -- # FETCH and OFFSET of the outer query apply to the rows of the VALUES. An
@@ -199,12 +197,10 @@ EXPLAIN VALUES ROW(1, 1.5), ROW(2.25, 3e0);
 -- EXPLAIN: VALUES (COL1 NUMERIC(7, 2), COL2 DOUBLE PRECISION) = ROW(1, 1.5), ROW(2.25, 3e0)
 
 VALUES TRUE, 1;
--- error 42804: data type mismatch in row 2, column 1 of VALUES: expected BOOLEAN but got SMALLINT
-
 VALUES ROW(1, 'a'), ROW(2, DATE '2022-06-30');
--- error 42804: data type mismatch in row 2, column 2 of VALUES: expected CHARACTER(1) but got DATE
-
 VALUES ROW(1, 2), ROW(3);
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected BOOLEAN but got SMALLINT
+-- error 42804: data type mismatch in row 2, column 2 of VALUES: expected CHARACTER(1) but got DATE
 -- error 42601: syntax error: VALUES rows must have the same number of columns
 
 -- # A derived column list over one-column rows, and an OFFSET past the end.

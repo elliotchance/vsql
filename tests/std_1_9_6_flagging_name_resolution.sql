@@ -111,6 +111,81 @@ SELECT SUM(x + y) FROM t;
 -- flags:
 -- COL1: 3
 
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 7
+
+/* flags */
+SELECT REGR_COUNT(1, 2) FROM t;
+-- flags: F441, T621
+-- COL1: 1
+
+/* flags */
+SELECT REGR_COUNT(1, x) FROM t;
+-- flags: T621
+-- COL1: 1
+
+/* flags */
+SELECT (SELECT REGR_COUNT(t1.x, 1) FROM u) FROM t AS t1;
+-- flags: T621
+-- COL1: 1
+
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 9 and 20
+
+/* flags */
+SELECT (SELECT REGR_COUNT(u.z, t1.x + 1) FROM u) FROM t AS t1;
+-- flags: F441, T621
+-- COL1: 1
+
+/* flags */
+SELECT (SELECT REGR_COUNT(t1.x + 1, u.z) FROM u) FROM t AS t1;
+-- flags: F441, T621
+-- COL1: 1
+
+/* flags */
+SELECT (SELECT REGR_COUNT(u.z, t1.x + u.x) FROM u) FROM t AS t1;
+-- flags: F441, F442, T621
+-- COL1: 1
+
+/* flags */
+SELECT (SELECT REGR_COUNT(u.z, t1.x) FROM u) FROM t AS t1;
+-- flags: T621
+-- COL1: 1
+
+/* flags */
+SELECT (SELECT REGR_COUNT(u.z + u.x, 1) FROM u) FROM t AS t1;
+-- flags: T621
+-- COL1: 1
+
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 17
+
+/* flags */
+SELECT (SELECT RANK(t1.x + t1.y) WITHIN GROUP (ORDER BY t1.y) FROM u) FROM t AS t1 GROUP BY t1.x, t1.y;
+-- flags: F442, T612
+-- COL1: 2
+
+/* flags */
+SELECT (SELECT RANK(t1.x, 1) WITHIN GROUP (ORDER BY t1.y, t1.x) FROM u) FROM t AS t1 GROUP BY t1.x;
+-- flags: T612
+-- COL1: 1
+
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 18
+
+/* flags */
+SELECT (SELECT PERCENTILE_DISC(t1.y - t1.x - 1) WITHIN GROUP (ORDER BY t1.y) FROM u) FROM t AS t1 GROUP BY t1.x, t1.y;
+-- flags: F442, T612
+-- COL1: 2e0
+
+-- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 21
+
+/* flags */
+SELECT (SELECT RANK(1) WITHIN GROUP (ORDER BY u.z + t1.x) FROM u) FROM t AS t1;
+-- flags: F442, T612
+-- COL1: 1
+
+/* flags */
+SELECT (SELECT PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY u.z + u.x) FROM u) FROM t AS t1;
+-- flags: T612
+-- COL1: 4e0
+
 -- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 10
 
 /* flags */

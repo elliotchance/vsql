@@ -1217,32 +1217,108 @@ fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_nam
 }
 
 // flag_set_function flags an aggregate function with an argument that contains
-// an outer reference, unless it's only that column reference. The aggregation
-// query is the innermost query of its column references, so a column that isn't
-// of the table being aggregated (10.9, Conformance Rules, 5) can only be one of
-// several, which is also covered by this. An expression may be compiled more
-// than once, so the same column is only counted once.
+// an outer reference, unless the argument is only that column reference, and
+// an argument with mixed column references (see flag_mixed_references). Each
+// argument of a binary set function is checked on its own. arg_columns are the
+// column references of each argument.
+//
+// The aggregation query is the innermost query of its column references, so a
+// column that isn't of the table being aggregated (10.9, Conformance Rules, 5)
+// can only be one of several, which is also covered by this. For the same
+// reason, a binary set function only has no column reference of that table
+// when it has no column references at all.
 //
 // ISO/IEC 9075-2:2023, 6.9, <set function specification>, Syntax Rules, 6
-// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 6, 8 and 19
-fn (mut c Compiler) flag_set_function(e RoutineInvocation) {
-	if !c.conn.flagging || !c.aggregated_columns.any(it.scope >= 0) {
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 6-9, 19 and 20
+fn (mut c Compiler) flag_set_function(e RoutineInvocation, arg_columns [][]AggregatedColumn) {
+	if !c.conn.flagging {
 		return
 	}
 
-	mut is_column := false
-	if primary := value_primary_of(e.args[0]) {
-		is_column = primary is &Identifier
-	}
-	if !is_column {
+	if e.function_name in binary_set_functions && arg_columns.all(it.len == 0) {
 		c.conn.flagged_features << 'F441'
 	}
 
-	mut columns := map[string]bool{}
-	for column in c.aggregated_columns {
-		columns['${column.scope} ${column.name}'] = true
+	for i, columns in arg_columns {
+		if !columns.any(it.scope >= 0) {
+			continue
+		}
+
+		if !is_column_argument(e.args[i]) {
+			c.conn.flagged_features << 'F441'
+		}
+
+		c.flag_mixed_references(columns)
 	}
-	if columns.len > 1 {
+}
+
+// is_column_argument is true if an argument of an aggregate function is only a
+// column reference. An argument of a binary set function is a <numeric value
+// expression>, which is only a column reference when it's a single <numeric
+// primary>.
+fn is_column_argument(e ValueExpression) bool {
+	if e is CommonValueExpression {
+		common := CommonValueExpression(e)
+		if common is NumericValueExpression {
+			numeric := NumericValueExpression(common)
+			factor := numeric.term.factor
+			if numeric.n == none && numeric.term.term == none && factor is ValueExpressionPrimary {
+				primary := ValueExpressionPrimary(factor)
+				if primary is NonparenthesizedValueExpressionPrimary {
+					return NonparenthesizedValueExpressionPrimary(primary) is &Identifier
+				}
+			}
+		}
+	}
+
+	primary := value_primary_of(e) or { return false }
+
+	return primary is &Identifier
+}
+
+// flag_ordered_set_function flags an argument or a sort key of a hypothetical
+// set function or an inverse distribution function with mixed column
+// references (see flag_mixed_references). The arguments aren't compiled as the
+// argument of an aggregate function, so the column references of each one are
+// found by compiling it again as one.
+//
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 17, 18 and 21
+fn (mut c Compiler) flag_ordered_set_function(e OrderedSetFunction) {
+	if !c.conn.flagging {
+		return
+	}
+
+	in_aggregate := c.in_aggregate
+	aggregated_columns := c.aggregated_columns
+	c.in_aggregate = true
+	defer {
+		c.in_aggregate = in_aggregate
+		c.aggregated_columns = aggregated_columns
+	}
+
+	mut exprs := e.args.clone()
+	exprs << e.order.map(it.expr)
+	for expr in exprs {
+		c.aggregated_columns = []
+		expr.compile(mut c) or {}
+		c.flag_mixed_references(c.aggregated_columns)
+	}
+}
+
+// flag_mixed_references flags a value expression of an aggregate function with
+// the column references columns, when there's more than one and one of them is
+// an outer reference. An expression may be compiled more than once, so the same
+// column is only counted once.
+fn (mut c Compiler) flag_mixed_references(columns []AggregatedColumn) {
+	if !columns.any(it.scope >= 0) {
+		return
+	}
+
+	mut names := map[string]bool{}
+	for column in columns {
+		names['${column.scope} ${column.name}'] = true
+	}
+	if names.len > 1 {
 		c.conn.flagged_features << 'F442'
 	}
 }

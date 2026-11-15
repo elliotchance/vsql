@@ -894,6 +894,7 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 	}
 
 	compile_filter(mut c, e.filter, name)!
+	c.flag_ordered_set_function(e)
 
 	return aggregate_result(mut c, AggregateFunction(e), ordered_set_function_type(e.name),
 		in_aggregate)!

@@ -103,10 +103,9 @@ UTEST_F(db, 6_50_prepare_undetermined_parameter) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42601");
 }
 
-/* A parameter whose type isn't known until the statement is executed (because
- * it's not a query, INSERT, UPDATE or DELETE) keeps the IPD that the
- * application set. */
-UTEST_F(db, 6_50_prepare_unknown_parameter_type) {
+/* The value of SET SCHEMA is a character string, whatever type the application
+ * set. */
+UTEST_F(db, 6_50_prepare_set_schema_parameter_type) {
   SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
   SQLINTEGER x = 5;
 
@@ -117,7 +116,7 @@ UTEST_F(db, 6_50_prepare_unknown_parameter_type) {
   ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"SET SCHEMA ?", SQL_NTS),
             SQL_SUCCESS);
   EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 1);
-  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_BIGINT);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_VARCHAR);
 }
 
 UTEST_F(db, 6_50_prepare_syntax_error) {

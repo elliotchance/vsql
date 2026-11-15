@@ -239,15 +239,15 @@
 20.7/GR/5.a.v.1          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.v.2          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.vi           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.vii          n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.vii.1        container    - -
-20.7/GR/5.a.vii.1.A      n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.vii.1.B      n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.vii.1.C      n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.vii.1.D      n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.vii.2        n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.vii.2.A      n/a          - - SUBSTRING SIMILAR (T581)
-20.7/GR/5.a.vii.2.B      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.1.A      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vii.1.B      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vii.1.C      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vii.1.D      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vii.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vii.2.A      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.vii.2.B      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.viii         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.viii.1       container    - -
 20.7/GR/5.a.viii.1.A     implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
@@ -332,8 +332,8 @@
 20.7/GR/5.a.xxvii        n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxvii.1      n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxvii.2      n/a          - - multiple column assignment (T641)
-20.7/GR/5.a.xxviii       n/a          - - SET TIME ZONE (F411)
-20.7/GR/5.a.xxix         n/a          - - SQL-invoked routines (T321)
+20.7/GR/5.a.xxviii       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
+20.7/GR/5.a.xxix         n/a          - - intervals (F052)
 20.7/GR/5.a.xxx          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
 20.7/GR/5.a.xxx.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
 20.7/GR/5.a.xxx.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
@@ -515,7 +515,7 @@
 20.11/GR/6.c.ii          implemented  vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.11/GR/6.c.ii.1        n/a          - - there are no implementation-defined conversions
 20.11/GR/6.c.ii.2        container    - -
-20.11/GR/6.c.ii.2.A      partial      vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql the error is the one of the CAST (such as 42846), libvsql raises 07006 instead
+20.11/GR/6.c.ii.2.A      implemented  vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.11/GR/6.c.ii.2.B      implemented  vsql/prepare.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.11/GR/6.c.iii         n/a          - - user-defined types (S023)
 20.11/GR/6.c.iii.1       n/a          - - user-defined types (S023)

@@ -927,6 +927,21 @@ fn sqlstate_42p02(parameter_name string) IError {
 	}
 }
 
+// restricted data type attribute violation: the value of a dynamic parameter
+// can't be cast to the data type of the dynamic parameter.
+//
+// ISO/IEC 9075-2:2023, 20.11, <input using clause>, General Rules, 6.c.ii.2.A
+struct SQLState07006 {
+	SQLState
+}
+
+fn sqlstate_07006(from Type, to Type) IError {
+	return SQLState07006{
+		code: sqlstate_to_int('07006')
+		msg:  'restricted data type attribute violation: cannot cast ${from} to ${to}'
+	}
+}
+
 // sql-client unable to establish sql-connection
 struct SQLState08001 {
 	SQLState

@@ -174,6 +174,19 @@ sends it as a ``NOTICE``.
   -- warning 02000: no data
   -- msg: DELETE 0
 
+Class ``07``: Dynamic SQL Error
+-------------------------------
+
+The values given to a prepared statement don't match its dynamic parameters.
+
+``07006`` restricted data type attribute violation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``07006`` is returned when a prepared statement is executed with a value for a
+dynamic parameter whose type can never be cast to the type of the dynamic
+parameter, such as a ``DOUBLE PRECISION`` for ``d < ?`` when ``d`` is a
+``DATE``. See :doc:`prepared-statements`.
+
 Class ``08``: Connection Exception
 ----------------------------------
 

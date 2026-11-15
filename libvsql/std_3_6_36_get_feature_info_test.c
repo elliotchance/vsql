@@ -88,3 +88,28 @@ UTEST_F(env, 6_36_get_feature_info_not_connected) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
 }
+
+/* An exception condition raised by the query of the SQL_FEATURES view is
+ * returned on the connection handle, and Supported isn't set. */
+UTEST_F(env, 6_36_get_feature_info_query_fails) {
+  SQLSMALLINT supported = -1;
+
+  remove("libvsql_get_feature_info.vsql");
+  ASSERT_EQ(SQLConnect(utest_fixture->dbc,
+                       (SQLCHAR *)"libvsql_get_feature_info.vsql", SQL_NTS,
+                       NULL, 0, NULL, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(vsql_arm_fault("lock_shared", 1), 0);
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", SQL_NTS,
+                              (SQLCHAR *)"E011", SQL_NTS, NULL, 0, &supported),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "58030");
+  EXPECT_EQ(supported, -1);
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
+  remove("libvsql_get_feature_info.vsql");
+  remove("libvsql_get_feature_info.vsql.wal");
+  remove("libvsql_get_feature_info.vsql.session");
+}

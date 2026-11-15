@@ -92,7 +92,7 @@
 5.2/GR/5.b.ii.2          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_30_get_data_test.c
 5.2/GR/5.b.ii.3          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_21_fetch_test.c
 5.2/GR/5.c               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
-5.2/GR/5.c.i             untested     libvsql/std_3_5_2_cli_routine_invocation.v - a failed statement has no effect, even in a transaction, but there's no CLI test for it
+5.2/GR/5.c.i             implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_5_2_cli_routine_invocation_test.c
 5.2/GR/5.c.ii            implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
 5.2/GR/5.c.iii           container    - -
 5.2/GR/5.c.iii.1         implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_26_free_handle_test.c

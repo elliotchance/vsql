@@ -185,12 +185,14 @@ fn func_tan(_ FunctionContext, args []Value) !Value {
 
 // SINH(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_sinh(_ FunctionContext, args []Value) !Value {
-	return new_double_precision_value(math.sinh(args[0].f64_value()))
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 10.b.v
+	return approximate_value(math.sinh(args[0].f64_value()), .is_double_precision)
 }
 
 // COSH(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_cosh(_ FunctionContext, args []Value) !Value {
-	return new_double_precision_value(math.cosh(args[0].f64_value()))
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 10.b.vii
+	return approximate_value(math.cosh(args[0].f64_value()), .is_double_precision)
 }
 
 // TANH(DOUBLE PRECISION) DOUBLE PRECISION

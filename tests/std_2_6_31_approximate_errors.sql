@@ -35,6 +35,23 @@ VALUES EXP(1000e0);
 VALUES POWER(10e0, 400e0);
 -- error 22003: numeric value out of range
 
+-- # So is a SINH or COSH that's too large (General Rules, 10.b.v and 10.b.vii),
+-- # but SINH(0) is still zero.
+VALUES SINH(1000e0);
+-- error 22003: numeric value out of range
+
+VALUES SINH(-1000e0);
+-- error 22003: numeric value out of range
+
+VALUES COSH(710e0);
+-- error 22003: numeric value out of range
+
+VALUES COSH(-1000e0);
+-- error 22003: numeric value out of range
+
+VALUES ROW(SINH(0e0), COSH(0e0));
+-- COL1: 0e0 COL2: 1e0
+
 -- # SQRT(x) is POWER(x, 0.5) (Syntax Rules, 19), so a negative is an invalid
 -- # argument for the power function (General Rules, 14.e).
 VALUES SQRT(-1e0);

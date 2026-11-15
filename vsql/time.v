@@ -42,7 +42,8 @@ const default_timestamp_precision = 6
 //
 // The years value must be four digits, and the other datetime components must
 // be two digits (with the exception of the seconds fraction, which may have up
-// to six digits).
+// to six digits). The period may be given without any fraction digits after it
+// (such as '12:34:56.'), which is the same as no fraction.
 //
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 39
 fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
@@ -60,7 +61,7 @@ fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
 
 	fraction := timestamp[19..]
 
-	return fraction.len == 0 || (fraction.len >= 2 && fraction.len <= 7
+	return fraction.len == 0 || (fraction.len <= 7
 		&& matches_datetime_pattern(fraction, '.000000'[..fraction.len]))
 }
 
@@ -235,7 +236,12 @@ fn new_time_from_string(s string) !Time {
 		t.typ.typ = .is_time_without_time_zone
 	}
 
-	return Time{t.typ, t.time_zone, t.t}
+	// A leap second (such as '23:59:60') rolls over into the next day of the
+	// dummy date. A TIME has no date, so it wraps around to the start of the
+	// same day, otherwise it would compare (and sort, group, etc) differently
+	// to the value it prints as.
+	return Time{t.typ, t.time_zone, new_lenient_time(1970, 1, 1, t.t.hour, t.t.minute,
+		t.t.second, t.t.nanosecond)}
 }
 
 // This is an internal constructor, you will want to use new_date_value

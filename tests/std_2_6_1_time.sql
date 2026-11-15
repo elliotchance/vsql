@@ -33,6 +33,57 @@ VALUES TIME 'a21:47:32';
 VALUES TIME '21:47:32T';
 -- error 42601: syntax error: TIME '21:47:32T' is not valid
 
+-- # A period with no fraction digits after it is allowed (5.3, <seconds value>),
+-- # and the precision is 0 (5.3, Syntax Rules, 34 and 35).
+/* types */
+VALUES TIME '21:47:32.';
+-- COL1: 21:47:32 (TIME(0) WITHOUT TIME ZONE)
+
+/* types */
+VALUES TIME '21:47:32.+05:12';
+-- COL1: 21:47:32+0512 (TIME(0) WITH TIME ZONE)
+
+VALUES TIME '21:47:32..';
+-- error 42601: syntax error: TIME '21:47:32..' is not valid
+
+-- # A leap second (60 or 61) rolls over into the next minute (6.1, General
+-- # Rules, 6). A TIME has no date, so '23:59:60' is the same value as
+-- # '00:00:00': it compares, sorts and groups the same.
+VALUES TIME '23:59:60';
+-- COL1: 00:00:00
+
+VALUES TIME '23:59:61.5';
+-- COL1: 00:00:01.5
+
+VALUES TIME '23:59:60' = TIME '00:00:00';
+-- COL1: TRUE
+
+VALUES TIME '23:59:60' > TIME '23:59:59';
+-- COL1: FALSE
+
+VALUES TIME '12:34:60' = TIME '12:35:00';
+-- COL1: TRUE
+
+VALUES TIME '23:59:60+05:00' = TIME '00:00:00+05:00';
+-- COL1: TRUE
+
+VALUES TIME '23:59:60.5-03:00' < TIME '00:00:01-03:00';
+-- COL1: TRUE
+
+CREATE TABLE leap (t TIME);
+INSERT INTO leap VALUES (TIME '23:59:60'), (TIME '00:00:00'), (TIME '12:00:00');
+SELECT t FROM leap ORDER BY t;
+SELECT COUNT(DISTINCT t) FROM leap;
+SELECT t, COUNT(*) FROM leap GROUP BY t ORDER BY t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- T: 00:00:00
+-- T: 00:00:00
+-- T: 12:00:00
+-- COL1: 2
+-- T: 00:00:00 COL2: 2
+-- T: 12:00:00 COL2: 1
+
 -- # A literal with a time zone is a TIME WITH TIME ZONE, and its precision is
 -- # the number of digits in the fraction of a second (5.3, Syntax Rules, 26).
 /* types */
@@ -348,6 +399,15 @@ VALUES CAST('12:34:56' AS TIME WITH TIME ZONE);
 /* types */
 VALUES CAST('12:34:56.5-03:00' AS TIME(2) WITH TIME ZONE);
 -- COL1: 12:34:56.50-0300 (TIME(2) WITH TIME ZONE)
+
+VALUES CAST('12:34:56.' AS TIME);
+-- COL1: 12:34:56
+
+VALUES CAST('23:59:60' AS TIME) = TIME '00:00:00';
+-- COL1: TRUE
+
+VALUES CAST('23:59:60+02:00' AS TIME WITH TIME ZONE) = TIME '00:00:00+02:00';
+-- COL1: TRUE
 
 VALUES CAST('25:00:00' AS TIME);
 -- error 22007: invalid datetime format

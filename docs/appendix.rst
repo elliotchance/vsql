@@ -8,6 +8,7 @@ Appendix
    functions.rst
    keywords.rst
    operators.rst
+   spreadsheet-functions.rst
    sql-compliance.rst
    sql-flagging.rst
    sqlstate.rst

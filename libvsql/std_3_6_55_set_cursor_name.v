@@ -57,30 +57,41 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 	}
 
 	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 8 and 9: CN
-	// must be an <identifier>, it can't start with SQL_CUR or SQLCUR (which
-	// are the generated names), and it can't be the name of the cursor of
-	// another statement of the connection. The names are compared as the
-	// identifiers they are, rather than as strings.
-	normalized := normalize_cursor_name(cn)
-	if !is_identifier(cn) || normalized.starts_with('SQL_CUR') || normalized.starts_with('SQLCUR') {
+	// must be an <identifier>, and the string itself can't start with SQL_CUR
+	// or SQLCUR (which are the generated names). That check is case sensitive
+	// and on the name as it's written, so sql_curx or "SQL_CURX" can be used
+	// (a generated name never clashes with them, see Stmt.name_of_cursor). CN
+	// can't be the name of the cursor of another statement of the connection,
+	// which is compared as the identifier it is (so c1 is the same as "C1"),
+	// since a positioned DELETE or UPDATE couldn't tell the cursors apart.
+	if !is_identifier(cn) || cn.starts_with('SQL_CUR') || cn.starts_with('SQLCUR')
+		|| stmt.cursor_name_in_use(cn) {
 		return cli_error('34000', 'invalid cursor name')
-	}
-	for h, other in stmts {
-		if h != stmt.handle && other.dbc == stmt.dbc && other.cursor_name != ''
-			&& normalize_cursor_name(other.cursor_name) == normalized {
-			return cli_error('34000', 'invalid cursor name')
-		}
 	}
 
 	// ISO/IEC 9075-3:2003, 6.55, SetCursorName, General Rules, 10: a cursor
 	// always has the name of its statement, so a closed cursor with another
 	// name doesn't exist any more.
-	if normalized != normalize_cursor_name(stmt.cursor_name) {
+	if normalize_cursor_name(cn) != normalize_cursor_name(stmt.cursor_name) {
 		stmt.destroy_cursor()
 	}
 	stmt.cursor_name = cn
 
 	return stmt.diag.result()
+}
+
+// cursor_name_in_use is true if another statement of the connection has a
+// cursor name that identifies the same cursor as name.
+fn (stmt &Stmt) cursor_name_in_use(name string) bool {
+	normalized := normalize_cursor_name(name)
+	for h, other in stmts {
+		if h != stmt.handle && other.dbc == stmt.dbc && other.cursor_name != ''
+			&& normalize_cursor_name(other.cursor_name) == normalized {
+			return true
+		}
+	}
+
+	return false
 }
 
 // normalize_cursor_name is the name of a cursor that a cursor name identifies:

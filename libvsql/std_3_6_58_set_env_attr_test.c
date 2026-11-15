@@ -96,6 +96,22 @@ UTEST(libvsql, 6_58_set_env_attr_no_null_termination) {
             SQL_SUCCESS);
   EXPECT_EQ(buf[0], 'x');
 
+  /* A zero BufferLength isn't an error (it's implementation-defined): nothing
+   * is copied, and the length is returned with a warning. A null pointer is
+   * still an error. */
+  {
+    SQLSMALLINT len = 0;
+
+    ASSERT_EQ(SQLSetCursorName(stmt, (SQLCHAR *)"c1", SQL_NTS), SQL_SUCCESS);
+    memset(buf, 'x', sizeof(buf));
+    EXPECT_EQ(SQLGetCursorName(stmt, buf, 0, &len), SQL_SUCCESS_WITH_INFO);
+    EXPECT_STATE(SQL_HANDLE_STMT, stmt, "01004");
+    EXPECT_EQ(buf[0], 'x');
+    EXPECT_EQ(len, 2);
+    EXPECT_EQ(SQLGetCursorName(stmt, NULL, 0, &len), SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, stmt, "HY009");
+  }
+
   free_handles(env, dbc, stmt);
 }
 

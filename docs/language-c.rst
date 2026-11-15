@@ -39,6 +39,15 @@ The integer types have the same width on every platform: ``SQLSMALLINT`` is
 ``SQLINTEGER`` a C ``long``, but that's 64 bits on macOS and Linux and 32 bits
 on Windows. A binding from another language can use these widths directly.
 
+When the ``SQL_ATTR_OUTPUT_NTS`` environment attribute is ``SQL_FALSE``
+(strings that are returned aren't null terminated), a routine that returns a
+string accepts a buffer length of ``0``: nothing is copied, the length is still
+returned, and a value that isn't empty is ``01004`` (string data, right
+truncation). So a program can ask for the length first. The standard makes a
+buffer length that isn't greater than zero ``HY090``, which it still is with
+null termination (the default). A null pointer for the string is still
+``HY009``, unless ``libvsql.h`` says the routine allows one.
+
 Threads
 -------
 

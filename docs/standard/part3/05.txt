@@ -253,7 +253,7 @@
 5.6/GR/4.j.i.1           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.j.i.2           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.j.i.3           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
-5.6/GR/4.j.ii            unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_49_param_data_test.c the rule says SQL NULL DATA, which can't be right since NULL is false; it's DATA AT EXEC, the same as ODBC
+5.6/GR/4.j.ii            implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_49_param_data_test.c the rule says SQL NULL DATA, which can't be right since NULL is false; it's DATA AT EXEC, the same as ODBC
 5.6/GR/4.k               n/a          - - there are no ROW, ARRAY or MULTISET types
 5.6/GR/4.k.i             n/a          - - there are no ROW, ARRAY or MULTISET types
 5.6/GR/4.k.ii            n/a          - - there are no ROW, ARRAY or MULTISET types
@@ -437,7 +437,7 @@
 # 5.9, Character string retrieval
 5.9                      implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 5.9/GR/1                 definition   - -
-5.9/GR/2                 unclear      libvsql/std_3_5_9_character_string_retrieval.v - with null termination False, a length of 0 isn't an error, since 4.4.3 makes it the same as a null pointer
+5.9/GR/2                 impl-defined libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_58_set_env_attr_test.c with null termination False, a length of 0 isn't an error: nothing is copied and the length is returned with 01004 (a null pointer is HY009)
 5.9/GR/3                 definition   - -
 5.9/GR/4                 implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 5.9/GR/5                 container    - -

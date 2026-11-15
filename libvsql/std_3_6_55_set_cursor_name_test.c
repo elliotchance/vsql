@@ -43,7 +43,7 @@ UTEST_F(db, 6_55_set_cursor_name_invalid) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
   EXPECT_EQ(
-      SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"sql_cur1", SQL_NTS),
+      SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"SQL_CUR1", SQL_NTS),
       SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
   EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"SQLCUR", SQL_NTS),
@@ -57,6 +57,39 @@ UTEST_F(db, 6_55_set_cursor_name_invalid) {
   EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"a\xc3\xa9", 2),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
+}
+
+/* Only a name that is written starting with SQL_CUR or SQLCUR is reserved, so
+ * a name in lower case or a delimited identifier can look like a generated
+ * name. A statement without a name then gets another generated name. */
+UTEST_F(db, 6_55_set_cursor_name_generated_prefix) {
+  SQLHSTMT stmt2, stmt3;
+  SQLCHAR name[200], expected[200];
+
+  EXPECT_EQ(
+      SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"sql_curx", SQL_NTS),
+      SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"sqlcur", SQL_NTS),
+      SQL_SUCCESS);
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt3), SQL_SUCCESS);
+
+  snprintf((char *)name, sizeof(name), "sql_cur%d", (int)stmt2);
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, name, SQL_NTS),
+            SQL_SUCCESS);
+  snprintf((char *)name, sizeof(name), "\"SQL_CUR%d_\"", (int)stmt2);
+  EXPECT_EQ(SQLSetCursorName(stmt3, name, SQL_NTS), SQL_SUCCESS);
+
+  EXPECT_EQ(SQLGetCursorName(stmt2, name, sizeof(name), NULL), SQL_SUCCESS);
+  snprintf((char *)expected, sizeof(expected), "SQL_CUR%d__", (int)stmt2);
+  EXPECT_STREQ((char *)name, (char *)expected);
+
+  /* The generated name is now in use. */
+  snprintf((char *)name, sizeof(name), "sql_cur%d__", (int)stmt2);
+  EXPECT_EQ(SQLSetCursorName(stmt3, name, SQL_NTS), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt3, "34000");
 }
 
 UTEST_F(db, 6_55_set_cursor_name_open_cursor) {

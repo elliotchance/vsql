@@ -23,6 +23,13 @@ struct UniqueConstraintDefinition {
 
 // A UniqueConstraint is a UNIQUE (other than the PRIMARY KEY) of a table, with
 // the names of its columns.
+//
+// The <unique null treatment> can't be given (F292), and the implicit one is
+// implementation-defined. vsql's is NULLS DISTINCT (see
+// check_unique_constraints), so it isn't stored with the constraint.
+//
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 5
+// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 2.d
 struct UniqueConstraint {
 	name            string
 	columns         []string

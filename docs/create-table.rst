@@ -207,7 +207,9 @@ Unique Constraints
 A ``UNIQUE`` constraint prevents two rows from having the same values for its
 columns (an error ``23505``), like a ``PRIMARY KEY``. Values that are equal are
 the same in the same way. A row with a ``NULL`` in any of the columns never
-conflicts, so a ``UNIQUE`` column can have any number of ``NULL`` values.
+conflicts, so a ``UNIQUE`` column can have any number of ``NULL`` values. This
+is ``NULLS DISTINCT``, which the SQL standard leaves for each database to choose
+when it isn't given (``NULLS [NOT] DISTINCT`` can't be given yet).
 
 A ``UNIQUE`` of a single column can also be written on the column, so
 ``code INTEGER UNIQUE`` is the same as ``code INTEGER, UNIQUE (code)``. A table

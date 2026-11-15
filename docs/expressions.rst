@@ -543,8 +543,9 @@ UNIQUE
 Returns ``TRUE`` if no two rows of the subquery are equal, otherwise ``FALSE``.
 It's never ``UNKNOWN``, and the subquery can have any number of columns. Values
 are equal when ``=`` is ``TRUE`` for them, so ``1.5`` and ``1.50`` are the same.
-A row that contains a ``NULL`` is never equal to another row, and it's ``TRUE``
-when there are no rows.
+A row that contains a ``NULL`` is never equal to another row (``NULLS
+DISTINCT``, which the SQL standard leaves for each database to choose when it
+isn't given), and it's ``TRUE`` when there are no rows.
 
 *Examples*
 

@@ -278,13 +278,13 @@
 8.11                     implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
 8.11/SR/1                n/a          - - user-defined types (S023)
 8.11/SR/2                implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
-8.11/SR/3                unclear      - - default null treatment is implementation-defined in 2023 (#1495)
+8.11/SR/3                impl-defined vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql NULLS DISTINCT
 8.11/GR/1                definition   - -
-8.11/GR/2                unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql vsql always treats nulls as distinct; the default is implementation-defined in 2023 (#1495)
-8.11/GR/2.a              unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql see 8.11/GR/2 (#1495)
-8.11/GR/2.b              unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql see 8.11/GR/2 (#1495)
+8.11/GR/2                implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/GR/2.a              implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
+8.11/GR/2.b              implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
 8.11/GR/2.c              n/a          - - UNIQUE null treatment (F292)
-8.11/GR/2.d              unclear      vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql see 8.11/GR/2 (#1495)
+8.11/GR/2.d              implemented  vsql/std_2_8_11_unique_predicate.v tests/std_2_8_11_unique_predicate.sql
 8.11/CR/1                implemented  vsql/std_2_8_11_unique_predicate.y tests/std_2_8_11_unique_predicate.sql
 8.11/CR/2                n/a          - - UNIQUE null treatment (F292)
 # 8.12, <normalized predicate>

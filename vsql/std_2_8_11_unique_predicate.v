@@ -32,8 +32,12 @@ fn (e UniquePredicate) compile(mut c Compiler) !CompileResult {
 // rows. Each column is compared like a grouping operation, the same as for
 // SELECT DISTINCT.
 //
-// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, Syntax Rules, 2
-// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, General Rules, 2
+// The <unique null treatment> can't be given (F292), and the implicit one is
+// implementation-defined. vsql's is NULLS DISTINCT, which is why a row with a
+// NULL is never a duplicate.
+//
+// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, Syntax Rules, 2 and 3
+// ISO/IEC 9075-2:2023, 8.11, <unique predicate>, General Rules, 2.a, 2.b and 2.d
 fn is_unique_rows(conn &Connection, rows [][]Value) !bool {
 	mut kept := [][]Value{}
 	for row in rows {

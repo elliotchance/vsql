@@ -49,8 +49,8 @@
 19.5/GR/1                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_7_set_names_schema.sql
 19.5/GR/2                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_7_set_names_schema.sql a value that is exactly the name of a catalog also works, because a name comes from a file path
 19.5/GR/3                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/std_2_19_5_set_catalog.sql
-19.5/CR/1                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/std_1_8_5_flagging.sql
-19.5/CR/2                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/std_1_8_5_flagging.sql
+19.5/CR/1                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/std_1_9_6_flagging.sql
+19.5/CR/2                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/std_1_9_6_flagging.sql
 # 19.6, <set schema statement>
 19.6                     implemented  vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql
 19.6/SR/1                implemented  vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_7_set_names_schema.sql
@@ -59,7 +59,7 @@
 19.6/GR/3                container    - -
 19.6/GR/3.a              implemented  vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_7_set_names_schema.sql a catalog that does not exist is 3D000
 19.6/GR/3.b              implemented  vsql/std_2_19_6_set_schema_statement.v tests/std_2_19_6_set_schema.sql
-19.6/CR/1                implemented  vsql/std_2_19_6_set_schema_statement.y tests/std_1_8_5_flagging.sql
+19.6/CR/1                implemented  vsql/std_2_19_6_set_schema_statement.y tests/std_1_9_6_flagging.sql
 # 19.7, <set names statement>
 19.7                     implemented  vsql/std_2_19_7_set_names_statement.v tests/std_2_19_7_set_names_schema.sql
 19.7/SR/1                implemented  vsql/std_2_19_7_set_names_statement.v tests/std_2_19_7_set_names_schema.sql

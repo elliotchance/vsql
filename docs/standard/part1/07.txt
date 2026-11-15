@@ -1,12 +1,20 @@
-# ISO/IEC 9075-1:2003(E)
+# ISO/IEC 9075-1:2023
 # id status code tests note (see docs/standard-index.rst)
-# 7, Annexes to the parts of ISO/IEC 9075
+# 7, Annexes to the parts of the ISO/IEC 9075 series
 7                        definition   - - about the standard itself
-# 7.1, Implementation-defined elements
+# 7.1, Annexes are informative
 7.1                      definition   - - about the standard itself
-# 7.2, Implementation-dependent elements
+# 7.2, SQL conformance summary
 7.2                      definition   - - about the standard itself
-# 7.3, Deprecated features
+# 7.3, Implementation-defined elements
 7.3                      definition   - - about the standard itself
-# 7.4, Incompatibilities with previous versions
+# 7.4, Implementation-dependent elements
 7.4                      definition   - - about the standard itself
+# 7.5, Deprecated features
+7.5                      definition   - - about the standard itself
+# 7.6, Incompatibilities with previous versions
+7.6                      definition   - - about the standard itself
+# 7.7, SQL feature taxonomy
+7.7                      definition   - - about the standard itself
+# 7.8, Defect Reports
+7.8                      definition   - - about the standard itself

@@ -10,9 +10,9 @@ import strings
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.5, Sites and operations on sites
-// ISO/IEC 9075-1:2003(E), 4.5.1, Sites
-// ISO/IEC 9075-1:2003(E), 4.5.2, Assignment
+// ISO/IEC 9075-1:2023, 4.7, Sites and operations on sites
+// ISO/IEC 9075-1:2023, 4.7.1, Sites
+// ISO/IEC 9075-1:2023, 4.7.2, Assignment
 
 const min_smallint = new_numeric_from_string('-32768')
 

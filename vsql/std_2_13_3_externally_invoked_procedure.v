@@ -4,7 +4,7 @@ module vsql
 //
 // Define an externally-invoked procedure.
 //
-// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.2.5, Indicator
+// The concept is described by ISO/IEC 9075-1:2023, 4.10.3.5, Indicator
 // parameters.
 //
 // The concepts are also described by:

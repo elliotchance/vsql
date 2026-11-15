@@ -6,10 +6,10 @@ module vsql
 //
 // The concepts are described by:
 //
-// ISO/IEC 9075-1:2003(E), 4.4.3.2, Character string types
-// ISO/IEC 9075-1:2003(E), 4.6.2, Descriptors relating to character sets
-// ISO/IEC 9075-1:2003(E), 4.6.2.1, Character sets
-// ISO/IEC 9075-1:2003(E), 4.6.2.2, Collations
+// ISO/IEC 9075-1:2023, 4.6.3.2, Character string types
+// ISO/IEC 9075-1:2023, 4.8.2, Descriptors relating to character sets
+// ISO/IEC 9075-1:2023, 4.8.2.1, Character sets
+// ISO/IEC 9075-1:2023, 4.8.2.2, Collations
 // ISO/IEC 9075-2:2023, 4.2, Data types
 // ISO/IEC 9075-2:2023, 4.3, Character strings
 // ISO/IEC 9075-2:2023, 4.5, Numbers

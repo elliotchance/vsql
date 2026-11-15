@@ -1,7 +1,7 @@
 SQL Flagging
 ============
 
-An SQL Flagger (ISO/IEC 9075-1, 8.5) finds the SQL that isn't portable, so that
+An SQL Flagger (ISO/IEC 9075-1, 9.6) finds the SQL that isn't portable, so that
 it can be changed before moving to another database. vsql flags the language
 that's outside of Core SQL (Feature F812, "Basic flagging"), and also says which
 optional feature each one needs ("SQL Feature Flagging").

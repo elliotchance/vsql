@@ -149,7 +149,7 @@ fn test_custom_function_bad_prototype() ! {
 
 // An SQL argument of a routine invocation that's a dynamic parameter needs
 // B033, as well as B031 for the dynamic parameter itself (see F812, "Basic
-// flagging", in tests/std_1_8_5_flagging.sql).
+// flagging", in tests/std_1_9_6_flagging.sql).
 // NOW() is always CURRENT_TIMESTAMP. A function with that name is called by
 // quoting it.
 // NOW() is a builtin function, so another one with the same arguments is a

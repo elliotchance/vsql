@@ -56,6 +56,30 @@ SECTIONS = {
     'Description': 'DE',
 }
 
+# Titles that both the headings and the table of contents of a PDF have
+# garbled (with spaces lost from, or put into, the middle of words).
+TITLES = {
+    'ISO/IEC 9075-1:2023': {
+        '4.6': 'SQL data types',
+        '4.8.2.3': 'Transliterations',
+        '4.8.4.1': 'Introduction to user-defined types',
+        '4.8.8': 'SQL-server modules (defined in ISO/IEC 9075-4)',
+        '5.2': 'ISO/IEC 9075-1: Framework (SQL/Framework)',
+        '5.3': 'ISO/IEC 9075-2 Foundation (SQL/Foundation)',
+        '5.7': 'ISO/IEC 9075-10: Object Language Bindings (SQL/OLB)',
+        '5.9': 'ISO/IEC 9075-13: SQL Routines and Types Using the Java™ Programming Language (SQL/JRT)',
+        '6.1': 'Notation taken from ISO/IEC 10646:2020',
+        '6.3.2': 'Specification of the Information and Definition Schemata',
+        '6.3.3': 'Use of terms',
+        '6.3.6.2': 'Clauses 1, 2, and 3',
+        '6.3.6.6': 'New and modified Format Items',
+        '6.4.3': 'Condition codes',
+        '6.4.6': 'Implementation-dependent items',
+        '9.6': 'SQL flagger',
+        '9.7.2': 'Requirements for SQL applications',
+    },
+}
+
 # Headings that end a rules section without starting another one.
 OTHER_HEADINGS = {'Function', 'Format', 'Definition'}
 
@@ -258,9 +282,14 @@ def subclauses(lines):
                 break
         else:
             # Some headings wrap onto a second line.
+            # A word may be hyphenated across them.
             for i in range(pos, len(lines) - 1):
-                if squash(lines[i] + lines[i + 1]) == want:
-                    heading = lines[i].strip() + ' ' + lines[i + 1].strip()
+                first = lines[i].strip()
+                if squash(first + lines[i + 1]) == want or \
+                        (first.endswith('-') and squash(first[:-1] + lines[i + 1]) == want):
+                    heading = first[:-1] + lines[i + 1].strip() if \
+                        squash(first + lines[i + 1]) != want else \
+                        first + ' ' + lines[i + 1].strip()
                     found.append((i, number, spaced(heading[len(number):], title)))
                     pos = i + 2
                     break
@@ -397,6 +426,11 @@ def index_rows(edition, text):
             if squash(toc.get(number, '')) == squash(title) and \
                     toc[number].count(' ') > title.count(' '):
                 title = toc[number]
+        fixed = TITLES.get(edition['citation'], {}).get(number)
+        if fixed is not None:
+            if squash(fixed) != squash(title):
+                sys.exit(f'{number}: "{title}" is not "{fixed}"')
+            title = fixed
         rows = [(number, None)]
         for section, rule, rule_text in rules(body):
             rows.append((f'{number}/{section}/{rule}', rule_text))

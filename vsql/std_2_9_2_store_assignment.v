@@ -448,13 +448,17 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 
 	match t.typ {
 		.is_smallint {
-			mut numeric_value := v.as_numeric()!
+			// The fraction is truncated before the range is checked, so 32767.9 fits
+			// in a SMALLINT.
+			mut numeric_value := v.as_numeric()!.trunc()
 			check_numeric_range(numeric_value, .is_smallint)!
 
 			return new_smallint_value(i16(numeric_value.i64()))
 		}
 		.is_integer {
-			mut numeric_value := v.as_numeric()!
+			// The fraction is truncated before the range is checked, so 32767.9 fits
+			// in a SMALLINT.
+			mut numeric_value := v.as_numeric()!.trunc()
 			check_numeric_range(numeric_value, .is_integer)!
 
 			// This is a bug: https://github.com/vlang/v/issues/17637
@@ -467,7 +471,9 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 			return new_integer_value(int(numeric_value.i64()))
 		}
 		.is_bigint {
-			mut numeric_value := v.as_numeric()!
+			// The fraction is truncated before the range is checked, so 32767.9 fits
+			// in a SMALLINT.
+			mut numeric_value := v.as_numeric()!.trunc()
 			check_numeric_range(numeric_value, .is_bigint)!
 
 			return new_bigint_value(numeric_value.str().i64())
@@ -484,8 +490,10 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 			// We must not lose any significant figures. A NUMERIC/DECIMAL without a
 			// precision has the maximum precision. We can't trust the size of the
 			// existing number as all the digits may not be used.
+			// A zero integer part (such as 0.5) uses no integer digits, so it
+			// fits in a NUMERIC(p,p).
 			parts := numeric_value.str().split('.')
-			if parts[0].trim_left('-').len > t.numeric_precision() - t.scale {
+			if parts[0].trim_left('-').trim_left('0').len > t.numeric_precision() - t.scale {
 				// numeric value out of range
 				return sqlstate_22003()
 			}

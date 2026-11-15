@@ -133,10 +133,10 @@
 9.2/GR/3.b.xiv           n/a          - - there are no BLOBs (T041)
 9.2/GR/3.b.xiv.1         n/a          - - there are no BLOBs (T041)
 9.2/GR/3.b.xiv.2         n/a          - - there are no BLOBs (T041)
-9.2/GR/3.b.xv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql
-9.2/GR/3.b.xv.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql
-9.2/GR/3.b.xv.2          impl-defined vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql an exact numeric is truncated
-9.2/GR/3.b.xv.3          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql
+9.2/GR/3.b.xv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql,tests/std_2_9_2_numeric_store_assignment.sql
+9.2/GR/3.b.xv.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql,tests/std_2_9_2_numeric_store_assignment.sql
+9.2/GR/3.b.xv.2          impl-defined vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_9_2_numeric_store_assignment.sql an exact numeric is truncated
+9.2/GR/3.b.xv.3          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql,tests/std_2_9_2_numeric_store_assignment.sql
 9.2/GR/3.b.xvi           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
 9.2/GR/3.b.xvi.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
 9.2/GR/3.b.xvi.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql

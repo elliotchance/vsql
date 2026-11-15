@@ -200,9 +200,11 @@ jobs:
         run: command -v psql || (.github/workflows/retry.sh sudo apt-get update && .github/workflows/retry.sh sudo apt-get install -y postgresql-client)
 
       # MAX_RUN_TIME fails big-test if a run takes 100 seconds or more (see
-      # docs/testing.rst).
+      # docs/testing.rst). Coverage is only checked on x86-64, since nearly
+      # all of vsql/ is the same code everywhere, and it takes a few minutes.
+      # Every other job runs the tests with COVERAGE=0.
       - name: Run tests
-        run: make test MAX_RUN_TIME=100
+        run: make test MAX_RUN_TIME=100 ${{ matrix.arch != 'x86-64' && 'COVERAGE=0' || '' }}
 
       # The tests for "vsql app" drive it in a headless Chromium (see
       # docs/testing.rst). The page is the same everywhere, so they only run
@@ -291,9 +293,9 @@ jobs:
           echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
 
       # MAX_RUN_TIME fails big-test if a run takes max_run_time seconds or more
-      # (see docs/testing.rst).
+      # (see docs/testing.rst). Coverage is only checked on Linux x86-64.
       - name: Run tests
-        run: make test MAX_RUN_TIME=${{ matrix.max_run_time }}
+        run: make test MAX_RUN_TIME=${{ matrix.max_run_time }} COVERAGE=0
 
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7
@@ -409,12 +411,14 @@ jobs:
       # On ARM64, V builds without -prod with the x86-64 tcc that setup-v.sh
       # downloads, and those programs crash under emulation (even V's own test
       # runner), so everything is built with llvm-mingw's clang instead.
+      #
+      # Coverage is only checked on Linux x86-64.
       - name: Run tests
         env:
           VFLAGS: ${{ matrix.arch == 'arm64' && '-cc clang' || '' }}
         run: |
           export PATH="$(cygpath -u "$PGBIN"):$PATH"
-          make -k test
+          make -k test COVERAGE=0
 
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7

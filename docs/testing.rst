@@ -985,9 +985,12 @@ the coverage.
 
 ``make test`` runs ``make coverage``, and the ORM tests with ``make
 vorm-test``, so CI also shows the coverage (in the log and the summary of the
-run).
+run). CI only checks the coverage on Linux x86-64, and the other jobs run the
+tests with ``COVERAGE=0``, since nearly all of ``vsql/`` is the same code
+everywhere. Lines that are only compiled on another OS (with ``$if``) aren't
+checked.
 
-Coverage makes the tests a few seconds slower. Set ``$COVERAGE`` to ``0`` to
+Coverage makes the tests slower. Set ``$COVERAGE`` to ``0`` to
 turn it off:
 
 .. code-block:: sh

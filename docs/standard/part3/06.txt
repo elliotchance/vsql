@@ -781,7 +781,7 @@
 6.22/GR/13.b             implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/13.b.i           implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/13.b.ii          implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
-6.22/GR/13.b.iii         implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c RELATIVE is from the first row of R, but NEXT is after the last row (as in 6.21/GR/10.b), since the rule can't be right for a rowset of more than one row
+6.22/GR/13.b.iii         unclear      libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c RELATIVE is from the first row of R, but NEXT is after the last row (as in 6.21/GR/10.b), since the rule can't be right for a rowset of more than one row
 6.22/GR/13.c             implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/13.c.i           implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/13.c.ii          implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
@@ -794,9 +794,9 @@
 6.22/GR/15.a             implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/15.a.i           container    - -
 6.22/GR/15.a.i.1         container    - -
-6.22/GR/15.a.i.1.A       implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c it's the rows from the K-th row; all the rows of T can't be right for a rowset of more than one row (LAST would have every row)
+6.22/GR/15.a.i.1.A       unclear      libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c it's the rows from the K-th row; all the rows of T can't be right for a rowset of more than one row (LAST would have every row)
 6.22/GR/15.a.i.1.B       implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
-6.22/GR/15.a.i.2         implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c it's the rows from the K-th row; all the rows in Tt can't be right for ABSOLUTE
+6.22/GR/15.a.i.2         unclear      libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c it's the rows from the K-th row; all the rows in Tt can't be right for ABSOLUTE
 6.22/GR/15.a.ii          implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/15.b             implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/15.b.i           implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
@@ -978,22 +978,22 @@
 6.23/GR/7.b.xix.1.A      container    - -
 6.23/GR/7.b.xix.1.A.I    implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xix.1.A.II   implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
-6.23/GR/7.b.xix.1.A.II.1 implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
-6.23/GR/7.b.xix.1.A.II.2 implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.1.A.II.1 unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.1.A.II.2 unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
 6.23/GR/7.b.xix.1.B      container    - -
 6.23/GR/7.b.xix.1.B.I    implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xix.1.B.II   implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
-6.23/GR/7.b.xix.1.B.II.1 implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
-6.23/GR/7.b.xix.1.B.II.2 implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.1.B.II.1 unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.1.B.II.2 unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
 6.23/GR/7.b.xix.1.C      container    - -
 6.23/GR/7.b.xix.1.C.I    implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xix.1.C.II   implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
-6.23/GR/7.b.xix.1.C.II.1 implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
-6.23/GR/7.b.xix.1.C.II.2 implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.1.C.II.1 unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.1.C.II.2 unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
 6.23/GR/7.b.xix.2        container    - -
-6.23/GR/7.b.xix.2.A      implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
-6.23/GR/7.b.xix.2.B      implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
-6.23/GR/7.b.xix.2.C      implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.2.A      unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.2.B      unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
+6.23/GR/7.b.xix.2.C      unclear      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the predicate is on the UK_ columns; the rule says the FK_ columns, which can't be right
 6.23/GR/7.b.xx           definition   - -
 6.23/GR/7.b.xxi          implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c ordered by FK_TABLE_CAT, FK_TABLE_SCHEM, FK_TABLE_NAME, FK_NAME and ORDINAL_POSITION
 6.23/GR/7.b.xxii         implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
@@ -1482,9 +1482,9 @@
 6.38/GR/2.a              implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/2.b              definition   - -
 6.38/GR/3                implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
-6.38/GR/4                n/a          - - there's no implicit ExecDirect, the rows of the views are read directly and can't fail
-6.38/GR/4.a              n/a          - - there's no implicit ExecDirect, the rows of the views are read directly and can't fail
-6.38/GR/4.b              n/a          - - there's no implicit ExecDirect, the rows of the views are read directly and can't fail
+6.38/GR/4                untestable   libvsql/std_3_6_38_get_info.v - there's no implicit ExecDirect, the rows of the views are read directly, so there's no status condition to return
+6.38/GR/4.a              untestable   libvsql/std_3_6_38_get_info.v - there's no implicit ExecDirect, the rows of the views are read directly, so there's no status condition to return
+6.38/GR/4.b              untestable   libvsql/std_3_6_38_get_info.v - there's no implicit ExecDirect, the rows of the views are read directly, so there's no status condition to return
 6.38/GR/5                definition   - -
 6.38/GR/6                implemented  libvsql/std_3_6_38_get_info.v libvsql/std_3_6_38_get_info_test.c
 6.38/GR/7                definition   - -
@@ -1912,7 +1912,7 @@
 6.49/GR/4.a.i            implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/4.a.ii           implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/4.a.iii          implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
-6.49/GR/4.b              implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c the rule says SQL NULL DATA (as 5.6/GR/4.j.ii); it's DATA AT EXEC
+6.49/GR/4.b              implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c DATA AT EXEC, as 5.13/SR/11 says (the rule says SQL NULL DATA, but NULL is false)
 6.49/GR/5                implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/6                definition   - -
 6.49/GR/7                implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
@@ -2193,7 +2193,7 @@
 6.55/GR/7.a              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/7.b              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/8                implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
-6.55/GR/9                implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c the SQL_CUR and SQLCUR prefixes are checked on the string as written (so sql_curx is allowed, and a generated name skips it); another statement's name is the same if it's the same identifier (regular ones in upper case, delimited ones without quotes)
+6.55/GR/9                unclear      libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c names are compared as identifiers (regular ones in upper case, delimited ones without quotes), rather than as strings with LIKE and identical
 6.55/GR/10               implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 # 6.56, SetDescField
 6.56                     container    - -

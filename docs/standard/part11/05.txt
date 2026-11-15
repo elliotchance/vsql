@@ -73,8 +73,8 @@
 5.18/CR/2                n/a          - - domains (F251)
 5.18/CR/3                n/a          - - domains (F251)
 # 5.19, COLUMN_PRIVILEGES view
-5.19                     n/a          - - privilege tables (F231)
-5.19/CR/1                n/a          - - privilege tables (F231)
+5.19                     missing      - - authorization identifiers and privileges (#732)
+5.19/CR/1                missing      - - authorization identifiers and privileges (#732)
 # 5.20, COLUMN_UDT_USAGE view
 5.20                     n/a          - - user-defined types (S023)
 5.20/CR/1                n/a          - - user-defined types (S023)
@@ -93,8 +93,8 @@
 5.23/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 5.23/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
 # 5.24, DATA_TYPE_PRIVILEGES view
-5.24                     n/a          - - privilege tables (F231)
-5.24/CR/1                n/a          - - privilege tables (F231)
+5.24                     missing      - - authorization identifiers and privileges (#732)
+5.24/CR/1                missing      - - authorization identifiers and privileges (#732)
 # 5.25, DIRECT_SUPERTABLES view
 5.25                     n/a          - - typed tables (S081)
 5.25/CR/1                n/a          - - typed tables (S081)
@@ -173,8 +173,8 @@
 5.44/CR/1                missing      - - SQL-invoked routines (#733)
 5.44/CR/2                missing      - - SQL-invoked routines (#733)
 # 5.45, ROUTINE_PRIVILEGES view
-5.45                     n/a          - - privilege tables (F231)
-5.45/CR/1                n/a          - - privilege tables (F231)
+5.45                     missing      - - authorization identifiers and privileges (#732)
+5.45/CR/1                missing      - - authorization identifiers and privileges (#732)
 # 5.46, ROUTINE_ROUTINE_USAGE view
 5.46                     missing      - - SQL-invoked routines (#733)
 5.46/CR/1                missing      - - SQL-invoked routines (#733)
@@ -226,8 +226,8 @@
 5.59/CR/1                n/a          - - type hierarchies (S024)
 5.59/CR/2                n/a          - - type hierarchies (S024)
 # 5.60, TABLE_PRIVILEGES view
-5.60                     n/a          - - privilege tables (F231)
-5.60/CR/1                n/a          - - privilege tables (F231)
+5.60                     missing      - - authorization identifiers and privileges (#732)
+5.60/CR/1                missing      - - authorization identifiers and privileges (#732)
 # 5.61, TABLES view
 5.61                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql every table, since there are no privileges (#732)
 5.61/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql flagged by the view
@@ -270,11 +270,11 @@
 5.69/CR/2                n/a          - - triggers (T211)
 5.69/CR/3                n/a          - - triggers (T211)
 # 5.70, UDT_PRIVILEGES view
-5.70                     n/a          - - privilege tables (F231)
-5.70/CR/1                n/a          - - privilege tables (F231)
+5.70                     missing      - - authorization identifiers and privileges (#732)
+5.70/CR/1                missing      - - authorization identifiers and privileges (#732)
 # 5.71, USAGE_PRIVILEGES view
-5.71                     n/a          - - privilege tables (F231)
-5.71/CR/1                n/a          - - privilege tables (F231)
+5.71                     missing      - - authorization identifiers and privileges (#732)
+5.71/CR/1                missing      - - authorization identifiers and privileges (#732)
 # 5.72, USER_DEFINED_TYPES view
 5.72                     n/a          - - user-defined types (S023)
 5.72/CR/1                n/a          - - user-defined types (S023)

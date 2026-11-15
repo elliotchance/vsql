@@ -44,6 +44,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 	cursor.row_states = []CursorRowState{len: cursor.rows.len}
 	cursor.columns = plan.columns()
 	cursor.is_open = true
+	cursor.isolation_level = conn.isolation_level
 	cursor.position = -1
 	cursor.on_row = false
 

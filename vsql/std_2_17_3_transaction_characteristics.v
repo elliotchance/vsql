@@ -149,7 +149,19 @@ fn check_transaction_modes(modes []TransactionMode) ! {
 
 // new_transaction_characteristics returns the characteristics of modes, which
 // have been checked by check_transaction_modes.
+// A holdable cursor that's still open is checked against the isolation level,
+// including when it isn't specified.
+//
+// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 2.a and 4
+// ISO/IEC 9075-2:2023, 17.3, <transaction characteristics>, Syntax Rules, 3
 fn new_transaction_characteristics(mut conn Connection, params map[string]Value, modes []TransactionMode) !TransactionCharacteristics {
+	characteristics := transaction_characteristics(mut conn, params, modes)!
+	conn.check_held_cursors(characteristics.isolation_level)!
+
+	return characteristics
+}
+
+fn transaction_characteristics(mut conn Connection, params map[string]Value, modes []TransactionMode) !TransactionCharacteristics {
 	// ISO/IEC 9075-2:2023, 17.1, <start transaction statement>, General Rules, 2.a
 	if modes.len == 0 {
 		return conn.enduring_characteristics()
@@ -165,7 +177,6 @@ fn new_transaction_characteristics(mut conn Connection, params map[string]Value,
 			}
 			IsolationLevel {
 				isolation_level = mode
-				conn.check_held_cursors(mode)!
 			}
 			DiagnosticsSize {
 				limit = condition_area_limit(mut conn, params, mode)!
@@ -188,16 +199,15 @@ fn new_transaction_characteristics(mut conn Connection, params map[string]Value,
 	}
 }
 
-// check_held_cursors checks that a holdable cursor that's still open from the
-// previous SQL-transaction has the isolation level that's being set.
+// check_held_cursors checks that a holdable cursor that's still open from a
+// previous SQL-transaction has the isolation level that's being set, which is
+// the isolation level of the SQL-transaction that opened it.
 //
 // ISO/IEC 9075-2:2023, 17.2, <set transaction statement>, General Rules, 1.a.ii
 fn (conn Connection) check_held_cursors(level IsolationLevel) ! {
-	if level != conn.isolation_level {
-		for _, cursor in conn.cursors {
-			if cursor.hold && cursor.is_open {
-				return sqlstate_25008()
-			}
+	for _, cursor in conn.cursors {
+		if cursor.hold && cursor.is_open && cursor.isolation_level != level {
+			return sqlstate_25008()
 		}
 	}
 }

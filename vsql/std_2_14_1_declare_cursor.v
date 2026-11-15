@@ -94,11 +94,15 @@ mut:
 	// before the first row, and rows.len after the last row. on_row is false
 	// when the cursor isn't positioned on a row, including after the current
 	// row is deleted (then it's before the next row, see Cursor.move).
-	is_open  bool
-	columns  Columns
-	rows     []Row
-	position int
-	on_row   bool
+	is_open bool
+	columns Columns
+	// isolation_level is the isolation level of the SQL-transaction that opened
+	// the cursor. A holdable cursor that's still open needs the same one (see
+	// Connection.check_held_cursors).
+	isolation_level IsolationLevel
+	rows            []Row
+	position        int
+	on_row          bool
 	// fetched is true if a FETCH has been executed in the current transaction.
 	// A holdable cursor must be fetched in a transaction before its current row
 	// can be changed (ISO/IEC 9075-2:2023, 15.6, General Rules, 7).

@@ -417,15 +417,19 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	// are no functional dependencies (Feature T301).
 	//
 	// ISO/IEC 9075-2:2023, 6.7, <column reference>, Conformance Rules, 2
+	//
+	// A column of a derived table with a duplicated name (see
+	// add_correlation_plan) is still a column reference, from "SELECT *".
+	is_column_reference := e.custom_id == '' || e.is_position_key()
 	if grouping_columns := c.grouping_columns {
-		if e.custom_id == '' && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
-			return sqlstate_42803(e.str())
+		if is_column_reference && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
+			return sqlstate_42803(e.column_str())
 		}
 	}
 
 	if distinct_columns := c.distinct_columns {
-		if e.custom_id == '' && !e.is_grouping_column(distinct_columns) {
-			return sqlstate_42p10(e.str())
+		if is_column_reference && !e.is_grouping_column(distinct_columns) {
+			return sqlstate_42p10(e.column_str())
 		}
 	}
 
@@ -451,6 +455,22 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	}
 
 	return compiled
+}
+
+// is_position_key is true for a column of a derived table that has the same
+// name as another column of it, which is read with a key for its position (see
+// add_correlation_plan).
+fn (e Identifier) is_position_key() bool {
+	return e.custom_id != '' && e.entity_name != '' && e.sub_entity_name != ''
+}
+
+// column_str is the name of a column reference in a message, which is the
+// table and column name for a position key, rather than the key.
+fn (e Identifier) column_str() string {
+	return Identifier{
+		...e
+		custom_id: ''
+	}.str()
 }
 
 // is_grouping_column is true if the column reference is one of the grouping
@@ -490,6 +510,9 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		for i := c.conn.subquery_scopes.len - 1; i >= 0; i-- {
 			scope := c.conn.subquery_scopes[i]
 			if e.is_column_of(c.conn, scope.tables, scope.context) {
+				if e.is_ambiguous_in(c.conn, scope.tables) {
+					return sqlstate_42702(e.sub_entity_name)
+				}
 				return e.compile_outer(mut c, i)
 			}
 		}
@@ -500,6 +523,10 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		&& !e.is_column_of(c.conn, c.tables, c.context) {
 		return sqlstate_42601_column('unknown column: ${c.conn.resolve_identifier(e)}',
 			e.qualifying_table(c), e.sub_entity_name)
+	}
+
+	if e.is_ambiguous_in(c.conn, c.tables) {
+		return sqlstate_42702(e.sub_entity_name)
 	}
 
 	// 2. A qualified field in a subquery table.
@@ -677,6 +704,32 @@ fn (e Identifier) is_column_of(conn &Connection, tables map[string]&Table, conte
 			if table := catalog.storage.tables[table_name.storage_id()] {
 				return e.is_column_of_table(conn, table)
 			}
+		}
+	}
+
+	return false
+}
+
+// is_ambiguous_in is true if a table that the column could be a column of has
+// more than one column with that name. Only a derived table can, such as
+// "(SELECT 1 AS a, 2 AS a) AS d".
+//
+// ISO/IEC 9075-2:2023, 6.6, <identifier chain>, Syntax Rules, 9.c
+// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 12.b.ii.3.B
+fn (e Identifier) is_ambiguous_in(conn &Connection, tables map[string]&Table) bool {
+	for _, table in tables {
+		if !e.is_column_of_table(conn, table) {
+			continue
+		}
+
+		mut found := 0
+		for column in table.columns {
+			if column.name.sub_entity_name == e.sub_entity_name {
+				found++
+			}
+		}
+		if found > 1 {
+			return true
 		}
 	}
 

@@ -2546,6 +2546,80 @@ CHARACTER_LENGTH
 - **SQL standard:** Core SQL (E021-04).
 - **Other databases:** see ``CHAR_LENGTH``.
 
+CHR
+^^^
+
+.. code-block:: sql
+
+   CHR(BIGINT) CHARACTER VARYING(1)
+
+The character with a Unicode code point, the opposite of ``UNICODE``. 0, a
+negative number, a surrogate (``0xD800`` to ``0xDFFF``) or a number above
+``0x10FFFF`` is a ``22023`` error (invalid parameter value), and a Unicode
+noncharacter (such as ``0xFFFF``) is a ``22029`` error, the same as in a
+``U&`` string.
+
+``CHR`` is a vsql extension flagged by ``V404-05`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CHR(65);
+  -- COL1: A
+
+  VALUES CHR(128522);
+  -- COL1: 😊
+
+  VALUES CHR(0);
+  -- error 22023: invalid parameter value: CHR: 0 is not a valid Unicode code point
+
+**Compatibility**
+
+- **SQL standard:** not standard. A constant character can be written with a
+  Unicode escape, such as ``U&'\+01F60A'`` (see :doc:`text`), but there's no
+  standard function for a code point that isn't a constant.
+- **Other databases:**
+
+  - PostgreSQL and Oracle: ``CHR``.
+  - MySQL: ``CHAR(n USING utf8mb4)``.
+  - SQLite: ``CHAR``.
+  - SQL Server: ``NCHAR``.
+
+INITCAP
+^^^^^^^
+
+.. code-block:: sql
+
+   INITCAP(CHARACTER VARYING) CHARACTER VARYING
+
+Returns the string with the first letter of each word in upper case and the
+rest in lower case. A word is a run of letters and digits, any other character
+(such as a space, ``'`` or ``-``) starts a new word. The result has the same
+type as the input, like ``UPPER`` and ``LOWER``, and uses the same full Unicode
+case mappings, so it can also be truncated with a ``01004`` warning.
+
+``INITCAP`` is a vsql extension flagged by ``V404-04`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES INITCAP('hELLO wORLD');
+  -- COL1: Hello World
+
+  VALUES INITCAP('o''neil mc-donald');
+  -- COL1: O'Neil Mc-Donald
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL and Oracle: ``INITCAP``.
+  - MySQL, SQLite and SQL Server: no equivalent.
+
 LOWER
 ^^^^^
 
@@ -2803,6 +2877,91 @@ Matching is case-sensitive. An empty ``SEARCH`` is found at the start of any
   - SQLite and Oracle: ``INSTR(string, search)``.
   - SQL Server: ``CHARINDEX(search, string)``.
 
+REPEAT
+^^^^^^
+
+.. code-block:: sql
+
+   REPEAT(CHARACTER VARYING, BIGINT) CHARACTER VARYING
+
+Returns the string repeated ``n`` times, or an empty string if ``n`` is 0 or
+less. The padding of a ``CHARACTER(n)`` is repeated too. The result is a
+``CHARACTER VARYING`` without a maximum length, but one that would be longer
+than 10485760 characters is a ``22001`` error.
+
+``REPEAT`` is a vsql extension flagged by ``V404-03`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES REPEAT('ab', 3);
+  -- COL1: ababab
+
+  VALUES REPEAT('ab', 0);
+  -- COL1:
+
+**Compatibility**
+
+- **SQL standard:** not standard. When the length of the result is known, a
+  string of one repeated character can be made with `RPAD`_ (T055).
+- **Other databases:**
+
+  - PostgreSQL and MySQL: ``REPEAT``.
+  - SQL Server: ``REPLICATE``.
+  - Oracle: ``RPAD('', n * LENGTH(s), s)``.
+  - SQLite: no equivalent.
+
+REPLACE
+^^^^^^^
+
+.. code-block:: sql
+
+   REPLACE(CHARACTER VARYING, CHARACTER VARYING, CHARACTER VARYING) CHARACTER VARYING
+
+``REPLACE(STRING, FROM, TO)`` replaces every occurrence of ``FROM`` in
+``STRING`` with ``TO``. The occurrences are found from left to right and don't
+overlap, so ``REPLACE('aaa', 'aa', 'b')`` is ``'ba'``. Matching is
+case-sensitive and compares characters, not bytes.
+
+An empty ``FROM`` returns ``STRING`` unchanged, and an empty ``TO`` removes
+each occurrence. The result is ``NULL`` if any argument is ``NULL``.
+
+The padding of a ``CHARACTER(n)`` is searched like any other character. The
+result is a ``CHARACTER VARYING`` without a maximum length, because it can be
+longer than ``STRING``.
+
+``REPLACE`` is a vsql extension flagged by ``V404-02`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES REPLACE('a.b.c', '.', '::');
+  -- COL1: a::b::c
+
+  VALUES REPLACE('aaa', 'aa', 'b');
+  -- COL1: ba
+
+  VALUES REPLACE('Hello hello', 'hello', 'bye');
+  -- COL1: Hello bye
+
+  VALUES REPLACE('banana', 'an', '');
+  -- COL1: ba
+
+**Compatibility**
+
+- **SQL standard:** not standard. The standard way is ``TRANSLATE_REGEX``
+  (F845), which vsql doesn't support yet (see
+  `#1471 <https://github.com/elliotchance/vsql/issues/1471>`_). Its search is a
+  regular expression, so any special characters in ``FROM`` (such as ``.`` or
+  ``*``) have to be escaped.
+- **Other databases:** ``REPLACE`` in all of them. SQL Server's matching
+  follows the collation, so it's usually case-insensitive. In Oracle a ``NULL``
+  (or empty) ``FROM`` or ``TO`` isn't ``NULL``, it's treated like an empty
+  string.
+
 RPAD
 ^^^^
 
@@ -2861,6 +3020,51 @@ Works like `BTRIM`_, but only removes the ``CHARACTERS`` from the end of
 - **SQL standard:** Optional feature T056.
 - **Other databases:** ``RTRIM`` in PostgreSQL, SQLite and Oracle. MySQL and
   SQL Server only remove spaces.
+
+SPLIT_PART
+^^^^^^^^^^
+
+.. code-block:: sql
+
+   SPLIT_PART(CHARACTER VARYING, CHARACTER VARYING, BIGINT) CHARACTER VARYING
+
+``SPLIT_PART(STRING, DELIMITER, N)`` splits ``STRING`` on every ``DELIMITER``
+and returns field ``N``, where the first field is 1. A negative ``N`` counts
+from the end, so -1 is the last field. A field that doesn't exist is an empty
+string, and ``N`` = 0 is a ``22023`` error.
+
+The delimiter is matched as plain text, case-sensitive. An empty delimiter
+doesn't split the string, so it's the only field. The result is a
+``CHARACTER VARYING`` with the length of ``STRING``, like ``SUBSTRING``.
+
+``SPLIT_PART`` is a vsql extension flagged by ``V404-07`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES SPLIT_PART('a,b,c', ',', 2);
+  -- COL1: b
+
+  VALUES SPLIT_PART('a,b,c', ',', -1);
+  -- COL1: c
+
+  VALUES SPLIT_PART('a,b,c', ',', 4);
+  -- COL1:
+
+**Compatibility**
+
+- **SQL standard:** not standard. The standard way is ``SUBSTRING_REGEX`` with
+  ``OCCURRENCE`` (F844), which vsql doesn't support yet (see
+  `#1185 <https://github.com/elliotchance/vsql/issues/1185>`_).
+- **Other databases:**
+
+  - PostgreSQL: ``SPLIT_PART``.
+  - MySQL: ``SUBSTRING_INDEX(SUBSTRING_INDEX(s, d, n), d, -1)``.
+  - Oracle: ``REGEXP_SUBSTR``.
+  - SQL Server: ``STRING_SPLIT``, which returns a table.
+  - SQLite: no equivalent.
 
 SUBSTRING
 ^^^^^^^^^
@@ -3035,6 +3239,44 @@ character is removed, not other white space such as tabs or new lines.
   - SQL Server: ``TRIM(characters FROM string)``, ``LTRIM`` and ``RTRIM``.
   - Oracle: ``TRIM``, which only allows one character like the standard, and
     ``LTRIM`` and ``RTRIM`` with any number of characters.
+
+UNICODE
+^^^^^^^
+
+.. code-block:: sql
+
+   UNICODE(CHARACTER VARYING) INTEGER
+
+The Unicode code point of the first character of the string. An empty string is
+0, and the padding of a ``CHARACTER(n)`` counts, so
+``UNICODE(CAST('' AS CHARACTER(3)))`` is 32 (a space). It's the opposite of
+``CHR``.
+
+``UNICODE`` is a vsql extension flagged by ``V404-06`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES UNICODE('A');
+  -- COL1: 65
+
+  VALUES UNICODE('é');
+  -- COL1: 233
+
+  VALUES UNICODE('');
+  -- COL1: 0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``ASCII``.
+  - MySQL: ``ORD`` (``ASCII`` is only the first byte).
+  - SQLite: ``UNICODE``.
+  - SQL Server: ``UNICODE``.
+  - Oracle: ``ASCII`` (of the first byte in the database character set).
 
 UPPER
 ^^^^^

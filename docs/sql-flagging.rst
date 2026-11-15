@@ -349,6 +349,24 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V404-01``
      - ``TRIM`` with only ``FROM``, such as ``TRIM(FROM x)``.
 
+   * - ``V404-02``
+     - ``REPLACE``.
+
+   * - ``V404-03``
+     - ``REPEAT``.
+
+   * - ``V404-04``
+     - ``INITCAP``.
+
+   * - ``V404-05``
+     - ``CHR``.
+
+   * - ``V404-06``
+     - ``UNICODE``.
+
+   * - ``V404-07``
+     - ``SPLIT_PART``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

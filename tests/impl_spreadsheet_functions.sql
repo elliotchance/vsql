@@ -1775,6 +1775,16 @@ VALUES 1 - EXP(-POWER(2 / 3e0, 1.5));
 SELECT LISTAGG(name, ', ') WITHIN GROUP (ORDER BY sku) FROM products;
 -- COL1: Apple, Banana, Cherry, Date
 
+-- # CHAR
+-- # =CHAR(65)
+VALUES CHR(65);
+-- COL1: A
+
+-- # CODE
+-- # =CODE("Apple")
+VALUES UNICODE('Apple');
+-- COL1: 65
+
 -- # CONCAT
 -- # =CONCAT("Apple", "pie")
 VALUES 'Apple' || 'pie';
@@ -1855,6 +1865,11 @@ VALUES SUBSTRING('Apple' FROM 2 FOR 3 USING OCTETS);
 VALUES CAST('1234.5' AS DECIMAL(10, 2));
 -- COL1: 1234.50
 
+-- # PROPER
+-- # =PROPER("hELLO wORLD")
+VALUES INITCAP('hELLO wORLD');
+-- COL1: Hello World
+
 -- # REGEXMATCH
 -- # =REGEXMATCH("Apple", "^[AB]")
 VALUES 'Apple' SIMILAR TO '[AB]%';
@@ -1874,6 +1889,11 @@ VALUES OVERLAY('Apple' PLACING 'xx' FROM 2 FOR 3);
 -- # =REPLACEB("Apple", 2, 3, "xx")
 VALUES OVERLAY('Apple' PLACING 'xx' FROM 2 FOR 3 USING OCTETS);
 -- COL1: Axxe
+
+-- # REPT
+-- # =REPT("ab", 3)
+VALUES REPEAT('ab', 3);
+-- COL1: ababab
 
 -- # RIGHT
 -- # =RIGHT("Apple", 2)
@@ -1895,14 +1915,29 @@ VALUES SUBSTRING('Apple' FROM OCTET_LENGTH('Apple') - 2 + 1 USING OCTETS);
 VALUES POSITION(UPPER('P') IN UPPER('Apple'));
 -- COL1: 2
 
+-- # SPLIT
+-- # =INDEX(SPLIT("a,b,c", ","), 1, 2)
+VALUES SPLIT_PART('a,b,c', ',', 2);
+-- COL1: b
+
+-- # SUBSTITUTE
+-- # =SUBSTITUTE("Apple", "p", "b")
+VALUES REPLACE('Apple', 'p', 'b');
+-- COL1: Abble
+
 -- # TEXTAFTER
 -- # =TEXTAFTER("user@example.com", "@")
 VALUES SUBSTRING('user@example.com' FROM POSITION('@' IN 'user@example.com') + CHAR_LENGTH('@'));
 -- COL1: example.com
 
+-- # TEXTAFTER
+-- # =TEXTAFTER("www.example.com", ".", -1)
+VALUES SPLIT_PART('www.example.com', '.', -1);
+-- COL1: com
+
 -- # TEXTBEFORE
 -- # =TEXTBEFORE("user@example.com", "@")
-VALUES SUBSTRING('user@example.com' FROM 1 FOR POSITION('@' IN 'user@example.com') - 1);
+VALUES SPLIT_PART('user@example.com', '@', 1);
 -- COL1: user
 
 -- # TEXTJOIN
@@ -1911,10 +1946,25 @@ SELECT LISTAGG(CAST(qty AS VARCHAR(10)), ', ') WITHIN GROUP (ORDER BY sku)
 FROM products WHERE qty IS NOT NULL;
 -- COL1: 10, 40, 5
 
+-- # TEXTSPLIT
+-- # =INDEX(TEXTSPLIT("a,b,c", ","), 1, 2)
+VALUES SPLIT_PART('a,b,c', ',', 2);
+-- COL1: b
+
 -- # TRIM
 -- # =TRIM("  Apple  ")
 VALUES TRIM('  Apple  ');
 -- COL1: Apple
+
+-- # UNICHAR
+-- # =UNICHAR(8364)
+VALUES CHR(8364);
+-- COL1: €
+
+-- # UNICODE
+-- # =UNICODE("€")
+VALUES UNICODE('€');
+-- COL1: 8364
 
 -- # UPPER
 -- # =UPPER("Apple")

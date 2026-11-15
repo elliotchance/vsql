@@ -140,6 +140,12 @@ import arrays
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
+// V404-02: REPLACE.
+// V404-03: REPEAT.
+// V404-04: INITCAP.
+// V404-05: CHR.
+// V404-06: UNICODE.
+// V404-07: SPLIT_PART.
 //
 // V501: PostgreSQL functions.
 // V501-01: version().
@@ -213,6 +219,12 @@ const vsql_degrees = 'V403-08'
 const vsql_radians = 'V403-09'
 const vsql_cbrt = 'V403-10'
 const vsql_trim_only_from = 'V404-01'
+const vsql_replace = 'V404-02'
+const vsql_repeat = 'V404-03'
+const vsql_initcap = 'V404-04'
+const vsql_chr = 'V404-05'
+const vsql_unicode = 'V404-06'
+const vsql_split_part = 'V404-07'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

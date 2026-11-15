@@ -180,13 +180,23 @@ jobs:
       # than it. The output of the build has the C compiler commands that the
       # amalgamation needs, which has to be generated on each OS and architecture
       # (see the release job).
+      #
+      # vsql and libvsql are built at the same time, since the C compiler only
+      # uses one core for each, and they take a minute or two. y.v is made first,
+      # so that they don't both make it.
       - name: Build release package
         shell: bash
         run: |
           .github/workflows/set_version.sh
+          make vsql/y.v
           mkdir -p "$RUNNER_TEMP/showcc"
-          make BUILD_OPTIONS=-showcc bin/vsql | tee "$RUNNER_TEMP/showcc/vsql.showcc"
-          make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
+          make BUILD_OPTIONS=-showcc bin/vsql > "$RUNNER_TEMP/showcc/vsql.showcc" 2>&1 & vsql=$!
+          make BUILD_OPTIONS=-showcc libvsql > "$RUNNER_TEMP/showcc/libvsql.showcc" 2>&1 & libvsql=$!
+          status=0
+          wait $vsql || status=1
+          wait $libvsql || status=1
+          cat "$RUNNER_TEMP/showcc/vsql.showcc" "$RUNNER_TEMP/showcc/libvsql.showcc"
+          [ $status = 0 ]
           .github/workflows/hello-test.sh bin/vsql
           make release VERSION=${GITHUB_REF##*/}
           scripts/amalgamation.sh generate amalgamation-linux-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
@@ -269,13 +279,23 @@ jobs:
       # than it. The output of the build has the C compiler commands that the
       # amalgamation needs, which has to be generated on each OS and architecture
       # (see the release job).
+      #
+      # vsql and libvsql are built at the same time, since the C compiler only
+      # uses one core for each, and they take a minute or two. y.v is made first,
+      # so that they don't both make it.
       - name: Build release package
         shell: bash
         run: |
           .github/workflows/set_version.sh
+          make vsql/y.v
           mkdir -p "$RUNNER_TEMP/showcc"
-          make BUILD_OPTIONS=-showcc bin/vsql | tee "$RUNNER_TEMP/showcc/vsql.showcc"
-          make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
+          make BUILD_OPTIONS=-showcc bin/vsql > "$RUNNER_TEMP/showcc/vsql.showcc" 2>&1 & vsql=$!
+          make BUILD_OPTIONS=-showcc libvsql > "$RUNNER_TEMP/showcc/libvsql.showcc" 2>&1 & libvsql=$!
+          status=0
+          wait $vsql || status=1
+          wait $libvsql || status=1
+          cat "$RUNNER_TEMP/showcc/vsql.showcc" "$RUNNER_TEMP/showcc/libvsql.showcc"
+          [ $status = 0 ]
           .github/workflows/hello-test.sh bin/vsql
           make release VERSION=${GITHUB_REF##*/}
           scripts/amalgamation.sh generate amalgamation-macos-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
@@ -365,13 +385,21 @@ jobs:
       # y.v is made first, otherwise the first make would make it newer than
       # vsql.exe, and build it again. The output of the build has the C compiler
       # commands that the amalgamation needs.
+      #
+      # vsql and libvsql are built at the same time, since the C compiler only
+      # uses one core for each.
       - name: Build release package
         run: |
           .github/workflows/set_version.sh
           make vsql/y.v
           mkdir -p "$RUNNER_TEMP/showcc"
-          v -n -nocache -prod -cc gcc -showcc cmd/vsql-cli -o bin/vsql.exe | tee "$RUNNER_TEMP/showcc/vsql.showcc"
-          make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
+          v -n -nocache -prod -cc gcc -showcc cmd/vsql-cli -o bin/vsql.exe > "$RUNNER_TEMP/showcc/vsql.showcc" 2>&1 & vsql=$!
+          make BUILD_OPTIONS=-showcc libvsql > "$RUNNER_TEMP/showcc/libvsql.showcc" 2>&1 & libvsql=$!
+          status=0
+          wait $vsql || status=1
+          wait $libvsql || status=1
+          cat "$RUNNER_TEMP/showcc/vsql.showcc" "$RUNNER_TEMP/showcc/libvsql.showcc"
+          [ $status = 0 ]
           .github/workflows/hello-test.sh bin/vsql.exe
           git checkout vsql/version.v
           touch bin/*

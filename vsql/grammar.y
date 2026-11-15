@@ -430,6 +430,7 @@ module vsql
 %token GET
 %token GLOBAL
 %token GRANT
+%token GREATEST
 %token GROUP
 %token GROUPING
 %token GROUPS
@@ -468,6 +469,7 @@ module vsql
 %token LATERAL
 %token LEAD
 %token LEADING
+%token LEAST
 %token LEFT
 %token LIKE
 %token LIKE_REGEX

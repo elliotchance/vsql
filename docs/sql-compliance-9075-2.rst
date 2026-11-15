@@ -1262,7 +1262,7 @@ Optional Features
    * - ❌ **T053**
      - **Explicit aliases for all-fields reference**
 
-   * - ❌ **T054**
+   * - ✅ **T054**
      - **GREATEST and LEAST**
 
    * - ❌ **T055**

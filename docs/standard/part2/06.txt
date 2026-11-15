@@ -560,7 +560,7 @@
 6.13/SR/4.b.ii           n/a          - - cast templates (T839)
 6.13/SR/5                definition   - -
 6.13/SR/6                n/a          - - collection types (S091, S271)
-6.13/SR/7                implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
+6.13/SR/7                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
 6.13/SR/8                n/a          - - intervals (F052)
 6.13/SR/9                n/a          - - intervals (F052)
 6.13/SR/10               impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql there are no character sets other than UTF8

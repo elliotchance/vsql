@@ -64,6 +64,13 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xv
 	compiled_expr := c.with_type(e.expr.compile(mut c)!, e.target)
 
+	// Whether the types can be cast is a Syntax Rule, so it's checked here
+	// rather than when a value is cast, even if every value is the null value.
+	// A dynamic parameter that's the null value has no declared type of its own.
+	if !compiled_expr.null_parameter {
+		check_cast(compiled_expr.typ, e.target)!
+	}
+
 	// A datetime without a time zone gets the time zone of the session, and a
 	// TIME becomes a TIMESTAMP on the CURRENT_DATE (General Rules 18 and 19).
 	//
@@ -138,6 +145,46 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 	}
 
 	return result
+}
+
+// CastKind is the kind of a type in the table of the types that can be cast
+// to each other.
+enum CastKind {
+	number
+	character
+	date
+	time
+	timestamp
+	boolean
+}
+
+fn cast_kind(t SQLType) CastKind {
+	return match t {
+		.is_character, .is_varchar { .character }
+		.is_date { .date }
+		.is_time_with_time_zone, .is_time_without_time_zone { .time }
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone { .timestamp }
+		.is_boolean { .boolean }
+		else { .number }
+	}
+}
+
+// check_cast returns 42846 if a value of type from can never be cast to type
+// to. Any type can be cast to and from a character string, or to its own kind
+// of type. Otherwise only a DATE and a TIME can be cast to a TIMESTAMP, and a
+// TIMESTAMP to a DATE or a TIME.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 7
+fn check_cast(from Type, to Type) ! {
+	from_kind := cast_kind(from.typ)
+	to_kind := cast_kind(to.typ)
+	if from_kind == to_kind || from_kind == .character || to_kind == .character
+		|| (from_kind in [.date, .time] && to_kind == .timestamp)
+		|| (from_kind == .timestamp && to_kind in [.date, .time]) {
+		return
+	}
+
+	return sqlstate_42846(from, to)
 }
 
 // cast_character_to_character casts a character string to CHAR(n) or

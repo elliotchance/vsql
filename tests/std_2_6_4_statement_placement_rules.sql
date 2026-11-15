@@ -20,3 +20,6 @@ UPDATE t SET x = SUM(x) + 1;
 -- # A unique constraint needs at least one column.
 CREATE TABLE u (x INT, UNIQUE ());
 -- error 42601: syntax error: unexpected ")" at line 1, column 32 near ", UNIQUE ())"
+
+CREATE TABLE u (x INT, PRIMARY KEY ());
+-- error 42601: syntax error: unexpected ")" at line 1, column 37 near "PRIMARY KEY ())"

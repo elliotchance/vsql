@@ -473,9 +473,10 @@ table. ``SQLGetInfo`` returns the same limits.
 ``SQL_PACKAGES``
 ----------------
 
-One row for each package of the SQL standard, which is a group of optional
-features. A package is only supported when Core SQL (the mandatory features)
-and all of its features are, so none of them are yet.
+One row for each package of SQL:2003, which is a group of optional features.
+SQL:2023 doesn't have packages any more, but the view is still in Part 11. A
+package is only supported when Core SQL (the mandatory features) and all of its
+features are, so none of them are yet.
 
 .. code-block:: sql
 

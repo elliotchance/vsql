@@ -247,3 +247,57 @@ SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 -- error 25008: invalid transaction state: held cursor requires same isolation level
 -- msg: CLOSE
 -- msg: SET TRANSACTION
+
+-- # The isolation level is checked for a held cursor when it isn't given, which
+-- # is the enduring one for START TRANSACTION without characteristics (17.1,
+-- # General Rule 2.a) or SERIALIZABLE (17.3, Syntax Rule 3). It's compared with
+-- # the isolation level of the transaction that opened the cursor, not the one
+-- # in between.
+/* extensions V108-01 V109-01 V110-01 */
+CREATE TABLE hc (a INT);
+INSERT INTO hc VALUES (1), (2);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+DECLARE c CURSOR WITH HOLD FOR SELECT a FROM hc;
+OPEN c;
+COMMIT;
+START TRANSACTION READ ONLY;
+START TRANSACTION;
+SET TRANSACTION DIAGNOSTICS SIZE 5;
+FETCH c;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+FETCH c;
+COMMIT;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- msg: COMMIT
+-- error 25008: invalid transaction state: held cursor requires same isolation level
+-- error 25008: invalid transaction state: held cursor requires same isolation level
+-- error 25008: invalid transaction state: held cursor requires same isolation level
+-- A: 1
+-- error 25008: invalid transaction state: held cursor requires same isolation level
+-- msg: START TRANSACTION
+-- A: 2
+-- msg: COMMIT
+
+-- # The enduring isolation level is used when START TRANSACTION doesn't give one.
+/* extensions V108-01 V109-01 */
+START TRANSACTION;
+DECLARE c CURSOR WITH HOLD FOR VALUES 1;
+OPEN c;
+COMMIT;
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED;
+START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+COMMIT;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- msg: COMMIT
+-- msg: SET SESSION CHARACTERISTICS
+-- error 25008: invalid transaction state: held cursor requires same isolation level
+-- msg: START TRANSACTION
+-- msg: COMMIT

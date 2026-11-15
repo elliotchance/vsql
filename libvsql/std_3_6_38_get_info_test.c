@@ -1,5 +1,8 @@
 #include "test.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 /* 6.38 GetInfo */
 
 UTEST_F(db, 6_38_get_info_string) {
@@ -32,15 +35,23 @@ UTEST_F(db, 6_38_get_info_string) {
 
 /* vsql's own items (IDs from 11000) are read the same way. An item without a
  * value is an empty string, such as the BUILD VERSION of a build that isn't a
- * release, or 0 for a SMALLINT. */
+ * release, or 0 for a SMALLINT. CI tests the release build of a tag, which has
+ * the tag as its BUILD VERSION (see set_version.sh). */
 UTEST_F(db, 6_38_get_info_vsql) {
   SQLCHAR value[100];
   SQLSMALLINT version = -1;
+  const char *ref = getenv("GITHUB_REF");
+  const char *tags = "refs/tags/";
+  const char *build_version = "";
+
+  if (ref != NULL && strncmp(ref, tags, strlen(tags)) == 0) {
+    build_version = ref + strlen(tags);
+  }
 
   EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_VSQL_BUILD_VERSION, value,
                        sizeof(value), NULL),
             SQL_SUCCESS);
-  EXPECT_STREQ((char *)value, "");
+  EXPECT_STREQ((char *)value, build_version);
   EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_VSQL_BUILD_DATE, value,
                        sizeof(value), NULL),
             SQL_SUCCESS);

@@ -5,8 +5,9 @@ Arithmetic Functions
    :local:
    :depth: 1
 
-Arithmetic functions return the absolute value or the remainder of a number,
-or which bucket it's in. The result has the type of an argument (see each
+Arithmetic functions return the absolute value, factorial or remainder of a
+number, the greatest common divisor or least common multiple of two integers,
+or which bucket a number is in. The result has the type of an argument (see each
 function).
 
 They accept any number. If there is no version of the function
@@ -60,6 +61,129 @@ literal ``-32768`` is a ``SMALLINT``, so ``ABS(-32768)`` is also an error, use
 
 - **SQL standard:** T441 (ABS and MOD functions).
 - **Other databases:** ``ABS`` in all of them.
+
+.. _function-factorial:
+
+FACTORIAL
+^^^^^^^^^
+
+.. code-block:: sql
+
+   FACTORIAL(BIGINT) NUMERIC
+
+The factorial of an integer: the product of every integer from 1 to the
+argument, and ``FACTORIAL(0)`` is 1. A ``SMALLINT`` or ``INTEGER`` is converted
+to a ``BIGINT``. The result is an exact ``NUMERIC``, so a large factorial keeps
+every digit.
+
+A negative argument, or one greater than 449 (the result would have more than
+1000 digits, the largest ``NUMERIC``), is a ``22003`` error (numeric value out
+of range).
+
+``FACTORIAL`` is a vsql extension flagged by ``V403-11`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES FACTORIAL(5);
+  -- COL1: 120
+
+  VALUES FACTORIAL(30);
+  -- COL1: 265252859812191058636308480000000
+
+  VALUES FACTORIAL(-1);
+  -- error 22003: numeric value out of range
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``FACTORIAL``.
+  - MySQL, SQLite, SQL Server and Oracle: none.
+
+.. _function-gcd:
+
+GCD
+^^^
+
+.. code-block:: sql
+
+   GCD(SMALLINT, SMALLINT) SMALLINT
+   GCD(INTEGER, INTEGER) INTEGER
+   GCD(BIGINT, BIGINT) BIGINT
+
+The greatest common divisor of two integers, the largest integer that divides
+both of them. It's never negative, ``GCD(x, 0)`` is the absolute value of
+``x`` and ``GCD(0, 0)`` is 0.
+
+The result has the larger of the two types, such as ``GCD(SMALLINT, BIGINT)
+BIGINT``. A result that doesn't fit in it, such as
+``GCD(CAST(-32768 AS SMALLINT), CAST(0 AS SMALLINT))``, is a ``22003`` error
+(numeric value out of range).
+
+``GCD`` is a vsql extension flagged by ``V403-12`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES GCD(12, 18);
+  -- COL1: 6
+
+  VALUES GCD(-12, 0);
+  -- COL1: 12
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``GCD``.
+  - MySQL, SQLite, SQL Server and Oracle: none.
+
+.. _function-lcm:
+
+LCM
+^^^
+
+.. code-block:: sql
+
+   LCM(SMALLINT, SMALLINT) SMALLINT
+   LCM(INTEGER, INTEGER) INTEGER
+   LCM(BIGINT, BIGINT) BIGINT
+
+The least common multiple of two integers, the smallest integer that both of
+them divide. It's never negative, and it's 0 if either argument is 0.
+
+The result has the larger of the two types, such as ``LCM(SMALLINT, BIGINT)
+BIGINT``. A result that doesn't fit in it is a ``22003`` error (numeric value
+out of range).
+
+``LCM`` is a vsql extension flagged by ``V403-13`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LCM(4, 6);
+  -- COL1: 12
+
+  VALUES LCM(-4, 6);
+  -- COL1: 12
+
+  VALUES LCM(5, 0);
+  -- COL1: 0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``LCM``.
+  - MySQL, SQLite, SQL Server and Oracle: none.
 
 .. _function-mod:
 

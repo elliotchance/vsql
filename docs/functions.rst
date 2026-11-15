@@ -159,17 +159,26 @@ Every function:
    * - :ref:`EXP <function-exp>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
+   * - :ref:`FACTORIAL <function-factorial>`
+     - :doc:`Arithmetic <functions-arithmetic>`
+     - Not standard
    * - :ref:`FLOOR <function-floor>`
      - :doc:`Rounding <functions-rounding>`
      - T621
    * - :ref:`GAMMA <function-gamma>`
      - :doc:`Error and Gamma <functions-error-and-gamma>`
      - Not standard
+   * - :ref:`GCD <function-gcd>`
+     - :doc:`Arithmetic <functions-arithmetic>`
+     - Not standard
    * - :ref:`GREATEST <function-greatest>`
      - :doc:`Conditional <functions-conditional>`
      - T054
    * - :ref:`INITCAP <function-initcap>`
      - :doc:`String <functions-string>`
+     - Not standard
+   * - :ref:`LCM <function-lcm>`
+     - :doc:`Arithmetic <functions-arithmetic>`
      - Not standard
    * - :ref:`LEAST <function-least>`
      - :doc:`Conditional <functions-conditional>`

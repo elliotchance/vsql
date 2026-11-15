@@ -435,7 +435,7 @@ fn (mut c Compiler) with_argument_types(function_name string, args []CompileResu
 		'POSITION' {
 			c.with_types(args, character_type)
 		}
-		'MOD' {
+		'MOD', 'GCD', 'LCM' {
 			c.with_types(args, same_type)
 		}
 		else {

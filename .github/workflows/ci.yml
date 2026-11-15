@@ -10,6 +10,10 @@ name: CI
 # change is an "edited" event, which is also sent when the title or description
 # changes, so the v job (that every other job needs) only runs for an edit that
 # changed the base branch.
+#
+# A pull request that only changes documentation (docs/ and Markdown or
+# reStructuredText files anywhere) doesn't test any OS. Only the docs job runs,
+# which checks the docs build and the standard index.
 on:
   workflow_dispatch:
   push:
@@ -19,9 +23,6 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened, edited]
-    paths-ignore:
-      - "**.md"
-      - "**.rst"
 
 # A new push to a pull request cancels its previous run. Other runs are never
 # cancelled. An edit that doesn't change the base branch gets a group of its
@@ -58,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       vc: ${{ steps.vc.outputs.vc }}
+      docs_only: ${{ steps.docs_only.outputs.docs_only }}
     steps:
       # A pull request that can't be merged into its base isn't tested, since
       # the run would test an old merge (or none). GitHub works out whether it
@@ -85,6 +87,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # See "on" for what counts as documentation.
+      - name: Check for documentation only
+        id: docs_only
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          files=$(.github/workflows/retry.sh gh api --paginate repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --jq '.[].filename')
+          test -n "$files"
+          other=$(echo "$files" | grep -vE '^docs/|\.(md|rst)$' || true)
+          if [ -n "$other" ]; then
+            echo "docs_only=false" >> $GITHUB_OUTPUT
+          else
+            echo "Only documentation has changed, so only the docs job runs."
+            echo "docs_only=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Find V master
         id: vc
         run: |
@@ -108,6 +127,32 @@ jobs:
             exit 1
           fi
 
+  # The docs checks from the Linux x86-64 job, for a pull request that only
+  # changes documentation (see "on").
+  docs:
+    name: Docs
+    needs: v
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' && needs.v.outputs.docs_only == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up V
+        run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
+
+      - name: Verify standard index
+        run: make check-standard-index
+
+      - name: Verify docs
+        run: |
+          python3 -m venv "$RUNNER_TEMP/docs-venv"
+          . "$RUNNER_TEMP/docs-venv/bin/activate"
+          pip install -r docs/requirements.txt
+          make clean-docs docs
+          git diff --exit-code
+
   # The name of the Linux x86-64 job is the check that the main ruleset
   # requires, so it mustn't change.
   linux:
@@ -116,7 +161,7 @@ jobs:
     # V master is found unless the job failed before then (such as for a merge
     # conflict). Only "Check the last tag" fails after it, which doesn't stop
     # the tests.
-    if: ${{ !cancelled() && needs.v.outputs.vc != '' }}
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' && needs.v.outputs.docs_only != 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -228,7 +273,7 @@ jobs:
   macos:
     name: macOS (${{ matrix.name }})
     needs: v
-    if: ${{ !cancelled() && needs.v.outputs.vc != '' }}
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' && needs.v.outputs.docs_only != 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -307,7 +352,7 @@ jobs:
   windows:
     name: Windows (${{ matrix.name }})
     needs: v
-    if: ${{ !cancelled() && needs.v.outputs.vc != '' }}
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' && needs.v.outputs.docs_only != 'true' }}
     strategy:
       fail-fast: false
       matrix:

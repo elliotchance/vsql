@@ -144,7 +144,8 @@ fn (t SQLType) supertype() (i16, i16) {
 // numeric operands. The scale is max(S1, S2) for + and -, and S1 + S2 for *.
 // The precision is implementation-defined, so it's large enough to hold any
 // result, up to the maximum precision. It's 0 (the maximum) if either precision
-// is unknown.
+// is unknown. The scale isn't limited, check_derived_scale rejects a scale that
+// is more than the maximum when the expression is prepared.
 //
 // ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1.c
 fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
@@ -166,6 +167,22 @@ fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 	size := if p1 == 0 || p2 == 0 { 0 } else { integer_digits + scale + 1 }
 
 	return Type{typ, math.min(size, max_numeric_precision), scale, false}
+}
+
+// check_derived_scale returns t, or an error if it's a NUMERIC or DECIMAL that
+// was derived from other types (such as the result of an arithmetic operator)
+// with a scale more than the maximum scale. The maximum scale is the same as the
+// maximum precision. The precision of a derived type is implementation-defined,
+// so it's limited to the maximum precision instead, but the scale can't be
+// reduced without changing the result.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 27.b
+fn check_derived_scale(t Type) !Type {
+	if t.scale > max_numeric_precision {
+		return sqlstate_42601('${t.typ} scale ${t.scale} is greater than the maximum of ${max_numeric_precision}')
+	}
+
+	return t
 }
 
 // exact_precision is the number of decimal digits that an exact numeric type

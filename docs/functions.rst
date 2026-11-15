@@ -159,6 +159,9 @@ Every function:
    * - :ref:`EXP <function-exp>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
+   * - :ref:`EXTRACT <function-extract>`
+     - :doc:`Date and Time <functions-date-and-time>`
+     - F052
    * - :ref:`FACTORIAL <function-factorial>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - Not standard

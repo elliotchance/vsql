@@ -61,7 +61,7 @@ VALUES TIMESTAMP '10000-06-30T21:47:32';
 VALUES TIMESTAMP '-1-06-30T21:47:32';
 -- error 42601: syntax error: TIMESTAMP '-1-06-30T21:47:32' is not valid
 
--- # A time zone can be from -14:00 to +14:00 (5.3, Syntax Rules, 35), and its
+-- # A time zone can be from -14:00 to +14:00 (5.3, Syntax Rules, 43), and its
 -- # minutes must be less than 60.
 VALUES TIMESTAMP '2022-06-30 21:47:32+12:00';
 -- COL1: 2022-06-30T21:47:32+1200
@@ -257,6 +257,20 @@ VALUES CAST(CAST(TIMESTAMP '2022-06-30 12:34:56.5+03:00' AS VARCHAR(40)) AS TIME
 
 VALUES CAST('DATE ''2022-06-30''' AS TIMESTAMP);
 -- error 22007: invalid datetime format
+
+-- # A time zone out of the range of -14:00 to +14:00, or with more than 59
+-- # minutes, is an invalid time zone displacement (General Rules, 8).
+VALUES CAST('2022-06-30 12:34:56+14:00' AS TIMESTAMP WITH TIME ZONE);
+-- COL1: 2022-06-30T12:34:56.000000+1400
+
+VALUES CAST('2022-06-30 12:34:56+14:01' AS TIMESTAMP WITH TIME ZONE);
+-- error 22009: invalid time zone displacement value
+
+VALUES CAST('2022-06-30 12:34:56-15:00' AS TIMESTAMP);
+-- error 22009: invalid time zone displacement value
+
+VALUES CAST('TIMESTAMP ''2022-06-30 12:34:56+05:60''' AS TIMESTAMP WITH TIME ZONE);
+-- error 22009: invalid time zone displacement value
 
 -- # A TIMESTAMP without a precision is a TIMESTAMP(6) (Syntax Rules, 36).
 /* types */

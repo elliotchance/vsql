@@ -101,7 +101,7 @@
 5.3/SR/40                implemented  vsql/time.v tests/std_2_6_1_timestamp.sql
 5.3/SR/41                n/a          - - intervals (F052)
 5.3/SR/42                n/a          - - intervals (F052)
-5.3/SR/43                unclear      vsql/time.v tests/std_2_6_1_time.sql changed in 2023 (#1499)
+5.3/SR/43                implemented  vsql/time.v tests/std_2_6_1_time.sql,tests/std_2_6_1_timestamp.sql
 5.3/SR/44                n/a          - - underscores in numeric literals (T662)
 5.3/SR/45                n/a          - - underscores in numeric literals (T662)
 5.3/SR/46                n/a          - - underscores in numeric literals (T662)

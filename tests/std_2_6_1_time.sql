@@ -7,7 +7,7 @@ VALUES TIME '2022-06-30 21:47:32+05:12';
 
 -- # Each field has two digits and must make a valid time of day (5.3, Syntax
 -- # Rules, 31 and 32). A time zone can be up to 14 hours either side of UTC
--- # (5.3, Syntax Rules, 35), and its sign applies to the minutes too.
+-- # (5.3, Syntax Rules, 43), and its sign applies to the minutes too.
 /* types */
 VALUES TIME '21:47:32';
 -- COL1: 21:47:32 (TIME(0) WITHOUT TIME ZONE)
@@ -364,6 +364,14 @@ VALUES CAST(CAST(TIME '12:34:56' AS VARCHAR(30)) AS TIME);
 
 VALUES CAST('TIMESTAMP ''2022-06-30 12:34:56''' AS TIME);
 -- error 22007: invalid datetime format
+
+-- # A time zone out of the range of -14:00 to +14:00 is an invalid time zone
+-- # displacement (General Rules, 8).
+VALUES CAST('12:34:56-14:00' AS TIME WITH TIME ZONE);
+-- COL1: 12:34:56-1400
+
+VALUES CAST('12:34:56-14:30' AS TIME WITH TIME ZONE);
+-- error 22009: invalid time zone displacement value
 
 -- # Times with a time zone are compared in UTC, which wraps around midnight
 -- # (8.2, General Rules, 6). A time without one is taken to be in the session

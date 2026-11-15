@@ -94,17 +94,22 @@ jobs:
 
       # A tag only tests the release build, so it can fail when every pull
       # request passes, and then nothing is released. So that it can't go
-      # unnoticed, this job fails while the newest tag that has finished has
-      # failed. It's the last step, so V master has already been found, and the
+      # unnoticed, a pull request fails this job while the newest tag that has
+      # finished failed and has no release. It looks at the release rather than
+      # the run, because a tag run that failed only here was still released.
+      # It's skipped for a tag, so that a tag's run only fails for its own
+      # build or release (otherwise one failed tag would fail every tag after
+      # it). It's the last step, so V master has already been found, and the
       # other jobs still run (see their "if"), so the next tag can be released.
       - name: Check the last tag
+        if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           run=$(gh run list --repo ${{ github.repository }} --workflow ci.yml --event push --status completed --limit 1 --json headBranch,conclusion,url --jq '.[0] | "\(.headBranch) \(.conclusion) \(.url)"')
           read -r tag conclusion url <<< "$run"
-          if [ "$conclusion" = "failure" ]; then
-            echo "::error::The CI run of the last tag ($tag) failed, so it wasn't released: $url"
+          if [ "$conclusion" = "failure" ] && ! .github/workflows/retry.sh gh release view "$tag" --repo ${{ github.repository }} > /dev/null; then
+            echo "::error::The CI run of the last tag ($tag) failed, and it wasn't released: $url"
             exit 1
           fi
 
@@ -433,8 +438,7 @@ jobs:
   release:
     name: Release
     needs: [linux, macos, windows]
-    # Only the jobs it needs decide whether it runs, not V master, which fails
-    # while the last tag has failed.
+    # Only the jobs it needs decide whether it runs, not V master.
     if: ${{ !cancelled() && needs.linux.result == 'success' && needs.macos.result == 'success' && needs.windows.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:

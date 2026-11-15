@@ -92,19 +92,6 @@ extract_field:
     $$.v = if name.starts_with('"') { name } else { name.to_upper() }
   }
 
-// primary_datetime_field and non_second_primary_datetime_field are from
-// <interval qualifier> (10.1), but there are no intervals.
-primary_datetime_field:
-  non_second_primary_datetime_field { $$.v = $1.v }
-| SECOND { $$.v = 'SECOND' }
-
-non_second_primary_datetime_field:
-  YEAR { $$.v = 'YEAR' }
-| MONTH { $$.v = 'MONTH' }
-| DAY { $$.v = 'DAY' }
-| HOUR { $$.v = 'HOUR' }
-| MINUTE { $$.v = 'MINUTE' }
-
 time_zone_field:
   TIMEZONE_HOUR { $$.v = 'TIMEZONE_HOUR' }
 | TIMEZONE_MINUTE { $$.v = 'TIMEZONE_MINUTE' }

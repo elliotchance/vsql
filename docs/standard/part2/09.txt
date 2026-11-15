@@ -116,23 +116,23 @@
 9.2/GR/3.b.v             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
 9.2/GR/3.b.v.1           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
 9.2/GR/3.b.v.2           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_varying.sql
-9.2/GR/3.b.vi            n/a          - - there are no CLOBs (T041)
-9.2/GR/3.b.vii           n/a          - - there are no CLOBs (T041)
-9.2/GR/3.b.vii.1         n/a          - - there are no CLOBs (T041)
-9.2/GR/3.b.vii.2         n/a          - - there are no CLOBs (T041)
-9.2/GR/3.b.viii          n/a          - - binary strings (T021)
-9.2/GR/3.b.ix            n/a          - - binary strings (T021)
-9.2/GR/3.b.ix.1          n/a          - - binary strings (T021)
-9.2/GR/3.b.ix.2          n/a          - - binary strings (T021)
-9.2/GR/3.b.x             n/a          - - binary strings (T021)
-9.2/GR/3.b.xi            n/a          - - binary strings (T021)
-9.2/GR/3.b.xii           n/a          - - binary strings (T021)
-9.2/GR/3.b.xii.1         n/a          - - binary strings (T021)
-9.2/GR/3.b.xii.2         n/a          - - binary strings (T021)
-9.2/GR/3.b.xiii          n/a          - - there are no BLOBs (T041)
-9.2/GR/3.b.xiv           n/a          - - there are no BLOBs (T041)
-9.2/GR/3.b.xiv.1         n/a          - - there are no BLOBs (T041)
-9.2/GR/3.b.xiv.2         n/a          - - there are no BLOBs (T041)
+9.2/GR/3.b.vi            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_large_object.sql
+9.2/GR/3.b.vii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_large_object.sql
+9.2/GR/3.b.vii.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_large_object.sql
+9.2/GR/3.b.vii.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_character_large_object.sql
+9.2/GR/3.b.viii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.ix            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.ix.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.ix.2          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.x             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xi            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xii.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xii.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xiii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xiv           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xiv.1         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
+9.2/GR/3.b.xiv.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql
 9.2/GR/3.b.xv            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql,tests/std_2_9_2_numeric_store_assignment.sql
 9.2/GR/3.b.xv.1          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_6_1_integer.sql,tests/std_2_9_2_numeric_store_assignment.sql
 9.2/GR/3.b.xv.2          impl-defined vsql/std_2_9_2_store_assignment.v tests/std_2_14_11_insert.sql,tests/std_2_9_2_numeric_store_assignment.sql an exact numeric is truncated
@@ -143,10 +143,10 @@
 9.2/GR/3.b.xvi.2.A       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql
 9.2/GR/3.b.xvi.2.B       impl-defined vsql/std_2_9_2_store_assignment.v tests/std_2_9_2_datetime_store_assignment.sql the fractional seconds are truncated
 9.2/GR/3.b.xvi.2.C       n/a          - - every datetime is within the range of every datetime type
-9.2/GR/3.b.xvii          n/a          - - intervals (F052)
-9.2/GR/3.b.xvii.1        n/a          - - intervals (F052)
-9.2/GR/3.b.xvii.2        n/a          - - intervals (F052)
-9.2/GR/3.b.xvii.3        n/a          - - intervals (F052)
+9.2/GR/3.b.xvii          implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+9.2/GR/3.b.xvii.1        implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+9.2/GR/3.b.xvii.2        impl-defined vsql/interval.v tests/std_2_6_1_interval.sql the fields after the end field are truncated
+9.2/GR/3.b.xvii.3        implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 9.2/GR/3.b.xviii         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_boolean.sql
 9.2/GR/3.b.xix           n/a          - - JSON data type (T801)
 9.2/GR/3.b.xx            n/a          - - there are no row type sites
@@ -514,7 +514,7 @@
 9.12/SR/2.j              definition   - -
 9.12/SR/2.k              definition   - -
 9.12/SR/2.l              definition   - -
-9.12/SR/3                n/a          - - there are no LOBs, arrays, multisets or user-defined types
+9.12/SR/3                partial      vsql/std_2_11_3_table_definition.v tests/std_2_6_1_character_large_object.sql LOBs (T045, T046) are rejected in a PRIMARY KEY, UNIQUE or FOREIGN KEY, but not yet in GROUP BY or DISTINCT; there are no arrays, multisets or user-defined types
 9.12/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_7_16_select_distinct.sql only the default collation
 9.12/CR/1                n/a          - - structured types (S024)
 9.12/CR/2                n/a          - - JSON data type (T801)
@@ -564,7 +564,7 @@
 9.14/SR/2.g              definition   - -
 9.14/SR/2.h              definition   - -
 9.14/SR/2.i              implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
-9.14/SR/3                n/a          - - there are no LOBs, arrays, multisets, reference types or user-defined types
+9.14/SR/3                partial      vsql/index.v tests/std_2_6_1_character_large_object.sql LOBs (T045, T046) are rejected in an index, but not yet in ORDER BY; there are no arrays, multisets, reference types or user-defined types
 9.14/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.14/CR/1                n/a          - - structured types (S024)
 9.14/CR/2                n/a          - - JSON data type (T801)

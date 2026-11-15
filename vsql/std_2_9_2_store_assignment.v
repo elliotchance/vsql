@@ -61,6 +61,13 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 		// (see bind_parameters).
 	}
 
+	// A large value (see LargeValue) that's already of type T keeps its
+	// reference, so that it isn't read and written again, such as when another
+	// column of the row is updated.
+	if v.is_large && v.typ.typ == t.typ && v.typ.size == t.size {
+		return v
+	}
+
 	// - GR 3.b. Otherwise, by the type of T:
 	match t.typ {
 		.is_character {
@@ -131,8 +138,58 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// - GR 3.b.v.2. Otherwise, it's 22001 (string data, right truncation).
 			return sqlstate_22001(t)
 		}
-		// - GR 3.b.vi-3.b.xiv. There are no CLOBs (T041), binary strings (T021) or
-		// BLOBs, so fallthrough.
+		.is_clob {
+			// - GR 3.b.vi. A CHARACTER LARGE OBJECT(L) is set to V when it isn't
+			// longer than L, which is its maximum length.
+			//
+			// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.a.iii A CHARACTER LARGE OBJECT without a length (a size of
+			// 0) has the maximum length, which is longer than any row.
+			l := t.size
+			s := cast_character_source(v, l)
+			m := s.len_utf8()
+			if l == 0 || m <= l {
+				return new_clob_value(s)
+			}
+
+			// - GR 3.b.vii. V is longer than L:
+			chars := s.runes()
+			if chars[l..].all(is_truncating_whitespace(it)) {
+				// - GR 3.b.vii.1. It's truncated if the extra characters are all
+				// <truncating whitespace>.
+				return new_clob_value(chars[..l].string())
+			}
+
+			// - GR 3.b.vii.2. Otherwise, it's 22001 (string data, right truncation).
+			return sqlstate_22001(t)
+		}
+		.is_binary, .is_varbinary, .is_blob {
+			// - GR 3.b.viii-3.b.xiv. A binary string is set to V when it's not
+			// longer than L (a BINARY LARGE OBJECT without a length has the maximum
+			// length). If V is longer, it's truncated if the extra octets are all
+			// X'00', otherwise it's 22001 (string data, right truncation). A BINARY
+			// that's shorter than L is padded with X'00'. A BINARY has a fixed
+			// length, and the others have a maximum length.
+			//
+			// ISO/IEC 9075-1:2023, 4.6.3.3, Binary string types
+			// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 21, 21.a, 21.b and 21.c
+			if !v.typ.typ.is_binary_string() {
+				return sqlstate_42846(v.typ, t)
+			}
+
+			l := t.size
+			mut s := v.string_value()
+			if l > 0 && s.len > l {
+				if !s[l..].bytes().all(it == 0) {
+					return sqlstate_22001(t)
+				}
+				s = s[..l]
+			}
+			if t.typ == .is_binary && s.len < l {
+				s += '\0'.repeat(l - s.len)
+			}
+
+			return new_binary_string_value(t.typ, s)
+		}
 		.is_numeric, .is_decimal, .is_smallint, .is_integer, .is_bigint, .is_real,
 		.is_double_precision {
 			// - GR 3.b.xv. A number:
@@ -179,7 +236,17 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// since the range is already validated at the time the timestamp is
 			// created.
 		}
-		// - GR 3.b.xvii. There are no intervals (F052).
+		.is_decfloat {
+			// - GR 3.b.xv. A DECFLOAT is rounded to its precision, or it's 22003
+			// (numeric value out of range) if its exponent is too large or small.
+			return cast_to_decfloat(v, t)
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			// - GR 3.b.xvii. An interval is set to V, after the fields after the end
+			// field of T are removed. It's 22015 (interval field overflow) if V
+			// doesn't fit in the leading precision of T.
+			return cast_interval(v, t)
+		}
 		.is_boolean {
 			// - GR 3.b.xviii. A BOOLEAN is set to V.
 			//
@@ -323,6 +390,16 @@ fn check_store_assignment(v Value, t Type) ! {
 // to t, regardless of the value.
 fn check_assignable(from Type, t Type) ! {
 	if (from.typ.is_string() && t.typ.is_number()) || (from.typ.is_number() && t.typ.is_string()) {
+		return sqlstate_42846(from, t)
+	}
+
+	// A binary string, a DECFLOAT and an interval can only be assigned from their
+	// own kind of type (a DECFLOAT from any number), until the casts between
+	// them and other types are supported.
+	if from.typ.is_binary_string() != t.typ.is_binary_string()
+		|| (t.typ == .is_decfloat && !from.typ.is_number() && from.typ != .is_decfloat)
+		|| (from.typ == .is_decfloat && !t.typ.is_number() && t.typ != .is_decfloat)
+		|| ((from.typ.is_interval() || t.typ.is_interval()) && from.typ != t.typ) {
 		return sqlstate_42846(from, t)
 	}
 
@@ -517,6 +594,32 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 	}
 
 	return sqlstate_42846(v.typ, t)
+}
+
+// cast_to_decfloat converts a number to a DECFLOAT, rounding it to the
+// precision of t.
+fn cast_to_decfloat(v Value, t Type) !Value {
+	s := match v.typ.typ {
+		.is_decfloat {
+			v.decfloat_value().str()
+		}
+		// An approximate number is its shortest decimal representation, which
+		// converts back to the same number.
+		.is_real {
+			f32(v.f64_value()).str()
+		}
+		.is_double_precision {
+			v.f64_value().str()
+		}
+		.is_smallint, .is_integer, .is_bigint, .is_numeric, .is_decimal {
+			v.str()
+		}
+		else {
+			return sqlstate_42846(v.typ, t)
+		}
+	}
+
+	return new_decfloat_value(t, new_decfloat_from_string(s, t.size)!)
 }
 
 fn check_integer_range(x i64, typ SQLType) ! {

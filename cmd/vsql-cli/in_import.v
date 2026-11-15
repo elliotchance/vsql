@@ -458,7 +458,7 @@ fn find_import_table(mut conn vsql.Connection, schema string, name string) !Impo
 // there's no simpler literal.
 fn sql_literal(typ vsql.Type, value string) string {
 	match typ.typ {
-		.is_varchar, .is_character {
+		.is_varchar, .is_character, .is_clob {
 			return quote_string(value)
 		}
 		.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric, .is_real,

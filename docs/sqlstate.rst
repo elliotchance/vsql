@@ -239,6 +239,20 @@ A transaction couldn't be started.
 ``0B000`` is caused when attempting to start a transaction but the pool of
 in-flight transactions is full (see :doc:`limitations`).
 
+Class ``0F``: Locator Exception
+-------------------------------
+
+A large value couldn't be read.
+
+``0F001`` invalid LOB locator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``CHARACTER LARGE OBJECT`` or ``BINARY LARGE OBJECT`` that's stored outside
+of its row (see *Large Values* in :doc:`file-format`) is read when it's used,
+rather than with its row. If the row was changed or deleted by another
+transaction that committed before then, its value has been removed, so reading
+it returns ``0F001`` rather than a different value.
+
 Class ``21``: Cardinality Violation
 -----------------------------------
 
@@ -397,6 +411,21 @@ The length of a ``SUBSTRING`` must not be negative.
 
   VALUES 2.5 / 0;
   -- error 22012: division by zero
+
+``22015`` interval field overflow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An interval has more digits in its start field than the type it's stored in
+allows.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x INTERVAL HOUR);
+  INSERT INTO foo (x) VALUES (INTERVAL '5' DAY);
+  -- msg: CREATE TABLE 1
+  -- error 22015: interval field overflow
 
 ``22018`` invalid character value for cast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

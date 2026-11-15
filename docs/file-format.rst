@@ -148,7 +148,7 @@ remaining space is reserved (see `Compatibility`_).
 Compatibility
 -------------
 
-The version of the file format that vsql reads and writes is 3. Every version
+The version of the file format that vsql reads and writes is 4. Every version
 of vsql can open a file created by an older version, and most features don't
 need to change the file format at all. The *Read Version* and *Write Version*
 in the `Header`_ work the same way as the read and write versions of SQLite:
@@ -188,6 +188,15 @@ the feature is no longer used.
       would remove versions of rows that the snapshot needs when it commits.
       The *Read Version* stays at 1, because older versions ignore the new
       objects.
+
+  * - 4
+    - The ``CHARACTER LARGE OBJECT``, ``BINARY``, ``BINARY VARYING``,
+      ``BINARY LARGE OBJECT``, ``DECFLOAT`` and ``INTERVAL`` types, and
+      `Large Values`_. The first table with a column of one of these types
+      (from a ``CREATE TABLE`` or an ``ALTER TABLE``), or the first value
+      that's stored as a large value, raises the *Read Version* and the
+      *Write Version* to 4, because an older version can't read their values
+      in a row. Everything added in the same release shares this version.
 
 These rules keep changes compatible:
 
@@ -433,6 +442,9 @@ are ignored, so that new types of objects can be added (see
   * - ``I``
     - `Identity Value Object`_
 
+  * - ``L``
+    - `Large Value Object`_
+
   * - ``N``
     - `Index Object`_
 
@@ -622,6 +634,53 @@ The serialization of each value does not need to be explained in detail here.
 You can check the code for ``Row.bytes()`` and ``new_row_from_bytes()``
 respectively.
 
+Large Values
+^^^^^^^^^^^^
+
+A character string or binary string (of any of those types) is written as a
+4 byte length and its octets. One that's longer than a quarter of the page size
+(1024 bytes for a page of 4096 bytes) is stored outside of the row instead, in
+`Large Value Object`_\ s, so that reading the row (such as for a table scan)
+doesn't read it. The row then has a reference in its place:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Part
+    - Format
+    - Description
+
+  * - *Marker*
+    - i32 (4 bytes)
+    - Always -1, where the length would be. A length can't be negative.
+
+  * - *Value ID*
+    - u64 (8 bytes)
+    - The ID of the value, which is issued from the same counter as the *Row ID*
+      in the `Header`_.
+
+  * - *Octets*
+    - i32 (4 bytes)
+    - The length of the value in octets.
+
+  * - *Characters*
+    - i32 (4 bytes)
+    - The length of the value in characters. For a binary string, it's the same
+      as *Octets*.
+
+  * - *Chunk Size*
+    - i32 (4 bytes)
+    - The number of octets in each Large Value Object, except the last.
+
+Whether a value is in the row or is a reference is known from each value, so
+the threshold and the chunk size can change (even for each value) without
+changing the file format.
+
+A row that's changed keeps the reference of a large value that isn't changed,
+so the value isn't copied. A large value that's replaced, or whose row is
+deleted, is expired with that version of the row. A large value that's copied
+to another row (or table) is stored again for that row.
+
 Primary Key
 ^^^^^^^^^^^
 
@@ -684,6 +743,22 @@ be read without reading the whole table.
     - The number of microseconds in UTC as an 8 byte integer (like ``BIGINT``),
       so that values in different time zones that are equal have the same key.
       The time zone is kept in the row.
+
+  * - ``BINARY``, ``BINARY VARYING``
+    - Each octet, where ``00`` is written as ``00 ff``, then ``00 00``. A binary
+      string that's the start of a longer one sorts before it. For example,
+      ``X'0100'`` is ``01 00 ff 00 00``.
+
+  * - ``DECFLOAT``
+    - The same as ``NUMERIC``, from the significant digits and the exponent, so
+      1.5 and 1.50 have the same key.
+
+  * - ``INTERVAL``
+    - The number of months (for a year-month interval) or microseconds (for a
+      day-time interval) as an 8 byte integer (like ``BIGINT``).
+
+A ``CHARACTER LARGE OBJECT`` or ``BINARY LARGE OBJECT`` can't be in a
+``PRIMARY KEY``, a ``UNIQUE`` or ``FOREIGN KEY`` constraint, or an index.
 
 The encoding of any type added later must also keep the order of the values,
 and must be self-delimiting (the length can be worked out from the bytes
@@ -764,6 +839,17 @@ visible version in place, without changing its *TID* or *XID*. However,
 ``CREATE SEQUENCE``, ``DROP SEQUENCE`` and an ``ALTER SEQUENCE`` that changes
 the value (such as ``RESTART``) create or expire versions like any other object,
 so they are undone by a ``ROLLBACK``.
+
+Large Value Object
+------------------
+
+A Large Value Object (has the ``L`` prefix, followed by the table ID as a u64,
+the *Value ID* as a u64 and the chunk number, from 0, as an i32) contains part
+of a large value (see `Large Values`_): the octets from the chunk number times
+the *Chunk Size*. The chunks of a value are never changed. They're created and
+expired along with the version of the row that has the reference, so they are
+visible to the same transactions, are undone by a ``ROLLBACK`` and are removed
+at the same time. ``DROP TABLE`` expires every Large Value Object of the table.
 
 Identity Value Object
 ---------------------

@@ -10,11 +10,19 @@ unsigned_literal:
 
 general_literal:
   character_string_literal { $$.v = $1.v }
+| binary_string_literal { $$.v = $1.v }
 | datetime_literal { $$.v = $1.v }
+| interval_literal { $$.v = $1.v }
 | boolean_literal { $$.v = $1.v }
 
 character_string_literal:
   LITERAL_STRING { $$.v = $1.v }
+
+binary_string_literal:
+  LITERAL_BINARY {
+    flag(mut yylex, 'T021')
+    $$.v = $1.v
+  }
 
 signed_numeric_literal:
   unsigned_numeric_literal { $$.v = $1.v }
@@ -90,6 +98,21 @@ time_string:
   LITERAL_STRING { $$.v = $1.v }
 
 timestamp_string:
+  LITERAL_STRING { $$.v = $1.v }
+
+interval_literal:
+  INTERVAL interval_string interval_qualifier {
+    flag(mut yylex, 'F052')
+    $$.v = yy_box(new_interval_value_from_string('', ($2.v as Value).string_value(),
+      $3.v as IntervalQualifier)!)
+  }
+| INTERVAL sign interval_string interval_qualifier {
+    flag(mut yylex, 'F052')
+    $$.v = yy_box(new_interval_value_from_string($2.v as string, ($3.v as Value).string_value(),
+      $4.v as IntervalQualifier)!)
+  }
+
+interval_string:
   LITERAL_STRING { $$.v = $1.v }
 
 boolean_literal:

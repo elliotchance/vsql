@@ -249,7 +249,7 @@ fn duplicate_key(values []Value) string {
 			// 0 and -0 are equal, but aren't the same string.
 			key << if n == 0 { '0' } else { n.str() }
 		} else if value.typ.typ.is_string() {
-			key << unsafe { value.v.string_value }.trim_right(' ')
+			key << value.string_value().trim_right(' ')
 		} else if value.typ.typ == .is_boolean {
 			key << unsafe { value.v.bool_value }.str()
 		} else {

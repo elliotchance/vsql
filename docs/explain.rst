@@ -17,6 +17,11 @@ Syntax
 Each line of the plan is a row with a single ``EXPLAIN`` column. The format of
 the plan is meant for people to read, and may change between versions.
 
+With ``vsql cli -autocommit=false``, ``EXPLAIN`` starts an SQL-transaction
+like the statement it explains would, so it uses up a ``SET TRANSACTION``.
+Otherwise (with autocommit, the default) it doesn't, because the statement isn't
+run, so the ``SET TRANSACTION`` is still used by the next statement.
+
 Examples
 --------
 

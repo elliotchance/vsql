@@ -204,7 +204,7 @@
 # 6.4, <value specification> and <target specification>
 6.4                      partial      vsql/std_2_6_4_value_specification_and_target_specification.v libvsql/module/test.mod there's no USER (#732)
 6.4/SR/1                 implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
-6.4/SR/2                 untested     vsql/std_2_6_4_value_specification_and_target_specification.v - a host parameter name is a syntax error outside of an SQL-client module
+6.4/SR/2                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_4_host_parameter_names.sql a host parameter name is a syntax error outside of an SQL-client module
 6.4/SR/3                 missing      - - USER (#732)
 6.4/SR/4                 impl-defined vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_11_5_column_defaults.sql CURRENT_CATALOG and CURRENT_SCHEMA are CHARACTER VARYING; CURRENT_USER, CURRENT_ROLE, SESSION_USER, SYSTEM_USER and CURRENT_PATH aren't supported (F321, T332, S071)
 6.4/SR/5                 n/a          - - collations (F693)
@@ -215,7 +215,7 @@
 6.4/SR/8.b               n/a          - - array element assignment (S097)
 6.4/SR/8.c               n/a          - - array element assignment (S097)
 6.4/SR/9                 implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/embed/example.sqc an indicator variable is an indicator parameter of the implied module
-6.4/SR/10                untested     vsql/std_2_6_4_value_specification_and_target_specification.v - an embedded variable name is a syntax error outside of an embedded SQL program
+6.4/SR/10                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_4_host_parameter_names.sql an embedded variable name is a syntax error outside of an embedded SQL program
 6.4/SR/11                implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_4_dynamic_parameters.sql
 6.4/SR/12                n/a          - - transform functions (S241)
 6.4/GR/1                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/std_2_6_30_arithmetic.sql

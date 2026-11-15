@@ -29,7 +29,7 @@ pub:
 // committed or rolled back. An empty result of a query also has the warning
 // 02000 (no data). A schema statement and a data statement can be in the same
 // SQL-transaction. EXPLAIN is transaction-initiating, like the statement it
-// explains. A query can't have an <updatability clause> (see
+// explains, but with autocommit it doesn't use up a SET TRANSACTION. A query can't have an <updatability clause> (see
 // check_direct_query).
 //
 // ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 2, 6.b.i and 8.a; ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 13.a and 22

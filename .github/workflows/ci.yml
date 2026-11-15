@@ -92,11 +92,31 @@ jobs:
           test -n "$vc"
           echo "vc=$vc" >> $GITHUB_OUTPUT
 
+      # A tag only tests the release build, so it can fail when every pull
+      # request passes, and then nothing is released. So that it can't go
+      # unnoticed, this job fails while the newest tag that has finished has
+      # failed. It's the last step, so V master has already been found, and the
+      # other jobs still run (see their "if"), so the next tag can be released.
+      - name: Check the last tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run=$(gh run list --repo ${{ github.repository }} --workflow ci.yml --event push --status completed --limit 1 --json headBranch,conclusion,url --jq '.[0] | "\(.headBranch) \(.conclusion) \(.url)"')
+          read -r tag conclusion url <<< "$run"
+          if [ "$conclusion" = "failure" ]; then
+            echo "::error::The CI run of the last tag ($tag) failed, so it wasn't released: $url"
+            exit 1
+          fi
+
   # The name of the Linux x86-64 job is the check that the main ruleset
   # requires, so it mustn't change.
   linux:
     name: Linux (${{ matrix.name }})
     needs: v
+    # V master is found unless the job failed before then (such as for a merge
+    # conflict). Only "Check the last tag" fails after it, which doesn't stop
+    # the tests.
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -208,6 +228,7 @@ jobs:
   macos:
     name: macOS (${{ matrix.name }})
     needs: v
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -286,6 +307,7 @@ jobs:
   windows:
     name: Windows (${{ matrix.name }})
     needs: v
+    if: ${{ !cancelled() && needs.v.outputs.vc != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -411,6 +433,9 @@ jobs:
   release:
     name: Release
     needs: [linux, macos, windows]
+    # Only the jobs it needs decide whether it runs, not V master, which fails
+    # while the last tag has failed.
+    if: ${{ !cancelled() && needs.linux.result == 'success' && needs.macos.result == 'success' && needs.windows.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

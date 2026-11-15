@@ -343,6 +343,18 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V403-10``
      - ``CBRT``.
 
+   * - ``V403-14``
+     - ``ERF``.
+
+   * - ``V403-15``
+     - ``ERFC``.
+
+   * - ``V403-16``
+     - ``GAMMA``.
+
+   * - ``V403-17``
+     - ``LGAMMA``.
+
    * - ``V404``
      - String functions (see :doc:`functions`).
 

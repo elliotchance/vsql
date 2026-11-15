@@ -386,13 +386,15 @@ No equivalent.
 LOGNORMDIST
 ^^^^^^^^^^^
 
-.. code-block:: text
-
-  =LOGNORMDIST(x, mean, standard_dev)
-
 Returns the cumulative lognormal distribution.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =LOGNORMDIST(x, mean, standard_dev)
+  VALUES 0.5 * ERFC(-(LN(/*x*/) - /*mean*/) / (/*standard_dev*/ * SQRT(2e0)));
+  -- =LOGNORMDIST(2, 0, 1)
+  VALUES 0.5 * ERFC(-(LN(2e0) - 0) / (1e0 * SQRT(2e0)));
+  -- COL1: 0.755891404214e0
 
 MODE
 ^^^^
@@ -433,14 +435,18 @@ Returns the normal distribution.
 
 .. code-block:: sql
 
+  -- =NORMDIST(x, mean, standard_dev, TRUE)
+  VALUES 0.5 * ERFC(-(/*x*/ - /*mean*/) / (/*standard_dev*/ * SQRT(2e0)));
+  -- =NORMDIST(1, 0, 1, TRUE)
+  VALUES 0.5 * ERFC(-(1 - 0) / (1e0 * SQRT(2e0)));
+  -- COL1: 0.841344746069e0
+
   -- =NORMDIST(x, mean, standard_dev, FALSE)
   VALUES EXP(-POWER(/*x*/ - /*mean*/, 2) / (2 * POWER(/*standard_dev*/, 2))) / (/*standard_dev*/ * SQRT(2 * PI()));
   -- =NORMDIST(1, 0, 1, FALSE)
   VALUES EXP(-POWER(1 - 0, 2) / (2 * POWER(1e0, 2)))
     / (1e0 * SQRT(2 * PI()));
   -- COL1: 0.241970724519e0
-
-Only the density (cumulative FALSE) has an equivalent.
 
 NORMINV
 ^^^^^^^
@@ -456,13 +462,15 @@ No equivalent.
 NORMSDIST
 ^^^^^^^^^
 
-.. code-block:: text
-
-  =NORMSDIST(z)
-
 Returns the cumulative standard normal distribution.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =NORMSDIST(z)
+  VALUES 0.5 * ERFC(-/*z*/ / SQRT(2e0));
+  -- =NORMSDIST(1)
+  VALUES 0.5 * ERFC(-1e0 / SQRT(2e0));
+  -- COL1: 0.841344746069e0
 
 NORMSINV
 ^^^^^^^^
@@ -659,13 +667,23 @@ For cumulative FALSE, use 1.5 / 3 * POWER(2 / 3e0, 0.5) * EXP(-POWER(2 / 3e0, 1.
 ZTEST
 ^^^^^
 
-.. code-block:: text
-
-  =ZTEST(array, x, [sigma])
-
 Returns the one-tailed p-value of a z-test.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =ZTEST(array, x)
+  SELECT 0.5 * ERFC((AVG(/*array*/) - /*x*/) / (STDDEV_SAMP(/*array*/) / SQRT(COUNT(/*array*/))) / SQRT(2e0)) FROM /*table*/;
+  -- =ZTEST(B2:B5, 4)
+  SELECT 0.5 * ERFC((AVG(y) - 4) / (STDDEV_SAMP(y) / SQRT(COUNT(y))) / SQRT(2e0))
+  FROM points;
+  -- COL1: 0.212848833428e0
+
+  -- =ZTEST(array, x, sigma)
+  SELECT 0.5 * ERFC((AVG(/*array*/) - /*x*/) / (/*sigma*/ / SQRT(COUNT(/*array*/))) / SQRT(2e0)) FROM /*table*/;
+  -- =ZTEST(B2:B5, 4, 2)
+  SELECT 0.5 * ERFC((AVG(y) - 4) / (2 / SQRT(COUNT(y))) / SQRT(2e0))
+  FROM points;
+  -- COL1: 0.146859056376e0
 
 Cube
 ----
@@ -1504,46 +1522,60 @@ Returns 1 when two numbers are equal and 0 otherwise.
 ERF
 ^^^
 
-.. code-block:: text
-
-  =ERF(lower_limit, [upper_limit])
-
 Returns the error function, integrated between two limits.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =ERF(lower_limit, upper_limit)
+  VALUES ERF(/*upper_limit*/) - ERF(/*lower_limit*/);
+  -- =ERF(0.5, 1)
+  VALUES ERF(1) - ERF(0.5);
+  -- COL1: 0.322200915137e0
+
+  -- =ERF(lower_limit)
+  VALUES ERF(/*lower_limit*/);
+  -- =ERF(1)
+  VALUES ERF(1);
+  -- COL1: 0.84270079295e0
 
 ERF.PRECISE
 ^^^^^^^^^^^
 
-.. code-block:: text
-
-  =ERF.PRECISE(x)
-
 Returns the error function integrated from 0 to a value.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =ERF.PRECISE(x)
+  VALUES ERF(/*x*/);
+  -- =ERF.PRECISE(1)
+  VALUES ERF(1);
+  -- COL1: 0.84270079295e0
 
 ERFC
 ^^^^
 
-.. code-block:: text
-
-  =ERFC(x)
-
 Returns the complementary error function, which is 1 minus ERF.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =ERFC(x)
+  VALUES ERFC(/*x*/);
+  -- =ERFC(1)
+  VALUES ERFC(1);
+  -- COL1: 0.15729920705e0
 
 ERFC.PRECISE
 ^^^^^^^^^^^^
 
-.. code-block:: text
-
-  =ERFC.PRECISE(x)
-
 Returns the complementary error function integrated from a value to infinity.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =ERFC.PRECISE(x)
+  VALUES ERFC(/*x*/);
+  -- =ERFC.PRECISE(1)
+  VALUES ERFC(1);
+  -- COL1: 0.15729920705e0
 
 GESTEP
 ^^^^^^
@@ -5887,13 +5919,15 @@ The counts come back as columns of one row, where the spreadsheet returns them d
 GAMMA
 ^^^^^
 
-.. code-block:: text
-
-  =GAMMA(number)
-
 Returns the gamma function of a number.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =GAMMA(number)
+  VALUES GAMMA(/*number*/);
+  -- =GAMMA(2.5)
+  VALUES GAMMA(2.5);
+  -- COL1: 1.329340388179e0
 
 GAMMA.DIST
 ^^^^^^^^^^
@@ -5920,35 +5954,45 @@ No equivalent.
 GAMMALN
 ^^^^^^^
 
-.. code-block:: text
-
-  =GAMMALN(x)
-
 Returns the natural logarithm of the gamma function.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =GAMMALN(x)
+  VALUES LGAMMA(/*x*/);
+  -- =GAMMALN(10)
+  VALUES LGAMMA(10);
+  -- COL1: 12.801827480081e0
+
+The spreadsheet returns #NUM! for a negative x, where LGAMMA returns the logarithm of the absolute value of the gamma function.
 
 GAMMALN.PRECISE
 ^^^^^^^^^^^^^^^
 
-.. code-block:: text
-
-  =GAMMALN.PRECISE(x)
-
 Returns the natural logarithm of the gamma function.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =GAMMALN.PRECISE(x)
+  VALUES LGAMMA(/*x*/);
+  -- =GAMMALN.PRECISE(10)
+  VALUES LGAMMA(10);
+  -- COL1: 12.801827480081e0
+
+The spreadsheet returns #NUM! for a negative x, where LGAMMA returns the logarithm of the absolute value of the gamma function.
 
 GAUSS
 ^^^^^
 
-.. code-block:: text
-
-  =GAUSS(z)
-
 Returns the probability that a standard normal value lies between the mean and z standard deviations from it.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =GAUSS(z)
+  VALUES ERF(/*z*/ / SQRT(2e0)) / 2;
+  -- =GAUSS(2)
+  VALUES ERF(2 / SQRT(2e0)) / 2;
+  -- COL1: 0.477249868052e0
 
 GEOMEAN
 ^^^^^^^
@@ -6092,14 +6136,18 @@ Returns the lognormal distribution.
 
 .. code-block:: sql
 
+  -- =LOGNORM.DIST(x, mean, standard_dev, TRUE)
+  VALUES 0.5 * ERFC(-(LN(/*x*/) - /*mean*/) / (/*standard_dev*/ * SQRT(2e0)));
+  -- =LOGNORM.DIST(2, 0, 1, TRUE)
+  VALUES 0.5 * ERFC(-(LN(2e0) - 0) / (1e0 * SQRT(2e0)));
+  -- COL1: 0.755891404214e0
+
   -- =LOGNORM.DIST(x, mean, standard_dev, FALSE)
   VALUES EXP(-POWER(LN(/*x*/) - /*mean*/, 2) / (2 * POWER(/*standard_dev*/, 2))) / (/*x*/ * /*standard_dev*/ * SQRT(2 * PI()));
   -- =LOGNORM.DIST(2, 0, 1, FALSE)
   VALUES EXP(-POWER(LN(2e0) - 0, 2) / (2 * POWER(1e0, 2)))
     / (2 * 1e0 * SQRT(2 * PI()));
   -- COL1: 0.156874019279e0
-
-Only the density (cumulative FALSE) has an equivalent.
 
 LOGNORM.INV
 ^^^^^^^^^^^
@@ -6276,14 +6324,18 @@ Returns the normal distribution.
 
 .. code-block:: sql
 
+  -- =NORM.DIST(x, mean, standard_dev, TRUE)
+  VALUES 0.5 * ERFC(-(/*x*/ - /*mean*/) / (/*standard_dev*/ * SQRT(2e0)));
+  -- =NORM.DIST(1, 0, 1, TRUE)
+  VALUES 0.5 * ERFC(-(1 - 0) / (1e0 * SQRT(2e0)));
+  -- COL1: 0.841344746069e0
+
   -- =NORM.DIST(x, mean, standard_dev, FALSE)
   VALUES EXP(-POWER(/*x*/ - /*mean*/, 2) / (2 * POWER(/*standard_dev*/, 2))) / (/*standard_dev*/ * SQRT(2 * PI()));
   -- =NORM.DIST(1, 0, 1, FALSE)
   VALUES EXP(-POWER(1 - 0, 2) / (2 * POWER(1e0, 2)))
     / (1e0 * SQRT(2 * PI()));
   -- COL1: 0.241970724519e0
-
-Only the density (cumulative FALSE) has an equivalent.
 
 NORM.INV
 ^^^^^^^^
@@ -6303,13 +6355,17 @@ Returns the standard normal distribution.
 
 .. code-block:: sql
 
+  -- =NORM.S.DIST(z, TRUE)
+  VALUES 0.5 * ERFC(-/*z*/ / SQRT(2e0));
+  -- =NORM.S.DIST(1, TRUE)
+  VALUES 0.5 * ERFC(-1e0 / SQRT(2e0));
+  -- COL1: 0.841344746069e0
+
   -- =NORM.S.DIST(z, FALSE)
   VALUES EXP(-POWER(/*z*/, 2) / 2) / SQRT(2 * PI());
   -- =NORM.S.DIST(1, FALSE)
   VALUES EXP(-POWER(1e0, 2) / 2) / SQRT(2 * PI());
   -- COL1: 0.241970724519e0
-
-Only the density (cumulative FALSE) has an equivalent.
 
 NORM.S.INV
 ^^^^^^^^^^
@@ -6870,13 +6926,23 @@ For cumulative FALSE, use 1.5 / 3 * POWER(2 / 3e0, 0.5) * EXP(-POWER(2 / 3e0, 1.
 Z.TEST
 ^^^^^^
 
-.. code-block:: text
-
-  =Z.TEST(array, x, [sigma])
-
 Returns the one-tailed p-value of a z-test.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =Z.TEST(array, x)
+  SELECT 0.5 * ERFC((AVG(/*array*/) - /*x*/) / (STDDEV_SAMP(/*array*/) / SQRT(COUNT(/*array*/))) / SQRT(2e0)) FROM /*table*/;
+  -- =Z.TEST(B2:B5, 4)
+  SELECT 0.5 * ERFC((AVG(y) - 4) / (STDDEV_SAMP(y) / SQRT(COUNT(y))) / SQRT(2e0))
+  FROM points;
+  -- COL1: 0.212848833428e0
+
+  -- =Z.TEST(array, x, sigma)
+  SELECT 0.5 * ERFC((AVG(/*array*/) - /*x*/) / (/*sigma*/ / SQRT(COUNT(/*array*/))) / SQRT(2e0)) FROM /*table*/;
+  -- =Z.TEST(B2:B5, 4, 2)
+  SELECT 0.5 * ERFC((AVG(y) - 4) / (2 / SQRT(COUNT(y))) / SQRT(2e0))
+  FROM points;
+  -- COL1: 0.146859056376e0
 
 Text Functions
 --------------

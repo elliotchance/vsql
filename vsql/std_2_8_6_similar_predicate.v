@@ -380,7 +380,7 @@ fn (mut p RegularParser) parse_repeat_factor() !(int, int) {
 	// The low value must be positive and the high value can't be less than
 	// it.
 	//
-	// ISO/IEC 9075-2:2023, 8.6, <similar predicate>,Syntax Rules, 7
+	// ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Syntax Rules, 8
 	if low < 1 || (high != -1 && high < low) {
 		return sqlstate_2201b()
 	}
@@ -388,6 +388,11 @@ fn (mut p RegularParser) parse_repeat_factor() !(int, int) {
 	return low, high
 }
 
+// parse_unsigned_integer reads a <low value> or <high value>, which is only
+// digits. Unlike an <unsigned integer> elsewhere, it can't contain an
+// underscore.
+//
+// ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Syntax Rules, 7
 fn (mut p RegularParser) parse_unsigned_integer() !int {
 	start := p.pos
 	for p.pos < p.pattern.len && !p.escaped[p.pos] && p.pattern[p.pos] >= `0`

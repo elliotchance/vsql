@@ -450,13 +450,14 @@ fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
 		'MOD' {
 			// The declared type is that of the divisor, which must have a scale of 0.
 			// vsql also allows a scale, so the result has the larger scale of the two,
-			// and it's less than the divisor (V403-01, see flag_mod_argument).
+			// and it's less than the divisor (V403-01, see flag_mod_argument). The
+			// precision is limited to the maximum precision.
 			//
 			// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 12
 			p2, s2 := arg_types[1].exact_precision(), arg_types[1].scale
 			scale := if s1 > s2 { s1 } else { s2 }
 			size := if p2 == 0 { 0 } else { p2 - s2 + scale }
-			return Type{return_type.typ, size, scale, false}
+			return Type{return_type.typ, math.min(size, max_numeric_precision), scale, false}
 		}
 		'FLOOR', 'CEIL', 'CEILING' {
 			// The precision is implementation-defined and the scale is 0. A fractional

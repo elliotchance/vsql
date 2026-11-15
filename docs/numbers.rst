@@ -224,6 +224,17 @@ scale is omitted it is 0. If the precision is also omitted it is 1000, so
 arithmetic operation also can't have more than 1000 digits, otherwise it's a
 ``22003`` (numeric value out of range) error.
 
+The scale can also be up to 1000. The scale of a result is worked out from the
+scales of the operands (for example, a multiplication or division adds them
+together), and if that's more than 1000 the statement is a ``42601`` (syntax
+error) when it's prepared. Unlike the precision, the scale is never reduced to
+fit, because that would change the result:
+
+.. code-block:: sql
+
+   VALUES CAST(0.5 AS NUMERIC(1000, 500)) * CAST(0.5 AS NUMERIC(1000, 501));
+   -- error 42601: syntax error: NUMERIC scale 1001 is greater than the maximum of 1000
+
 A value always has exactly the scale of its type, so any digits beyond it are
 dropped (rounded towards zero) after each operation. In the SQL standard, the
 only difference is that a ``DECIMAL`` may have a larger precision than the one

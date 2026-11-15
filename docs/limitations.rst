@@ -91,6 +91,10 @@ its type is a ``22001`` (for text) or ``22003`` (for numbers) error.
       :doc:`numbers`)
     - 1000 digits
 
+  * - The maximum scale of a ``NUMERIC`` or ``DECIMAL``, including the result of
+      an expression such as a multiplication (see :doc:`numbers`)
+    - 1000
+
   * - The maximum number of digits in a numeric literal (not including leading
       zeros)
     - 1000

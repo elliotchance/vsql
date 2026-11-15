@@ -38,7 +38,7 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 
 				return eval_binary(mut conn, left, e.op, right)!
 			}
-			typ:          arithmetic_type(compiled_n.typ, compiled_term.typ, e.op)
+			typ:          arithmetic_type(compiled_n.typ, compiled_term.typ, e.op)!
 			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
 			constant:     compiled_n.constant && compiled_term.constant
 		}.fold()
@@ -78,7 +78,7 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 
 				return eval_binary(mut conn, left, e.op, right)!
 			}
-			typ:          arithmetic_type(compiled_term.typ, compiled_factor.typ, e.op)
+			typ:          arithmetic_type(compiled_term.typ, compiled_factor.typ, e.op)!
 			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
 			constant:     compiled_term.constant && compiled_factor.constant
 		}.fold()
@@ -192,16 +192,18 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 // arithmetic_type is the declared type of a binary arithmetic expression. Two
 // numbers of the same category have the more general type, except that an
 // exact result with a NUMERIC or DECIMAL operand follows exact_arithmetic_type
-// (division is done as multiplication, see Numeric.divide). See
+// (division is done as multiplication, see Numeric.divide), and it's an error
+// if its scale is more than the maximum (see check_derived_scale). See
 // arithmetic_supertype for an exact and an approximate number.
 //
 // ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1
-fn arithmetic_type(t1 Type, t2 Type, op string) Type {
+fn arithmetic_type(t1 Type, t2 Type, op string) !Type {
 	t1_category, _ := t1.typ.supertype()
 	t2_category, _ := t2.typ.supertype()
 	if t1_category == 2 && t2_category == 2
 		&& (t1.typ in [.is_numeric, .is_decimal] || t2.typ in [.is_numeric, .is_decimal]) {
-		return exact_arithmetic_type(t1, t2, if op == '/' { '*' } else { op })
+		exact_op := if op == '/' { '*' } else { op }
+		return check_derived_scale(exact_arithmetic_type(t1, t2, exact_op))!
 	}
 
 	// Two numbers always have one. The operator doesn't exist for anything else,

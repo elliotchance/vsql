@@ -57,7 +57,7 @@
 6.1/SR/26.e              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/27                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum precision is 1000, and the maximum scale is the precision
 6.1/SR/27.a              impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql 1000
-6.1/SR/27.b              impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the scale can't be greater than the precision
+6.1/SR/27.b              impl-defined vsql/std_2_6_1_data_type.v,vsql/type.v tests/std_2_6_1_type_limits.sql the scale can't be greater than the precision, so at most 1000, and a derived type with a larger scale is a 42601 error
 6.1/SR/28                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_numeric.sql
 6.1/SR/29                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_decimal.sql the precision is the specified precision
 6.1/SR/30                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql binary precisions of 16, 32 and 64
@@ -1077,8 +1077,8 @@
 6.30/SR/1.c              implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql
 6.30/SR/1.c.i            definition   - -
 6.30/SR/1.c.ii           implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql
-6.30/SR/1.c.iii          implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql
-6.30/SR/1.c.iv           impl-defined vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql a division has the type of a multiplication (so the scale is S1 + S2), and two integers have the larger integer type
+6.30/SR/1.c.iii          implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql,tests/std_2_6_1_type_limits.sql
+6.30/SR/1.c.iv           impl-defined vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql,tests/std_2_6_1_type_limits.sql a division has the type of a multiplication (so the scale is S1 + S2, and more than 1000 is a 42601 error), and two integers have the larger integer type
 6.30/SR/2                implemented  vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql
 6.30/SR/3                untested     vsql/std_2_6_30_numeric_value_expression.v -
 6.30/SR/4                untested     vsql/lexer.v - "--" always starts a comment

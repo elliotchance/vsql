@@ -15,11 +15,35 @@
 # own CI on master is almost always cancelled by the next push, so whether a
 # commit builds is the only way to tell.
 #
-# V is in ~/vlang (or $V_DIR).
+# V is in ~/vlang (or $V_DIR). CI caches it for each vc commit, so it's only
+# built again when ~/vlang has a V that was set up for a different commit (see
+# .vc-commit).
+#
+# On Windows, makev.bat is given $V_MAKE_OPTIONS (such as -clang) when it's
+# set.
 
 dir="${V_DIR:-$HOME/vlang}"
 tries=10
 retry=.github/workflows/retry.sh
+
+exe=
+[ "$RUNNER_OS" = Windows ] && exe=.exe
+
+# On Windows, the PATH needs C:\... rather than Git Bash's /c/..., since make
+# runs simple commands (such as "v fmt") without a shell.
+add_to_path() {
+  if [ "$RUNNER_OS" = Windows ]; then
+    cygpath -w "$dir" >> "$GITHUB_PATH"
+  else
+    echo "$dir" >> "$GITHUB_PATH"
+  fi
+}
+
+if [ -n "$1" ] && [ "$(cat "$dir/.vc-commit" 2>/dev/null)" = "$1" ] && "$dir/v$exe" version; then
+  echo "Using the V in $dir that was already set up for vc $1."
+  add_to_path
+  exit 0
+fi
 
 rm -rf "$dir"
 $retry git clone -q --filter=blob:none https://github.com/vlang/v "$dir" || exit 1
@@ -29,16 +53,17 @@ git -C "$dir/vc" config branch.master.merge refs/heads/master
 
 first=${1:-$(git -C "$dir/vc" rev-parse HEAD)}
 
-exe=
-[ "$RUNNER_OS" = Windows ] && exe=.exe
-
 build() {
   if [ "$RUNNER_OS" = Windows ]; then
-    # V renamed make.bat to makev.bat. MSVC is tried first, then GCC, like
-    # vlang/setup-v.
+    # V renamed make.bat to makev.bat. Without $V_MAKE_OPTIONS, MSVC is tried
+    # first, then GCC, like vlang/setup-v.
     bat=makev.bat
     [ -f "$dir/$bat" ] || bat=make.bat
-    (cd "$dir" && { cmd //c "$bat" || cmd //c "$bat -gcc"; })
+    if [ -n "$V_MAKE_OPTIONS" ]; then
+      (cd "$dir" && cmd //c "$bat $V_MAKE_OPTIONS")
+    else
+      (cd "$dir" && { cmd //c "$bat" || cmd //c "$bat -gcc"; })
+    fi
   else
     (cd "$dir" && make)
   fi
@@ -61,13 +86,8 @@ for vc in $(git -C "$dir/vc" rev-list --max-count=$tries "$first"); do
       if [ "$vc" != "$first" ]; then
         echo "::warning::V from vc $first doesn't build here, so this job uses V $v (vc $vc)."
       fi
-      # On Windows, the PATH needs C:\... rather than Git Bash's /c/...,
-      # since make runs simple commands (such as "v fmt") without a shell.
-      if [ "$RUNNER_OS" = Windows ]; then
-        cygpath -w "$dir" >> "$GITHUB_PATH"
-      else
-        echo "$dir" >> "$GITHUB_PATH"
-      fi
+      echo "$first" > "$dir/.vc-commit"
+      add_to_path
       exit 0
     fi
   fi

@@ -142,6 +142,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # V is cached for each vc commit (see setup-v.sh), since building it takes
+      # 2 to 8 minutes, and a lot of runs use the same V master. vc and V's
+      # history aren't needed once it's built.
+      - name: Restore V
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/vlang
+            !~/vlang/vc
+            !~/vlang/.git
+          key: v-${{ runner.os }}-${{ matrix.arch }}-${{ needs.v.outputs.vc }}
+
       - name: Set up V
         run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
 
@@ -257,6 +269,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # V is cached for each vc commit (see setup-v.sh), since building it takes
+      # 2 to 8 minutes, and a lot of runs use the same V master. vc and V's
+      # history aren't needed once it's built.
+      - name: Restore V
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/vlang
+            !~/vlang/vc
+            !~/vlang/.git
+          key: v-${{ runner.os }}-${{ matrix.arch }}-${{ needs.v.outputs.vc }}
+
       - name: Set up V
         run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
 
@@ -337,10 +361,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # The runner's MinGW (and the V that setup-v.sh builds) is x86-64, which runs
-      # emulated on ARM64, so its programs and C would be x86-64 too.
-      # llvm-mingw's native ARM64 toolchain is used instead, which has gcc and
-      # make (clang and lld, as MinGW).
+      # The runner's MinGW, and the V that setup-v.sh builds with it, are
+      # x86-64, which runs emulated on ARM64, so its programs and C would be
+      # x86-64 too. llvm-mingw's native ARM64 toolchain is used instead (for V
+      # too), which has gcc and make (clang and lld, as MinGW).
       - name: Install llvm-mingw
         if: matrix.arch == 'arm64'
         run: |
@@ -348,15 +372,22 @@ jobs:
           unzip -q "$RUNNER_TEMP/llvm-mingw.zip" -d "$RUNNER_TEMP"
           cygpath -w "$RUNNER_TEMP/llvm-mingw-20261020-ucrt-aarch64/bin" >> $GITHUB_PATH
 
-      - name: Set up V
-        run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
+      # V is cached for each vc commit (see setup-v.sh), since building it takes
+      # 2 to 8 minutes, and a lot of runs use the same V master. vc and V's
+      # history aren't needed once it's built.
+      - name: Restore V
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/vlang
+            !~/vlang/vc
+            !~/vlang/.git
+          key: v-${{ runner.os }}-${{ matrix.arch }}-${{ needs.v.outputs.vc }}
 
-      - name: Build V for ARM64
-        if: matrix.arch == 'arm64'
-        shell: cmd
-        run: |
-          for /f "delims=" %%i in ('where v') do cd /d %%~dpi
-          call makev.bat -clang
+      - name: Set up V
+        env:
+          V_MAKE_OPTIONS: ${{ matrix.arch == 'arm64' && '-clang' || '' }}
+        run: .github/workflows/setup-v.sh ${{ needs.v.outputs.vc }}
 
       - name: Show V version
         run: v version

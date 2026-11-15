@@ -655,8 +655,8 @@
 9.17/GR/9.a              implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
 9.17/GR/9.b              implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/api_test.v the statement is checked when the module is compiled
 9.17/GR/10               implemented  vsql/std_2_13_1_sql_client_module_definition.c,vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,libvsql/module/test_more_main.c
-9.17/GR/11               impl-defined - - schema and data statements can be in the same transaction
-9.17/GR/11.a             unclear      - - without T670, mixing schema and data statements in a transaction is an exception in 2023 (#1197)
+9.17/GR/11               impl-defined vsql/prepare.v tests/std_2_9_17_schema_data_mixing.sql an open cursor keeps its rows, and a dropped deferred constraint isn't checked
+9.17/GR/11.a             implemented  vsql/prepare.v tests/std_2_9_17_schema_data_mixing.sql T670 is supported, so there's no exception
 9.17/GR/11.b             impl-defined - - vsql has no other restrictions
 9.17/GR/12               implemented  vsql/prepare.v tests/std_2_17_2_set_transaction.sql
 9.17/GR/13               container    - -

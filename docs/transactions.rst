@@ -23,6 +23,12 @@ transaction can't write to that table, or delete or update rows of a table that
 a new ``FOREIGN KEY`` references, until it's committed or rolled back. Either
 transaction (whichever is second) gets a ``40001``.
 
+A transaction can have statements that change the schema (such as ``CREATE
+TABLE`` or ``ALTER TABLE``) and statements that change the data (such as
+``INSERT``), in any order. An open cursor keeps the rows it had when it was
+opened, even if its table is changed or dropped. A deferred constraint that's
+dropped isn't checked when the transaction ends.
+
 A table, index, schema or sequence that another transaction has created isn't
 visible until it's committed, but whether it will exist depends on how that
 transaction ends. So creating another one with the same name (including with

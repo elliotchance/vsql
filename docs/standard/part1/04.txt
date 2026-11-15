@@ -153,7 +153,7 @@
 # 4.10.1, Host languages
 4.10.1                   implemented  libvsql/std_3_5_1_cli_routine.v,vsql/std_2_21_1_embedded_sql_host_program.v libvsql/std_3_6_19_exec_direct_test.c,vsql/module_test.v C, with the SQL/CLI, SQL-client modules or Embedded SQL
 # 4.10.2, Source language character set
-4.10.2                   unclear      vsql/lexer.v tests/std_2_5_2_identifier_e.sql identifiers can have any character (#1504)
+4.10.2                   implemented  vsql/lexer.v tests/std_2_11_3_create_table.sql the characters that an identifier shouldn't contain are allowed
 # 4.10.3, Parameter passing and data type correspondences
 4.10.3                   implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v
 # 4.10.3.1, General parameter passing and data type correspondence information

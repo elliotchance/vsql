@@ -125,6 +125,11 @@ import arrays
 //
 // V402: Date and time functions.
 // V402-01: NOW() instead of CURRENT_TIMESTAMP.
+// V402-02 to V402-08: EXTRACT fields (see vsql_extract_fields).
+// V402-09: MAKE_DATE.
+// V402-10: MAKE_TIME.
+// V402-11: MAKE_TIMESTAMP.
+// V402-12: MAKE_TIMESTAMPTZ.
 //
 // V403: Mathematical functions.
 // V403-01: MOD with an argument that has a scale or is approximate.
@@ -231,6 +236,10 @@ const vsql_extract_fields = {
 	'EPOCH':   'V402-08'
 }
 
+const vsql_make_date = 'V402-09'
+const vsql_make_time = 'V402-10'
+const vsql_make_timestamp = 'V402-11'
+const vsql_make_timestamptz = 'V402-12'
 const vsql_mod_not_integer = 'V403-01'
 const vsql_round = 'V403-02'
 const vsql_trunc = 'V403-03'

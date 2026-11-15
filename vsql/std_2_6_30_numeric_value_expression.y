@@ -28,7 +28,7 @@ operator_factor:
   sign numeric_primary {
     $$.v = yy_box(parse_factor_2($1.v as string, $2.v as NumericPrimary)!)
   }
-| numeric_value_function { $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation)) }
+| numeric_value_function { $$.v = $1.v }
 
 numeric_value_expression:
   term { $$.v = yy_box(NumericValueExpression{term: $1.v as Term}) }
@@ -62,6 +62,6 @@ numeric_primary:
   value_expression_primary {
     $$.v = yy_box(NumericPrimary($1.v as ValueExpressionPrimary))
   }
-| numeric_value_function { $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation)) }
+| numeric_value_function { $$.v = $1.v }
 
 %%

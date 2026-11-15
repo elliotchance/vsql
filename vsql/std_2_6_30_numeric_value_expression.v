@@ -123,11 +123,14 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	}.fold()
 }
 
-type NumericPrimary = RoutineInvocation | SignedValueExpressionPrimary | ValueExpressionPrimary
+type NumericPrimary = ExtractExpression
+	| RoutineInvocation
+	| SignedValueExpressionPrimary
+	| ValueExpressionPrimary
 
 fn (e NumericPrimary) pstr(params map[string]Value) string {
 	return match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
+		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression {
 			e.pstr(params)
 		}
 	}
@@ -135,7 +138,7 @@ fn (e NumericPrimary) pstr(params map[string]Value) string {
 
 fn (e NumericPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
+		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression {
 			return e.compile(mut c)!
 		}
 	}

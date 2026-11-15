@@ -307,9 +307,10 @@ fn name_features(names []string) []string {
 fn flag_datetime_literal(mut yylex YYLexer, value string, is_timestamp bool) {
 	time_part := value.trim_space().all_after_last(' ')
 	time_zone := time_part.index_any('+-')
-	fraction := if time_zone >= 0 { time_part[..time_zone] } else { time_part }.all_after('.')
+	time_only := if time_zone >= 0 { time_part[..time_zone] } else { time_part }
+	fraction := time_only.all_after('.')
 	flag_if(mut yylex, time_zone >= 0, 'F411')
-	if fraction != time_part {
+	if fraction != time_only {
 		flag_if(mut yylex, !is_timestamp || fraction.len > 6, 'F555')
 	}
 }

@@ -986,13 +986,12 @@ Returns the day of the month of a date, from 1 to 31.
 .. code-block:: sql
 
   -- =DAY(serial_number)
-  VALUES CAST(SUBSTRING(CAST(/*serial_number*/ AS VARCHAR(17)) FROM 15 FOR 2) AS INTEGER);
+  VALUES EXTRACT(DAY FROM /*serial_number*/);
   -- =DAY(DATE(2024, 3, 5))
-  VALUES CAST(SUBSTRING(CAST(DATE '2024-03-05' AS VARCHAR(17)) FROM 15 FOR 2) AS INTEGER);
+  VALUES EXTRACT(DAY FROM DATE '2024-03-05');
   -- COL1: 5
 
-A date cast to text is ``DATE '2024-03-05'``, which is where the positions come
-from. Cast a ``TIMESTAMP`` to ``DATE`` first.
+It also works on a ``TIMESTAMP``.
 
 DAYS
 ^^^^
@@ -1057,13 +1056,13 @@ Returns the hour of a time, from 0 to 23.
 .. code-block:: sql
 
   -- =HOUR(serial_number)
-  VALUES CAST(SUBSTRING(CAST(/*serial_number*/ AS VARCHAR(15)) FROM 7 FOR 2) AS INTEGER);
+  VALUES EXTRACT(HOUR FROM /*serial_number*/);
   -- =HOUR("14:30:15")
-  VALUES CAST(SUBSTRING(CAST(TIME '14:30:15' AS VARCHAR(15)) FROM 7 FOR 2) AS INTEGER);
+  VALUES EXTRACT(HOUR FROM TIME '14:30:15');
   -- COL1: 14
 
-A time cast to text is ``TIME '14:30:15'``, which is where the positions come
-from. Cast a ``TIMESTAMP`` to ``TIME`` first.
+It also works on a ``TIMESTAMP``. A ``DATE`` has no hour, so it's an error,
+where a spreadsheet returns 0.
 
 ISOWEEKNUM
 ^^^^^^^^^^
@@ -1084,12 +1083,12 @@ Returns the minute of a time, from 0 to 59.
 .. code-block:: sql
 
   -- =MINUTE(serial_number)
-  VALUES CAST(SUBSTRING(CAST(/*serial_number*/ AS VARCHAR(15)) FROM 10 FOR 2) AS INTEGER);
+  VALUES EXTRACT(MINUTE FROM /*serial_number*/);
   -- =MINUTE("14:30:15")
-  VALUES CAST(SUBSTRING(CAST(TIME '14:30:15' AS VARCHAR(15)) FROM 10 FOR 2) AS INTEGER);
+  VALUES EXTRACT(MINUTE FROM TIME '14:30:15');
   -- COL1: 30
 
-Cast a ``TIMESTAMP`` to ``TIME`` first.
+It also works on a ``TIMESTAMP``.
 
 MONTH
 ^^^^^
@@ -1099,12 +1098,12 @@ Returns the month of a date, from 1 to 12.
 .. code-block:: sql
 
   -- =MONTH(serial_number)
-  VALUES CAST(SUBSTRING(CAST(/*serial_number*/ AS VARCHAR(17)) FROM 12 FOR 2) AS INTEGER);
+  VALUES EXTRACT(MONTH FROM /*serial_number*/);
   -- =MONTH(DATE(2024, 3, 5))
-  VALUES CAST(SUBSTRING(CAST(DATE '2024-03-05' AS VARCHAR(17)) FROM 12 FOR 2) AS INTEGER);
+  VALUES EXTRACT(MONTH FROM DATE '2024-03-05');
   -- COL1: 3
 
-Cast a ``TIMESTAMP`` to ``DATE`` first.
+It also works on a ``TIMESTAMP``.
 
 NETWORKDAYS
 ^^^^^^^^^^^
@@ -1153,12 +1152,14 @@ Returns the second of a time, from 0 to 59.
 .. code-block:: sql
 
   -- =SECOND(serial_number)
-  VALUES CAST(SUBSTRING(CAST(/*serial_number*/ AS VARCHAR(15)) FROM 13 FOR 2) AS INTEGER);
+  VALUES EXTRACT(SECOND FROM /*serial_number*/);
   -- =SECOND("14:30:15")
-  VALUES CAST(SUBSTRING(CAST(TIME '14:30:15' AS VARCHAR(15)) FROM 13 FOR 2) AS INTEGER);
+  VALUES EXTRACT(SECOND FROM TIME '14:30:15');
   -- COL1: 15
 
-Cast a ``TIMESTAMP`` to ``TIME`` first.
+It also works on a ``TIMESTAMP``. The fraction of a second is kept, so
+``EXTRACT(SECOND FROM TIME '14:30:15.75')`` is 15.75; use ``FLOOR`` for whole
+seconds.
 
 TIME
 ^^^^
@@ -1261,12 +1262,12 @@ Returns the year of a date.
 .. code-block:: sql
 
   -- =YEAR(serial_number)
-  VALUES CAST(SUBSTRING(CAST(/*serial_number*/ AS VARCHAR(17)) FROM 7 FOR 4) AS INTEGER);
+  VALUES EXTRACT(YEAR FROM /*serial_number*/);
   -- =YEAR(DATE(2024, 3, 5))
-  VALUES CAST(SUBSTRING(CAST(DATE '2024-03-05' AS VARCHAR(17)) FROM 7 FOR 4) AS INTEGER);
+  VALUES EXTRACT(YEAR FROM DATE '2024-03-05');
   -- COL1: 2024
 
-Cast a ``TIMESTAMP`` to ``DATE`` first.
+It also works on a ``TIMESTAMP``.
 
 YEARFRAC
 ^^^^^^^^

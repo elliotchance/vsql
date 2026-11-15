@@ -122,6 +122,9 @@ Each function also has a **Compatibility** section:
    * - ``EXP``
      - Exponent and Logarithm
      - T621
+   * - ``EXTRACT``
+     - Date and Time
+     - F052
    * - ``FLOOR``
      - Rounding
      - T621
@@ -1149,9 +1152,10 @@ Date and Time
 -------------
 
 These functions return the current date and time (see :doc:`dates-times` for
-the types). The time is taken once for each statement, so every use in the
-same statement has the same value, even if the statement takes a while. Each
-execution of a prepared statement has a new time.
+the types), except for ``EXTRACT``, which returns a part of a date or time.
+The time is taken once for each statement, so every use in the same statement
+has the same value, even if the statement takes a while. Each execution of a
+prepared statement has a new time.
 
 The time zone is the time zone of the session.
 
@@ -1237,6 +1241,58 @@ date and time, but without the time zone.
   - MySQL, SQL Server and SQLite: ``CURRENT_TIMESTAMP``, but without a time
     zone. The SQLite timestamp is a string in UTC. SQL Server has
     ``SYSDATETIMEOFFSET()`` for the time zone.
+
+EXTRACT
+^^^^^^^
+
+.. code-block:: sql
+
+   EXTRACT(YEAR FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(MONTH FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(DAY FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(HOUR FROM TIME or TIMESTAMP) INTEGER
+   EXTRACT(MINUTE FROM TIME or TIMESTAMP) INTEGER
+   EXTRACT(SECOND FROM TIME(p) or TIMESTAMP(p)) NUMERIC(p + 2, p)
+   EXTRACT(TIMEZONE_HOUR FROM TIME or TIMESTAMP WITH TIME ZONE) INTEGER
+   EXTRACT(TIMEZONE_MINUTE FROM TIME or TIMESTAMP WITH TIME ZONE) INTEGER
+
+Returns one field of a date, time or timestamp, with or without a time zone.
+The field must be part of the type: a ``DATE`` has no ``HOUR``, and only a
+value ``WITH TIME ZONE`` has ``TIMEZONE_HOUR`` and ``TIMEZONE_MINUTE``.
+Otherwise it's a ``42804`` error. The fields of a value with a time zone are its
+local date and time, not UTC.
+
+``SECOND`` keeps the fraction of a second, so its scale is the precision of the
+value. The time zone fields have the sign of the time zone, so ``-05:30`` is
+``-5`` hours and ``-30`` minutes.
+
+.. code-block:: sql
+
+  VALUES EXTRACT(YEAR FROM DATE '2022-03-24');
+  -- COL1: 2022
+
+  VALUES EXTRACT(SECOND FROM TIMESTAMP '2022-03-24 15:45:55.120');
+  -- COL1: 55.120
+
+  VALUES EXTRACT(TIMEZONE_HOUR FROM TIME '15:45:55-05:30');
+  -- COL1: -5
+
+There are no intervals, so the source can't be an ``INTERVAL``, and fields that
+other databases have (such as ``WEEK``, ``DOW`` or ``EPOCH``) are a syntax
+error.
+
+**Compatibility**
+
+- **SQL standard:** F052 (intervals and datetime arithmetic), and F411 (time
+  zone specification) for ``TIMEZONE_HOUR`` and ``TIMEZONE_MINUTE``. vsql
+  doesn't support all of F052, which is mostly intervals.
+- **Other databases:**
+
+  - PostgreSQL, MySQL and Oracle: ``EXTRACT``. PostgreSQL returns a
+    ``NUMERIC`` for every field, and has more fields. MySQL doesn't keep the
+    fraction of ``SECOND``.
+  - SQL Server: ``DATEPART(year, d)``.
+  - SQLite: ``STRFTIME('%Y', d)``, as a string.
 
 LOCALTIME
 ^^^^^^^^^

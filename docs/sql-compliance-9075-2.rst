@@ -671,7 +671,7 @@ Optional Features
    * - ❌ **F038**
      - **REVOKE of a WITH GRANT OPTION privilege**
 
-   * - ❌ **F052**
+   * - ⭕ **F052**
      - **Intervals and datetime arithmetic**
 
    * - ✅ **F053**

@@ -509,3 +509,93 @@ fn with_numeric_type(v Value, typ Type) Value {
 
 	return new_decimal_value_from_numeric(new_numeric(t, n.numerator, n.denominator))
 }
+
+// ExtractExpression is EXTRACT(field FROM source). source is a reference
+// because a ValueExpression can contain an ExtractExpression, and V stores a
+// sum type's value inline.
+struct ExtractExpression {
+	field  string
+	source &ValueExpression
+}
+
+fn (e ExtractExpression) pstr(params map[string]Value) string {
+	return 'EXTRACT(${e.field} FROM ${e.source.pstr(params)})'
+}
+
+// compile checks that the field is one of the fields of the source: a DATE has
+// YEAR, MONTH and DAY, a TIME has HOUR, MINUTE and SECOND, a TIMESTAMP has all
+// six, and only a TIME or TIMESTAMP WITH TIME ZONE has TIMEZONE_HOUR and
+// TIMEZONE_MINUTE. The result is an INTEGER, except for SECOND, which is a
+// NUMERIC that has the fractional seconds precision of the source as its scale.
+// A time zone field has the sign of the time zone, so -05:30 is -5 hours and
+// -30 minutes.
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 6.a, 6.b, 7.a and 7.b
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 4.a, 4.b.i and 4.b.ii
+fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
+	compiled := e.source.compile(mut c)!
+	typ := compiled.typ
+	mut expected := 'TIME WITH TIME ZONE or TIMESTAMP WITH TIME ZONE'
+	mut allowed := [SQLType.is_time_with_time_zone, .is_timestamp_with_time_zone]
+	if e.field in ['YEAR', 'MONTH', 'DAY'] {
+		expected = 'DATE or TIMESTAMP'
+		allowed = [.is_date, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
+	} else if e.field in ['HOUR', 'MINUTE', 'SECOND'] {
+		expected = 'TIME or TIMESTAMP'
+		allowed = [.is_time_without_time_zone, .is_time_with_time_zone,
+			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
+	}
+	if typ.typ !in allowed {
+		return sqlstate_42804('in EXTRACT(${e.field} FROM ...)', expected, typ.str())
+	}
+
+	return_type := if e.field == 'SECOND' {
+		new_type('NUMERIC', typ.size + 2, i16(typ.size))
+	} else {
+		new_type('INTEGER', 0, 0)
+	}
+
+	return CompileResult{
+		run:          fn [e, compiled, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled.run(mut conn, data, params)!
+			if value.is_null {
+				return Value{
+					typ:     return_type
+					is_null: true
+				}
+			}
+
+			t := value.time_value()
+			return match e.field {
+				'YEAR' {
+					new_integer_value(t.t.year)
+				}
+				'MONTH' {
+					new_integer_value(t.t.month)
+				}
+				'DAY' {
+					new_integer_value(t.t.day)
+				}
+				'HOUR' {
+					new_integer_value(t.t.hour)
+				}
+				'MINUTE' {
+					new_integer_value(t.t.minute)
+				}
+				'SECOND' {
+					seconds := '${t.t.second}${t.str_fractional_seconds(return_type.scale)}'
+					with_numeric_type(new_numeric_value(seconds), return_type)
+				}
+				'TIMEZONE_HOUR' {
+					new_integer_value(t.time_zone / 60)
+				}
+				else {
+					new_integer_value(t.time_zone % 60)
+				}
+			}
+		}
+		typ:          return_type
+		contains_agg: compiled.contains_agg
+		constant:     compiled.constant
+	}.fold()
+}

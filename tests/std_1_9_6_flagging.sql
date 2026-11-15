@@ -247,6 +247,18 @@ SELECT TIME '12:00:00.5', TIME '12:00:00+05:00', TIMESTAMP '2026-10-28 12:00:00.
 -- flags: F411, F555
 -- COL1: 12:00:00.5 COL2: 12:00:00+0500 COL3: 2026-10-28T12:00:00.123
 
+-- # EXTRACT needs F052, and a time zone field needs F411 as well (Part 2,
+-- # 6.31, Conformance Rules, 3 and 4).
+/* flags */
+SELECT EXTRACT(YEAR FROM d) FROM t;
+-- flags: F052
+-- COL1: 2026
+
+/* flags */
+SELECT EXTRACT(TIMEZONE_HOUR FROM TIMESTAMP '2026-10-28 12:00:00+05:00') FROM t;
+-- flags: F052, F411
+-- COL1: 5
+
 -- # The flags come from the syntax, so a CAST to BIGINT (T071) or BOOLEAN
 -- # (T031) is flagged even though an INTEGER can't be cast to a BOOLEAN.
 /* flags */

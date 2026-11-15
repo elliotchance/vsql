@@ -156,6 +156,14 @@ The current date and time are provided by ``CURRENT_DATE``, ``CURRENT_TIME``,
 ``CURRENT_TIMESTAMP``, ``LOCALTIME``, ``LOCALTIMESTAMP`` and ``NOW()``. See
 *Date and Time* in :doc:`functions`.
 
+Fields
+------
+
+``EXTRACT`` returns one field (``YEAR``, ``MONTH``, ``DAY``, ``HOUR``,
+``MINUTE``, ``SECOND``, ``TIMEZONE_HOUR`` or ``TIMEZONE_MINUTE``) of a date,
+time or timestamp, such as ``EXTRACT(YEAR FROM d)``. See *EXTRACT* in
+:doc:`functions`.
+
 Casting
 -------
 

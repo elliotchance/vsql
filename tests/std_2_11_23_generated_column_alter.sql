@@ -103,3 +103,11 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- X: 2 Z: 4
 -- X: 5 Z: 10
+
+-- # With RESTRICT, a column that a generated column uses gives 2BP01 even when
+-- # the generated column is the only other column (CASCADE would leave no
+-- # columns).
+CREATE TABLE t (a INT, b INT GENERATED ALWAYS AS (a * 2));
+ALTER TABLE t DROP COLUMN a RESTRICT;
+-- msg: CREATE TABLE 1
+-- error 2BP01: dependent objects still exist on column B on ":memory:".PUBLIC.T

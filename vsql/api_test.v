@@ -859,7 +859,7 @@ fn test_open_cursor_updatability() ! {
 	assert failed
 	assert db.query('UPDATE t SET y = 5 WHERE CURRENT OF u')!.msg == 'UPDATE 1'
 
-	// FOR UPDATE makes an ordered query updatable (F831), but the query must be
+	// FOR UPDATE makes an ordered query updatable (F833), but the query must be
 	// simply updatable.
 	mut ordered := db.prepare('SELECT x, y FROM t ORDER BY x FOR UPDATE')!
 	ordered.open_cursor('O', false, {})!

@@ -3,8 +3,10 @@ SQL Flagging
 
 An SQL Flagger (ISO/IEC 9075-1, 9.6) finds the SQL that isn't portable, so that
 it can be changed before moving to another database. vsql flags the language
-that's outside of Core SQL (Feature F812, "Basic flagging"), and also says which
-optional feature each one needs ("SQL Feature Flagging").
+that's outside of Core SQL, and also says which optional feature of ISO/IEC
+9075-2:2023 each one needs ("SQL Feature Flagging"). The flagger itself isn't a
+feature in SQL:2023, which dropped Features F812 ("Basic flagging") and F813
+("Extended flagging").
 
 ``features()`` on a prepared statement returns the Feature IDs (see
 :doc:`sql-compliance`) that the statement uses, sorted and without duplicates.

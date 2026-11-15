@@ -216,7 +216,7 @@ fn (mut t ModuleTokens) dynamic_open_statement(p ExternallyInvokedProcedure, cur
 // dynamic_fetch_statement compiles a <dynamic fetch statement>, after the
 // cursor name, which is a declared dynamic cursor. The <fetch orientation> can
 // only be NEXT (see fetch_statement), since there are no scrollable cursors
-// (F431).
+// (F438).
 //
 // ISO/IEC 9075-2:2023, 20.20, <dynamic fetch statement>, Syntax Rules, 1 and 2
 fn (mut t ModuleTokens) dynamic_fetch_statement(p ExternallyInvokedProcedure, cursor ModuleCursor) !ModuleStatement {

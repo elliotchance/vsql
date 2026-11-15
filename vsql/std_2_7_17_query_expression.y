@@ -220,18 +220,19 @@ query_intersect_operation:
       $3.v as SimpleTable))
   }
 
-// Without ALL or DISTINCT, it's DISTINCT. INTERSECT is flagged with F302, and
-// INTERSECT DISTINCT also with T551.
+// Without ALL or DISTINCT, it's DISTINCT. INTERSECT is flagged with F303,
+// INTERSECT ALL also with F305 and INTERSECT DISTINCT also with T551.
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 6
-// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 8 and 10
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 7, 8 and 10
 intersect_operator:
   INTERSECT {
-    flag(mut yylex, 'F302')
+    flag(mut yylex, 'F303')
     $$.v = yy_box(QuerySetOperator{'INTERSECT', false})
   }
 | INTERSECT set_quantifier {
-    flag(mut yylex, 'F302')
+    flag(mut yylex, 'F303')
+    flag_if(mut yylex, !($2.v as bool), 'F305')
     flag_if(mut yylex, $2.v as bool, 'T551')
     $$.v = yy_box(QuerySetOperator{'INTERSECT', !($2.v as bool)})
   }

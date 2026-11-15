@@ -167,6 +167,32 @@ fn test_condition_area_limit_of_new_session() ! {
 	assert db2.condition_area_limit == 100
 }
 
+// EXPLAIN is transaction-initiating, like the statement it explains, so
+// without autocommit it starts the SQL-transaction, which uses up the SET
+// TRANSACTION. With autocommit it doesn't, because EXPLAIN doesn't run the
+// statement.
+//
+// ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 2.c and 6.b.ii.1.B
+fn test_direct_explain_transaction() ! {
+	mut db := open(':memory:')!
+	db.direct('CREATE TABLE t (x INT);', autocommit: true)!
+
+	db.direct('SET TRANSACTION READ ONLY;')!
+	db.direct('EXPLAIN SELECT * FROM t;')!
+	assert db.direct_query_transaction && db.next_transaction == none
+	db.direct('ROLLBACK;')!
+	assert !db.is_active()
+
+	db.direct('SET TRANSACTION READ ONLY;')!
+	db.direct('EXPLAIN SELECT * FROM t;', autocommit: true)!
+	assert !db.is_active() && db.next_transaction != none
+	db.direct('INSERT INTO t (x) VALUES (1);', autocommit: true) or {
+		assert sqlstate_from_int(err.code()) == '25006'
+		return
+	}
+	assert false
+}
+
 // c_arm_fault is only called by the C tests of libvsql.
 fn test_c_arm_fault() {
 	assert c_arm_fault(c'wal_write', 2) == 0

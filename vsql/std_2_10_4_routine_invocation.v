@@ -53,9 +53,17 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	arg_types := c.with_argument_types(e.function_name, e.args.map(it.compile(mut c)!)).map(it.typ)
+	// The column references of each argument are kept for the flagger.
+	mut args := []CompileResult{}
+	mut arg_columns := [][]AggregatedColumn{}
+	for arg in e.args {
+		columns := c.aggregated_columns.len
+		args << arg.compile(mut c)!
+		arg_columns << c.aggregated_columns[columns..].clone()
+	}
+	arg_types := c.with_argument_types(e.function_name, args).map(it.typ)
 	if is_agg {
-		c.flag_set_function(e)
+		c.flag_set_function(e, arg_columns)
 	}
 
 	func_name := e.function_name

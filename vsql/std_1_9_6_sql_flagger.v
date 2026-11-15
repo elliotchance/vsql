@@ -1097,13 +1097,17 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // ISO/IEC 9075-11:2006, 5.55, SQL_PARTS view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.57, SQL_SIZING_PROFILES view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.61, TABLES view, Conformance Rules, 1
-// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 19 and 20
+// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 9, 19, 20, 37, 39 and 40
 const information_schema_features = {
 	'COLUMNS':                       ['F391']
 	'COLUMNS.IS_GENERATED':          ['T175']
 	'COLUMNS.GENERATION_EXPRESSION': ['T175']
 	'COLUMNS.IS_UPDATABLE':          ['T111']
+	'COLUMNS_S.IS_GENERATED':        ['T175']
+	'COLUMNS_S.GENERATION_EXPR':     ['T175']
+	'COLUMNS_S.IS_UPDATABLE':        ['T111']
 	'KEY_COLUMN_USAGE':              ['F341', 'F391']
+	'KEY_COLUMN_USAGE_S':            ['F341']
 	'REFERENTIAL_CONSTRAINTS':       ['F391']
 	'SQL_IMPLEMENTATION_INFO':       ['F391', 'F502']
 	'SQL_IMPL_INFO':                 ['F502']

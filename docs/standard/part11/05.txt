@@ -299,7 +299,7 @@
 5.77/CR/6                n/a          - - COL_DOMAIN_USAGE: domains (F251)
 5.77/CR/7                missing      - - CONSTR_COL_USAGE (CONST_COL_USAGE in the rule): after CONSTRAINT_COLUMN_USAGE (#736)
 5.77/CR/8                missing      - - CONSTR_TABLE_USAGE (CONST_TABLE_USAGE in the rule): after CONSTRAINT_TABLE_USAGE (#736)
-5.77/CR/9                missing      - - KEY_COLUMN_USAGE_S: not flagged with F341 (#737)
+5.77/CR/9                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/10               missing      - - ROUTINE_COL_USAGE: after ROUTINE_COLUMN_USAGE (#733)
 5.77/CR/11               missing      - - ROUT_TABLE_USAGE: after ROUTINE_TABLE_USAGE (#733)
 5.77/CR/12               missing      - - ROUT_ROUT_USAGE_S: after ROUTINE_ROUTINE_USAGE (#733)
@@ -327,10 +327,10 @@
 5.77/CR/34               missing      - - ROUTINES_S: after ROUTINES (#733)
 5.77/CR/35               n/a          - - TRIGGERS_S: triggers (T211)
 5.77/CR/36               n/a          - - FIELDS_S: row types (T051)
-5.77/CR/37               missing      - - COLUMNS_S.IS_UPDATABLE: not flagged with T111 (#737)
+5.77/CR/37               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/38               missing      - - COL_COL_USAGE: after COLUMN_COLUMN_USAGE (#736)
-5.77/CR/39               missing      - - the rule says COLUMNS, which is the same as 5.21/CR/2, so it's likely COLUMNS_S.IS_GENERATED: not flagged with T175 (#737)
-5.77/CR/40               missing      - - COLUMNS_S.GENERATION_EXPR: not flagged with T175 (#737)
+5.77/CR/39               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql the rule says COLUMNS, which is the same as 5.21/CR/2, so it's taken as COLUMNS_S.IS_GENERATED
+5.77/CR/40               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/41               missing      - - ROUT_SEQ_USAGE_S: after ROUTINE_SEQUENCE_USAGE (#733)
 5.77/CR/42               missing      - - SEQUENCES_S: after SEQUENCES (#736)
 5.77/CR/43               n/a          - - TRIG_SEQ_USAGE_S (TRIGGER_SEQ_USAGE_S in the rule): triggers (T211)

@@ -4,6 +4,7 @@
 module vsql
 
 import io
+import strings
 
 // DumpCompat is the database that a dump is written for.
 pub enum DumpCompat {
@@ -506,7 +507,7 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 					...table
 					name: options.output_name(table.name)
 				}, keys.map(options.output_foreign_key(it))).join('\n')
-				write_line(mut w, options.output_definition(definition, table.name))!
+				write_line(mut w, options.output_compat_definition(definition, table.name))!
 			}
 			if !options.schema_only {
 				name := c.table_sql(options.output_name(table.name))
@@ -569,4 +570,46 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 		}
 		write_line(mut w, 'COMMIT;')!
 	}
+}
+
+// output_compat_definition is output_definition for a definition in another SQL
+// dialect. Its expressions are printed by vsql (see DumpCompat.expression_sql),
+// including the ones in its comments, which also leave out the schema, so the
+// text can be scanned for the names.
+fn (o DumpOptions) output_compat_definition(definition string, name Identifier) string {
+	if !o.no_schema {
+		return definition
+	}
+
+	mut prefixes := map[string]string{}
+	for schema in [name.schema_name, delimit_identifier(name.schema_name)] {
+		for table in [name.entity_name, delimit_identifier(name.entity_name)] {
+			prefixes['${schema}.${table}.'] = '${table}.'
+		}
+	}
+
+	mut sb := strings.new_builder(definition.len)
+	mut in_string := false
+	mut i := 0
+	outer: for i < definition.len {
+		c := definition[i]
+		if c == `'` {
+			in_string = !in_string
+		}
+		is_start := i == 0 || !(definition[i - 1].is_letter() || definition[i - 1].is_digit()
+			|| definition[i - 1] in [`_`, `.`, `"`])
+		if !in_string && is_start {
+			for prefix, replacement in prefixes {
+				if definition[i..].starts_with(prefix) {
+					sb.write_string(replacement)
+					i += prefix.len
+					continue outer
+				}
+			}
+		}
+		sb.write_u8(c)
+		i++
+	}
+
+	return sb.str()
 }

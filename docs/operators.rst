@@ -22,8 +22,9 @@ are distinct if any of their fields are.
 
 ``!=`` is the same as ``<>`` everywhere that a comparison operator is allowed.
 It's a vsql extension and not standard SQL, so it's flagged with ``V301-01`` (see
-:doc:`sql-flagging`). A ``CHECK`` constraint or generated column that's written
-with ``!=`` is stored, shown in ``INFORMATION_SCHEMA`` and dumped with ``<>``.
+:doc:`sql-flagging`). A ``CHECK`` constraint that's written with ``!=`` is
+stored, shown in ``INFORMATION_SCHEMA`` and dumped with ``<>``, but the
+expression of a generated column is kept as it was written.
 
 Binary Operations
 -----------------

@@ -10,8 +10,29 @@ type DefaultOption = CurrentCatalog
 	| NullSpecification
 	| Value
 
-// str returns the SQL for the default, which is also how it's stored in the
-// file as part of the CREATE TABLE.
+// DefaultClause is a <default clause>. text is its <default option> as it was
+// written, which is how it's shown by the INFORMATION_SCHEMA and stored in the
+// file (see Column.default_text).
+struct DefaultClause {
+	option DefaultOption
+	text   string
+}
+
+// written_default_option is the text of the <default option> that the parser
+// has just read, from the token after DEFAULT (which can't be in a <default
+// option>).
+fn written_default_option(mut yylex YYLexer, has_lookahead bool) string {
+	l := yylex as Lexer
+	last := l.last_token(has_lookahead)
+	mut first := last
+	for l.tokens[first - 1].token != token_default {
+		first--
+	}
+
+	return l.written_text(first, last)
+}
+
+// str returns the SQL for the default, after it's been parsed.
 fn (o DefaultOption) str() string {
 	return match o {
 		CurrentCatalog { 'CURRENT_CATALOG' }

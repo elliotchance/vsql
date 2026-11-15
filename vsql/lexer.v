@@ -83,6 +83,11 @@ mut:
 	// source is the text that the tokens are from, if it's known. A syntax error
 	// then says where it is (see syntax_error_position).
 	source string
+	// text is also the text that the tokens are from, if it's known, but it's
+	// only used to keep part of the statement as it was written (see
+	// written_text), so it's known even when a syntax error doesn't say where it
+	// is.
+	text string
 	// at_end is true once the parser has been given the end of the tokens.
 	at_end bool
 }
@@ -98,6 +103,20 @@ fn (mut l Lexer) lex(mut lval YYSymType) int {
 		*lval = l.tokens[l.pos - 1].sym()
 	}
 	return l.tokens[l.pos - 1].token
+}
+
+// last_token is the index of the last token of the rule that the parser is
+// reducing. The parser might have already read the token after it, which is
+// the end (that isn't a token) when the rule is at the end of the statement.
+fn (l Lexer) last_token(has_lookahead bool) int {
+	return if has_lookahead && !l.at_end { l.pos - 2 } else { l.pos - 1 }
+}
+
+// written_text is the text from the token at first to the token at last
+// (inclusive) as it was written, including any comments and white space
+// between them. It's empty if the text of the tokens isn't known.
+fn (l Lexer) written_text(first int, last int) string {
+	return l.text.runes()#[l.tokens[first].start..l.tokens[last].end].string()
 }
 
 fn (mut l Lexer) error(s string) IError {

@@ -117,7 +117,7 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 	}
 
 	text_sql, mut references := rewrite_host_parameters(text, p)!
-	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
+	stmt := parse_tokens(tokenize(text_sql)!, text_sql) or { return procedure_error(p, err) }
 	mark_stored_parameters(stmt, mut references)
 
 	if stmt is RollbackStatement && stmt.savepoint != '' {

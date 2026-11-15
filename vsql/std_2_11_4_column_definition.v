@@ -198,6 +198,12 @@ fn check_identity_sequence(t Type, s Sequence) ! {
 // ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 10
 struct GenerationClause {
 	expr ValueExpression
+	// text is the <generation expression> (with its parentheses) as it was
+	// written, which is how it's shown by the INFORMATION_SCHEMA and stored in
+	// the file.
+	//
+	// ISO/IEC 9075-11:2006, 6.20, COLUMNS base table, Description, 18
+	text string
 	// infer_type is set when the column definition doesn't have a data type, so
 	// the column has the declared type of the expression. It's not in the file,
 	// which always has the data type (see Table.bytes).
@@ -209,7 +215,27 @@ struct GenerationClause {
 // str is how the generated column is stored in the file as part of the CREATE
 // TABLE (see Table.bytes).
 fn (g GenerationClause) str() string {
-	return 'GENERATED ALWAYS AS (${g.expr.pstr(map[string]Value{})})'
+	return 'GENERATED ALWAYS AS ${g.text}'
+}
+
+// written_generation_expression is the text of the <generation expression>
+// that the parser has just read, from the right parenthesis at the end back to
+// the left parenthesis that it closes.
+fn written_generation_expression(mut yylex YYLexer, has_lookahead bool) string {
+	l := yylex as Lexer
+	last := l.last_token(has_lookahead)
+	mut first := last
+	mut depth := 1
+	for depth > 0 {
+		first--
+		match l.tokens[first].token {
+			token_operator_left_paren, token_operator_left_paren_asterisk { depth-- }
+			token_operator_right_paren { depth++ }
+			else {}
+		}
+	}
+
+	return l.written_text(first, last)
 }
 
 // compile returns the generation expression of the column, to be evaluated for

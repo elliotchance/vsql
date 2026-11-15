@@ -123,7 +123,7 @@ fn parse_connection_statement(sql_stmt string) ?Stmt {
 		return none
 	}
 
-	stmt := parse_tokens(tokenize(statements[0]) or { return none }) or { return none }
+	stmt := parse_tokens(tokenize(statements[0]) or { return none }, statements[0]) or { return none }
 	if stmt is ConnectStatement || stmt is SetConnectionStatement || stmt is DisconnectStatement {
 		return stmt
 	}

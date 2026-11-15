@@ -267,65 +267,74 @@ fn requote_identifier(s string) string {
 	return delimit_identifier(s)
 }
 
-// without_catalog_qualifiers returns a statement printed by vsql with the catalog
-// name removed from each column reference, which is the only name that has four
-// parts. The catalog of a stored definition is always the file (see
+// without_catalog_qualifiers returns a statement with the catalog name removed
+// from each column reference, which is the only name that has four parts. The
+// catalog of a stored definition is always the file (see
 // Compiler.stored_definition), but a dump can be loaded into a file with any
-// name. The text is scanned because a definition is printed from its expression,
-// which has no way to change an identifier. A name is always printed without
-// spaces around the dots, and anything in a string isn't a name.
-fn without_catalog_qualifiers(stmt string) string {
+// name.
+fn without_catalog_qualifiers(stmt string) !string {
+	return without_qualifiers(stmt, fn (parts []string) int {
+		return if parts.len == 4 { 1 } else { 0 }
+	})
+}
+
+// without_qualifiers returns a statement with the first parts of some of its
+// names (identifier chains, such as S.T.X) removed. qualifiers is the number of
+// parts to remove from a name, given the parts as they're stored (see
+// name_part). The text is changed rather than the statement because a default
+// or generation expression is kept as it was written, so a name can be in any
+// case, have spaces or comments around its periods, or be in a comment or
+// string that must not be changed. Those are found by the tokens.
+fn without_qualifiers(stmt string, qualifiers fn ([]string) int) !string {
+	tokens := tokenize(stmt)!
 	cs := stmt.runes()
 	mut result := []rune{cap: cs.len}
+	mut copied := 0
 	mut i := 0
-	for i < cs.len {
-		mut start := i
-		mut end := i + 1
-		if cs[i] == `'` {
-			end = quoted_end(cs, i)
-		} else if cs[i] == `"` || is_identifier_char(cs[i], false) {
-			mut starts := [i]
-			end = identifier_part_end(cs, i)
-			for end < cs.len && cs[end] == `.` {
-				starts << end + 1
-				end = identifier_part_end(cs, end + 1)
+	for i < tokens.len {
+		mut parts := []string{}
+		mut j := i
+		for j < tokens.len {
+			parts << name_part(tokens[j]) or { break }
+			j++
+			if j + 1 >= tokens.len || tokens[j].token != token_operator_period {
+				break
 			}
-			if starts.len == 4 {
-				start = starts[1]
-			}
+			j++
 		}
-		result << cs[start..end]
-		i = end
+		n := qualifiers(parts)
+		if n > 0 {
+			result << cs[copied..tokens[i].start]
+			copied = tokens[i + 2 * n].start
+		}
+		i = if j > i { j } else { i + 1 }
 	}
+	result << cs[copied..]
 
 	return result.string()
 }
 
-// identifier_part_end is the index after the name that starts at the index.
-fn identifier_part_end(cs []rune, start int) int {
-	if cs[start] == `"` {
-		return quoted_end(cs, start)
+// name_part is a token that's a part of a name, as the name is stored: a
+// regular identifier or a non-reserved word is upper case, and a delimited
+// identifier is without its quotes. It's none if the token can't be a name.
+fn name_part(t Token) ?string {
+	match t.value {
+		IdentifierChain {
+			if t.value.identifier.starts_with('"') {
+				return t.value.identifier#[1..-1].replace('""', '"')
+			}
+
+			return t.value.identifier.to_upper()
+		}
+		string {
+			if keyword_tokens[t.value] or { 0 } == t.token {
+				return t.value
+			}
+		}
+		Value {}
 	}
 
-	mut end := start
-	for end < cs.len && is_identifier_char(cs[end], true) {
-		end++
-	}
-
-	return end
-}
-
-// quoted_end is the index after the string or delimited identifier that starts
-// at the index, where a doubled quote is a part of it. It's only used on a whole
-// statement printed by vsql, so the closing quote is always followed by something
-// (at least the semicolon).
-fn quoted_end(cs []rune, start int) int {
-	mut i := start + 1
-	for cs[i] != cs[start] || cs[i + 1] == cs[start] {
-		i += if cs[i] == cs[start] { 2 } else { 1 }
-	}
-
-	return i + 1
+	return none
 }
 
 // is_regular_identifier is true if s is read as a name without quotes. It must

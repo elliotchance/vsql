@@ -110,8 +110,8 @@ VALUES <> 1;
 VALUES 1 !== 2;
 -- error 42601: syntax error: unexpected "=" at line 1, column 12 near "VALUES 1 !== 2"
 
--- # A CHECK constraint and a generated column keep the standard spelling, so
--- # that a dump doesn't depend on the extension.
+-- # A CHECK constraint keeps the standard spelling, but a generation expression
+-- # is kept as it was written (Part 11, 6.20, Description 18).
 /* extensions V301-01 */
 CREATE TABLE c (x INT CONSTRAINT c1 CHECK (x != 1), y BOOLEAN GENERATED ALWAYS AS (x != 2));
 INSERT INTO c (x) VALUES (2);
@@ -127,4 +127,4 @@ SELECT GENERATION_EXPRESSION FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 
 -- X: 3 Y: TRUE
 -- error 23514: violates check constraint: CHECK (X <> 1) on ":memory:".PUBLIC.C
 -- CHECK_CLAUSE: X <> 1
--- GENERATION_EXPRESSION: X <> 2
+-- GENERATION_EXPRESSION: (x != 2)

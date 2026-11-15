@@ -84,7 +84,9 @@ One row for each column of each table in ``TABLES``.
   * - ``COLUMN_DEFAULT``
     - The SQL of the ``DEFAULT``, such as ``'it''s'`` or ``CURRENT_DATE``, or
       ``NULL`` if the column doesn't have one. A ``DEFAULT NULL`` is the text
-      ``NULL``.
+      ``NULL``. It's the text as it was written, so ``DEFAULT +.5`` is
+      ``+.5``, rather than ``0.5``. A table created by an older version has
+      the text that vsql printed it as.
 
   * - ``IS_NULLABLE``
     - ``NO`` for a ``NOT NULL`` or ``PRIMARY KEY`` column, otherwise ``YES``.
@@ -138,7 +140,9 @@ One row for each column of each table in ``TABLES``.
     - ``ALWAYS`` for a generated column, otherwise ``NEVER``.
 
   * - ``GENERATION_EXPRESSION``
-    - The expression of a generated column, otherwise ``NULL``.
+    - The expression of a generated column, with its parentheses, as it was
+      written (such as ``(x + 1)``), otherwise ``NULL``. A table created by
+      an older version has the text that vsql printed it as.
 
   * - ``IS_UPDATABLE``
     - ``YES``, or ``NO`` for the tables of the ``INFORMATION_SCHEMA``.

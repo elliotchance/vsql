@@ -19,5 +19,6 @@ fn (c DropColumnDefaultClause) execute(column Column) !Column {
 	return Column{
 		...column
 		default_value: none
+		default_text:  ''
 	}
 }

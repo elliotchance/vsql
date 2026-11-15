@@ -150,7 +150,7 @@ fn test_dump_no_schema() {
 		'CREATE SCHEMA foo',
 		'CREATE SEQUENCE foo.seq1',
 		"SET SCHEMA 'FOO'",
-		"CREATE TABLE parent (id INT NOT NULL PRIMARY KEY, x INT CHECK (foo.parent.x > 0), y INT GENERATED ALWAYS AS (foo.parent.x + 1), z VARCHAR(20) DEFAULT 'FOO.PARENT.X')",
+		"CREATE TABLE parent (id INT NOT NULL PRIMARY KEY, x INT CHECK (foo.parent.x > 0), y INT GENERATED ALWAYS AS (foo . parent.x /* it's */ + 1), z VARCHAR(20) DEFAULT 'FOO.PARENT.X')",
 		'CREATE TABLE child (pid INT, CONSTRAINT fk1 FOREIGN KEY (pid) REFERENCES foo.parent (id))',
 		'INSERT INTO foo.parent (id, x) VALUES (1, 2)',
 		"SET SCHEMA 'PUBLIC'",
@@ -175,7 +175,7 @@ fn test_dump_no_schema() {
 	output := sb.str()
 	assert output.contains('CREATE TABLE "PARENT" (')
 	assert output.contains('CHECK (PARENT.X > 0)')
-	assert output.contains('GENERATED ALWAYS AS (PARENT.X + 1)')
+	assert output.contains("GENERATED ALWAYS AS (parent.x /* it's */ + 1)")
 	assert output.contains("DEFAULT 'FOO.PARENT.X'")
 
 	// It can be loaded into a schema that's named differently.

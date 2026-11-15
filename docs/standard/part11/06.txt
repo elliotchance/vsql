@@ -106,7 +106,7 @@
 6.20/DE/7                container    - -
 6.20/DE/7.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.20/DE/7.b              untested     vsql/std_11_5_information_schema.v - a default longer than 10485760 characters
-6.20/DE/7.c              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
+6.20/DE/7.c              implemented  vsql/std_11_5_information_schema.v,vsql/table.v tests/std_11_5_21_columns.sql,tests/std_2_11_5_column_defaults.sql
 6.20/DE/8                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.20/DE/9                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql always NO, there are no typed tables (S081)
 6.20/DE/10               implemented  vsql/std_11_5_information_schema.v tests/std_2_11_4_identity_column.sql
@@ -117,7 +117,7 @@
 6.20/DE/15               implemented  vsql/std_11_5_information_schema.v tests/std_2_11_4_identity_column.sql,tests/std_2_11_20_identity_column_alter.sql
 6.20/DE/16               implemented  vsql/std_11_5_information_schema.v tests/std_2_11_4_identity_column.sql
 6.20/DE/17               implemented  vsql/std_11_5_information_schema.v tests/std_2_11_4_generated_column.sql
-6.20/DE/18               implemented  vsql/std_11_5_information_schema.v tests/std_2_11_4_generated_column.sql
+6.20/DE/18               implemented  vsql/std_11_5_information_schema.v,vsql/std_2_11_4_column_definition.v tests/std_2_11_4_generated_column.sql,tests/std_11_5_21_columns.sql
 6.20/DE/19               implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 # 6.21, DATA_TYPE_DESCRIPTOR base table
 6.21                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql

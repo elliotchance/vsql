@@ -5,7 +5,7 @@ module vsql
 // Set the default clause for a column.
 
 struct SetColumnDefaultClause {
-	default_value DefaultOption
+	default_clause DefaultClause
 }
 
 // execute returns the column with the new default, which is checked the same
@@ -15,7 +15,8 @@ struct SetColumnDefaultClause {
 fn (c SetColumnDefaultClause) execute(mut conn Connection, column Column) !Column {
 	new_column := Column{
 		...column
-		default_value: new_ref(c.default_value)
+		default_value: new_ref(c.default_clause.option)
+		default_text:  c.default_clause.text
 	}
 	check_default_clause(mut conn, new_column)!
 

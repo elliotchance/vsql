@@ -1,7 +1,12 @@
 %%
 
 default_clause:
-  DEFAULT default_option { $$.v = $2.v }
+  DEFAULT default_option {
+    $$.v = yy_box(DefaultClause{
+      option: $2.v as DefaultOption
+      text:   written_default_option(mut yylex, yyrcvr.char >= 0)
+    })
+  }
 
 // USER, CURRENT_USER, CURRENT_ROLE, SESSION_USER, SYSTEM_USER and CURRENT_PATH
 // aren't supported.

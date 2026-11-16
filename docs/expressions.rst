@@ -333,7 +333,7 @@ ID ``V302-01`` (see :doc:`sql-flagging`).
 
 It's the same as `LIKE`_ (including ``%``, ``_``, ``ESCAPE`` and ``NULL``), except
 that it ignores case. Characters are the same if ``UPPER`` or ``LOWER`` makes them
-the same (see :doc:`functions`), so the full Unicode case mappings are used, and
+the same (see :doc:`functions-string`), so the full Unicode case mappings are used, and
 a character that ``UPPER`` and ``LOWER`` don't change (such as ``ⓐ``) only matches
 itself.
 

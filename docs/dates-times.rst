@@ -157,7 +157,7 @@ Current Date and Time
 
 The current date and time are provided by ``CURRENT_DATE``, ``CURRENT_TIME``,
 ``CURRENT_TIMESTAMP``, ``LOCALTIME``, ``LOCALTIMESTAMP`` and ``NOW()``. See
-*Date and Time* in :doc:`functions`.
+:doc:`functions-date-and-time`.
 
 Casting
 -------

@@ -95,7 +95,7 @@ A string literal is normalized to Unicode Normalization Form C (NFC), so
 ``U&'\0065\0301'`` and ``U&'\00E9'`` are the same string with one character.
 Other strings, such as the value of a parameter, are kept as they are.
 
-See :doc:`functions` for the string functions, such as ``UPPER`` and
+See :doc:`functions-string` for the string functions, such as ``UPPER`` and
 ``SUBSTRING``, and ``||`` to concatenate strings.
 
 Notes

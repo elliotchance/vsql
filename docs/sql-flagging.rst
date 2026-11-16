@@ -356,7 +356,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``LGAMMA``.
 
    * - ``V404``
-     - String functions (see :doc:`functions`).
+     - String functions (see :doc:`functions-string`).
 
    * - ``V404-01``
      - ``TRIM`` with only ``FROM``, such as ``TRIM(FROM x)``.

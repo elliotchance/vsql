@@ -8,4 +8,5 @@ equivalent in vsql is listed too, so you can tell that it hasn't been missed.
 .. toctree::
    :maxdepth: 1
 
+   compatibility-sqlite3.rst
    compatibility-spreadsheet.rst

@@ -451,7 +451,7 @@
 # 4.43.7.1, Encompassing transaction belonging to an external agent
 4.43.7.1                 n/a          - - there's no external transaction manager or encompassing transaction
 # 4.43.7.2, Encompassing transaction belonging to the SQL-agent
-4.43.7.2                 n/a          - - there's no external transaction manager or encompassing transaction
+4.43.7.2                 implemented  vsql/agent.v vsql/api_test.v committing more than one SQL-server isn't atomic
 # 4.44, SQL-connections
 4.44                     implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.45, SQL-sessions

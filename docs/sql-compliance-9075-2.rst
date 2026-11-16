@@ -1391,7 +1391,7 @@ Optional Features
    * - ✅ **T261**
      - **Chained transactions**
 
-   * - ❌ **T262**
+   * - ✅ **T262**
      - **Multiple server transactions**
 
    * - ✅ **T271**

@@ -33,10 +33,15 @@ connection is made by the first statement, unless a connection statement
 connection statement, there's no implicit connection, so a statement without a
 current connection is ``08003``.
 
-Each connection is a different database, and a transaction can't be across
-databases. So, ``CONNECT TO`` (and ``SET CONNECTION``) is ``0A001`` (multiple
-server transactions) when the current connection has an active transaction.
-Use :doc:`commit` or :doc:`rollback` first.
+Each connection is a different database. A transaction can be across more than
+one of them: when it's active on one connection, the first statement on
+another connection starts a part of it there (with the same access mode and
+isolation level, unless ``SET LOCAL TRANSACTION`` changes them, see
+:doc:`set-transaction`). A :doc:`commit` or :doc:`rollback` on any of them ends
+every part. A ``COMMIT`` checks the deferred constraints of every part first,
+and if any of them fail, every part is rolled back. Committing more than one
+database isn't atomic, though: if committing one of them fails (such as because
+of a disk error), the ones before it stay committed.
 
 Examples
 --------

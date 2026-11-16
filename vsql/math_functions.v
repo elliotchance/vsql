@@ -5,11 +5,11 @@ import math.big
 import rand
 
 // The mathematical functions that the SQL standard doesn't have, but other
-// databases do (V403-02 to V403-17): most of them have ROUND to CBRT, while ERF,
-// ERFC, GAMMA and LGAMMA come from PostgreSQL. Like the standard ones, an exact
-// number is implicitly cast to a NUMERIC and an approximate number to a DOUBLE
-// PRECISION (see find_function), and the result is NULL when any argument is
-// NULL.
+// databases do (V403-02 to V403-17): most of them have ROUND to CBRT, while
+// FACTORIAL, GCD, LCM, ERF, ERFC, GAMMA and LGAMMA come from PostgreSQL. Like the
+// standard ones, an exact number is implicitly cast to a NUMERIC and an
+// approximate number to a DOUBLE PRECISION (see find_function), and the result
+// is NULL when any argument is NULL.
 
 fn register_math_funcs(mut conn Connection) ! {
 	double_precision := Type{SQLType.is_double_precision, 0, 0, false}
@@ -52,6 +52,29 @@ fn register_math_funcs(mut conn Connection) ! {
 		conn.register_func(Func{'SIGN', [typ], false, func_sign_integer, typ, false, true, [
 			vsql_sign,
 		]})!
+	}
+
+	// FACTORIAL is exact, so the result is a NUMERIC that can hold all of its
+	// digits. Any integer is implicitly cast to a BIGINT.
+	conn.register_func(Func{'FACTORIAL', [bigint], false, func_factorial, numeric, false, true, [
+		vsql_factorial,
+	]})!
+
+	// Like MOD, GCD and LCM have a version for each combination of integer
+	// types. The result has the larger of the two types.
+	integer_types := [smallint, integer, bigint]
+	for i, a in integer_types {
+		for j, b in integer_types {
+			result_type := if i > j { a } else { b }
+			conn.register_func(Func{'GCD', [a, b], false, fn [result_type] (_ FunctionContext, args []Value) !Value {
+				return integer_function_result(gcd_u64(abs_u64(args[0].int_value()), abs_u64(args[1].int_value())),
+					result_type)
+			}, result_type, false, true, [vsql_gcd]})!
+			conn.register_func(Func{'LCM', [a, b], false, fn [result_type] (_ FunctionContext, args []Value) !Value {
+				return integer_function_result(lcm_u64(abs_u64(args[0].int_value()), abs_u64(args[1].int_value()))!,
+					result_type)
+			}, result_type, false, true, [vsql_lcm]})!
+		}
 	}
 
 	conn.register_func(Func{'PI', [], false, func_pi, double_precision, false, true, [
@@ -246,6 +269,82 @@ fn func_sign_integer(_ FunctionContext, args []Value) !Value {
 		.is_smallint { new_smallint_value(i16(sign)) }
 		.is_integer { new_integer_value(sign) }
 		else { new_bigint_value(sign) }
+	}
+}
+
+// max_factorial is the largest n for which n! has no more than
+// max_numeric_precision digits (449! has 998 digits, 450! has 1001).
+const max_factorial = 449
+
+// FACTORIAL(BIGINT) NUMERIC
+fn func_factorial(_ FunctionContext, args []Value) !Value {
+	n := args[0].int_value()
+	if n < 0 || n > max_factorial {
+		return sqlstate_22003()
+	}
+
+	mut result := big.one_int
+	for i in 2 .. n + 1 {
+		result = result * big.integer_from_i64(i)
+	}
+
+	return new_numeric_value_from_numeric(new_numeric(Type{.is_numeric, 0, 0, false},
+		result, big.one_int))
+}
+
+// abs_u64 is the absolute value of x, which fits in a u64 even for the
+// smallest BIGINT.
+fn abs_u64(x i64) u64 {
+	return if x < 0 { u64(0) - u64(x) } else { u64(x) }
+}
+
+// gcd_u64 is the greatest common divisor of a and b, or 0 if they're both 0.
+fn gcd_u64(a u64, b u64) u64 {
+	mut x, mut y := a, b
+	for y != 0 {
+		x, y = y, x % y
+	}
+
+	return x
+}
+
+// lcm_u64 is the least common multiple of a and b, or 0 if either is 0. A
+// result that doesn't fit in a u64 is a 22003 error.
+fn lcm_u64(a u64, b u64) !u64 {
+	if a == 0 || b == 0 {
+		return 0
+	}
+
+	x := a / gcd_u64(a, b)
+	if b > max_u64 / x {
+		return sqlstate_22003()
+	}
+
+	return x * b
+}
+
+// integer_function_result is the result of GCD or LCM as a SMALLINT, INTEGER or
+// BIGINT. A result that doesn't fit in the type is a 22003 error.
+fn integer_function_result(x u64, typ Type) !Value {
+	return match typ.typ {
+		.is_smallint {
+			if x > u64(max_i16) {
+				return sqlstate_22003()
+			}
+			new_smallint_value(i16(x))
+		}
+		.is_integer {
+			if x > u64(max_i32) {
+				return sqlstate_22003()
+			}
+			new_integer_value(int(x))
+		}
+		else {
+			if x > u64(max_i64) {
+				return sqlstate_22003()
+			}
+			new_bigint_value(i64(x))
+		}
 	}
 }
 

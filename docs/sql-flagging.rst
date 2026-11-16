@@ -343,6 +343,14 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V403-10``
      - ``CBRT``.
 
+   * - ``V403-11``
+     - ``FACTORIAL``.
+
+   * - ``V403-12``
+     - ``GCD``.
+
+   * - ``V403-13``
+     - ``LCM``.
    * - ``V403-14``
      - ``ERF``.
 

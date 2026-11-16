@@ -167,12 +167,14 @@ Returns the binomial probability of a number of successes in a number of trials.
 .. code-block:: sql
 
   -- =BINOMDIST(number_s, trials, probability_s, FALSE)
-  VALUES /*trials choose number_s*/ * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*trials*/ - /*number_s*/);
+  VALUES FACTORIAL(/*trials*/) / (FACTORIAL(/*number_s*/) * FACTORIAL(/*trials*/ - /*number_s*/))
+    * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*trials*/ - /*number_s*/);
   -- =BINOMDIST(2, 5, 0.5, FALSE)
-  VALUES (5 * 4 / 2) * POWER(0.5e0, 2) * POWER(1 - 0.5e0, 5 - 2);
+  VALUES FACTORIAL(5) / (FACTORIAL(2) * FACTORIAL(5 - 2))
+    * POWER(0.5e0, 2) * POWER(1 - 0.5e0, 5 - 2);
   -- COL1: 0.3125e0
 
-vsql has no COMBIN or FACT, so the binomial coefficient is written out as a product. For cumulative TRUE, add up the terms for 0 to number_s.
+The binomial coefficient COMBIN(trials, number_s) is written with FACTORIAL. For cumulative TRUE, add up the terms for 0 to number_s.
 
 CEILING
 ^^^^^^^
@@ -365,12 +367,17 @@ Returns the probability of a number of successes in a sample drawn without repla
 .. code-block:: sql
 
   -- =HYPGEOMDIST(sample_s, number_sample, population_s, number_pop)
-  VALUES /*population_s choose sample_s*/ * /*(number_pop - population_s) choose (number_sample - sample_s)*/ / /*number_pop choose number_sample*/;
+  VALUES (FACTORIAL(/*population_s*/) / (FACTORIAL(/*sample_s*/) * FACTORIAL(/*population_s*/ - /*sample_s*/)))
+    * (FACTORIAL(/*number_pop*/ - /*population_s*/) / (FACTORIAL(/*number_sample*/ - /*sample_s*/)
+      * FACTORIAL(/*number_pop*/ - /*population_s*/ - /*number_sample*/ + /*sample_s*/)))
+    / (FACTORIAL(/*number_pop*/) / (FACTORIAL(/*number_sample*/) * FACTORIAL(/*number_pop*/ - /*number_sample*/)) * 1e0);
   -- =HYPGEOMDIST(1, 2, 3, 6)
-  VALUES 3 * 3 / (6 * 5 / 2.0);
-  -- COL1: 0.6
+  VALUES (FACTORIAL(3) / (FACTORIAL(1) * FACTORIAL(2)))
+    * (FACTORIAL(3) / (FACTORIAL(1) * FACTORIAL(2)))
+    / (FACTORIAL(6) / (FACTORIAL(2) * FACTORIAL(4)) * 1e0);
+  -- COL1: 0.6e0
 
-vsql has no COMBIN, so each coefficient is written out: COMBIN(3, 1) * COMBIN(3, 1) / COMBIN(6, 2).
+This is COMBIN(3, 1) * COMBIN(3, 1) / COMBIN(6, 2), each written with FACTORIAL, and the 1e0 makes the last division approximate instead of an integer division.
 
 LOGINV
 ^^^^^^
@@ -421,12 +428,14 @@ Returns the probability of a number of failures before a number of successes.
 .. code-block:: sql
 
   -- =NEGBINOMDIST(number_f, number_s, probability_s)
-  VALUES /*(number_f + number_s - 1) choose number_f*/ * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*number_f*/);
+  VALUES FACTORIAL(/*number_f*/ + /*number_s*/ - 1) / (FACTORIAL(/*number_s*/ - 1) * FACTORIAL(/*number_f*/))
+    * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*number_f*/);
   -- =NEGBINOMDIST(2, 3, 0.5)
-  VALUES (4 * 3 / 2) * POWER(0.5e0, 3) * POWER(1 - 0.5e0, 2);
+  VALUES FACTORIAL(2 + 3 - 1) / (FACTORIAL(3 - 1) * FACTORIAL(2))
+    * POWER(0.5e0, 3) * POWER(1 - 0.5e0, 2);
   -- COL1: 0.1875e0
 
-vsql has no COMBIN or FACT, so the binomial coefficient is written out as a product.
+The binomial coefficient COMBIN(number_f + number_s - 1, number_s - 1) is written with FACTORIAL.
 
 NORMDIST
 ^^^^^^^^
@@ -521,12 +530,12 @@ Returns the Poisson probability of a number of events.
 .. code-block:: sql
 
   -- =POISSON(x, mean, FALSE)
-  VALUES EXP(-/*mean*/) * POWER(/*mean*/, /*x*/) / /*x factorial*/;
+  VALUES EXP(-/*mean*/) * POWER(/*mean*/, /*x*/) / FACTORIAL(/*x*/);
   -- =POISSON(2, 3, FALSE)
-  VALUES EXP(-3e0) * POWER(3e0, 2) / (2 * 1);
+  VALUES EXP(-3e0) * POWER(3e0, 2) / FACTORIAL(2);
   -- COL1: 0.224041807655e0
 
-vsql has no FACT, so x! is written out as a product. For cumulative TRUE, add up the terms for 0 to x.
+For cumulative TRUE, add up the terms for 0 to x.
 
 QUARTILE
 ^^^^^^^^
@@ -4194,25 +4203,31 @@ of the significance.
 COMBIN
 ^^^^^^
 
-.. code-block:: text
-
-  =COMBIN(number, number_chosen)
-
 Returns the number of ways to choose some items from a set, ignoring order.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =COMBIN(number, number_chosen)
+  VALUES FACTORIAL(/*number*/) / (FACTORIAL(/*number_chosen*/) * FACTORIAL(/*number*/ - /*number_chosen*/));
+  -- =COMBIN(5, 2)
+  VALUES FACTORIAL(5) / (FACTORIAL(2) * FACTORIAL(5 - 2));
+  -- COL1: 10
 
 COMBINA
 ^^^^^^^
 
-.. code-block:: text
-
-  =COMBINA(number, number_chosen)
-
 Returns the number of ways to choose some items from a set, ignoring order and
 allowing repeats.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =COMBINA(number, number_chosen)
+  VALUES FACTORIAL(/*number*/ + /*number_chosen*/ - 1) / (FACTORIAL(/*number_chosen*/) * FACTORIAL(/*number*/ - 1));
+  -- =COMBINA(4, 3)
+  VALUES FACTORIAL(4 + 3 - 1) / (FACTORIAL(3) * FACTORIAL(4 - 1));
+  -- COL1: 20
+
+This is COMBIN(number + number_chosen - 1, number_chosen).
 
 COS
 ^^^
@@ -4345,13 +4360,17 @@ Returns e raised to the power of a number.
 FACT
 ^^^^
 
-.. code-block:: text
-
-  =FACT(number)
-
 Returns the factorial of a number.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =FACT(number)
+  VALUES FACTORIAL(/*number*/);
+  -- =FACT(5)
+  VALUES FACTORIAL(5);
+  -- COL1: 120
+
+The result is an exact NUMERIC, so a large factorial keeps every digit.
 
 FACTDOUBLE
 ^^^^^^^^^^
@@ -4404,13 +4423,17 @@ sign of the significance.
 GCD
 ^^^
 
-.. code-block:: text
-
-  =GCD(number1, [number2], ...)
-
 Returns the greatest common divisor of whole numbers.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =GCD(number1, number2, ...)
+  VALUES GCD(GCD(/*number1*/, /*number2*/), ...);
+  -- =GCD(24, 36, 60)
+  VALUES GCD(GCD(24, 36), 60);
+  -- COL1: 12
+
+GCD takes two numbers, so nest it for more.
 
 INT
 ^^^
@@ -4442,13 +4465,17 @@ of the significance.
 LCM
 ^^^
 
-.. code-block:: text
-
-  =LCM(number1, [number2], ...)
-
 Returns the least common multiple of whole numbers.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =LCM(number1, number2, ...)
+  VALUES LCM(LCM(/*number1*/, /*number2*/), ...);
+  -- =LCM(4, 6, 10)
+  VALUES LCM(LCM(4, 6), 10);
+  -- COL1: 60
+
+LCM takes two numbers, so nest it for more.
 
 LN
 ^^
@@ -4563,14 +4590,17 @@ Rounds a number to the nearest multiple of another number.
 MULTINOMIAL
 ^^^^^^^^^^^
 
-.. code-block:: text
-
-  =MULTINOMIAL(number1, [number2], ...)
-
 Returns the factorial of a sum divided by the product of the factorials of its
 parts.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =MULTINOMIAL(number1, number2, ...)
+  VALUES FACTORIAL(/*number1*/ + /*number2*/ + ...) / (FACTORIAL(/*number1*/) * FACTORIAL(/*number2*/) * ...);
+  -- =MULTINOMIAL(2, 3, 4)
+  VALUES FACTORIAL(2 + 3 + 4)
+    / (FACTORIAL(2) * FACTORIAL(3) * FACTORIAL(4));
+  -- COL1: 1260
 
 MUNIT
 ^^^^^
@@ -5476,12 +5506,14 @@ Returns the binomial probability of a number of successes in a number of trials.
 .. code-block:: sql
 
   -- =BINOM.DIST(number_s, trials, probability_s, FALSE)
-  VALUES /*trials choose number_s*/ * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*trials*/ - /*number_s*/);
+  VALUES FACTORIAL(/*trials*/) / (FACTORIAL(/*number_s*/) * FACTORIAL(/*trials*/ - /*number_s*/))
+    * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*trials*/ - /*number_s*/);
   -- =BINOM.DIST(2, 5, 0.5, FALSE)
-  VALUES (5 * 4 / 2) * POWER(0.5e0, 2) * POWER(1 - 0.5e0, 5 - 2);
+  VALUES FACTORIAL(5) / (FACTORIAL(2) * FACTORIAL(5 - 2))
+    * POWER(0.5e0, 2) * POWER(1 - 0.5e0, 5 - 2);
   -- COL1: 0.3125e0
 
-vsql has no COMBIN or FACT, so the binomial coefficient is written out as a product. For cumulative TRUE, add up the terms for 0 to number_s.
+The binomial coefficient COMBIN(trials, number_s) is written with FACTORIAL. For cumulative TRUE, add up the terms for 0 to number_s.
 
 BINOM.DIST.RANGE
 ^^^^^^^^^^^^^^^^
@@ -5491,13 +5523,16 @@ Returns the binomial probability that the number of successes falls in a range.
 .. code-block:: sql
 
   -- =BINOM.DIST.RANGE(trials, probability_s, number_s, number_s2)
-  SELECT SUM(/*trials choose k*/ * POWER(/*probability_s*/, k) * POWER(1 - /*probability_s*/, /*trials*/ - k)) FROM (VALUES /*number_s*/, ..., /*number_s2*/) AS t (k);
+  SELECT SUM(FACTORIAL(/*trials*/) / (FACTORIAL(k) * FACTORIAL(/*trials*/ - k))
+    * POWER(/*probability_s*/, k) * POWER(1 - /*probability_s*/, /*trials*/ - k))
+  FROM (VALUES /*number_s*/, ..., /*number_s2*/) AS t (k);
   -- =BINOM.DIST.RANGE(3, 0.5, 1, 2)
-  SELECT SUM(c * POWER(0.5e0, k) * POWER(1 - 0.5e0, 3 - k))
-  FROM (VALUES (1, 3), (2, 3)) AS t (k, c);
+  SELECT SUM(FACTORIAL(3) / (FACTORIAL(k) * FACTORIAL(3 - k))
+    * POWER(0.5e0, k) * POWER(1 - 0.5e0, 3 - k))
+  FROM (VALUES 1, 2) AS t (k);
   -- COL1: 0.75e0
 
-Each row is a number of successes k and its coefficient c = COMBIN(3, k), written out because vsql has no COMBIN.
+Each row is a number of successes k, and COMBIN(3, k) is written with FACTORIAL.
 
 BINOM.INV
 ^^^^^^^^^
@@ -6044,12 +6079,17 @@ Returns the probability of a number of successes in a sample drawn without repla
 .. code-block:: sql
 
   -- =HYPGEOM.DIST(sample_s, number_sample, population_s, number_pop, FALSE)
-  VALUES /*population_s choose sample_s*/ * /*(number_pop - population_s) choose (number_sample - sample_s)*/ / /*number_pop choose number_sample*/;
+  VALUES (FACTORIAL(/*population_s*/) / (FACTORIAL(/*sample_s*/) * FACTORIAL(/*population_s*/ - /*sample_s*/)))
+    * (FACTORIAL(/*number_pop*/ - /*population_s*/) / (FACTORIAL(/*number_sample*/ - /*sample_s*/)
+      * FACTORIAL(/*number_pop*/ - /*population_s*/ - /*number_sample*/ + /*sample_s*/)))
+    / (FACTORIAL(/*number_pop*/) / (FACTORIAL(/*number_sample*/) * FACTORIAL(/*number_pop*/ - /*number_sample*/)) * 1e0);
   -- =HYPGEOM.DIST(1, 2, 3, 6, FALSE)
-  VALUES 3 * 3 / (6 * 5 / 2.0);
-  -- COL1: 0.6
+  VALUES (FACTORIAL(3) / (FACTORIAL(1) * FACTORIAL(2)))
+    * (FACTORIAL(3) / (FACTORIAL(1) * FACTORIAL(2)))
+    / (FACTORIAL(6) / (FACTORIAL(2) * FACTORIAL(4)) * 1e0);
+  -- COL1: 0.6e0
 
-vsql has no COMBIN, so each coefficient is written out: COMBIN(3, 1) * COMBIN(3, 1) / COMBIN(6, 2). For cumulative TRUE, add up the terms for 0 to sample_s.
+This is COMBIN(3, 1) * COMBIN(3, 1) / COMBIN(6, 2), each written with FACTORIAL, and the 1e0 makes the last division approximate instead of an integer division. For cumulative TRUE, add up the terms for 0 to sample_s.
 
 INTERCEPT
 ^^^^^^^^^
@@ -6310,12 +6350,14 @@ Returns the probability of a number of failures before a number of successes.
 .. code-block:: sql
 
   -- =NEGBINOM.DIST(number_f, number_s, probability_s, FALSE)
-  VALUES /*(number_f + number_s - 1) choose number_f*/ * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*number_f*/);
+  VALUES FACTORIAL(/*number_f*/ + /*number_s*/ - 1) / (FACTORIAL(/*number_s*/ - 1) * FACTORIAL(/*number_f*/))
+    * POWER(/*probability_s*/, /*number_s*/) * POWER(1 - /*probability_s*/, /*number_f*/);
   -- =NEGBINOM.DIST(2, 3, 0.5, FALSE)
-  VALUES (4 * 3 / 2) * POWER(0.5e0, 3) * POWER(1 - 0.5e0, 2);
+  VALUES FACTORIAL(2 + 3 - 1) / (FACTORIAL(3 - 1) * FACTORIAL(2))
+    * POWER(0.5e0, 3) * POWER(1 - 0.5e0, 2);
   -- COL1: 0.1875e0
 
-vsql has no COMBIN or FACT, so the binomial coefficient is written out as a product. For cumulative TRUE, add up the terms for 0 to number_f.
+The binomial coefficient COMBIN(number_f + number_s - 1, number_s - 1) is written with FACTORIAL. For cumulative TRUE, add up the terms for 0 to number_f.
 
 NORM.DIST
 ^^^^^^^^^
@@ -6461,12 +6503,10 @@ Returns the number of ordered ways to choose some items from a set.
 .. code-block:: sql
 
   -- =PERMUT(number, number_chosen)
-  VALUES /*number*/ * (/*number*/ - 1) * ... * (/*number*/ - /*number_chosen*/ + 1);
+  VALUES FACTORIAL(/*number*/) / FACTORIAL(/*number*/ - /*number_chosen*/);
   -- =PERMUT(5, 2)
-  VALUES 5 * 4;
+  VALUES FACTORIAL(5) / FACTORIAL(5 - 2);
   -- COL1: 20
-
-vsql has no FACT, so multiply number_chosen numbers counting down from number.
 
 PERMUTATIONA
 ^^^^^^^^^^^^
@@ -6502,12 +6542,12 @@ Returns the Poisson probability of a number of events.
 .. code-block:: sql
 
   -- =POISSON.DIST(x, mean, FALSE)
-  VALUES EXP(-/*mean*/) * POWER(/*mean*/, /*x*/) / /*x factorial*/;
+  VALUES EXP(-/*mean*/) * POWER(/*mean*/, /*x*/) / FACTORIAL(/*x*/);
   -- =POISSON.DIST(2, 3, FALSE)
-  VALUES EXP(-3e0) * POWER(3e0, 2) / (2 * 1);
+  VALUES EXP(-3e0) * POWER(3e0, 2) / FACTORIAL(2);
   -- COL1: 0.224041807655e0
 
-vsql has no FACT, so x! is written out as a product. For cumulative TRUE, add up the terms for 0 to x.
+For cumulative TRUE, add up the terms for 0 to x.
 
 PROB
 ^^^^

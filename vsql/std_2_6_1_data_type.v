@@ -1,5 +1,7 @@
 module vsql
 
+import strconv
+
 // ISO/IEC 9075-2:2023, 6.1, <data type>
 //
 // Specify a data type.
@@ -83,6 +85,40 @@ fn parse_type_with_length(name string, length string) !Type {
 	typ.octets = length.ends_with(' OCTETS')
 
 	return typ
+}
+
+// large_object_length is the numeric value of a <large object length> with a
+// <multiplier> of scale (see the multiplier grammar), as a string. A value
+// that's too large for an i64 is max_i64, which is too large for any type
+// anyway (see parse_large_object_type).
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 11.b
+fn large_object_length(digits string, scale u64) string {
+	d := strconv.parse_uint(digits, 10, 64) or { max_u64 }
+	if d > u64(max_i64) / scale {
+		return max_i64.str()
+	}
+
+	return (d * scale).str()
+}
+
+// parse_large_object_type is a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT
+// with an explicit <large object length>, which must be from 1 to the maximum
+// length. It's checked when it's parsed, since a longer length doesn't fit in
+// the type.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 12 and 17
+fn parse_large_object_type(name string, length string) !Type {
+	n := strconv.parse_uint(length, 10, 64) or { max_u64 }
+	if n < 1 {
+		return sqlstate_42601('${name} length must be greater than 0')
+	}
+
+	if n > u64(max_large_object_length) {
+		return sqlstate_42601('${name} length must not be greater than ${max_large_object_length}')
+	}
+
+	return new_type(name, int(n), 0)
 }
 
 // parse_type_with_precision is used for a data type with an explicit

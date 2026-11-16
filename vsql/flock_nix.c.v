@@ -175,3 +175,9 @@ fn truncate_file(file os.File, path string, len u64) ! {
 		return sqlstate_58030('cannot truncate ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
+
+// begin_precise_sleep and end_precise_sleep are only needed on Windows, where
+// time.sleep() isn't precise to a millisecond.
+fn begin_precise_sleep() {}
+
+fn end_precise_sleep() {}

@@ -133,6 +133,17 @@ fn (mut l IsolationLock) close() {
 
 // wait polls for the lock until the deadline.
 fn (mut l IsolationLock) wait(state IsolationLockState, deadline time.Time, message string) ! {
+	if l.try_lock(state)! {
+		return
+	}
+
+	// The polls must be closer together than a short transaction, or the
+	// connection that released the lock takes the queue again before the one
+	// waiting for it has looked (see acquire).
+	begin_precise_sleep()
+	defer {
+		end_precise_sleep()
+	}
 	for !l.try_lock(state)! {
 		if time.now() >= deadline {
 			return sqlstate_40001(message)

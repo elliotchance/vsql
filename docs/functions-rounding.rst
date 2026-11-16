@@ -19,6 +19,7 @@ CEIL
 
    CEIL(DOUBLE PRECISION) DOUBLE PRECISION
    CEIL(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   CEIL(DECFLOAT(p)) DECFLOAT(p)
 
 Round up to the nearest integer (towards positive infinity), so ``CEIL(-3.7)``
 is -3.
@@ -67,6 +68,7 @@ CEILING
 
    CEILING(DOUBLE PRECISION) DOUBLE PRECISION
    CEILING(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   CEILING(DECFLOAT(p)) DECFLOAT(p)
 
 ``CEILING`` is another name for ``CEIL``, see ``CEIL``.
 
@@ -92,6 +94,7 @@ FLOOR
 
    FLOOR(DOUBLE PRECISION) DOUBLE PRECISION
    FLOOR(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   FLOOR(DECFLOAT(p)) DECFLOAT(p)
 
 Round down to the nearest integer (towards negative infinity), so
 ``FLOOR(-3.3)`` is -4.
@@ -142,6 +145,8 @@ ROUND
    ROUND(DOUBLE PRECISION, BIGINT) DOUBLE PRECISION
    ROUND(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
    ROUND(NUMERIC(p, s), PLACES) NUMERIC(p - s + PLACES + 1, PLACES)
+   ROUND(DECFLOAT(p)) DECFLOAT(p)
+   ROUND(DECFLOAT(p), BIGINT) DECFLOAT(p)
 
 Round to the nearest integer, or to ``PLACES`` decimal places. Half is rounded
 away from zero, so ``ROUND(2.5)`` is 3 and ``ROUND(-2.5)`` is -3, for exact and
@@ -193,6 +198,8 @@ TRUNC
    TRUNC(DOUBLE PRECISION, BIGINT) DOUBLE PRECISION
    TRUNC(NUMERIC(p, s)) NUMERIC(p - s, 0)
    TRUNC(NUMERIC(p, s), PLACES) NUMERIC(p - s + PLACES, PLACES)
+   TRUNC(DECFLOAT(p)) DECFLOAT(p)
+   TRUNC(DECFLOAT(p), BIGINT) DECFLOAT(p)
 
 Truncate towards zero to an integer, or to ``PLACES`` decimal places, so
 ``TRUNC(-9.99)`` is -9. ``PLACES`` can be negative, like ``ROUND``, and the type

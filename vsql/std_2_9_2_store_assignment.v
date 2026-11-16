@@ -597,19 +597,21 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 }
 
 // cast_to_decfloat converts a number to a DECFLOAT, rounding it to the
-// precision of t.
+// precision of t, or it's out of range.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 10.a
 fn cast_to_decfloat(v Value, t Type) !Value {
 	s := match v.typ.typ {
 		.is_decfloat {
 			v.decfloat_value().str()
 		}
 		// An approximate number is its shortest decimal representation, which
-		// converts back to the same number.
+		// converts back to the same number. A whole number has no ".0".
 		.is_real {
-			f32(v.f64_value()).str()
+			f32(v.f64_value()).str().trim_string_right('.0')
 		}
 		.is_double_precision {
-			v.f64_value().str()
+			v.f64_value().str().trim_string_right('.0')
 		}
 		.is_smallint, .is_integer, .is_bigint, .is_numeric, .is_decimal {
 			v.str()

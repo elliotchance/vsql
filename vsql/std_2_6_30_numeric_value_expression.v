@@ -201,6 +201,11 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 //
 // ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1
 fn arithmetic_type(t1 Type, t2 Type, op string) !Type {
+	// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1.a
+	if t := decfloat_supertype(t1, t2) {
+		return t
+	}
+
 	t1_category, _ := t1.typ.supertype()
 	t2_category, _ := t2.typ.supertype()
 	if t1_category == 2 && t2_category == 2
@@ -215,9 +220,14 @@ fn arithmetic_type(t1 Type, t2 Type, op string) !Type {
 }
 
 // arithmetic_supertype is the type that both operands are cast to. If either is
+// a DECFLOAT, it's a DECFLOAT (see decfloat_supertype). If either is
 // approximate, the result is approximate (Syntax Rule 1b). Like the rows of a
 // VALUES (9.5 Syntax Rule 3d), that's DOUBLE PRECISION, unless both are REAL.
 fn arithmetic_supertype(t1 Type, t2 Type) !Type {
+	if t := decfloat_supertype(t1, t2) {
+		return t
+	}
+
 	if (t1.typ in approximate_types) != (t2.typ in approximate_types) {
 		return Type{.is_double_precision, 0, 0, false, false}
 	}
@@ -254,4 +264,32 @@ fn eval_binary(mut conn Connection, x Value, op string, y Value) !Value {
 	}
 
 	return sqlstate_42883('operator does not exist: ${key}')
+}
+
+// decfloat_supertype is the type of an operation on two numbers when either is
+// a DECFLOAT, or none if neither is. Its precision is implementation-defined,
+// so it's the larger precision of the DECFLOATs, and the other number (an exact
+// or approximate number) is cast to it.
+//
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1.a
+fn decfloat_supertype(t1 Type, t2 Type) ?Type {
+	if !t1.typ.is_number() || !t2.typ.is_number()
+		|| (t1.typ != .is_decfloat && t2.typ != .is_decfloat) {
+		return none
+	}
+
+	return Type{.is_decfloat, decfloat_precision([t1, t2]), 0, false, false}
+}
+
+// decfloat_precision is the largest precision of the DECFLOATs in types. A
+// DECFLOAT without a precision has the maximum precision.
+fn decfloat_precision(types []Type) int {
+	mut p := 0
+	for t in types {
+		if t.typ == .is_decfloat {
+			p = int_max(p, if t.size == 0 { max_decfloat_precision } else { t.size })
+		}
+	}
+
+	return if p == 0 { max_decfloat_precision } else { p }
 }

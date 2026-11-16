@@ -277,6 +277,8 @@ fn cast_character_to_octets(mut conn Connection, s string, to Type) Value {
 // and trailing <truncating whitespace> is removed, and what's left must be a
 // <signed numeric literal>, which is rounded to the precision of the DECFLOAT.
 // Unlike other numbers, an approximate numeric literal keeps all of its digits.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 10.b
 fn cast_character_to_decfloat(v Value, to Type) !Value {
 	s := trim_truncating_whitespace(v.string_value())
 	if numeric_literal_kind(s) == .invalid {

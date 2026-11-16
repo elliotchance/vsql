@@ -339,8 +339,41 @@ exponent outside of the range is an error (``22003``). Trailing zeros are kept,
 so ``1.50`` is shown as ``1.50``, but it's equal to ``1.5``. A very large or
 very small value is shown with an exponent, such as ``1.5E+20``.
 
-A ``DECFLOAT`` can only be stored, compared as a ``PRIMARY KEY`` and cast for
-now. Arithmetic, comparisons and functions don't accept one yet.
+Arithmetic with a ``DECFLOAT`` and any other number is a ``DECFLOAT``, with the
+larger precision of the ``DECFLOAT`` operands. The result is exact and then
+rounded to the precision (half to even), and like IEEE 754, an addition keeps
+the smaller exponent of the two, a multiplication adds them, and an exact
+division has the difference of the two if it can:
+
+.. code-block:: sql
+
+   VALUES CAST(1.50 AS DECFLOAT) + 1;
+   -- COL1: 2.50
+
+   VALUES CAST(1 AS DECFLOAT(16)) / 3;
+   -- COL1: 0.3333333333333333
+
+   VALUES CAST(6 AS DECFLOAT) / 2;
+   -- COL1: 3
+
+A ``DECFLOAT`` is compared by value with any other number, without losing any
+digits, so it can be used anywhere a number can (``ORDER BY``, ``GROUP BY``,
+``DISTINCT``, ``UNION`` and so on). Values that only differ by trailing zeros,
+such as ``1.5`` and ``1.50``, are equal. When the types are combined (such as
+in a ``CASE`` or a ``UNION``), the result is a ``DECFLOAT`` if any of them is.
+
+The numeric functions (see :doc:`functions`) of a ``DECFLOAT`` are a
+``DECFLOAT``. ``ABS``, ``MOD``, ``FLOOR``, ``CEIL``, ``SQRT``, ``POWER`` with a
+whole number (or ``0.5``) exponent, ``ROUND``, ``TRUNC`` and ``SIGN`` are
+exact. The other functions (such as ``LN`` and ``SIN``) are calculated with a
+``DOUBLE PRECISION``, so the result only has about 16 significant digits, and
+an argument or result outside of the range of a ``DOUBLE PRECISION`` is a
+``22003`` error. ``SUM``, ``AVG``, ``STDDEV_POP``, ``STDDEV_SAMP``, ``VAR_POP``
+and ``VAR_SAMP`` of a ``DECFLOAT`` are a ``DECFLOAT`` with the same precision.
+They're calculated exactly, and only the result is rounded.
+
+A ``DECFLOAT`` can be cast to and from any number or character string. Cast to
+a character string, it has the same form as it's shown, such as ``1.5E+20``.
 
 Casting
 -------

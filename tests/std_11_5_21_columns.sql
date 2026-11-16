@@ -163,3 +163,11 @@ SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name
 -- COLUMN_NAME: F IS_NULLABLE: YES
 -- COLUMN_NAME: G IS_NULLABLE: YES
 -- COLUMN_NAME: H IS_NULLABLE: YES
+
+-- # A DECFLOAT has a decimal precision (Part 2, 6.1, General Rules, 18), and
+-- # no scale.
+CREATE TABLE t (a DECFLOAT, b DECFLOAT(16));
+SELECT column_name, data_type, numeric_precision, numeric_precision_radix, numeric_scale FROM information_schema.columns WHERE table_name = 'T' ORDER BY ordinal_position;
+-- msg: CREATE TABLE 1
+-- COLUMN_NAME: A DATA_TYPE: DECFLOAT NUMERIC_PRECISION: 34 NUMERIC_PRECISION_RADIX: 10 NUMERIC_SCALE: NULL
+-- COLUMN_NAME: B DATA_TYPE: DECFLOAT NUMERIC_PRECISION: 16 NUMERIC_PRECISION_RADIX: 10 NUMERIC_SCALE: NULL

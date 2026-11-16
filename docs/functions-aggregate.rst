@@ -133,6 +133,7 @@ AVG
    AVG(DECIMAL(p, s)) DECIMAL(p, s)
    AVG(REAL) REAL
    AVG(DOUBLE PRECISION) DOUBLE PRECISION
+   AVG(DECFLOAT(p)) DECFLOAT(p)
 
 Returns the average value. The result has the same type as the values, so the
 average of exact numbers is truncated to their scale. For example, the average
@@ -689,6 +690,7 @@ SUM
    SUM(DECIMAL(p, s)) DECIMAL
    SUM(REAL) REAL
    SUM(DOUBLE PRECISION) DOUBLE PRECISION
+   SUM(DECFLOAT(p)) DECFLOAT(p)
 
 Returns the sum (total) of all values. The sum of integers is a ``BIGINT``, so
 it can be larger than any one value. The sum of exact numbers keeps their scale

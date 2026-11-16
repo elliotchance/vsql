@@ -21,7 +21,7 @@
 20.1/SR/6.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.f              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.g              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.1/SR/6.h              n/a          - - DECFLOAT (T076)
+20.1/SR/6.h              missing      - - DECFLOAT in SQL descriptor areas (#1620)
 20.1/SR/6.i              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.j              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.k              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -49,7 +49,7 @@
 20.1/SR/7.i              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.j              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.k              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.1/SR/7.l              n/a          - - DECFLOAT (T076)
+20.1/SR/7.l              missing      - - DECFLOAT in SQL descriptor areas (#1620)
 20.1/SR/7.m              n/a          - - a host parameter can't be FLOAT (Table 20)
 20.1/SR/7.n              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.o              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -162,7 +162,7 @@
 20.5/GR/4.c.iii.5        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/4.c.iii.6        n/a          - - intervals (F052)
 20.5/GR/4.c.iii.7        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 18
-20.5/GR/4.c.iii.8        n/a          - - DECFLOAT (T076)
+20.5/GR/4.c.iii.8        missing      - - DECFLOAT in SQL descriptor areas (#1620)
 20.5/GR/4.c.iii.9        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 53
 20.5/GR/4.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/4.d.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -460,7 +460,7 @@
 20.10/GR/7.d.ii          n/a          - - binary strings (T021)
 20.10/GR/7.d.iii         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.iv          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.10/GR/7.d.v           n/a          - - DECFLOAT (T076)
+20.10/GR/7.d.v           missing      - - DECFLOAT in SQL descriptor areas (#1620)
 20.10/GR/7.d.vi          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.vii         n/a          - - intervals (F052)
 20.10/GR/7.d.viii        n/a          - - user-defined types (S023)

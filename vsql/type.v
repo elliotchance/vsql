@@ -82,7 +82,7 @@ fn (t SQLType) str() string {
 fn (t SQLType) is_number() bool {
 	return match t {
 		.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint, .is_decimal,
-		.is_numeric {
+		.is_numeric, .is_decfloat {
 			true
 		}
 		else {
@@ -261,6 +261,11 @@ fn implicit_cast_type(v Value, t Type) Type {
 		if v.typ.typ in [.is_smallint, .is_integer, .is_bigint] && !v.is_null {
 			return Type{t.typ, v.str().trim_left('-').len, 0, false, false}
 		}
+	}
+
+	// A DECFLOAT keeps its precision, which is part of what it is.
+	if t.typ == .is_decfloat {
+		return Type{t.typ, t.size, 0, false, false}
 	}
 
 	return Type{t.typ, 0, 0, false, false}

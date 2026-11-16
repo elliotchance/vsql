@@ -50,6 +50,7 @@ EXP
 .. code-block:: sql
 
    EXP(DOUBLE PRECISION) DOUBLE PRECISION
+   EXP(DECFLOAT(p)) DECFLOAT(p)
 
 Exponential, *e* (2.718281828459...) raised to the power of the argument. The
 result is always greater than 0, so an argument greater than about 709.78 (the
@@ -82,6 +83,7 @@ LN
 .. code-block:: sql
 
    LN(DOUBLE PRECISION) DOUBLE PRECISION
+   LN(DECFLOAT(p)) DECFLOAT(p)
 
 Natural logarithm (base *e*). The argument must be greater than 0, otherwise
 it's a ``2201E`` error (invalid argument for natural logarithm).
@@ -114,6 +116,7 @@ LOG
 .. code-block:: sql
 
    LOG(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   LOG(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``LOG(BASE, NUMBER)`` is the logarithm of ``NUMBER`` in ``BASE``, so ``LOG(2, 8)`` is 3. ``NUMBER`` must be
 greater than 0, and ``BASE`` must be greater than 0 and not 1, otherwise it's a
@@ -154,6 +157,7 @@ LOG10
 .. code-block:: sql
 
    LOG10(DOUBLE PRECISION) DOUBLE PRECISION
+   LOG10(DECFLOAT(p)) DECFLOAT(p)
 
 Logarithm in base 10, the same as ``LOG(10, NUMBER)``. The argument must be
 greater than 0, otherwise it's a ``22003`` error (numeric value out of range).
@@ -186,9 +190,11 @@ POWER
 .. code-block:: sql
 
    POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   POWER(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``POWER(BASE, EXPONENT)`` is ``BASE`` raised to the power of ``EXPONENT``. Both are converted to
-``DOUBLE PRECISION``, so the result is always approximate, even for integers.
+``DOUBLE PRECISION``, so the result is always approximate, even for integers,
+unless either is a ``DECFLOAT``.
 
 - ``POWER(0, 0)`` is 1.
 - A ``BASE`` of 0 with a negative ``EXPONENT`` is a ``2201F`` error (invalid
@@ -229,6 +235,7 @@ SQRT
 .. code-block:: sql
 
    SQRT(DOUBLE PRECISION) DOUBLE PRECISION
+   SQRT(DECFLOAT(p)) DECFLOAT(p)
 
 Square root. The result is approximate, even for a perfect square. The argument
 can't be negative, otherwise it's a ``2201F`` error (invalid argument for power

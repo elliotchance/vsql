@@ -1,0 +1,78 @@
+-- # Any number can be cast to a DECFLOAT, which keeps every digit that fits
+-- # in the precision, after rounding (General Rules, 10.a.i), or it's out of
+-- # range (General Rules, 10.a.ii).
+/* types */
+VALUES ROW(CAST(CAST(-5 AS SMALLINT) AS DECFLOAT), CAST(123456 AS DECFLOAT(16)), CAST(CAST(9223372036854775807 AS BIGINT) AS DECFLOAT(16)));
+VALUES ROW(CAST(1.50 AS DECFLOAT), CAST(CAST(1.25 AS DECIMAL(5, 2)) AS DECFLOAT(16)), CAST(1.5e0 AS DECFLOAT), CAST(CAST(0.1 AS REAL) AS DECFLOAT), CAST(3e0 AS DECFLOAT), CAST(1e20 AS DECFLOAT));
+VALUES CAST(CAST(1.5 AS DECFLOAT) AS DECFLOAT(16));
+VALUES CAST(CAST('1.23456789012345678901234567890' AS DECFLOAT) AS DECFLOAT(16));
+VALUES CAST(CAST('1E+400' AS DECFLOAT) AS DECFLOAT(16));
+VALUES CAST(1.5e300 AS DECFLOAT(16));
+-- COL1: -5 (DECFLOAT(34)) COL2: 123456 (DECFLOAT(16)) COL3: 9.223372036854776E+18 (DECFLOAT(16))
+-- COL1: 1.50 (DECFLOAT(34)) COL2: 1.25 (DECFLOAT(16)) COL3: 1.5 (DECFLOAT(34)) COL4: 0.1 (DECFLOAT(34)) COL5: 3 (DECFLOAT(34)) COL6: 1E+20 (DECFLOAT(34))
+-- COL1: 1.5 (DECFLOAT(16))
+-- COL1: 1.234567890123457 (DECFLOAT(16))
+-- error 22003: numeric value out of range
+-- COL1: 1.5E+300 (DECFLOAT(16))
+
+-- # A DECFLOAT can be cast to any number. An exact number is truncated to its
+-- # scale, and must fit.
+/* types */
+VALUES ROW(CAST(CAST(1.5 AS DECFLOAT) AS SMALLINT), CAST(CAST(-2.9 AS DECFLOAT) AS INTEGER), CAST(CAST('1E+18' AS DECFLOAT) AS BIGINT));
+VALUES ROW(CAST(CAST(1.255 AS DECFLOAT) AS NUMERIC(4, 2)), CAST(CAST(1.5 AS DECFLOAT) AS DECIMAL(3, 1)), CAST(CAST(0.1 AS DECFLOAT) AS DOUBLE PRECISION), CAST(CAST(0.1 AS DECFLOAT) AS REAL));
+VALUES CAST(CAST(40000 AS DECFLOAT) AS SMALLINT);
+VALUES CAST(CAST('1E+400' AS DECFLOAT) AS DOUBLE PRECISION);
+VALUES CAST(CAST(123.4 AS DECFLOAT) AS NUMERIC(3, 1));
+-- COL1: 1 (SMALLINT) COL2: -2 (INTEGER) COL3: 1000000000000000000 (BIGINT)
+-- COL1: 1.25 (NUMERIC(4, 2)) COL2: 1.5 (DECIMAL(3, 1)) COL3: 0.1e0 (DOUBLE PRECISION) COL4: 0.1e0 (REAL)
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+
+-- # A character string is cast as the <signed numeric literal> it holds, after
+-- # removing leading and trailing spaces (General Rules, 10.b).
+/* types */
+VALUES ROW(CAST(' -1.50 ' AS DECFLOAT(16)), CAST(CAST('2.5e3' AS VARCHAR(10)) AS DECFLOAT), CAST(CAST('7' AS CLOB) AS DECFLOAT));
+VALUES CAST('1.5x' AS DECFLOAT);
+VALUES CAST('' AS DECFLOAT);
+-- COL1: -1.50 (DECFLOAT(16)) COL2: 2.5E+3 (DECFLOAT(34)) COL3: 7 (DECFLOAT(34))
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+
+-- # A DECFLOAT is cast to a character string as a <signed numeric literal>,
+-- # with an exponent for a very large or small number (General Rules, 11.c and
+-- # 12.c). A CHARACTER is padded with spaces, and a string that's too long is
+-- # an error.
+/* types */
+VALUES ROW(CAST(CAST(1.50 AS DECFLOAT) AS CHARACTER(6)), CAST(CAST(-1.5E+300 AS DECFLOAT) AS VARCHAR(20)), CAST(CAST(0.0000001 AS DECFLOAT) AS VARCHAR(10)), CAST(CAST(12 AS DECFLOAT) AS CLOB));
+VALUES CAST(CAST(123456 AS DECFLOAT) AS CHARACTER(3));
+VALUES CAST(CAST(123456 AS DECFLOAT) AS VARCHAR(5));
+-- COL1: 1.50   (CHARACTER(6)) COL2: -1.5E+300 (CHARACTER VARYING(20)) COL3: 1E-7 (CHARACTER VARYING(10)) COL4: 12 (CHARACTER LARGE OBJECT)
+-- error 22001: string data right truncation for CHARACTER(3)
+-- error 22001: string data right truncation for CHARACTER VARYING(5)
+
+-- # A DECFLOAT can't be cast to or from any other type.
+VALUES CAST(CAST(1 AS DECFLOAT) AS BOOLEAN);
+VALUES CAST(TRUE AS DECFLOAT);
+VALUES CAST(DATE '2020-01-01' AS DECFLOAT);
+VALUES CAST(CAST(1 AS DECFLOAT) AS TIMESTAMP);
+VALUES CAST(X'01' AS DECFLOAT);
+VALUES CAST(INTERVAL '1' DAY AS DECFLOAT);
+-- error 42846: cannot coerce DECFLOAT(34) to BOOLEAN
+-- error 42846: cannot coerce BOOLEAN to DECFLOAT(34)
+-- error 42846: cannot coerce DATE to DECFLOAT(34)
+-- error 42846: cannot coerce DECFLOAT(34) to TIMESTAMP(6) WITHOUT TIME ZONE
+-- error 42846: cannot coerce BINARY(1) to DECFLOAT(34)
+-- error 42846: cannot coerce INTERVAL DAY(2) to DECFLOAT(34)
+
+-- # A DECFLOAT can be stored in any number column, and a DECFLOAT column can
+-- # store any number.
+CREATE TABLE t (a INTEGER, b NUMERIC(5, 2), c DOUBLE PRECISION, d DECFLOAT(16));
+INSERT INTO t VALUES (CAST(1.5 AS DECFLOAT), CAST(2.345 AS DECFLOAT), CAST(0.1 AS DECFLOAT), 1.5e0 * 2);
+INSERT INTO t (d) VALUES (CAST(1 AS DECFLOAT) / 3);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- A: 1 B: 2.34 C: 0.1e0 D: 3
+-- A: NULL B: NULL C: NULL D: 0.3333333333333333

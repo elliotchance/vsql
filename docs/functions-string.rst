@@ -6,12 +6,52 @@ String Functions
    :depth: 1
 
 String functions accept a ``CHARACTER`` or ``CHARACTER VARYING`` (see
-:doc:`text`). A ``CHARACTER(n)`` value always has ``n`` characters, so its
+:doc:`text`), or a binary string (see :doc:`binary`) when the function says
+so. A ``CHARACTER(n)`` value always has ``n`` characters, so its
 padding spaces are counted and searched like any other character.
 
 Lengths and positions are counted in characters, where a multibyte character
 (such as ``😊``) counts as one, unless the function says otherwise. The first
 character is at position 1.
+
+BINARY_TO_HEX
+^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   BINARY_TO_HEX(BINARY VARYING) CHARACTER VARYING
+   BINARY_TO_HEX(BINARY LARGE OBJECT) CHARACTER LARGE OBJECT
+
+Converts a binary string (see :doc:`binary`) to two upper case hexadecimal
+digits for each octet, the same way that it's shown. A ``BINARY(n)`` includes
+its padding ``X'00'`` octets. A result that's longer than 10485760 characters
+(the longest ``CHARACTER VARYING``) is a ``22001`` error. ``HEX_TO_BINARY``
+converts it back.
+
+``BINARY_TO_HEX`` is a vsql extension flagged by ``V406-01`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES BINARY_TO_HEX(X'CAFE');
+  -- COL1: CAFE
+
+  VALUES BINARY_TO_HEX(CAST(X'01' AS BINARY(3)));
+  -- COL1: 010000
+
+**Compatibility**
+
+- **SQL standard:** not standard. There's no ``CAST`` between a binary string
+  and a character string.
+- **Other databases:**
+
+  - MySQL and SQLite: ``HEX``. It also accepts a character string (its bytes)
+    or a number.
+  - PostgreSQL: ``ENCODE(value, 'hex')``, in lower case.
+  - SQL Server: ``CONVERT(VARCHAR(MAX), value, 2)``.
+  - Oracle: ``RAWTOHEX``.
 
 BTRIM
 ^^^^^
@@ -134,6 +174,45 @@ noncharacter (such as ``0xFFFF``) is a ``22029`` error, the same as in a
   - MySQL: ``CHAR(n USING utf8mb4)``.
   - SQLite: ``CHAR``.
   - SQL Server: ``NCHAR``.
+
+HEX_TO_BINARY
+^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   HEX_TO_BINARY(CHARACTER VARYING) BINARY VARYING
+   HEX_TO_BINARY(CHARACTER LARGE OBJECT) BINARY LARGE OBJECT
+
+Converts pairs of hexadecimal digits (in upper or lower case) to a binary
+string (see :doc:`binary`), one octet for each pair. Anything else, including
+an odd number of digits or spaces, is a ``22018`` error. It's the opposite of
+``BINARY_TO_HEX``.
+
+``HEX_TO_BINARY`` is a vsql extension flagged by ``V406-02`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES HEX_TO_BINARY('cafe');
+  -- COL1: CAFE
+
+  VALUES HEX_TO_BINARY('ABC');
+  -- error 22018: invalid character value for cast
+
+**Compatibility**
+
+- **SQL standard:** not standard. There's no ``CAST`` between a binary string
+  and a character string.
+- **Other databases:**
+
+  - MySQL: ``UNHEX``, an odd number of digits has a leading ``0`` and anything
+    else is ``NULL``.
+  - SQLite: ``UNHEX``, anything else is ``NULL``.
+  - PostgreSQL: ``DECODE(value, 'hex')``.
+  - SQL Server: ``CONVERT(VARBINARY(MAX), value, 2)``.
+  - Oracle: ``HEXTORAW``.
 
 INITCAP
 ^^^^^^^

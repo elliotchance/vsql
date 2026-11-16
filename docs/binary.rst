@@ -70,6 +70,18 @@ of octets in it, and it's shown the same way (in upper case).
   VALUES X'0a1B';
   -- COL1: 0A1B
 
+There's no ``CAST`` between a binary string and a character string.
+``BINARY_TO_HEX`` converts a binary string to its hexadecimal digits, and
+``HEX_TO_BINARY`` converts them back (see :doc:`functions`).
+
+.. code-block:: sql
+
+  VALUES BINARY_TO_HEX(X'CAFE');
+  -- COL1: CAFE
+
+  VALUES HEX_TO_BINARY('cafe');
+  -- COL1: CAFE
+
 Operations
 ----------
 

@@ -436,6 +436,15 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V405-02``
      - ``PRODUCT``.
 
+   * - ``V406``
+     - Binary string functions (see :doc:`functions`).
+
+   * - ``V406-01``
+     - ``BINARY_TO_HEX``.
+
+   * - ``V406-02``
+     - ``HEX_TO_BINARY``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

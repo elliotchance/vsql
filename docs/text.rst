@@ -64,8 +64,13 @@ time instead (see ``Row.get_lob`` in :doc:`v-client-library-docs`). Other
 string types are read with the row.
 
 A ``CHARACTER LARGE OBJECT`` can't be in a ``PRIMARY KEY``, a ``UNIQUE`` or
-``FOREIGN KEY`` constraint, or an index. It can only be stored and cast for
-now. Operators and functions don't accept one yet.
+``FOREIGN KEY`` constraint, or an index. It can be used with ``||`` and the
+string functions (such as ``SUBSTRING``, ``TRIM``, ``UPPER``, ``LOWER``,
+``POSITION``, ``CHAR_LENGTH`` and ``OCTET_LENGTH``), and the result of
+``||``, ``SUBSTRING`` and ``TRIM`` is also a ``CHARACTER LARGE OBJECT``.
+``CHAR_LENGTH`` and ``OCTET_LENGTH`` of a long value don't read it, and
+``SUBSTRING`` only reads the part that's in the result when every character
+is one byte (or with ``USING OCTETS``).
 
 The only character set is UTF-8, which is also the national character set. So
 each national character string type is the same as the character string type:

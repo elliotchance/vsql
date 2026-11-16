@@ -1276,8 +1276,8 @@
 6.31/CR/4                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/5                n/a          - - national character (F421)
 6.31/CR/6                implemented  vsql/funcs.v tests/std_2_6_31_binary_position.sql T047 when either is a BINARY LARGE OBJECT, otherwise T021
-6.31/CR/7                n/a          - - LOBs (T041)
-6.31/CR/8                partial      vsql/funcs.v tests/std_2_6_31_binary_octet_length.sql only a BINARY LARGE OBJECT, there are no CHARACTER LARGE OBJECT string functions yet (T050)
+6.31/CR/7                implemented  vsql/funcs.v tests/std_2_6_31_clob_length_position.sql
+6.31/CR/8                implemented  vsql/funcs.v tests/std_2_6_31_binary_octet_length.sql,tests/std_2_6_31_clob_length_position.sql
 6.31/CR/9                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/10               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/11               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
@@ -1303,7 +1303,7 @@
 6.32/SR/3                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/SR/3.a              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/SR/3.b              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
-6.32/SR/3.b.i            n/a          - - LOBs (T041)
+6.32/SR/3.b.i            implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql
 6.32/SR/3.b.ii           implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/SR/3.b.iii          implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/SR/4                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
@@ -1327,10 +1327,10 @@
 6.32/GR/2.b.ii.2.A       missing      - - the result isn't normalized (#902)
 6.32/GR/2.b.ii.2.B       impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql S1 followed by S2
 6.32/GR/2.b.ii.3         container    - -
-6.32/GR/2.b.ii.3.A       n/a          - - LOBs (T041)
-6.32/GR/2.b.ii.3.A.I     n/a          - - LOBs (T041)
-6.32/GR/2.b.ii.3.A.II    n/a          - - LOBs (T041)
-6.32/GR/2.b.ii.3.A.III   n/a          - - LOBs (T041)
+6.32/GR/2.b.ii.3.A       impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql LOL is 2147483647, the same as the longest CHARACTER LARGE OBJECT
+6.32/GR/2.b.ii.3.A.I     impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql LOL is 2147483647, the same as the longest CHARACTER LARGE OBJECT
+6.32/GR/2.b.ii.3.A.II    impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql LOL is 2147483647, the same as the longest CHARACTER LARGE OBJECT
+6.32/GR/2.b.ii.3.A.III   impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql LOL is 2147483647, the same as the longest CHARACTER LARGE OBJECT
 6.32/GR/2.b.ii.3.B       implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.B.I     implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.B.II    implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
@@ -1352,7 +1352,7 @@
 6.32/CR/1                n/a          - - national character (F421)
 6.32/CR/2                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql a binary string literal, type or concatenation is T021
 6.32/CR/3                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql T048 for a BINARY LARGE OBJECT, otherwise T021
-6.32/CR/4                n/a          - - LOBs (T041)
+6.32/CR/4                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql
 # 6.33, <string value function>
 6.33                     implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql
 6.33/SR/1                implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql
@@ -1361,7 +1361,7 @@
 6.33/SR/4                implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql
 6.33/SR/4.a              implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql
 6.33/SR/4.a.i            implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql
-6.33/SR/4.a.ii           n/a          - - LOBs (T041)
+6.33/SR/4.a.ii           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_clob_functions.sql
 6.33/SR/4.b              impl-defined vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql the character set is always UTF8, and its collation is the only one
 6.33/SR/5                untestable   - - a character string is always UTF8
 6.33/SR/6                implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_substring.sql
@@ -1369,7 +1369,7 @@
 6.33/SR/7.a              implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_regular_expression_substring.sql
 6.33/SR/7.b              container    - -
 6.33/SR/7.b.i            implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_regular_expression_substring.sql
-6.33/SR/7.b.ii           n/a          - - LOBs (T041)
+6.33/SR/7.b.ii           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_clob_functions.sql
 6.33/SR/7.c              impl-defined vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_regular_expression_substring.sql the character set is always UTF8, and its collation is the only one
 6.33/SR/8                n/a          - - SUBSTRING_REGEX (F844)
 6.33/SR/8.a              n/a          - - SUBSTRING_REGEX (F844)
@@ -1425,7 +1425,7 @@
 6.33/SR/14.a.ii          implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_trim.sql
 6.33/SR/14.b             container    - -
 6.33/SR/14.b.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql
-6.33/SR/14.b.ii          n/a          - - LOBs (T041)
+6.33/SR/14.b.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_clob_functions.sql
 6.33/SR/14.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql
 6.33/SR/14.d             impl-defined vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_trim.sql the character set is always UTF8, and its collation is the only one
 6.33/SR/15               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_pad_and_multi_character_trim.sql
@@ -1693,7 +1693,7 @@
 6.33/CR/14               n/a          - - TRANSLATE_REGEX (F845)
 6.33/CR/15               n/a          - - regular expressions (F846)
 6.33/CR/16               n/a          - - regular expressions (F847)
-6.33/CR/17               n/a          - - LOBs (T041)
+6.33/CR/17               implemented  vsql/std_2_6_33_string_value_function.v,vsql/funcs.v tests/std_2_6_33_clob_functions.sql
 6.33/CR/18               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql
 6.33/CR/19               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/CR/20               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql

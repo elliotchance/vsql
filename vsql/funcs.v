@@ -95,6 +95,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	decimal := Type{SQLType.is_decimal, 0, 0, false, false}
 	varbinary := Type{SQLType.is_varbinary, 0, 0, false, false}
 	blob := Type{SQLType.is_blob, 0, 0, false, false}
+	clob := Type{SQLType.is_clob, 0, 0, false, false}
 
 	// Scalar functions. The trigonometric functions, LOG, LN, EXP, POWER and SQRT
 	// return a DOUBLE PRECISION (the approximate numeric type is
@@ -120,6 +121,21 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'CEILING', [numeric], false, func_ceil_numeric, numeric, false, true, []})!
 	conn.register_func(Func{'CHARACTER_LENGTH', [varchar], false, func_char_length, integer, false, true, []})!
 	conn.register_func(Func{'CHAR_LENGTH', [varchar], false, func_char_length, integer, false, true, []})!
+	// POSITION, CHAR_LENGTH, OCTET_LENGTH, LOWER and UPPER of a CHARACTER LARGE
+	// OBJECT are Feature T050, and OCTET_LENGTH is also T047. The length of a
+	// large value is known without reading it.
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 7 and 8
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 17
+	conn.register_func(Func{'CHARACTER_LENGTH', [clob], false, func_char_length, integer, false, true, ['T050']})!
+	conn.register_func(Func{'CHAR_LENGTH', [clob], false, func_char_length, integer, false, true, ['T050']})!
+	clob_octet_length := ['T047', 'T050']
+	conn.register_func(Func{'OCTET_LENGTH', [clob], false, func_octet_length, integer, false, true, clob_octet_length})!
+	conn.register_func(Func{'POSITION', [varchar, clob], false, func_position, integer, false, true, ['T050']})!
+	conn.register_func(Func{'POSITION', [clob, varchar], false, func_position, integer, false, true, ['T050']})!
+	conn.register_func(Func{'POSITION', [clob, clob], false, func_position, integer, false, true, ['T050']})!
+	conn.register_func(Func{'LOWER', [clob], false, func_lower, clob, false, true, ['T050']})!
+	conn.register_func(Func{'UPPER', [clob], false, func_upper, clob, false, true, ['T050']})!
 	conn.register_func(Func{'COS', [double_precision], false, func_cos, double_precision, false, true, []})!
 	conn.register_func(Func{'COSH', [double_precision], false, func_cosh, double_precision, false, true, []})!
 	conn.register_func(Func{'EXP', [double_precision], false, func_exp, double_precision, false, true, []})!

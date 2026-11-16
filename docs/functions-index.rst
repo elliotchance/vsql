@@ -54,6 +54,9 @@ Every function, in alphabetical order:
    * - :ref:`BASE64_TO_BINARY <functions-string:BASE64_TO_BINARY>`
      - Convert base64 text to a binary string
      - String
+   * - :ref:`BASE_TO_INTEGER <functions-number-base:BASE_TO_INTEGER>`
+     - Reads an integer in a radix from 2 to 36
+     - Number Base
    * - :ref:`BINARY_TO_BASE64 <functions-string:BINARY_TO_BASE64>`
      - Convert a binary string to base64 text
      - String
@@ -210,12 +213,21 @@ Every function, in alphabetical order:
    * - :ref:`HEX_TO_BINARY <functions-string:HEX_TO_BINARY>`
      - Convert hexadecimal digits to a binary string
      - String
+   * - :ref:`HEX_TO_INTEGER <functions-number-base:HEX_TO_INTEGER>`
+     - Reads a hexadecimal integer
+     - Number Base
    * - :ref:`IF <functions-conditional:IF>`
      - One value if a condition is true, otherwise another
      - Conditional
    * - :ref:`INITCAP <functions-string:INITCAP>`
      - Capitalize the first letter of each word
      - String
+   * - :ref:`INTEGER_TO_BASE <functions-number-base:INTEGER_TO_BASE>`
+     - Writes an integer in a radix from 2 to 36
+     - Number Base
+   * - :ref:`INTEGER_TO_HEX <functions-number-base:INTEGER_TO_HEX>`
+     - Writes an integer in hexadecimal
+     - Number Base
    * - :ref:`LAST_DAY <functions-date-and-time:LAST_DAY>`
      - Last day of the month of a date
      - Date and Time

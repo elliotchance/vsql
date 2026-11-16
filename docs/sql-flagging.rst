@@ -479,6 +479,18 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V403-17``
      - ``LGAMMA``.
 
+   * - ``V403-18``
+     - ``INTEGER_TO_BASE``.
+
+   * - ``V403-19``
+     - ``BASE_TO_INTEGER``.
+
+   * - ``V403-20``
+     - ``INTEGER_TO_HEX``.
+
+   * - ``V403-21``
+     - ``HEX_TO_INTEGER``.
+
    * - ``V403-22``
      - ``TRIM_SCALE``.
 

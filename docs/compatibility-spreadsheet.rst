@@ -1505,35 +1505,58 @@ Returns the Bessel function Yn(x), also called the Weber or Neumann function.
 BIN2DEC
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =BIN2DEC(number)
+✅ vsql has the same function: ``BASE_TO_INTEGER(..., 2)``.
 
 Converts a binary number written as text to a decimal number.
+
+.. code-block:: sql
+
+  -- =BIN2DEC(number)
+  VALUES BASE_TO_INTEGER(/*number*/, 2);
+  -- =BIN2DEC("1100100")
+  VALUES BASE_TO_INTEGER('1100100', 2);
+  -- COL1: 100
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front.
 
 BIN2HEX
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
+🔧 vsql has no ``BIN2HEX`` function, but an expression does the same thing.
 
-.. code-block:: text
+Converts a binary number written as text to hexadecimal text.
 
-  =BIN2HEX(number, [places])
+.. code-block:: sql
 
-Converts a binary number to hexadecimal text.
+  -- =BIN2HEX(number)
+  VALUES INTEGER_TO_HEX(BASE_TO_INTEGER(/*number*/, 2));
+  -- =BIN2HEX("11111011")
+  VALUES INTEGER_TO_HEX(BASE_TO_INTEGER('11111011', 2));
+  -- COL1: FB
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 BIN2OCT
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
+🔧 vsql has no ``BIN2OCT`` function, but an expression does the same thing.
 
-.. code-block:: text
+Converts a binary number written as text to octal text.
 
-  =BIN2OCT(number, [places])
+.. code-block:: sql
 
-Converts a binary number to octal text.
+  -- =BIN2OCT(number)
+  VALUES INTEGER_TO_BASE(BASE_TO_INTEGER(/*number*/, 2), 8);
+  -- =BIN2OCT("1001")
+  VALUES INTEGER_TO_BASE(BASE_TO_INTEGER('1001', 2), 8);
+  -- COL1: 11
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 BITAND
 ^^^^^^
@@ -1634,35 +1657,59 @@ Converts a measurement from one unit to another, such as miles to kilometers.
 DEC2BIN
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =DEC2BIN(number, [places])
+✅ vsql has the same function: ``INTEGER_TO_BASE(..., 2)``.
 
 Converts a decimal number to binary text.
+
+.. code-block:: sql
+
+  -- =DEC2BIN(number)
+  VALUES INTEGER_TO_BASE(/*number*/, 2);
+  -- =DEC2BIN(9)
+  VALUES INTEGER_TO_BASE(9, 2);
+  -- COL1: 1001
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 DEC2HEX
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =DEC2HEX(number, [places])
+✅ vsql has the same function: ``INTEGER_TO_HEX``.
 
 Converts a decimal number to hexadecimal text.
+
+.. code-block:: sql
+
+  -- =DEC2HEX(number)
+  VALUES INTEGER_TO_HEX(/*number*/);
+  -- =DEC2HEX(100)
+  VALUES INTEGER_TO_HEX(100);
+  -- COL1: 64
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 DEC2OCT
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =DEC2OCT(number, [places])
+✅ vsql has the same function: ``INTEGER_TO_BASE(..., 8)``.
 
 Converts a decimal number to octal text.
+
+.. code-block:: sql
+
+  -- =DEC2OCT(number)
+  VALUES INTEGER_TO_BASE(/*number*/, 8);
+  -- =DEC2OCT(58)
+  VALUES INTEGER_TO_BASE(58, 8);
+  -- COL1: 72
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 DELTA
 ^^^^^
@@ -1775,35 +1822,58 @@ Returns 1 when a number is at least a threshold and 0 otherwise.
 HEX2BIN
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
+🔧 vsql has no ``HEX2BIN`` function, but an expression does the same thing.
 
-.. code-block:: text
+Converts a hexadecimal number written as text to binary text.
 
-  =HEX2BIN(number, [places])
+.. code-block:: sql
 
-Converts a hexadecimal number to binary text.
+  -- =HEX2BIN(number)
+  VALUES INTEGER_TO_BASE(HEX_TO_INTEGER(/*number*/), 2);
+  -- =HEX2BIN("F")
+  VALUES INTEGER_TO_BASE(HEX_TO_INTEGER('F'), 2);
+  -- COL1: 1111
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 HEX2DEC
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =HEX2DEC(number)
+✅ vsql has the same function: ``HEX_TO_INTEGER``.
 
 Converts a hexadecimal number written as text to a decimal number.
+
+.. code-block:: sql
+
+  -- =HEX2DEC(number)
+  VALUES HEX_TO_INTEGER(/*number*/);
+  -- =HEX2DEC("A5")
+  VALUES HEX_TO_INTEGER('A5');
+  -- COL1: 165
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front.
 
 HEX2OCT
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
+🔧 vsql has no ``HEX2OCT`` function, but an expression does the same thing.
 
-.. code-block:: text
+Converts a hexadecimal number written as text to octal text.
 
-  =HEX2OCT(number, [places])
+.. code-block:: sql
 
-Converts a hexadecimal number to octal text.
+  -- =HEX2OCT(number)
+  VALUES INTEGER_TO_BASE(HEX_TO_INTEGER(/*number*/), 8);
+  -- =HEX2OCT("F")
+  VALUES INTEGER_TO_BASE(HEX_TO_INTEGER('F'), 8);
+  -- COL1: 17
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 IMABS
 ^^^^^
@@ -2160,35 +2230,58 @@ Returns the tangent of a complex number.
 OCT2BIN
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
+🔧 vsql has no ``OCT2BIN`` function, but an expression does the same thing.
 
-.. code-block:: text
+Converts an octal number written as text to binary text.
 
-  =OCT2BIN(number, [places])
+.. code-block:: sql
 
-Converts an octal number to binary text.
+  -- =OCT2BIN(number)
+  VALUES INTEGER_TO_BASE(BASE_TO_INTEGER(/*number*/, 8), 2);
+  -- =OCT2BIN("3")
+  VALUES INTEGER_TO_BASE(BASE_TO_INTEGER('3', 8), 2);
+  -- COL1: 11
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 OCT2DEC
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =OCT2DEC(number)
+✅ vsql has the same function: ``BASE_TO_INTEGER(..., 8)``.
 
 Converts an octal number written as text to a decimal number.
+
+.. code-block:: sql
+
+  -- =OCT2DEC(number)
+  VALUES BASE_TO_INTEGER(/*number*/, 8);
+  -- =OCT2DEC("54")
+  VALUES BASE_TO_INTEGER('54', 8);
+  -- COL1: 44
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front.
 
 OCT2HEX
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
+🔧 vsql has no ``OCT2HEX`` function, but an expression does the same thing.
 
-.. code-block:: text
+Converts an octal number written as text to hexadecimal text.
 
-  =OCT2HEX(number, [places])
+.. code-block:: sql
 
-Converts an octal number to hexadecimal text.
+  -- =OCT2HEX(number)
+  VALUES INTEGER_TO_HEX(BASE_TO_INTEGER(/*number*/, 8));
+  -- =OCT2HEX("100")
+  VALUES INTEGER_TO_HEX(BASE_TO_INTEGER('100', 8));
+  -- COL1: 40
+
+Excel writes a negative number as 10 digits of two's complement (such as
+``FFFFFFFFFF`` for -1), but vsql writes a ``-`` in front. There's no
+``places`` to add leading zeros.
 
 Financial
 ---------
@@ -4531,13 +4624,19 @@ Returns the inverse hyperbolic tangent of a number.
 BASE
 ^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =BASE(number, radix, [min_length])
+✅ vsql has the same function: ``INTEGER_TO_BASE``.
 
 Converts a number to text in another base, such as binary or hexadecimal.
+
+.. code-block:: sql
+
+  -- =BASE(number, radix)
+  VALUES INTEGER_TO_BASE(/*number*/, /*radix*/);
+  -- =BASE(255, 16)
+  VALUES INTEGER_TO_BASE(255, 16);
+  -- COL1: FF
+
+There's no ``min_length`` to add leading zeros.
 
 CEILING.MATH
 ^^^^^^^^^^^^
@@ -4705,13 +4804,17 @@ Returns the hyperbolic cosecant of a number.
 DECIMAL
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =DECIMAL(text, radix)
+✅ vsql has the same function: ``BASE_TO_INTEGER``.
 
 Converts text that holds a number in another base to a decimal number.
+
+.. code-block:: sql
+
+  -- =DECIMAL(text, radix)
+  VALUES BASE_TO_INTEGER(/*text*/, /*radix*/);
+  -- =DECIMAL("FF", 16)
+  VALUES BASE_TO_INTEGER('FF', 16);
+  -- COL1: 255
 
 DEGREES
 ^^^^^^^

@@ -427,6 +427,9 @@ fn builtin_arg_names(name string) ?[]string {
 	if names := size_arg_names[name] {
 		return names
 	}
+	if names := base_arg_names[name] {
+		return names
+	}
 	if names := math_arg_names[name] {
 		return names
 	}
@@ -443,6 +446,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	register_date_trunc_funcs(mut conn)!
 	register_make_interval_funcs(mut conn)!
 	register_math_funcs(mut conn)!
+	register_base_funcs(mut conn)!
 	register_string_funcs(mut conn)!
 	register_decfloat_funcs(mut conn)!
 	register_binary_funcs(mut conn)!

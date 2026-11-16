@@ -546,8 +546,8 @@ The row count of an ``OFFSET`` must not be negative.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An argument of a function isn't one that it accepts, such as ``CHR`` of a number
-that isn't a Unicode code point, or field 0 of ``SPLIT_PART`` (see
-:doc:`functions-string`).
+that isn't a Unicode code point, field 0 of ``SPLIT_PART`` (see
+:doc:`functions-string`), or a method of ``HASH`` that doesn't exist.
 
 **Examples**
 
@@ -555,6 +555,9 @@ that isn't a Unicode code point, or field 0 of ``SPLIT_PART`` (see
 
   VALUES CHR(0);
   -- error 22023: invalid parameter value: CHR: 0 is not a valid Unicode code point
+
+  VALUES HASH('abc', 'SHA-256');
+  -- error 22023: invalid parameter value: HASH: SHA-256 is not a hash method
 
 ``22025`` invalid escape sequence
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

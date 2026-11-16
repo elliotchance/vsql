@@ -171,6 +171,13 @@ import arrays
 // V406-03: BINARY_TO_BASE64.
 // V406-04: BASE64_TO_BINARY.
 //
+// V408: Hash functions.
+// V408-01: HASH.
+// V408-02: MD5.
+// V408-03: SHA1.
+// V408-04: SHA256.
+// V408-05: SHA512.
+//
 // V501: PostgreSQL functions.
 // V501-01: version().
 // V501-02: current_setting().
@@ -280,6 +287,11 @@ const vsql_binary_to_hex = 'V406-01'
 const vsql_hex_to_binary = 'V406-02'
 const vsql_binary_to_base64 = 'V406-03'
 const vsql_base64_to_binary = 'V406-04'
+const vsql_hash = 'V408-01'
+const vsql_md5 = 'V408-02'
+const vsql_sha1 = 'V408-03'
+const vsql_sha256 = 'V408-04'
+const vsql_sha512 = 'V408-05'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

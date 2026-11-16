@@ -1,0 +1,82 @@
+-- # Every function that accepts a CHARACTER LARGE OBJECT or BINARY LARGE
+-- # OBJECT reads a value that's stored outside of its row (see "Large Values"
+-- # in the file format docs) correctly. The tests use pages of 256 octets, so
+-- # each value here is many times longer than half of a page, and is stored in
+-- # chunks of 76 octets that are read when they're needed.
+
+/* define lob */
+CREATE TABLE t (c CLOB, b BLOB, u CLOB);
+INSERT INTO t (c) VALUES ('0123456789ABCDEF');
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET c = c || c;
+UPDATE t SET b = HEX_TO_BINARY(c);
+UPDATE t SET u = BINARY_TO_BASE64(b);
+
+-- # CHAR_LENGTH, CHARACTER_LENGTH and OCTET_LENGTH.
+/* include lob */
+SELECT CHAR_LENGTH(c), CHARACTER_LENGTH(c), OCTET_LENGTH(c), OCTET_LENGTH(b), OCTET_LENGTH(u), OCTET_LENGTH(c || c) FROM t;
+-- COL1: 4096 COL2: 4096 COL3: 4096 COL4: 2048 COL5: 2732 COL6: 8192
+
+-- # POSITION, with a large value as the string or the substring.
+/* include lob */
+SELECT POSITION('EF0123' IN c), POSITION(c IN c), POSITION(c IN 'abc'), POSITION('x' IN c) FROM t;
+-- COL1: 15 COL2: 1 COL3: 0 COL4: 0
+
+/* include lob */
+SELECT POSITION(X'EF0123' IN b), POSITION(b IN b), POSITION(b IN X'01'), POSITION(X'FF' IN b) FROM t;
+-- COL1: 8 COL2: 1 COL3: 0 COL4: 0
+
+-- # LOWER and UPPER.
+/* include lob */
+SELECT MD5(LOWER(c)), MD5(UPPER(LOWER(c))) FROM t;
+-- COL1: 8be46e8a3cb2602adea470dc8afbb729 COL2: e486c83ec8f0c9addeef05e08ed5567e
+
+-- # SUBSTRING, across the end of a chunk.
+/* include lob */
+SELECT SUBSTRING(c FROM 70 FOR 12), SUBSTRING(b FROM 74 FOR 4), OCTET_LENGTH(SUBSTRING(c FROM 100)) FROM t;
+-- COL1: 56789ABCDEF0 COL2: 23456789 COL3: 3997
+
+-- # TRIM.
+/* include lob */
+SELECT MD5(TRIM(LEADING '0' FROM c)), MD5(TRIM(TRAILING 'F' FROM c)), MD5(TRIM(LEADING X'01' FROM b)) FROM t;
+-- COL1: fc371efb6a21b767d69d8115e1e01405 COL2: 9bf129fafe16ba4f4ac4f6726c5c76a4 COL3: 8179cd1e1b9518094f2d62bd0b08cee4
+
+-- # OVERLAY, across the end of a chunk.
+/* include lob */
+SELECT MD5(OVERLAY(c PLACING 'xyz' FROM 75 FOR 3)), MD5(OVERLAY(b PLACING X'AABB' FROM 75 FOR 2)) FROM t;
+-- COL1: e3bbd3d66951ae7d9e4bad65608d1e1e COL2: 3809f893e8a54622c618392cf950df76
+
+-- # BINARY_TO_HEX, HEX_TO_BINARY, BINARY_TO_BASE64 and BASE64_TO_BINARY.
+/* include lob */
+SELECT MD5(BINARY_TO_HEX(b)), BINARY_TO_HEX(b) = c, HEX_TO_BINARY(c) = b, MD5(BINARY_TO_BASE64(b)), MD5(u), BASE64_TO_BINARY(u) = b FROM t;
+-- COL1: e486c83ec8f0c9addeef05e08ed5567e COL2: TRUE COL3: TRUE COL4: 959baffdac831a6af4a0734f2ac391a0 COL5: 959baffdac831a6af4a0734f2ac391a0 COL6: TRUE
+
+-- # HASH, MD5, SHA1, SHA256 and SHA512 read a large value a few chunks at a
+-- # time.
+/* include lob */
+SELECT MD5(c), MD5(b), SHA1(c), SHA1(b) FROM t;
+-- COL1: e486c83ec8f0c9addeef05e08ed5567e COL2: aecda71ffda49dffbcca557fc216e3a8 COL3: 23b0fa69382a0216a404cf76555daa8ee56cb47a COL4: 291e1c6ae86abe8e4b80e1055cfccc9f15074446
+
+/* include lob */
+SELECT SHA256(c), SHA256(b) FROM t;
+-- COL1: 9aec711280669e3c0470796546f24aa8363e9d50665a755384d08b7fa6151535 COL2: a26ef66dc43a8c63fee57e5da951c0073d5bf3db2ec8e86ca7b55cd9305c4850
+
+/* include lob */
+SELECT SHA512(c), SHA512(b) FROM t;
+-- COL1: 41a6433fcb1eae6de55290499af78a705562af516aac5fbbe7ac6350a01242022efc2cb77a6a9b5d6ae799d2662845a2d743e93c3e0dc5a76670eacc901d485d COL2: 4a6710fd196e18622daae0b99f025f21fcabe0597d471309011b8f739538c8f93b197761515c3f443305f7230cc38cc4c102750868af505cd1be979c9d523158
+
+/* include lob */
+SELECT HASH(c, 'SHA3_256'), HASH(b, 'BLAKE2B_256'), HASH(c, 'SHA384') FROM t;
+-- COL1: D2C96EE33FCC96BA2050B45ACBDA695FD23493EF9F075B18D387B9EE938732B3 COL2: 0B31AD34DEC3E1750B8AD5C8828E67FD486A8F935C8BF66E41FFA4D29D7648EF COL3: 9405C815D3A42F4E671A0E13D7C6B57B24FBA2AE80EC74166E39EA7CE2AC3B03490F93A3E4E0189B16879F89D1696E4B
+
+-- # BLAKE3 and RIPEMD160 are written in pieces differently, so they're the
+-- # same as hashing the whole value at once.
+/* include lob */
+SELECT HASH(c, 'BLAKE3') = HASH(CAST(c AS VARCHAR(5000)), 'BLAKE3'), HASH(b, 'RIPEMD160') = HASH(CAST(b AS VARBINARY(5000)), 'RIPEMD160') FROM t;
+-- COL1: TRUE COL2: TRUE

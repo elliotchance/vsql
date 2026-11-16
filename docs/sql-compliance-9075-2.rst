@@ -1211,10 +1211,10 @@ Optional Features
    * - ❌ **T022**
      - **Advanced support for BINARY and VARBINARY data types**
 
-   * - ❌ **T023**
+   * - ✅ **T023**
      - **Compound binary literals**
 
-   * - ❌ **T024**
+   * - ✅ **T024**
      - **Spaces in binary literals**
 
    * - ✅ **T031**

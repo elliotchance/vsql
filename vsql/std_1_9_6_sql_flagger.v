@@ -151,6 +151,10 @@ import arrays
 // V403-15: ERFC.
 // V403-16: GAMMA.
 // V403-17: LGAMMA.
+// V403-18: INTEGER_TO_BASE.
+// V403-19: BASE_TO_INTEGER.
+// V403-20: INTEGER_TO_HEX.
+// V403-21: HEX_TO_INTEGER.
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
@@ -261,6 +265,10 @@ const vsql_erf = 'V403-14'
 const vsql_erfc = 'V403-15'
 const vsql_gamma = 'V403-16'
 const vsql_lgamma = 'V403-17'
+const vsql_integer_to_base = 'V403-18'
+const vsql_base_to_integer = 'V403-19'
+const vsql_integer_to_hex = 'V403-20'
+const vsql_hex_to_integer = 'V403-21'
 const vsql_trim_only_from = 'V404-01'
 const vsql_replace = 'V404-02'
 const vsql_repeat = 'V404-03'

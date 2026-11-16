@@ -168,6 +168,23 @@ fn (mut l IsolationLock) close_file() {
 
 fn C._commit(int) int
 
+#include <mmsystem.h>
+#flag -lwinmm
+
+fn C.timeBeginPeriod(u32) u32
+fn C.timeEndPeriod(u32) u32
+
+// begin_precise_sleep makes time.sleep() wake up within a millisecond, until
+// end_precise_sleep(). Otherwise, Windows only wakes a thread every 15.6ms, so
+// polling for a lock every millisecond is really every 15.6ms.
+fn begin_precise_sleep() {
+	C.timeBeginPeriod(1)
+}
+
+fn end_precise_sleep() {
+	C.timeEndPeriod(1)
+}
+
 // fsync waits for the file to be written to the disk. It must be flushed first.
 // _commit() already asks the drive to write its cache, so ConnectionOptions.
 // full_fsync makes no difference.

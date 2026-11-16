@@ -418,6 +418,7 @@ fn test_all() ! {
 	tests := get_tests()!
 	shard := os.getenv('SQL_TEST_SHARD')
 	if shard != '' {
+		install_sql_test_crash_report()
 		parts := shard.split('/')
 		// An error stops this process's tests, but the process that started it
 		// still needs to know about it.
@@ -547,6 +548,7 @@ fn run_sql_tests(tests []SQLTest, first int, jobs int, verbose bool, filter_line
 		mut failed_modes := []string{}
 		mut skipped := false
 		for mode in modes {
+			set_sql_test_location('${test.file_name}:${test.line_number} (${sql_test_mode_str(mode, through_server)})')
 			// An error (rather than a failed assertion) still says which test it
 			// was.
 			result := run_single_test(test, verbose, filter_line, mode, through_server, port, mut
@@ -567,6 +569,7 @@ fn run_sql_tests(tests []SQLTest, first int, jobs int, verbose bool, filter_line
 			outcome.failed << '${test.file_name}:${test.line_number} (${failed_modes.join(', ')})'
 		}
 	}
+	set_sql_test_location('the end of the tests (stopping the server)')
 
 	return outcome
 }

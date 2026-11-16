@@ -1,12 +1,12 @@
--- # USING CHARACTERS is implicit (Syntax Rules, 6), as EXPLAIN shows. The
--- # result is a CHARACTER VARYING as long as the source (Syntax Rules, 4.a.i).
+-- # USING CHARACTERS is implicit (Syntax Rules, 6). The result is a CHARACTER
+-- # VARYING as long as the source (Syntax Rules, 4.a.i).
 /* extensions V001-01 */
 EXPLAIN VALUES SUBSTRING('hello' FROM 3);
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(5)) = ROW(SUBSTRING('hello' FROM 3 USING CHARACTERS))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(5)) = ROW(SUBSTRING('hello' FROM 3))
 
 /* extensions V001-01 */
 EXPLAIN VALUES SUBSTRING('hello world' FROM 3 FOR 5);
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(11)) = ROW(SUBSTRING('hello world' FROM 3 FOR 5 USING CHARACTERS))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(11)) = ROW(SUBSTRING('hello world' FROM 3 FOR 5))
 
 /* extensions V001-01 */
 EXPLAIN VALUES SUBSTRING('hello world' FROM 3 USING CHARACTERS);

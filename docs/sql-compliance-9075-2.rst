@@ -1208,7 +1208,7 @@ Optional Features
    * - ⭕ **T021**
      - **BINARY and VARBINARY data types**
 
-   * - ❌ **T022**
+   * - ⭕ **T022**
      - **Advanced support for BINARY and VARBINARY data types**
 
    * - ❌ **T023**
@@ -1244,10 +1244,10 @@ Optional Features
    * - ✅ **T046**
      - **CLOB data type**
 
-   * - ❌ **T047**
+   * - ⭕ **T047**
      - **POSITION, OCTET_LENGTH, TRIM, and SUBSTRING for BLOBs**
 
-   * - ❌ **T048**
+   * - ✅ **T048**
      - **Concatenation of BLOBs**
 
    * - ❌ **T049**

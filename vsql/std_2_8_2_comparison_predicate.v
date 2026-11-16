@@ -290,9 +290,10 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 		return compare_strings(xv, yv)
 	}
 
-	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 4
-	// and 5 compare binary strings octet by octet. Binary strings are not
-	// supported.
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 4 and 5
+	if xv.typ.typ.is_binary_string() && yv.typ.typ.is_binary_string() {
+		return compare_binary_strings(xv.string_value(), yv.string_value())
+	}
 
 	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 6
 	//
@@ -451,6 +452,25 @@ fn compare_strings(xv Value, yv Value) CompareResult {
 	// the result is given by the collation. Which of several equal strings MAX,
 	// MIN, DISTINCT, UNION, etc. pick is implementation-dependent (General
 	// Rules, 3.d).
+	if x < y {
+		return .is_less
+	}
+
+	if x > y {
+		return .is_greater
+	}
+
+	return .is_equal
+}
+
+// compare_binary_strings compares two binary strings octet by octet. When one
+// is the start of the other, the shorter one is less, even if the rest of the
+// longer one is all X'00' (which is implementation-defined). That's the same
+// order as their keys, see write_key_binary.
+//
+// ISO/IEC 9075-2:2023, 4.4.2, Binary string comparison
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 5.a-5.e
+fn compare_binary_strings(x string, y string) CompareResult {
 	if x < y {
 		return .is_less
 	}

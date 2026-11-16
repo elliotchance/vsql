@@ -99,6 +99,9 @@ fn (t SQLType) is_string() bool {
 }
 
 // is_binary_string is true for BINARY, BINARY VARYING and BINARY LARGE OBJECT.
+//
+// ISO/IEC 9075-2:2023, 4.4, Binary strings
+// ISO/IEC 9075-2:2023, 4.4.1, Introduction to binary strings
 fn (t SQLType) is_binary_string() bool {
 	return t in [.is_binary, .is_varbinary, .is_blob]
 }

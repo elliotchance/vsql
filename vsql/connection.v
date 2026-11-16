@@ -1049,8 +1049,14 @@ fn (mut conn Connection) register_func(func Func) ! {
 	conn.funcs << func
 }
 
+// function_arg_type is the type of an argument that's used to find a function:
+// a CHARACTER is a CHARACTER VARYING, and a BINARY is a BINARY VARYING.
 fn function_arg_type(t Type) SQLType {
-	return if t.typ == .is_character { .is_varchar } else { t.typ }
+	return match t.typ {
+		.is_character { .is_varchar }
+		.is_binary { .is_varbinary }
+		else { t.typ }
+	}
 }
 
 pub fn (mut conn Connection) catalog() &CatalogConnection {
@@ -1083,16 +1089,10 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 
 		mut cost := 0
 		for i, t in arg_types {
-			mut real_arg_type := t
-
-			// All CHARACTER types are considered to be CHARACTER VARYING.
-			if t.typ == .is_character {
-				real_arg_type = Type{SQLType.is_varchar, t.scale, 0, false, false}
-			}
-
-			// Only compare the SQLType so that the precision/scale/null isn't
-			// part of the comparison.
-			c := implicit_numeric_cast_cost(real_arg_type.typ, f.arg_types[i].typ) or {
+			// All CHARACTER types are considered to be CHARACTER VARYING, and
+			// BINARY types are BINARY VARYING. Only compare the SQLType so that
+			// the precision/scale/null isn't part of the comparison.
+			c := implicit_numeric_cast_cost(function_arg_type(t), f.arg_types[i].typ) or {
 				cost = -1
 				break
 			}

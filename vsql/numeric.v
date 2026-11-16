@@ -217,7 +217,16 @@ fn (n Numeric) divide(n2 Numeric) !Numeric {
 		return sqlstate_22012() // division by zero
 	}
 
-	return n.multiply(n2.reciprocal())
+	// The denominator can't be negative, so the sign moves to the numerator.
+	typ := exact_arithmetic_type(n.typ, n2.typ, '/')
+	mut numerator := n.numerator * n2.denominator
+	mut denominator := n.denominator * n2.numerator
+	if denominator.signum == -1 {
+		numerator = numerator.neg()
+		denominator = denominator.neg()
+	}
+
+	return new_numeric(typ, numerator, denominator).normalize_denominator(typ)
 }
 
 // check_numeric_precision returns n, or an error if its integer part has more
@@ -330,10 +339,6 @@ fn big_integer_to_i64(n big.Integer) i64 {
 
 fn (n Numeric) integer() big.Integer {
 	return n.numerator / n.denominator
-}
-
-fn (n Numeric) reciprocal() Numeric {
-	return new_numeric(n.typ, n.denominator, n.numerator)
 }
 
 fn (n Numeric) trunc() Numeric {

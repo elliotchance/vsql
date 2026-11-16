@@ -1078,7 +1078,7 @@
 6.30/SR/1.c.i            definition   - -
 6.30/SR/1.c.ii           implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql
 6.30/SR/1.c.iii          implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql,tests/std_2_6_1_type_limits.sql
-6.30/SR/1.c.iv           impl-defined vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql,tests/std_2_6_1_type_limits.sql a division has the type of a multiplication (so the scale is S1 + S2, and more than 1000 is a 42601 error), and two integers have the larger integer type
+6.30/SR/1.c.iv           impl-defined vsql/type.v tests/std_2_6_30_arithmetic.sql,tests/std_2_6_1_numeric.sql,tests/std_2_6_1_type_limits.sql scale MAX(S1, S2, 16) and precision P1 - S1 + S2 + scale (truncated); two integers have the larger integer type
 6.30/SR/2                implemented  vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql
 6.30/SR/3                implemented  vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_numeric_null_operands.sql
 6.30/SR/4                implemented  vsql/lexer.v tests/std_2_6_30_numeric_null_operands.sql

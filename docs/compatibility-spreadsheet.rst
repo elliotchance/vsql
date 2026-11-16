@@ -848,7 +848,7 @@ Returns the average of a field over the rows that match the criteria.
   SELECT AVG(/*field*/) FROM /*database*/ WHERE /*criteria*/;
   -- =DAVERAGE(A1:D5, "price", F1:F2), with F1 = "price" and F2 = ">1"
   SELECT AVG(price) FROM products WHERE price > 1;
-  -- COL1: 2.83
+  -- COL1: 2.8333333333333333
 
 The criteria range F1:F2 holds the header "price" and the condition ">1", which becomes the WHERE.
 
@@ -2825,7 +2825,7 @@ Returns the straight-line depreciation of an asset for one period.
   VALUES (/*cost*/ - /*salvage*/) / /*life*/;
   -- =SLN(10000, 1000, 5)
   VALUES (10000 - 1000) / 5.0;
-  -- COL1: 1800.0
+  -- COL1: 1800.0000000000000000
 
 STOCKHISTORY
 ^^^^^^^^^^^^
@@ -2851,7 +2851,7 @@ Returns the sum-of-years' digits depreciation of an asset for a period.
   VALUES (/*cost*/ - /*salvage*/) * (/*life*/ - /*per*/ + 1) * 2 / (/*life*/ * (/*life*/ + 1));
   -- =SYD(10000, 1000, 5, 2)
   VALUES (10000 - 1000.0) * (5 - 2 + 1) * 2 / (5 * (5 + 1));
-  -- COL1: 2400.0
+  -- COL1: 2400.0000000000000000
 
 TBILLEQ
 ^^^^^^^
@@ -4586,7 +4586,7 @@ Returns the number of ways to choose some items from a set, ignoring order.
   VALUES FACTORIAL(/*number*/) / (FACTORIAL(/*number_chosen*/) * FACTORIAL(/*number*/ - /*number_chosen*/));
   -- =COMBIN(5, 2)
   VALUES FACTORIAL(5) / (FACTORIAL(2) * FACTORIAL(5 - 2));
-  -- COL1: 10
+  -- COL1: 10.0000000000000000
 
 COMBINA
 ^^^^^^^
@@ -4602,7 +4602,7 @@ allowing repeats.
   VALUES FACTORIAL(/*number*/ + /*number_chosen*/ - 1) / (FACTORIAL(/*number_chosen*/) * FACTORIAL(/*number*/ - 1));
   -- =COMBINA(4, 3)
   VALUES FACTORIAL(4 + 3 - 1) / (FACTORIAL(3) * FACTORIAL(4 - 1));
-  -- COL1: 20
+  -- COL1: 20.0000000000000000
 
 This is COMBIN(number + number_chosen - 1, number_chosen).
 
@@ -5021,7 +5021,7 @@ parts.
   -- =MULTINOMIAL(2, 3, 4)
   VALUES FACTORIAL(2 + 3 + 4)
     / (FACTORIAL(2) * FACTORIAL(3) * FACTORIAL(4));
-  -- COL1: 1260
+  -- COL1: 1260.0000000000000000
 
 MUNIT
 ^^^^^
@@ -5066,7 +5066,7 @@ Excel.
   -- =PERCENTOF(C2:C3, C2:C5)
   SELECT SUM(price) FILTER (WHERE sku IN ('A1', 'B2')) / SUM(price)
   FROM products;
-  -- COL1: 0.2000
+  -- COL1: 0.2000000000000000
 
 PI
 ^^
@@ -5246,7 +5246,7 @@ Rounds a number away from zero to a number of decimal places.
   VALUES SIGN(/*number*/) * CEIL(ABS(/*number*/) * /*10 to the power of num_digits*/) / /*10 to the power of num_digits*/;
   -- =ROUNDUP(2.341, 1)
   VALUES SIGN(2.341) * CEIL(ABS(2.341) * 10) / 10.0;
-  -- COL1: 2.4
+  -- COL1: 2.4000000000000000
 
 The 10 is ``POWER(10, num_digits)``.
 
@@ -5618,7 +5618,7 @@ Returns one number divided by another. Only in Google Sheets.
   VALUES /*dividend*/ / /*divisor*/;
   -- =DIVIDE(10, 4)
   VALUES 10 / 4.0;
-  -- COL1: 2.5
+  -- COL1: 2.5000000000000000
 
 Dividing two integers truncates (10 / 4 is 2), and a decimal result keeps the decimal places of its operands (1 / 3.0 is 0.3). Use 1 / 3e0 for full precision.
 
@@ -7137,7 +7137,7 @@ Returns the number of ordered ways to choose some items from a set.
   VALUES FACTORIAL(/*number*/) / FACTORIAL(/*number*/ - /*number_chosen*/);
   -- =PERMUT(5, 2)
   VALUES FACTORIAL(5) / FACTORIAL(5 - 2);
-  -- COL1: 20
+  -- COL1: 20.0000000000000000
 
 PERMUTATIONA
 ^^^^^^^^^^^^
@@ -7256,7 +7256,7 @@ Returns the rank of a number among other numbers, with ties sharing their averag
   -- =RANK.AVG(3, C2:C5)
   SELECT COUNT(*) FILTER (WHERE price > 3)
     + (COUNT(*) FILTER (WHERE price = 3) + 1) / 2.0 FROM products;
-  -- COL1: 2.0
+  -- COL1: 2.0000000000000000
 
 Use price < 3 for order 1.
 
@@ -7561,7 +7561,7 @@ Returns the mean after leaving out a fraction of the smallest and largest values
   -- =TRIMMEAN(C2:C5, 0.5)
   SELECT AVG(price) FROM (SELECT price FROM products ORDER BY price
     OFFSET 1 ROW FETCH FIRST 2 ROWS ONLY) AS t;
-  -- COL1: 2.25
+  -- COL1: 2.2500000000000000
 
 OFFSET is the number left out at each end, n * percent / 2 rounded down, and FETCH is the number kept.
 

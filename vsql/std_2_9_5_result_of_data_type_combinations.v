@@ -27,13 +27,33 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		// one character set (UTF8) and collation.
 		//
 		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.a
+		//
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.a.iii
 		t1.typ.is_string() && t2.typ.is_string() {
 			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
+			if t1.typ == .is_clob || t2.typ == .is_clob {
+				return Type{.is_clob, size, 0, false, false}
+			}
 			if t1.typ == .is_character && t2.typ == .is_character {
 				return Type{.is_character, size, 0, false, false}
 			}
 
 			return Type{.is_varchar, size, 0, false, false}
+		}
+		// The longest binary string, which is a BINARY LARGE OBJECT if any of them
+		// are, and otherwise only fixed-length if all of them are.
+		//
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.b
+		t1.typ.is_binary_string() && t2.typ.is_binary_string() {
+			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
+			if t1.typ == .is_blob || t2.typ == .is_blob {
+				return Type{.is_blob, size, 0, false, false}
+			}
+			if t1.typ == .is_binary && t2.typ == .is_binary {
+				return Type{.is_binary, size, 0, false, false}
+			}
+
+			return Type{.is_varbinary, size, 0, false, false}
 		}
 		// Approximate numeric if any of them are. It's REAL if they're all REAL,
 		// otherwise DOUBLE PRECISION.

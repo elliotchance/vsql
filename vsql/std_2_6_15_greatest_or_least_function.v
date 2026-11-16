@@ -43,6 +43,7 @@ fn (e GreatestOrLeastFunction) compile(mut c Compiler) !CompileResult {
 	mut typ := Type{compiled[0].typ.typ, compiled[0].typ.size, compiled[0].typ.scale, false, false}
 	mut contains_agg := false
 	for i, a in compiled {
+		check_ordering_operand(a.typ, 'argument ${i + 1} of ${name}')!
 		for b in compiled[i + 1..] {
 			if !comparable_types(a.typ.typ, b.typ.typ) || (a.typ.typ.is_datetime()
 				&& b.typ.typ.is_datetime() && datetime_fields(a.typ.typ) != datetime_fields(b.typ.typ)) {

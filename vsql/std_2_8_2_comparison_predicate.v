@@ -24,6 +24,20 @@ enum ComparisonOperator {
 	greater_than_or_equal
 }
 
+// check_ordering_operands returns an error if a comparison other than = or <>,
+// which is an ordering operation, has an operand (or a field of a row) that's a
+// large object.
+//
+// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 1.a, 1.b, 2.a and 2.b
+fn (op ComparisonOperator) check_ordering_operands(types []Type) ! {
+	if op in [.equal, .not_equal] {
+		return
+	}
+	for typ in types {
+		check_ordering_operand(typ, 'operand of ${op}')!
+	}
+}
+
 fn (op ComparisonOperator) str() string {
 	return match op {
 		.equal { '=' }
@@ -195,6 +209,7 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxi
 	compiled_left, compiled_right = c.with_pair_types(compiled_left, compiled_right, same_type)
+	e.op.check_ordering_operands([compiled_left.typ, compiled_right.typ])!
 	c.check_comparison(compiled_left.typ, compiled_right.typ, compiled_left.null_parameter
 		|| compiled_right.null_parameter)!
 
@@ -215,6 +230,9 @@ fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxi
 	typed := c.with_row_types([e.left.compile_fields(mut c)!, e.right.compile_fields(mut c)!])
 	left, right := typed[0], typed[1]
+	mut types := left.map(it.typ)
+	types << right.map(it.typ)
+	e.op.check_ordering_operands(types)!
 	c.check_row_comparison(left.map(it.typ), right.map(it.typ), null_parameters(left, right))!
 
 	return CompileResult{

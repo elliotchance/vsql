@@ -4,10 +4,12 @@ import math
 import math.big
 import rand
 
-// The mathematical functions that the SQL standard doesn't have, but most other
-// databases do (V403-02 to V403-10). Like the standard ones, an exact number is
-// implicitly cast to a NUMERIC and an approximate number to a DOUBLE PRECISION
-// (see find_function), and the result is NULL when any argument is NULL.
+// The mathematical functions that the SQL standard doesn't have, but other
+// databases do (V403-02 to V403-17): most of them have ROUND to CBRT, while ERF,
+// ERFC, GAMMA and LGAMMA come from PostgreSQL. Like the standard ones, an exact
+// number is implicitly cast to a NUMERIC and an approximate number to a DOUBLE
+// PRECISION (see find_function), and the result is NULL when any argument is
+// NULL.
 
 fn register_math_funcs(mut conn Connection) ! {
 	double_precision := Type{SQLType.is_double_precision, 0, 0, false}
@@ -73,6 +75,18 @@ fn register_math_funcs(mut conn Connection) ! {
 	]})!
 	conn.register_func(Func{'CBRT', [double_precision], false, func_cbrt, double_precision, false, true, [
 		vsql_cbrt,
+	]})!
+	conn.register_func(Func{'ERF', [double_precision], false, func_erf, double_precision, false, true, [
+		vsql_erf,
+	]})!
+	conn.register_func(Func{'ERFC', [double_precision], false, func_erfc, double_precision, false, true, [
+		vsql_erfc,
+	]})!
+	conn.register_func(Func{'GAMMA', [double_precision], false, func_gamma, double_precision, false, true, [
+		vsql_gamma,
+	]})!
+	conn.register_func(Func{'LGAMMA', [double_precision], false, func_lgamma, double_precision, false, true, [
+		vsql_lgamma,
 	]})!
 }
 
@@ -263,4 +277,44 @@ fn func_radians(_ FunctionContext, args []Value) !Value {
 // CBRT(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_cbrt(_ FunctionContext, args []Value) !Value {
 	return new_double_precision_value(math.cbrt(args[0].f64_value()))
+}
+
+// ERF(DOUBLE PRECISION) DOUBLE PRECISION
+fn func_erf(_ FunctionContext, args []Value) !Value {
+	return new_double_precision_value(math.erf(args[0].f64_value()))
+}
+
+// ERFC(DOUBLE PRECISION) DOUBLE PRECISION
+fn func_erfc(_ FunctionContext, args []Value) !Value {
+	return new_double_precision_value(math.erfc(args[0].f64_value()))
+}
+
+// is_gamma_pole is true when gamma of x is undefined: 0 and the negative
+// integers. Every DOUBLE PRECISION from -2^52 down is an integer.
+fn is_gamma_pole(x f64) bool {
+	return x == 0 || (x < 0 && x == math.floor(x))
+}
+
+// GAMMA(DOUBLE PRECISION) DOUBLE PRECISION
+fn func_gamma(_ FunctionContext, args []Value) !Value {
+	x := args[0].f64_value()
+	if is_gamma_pole(x) {
+		return sqlstate_22003()
+	}
+
+	// A result that is too large (from a large x, or an x very close to 0) is
+	// an error. One that is too small, such as GAMMA(-200.5), is 0 (adding 0
+	// turns -0 into 0).
+	return approximate_value(math.gamma(x) + 0, .is_double_precision)
+}
+
+// LGAMMA(DOUBLE PRECISION) DOUBLE PRECISION
+fn func_lgamma(_ FunctionContext, args []Value) !Value {
+	x := args[0].f64_value()
+	if is_gamma_pole(x) {
+		return sqlstate_22003()
+	}
+
+	// Only a very large x is too large, such as LGAMMA(1e308).
+	return approximate_value(math.log_gamma(x), .is_double_precision)
 }

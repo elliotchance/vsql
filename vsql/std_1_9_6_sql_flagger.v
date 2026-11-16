@@ -137,6 +137,10 @@ import arrays
 // V403-08: DEGREES.
 // V403-09: RADIANS.
 // V403-10: CBRT.
+// V403-14: ERF.
+// V403-15: ERFC.
+// V403-16: GAMMA.
+// V403-17: LGAMMA.
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
@@ -218,6 +222,10 @@ const vsql_atan2 = 'V403-07'
 const vsql_degrees = 'V403-08'
 const vsql_radians = 'V403-09'
 const vsql_cbrt = 'V403-10'
+const vsql_erf = 'V403-14'
+const vsql_erfc = 'V403-15'
+const vsql_gamma = 'V403-16'
+const vsql_lgamma = 'V403-17'
 const vsql_trim_only_from = 'V404-01'
 const vsql_replace = 'V404-02'
 const vsql_repeat = 'V404-03'

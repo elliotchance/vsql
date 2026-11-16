@@ -24,9 +24,8 @@ VALUES MOD(0e0, 5e0);
 -- # Dividing by zero with / is an error too, including for exact numbers with
 -- # a scale (6.29, General Rules, 4).
 VALUES 5.0 / 0.0;
--- error 22012: division by zero
-
 VALUES CAST(5 AS DECIMAL(3, 1)) / CAST(0 AS DECIMAL(3, 1));
+-- error 22012: division by zero
 -- error 22012: division by zero
 
 -- # Zero NUMERIC and DECIMAL values are stored and read back correctly.

@@ -1,18 +1,14 @@
 -- # SUBSTRING and TRIM need a character string source, and the TRIM character
 -- # must be comparable with it.
 VALUES SUBSTRING(123 FROM 1 FOR 2);
--- error 42883: function does not exist: SUBSTRING(SMALLINT)
-
 VALUES SUBSTRING(DATE '2024-01-02' FROM 1);
--- error 42883: function does not exist: SUBSTRING(DATE)
-
 VALUES TRIM(' ' FROM 123);
--- error 42883: function does not exist: TRIM(SMALLINT)
-
 VALUES TRIM(TRUE);
--- error 42883: function does not exist: TRIM(BOOLEAN)
-
 VALUES TRIM(123 FROM 'abc');
+-- error 42883: function does not exist: SUBSTRING(SMALLINT)
+-- error 42883: function does not exist: SUBSTRING(DATE)
+-- error 42883: function does not exist: TRIM(SMALLINT)
+-- error 42883: function does not exist: TRIM(BOOLEAN)
 -- error 42883: function does not exist: TRIM(SMALLINT FROM CHARACTER(3))
 
 -- # A NULL source gives NULL (General Rules, 3.d), and the result is a

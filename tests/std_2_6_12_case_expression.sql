@@ -71,9 +71,8 @@ VALUES CASE WHEN TRUE THEN 'a' WHEN TRUE THEN 'b' END;
 -- # with = (Syntax Rules, 2.i) and NULL = NULL is UNKNOWN, not TRUE. So the
 -- # ELSE is used.
 VALUES CASE CAST(NULL AS INT) WHEN 1 THEN 'a' WHEN CAST(NULL AS INT) THEN 'b' ELSE 'c' END;
--- COL1: c
-
 VALUES CASE WHEN CAST(NULL AS BOOLEAN) THEN 'a' WHEN 1 = CAST(NULL AS INT) THEN 'b' ELSE 'c' END;
+-- COL1: c
 -- COL1: c
 
 -- # A CASE can be the result of another CASE.
@@ -83,35 +82,29 @@ VALUES CASE 1 WHEN 1 THEN CASE WHEN 1 = 2 THEN 'a' ELSE 'b' END END;
 -- # At least one result must not be NULL, so the CASE has a type (Syntax Rules,
 -- # 3). The implicit ELSE NULL doesn't count.
 VALUES CASE 1 WHEN 1 THEN NULL END;
--- error 42601: syntax error: CASE needs at least one result that is not NULL
-
 VALUES CASE WHEN TRUE THEN NULL ELSE NULL END;
+-- error 42601: syntax error: CASE needs at least one result that is not NULL
 -- error 42601: syntax error: CASE needs at least one result that is not NULL
 
 -- # A WHEN value must be comparable with the operand (8.2, Syntax Rules, 3) and
 -- # a searched WHEN must be a BOOLEAN. The results must all be numbers or all
 -- # be strings (9.5, Syntax Rules, 3.a.i and 3.c.i).
 VALUES CASE 1 WHEN 'a' THEN 1 END;
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
-
 VALUES CASE WHEN 1 THEN 1 END;
--- error 42804: data type mismatch in CASE WHEN: expected BOOLEAN but got SMALLINT
-
 VALUES CASE 1 WHEN 1 THEN 1 ELSE 'a' END;
--- error 42804: data type mismatch in CASE: expected SMALLINT but got CHARACTER(1)
-
 VALUES CASE WHEN TRUE THEN 'a' WHEN FALSE THEN 1 END;
+-- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42804: data type mismatch in CASE WHEN: expected BOOLEAN but got SMALLINT
+-- error 42804: data type mismatch in CASE: expected SMALLINT but got CHARACTER(1)
 -- error 42804: data type mismatch in CASE: expected CHARACTER(1) but got SMALLINT
 
 -- # Syntax errors: an extra END, a CASE without a WHEN and an ELSE without a
 -- # WHEN.
 VALUES CASE 1 WHEN 1 THEN 'a' END END;
--- error 42601: syntax error: unexpected END at line 1, column 35 near "THEN 'a' END END"
-
 VALUES CASE 1 END;
--- error 42601: syntax error: unexpected END at line 1, column 15 near "VALUES CASE 1 END", expecting WHEN
-
 VALUES CASE ELSE 1 END;
+-- error 42601: syntax error: unexpected END at line 1, column 35 near "THEN 'a' END END"
+-- error 42601: syntax error: unexpected END at line 1, column 15 near "VALUES CASE 1 END", expecting WHEN
 -- error 42601: syntax error: unexpected ELSE at line 1, column 13 near "VALUES CASE ELSE 1"
 
 -- # On rows, a NULL in A matches no WHEN, so the simple CASE uses the ELSE (B).

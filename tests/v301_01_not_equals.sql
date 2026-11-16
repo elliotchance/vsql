@@ -86,28 +86,22 @@ SELECT '!=' AS a, y /* != */ FROM t WHERE x = y;
 
 -- # ! isn't a token by itself.
 VALUES 1 ! 2;
--- error 42601: syntax error: invalid character: !
-
 VALUES 1 ! = 2;
--- error 42601: syntax error: invalid character: !
-
 VALUES 1 !/* */= 2;
--- error 42601: syntax error: invalid character: !
-
 VALUES 1 !;
--- error 42601: syntax error: invalid character: !
-
 VALUES !1;
+-- error 42601: syntax error: invalid character: !
+-- error 42601: syntax error: invalid character: !
+-- error 42601: syntax error: invalid character: !
+-- error 42601: syntax error: invalid character: !
 -- error 42601: syntax error: invalid character: !
 
 -- # The error is about what was written.
 VALUES != 1;
--- error 42601: syntax error: unexpected "!=" at line 1, column 8 near "VALUES != 1"
-
 VALUES <> 1;
--- error 42601: syntax error: unexpected "<>" at line 1, column 8 near "VALUES <> 1"
-
 VALUES 1 !== 2;
+-- error 42601: syntax error: unexpected "!=" at line 1, column 8 near "VALUES != 1"
+-- error 42601: syntax error: unexpected "<>" at line 1, column 8 near "VALUES <> 1"
 -- error 42601: syntax error: unexpected "=" at line 1, column 12 near "VALUES 1 !== 2"
 
 -- # A CHECK constraint keeps the standard spelling, but a generation expression

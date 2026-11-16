@@ -42,30 +42,22 @@ VALUES -.23;
 -- # General Rules, 8.a.i), but losing a digit before the point is out of range
 -- # (6.13, General Rules, 8.a.ii).
 VALUES CAST(1.23 AS NUMERIC(10, 6));
--- COL1: 1.230000
-
 VALUES CAST(1.23 AS NUMERIC(10, 2));
--- COL1: 1.23
-
 VALUES CAST(1.23 AS NUMERIC(10, 1));
--- COL1: 1.2
-
 VALUES CAST(1234.5 AS NUMERIC(3, 0));
--- error 22003: numeric value out of range
-
 VALUES CAST(-1.23 AS NUMERIC);
--- COL1: -1
-
 VALUES CAST(-12.34 AS NUMERIC(4, 2));
--- COL1: -12.34
-
 VALUES CAST(-12.34 AS NUMERIC(4, 1));
--- COL1: -12.3
-
 VALUES CAST(-12.34 AS NUMERIC(2, 0));
--- COL1: -12
-
 VALUES CAST(-12.34 AS NUMERIC(3, 2));
+-- COL1: 1.230000
+-- COL1: 1.23
+-- COL1: 1.2
+-- error 22003: numeric value out of range
+-- COL1: -1
+-- COL1: -12.34
+-- COL1: -12.3
+-- COL1: -12
 -- error 22003: numeric value out of range
 
 -- # Adding or subtracting gives the larger scale (6.29, Syntax Rules, 1.c.ii)
@@ -74,30 +66,22 @@ VALUES CAST(-12.34 AS NUMERIC(3, 2));
 -- # rest (6.29, General Rules, 5.b), so 1.24 / 1.5 is 0.82666 and 1.23 / 5 is
 -- # 0.24.
 VALUES CAST(1.23 AS NUMERIC(6, 2)) + CAST(1.5 AS NUMERIC(6, 3));
--- COL1: 2.730
-
 VALUES CAST(1.23 AS NUMERIC(6, 2)) - CAST(1.5 AS NUMERIC(6, 3));
--- COL1: -0.270
-
 VALUES CAST(1.23 AS NUMERIC(6, 2)) - CAST(-1.5 AS NUMERIC(6, 3));
--- COL1: 2.730
-
 VALUES CAST(1.23 AS NUMERIC(6, 2)) * CAST(1.5 AS NUMERIC(6, 3));
--- COL1: 1.84500
-
 VALUES CAST(CAST(1.23 AS NUMERIC(6, 2)) * CAST(1.5 AS NUMERIC(6, 3)) AS NUMERIC(6, 4));
--- COL1: 1.8450
-
 VALUES CAST(1.24 AS NUMERIC(6, 2)) / CAST(1.5 AS NUMERIC(6, 3));
--- COL1: 0.82666
-
 VALUES CAST(1.24 AS NUMERIC(6, 3)) / CAST(1.5 AS NUMERIC(6, 2));
--- COL1: 0.82666
-
 VALUES CAST(CAST(1.24 AS NUMERIC(6, 2)) / CAST(1.5 AS NUMERIC(6, 3)) AS NUMERIC(6, 4));
--- COL1: 0.8266
-
 VALUES CAST(1.23 AS NUMERIC(3,2)) / 5;
+-- COL1: 2.730
+-- COL1: -0.270
+-- COL1: 2.730
+-- COL1: 1.84500
+-- COL1: 1.8450
+-- COL1: 0.82666
+-- COL1: 0.82666
+-- COL1: 0.8266
 -- COL1: 0.24
 
 -- # NUMERIC on its own has a scale of 0, so the division has a scale of 2 (2 +
@@ -107,9 +91,8 @@ VALUES CAST(CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC) AS NUMERIC(5,4));
 
 -- # The sum has a scale of 3 and the product a scale of 5.
 VALUES CAST(10.24 AS NUMERIC(4,2)) + CAST(12.123 AS NUMERIC(8,3));
--- COL1: 22.363
-
 VALUES CAST(10.24 AS NUMERIC(4,2)) * CAST(12.123 AS NUMERIC(8,3));
+-- COL1: 22.363
 -- COL1: 124.13952
 
 -- # 1.23 / 5 is truncated to 0.24 before it's multiplied, so the result is
@@ -128,9 +111,8 @@ VALUES CAST(1.23 AS NUMERIC(3,2)) / CAST(5 AS NUMERIC) * CAST(5 AS NUMERIC);
 -- # 1 / 3 with two scale-1 operands keeps two places, and casting to a larger
 -- # scale doesn't bring the dropped digits back.
 VALUES CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1));
--- COL1: 0.33
-
 VALUES CAST(CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1)) AS NUMERIC(10, 8));
+-- COL1: 0.33
 -- COL1: 0.33000000
 
 -- # A string is cast as the numeric literal it holds, which can be an

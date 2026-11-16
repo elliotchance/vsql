@@ -1,10 +1,9 @@
 -- # V201-01: A SELECT without a FROM clause reads one row with no columns.
 
-/* setup */
+/* define t */
 CREATE TABLE t (x INT NOT NULL, y VARCHAR(10));
 INSERT INTO t (x, y) VALUES (1, 'a');
 INSERT INTO t (x, y) VALUES (2, 'b');
-CREATE SEQUENCE seq;
 
 -- # Only a SELECT without a FROM is flagged, including with DISTINCT or ALL.
 /* flags */
@@ -25,18 +24,21 @@ SELECT ALL 1;
 -- flags: V201-01
 -- COL1: 1
 
+/* include t */
 /* flags */
 SELECT 1 FROM t;
 -- flags:
 -- COL1: 1
 -- COL1: 1
 
+/* include t */
 /* flags */
 SELECT DISTINCT x FROM t;
 -- flags:
 -- X: 1
 -- X: 2
 
+/* include t */
 /* flags */
 SELECT * FROM t WHERE x = 1;
 -- flags:
@@ -61,21 +63,22 @@ SELECT 1 x;
 SELECT CURRENT_DATE IS NOT NULL AS x;
 -- X: TRUE (BOOLEAN)
 
+CREATE SEQUENCE seq;
 /* extensions V201-01 */
 SELECT NEXT VALUE FOR seq;
+-- msg: CREATE SEQUENCE 1
 -- COL1: 1
 
 -- # There are no columns: * needs a FROM to parse, and a column reference or
 -- # T.* is an unknown name. WHERE, GROUP BY and HAVING need a FROM too.
 SELECT *;
--- error 42601: syntax error: unexpected $end at line 1, column 9 near "SELECT *", expecting FROM
-
 SELECT DISTINCT *;
--- error 42601: syntax error: unexpected $end at line 1, column 18 near "SELECT DISTINCT *", expecting FROM
-
 SELECT *, 1;
+-- error 42601: syntax error: unexpected $end at line 1, column 9 near "SELECT *", expecting FROM
+-- error 42601: syntax error: unexpected $end at line 1, column 18 near "SELECT DISTINCT *", expecting FROM
 -- error 42601: syntax error: unexpected "," at line 1, column 9 near "SELECT *, 1", expecting FROM
 
+/* include t */
 /* extensions V201-01 */
 SELECT t.*;
 -- error 42P01: no such table: ":memory:".PUBLIC.T
@@ -88,17 +91,16 @@ SELECT x;
 SELECT COL1;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.COL1
 
+/* include t */
 /* extensions V201-01 */
 SELECT t.x;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 
 SELECT 1 WHERE TRUE;
--- error 42601: syntax error: unexpected WHERE at line 1, column 10 near "SELECT 1 WHERE TRUE"
-
 SELECT 1 GROUP BY x;
--- error 42601: syntax error: unexpected GROUP at line 1, column 10 near "SELECT 1 GROUP BY"
-
 SELECT 1 HAVING TRUE;
+-- error 42601: syntax error: unexpected WHERE at line 1, column 10 near "SELECT 1 WHERE TRUE"
+-- error 42601: syntax error: unexpected GROUP at line 1, column 10 near "SELECT 1 GROUP BY"
 -- error 42601: syntax error: unexpected HAVING at line 1, column 10 near "SELECT 1 HAVING TRUE"
 
 -- # An aggregate sees the one row, so COUNT(*) is 1. In a subquery, COUNT(*)
@@ -113,19 +115,23 @@ SELECT COUNT(*);
 SELECT COUNT(*), SUM(5) AS s, MIN(2), MAX('a');
 -- COL1: 1 S: 5 COL3: 2 COL4: a
 
+/* include t */
 /* extensions V201-01 */
 SELECT x, (SELECT COUNT(*)) AS c FROM t;
 -- X: 1 C: 1
 -- X: 2 C: 1
 
+/* include t */
 SELECT x, (SELECT COUNT(*) FROM (VALUES 1) AS v) AS c FROM t;
 -- X: 1 C: 1
 -- X: 2 C: 1
 
+/* include t */
 /* extensions V201-01 */
 SELECT (SELECT SUM(x)) AS s FROM t;
 -- S: 3
 
+/* include t */
 SELECT (SELECT SUM(x) FROM (VALUES 1) AS v) AS s FROM t;
 -- S: 3
 
@@ -169,6 +175,7 @@ SELECT 1 UNION ALL SELECT 1;
 /* extensions V201-01 */
 SELECT 1 EXCEPT SELECT 1;
 
+/* include t */
 /* extensions V202-01 V201-01 */
 SELECT x FROM t UNION SELECT 3 ORDER BY 1;
 -- X: 1
@@ -188,18 +195,22 @@ SELECT * FROM (SELECT 1 AS a, 'b') AS d;
 SELECT d.b + 1 FROM (SELECT 1) AS d (b);
 -- COL1: 2
 
+/* include t */
 /* extensions V201-01 */
 SELECT x FROM t JOIN (SELECT 2 AS z) AS d ON x = z;
 -- X: 2
 
+/* include t */
 /* extensions V201-01 */
 SELECT * FROM t WHERE x = (SELECT 1);
 -- X: 1 Y: a
 
+/* include t */
 /* extensions V201-01 */
 SELECT * FROM t WHERE x IN (SELECT 2);
 -- X: 2 Y: b
 
+/* include t */
 /* extensions V201-01 */
 SELECT x FROM t WHERE EXISTS (SELECT 1) ORDER BY x FETCH FIRST 1 ROW ONLY;
 -- X: 1
@@ -208,11 +219,13 @@ SELECT x FROM t WHERE EXISTS (SELECT 1) ORDER BY x FETCH FIRST 1 ROW ONLY;
 SELECT (SELECT 1 + 1);
 -- COL1: 2
 
+/* include t */
 /* extensions V201-01 */
 SELECT x, (SELECT x + 1) AS z FROM t;
 -- X: 1 Z: 2
 -- X: 2 Z: 3
 
+/* include t */
 /* extensions V201-01 */
 SELECT y FROM t WHERE (SELECT x) = 2;
 -- Y: b
@@ -221,23 +234,27 @@ SELECT y FROM t WHERE (SELECT x) = 2;
 VALUES (SELECT 7);
 -- COL1: 7
 
+/* include t */
 /* extensions V201-01 V202-01 V202-02 */
 SELECT DISTINCT (SELECT 1) AS z FROM t ORDER BY (SELECT 1);
 -- Z: 1
 
 -- # And in INSERT and UPDATE, as the source or as a value.
+/* include t */
 /* extensions V201-01 */
 INSERT INTO t (x, y) SELECT 3, 'c';
 SELECT * FROM t WHERE x = 3;
 -- msg: INSERT 1
 -- X: 3 Y: c
 
+/* include t */
 /* extensions V201-01 */
 INSERT INTO t (x, y) VALUES ((SELECT 3), 'c');
 SELECT * FROM t WHERE x = 3;
 -- msg: INSERT 1
 -- X: 3 Y: c
 
+/* include t */
 /* extensions V201-01 */
 UPDATE t SET y = (SELECT 'z') WHERE x = 1;
 SELECT y FROM t WHERE x = 1;

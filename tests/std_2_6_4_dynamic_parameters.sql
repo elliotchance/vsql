@@ -33,9 +33,10 @@ VALUES '?', ?;
 -- COL1: a
 
 -- # A parameter can be inserted into a column, and compared in a WHERE.
-/* setup */
+/* define t1 */
 CREATE TABLE t1 (x FLOAT, y VARCHAR(10));
 
+/* include t1 */
 /* params 1.5 'hi' */
 INSERT INTO t1 (x, y) VALUES (?, ?);
 SELECT * FROM t1;
@@ -43,12 +44,14 @@ SELECT * FROM t1;
 -- msg: INSERT 1
 -- X: 1.5e0 Y: hi
 
+/* include t1 */
 /* params 'hi' */
 SELECT * FROM t1 WHERE y = ?;
 -- sql: SELECT * FROM t1 WHERE y = 'hi'
 
 -- # Each statement numbers its own parameters, so the "?" in the UPDATE is
 -- # "?1".
+/* include t1 */
 /* params 3 'a' */
 INSERT INTO t1 (x, y) VALUES (?, ?);
 /* params 3 */

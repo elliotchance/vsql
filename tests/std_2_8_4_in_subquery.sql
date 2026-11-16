@@ -1,80 +1,80 @@
 /* setup */
-CREATE TABLE t1 (x INT, y VARCHAR(10));
 CREATE TABLE t2 (x BIGINT);
-CREATE TABLE t3 (x INT);
-INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (3, 'c');
 INSERT INTO t2 (x) VALUES (2), (3), (4);
+
+/* define t1 */
+CREATE TABLE t1 (x INT, y VARCHAR(10));
+INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (3, 'c');
+
+/* define t3 */
+CREATE TABLE t3 (x INT);
 INSERT INTO t3 (x) VALUES (2), (NULL);
 
 -- # IN with a subquery is TRUE when any row is equal (E061-11).
+/* include t1 */
 SELECT * FROM t1 WHERE x IN (SELECT x FROM t2);
 -- X: 2 Y: b
 -- X: 3 Y: c
 
+/* include t1 */
 SELECT * FROM t1 WHERE x NOT IN (SELECT x FROM t2);
 -- X: 1 Y: a
 
 VALUES 3 IN (SELECT x FROM t2);
--- COL1: TRUE
-
 VALUES 5 IN (SELECT x FROM t2);
--- COL1: FALSE
-
 VALUES 5 NOT IN (SELECT x FROM t2);
+-- COL1: TRUE
+-- COL1: FALSE
 -- COL1: TRUE
 
 -- # An empty subquery is FALSE for IN, and TRUE for NOT IN, even for a NULL
 -- # value.
 VALUES 1 IN (SELECT x FROM t2 WHERE x > 10);
--- COL1: FALSE
-
 VALUES 1 NOT IN (SELECT x FROM t2 WHERE x > 10);
--- COL1: TRUE
-
 VALUES CAST(NULL AS INT) IN (SELECT x FROM t2 WHERE x > 10);
+-- COL1: FALSE
+-- COL1: TRUE
 -- COL1: FALSE
 
 -- # A NULL that isn't equal is UNKNOWN, so NOT IN is never TRUE with a NULL.
 -- # A NULL value is UNKNOWN when the subquery has rows.
+/* include t3 */
 VALUES 2 IN (SELECT x FROM t3);
--- COL1: TRUE
-
 VALUES 1 IN (SELECT x FROM t3);
--- COL1: UNKNOWN
-
 VALUES 1 NOT IN (SELECT x FROM t3);
--- COL1: UNKNOWN
-
 VALUES 2 NOT IN (SELECT x FROM t3);
+-- COL1: TRUE
+-- COL1: UNKNOWN
+-- COL1: UNKNOWN
 -- COL1: FALSE
 
 VALUES CAST(NULL AS INT) IN (SELECT x FROM t2);
 -- COL1: UNKNOWN
 
+/* include t1 t3 */
 SELECT * FROM t1 WHERE x NOT IN (SELECT x FROM t3);
 
 -- # The subquery can be any query expression.
+/* include t1 */
 VALUES 'b' IN (SELECT y FROM t1 WHERE x > 1 ORDER BY y FETCH FIRST 1 ROW ONLY);
--- COL1: TRUE
-
 VALUES 'c' IN (SELECT y FROM t1 WHERE x > 1 ORDER BY y FETCH FIRST 1 ROW ONLY);
--- COL1: FALSE
-
 VALUES 4 IN (SELECT x FROM t1 UNION SELECT x FROM t2);
--- COL1: TRUE
-
 VALUES 2 IN (SELECT x FROM t1 EXCEPT SELECT x FROM t2);
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
 -- COL1: FALSE
 
 VALUES 5 IN (VALUES 4, 5);
 -- COL1: TRUE
 
+/* include t1 */
 VALUES 3 IN (SELECT COUNT(*) FROM t1);
--- COL1: TRUE
-
 VALUES 2 IN (SELECT a FROM (SELECT x + 1 AS a FROM t1) AS q);
 -- COL1: TRUE
+-- COL1: TRUE
 
+/* include t1 t3 */
 SELECT * FROM t1 WHERE x IN (SELECT x FROM t2 WHERE x IN (SELECT x FROM t3));
 -- X: 2 Y: b
 
@@ -82,6 +82,7 @@ SELECT * FROM t1 WHERE x IN (SELECT x FROM t2 WHERE x IN (SELECT x FROM t3));
 VALUES 2.0 IN (SELECT x FROM t2);
 -- COL1: TRUE
 
+/* include t1 */
 VALUES 'b ' IN (SELECT y FROM t1);
 -- COL1: TRUE
 
@@ -92,27 +93,27 @@ VALUES 3 IN ((SELECT x FROM t2));
 -- # A subquery in a list of values is a scalar subquery, so it can only have
 -- # one row.
 VALUES 3 IN ((SELECT x FROM t2 WHERE x = 3), 5);
--- COL1: TRUE
-
 VALUES 3 IN ((SELECT x FROM t2), 5);
+-- COL1: TRUE
 -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
 
 -- # The subquery must have one column.
+/* include t1 */
 VALUES 1 IN (SELECT * FROM t1);
--- error 42601: syntax error: subquery must return only one column
-
 VALUES 1 IN (SELECT x, y FROM t1);
--- error 42601: syntax error: subquery must return only one column
-
 VALUES 1 IN (SELECT y FROM t1);
+-- error 42601: syntax error: subquery must return only one column
+-- error 42601: syntax error: subquery must return only one column
 -- error 42883: cannot compare SMALLINT and CHARACTER VARYING(10)
 
 -- # The column of a UNION ALL has a type that fits both queries, so character
 -- # strings from either one are found.
+/* include t1 */
 VALUES 'a' IN (SELECT y FROM t1 UNION ALL SELECT CAST(x AS VARCHAR(10)) FROM t1);
 -- COL1: TRUE
 
 -- # IN and NOT IN, with a subquery or a list, are kept when they're shown.
+/* include t1 */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 WHERE x NOT IN (SELECT x FROM t2 WHERE x > 1);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))
@@ -129,6 +130,7 @@ SELECT * FROM t2;
 -- msg: DELETE 2
 -- X: 2
 
+/* include t1 */
 UPDATE t1 SET y = 'z' WHERE x IN (SELECT x + 1 FROM t1);
 SELECT * FROM t1;
 -- msg: UPDATE 2

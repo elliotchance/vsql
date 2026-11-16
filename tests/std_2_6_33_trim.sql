@@ -81,9 +81,8 @@ VALUES TRIM(TRAILING 'a' FROM 'aaababccaa');
 
 -- # The trim character must be one character (General Rules, 11.d).
 VALUES TRIM('ab' FROM 'abcab');
--- error 22027: trim error
-
 VALUES TRIM(LEADING '' FROM 'abc');
+-- error 22027: trim error
 -- error 22027: trim error
 
 -- # A NULL source gives NULL (General Rules, 11.c), before the length of the
@@ -98,7 +97,6 @@ SELECT TRIM(TRAILING 'xx' FROM c) FROM t;
 -- # Characters, not octets, are removed, and removing all of them gives an
 -- # empty string.
 VALUES TRIM('é' FROM 'ééãbcé');
--- COL1: ãbc
-
 VALUES TRIM('a' FROM 'aaaa');
+-- COL1: ãbc
 -- COL1: 

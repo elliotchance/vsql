@@ -72,9 +72,8 @@ VALUES 53 + CAST(123 AS INTEGER);
 -- COL1: 176 (INTEGER)
 
 VALUES CAST(500000000 AS INTEGER) + 2000000000;
--- error 22003: numeric value out of range
-
 VALUES 500000000 + CAST(2000000000 AS INTEGER);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 /* types */
@@ -86,9 +85,8 @@ VALUES 53 - CAST(123 AS INTEGER);
 -- COL1: -70 (INTEGER)
 
 VALUES CAST(-2000000000 AS INTEGER) - 500000000;
--- error 22003: numeric value out of range
-
 VALUES -500000000 - CAST(2000000000 AS INTEGER);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 /* types */
@@ -100,9 +98,8 @@ VALUES -53 * CAST(123 AS INTEGER);
 -- COL1: -6519 (INTEGER)
 
 VALUES CAST(-300000 AS INTEGER) * 200000;
--- error 22003: numeric value out of range
-
 VALUES -300000 * CAST(200000 AS INTEGER);
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 -- # Integer division keeps the integer type and truncates towards zero (6.29,
@@ -122,9 +119,8 @@ VALUES -90000 / CAST(3.2 AS INTEGER);
 -- COL1: -30000 (INTEGER)
 
 VALUES CAST(-30000 AS INTEGER) / 0;
--- error 22012: division by zero
-
 VALUES -90000 / CAST(0.1 AS INTEGER);
+-- error 22012: division by zero
 -- error 22012: division by zero
 
 -- # Results that fit keep the INTEGER type. -2147483648 has no positive
@@ -140,15 +136,12 @@ VALUES CAST(100000 AS INTEGER) * 2;
 -- COL1: 200000 (INTEGER)
 
 VALUES CAST(-2147483648 AS INTEGER) * -1;
--- error 22003: numeric value out of range
-
 VALUES -CAST(-2147483648 AS INTEGER);
--- error 22003: numeric value out of range
-
 VALUES -CAST(-2147483647 AS INTEGER);
--- COL1: 2147483647
-
 VALUES CAST(-2147483648 AS INTEGER) / -1;
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- COL1: 2147483647
 -- error 22003: numeric value out of range
 
 -- # A string is cast as the numeric literal it holds (6.13, General Rules,

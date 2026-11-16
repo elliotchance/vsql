@@ -77,9 +77,8 @@ SELECT * FROM foo;
 
 -- # A table that was never created can't be dropped by either behavior.
 DROP TABLE foo RESTRICT;
--- error 42P01: no such table: ":memory:".PUBLIC.FOO
-
 DROP TABLE foo CASCADE;
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 -- # DROP TABLE can't be used with EXPLAIN, and only one of RESTRICT or CASCADE

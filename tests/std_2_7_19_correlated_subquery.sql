@@ -1,7 +1,6 @@
 /* setup */
 CREATE TABLE t1 (x INT, y VARCHAR(10));
 CREATE TABLE t2 (x INT, z INT);
-CREATE TABLE t3 (w INT);
 INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (3, 'b'), (NULL, 'c');
 INSERT INTO t2 (x, z) VALUES (2, 20), (3, 30), (3, 31);
 
@@ -22,9 +21,8 @@ SELECT x, (SELECT MAX(z) FROM t2 WHERE t2.x = t1.x) AS m FROM t1;
 -- X: NULL M: NULL
 
 SELECT y FROM t1 WHERE (SELECT COUNT(*) FROM t2 WHERE t2.x = t1.x) > 1;
--- Y: b
-
 SELECT * FROM t1 WHERE 25 IN (SELECT z - 5 * t1.x FROM t2);
+-- Y: b
 -- X: 1 Y: a
 
 -- # ALL is TRUE when the subquery has no rows, even for a NULL x (8.9, General
@@ -46,12 +44,16 @@ SELECT y FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE z = x * 10);
 -- Y: b
 -- Y: c
 
+CREATE TABLE t3 (w INT);
 SELECT x FROM t1 WHERE EXISTS (SELECT * FROM t3 WHERE x = 2);
 SELECT x FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE y = 'a');
+-- msg: CREATE TABLE 1
 -- X: 1
 
 -- # A column of the outer query can be ambiguous.
+CREATE TABLE t3 (w INT);
 SELECT * FROM t1 INNER JOIN t2 ON t1.x = t2.x WHERE EXISTS (SELECT * FROM t3 WHERE x = 2);
+-- msg: CREATE TABLE 1
 -- error 42702: ambiguous column: X
 
 -- # A correlation name can tell the same table apart.
@@ -129,9 +131,8 @@ SELECT (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1;
 -- M: 3
 
 SELECT (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1 WHERE x > 5;
--- M: NULL
-
 SELECT x, (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1;
+-- M: NULL
 -- error 42803: column X must be in the GROUP BY clause or used in an aggregate function
 
 SELECT y, (SELECT COUNT(t1.x) + COUNT(*) FROM t2 WHERE z = 20) AS c FROM t1 GROUP BY y;
@@ -149,12 +150,10 @@ SELECT 1 IN (SELECT MIN(t1.x) FROM t2 WHERE z = 20) AS a, 1 = ANY (SELECT MIN(t1
 -- A: TRUE B: TRUE
 
 SELECT (SELECT (SELECT COUNT(DISTINCT t1.y) FROM t2 AS b WHERE b.z = 20) FROM t2 WHERE z = 20) AS c FROM t1;
--- C: 3
-
 SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = MAX(t1.x));
--- error 42601: syntax error: an aggregate function cannot be used in WHERE
-
 SELECT * FROM t1 WHERE MAX(x) > 1;
+-- C: 3
+-- error 42601: syntax error: an aggregate function cannot be used in WHERE
 -- error 42601: syntax error: an aggregate function cannot be used in WHERE
 
 -- # An aggregate function that also uses a column of the subquery belongs to
@@ -171,16 +170,16 @@ SELECT y FROM t1 GROUP BY y HAVING (SELECT MAX(t2.z + t1.x) FROM t2) > 0;
 -- error 42803: column T1.X must be in the GROUP BY clause or used in an aggregate function
 
 -- # A column must be in the FROM clause of a query that contains it.
+CREATE TABLE t3 (w INT);
 SELECT * FROM t3 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
-
 SELECT * FROM t3 WHERE EXISTS (SELECT * FROM t2 WHERE y = 'a');
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
 
 SELECT y FROM t2;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
-
 SELECT * FROM t1 AS a WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
 
 -- # UPDATE and DELETE can use the row being changed.

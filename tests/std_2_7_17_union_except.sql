@@ -3,7 +3,6 @@ CREATE TABLE t1 (x INT, y VARCHAR(10));
 CREATE TABLE t2 (x BIGINT, z VARCHAR(20));
 INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (2, 'b'), (3, NULL), (3, NULL);
 INSERT INTO t2 (x, z) VALUES (2, 'b'), (3, NULL), (4, 'd');
-CREATE SEQUENCE seq1;
 
 -- # UNION ALL keeps every row, the left rows first (E071-02).
 SELECT x, y FROM t1 UNION ALL SELECT x, z FROM t2;
@@ -121,16 +120,14 @@ VALUES CAST('a' AS CHAR(3)) UNION VALUES CAST('a' AS VARCHAR(5));
 -- # Columns whose types can't be combined are an error (9.5, Syntax Rules,
 -- # 3.a.i).
 SELECT x FROM t1 UNION SELECT y FROM t1;
--- error 42804: data type mismatch in column 1 of UNION: expected INTEGER but got CHARACTER VARYING(10)
-
 VALUES ROW(1, 'a') EXCEPT VALUES ROW('a', 1);
+-- error 42804: data type mismatch in column 1 of UNION: expected INTEGER but got CHARACTER VARYING(10)
 -- error 42804: data type mismatch in column 1 of EXCEPT: expected SMALLINT but got CHARACTER(1)
 
 -- # Both sides must have the same number of columns.
 SELECT x FROM t1 UNION SELECT x, z FROM t2;
--- error 42601: syntax error: each UNION query must have the same number of columns
-
 SELECT x, y FROM t1 EXCEPT SELECT x FROM t2;
+-- error 42601: syntax error: each UNION query must have the same number of columns
 -- error 42601: syntax error: each EXCEPT query must have the same number of columns
 
 -- # The columns are named after the left side.
@@ -172,12 +169,10 @@ VALUES 2, 1 UNION VALUES 3 ORDER BY COL1;
 
 -- # ORDER BY can only use the columns of the result.
 SELECT x AS a FROM t1 UNION SELECT x AS b FROM t2 ORDER BY b;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
-
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY y;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
-
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY t1.x;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
 
 -- # Each side can have its own ORDER BY, OFFSET and FETCH FIRST (F855, F856,
@@ -246,10 +241,12 @@ EXPLAIN VALUES 1 EXCEPT ALL VALUES 2 UNION ALL VALUES 3;
 
 -- # NEXT VALUE FOR can't be used on either side, even a nested one. No value is
 -- # used.
+CREATE SEQUENCE seq1;
 SELECT NEXT VALUE FOR seq1 FROM t2 UNION ALL SELECT x FROM t2;
 SELECT x FROM t2 EXCEPT SELECT NEXT VALUE FOR seq1 FROM t2;
 SELECT x FROM t2 UNION (SELECT x FROM t2 EXCEPT SELECT NEXT VALUE FOR seq1 FROM t2);
 SELECT NEXT VALUE FOR seq1 FROM t2;
+-- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in UNION
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in EXCEPT
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in UNION
@@ -259,9 +256,8 @@ SELECT NEXT VALUE FOR seq1 FROM t2;
 
 -- # An error from either side.
 SELECT x FROM t1 UNION SELECT 1 / 0 FROM t2;
--- error 22012: division by zero
-
 SELECT x FROM t1 UNION SELECT foo FROM t2;
+-- error 22012: division by zero
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.FOO
 
 -- # The combined type has enough precision for both sides.

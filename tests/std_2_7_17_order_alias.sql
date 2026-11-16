@@ -3,17 +3,25 @@ CREATE TABLE t (x INTEGER, y INTEGER, z INTEGER);
 INSERT INTO t (x, y, z) VALUES (1, 30, 200);
 INSERT INTO t (x, y, z) VALUES (2, 10, 300);
 INSERT INTO t (x, y, z) VALUES (3, 20, 100);
+
+/* define u */
 CREATE TABLE u (x INTEGER, w INTEGER);
 INSERT INTO u (x, w) VALUES (1, 3);
 INSERT INTO u (x, w) VALUES (2, 1);
 INSERT INTO u (x, w) VALUES (3, 2);
+
+/* define col */
 CREATE TABLE col (col1 INTEGER, col2 INTEGER);
 INSERT INTO col (col1, col2) VALUES (1, 20);
 INSERT INTO col (col1, col2) VALUES (2, 10);
+
+/* define d */
 CREATE TABLE d (a INTEGER, b INTEGER);
 INSERT INTO d (a, b) VALUES (1, 5);
 INSERT INTO d (a, b) VALUES (1, 6);
 INSERT INTO d (a, b) VALUES (2, 7);
+
+/* define g */
 CREATE TABLE g (a INTEGER, b INTEGER);
 INSERT INTO g (a, b) VALUES (1, 5);
 INSERT INTO g (a, b) VALUES (1, 6);
@@ -21,7 +29,6 @@ INSERT INTO g (a, b) VALUES (2, 1);
 INSERT INTO g (a, b) VALUES (3, 2);
 INSERT INTO g (a, b) VALUES (3, 3);
 INSERT INTO g (a, b) VALUES (3, 4);
-CREATE SEQUENCE seq;
 
 -- # The alias of a column, and of an expression.
 SELECT x AS a FROM t ORDER BY a DESC;
@@ -105,6 +112,7 @@ SELECT -x AS x FROM t ORDER BY t.x * 2;
 -- # A column of the result can be used even if the name is in more than one
 -- # table, and without an alias. A name that isn't a column of the result is
 -- # ambiguous if more than one table has it.
+/* include u */
 SELECT t.x FROM t JOIN u ON t.x = u.x ORDER BY x DESC;
 SELECT t.y AS w, u.w AS y FROM t JOIN u ON t.x = u.x ORDER BY w;
 SELECT t.y AS w, u.w AS y FROM t JOIN u ON t.x = u.x ORDER BY u.w;
@@ -123,6 +131,7 @@ SELECT y FROM t JOIN u ON t.x = u.x ORDER BY x;
 -- # A name is ambiguous if it's more than one column of the result, even in an
 -- # expression, and even if they're the same expression. It's fine as long as
 -- # it isn't used.
+/* include u */
 SELECT x AS a, y AS a FROM t ORDER BY a;
 SELECT x AS a, y AS a FROM t ORDER BY a + 1;
 SELECT x AS a, x AS a FROM t ORDER BY a;
@@ -146,6 +155,7 @@ SELECT x AS a, y AS a FROM t ORDER BY t.x DESC;
 
 -- # An unnamed column has an implementation-dependent name, so it doesn't hide
 -- # a column of a table or make a name ambiguous.
+/* include col */
 SELECT -col1 FROM col ORDER BY col1;
 SELECT col1 + 1, col2 AS col1 FROM col ORDER BY col1;
 SELECT col2 AS col2, col1 + 1 FROM col ORDER BY col2;
@@ -158,6 +168,7 @@ SELECT col2 AS col2, col1 + 1 FROM col ORDER BY col2;
 
 -- # With DISTINCT, the alias is in the select list so it's always allowed, but
 -- # a column of the table has to be.
+/* include d */
 SELECT DISTINCT a AS c FROM d ORDER BY c DESC;
 SELECT DISTINCT a + 1 AS c FROM d ORDER BY c DESC;
 SELECT DISTINCT a + 1 AS c FROM d ORDER BY c * 2 DESC;
@@ -179,6 +190,7 @@ SELECT DISTINCT a AS c, a AS c FROM d ORDER BY c;
 
 -- # With GROUP BY or an aggregate function, it can be a grouping column, an
 -- # expression of one, or an aggregate function.
+/* include g */
 SELECT a AS c FROM g GROUP BY a ORDER BY c DESC;
 SELECT a + 1 AS c FROM g GROUP BY a ORDER BY c DESC;
 SELECT b AS a FROM g GROUP BY b ORDER BY a DESC FETCH FIRST 1 ROW ONLY;
@@ -214,6 +226,7 @@ SELECT a, COUNT(*) AS n FROM g GROUP BY a HAVING COUNT(*) > 1 ORDER BY n;
 -- A: 3 N: 3
 
 -- # The argument of an aggregate function isn't a column of the result.
+/* include g */
 /* extensions V202-03 */
 SELECT a AS b, SUM(b) AS s FROM g GROUP BY a ORDER BY SUM(b);
 -- B: 2 S: 1
@@ -222,6 +235,7 @@ SELECT a AS b, SUM(b) AS s FROM g GROUP BY a ORDER BY SUM(b);
 
 -- # A subquery in a sort key can't use an alias (it isn't standard SQL anyway),
 -- # so the name is the column of the table.
+/* include u */
 /* extensions V202-02 V202-03 */
 SELECT y AS a FROM t ORDER BY (SELECT MAX(w) FROM u WHERE u.x = a);
 SELECT -y AS w FROM t ORDER BY (SELECT w FROM u WHERE u.x = t.x);
@@ -263,6 +277,7 @@ SELECT x AS a, y AS a FROM t UNION SELECT y, z FROM t ORDER BY a + 1;
 -- A: 10
 
 -- # A derived table or an ORDER BY in a subquery has its own columns.
+/* include u d */
 SELECT b FROM (SELECT -x AS b FROM t ORDER BY b) AS d ORDER BY b DESC;
 SELECT MAX(a) AS m FROM (SELECT -x AS a FROM t ORDER BY a FETCH FIRST 2 ROWS ONLY) AS d;
 SELECT x FROM t WHERE x = (SELECT -w AS x FROM u ORDER BY x FETCH FIRST 1 ROW ONLY) + 4;
@@ -275,6 +290,7 @@ SELECT x FROM t WHERE x = (SELECT -w AS x FROM u ORDER BY x FETCH FIRST 1 ROW ON
 -- # A sort key can't contain a NEXT VALUE FOR, but it can be the name of a
 -- # column of the result that does. Each row uses one value, whatever the sort
 -- # compares, including the rows that FETCH removes.
+CREATE SEQUENCE seq;
 /* extensions V202-01 */
 SELECT x FROM t ORDER BY NEXT VALUE FOR seq;
 SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY x FETCH FIRST 1 ROW ONLY;
@@ -284,6 +300,7 @@ SELECT NEXT VALUE FOR seq + 1 AS n, x FROM t ORDER BY n FETCH FIRST 1 ROW ONLY;
 SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY x FETCH FIRST 1 ROW ONLY;
 SELECT DISTINCT NEXT VALUE FOR seq AS n FROM t ORDER BY n;
 SELECT NEXT VALUE FOR seq AS n FROM t GROUP BY x ORDER BY n;
+-- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in ORDER BY
 -- N: 1
 -- N: 6
@@ -298,8 +315,10 @@ SELECT NEXT VALUE FOR seq AS n FROM t GROUP BY x ORDER BY n;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a grouped query
 
 -- # EXPLAIN shows the sort by the alias, after any NEXT VALUE FOR is evaluated.
+CREATE SEQUENCE seq;
 /* extensions V001-01 */
 EXPLAIN SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY n;
+-- msg: CREATE SEQUENCE 1
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (X INTEGER, Y INTEGER, Z INTEGER)
 -- EXPLAIN: SEQUENCE VALUES (NEXT VALUE FOR SEQ)
 -- EXPLAIN: ORDER BY N ASC

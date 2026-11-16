@@ -112,12 +112,10 @@ SELECT DISTINCT t.* FROM t ORDER BY c DESC, a;
 -- A: NULL B: NULL C: NULL
 
 SELECT DISTINCT a FROM t ORDER BY b;
--- error 42P10: column B must be in the select list to be used in ORDER BY with SELECT DISTINCT
-
 SELECT DISTINCT a * 2 FROM t ORDER BY a;
--- error 42P10: column A must be in the select list to be used in ORDER BY with SELECT DISTINCT
-
 SELECT DISTINCT a FROM t ORDER BY ABS(c);
+-- error 42P10: column B must be in the select list to be used in ORDER BY with SELECT DISTINCT
+-- error 42P10: column A must be in the select list to be used in ORDER BY with SELECT DISTINCT
 -- error 42P10: column C must be in the select list to be used in ORDER BY with SELECT DISTINCT
 
 SELECT DISTINCT a FROM t WHERE c > 2;

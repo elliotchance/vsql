@@ -6,6 +6,8 @@
 CREATE TABLE t (x INTEGER, y INTEGER, z INTEGER);
 INSERT INTO t (x, y, z) VALUES (1, 10, 100);
 INSERT INTO t (x, y, z) VALUES (2, 20, 200);
+
+/* define u */
 CREATE TABLE u (x INTEGER, y INTEGER);
 INSERT INTO u (x, y) VALUES (1, 10);
 
@@ -154,6 +156,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- # table of the cursor: an outer reference (T.Y), or the same table read
 -- # again, even renamed. A column of another table with the same name (U.Y)
 -- # isn't.
+/* include u */
 /* extensions V108-01 V109-01 V110-01 V113-01 V202-02 V202-03 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(u.y) FROM u WHERE u.x = t.y) FOR UPDATE;
@@ -168,6 +171,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column Y is used by a sort key of cursor C
 -- msg: UPDATE 1
 
+/* include u */
 /* extensions V108-01 V109-01 V110-01 V113-01 V202-02 V202-03 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(y) FROM u) FOR UPDATE;

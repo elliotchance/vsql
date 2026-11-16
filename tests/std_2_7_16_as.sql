@@ -23,10 +23,8 @@ SELECT 1 AS "Bob" FROM t1;
 -- # An expression can be named too, as can more than one column, and the AS
 -- # keyword is optional.
 SELECT 'foo' || 'bar' AS Str FROM t1;
--- STR: foobar
-
 SELECT 1 + 2 AS total1, 3 + 4 AS total2 FROM t1;
--- TOTAL1: 3 TOTAL2: 7
-
 SELECT 1 + 2 total FROM t1;
+-- STR: foobar
+-- TOTAL1: 3 TOTAL2: 7
 -- TOTAL: 3

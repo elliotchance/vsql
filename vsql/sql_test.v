@@ -11,10 +11,13 @@ struct SQLTest {
 	setup       []string
 	file_name   string
 	line_number int
-	stmts       []string
-	expected    string
-	show_types  bool
-	show_flags  bool
+	// stmts are the statements and directives of the test, in order. A
+	// statement from an include directive starts with "include ", and is run
+	// like the setup: its output isn't checked, and it can't fail.
+	stmts      []string
+	expected   string
+	show_types bool
+	show_flags bool
 	// extensions are the vsql extensions (such as "V001-01") that the test
 	// uses, see the "extensions" directive.
 	extensions []string
@@ -52,7 +55,14 @@ fn get_tests() ![]SQLTest {
 
 		mut stmts := []string{}
 		mut expected := []string{}
+		// setup runs before every test of the file. defines are the named
+		// groups of statements that the include directive runs, see
+		// SQLTest.stmts.
 		mut setup := []string{}
+		mut defines := map[string][]string{}
+		mut define_name := ''
+		mut included := map[string]bool{}
+		mut file_tests := 0
 		mut line_number := 0
 		mut stmt := ''
 		mut setup_stmt := ''
@@ -67,9 +77,14 @@ fn get_tests() ![]SQLTest {
 				// A block with only a setup or comments isn't a test. A block
 				// with only an expected output is kept, so that it fails.
 				if stmts.len > 0 || expected.len > 0 {
+					if define_name != '' {
+						panic('${test_file_path}:${line_number}: define ${define_name} can only have statements')
+					}
 					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size, postgresql}
+					file_tests++
 				}
 				stmts = []
+				define_name = ''
 				expected = []
 				in_setup = false
 				show_types = false
@@ -80,7 +95,37 @@ fn get_tests() ![]SQLTest {
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
+					// The setup is before the first test, so that every test
+					// runs all of it.
+					if file_tests > 0 || stmts.len > 0 || setup.len > 0 {
+						panic('${test_file_path}:${line_number + 1}: there can only be one setup, before the first test')
+					}
 					in_setup = true
+				} else if contents.starts_with('define ') {
+					define_name = contents[7..].trim_space()
+					if stmts.len > 0 || define_name in defines {
+						panic('${test_file_path}:${line_number + 1}: define ${define_name} must be the start of its own block, and only defined once')
+					}
+					defines[define_name] = []string{}
+				} else if contents.starts_with('include ') {
+					for name in contents[8..].fields() {
+						included_stmts := defines[name] or {
+							panic('${test_file_path}:${line_number + 1}: define ${name} must be before it is included')
+						}
+						if name == define_name {
+							panic('${test_file_path}:${line_number + 1}: define ${name} includes itself')
+						}
+						included[name] = true
+						for included_stmt in included_stmts {
+							if define_name == '' {
+								stmts << included_stmt
+							} else {
+								defines[define_name] << included_stmt
+							}
+						}
+					}
+				} else if define_name != '' {
+					panic('${test_file_path}:${line_number + 1}: define ${define_name} can only have statements')
 				} else if contents.starts_with('connection ') {
 					stmts << replace_unicode(contents)
 				} else if contents.starts_with('fault ') || contents.starts_with('disconnect ') {
@@ -127,7 +172,13 @@ fn get_tests() ![]SQLTest {
 					// numbers of a syntax error are the lines of the statement.
 					stmt += if stmt == '' { line } else { '\n${line}' }
 					if line.ends_with(';') {
-						stmts << replace_unicode(stmt)
+						// The statements of a define are kept with "include "
+						// before them, see SQLTest.stmts.
+						if define_name == '' {
+							stmts << replace_unicode(stmt)
+						} else {
+							defines[define_name] << 'include ' + replace_unicode(stmt)
+						}
 						stmt = ''
 					}
 				}
@@ -138,6 +189,12 @@ fn get_tests() ![]SQLTest {
 
 		if stmts.len > 0 {
 			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size, postgresql}
+		}
+
+		for name, _ in defines {
+			if name !in included {
+				panic('${test_file_path}: define ${name} is not included by any test')
+			}
 		}
 	}
 
@@ -332,13 +389,6 @@ fn (test SQLTest) modes() []SQLTestMode {
 	return modes
 }
 
-// statement_count is how many SQL statements the test runs in each mode,
-// including its setup. Each SQL statement starts with a new line, unlike the
-// directives that are also in stmts.
-fn (test SQLTest) statement_count() int {
-	return test.setup.len + test.stmts.filter(it.starts_with('\n')).len
-}
-
 // through_server is true if the statements of the test are sent to a Server
 // from a PostgreSQL client over TCP (in each mode). One server is shared by all
 // of the tests. The server can't run a test that uses something only the V
@@ -417,22 +467,24 @@ fn test_all() ! {
 	}
 
 	// The V test summary does not include the failed assertions (only the
-	// passing ones) so we keep our own count of the SQL tests.
-	mut passed := 0
+	// passing ones) so we keep our own count. A test is just a group of
+	// statements, so the count is of every statement that was run, see
+	// SQLTestConn.statements.
 	mut failed := []string{}
 	mut statements := 0
+	mut assertions := 0
 	mut flagged := map[string]bool{}
 	for outcome in outcomes {
-		passed += outcome.passed
 		failed << outcome.failed
 		statements += outcome.statements
+		assertions += outcome.assertions
 		for id, _ in outcome.flagged {
 			flagged[id] = true
 		}
 	}
 	failed.sort()
 
-	println('SQL tests: ${passed} passed, ${failed.len} failed, ${passed + failed.len} total, ${statements} statements')
+	println('SQL tests: ${statements} statements, ${assertions} assertions, ${failed.len} failed')
 	for location in failed {
 		println('  FAILED ${location}')
 	}
@@ -459,9 +511,9 @@ fn test_all() ! {
 // run_sql_tests.
 struct SQLTestOutcome {
 mut:
-	passed     int
 	failed     []string
 	statements int
+	assertions int
 	flagged    map[string]bool
 }
 
@@ -498,7 +550,7 @@ fn run_sql_tests(tests []SQLTest, first int, jobs int, verbose bool, filter_line
 			// An error (rather than a failed assertion) still says which test it
 			// was.
 			result := run_single_test(test, verbose, filter_line, mode, through_server, port, mut
-				outcome.flagged) or {
+				outcome) or {
 				return error('${test.file_name}:${test.line_number} (${sql_test_mode_str(mode, through_server)}): ${err}')
 			}
 			match result {
@@ -511,11 +563,8 @@ fn run_sql_tests(tests []SQLTest, first int, jobs int, verbose bool, filter_line
 		if skipped {
 			continue
 		}
-		outcome.statements += test.statement_count()
 		if failed_modes.len > 0 {
 			outcome.failed << '${test.file_name}:${test.line_number} (${failed_modes.join(', ')})'
-		} else {
-			outcome.passed++
 		}
 	}
 
@@ -525,7 +574,7 @@ fn run_sql_tests(tests []SQLTest, first int, jobs int, verbose bool, filter_line
 // encode is how a process that ran some of the tests gives its outcome to the
 // process that started it, one line for each value.
 fn (outcome SQLTestOutcome) encode() string {
-	mut lines := ['passed ${outcome.passed}', 'statements ${outcome.statements}']
+	mut lines := ['statements ${outcome.statements}', 'assertions ${outcome.assertions}']
 	for location in outcome.failed {
 		lines << 'failed ${location}'
 	}
@@ -542,8 +591,8 @@ fn decode_sql_test_outcome(s string) SQLTestOutcome {
 	for line in s.split_into_lines() {
 		kind, value := line.split_once(' ') or { continue }
 		match kind {
-			'passed' { outcome.passed = value.int() }
 			'statements' { outcome.statements = value.int() }
+			'assertions' { outcome.assertions = value.int() }
 			'failed' { outcome.failed << value }
 			else { outcome.flagged[value] = true }
 		}
@@ -609,7 +658,7 @@ fn start_sql_test_server() !&Server {
 }
 
 @[assert_continues]
-fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode, through_server bool, port int, mut flagged map[string]bool) !SQLTestResult {
+fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode, through_server bool, port int, mut outcome SQLTestOutcome) !SQLTestResult {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
@@ -646,6 +695,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	mut opened := [db]
 	defer {
 		for mut conn in opened {
+			outcome.statements += conn.statements
 			conn.close()
 		}
 	}
@@ -684,6 +734,21 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 		disarm_faults()
 	}
 	for stmt in test.stmts {
+		if stmt.starts_with('include ') {
+			sql := stmt[8..]
+			if verbose {
+				println('  ${sql.trim_space()}')
+			}
+			for id in sql_test_extensions(sql) {
+				problems << 'include uses vsql extension ${id}: ${sql.trim_space()}'
+			}
+			output := db.run(sql, map[string]Value{}, false, false)!
+			if output.error != '' {
+				problems << 'include failed: ${sql.trim_space()}: ${output.error}'
+			}
+			continue
+		}
+
 		// "fault <name>" fails the next time it's reached, "fault <name> <n>"
 		// fails the nth time.
 		if stmt.starts_with('fault ') {
@@ -817,7 +882,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			actual += '${prefix}${output.flags}\n'
 			for id in output.flags.all_after('flags:').split(',') {
 				if id.trim_space() != '' {
-					flagged[id.trim_space()] = true
+					outcome.flagged[id.trim_space()] = true
 				}
 			}
 		}
@@ -845,6 +910,10 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	actual_trim := at + actual.trim_space()
 
 	assert expected == actual_trim
+	// Each "--" line of the test is an assertion, checked against the output.
+	if test.expected.trim_space() != '' {
+		outcome.assertions += test.expected.trim_space().split_into_lines().len
+	}
 
 	for id in test.extensions {
 		if id !in used {
@@ -944,6 +1013,8 @@ struct SQLTestConn {
 mut:
 	db     &Connection   = unsafe { nil }
 	client &PGTestClient = unsafe { nil }
+	// statements is how many statements this connection has run.
+	statements int
 }
 
 // sql_test_main_file is the name of the file of a test that's run on disk.
@@ -1008,6 +1079,7 @@ fn (mut c SQLTestConn) close() {
 }
 
 fn (mut c SQLTestConn) run(stmt string, params map[string]Value, show_types bool, show_flags bool) !SQLTestOutput {
+	c.statements++
 	if c.client != unsafe { nil } {
 		return c.client.query(stmt)
 	}

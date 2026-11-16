@@ -15,12 +15,10 @@ VALUES OCTET_LENGTH('hello Hello');
 -- # the bytes of the UTF-8 (General Rules, 6). Function names aren't case
 -- # sensitive.
 VALUES CHAR_LENGTH('😊£');
--- COL1: 2
-
 VALUES OCTET_LENGTH('😊£');
--- COL1: 6
-
 VALUES char_length('😊£');
+-- COL1: 2
+-- COL1: 6
 -- COL1: 2
 
 -- # A CHAR is padded with spaces to its length, and keeps them when it's

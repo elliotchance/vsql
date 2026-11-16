@@ -16,12 +16,10 @@ VALUES ROW(6, '  hello' = '  hello');
 
 -- # Datetimes are only comparable if they have the same fields.
 VALUES DATE '2020-01-01' = TIMESTAMP '2020-01-01 00:00:00';
--- error 42883: cannot compare DATE and TIMESTAMP(0) WITHOUT TIME ZONE
-
 VALUES DATE '2020-01-01' = TIME '00:00:00';
--- error 42883: cannot compare DATE and TIME(0) WITHOUT TIME ZONE
-
 VALUES TIME '00:00:00' < TIMESTAMP '2020-01-01 00:00:00';
+-- error 42883: cannot compare DATE and TIMESTAMP(0) WITHOUT TIME ZONE
+-- error 42883: cannot compare DATE and TIME(0) WITHOUT TIME ZONE
 -- error 42883: cannot compare TIME(0) WITHOUT TIME ZONE and TIMESTAMP(0) WITHOUT TIME ZONE
 
 -- # A datetime can be cast to have the same fields, and times with a time zone

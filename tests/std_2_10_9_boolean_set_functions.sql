@@ -20,9 +20,8 @@ SELECT EVERY(f), ANY(f), SOME(f) FROM b;
 -- COL1: FALSE COL2: TRUE COL3: TRUE
 
 SELECT EVERY(f), ANY(f), SOME(f) FROM b WHERE g = 1;
--- COL1: TRUE COL2: TRUE COL3: TRUE
-
 SELECT EVERY(f), ANY(f) FROM b WHERE 1 = 0;
+-- COL1: TRUE COL2: TRUE COL3: TRUE
 -- COL1: UNKNOWN COL2: UNKNOWN
 
 -- # DISTINCT and ALL don't change the result.
@@ -62,19 +61,16 @@ EXPLAIN SELECT EVERY(f), ANY(DISTINCT f), SOME(f) FROM b;
 
 -- # The argument must be a boolean (Syntax Rules, 7.e).
 SELECT EVERY(g) FROM b;
--- error 42883: function does not exist: EVERY(INTEGER)
-
 SELECT ANY(g) FROM b;
--- error 42883: function does not exist: ANY(INTEGER)
-
 SELECT SOME(DISTINCT g) FROM b;
+-- error 42883: function does not exist: EVERY(INTEGER)
+-- error 42883: function does not exist: ANY(INTEGER)
 -- error 42883: function does not exist: SOME(INTEGER)
 
 -- # Like any aggregate function, they can't be nested or used in WHERE.
 SELECT EVERY(EVERY(f)) FROM b;
--- error 42601: syntax error: nested set function: EVERY(EVERY(F))
-
 SELECT g FROM b WHERE ANY(f);
+-- error 42601: syntax error: nested set function: EVERY(EVERY(F))
 -- error 42601: syntax error: an aggregate function cannot be used in WHERE
 
 -- # ANY or SOME followed by a subquery is a quantified comparison (see 8.9),
@@ -87,18 +83,14 @@ SELECT f = ANY(f) FROM b GROUP BY f;
 -- COL1: TRUE
 
 SELECT DISTINCT g FROM b WHERE g = ANY (SELECT 1 FROM b);
--- G: 1
-
 SELECT DISTINCT g FROM b WHERE g < SOME (SELECT 2 FROM b);
--- G: 1
-
 SELECT DISTINCT g FROM b WHERE g = ALL (SELECT 1 FROM b);
--- G: 1
-
 SELECT DISTINCT g FROM b WHERE g = ANY ((SELECT 1 FROM b));
--- G: 1
-
 SELECT DISTINCT g FROM b WHERE g = SOME (VALUES 2);
+-- G: 1
+-- G: 1
+-- G: 1
+-- G: 1
 -- G: 2
 
 /* extensions V201-01 */

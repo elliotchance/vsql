@@ -6,15 +6,12 @@ VALUES ROW(U&'\0041bc', u&'d\0061t\+000061', U&'a\\b', U&'no escapes');
 -- # An escape is one character, however many bytes it takes in UTF-8, and
 -- # U+0000 is an ordinary character. A doubled quote is still one quote.
 VALUES ROW(U&'caf\00e9', CHAR_LENGTH(U&'caf\00e9'), OCTET_LENGTH(U&'caf\00e9'));
--- COL1: café COL2: 4 COL3: 5
-
 VALUES ROW(CHAR_LENGTH(U&'\+01F600'), OCTET_LENGTH(U&'\+01F600'));
--- COL1: 1 COL2: 4
-
 VALUES ROW(CHAR_LENGTH(U&'a\0000b'), OCTET_LENGTH(U&'a\0000b'));
--- COL1: 3 COL2: 3
-
 VALUES U&'it''s';
+-- COL1: café COL2: 4 COL3: 5
+-- COL1: 1 COL2: 4
+-- COL1: 3 COL2: 3
 -- COL1: it's
 
 -- # UESCAPE chooses another escape character.
@@ -36,73 +33,55 @@ VALUES U&'\0041'
 -- # Rules, 7), and there can't be one between the U, the & and the quote (5.3,
 -- # Syntax Rules, 11).
 VALUES 'a' 'b';
--- error 42601: syntax error: unexpected string at line 1, column 12 near "VALUES 'a' 'b'"; hint: is a "," missing before 'b'?
-
 VALUES U & 'x';
+-- error 42601: syntax error: unexpected string at line 1, column 12 near "VALUES 'a' 'b'"; hint: is a "," missing before 'b'?
 -- error 42601: syntax error: invalid character: &
 
 -- # Invalid escapes.
 VALUES U&'\004';
--- error 42601: syntax error: invalid Unicode escape: \004
-
 VALUES U&'\00G1';
--- error 42601: syntax error: invalid Unicode escape: \00G1
-
 VALUES U&'\+00004';
--- error 42601: syntax error: invalid Unicode escape: \+00004
-
 VALUES U&'\+110000';
--- error 42601: syntax error: invalid Unicode code point: \+110000
-
 VALUES U&'\D800';
+-- error 42601: syntax error: invalid Unicode escape: \004
+-- error 42601: syntax error: invalid Unicode escape: \00G1
+-- error 42601: syntax error: invalid Unicode escape: \+00004
+-- error 42601: syntax error: invalid Unicode code point: \+110000
 -- error 42601: syntax error: invalid Unicode code point: \D800
 
 -- # The escape character can't be a hexit, plus sign, quote, double quote or
 -- # white space (Syntax Rules, 16), and it must be exactly one character.
 VALUES U&'x' UESCAPE '+';
--- error 42601: syntax error: invalid Unicode escape character: '+'
-
 VALUES U&'x' UESCAPE 'a';
--- error 42601: syntax error: invalid Unicode escape character: 'a'
-
 VALUES U&'x' UESCAPE ' ';
--- error 42601: syntax error: invalid Unicode escape character: ' '
-
 VALUES U&'x' UESCAPE '"';
--- error 42601: syntax error: invalid Unicode escape character: '"'
-
 VALUES U&'x' UESCAPE '';
--- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
-
 VALUES U&'x' UESCAPE 'ab';
--- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
-
 VALUES U&'x' UESCAPE;
--- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
-
 VALUES U&'x' UESCAPEX;
+-- error 42601: syntax error: invalid Unicode escape character: '+'
+-- error 42601: syntax error: invalid Unicode escape character: 'a'
+-- error 42601: syntax error: invalid Unicode escape character: ' '
+-- error 42601: syntax error: invalid Unicode escape character: '"'
+-- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
+-- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
+-- error 42601: syntax error: UESCAPE must be followed by a single character in quotes
 -- error 42601: syntax error: unexpected identifier at line 1, column 14 near "VALUES U&'x' UESCAPEX"; hint: is a "," missing before UESCAPEX?
 
 -- # A noncharacter can't be in a character string.
 VALUES U&'\FFFF';
--- error 22029: non-character in character string
-
 VALUES U&'\FFFE';
--- error 22029: non-character in character string
-
 VALUES U&'\FDD0';
--- error 22029: non-character in character string
-
 VALUES U&'\FDEF';
--- error 22029: non-character in character string
-
 VALUES CHAR_LENGTH(U&'\+10FFFF');
--- error 22029: non-character in character string
-
 VALUES CHAR_LENGTH(U&'\+01FFFE');
--- error 22029: non-character in character string
-
 VALUES '<U+FFFF>';
+-- error 22029: non-character in character string
+-- error 22029: non-character in character string
+-- error 22029: non-character in character string
+-- error 22029: non-character in character string
+-- error 22029: non-character in character string
+-- error 22029: non-character in character string
 -- error 22029: non-character in character string
 
 /* params '￿' */

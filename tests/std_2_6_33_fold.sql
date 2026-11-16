@@ -19,13 +19,10 @@ EXPLAIN SELECT UPPER(a), LOWER(a) FROM t;
 
 -- # The argument must be one character string.
 VALUES UPPER(123);
--- error 42883: function does not exist: UPPER(SMALLINT)
-
 VALUES LOWER(TRUE);
--- error 42883: function does not exist: LOWER(BOOLEAN)
-
 VALUES UPPER();
--- error 42601: syntax error: unexpected ")" at line 1, column 14 near "VALUES UPPER()"
-
 VALUES LOWER('abc', 123);
+-- error 42883: function does not exist: UPPER(SMALLINT)
+-- error 42883: function does not exist: LOWER(BOOLEAN)
+-- error 42601: syntax error: unexpected ")" at line 1, column 14 near "VALUES UPPER()"
 -- error 42601: syntax error: unexpected "," at line 1, column 19 near "LOWER('abc', 123", expecting ")" or "||"

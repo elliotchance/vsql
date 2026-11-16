@@ -1,8 +1,6 @@
 /* setup */
 CREATE TABLE a (id INT NOT NULL, x INT);
 CREATE TABLE b (id INT NOT NULL, y INT);
-CREATE TABLE c (id INT NOT NULL);
-CREATE TABLE pk (id INT PRIMARY KEY);
 INSERT INTO a (id, x) VALUES (1, 10);
 INSERT INTO b (id, y) VALUES (2, 20);
 
@@ -24,8 +22,10 @@ EXPLAIN SELECT a.id AS p, public.a.id AS q FROM a;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
 -- EXPLAIN: EXPR (P INTEGER NOT NULL, Q INTEGER NOT NULL)
 
+CREATE TABLE pk (id INT PRIMARY KEY);
 /* extensions V001-01 */
 EXPLAIN SELECT id FROM pk;
+-- msg: CREATE TABLE 1
 -- EXPLAIN: TABLE ":memory:".PUBLIC.PK (ID INTEGER NOT NULL)
 -- EXPLAIN: EXPR (ID INTEGER NOT NULL)
 
@@ -64,8 +64,10 @@ EXPLAIN SELECT i, x FROM (SELECT id AS i, x FROM a) AS d;
 -- # A scalar subquery is NULL when it has no rows, so it can be NULL even when
 -- # its column can't. A column of a UNION ALL can be NULL too, since vsql
 -- # doesn't have T101 (7.17, Syntax Rules, 19.b.ii.1.A).
+CREATE TABLE c (id INT NOT NULL);
 /* extensions V001-01 */
 EXPLAIN SELECT (SELECT a.id FROM c) FROM a;
+-- msg: CREATE TABLE 1
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
 -- EXPLAIN: EXPR (COL1 INTEGER)
 
@@ -120,8 +122,10 @@ EXPLAIN SELECT a.id AS p, b.* FROM a RIGHT JOIN b ON a.id = b.id;
 -- EXPLAIN: RIGHT JOIN ON A.ID = B.ID (":memory:".PUBLIC.A.ID INTEGER, ":memory:".PUBLIC.A.X INTEGER, ":memory:".PUBLIC.B.ID INTEGER NOT NULL, ":memory:".PUBLIC.B.Y INTEGER)
 -- EXPLAIN: EXPR (P INTEGER, ":memory:".PUBLIC.B.ID INTEGER NOT NULL, ":memory:".PUBLIC.B.Y INTEGER)
 
+CREATE TABLE c (id INT NOT NULL);
 /* extensions V001-01 */
 EXPLAIN SELECT a.id AS p, b.id AS q, c.id AS r FROM a LEFT JOIN b ON a.id = b.id INNER JOIN c ON a.id = c.id;
+-- msg: CREATE TABLE 1
 -- EXPLAIN: $1:
 -- EXPLAIN:   $1:
 -- EXPLAIN:     TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
@@ -133,8 +137,10 @@ EXPLAIN SELECT a.id AS p, b.id AS q, c.id AS r FROM a LEFT JOIN b ON a.id = b.id
 -- EXPLAIN: INNER JOIN ON A.ID = C.ID (":memory:".PUBLIC.A.ID INTEGER NOT NULL, ":memory:".PUBLIC.A.X INTEGER, ":memory:".PUBLIC.B.ID INTEGER, ":memory:".PUBLIC.B.Y INTEGER, ":memory:".PUBLIC.C.ID INTEGER NOT NULL)
 -- EXPLAIN: EXPR (P INTEGER NOT NULL, Q INTEGER, R INTEGER NOT NULL)
 
+CREATE TABLE c (id INT NOT NULL);
 /* extensions V001-01 */
 EXPLAIN SELECT a.id AS p, b.id AS q, c.id AS r FROM a INNER JOIN b ON a.id = b.id RIGHT JOIN c ON a.id = c.id;
+-- msg: CREATE TABLE 1
 -- EXPLAIN: $1:
 -- EXPLAIN:   $1:
 -- EXPLAIN:     TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
@@ -146,8 +152,10 @@ EXPLAIN SELECT a.id AS p, b.id AS q, c.id AS r FROM a INNER JOIN b ON a.id = b.i
 -- EXPLAIN: RIGHT JOIN ON A.ID = C.ID (":memory:".PUBLIC.A.ID INTEGER, ":memory:".PUBLIC.A.X INTEGER, ":memory:".PUBLIC.B.ID INTEGER, ":memory:".PUBLIC.B.Y INTEGER, ":memory:".PUBLIC.C.ID INTEGER NOT NULL)
 -- EXPLAIN: EXPR (P INTEGER, Q INTEGER, R INTEGER NOT NULL)
 
+CREATE TABLE c (id INT NOT NULL);
 /* extensions V001-01 */
 EXPLAIN SELECT a.id AS p, b.id AS q, c.id AS r FROM a LEFT JOIN (b INNER JOIN c ON b.id = c.id) ON a.id = b.id;
+-- msg: CREATE TABLE 1
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
 -- EXPLAIN: $2:
@@ -184,7 +192,6 @@ EXPLAIN SELECT a.id AS p, b.id AS q FROM a LEFT JOIN b ON a.id = b.id WHERE a.id
 
 -- # The NULLs that an outer join puts in a NOT NULL column.
 SELECT a.id AS p, b.id AS q FROM a LEFT JOIN b ON a.id = b.id;
--- P: 1 Q: NULL
-
 SELECT a.id AS p, b.id AS q FROM a RIGHT JOIN b ON a.id = b.id;
+-- P: 1 Q: NULL
 -- P: NULL Q: 2

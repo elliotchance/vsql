@@ -2,14 +2,18 @@
 -- # with the catalog.
 /* setup */
 CREATE TABLE t (x INT NOT NULL, y INT);
-CREATE TABLE u (x INT NOT NULL, z INT);
 CREATE SCHEMA s;
 CREATE TABLE s.t (x INT NOT NULL);
+INSERT INTO t (x, y) VALUES (1, 2);
+
+/* define u */
+CREATE TABLE u (x INT NOT NULL, z INT);
+INSERT INTO u (x, z) VALUES (1, 3);
+
+/* define p1 */
 CREATE TABLE p1 (id INT NOT NULL PRIMARY KEY, v VARCHAR(10) NOT NULL UNIQUE, n NUMERIC(10, 2) NOT NULL UNIQUE);
 CREATE TABLE c1 (a INT REFERENCES p1, b BIGINT);
 CREATE TABLE old_key (a BIGINT REFERENCES p1, b INT);
-INSERT INTO t (x, y) VALUES (1, 2);
-INSERT INTO u (x, z) VALUES (1, 3);
 
 -- # ISO/IEC 9075-2:2023, 7.12, <where clause>, Conformance Rules, 1
 
@@ -28,11 +32,13 @@ SELECT * FROM (SELECT COUNT(*) + 1 FROM t) AS d (c) WHERE c > 0;
 -- flags: F441, F591
 -- C: 2
 
+/* include u */
 /* flags */
 SELECT * FROM (SELECT x, COUNT(*) AS c FROM t GROUP BY x) AS d, u WHERE c > 0 AND z > 0;
 -- flags: F441, F591
 -- X: 1 C: 1 X: 1 Z: 3
 
+/* include u */
 /* flags */
 SELECT * FROM (SELECT COUNT(*) AS c FROM t) AS d WHERE EXISTS (SELECT z FROM u WHERE d.c > 0);
 -- flags: F441, F591
@@ -46,6 +52,7 @@ SELECT * FROM (SELECT x, COUNT(*) AS c FROM t GROUP BY x) AS d WHERE x > 0;
 -- flags: F591
 -- X: 1 C: 1
 
+/* include u */
 /* flags */
 SELECT * FROM (SELECT COUNT(*) AS x FROM t) AS d WHERE EXISTS (SELECT z FROM u WHERE x > 0);
 -- flags: F591
@@ -63,26 +70,31 @@ SELECT COUNT(*) AS c FROM t HAVING COUNT(*) > 0;
 
 -- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 6, 8 and 19
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(t1.x + 1) FROM u) FROM t AS t1;
 -- flags: F441
 -- COL1: 2
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(DISTINCT t1.x + 1) FROM u) FROM t AS t1;
 -- flags: F441, F561
 -- COL1: 2
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(t1.x + u.z) FROM u) FROM t AS t1;
 -- flags: F441, F442
 -- COL1: 4
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(y + z) FROM u) FROM t;
 -- flags: F441, F442
 -- COL1: 5
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(t1.x + t1.y) FROM u) FROM t AS t1;
 -- flags: F441, F442
@@ -91,16 +103,19 @@ SELECT (SELECT SUM(t1.x + t1.y) FROM u) FROM t AS t1;
 -- # The same column is one column reference only, an aggregate function of only
 -- # one outer reference is allowed, and so is one that's only of its own query.
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(t1.x) FROM u) FROM t AS t1;
 -- flags:
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(u.x + u.z) FROM u) FROM t;
 -- flags:
 -- COL1: 4
 
+/* include u */
 /* flags */
 SELECT (SELECT SUM(x + 1) FROM u) FROM t;
 -- flags:
@@ -123,6 +138,7 @@ SELECT REGR_COUNT(1, x) FROM t;
 -- flags: T621
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT REGR_COUNT(t1.x, 1) FROM u) FROM t AS t1;
 -- flags: T621
@@ -130,26 +146,31 @@ SELECT (SELECT REGR_COUNT(t1.x, 1) FROM u) FROM t AS t1;
 
 -- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 9 and 20
 
+/* include u */
 /* flags */
 SELECT (SELECT REGR_COUNT(u.z, t1.x + 1) FROM u) FROM t AS t1;
 -- flags: F441, T621
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT REGR_COUNT(t1.x + 1, u.z) FROM u) FROM t AS t1;
 -- flags: F441, T621
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT REGR_COUNT(u.z, t1.x + u.x) FROM u) FROM t AS t1;
 -- flags: F441, F442, T621
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT REGR_COUNT(u.z, t1.x) FROM u) FROM t AS t1;
 -- flags: T621
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT REGR_COUNT(u.z + u.x, 1) FROM u) FROM t AS t1;
 -- flags: T621
@@ -157,11 +178,13 @@ SELECT (SELECT REGR_COUNT(u.z + u.x, 1) FROM u) FROM t AS t1;
 
 -- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 17
 
+/* include u */
 /* flags */
 SELECT (SELECT RANK(t1.x + t1.y) WITHIN GROUP (ORDER BY t1.y) FROM u) FROM t AS t1 GROUP BY t1.x, t1.y;
 -- flags: F442, T612
 -- COL1: 2
 
+/* include u */
 /* flags */
 SELECT (SELECT RANK(t1.x, 1) WITHIN GROUP (ORDER BY t1.y, t1.x) FROM u) FROM t AS t1 GROUP BY t1.x;
 -- flags: T612
@@ -169,6 +192,7 @@ SELECT (SELECT RANK(t1.x, 1) WITHIN GROUP (ORDER BY t1.y, t1.x) FROM u) FROM t A
 
 -- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 18
 
+/* include u */
 /* flags */
 SELECT (SELECT PERCENTILE_DISC(t1.y - t1.x - 1) WITHIN GROUP (ORDER BY t1.y) FROM u) FROM t AS t1 GROUP BY t1.x, t1.y;
 -- flags: F442, T612
@@ -176,11 +200,13 @@ SELECT (SELECT PERCENTILE_DISC(t1.y - t1.x - 1) WITHIN GROUP (ORDER BY t1.y) FRO
 
 -- # ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 21
 
+/* include u */
 /* flags */
 SELECT (SELECT RANK(1) WITHIN GROUP (ORDER BY u.z + t1.x) FROM u) FROM t AS t1;
 -- flags: F442, T612
 -- COL1: 1
 
+/* include u */
 /* flags */
 SELECT (SELECT PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY u.z + u.x) FROM u) FROM t AS t1;
 -- flags: T612
@@ -218,21 +244,25 @@ DECLARE dc CURSOR FOR SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM t GROUP BY x
 
 -- # ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Conformance Rules, 5
 
+/* include p1 */
 /* flags */
 CREATE TABLE c2 (a BIGINT REFERENCES p1);
 -- flags: T071, T201
 -- msg: CREATE TABLE 1
 
+/* include p1 */
 /* flags */
 CREATE TABLE c3 (a VARCHAR(20) REFERENCES p1 (v));
 -- flags: T201
 -- msg: CREATE TABLE 1
 
+/* include p1 */
 /* flags */
 CREATE TABLE c4 (a NUMERIC(10, 1) REFERENCES p1 (n));
 -- flags: T201
 -- msg: CREATE TABLE 1
 
+/* include p1 */
 /* flags */
 CREATE TABLE c5 (a BIGINT, FOREIGN KEY (a) REFERENCES public.p1 (id));
 -- flags: T071, T201
@@ -243,11 +273,13 @@ CREATE TABLE c6 (a BIGINT REFERENCES c6 (b), b INT NOT NULL UNIQUE);
 -- flags: T071, T201
 -- msg: CREATE TABLE 1
 
+/* include p1 */
 /* flags */
 ALTER TABLE c1 ADD FOREIGN KEY (b) REFERENCES p1 (id);
 -- flags: F388, T201
 -- msg: ALTER TABLE 1
 
+/* include p1 */
 /* flags */
 ALTER TABLE t ADD COLUMN w BIGINT REFERENCES p1;
 -- flags: T071, T201
@@ -256,6 +288,7 @@ ALTER TABLE t ADD COLUMN w BIGINT REFERENCES p1;
 -- # The same data type (other than NOT NULL), a FOREIGN KEY that already exists
 -- # with a different data type, and when the other table doesn't exist.
 
+/* include p1 */
 /* flags */
 CREATE TABLE c7 (a INTEGER NOT NULL REFERENCES p1, b VARCHAR(10) REFERENCES p1 (v), c NUMERIC(10, 2) REFERENCES p1 (n));
 -- flags:
@@ -266,21 +299,25 @@ CREATE TABLE c8 (a INT REFERENCES c8 (b), b INT NOT NULL UNIQUE);
 -- flags:
 -- msg: CREATE TABLE 1
 
+/* include p1 */
 /* flags */
 ALTER TABLE old_key ADD FOREIGN KEY (b) REFERENCES p1 (id);
 -- flags: F388
 -- msg: ALTER TABLE 1
 
+/* include p1 */
 /* flags */
 ALTER TABLE old_key ADD COLUMN w INT;
 -- flags:
 -- msg: ALTER TABLE 1
 
+/* include p1 */
 /* flags */
 ALTER TABLE old_key ALTER COLUMN b DROP DEFAULT;
 -- flags: F387
 -- error 42601: syntax error: column B has no DEFAULT
 
+/* include p1 */
 /* flags */
 ALTER TABLE missing ADD COLUMN w BIGINT REFERENCES p1;
 -- flags: T071
@@ -291,6 +328,7 @@ CREATE TABLE c9 (a BIGINT REFERENCES missing);
 -- flags: T071
 -- error 42P01: no such table: ":memory:".PUBLIC.MISSING
 
+/* include p1 */
 /* flags */
 CREATE TABLE c10 (a BIGINT, a BIGINT REFERENCES p1);
 -- flags: T071
@@ -322,6 +360,7 @@ DELETE FROM t WHERE x IN (SELECT d.x + 1 FROM (SELECT x FROM public.t) AS d);
 -- warning 02000: no data
 -- msg: DELETE 0
 
+/* include u */
 /* flags */
 DELETE FROM t WHERE x IN (SELECT u.x + 1 FROM u JOIN t ON u.x = t.x);
 -- flags: F781
@@ -343,6 +382,7 @@ DELETE FROM s.t WHERE x IN (SELECT x + 1 FROM t);
 -- warning 02000: no data
 -- msg: DELETE 0
 
+/* include u */
 /* flags */
 DELETE FROM t WHERE x IN (SELECT x + 1 FROM u AS t);
 -- flags:
@@ -379,11 +419,13 @@ UPDATE t SET y = 1, x = (SELECT MAX(x) + 1 FROM public.t);
 -- flags: F781
 -- msg: UPDATE 1
 
+/* include u */
 /* flags */
 UPDATE t SET y = (SELECT SUM(t.x + u.z) FROM u);
 -- flags: F441, F442
 -- msg: UPDATE 1
 
+/* include u */
 /* flags */
 UPDATE t SET y = (SELECT MAX(z) FROM u);
 -- flags:
@@ -402,12 +444,14 @@ UPDATE t SET y = NULL WHERE x = 0;
 
 -- # A positioned UPDATE has a <set clause list>, but no <search condition>.
 
+/* include p1 */
 /* flags */
 /* extensions V113-01 */
 UPDATE t SET y = (SELECT MAX(x) FROM t) WHERE CURRENT OF c1;
 -- flags: F781, V113-01
 -- error 34000: invalid cursor name: cursor C1 does not exist
 
+/* include p1 */
 /* flags */
 /* extensions V113-01 */
 UPDATE t SET y = 1 WHERE CURRENT OF c1;
@@ -429,6 +473,7 @@ INSERT INTO t SELECT x + 10, y FROM t;
 -- flags: F781
 -- msg: INSERT 1
 
+/* include u */
 /* flags */
 INSERT INTO t (x) SELECT x + 1 FROM u WHERE x IN (SELECT x FROM t);
 -- flags: F781
@@ -444,6 +489,7 @@ INSERT INTO t (x) SELECT d.x + 1 FROM (SELECT x FROM public.t) AS d;
 -- flags: F591, F781
 -- msg: INSERT 1
 
+/* include u */
 /* flags */
 INSERT INTO t (x) SELECT u.x + 1 FROM u JOIN t ON u.x = t.x;
 -- flags: F781
@@ -463,6 +509,7 @@ INSERT INTO s.t (x) SELECT x FROM t;
 -- flags:
 -- msg: INSERT 1
 
+/* include u */
 /* flags */
 INSERT INTO t (x) SELECT t.x + 1 FROM u AS t;
 -- flags:

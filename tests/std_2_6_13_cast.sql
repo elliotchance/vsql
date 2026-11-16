@@ -86,30 +86,22 @@ VALUES CAST('true' AS BOOLEAN);
 -- COL1: TRUE (BOOLEAN)
 
 VALUES CAST('  FaLsE ' AS BOOLEAN);
--- COL1: FALSE
-
 VALUES CAST('unknown' AS BOOLEAN);
--- COL1: UNKNOWN
-
 VALUES CAST(CAST('false' AS VARCHAR(10)) AS BOOLEAN);
--- COL1: FALSE
-
 VALUES CAST(CAST(NULL AS VARCHAR(10)) AS BOOLEAN);
--- COL1: UNKNOWN
-
 VALUES CAST('abc' AS BOOLEAN);
--- error 22018: invalid character value for cast
-
 VALUES CAST('' AS BOOLEAN);
--- error 22018: invalid character value for cast
-
 VALUES CAST('t' AS BOOLEAN);
--- error 22018: invalid character value for cast
-
 VALUES CAST('1' AS BOOLEAN);
--- error 22018: invalid character value for cast
-
 VALUES CAST('TRUE x' AS BOOLEAN);
+-- COL1: FALSE
+-- COL1: UNKNOWN
+-- COL1: FALSE
+-- COL1: UNKNOWN
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
 -- error 22018: invalid character value for cast
 
 -- # A BOOLEAN cast to a string is TRUE or FALSE, padded for a CHAR, and UNKNOWN
@@ -120,18 +112,14 @@ VALUES CAST(TRUE AS VARCHAR(10));
 -- COL1: TRUE (CHARACTER VARYING(10))
 
 VALUES CAST(FALSE AS CHAR(10)) || 'x';
--- COL1: FALSE     x
-
 VALUES CAST(TRUE AS VARCHAR(4));
--- COL1: TRUE
-
 VALUES CAST(UNKNOWN AS VARCHAR(10));
--- COL1: NULL
-
 VALUES CAST(TRUE AS CHAR(3));
--- error 22018: invalid character value for cast
-
 VALUES CAST(FALSE AS VARCHAR(4));
+-- COL1: FALSE     x
+-- COL1: TRUE
+-- COL1: NULL
+-- error 22018: invalid character value for cast
 -- error 22018: invalid character value for cast
 
 -- # The declared type of a CAST is the target type (Syntax Rules, 2).
@@ -144,24 +132,18 @@ EXPLAIN VALUES CAST(123 AS SMALLINT);
 -- # so an approximate literal such as '1e2' can be cast to an INT (General
 -- # Rules, 8.b.ii).
 VALUES CAST('hello' AS DOUBLE PRECISION);
--- error 22018: invalid character value for cast
-
 VALUES CAST('abc' AS INT);
--- error 22018: invalid character value for cast
-
 VALUES CAST('12abc' AS INT);
--- error 22018: invalid character value for cast
-
 VALUES CAST('abc' AS NUMERIC(5, 2));
--- error 22018: invalid character value for cast
-
 VALUES CAST('' AS INT);
--- error 22018: invalid character value for cast
-
 VALUES CAST('' AS NUMERIC(5, 2));
--- error 22018: invalid character value for cast
-
 VALUES CAST('1e' AS INT);
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
 -- error 22018: invalid character value for cast
 
 /* types */
@@ -174,70 +156,52 @@ VALUES CAST(' 1.5 ' AS NUMERIC(5, 2));
 -- # Only the space is <truncating whitespace> (5.2, Syntax Rules, 4), so a tab
 -- # isn't removed.
 VALUES CAST(U&'\000912' AS INT);
--- error 22018: invalid character value for cast
-
 VALUES CAST(U&'1.5\0009' AS DOUBLE PRECISION);
--- error 22018: invalid character value for cast
-
 VALUES CAST('-12' AS INT);
--- COL1: -12
-
 VALUES CAST('+.5' AS NUMERIC(3, 2));
--- COL1: 0.50
-
 VALUES CAST('1e2' AS INT);
--- COL1: 100
-
 VALUES CAST('1e2' AS DOUBLE PRECISION);
+-- error 22018: invalid character value for cast
+-- error 22018: invalid character value for cast
+-- COL1: -12
+-- COL1: 0.50
+-- COL1: 100
 -- COL1: 100e0
 
 -- # A literal too large for a DOUBLE PRECISION or for the target is out of
 -- # range, and one too small for a DOUBLE PRECISION is zero.
 VALUES CAST('1e309' AS DOUBLE PRECISION);
--- error 22003: numeric value out of range
-
 VALUES CAST('-1.5E400' AS INT);
--- error 22003: numeric value out of range
-
 VALUES CAST('1e309' AS BIGINT);
--- error 22003: numeric value out of range
-
 VALUES CAST('1e39' AS REAL);
--- error 22003: numeric value out of range
-
 VALUES CAST('1e-400' AS DOUBLE PRECISION);
--- COL1: 0e0
-
 VALUES CAST('1e-400' AS SMALLINT);
--- COL1: 0
-
 VALUES CAST(' 1.5 ' AS DOUBLE PRECISION);
--- COL1: 1.5e0
-
 VALUES CAST('99999' AS SMALLINT);
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- COL1: 0e0
+-- COL1: 0
+-- COL1: 1.5e0
 -- error 22003: numeric value out of range
 
 -- # A BOOLEAN or a datetime can't be cast to a number (Syntax Rules, 7), or be
 -- # stored in a numeric column.
 VALUES CAST(TRUE AS FLOAT);
--- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
-
 VALUES CAST(TRUE AS INT);
--- error 42846: cannot coerce BOOLEAN to INTEGER
-
 VALUES CAST(DATE '2020-01-01' AS INT);
--- error 42846: cannot coerce DATE to INTEGER
-
 VALUES CAST(DATE '2020-01-01' AS DOUBLE PRECISION);
--- error 42846: cannot coerce DATE to DOUBLE PRECISION
-
 VALUES CAST(DATE '2020-01-01' AS NUMERIC(5, 0));
--- error 42846: cannot coerce DATE to NUMERIC(5)
-
 VALUES CAST(TIME '10:00:00' AS SMALLINT);
--- error 42846: cannot coerce TIME(0) WITHOUT TIME ZONE to SMALLINT
-
 VALUES CAST(TIMESTAMP '2020-01-01 10:00:00+05:00' AS BIGINT);
+-- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
+-- error 42846: cannot coerce BOOLEAN to INTEGER
+-- error 42846: cannot coerce DATE to INTEGER
+-- error 42846: cannot coerce DATE to DOUBLE PRECISION
+-- error 42846: cannot coerce DATE to NUMERIC(5)
+-- error 42846: cannot coerce TIME(0) WITHOUT TIME ZONE to SMALLINT
 -- error 42846: cannot coerce TIMESTAMP(0) WITH TIME ZONE to BIGINT
 
 CREATE TABLE t (x INT);
@@ -285,20 +249,17 @@ SELECT CAST(b AS VARCHAR(10)), CAST(i AS REAL), CAST(c AS BOOLEAN), CAST(c AS DA
 -- # A number too large for the target is out of range (General Rules, 8.a.ii),
 -- # and an exact number cast to a VARCHAR must fit (General Rules, 12.a.iii.3).
 VALUES CAST(60000 AS SMALLINT);
--- error 22003: numeric value out of range
-
 VALUES CAST(12345 AS VARCHAR(10));
--- COL1: 12345
-
 VALUES CAST(12345 AS VARCHAR(3));
+-- error 22003: numeric value out of range
+-- COL1: 12345
 -- error 22001: string data right truncation for CHARACTER VARYING(3)
 
 -- # NUMERIC without a scale has a scale of 0 (6.1, Syntax Rules, 22), so the
 -- # digits after the point are truncated.
 VALUES CAST(123456789 AS DOUBLE PRECISION);
--- COL1: 1.23456789e+08
-
 VALUES CAST(1.23 AS NUMERIC);
+-- COL1: 1.23456789e+08
 -- COL1: 1
 
 -- # A datetime cast to a string is its whole literal, with the keyword and the
@@ -313,9 +274,8 @@ VALUES CAST(DATE '2022-06-30' AS CHARACTER(20));
 -- COL1: DATE '2022-06-30'    (CHARACTER(20))
 
 VALUES CAST(DATE '2022-06-30' AS VARCHAR(10));
--- error 22001: string data right truncation for CHARACTER VARYING(10)
-
 VALUES CAST(DATE '2022-06-30' AS CHARACTER(10));
+-- error 22001: string data right truncation for CHARACTER VARYING(10)
 -- error 22001: string data right truncation for CHARACTER(10)
 
 /* types */
@@ -344,9 +304,8 @@ VALUES CAST(TIMESTAMP '2022-06-30 12:34:56' AS VARCHAR(30));
 -- # The target type must be valid: a length greater than 0 (6.1, Syntax Rules,
 -- # 4) and a scale no greater than the precision (6.1, Syntax Rules, 23).
 VALUES CAST('x' AS VARCHAR(0));
--- error 42601: syntax error: CHARACTER VARYING length must be greater than 0
-
 VALUES CAST(1.23 AS NUMERIC(2, 3));
+-- error 42601: syntax error: CHARACTER VARYING length must be greater than 0
 -- error 42601: syntax error: NUMERIC scale (3) must not be greater than precision (2)
 
 -- # Only the most recent 100 warnings are kept.

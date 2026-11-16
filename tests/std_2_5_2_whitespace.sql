@@ -124,9 +124,8 @@ VALUES<U+0061>123;
 
 -- # A character that isn't part of a token or white space isn't ignored.
 VALUES 1 @;
--- error 42601: syntax error: invalid character: @
-
 VALUES 1 ~;
+-- error 42601: syntax error: invalid character: @
 -- error 42601: syntax error: invalid character: ~
 
 -- # vsql only allows ASCII letters in a regular identifier (#761), although é

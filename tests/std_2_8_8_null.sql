@@ -1,20 +1,15 @@
 -- # A value that isn't NULL, of each kind of literal.
 VALUES 'a' IS NULL;
--- COL1: FALSE
-
 VALUES 'a' IS NOT NULL;
--- COL1: TRUE
-
 VALUES 1.23 IS NULL;
--- COL1: FALSE
-
 VALUES 1.23 IS NOT NULL;
--- COL1: TRUE
-
 VALUES 123 IS NULL;
--- COL1: FALSE
-
 VALUES 123 IS NOT NULL;
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: FALSE
 -- COL1: TRUE
 
 -- # Only TRUE rows are selected, so IS NULL is how a NULL is found.

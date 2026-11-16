@@ -6,7 +6,6 @@ INSERT INTO t (a, b) VALUES (2, 30);
 INSERT INTO t (a, b) VALUES (3, NULL);
 INSERT INTO t (a, b) VALUES (3, 40);
 INSERT INTO t (a, b) VALUES (3, 50);
-CREATE TABLE e (a INT);
 
 -- # HAVING keeps only the groups where the condition is TRUE
 -- # (General Rules, 1).
@@ -81,33 +80,35 @@ SELECT MAX(b) FROM t HAVING MIN(b) = 10;
 
 -- # Even an empty table is one group without a GROUP BY. With a GROUP BY
 -- # there are no groups, so there are no rows.
+CREATE TABLE e (a INT);
 SELECT COUNT(*) FROM e HAVING COUNT(*) = 0;
--- COL1: 0
-
 SELECT 1 FROM e HAVING TRUE;
+-- msg: CREATE TABLE 1
+-- COL1: 0
 -- COL1: 1
 
+CREATE TABLE e (a INT);
 SELECT COUNT(*) FROM e GROUP BY a HAVING TRUE;
+-- msg: CREATE TABLE 1
 
 -- # The HAVING can only use grouping columns, outside of an aggregate.
 SELECT a FROM t GROUP BY a HAVING b > 1;
--- error 42803: column B must be in the GROUP BY clause or used in an aggregate function
-
 SELECT COUNT(*) FROM t HAVING a > 1;
+-- error 42803: column B must be in the GROUP BY clause or used in an aggregate function
 -- error 42803: column A must be in the GROUP BY clause or used in an aggregate function
 
+CREATE TABLE e (a INT);
 SELECT COUNT(*) FROM e HAVING a > 1;
+-- msg: CREATE TABLE 1
 -- error 42803: column A must be in the GROUP BY clause or used in an aggregate function
 
 -- # An unknown column, a condition that isn't boolean, and an aggregate inside
 -- # another (6.9, Syntax Rules, 1) are errors.
 SELECT a FROM t GROUP BY a HAVING c > 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
-
 SELECT a FROM t GROUP BY a HAVING a;
--- error 42804: data type mismatch in HAVING: expected BOOLEAN but got INTEGER
-
 SELECT a FROM t GROUP BY a HAVING COUNT(MAX(b)) > 1;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
+-- error 42804: data type mismatch in HAVING: expected BOOLEAN but got INTEGER
 -- error 42601: syntax error: nested set function: COUNT(MAX(B))
 
 -- # HAVING with a join.
@@ -132,12 +133,10 @@ SELECT * FROM (SELECT a FROM t GROUP BY a HAVING COUNT(*) > 1) AS s;
 
 -- # An asterisk is every column, so each one must be grouped.
 SELECT * FROM t GROUP BY a HAVING COUNT(*) > 1;
--- error 42803: column ":memory:".PUBLIC.T.B must be in the GROUP BY clause or used in an aggregate function
-
 SELECT * FROM t HAVING COUNT(*) > 1;
--- error 42803: column ":memory:".PUBLIC.T.A must be in the GROUP BY clause or used in an aggregate function
-
 SELECT * FROM t GROUP BY a;
+-- error 42803: column ":memory:".PUBLIC.T.B must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column ":memory:".PUBLIC.T.A must be in the GROUP BY clause or used in an aggregate function
 -- error 42803: column ":memory:".PUBLIC.T.B must be in the GROUP BY clause or used in an aggregate function
 
 SELECT * FROM t GROUP BY b, a HAVING b > 30;

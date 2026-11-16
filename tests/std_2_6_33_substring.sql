@@ -104,34 +104,27 @@ VALUES SUBSTRING('Жabڣc' FROM 3 FOR 2 USING OCTETS);
 -- # The end can be past the largest BIGINT. A negative length is an error
 -- # (General Rules, 3.e).
 VALUES SUBSTRING('hello' FROM 0 FOR 3);
--- COL1: he
-
 VALUES SUBSTRING('hello' FROM -1 FOR 3);
--- COL1: h
-
 VALUES SUBSTRING('hello' FROM -5 FOR 3);
+-- COL1: he
+-- COL1: h
 -- COL1: 
 
 VALUES SUBSTRING('hello' FROM 2 FOR 0);
 -- COL1: 
 
 VALUES SUBSTRING('hello' FROM 2 FOR 10);
--- COL1: ello
-
 VALUES SUBSTRING('hello' FROM 6 FOR 2);
+-- COL1: ello
 -- COL1: 
 
 VALUES SUBSTRING('hello' FROM 4 FOR 9223372036854775807);
--- COL1: lo
-
 VALUES SUBSTRING('hello' FROM 2 FOR -1);
--- error 22011: substring error
-
 VALUES SUBSTRING('hello' FROM 0 FOR 3 USING OCTETS);
--- COL1: he
-
 VALUES SUBSTRING('hello' FROM 2 FOR 10 USING OCTETS);
--- COL1: ello
-
 VALUES SUBSTRING('hello' FROM 2 FOR -1 USING OCTETS);
+-- COL1: lo
+-- error 22011: substring error
+-- COL1: he
+-- COL1: ello
 -- error 22011: substring error

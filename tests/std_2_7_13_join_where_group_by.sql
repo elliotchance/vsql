@@ -74,7 +74,6 @@ SELECT x, COUNT(*) FROM t1 LEFT JOIN t2 ON t1.id = t2.t1_id WHERE y IS NULL OR y
 -- X: 30 COL2: 1
 
 SELECT COUNT(*) FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE x = 20;
--- COL1: 2
-
 SELECT COUNT(*) FROM t1 JOIN t2 ON TRUE GROUP BY z;
+-- COL1: 2
 -- error 42703: no such column: Z

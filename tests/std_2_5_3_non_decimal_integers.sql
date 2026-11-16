@@ -31,20 +31,17 @@ VALUES 0x1_;
 -- # A digit or letter that isn't of the radix is an error, but a radix indicator
 -- # without a digit after it is 0 followed by a name.
 VALUES 0b102;
--- error 42601: syntax error: invalid binary integer: 0b102
-
 VALUES 0xFG;
--- error 42601: syntax error: invalid hexadecimal integer: 0xFG
-
 SELECT 0x FROM (VALUES 1) AS t (y);
+-- error 42601: syntax error: invalid binary integer: 0b102
+-- error 42601: syntax error: invalid hexadecimal integer: 0xFG
 -- X: 0
 
 -- # It's an integer, so it can't have a period or be a mantissa (Syntax Rules,
 -- # 32).
 VALUES 0x1.5;
--- error 42601: syntax error: a non-decimal integer cannot have a period or exponent: 0x1.
-
 VALUES 0b1e2;
+-- error 42601: syntax error: a non-decimal integer cannot have a period or exponent: 0x1.
 -- error 42601: syntax error: a non-decimal integer cannot have a period or exponent: 0b1e
 
 -- # It's an <unsigned integer> anywhere one can be used.

@@ -1,6 +1,6 @@
 -- # ILIKE is LIKE that ignores case (V302-01). It's a vsql extension. See also
 -- # v302_01_ilike_names.sql for "ilike" used as a name.
-/* setup */
+/* define t */
 CREATE TABLE t (x VARCHAR(10), y VARCHAR(10));
 INSERT INTO t (x, y) VALUES ('Ab', 'aB');
 
@@ -402,40 +402,47 @@ VALUES 'a' NOT ILIKE 'A' ESCAPE '!';
 -- flags: F281, F641, F661, V302-01
 -- COL1: FALSE
 
+/* include t */
 /* flags */
 SELECT x FROM t WHERE x LIKE 'Ab';
 -- flags:
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 /* flags */
 SELECT x FROM t WHERE x ILIKE 'AB';
 -- flags: V302-01
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 /* flags */
 SELECT x FROM t WHERE x || 'c' ILIKE 'abC';
 -- flags: F281, V302-01
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 /* flags */
 SELECT x FROM t WHERE x ILIKE y;
 -- flags: F281, V302-01
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 /* flags */
 SELECT x FROM t WHERE x NOT ILIKE y;
 -- flags: F281, V302-01
 
+/* include t */
 /* extensions V302-01 */
 /* flags */
 SELECT x FROM t WHERE x ILIKE 'a' ESCAPE y;
 -- flags: F281, V302-01
 -- error 22019: invalid escape character
 
+/* include t */
 /* extensions V302-01 */
 /* flags */
 SELECT x FROM t WHERE x NOT ILIKE 'a' ESCAPE y;
@@ -444,22 +451,27 @@ SELECT x FROM t WHERE x NOT ILIKE 'a' ESCAPE y;
 
 -- # Either side can be any expression that returns a character string,
 -- # including one that starts with a reserved word, such as UPPER or CASE.
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE (x) ILIKE (y);
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE UPPER(x) ILIKE LOWER(y);
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE x ILIKE CAST(y AS VARCHAR(5));
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE x ILIKE CASE WHEN TRUE THEN 'AB' END;
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE x ILIKE COALESCE(y, 'c');
 -- X: Ab
@@ -467,21 +479,24 @@ SELECT x FROM t WHERE x ILIKE COALESCE(y, 'c');
 -- # A pattern can't start with NULL, so ILIKE isn't the operator there, and
 -- # as a name it's a syntax error. LIKE NULL is a syntax error for another
 -- # reason: NULL on its own isn't a value.
+/* include t */
 SELECT x FROM t WHERE x ILIKE NULL;
--- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE NULL"
-
 SELECT x FROM t WHERE x LIKE NULL;
+-- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE NULL"
 -- error 42601: syntax error: unexpected $end at line 1, column 34 near "WHERE x LIKE NULL", expecting "::"
 
 -- # More functions that return a character string.
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE x ILIKE TRIM(y);
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE x ILIKE SUBSTRING(y FROM 1);
 -- X: Ab
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE x ILIKE NULLIF(y, 'c');
 -- X: Ab
@@ -492,10 +507,12 @@ VALUES TRUE ILIKE 'a';
 -- error 42883: operator does not exist: BOOLEAN ILIKE CHARACTER
 
 -- # An aggregate, a CASE and CURRENT_SCHEMA can be operands too.
+/* include t */
 /* extensions V302-01 */
 SELECT x ILIKE MAX(y) FROM t GROUP BY x;
 -- COL1: TRUE
 
+/* include t */
 /* extensions V302-01 */
 SELECT x FROM t WHERE CASE WHEN TRUE THEN x END ILIKE 'AB';
 -- X: Ab
@@ -515,6 +532,7 @@ VALUES ? ILIKE ?;
 -- sql: VALUES 'A' ILIKE 'a'
 -- COL1: TRUE
 
+/* include t */
 /* extensions V302-01 */
 /* params 'a' */
 SELECT x FROM t WHERE x NOT ILIKE ?;
@@ -532,8 +550,8 @@ INSERT INTO c (x) VALUES ('B');
 
 -- # A pattern can't start with TRUE either, so it isn't ILIKE, while LIKE TRUE
 -- # parses and is an error because TRUE isn't a character string.
+/* include t */
 SELECT x FROM t WHERE x ILIKE TRUE;
--- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE TRUE"
-
 SELECT x FROM t WHERE x LIKE TRUE;
+-- error 42601: syntax error: unexpected ILIKE at line 1, column 25 near "t WHERE x ILIKE TRUE"
 -- error 42883: operator does not exist: CHARACTER VARYING LIKE BOOLEAN

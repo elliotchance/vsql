@@ -17,12 +17,10 @@ SELECT s * 2, i + 1, b - 1, -i FROM t;
 -- COL1: NULL (SMALLINT) COL2: NULL (INTEGER) COL3: NULL (BIGINT) COL4: NULL (INTEGER)
 
 SELECT n + 1.5, n * 2.0, -n FROM t;
--- COL1: NULL COL2: NULL COL3: NULL
-
 SELECT m * CAST(2 AS DECIMAL(2, 0)), -m FROM t;
--- COL1: NULL COL2: NULL
-
 SELECT 2e0 * d, 1 + i FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL
+-- COL1: NULL COL2: NULL
 -- COL1: NULL COL2: NULL
 
 -- # The NULL takes precedence over a division by zero.
@@ -32,15 +30,12 @@ SELECT d / 0e0, i / 0, n / 0.0 FROM t;
 -- # String functions and concatenation.
 
 SELECT c || 'x', 'x' || c FROM t;
--- COL1: NULL COL2: NULL
-
 SELECT UPPER(c), LOWER(c), TRIM(c), TRIM(c FROM 'abc') FROM t;
--- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
-
 SELECT CHAR_LENGTH(c), OCTET_LENGTH(c), POSITION('a' IN c), POSITION(c IN 'abc') FROM t;
--- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
-
 SELECT SUBSTRING(c FROM 1), SUBSTRING('abc' FROM i), SUBSTRING('abc' FROM 1 FOR i) FROM t;
+-- COL1: NULL COL2: NULL
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
 -- COL1: NULL COL2: NULL COL3: NULL
 
 -- # Numeric functions.
@@ -55,9 +50,8 @@ SELECT ABS(n), FLOOR(n), CEIL(n), MOD(n, 2.0), MOD(2e0, d) FROM t;
 -- # LIKE and SIMILAR TO are UNKNOWN when either side is NULL.
 
 SELECT c LIKE 'a%', 'a' LIKE c, c NOT LIKE 'a%' FROM t;
--- COL1: UNKNOWN COL2: UNKNOWN COL3: UNKNOWN
-
 SELECT c SIMILAR TO 'a%', 'a' SIMILAR TO c, c NOT SIMILAR TO 'a%' FROM t;
+-- COL1: UNKNOWN COL2: UNKNOWN COL3: UNKNOWN
 -- COL1: UNKNOWN COL2: UNKNOWN COL3: UNKNOWN
 
 -- # A NULL in a WHERE expression never matches.

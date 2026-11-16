@@ -72,12 +72,10 @@ CREATE TABLE "Foo" (baz CHARACTER VARYING(10));
 
 -- # A delimited identifier can't be empty, and must have a closing quote.
 CREATE TABLE "" (x INT);
--- error 42601: syntax error: a delimited identifier cannot be empty
-
 CREATE TABLE foo ("" INT);
--- error 42601: syntax error: a delimited identifier cannot be empty
-
 CREATE TABLE "foo (x INT);
+-- error 42601: syntax error: a delimited identifier cannot be empty
+-- error 42601: syntax error: a delimited identifier cannot be empty
 -- error 42601: syntax error: unterminated delimited identifier: "foo (x INT)
 
 -- # A delimited identifier can have any character other than the ones in the
@@ -86,15 +84,12 @@ CREATE TABLE "foo (x INT);
 -- # unassigned code point (U+0378) and a line separator (U+2028). Private use
 -- # characters and other spaces are allowed.
 CREATE TABLE "a	b" (x INT);
--- error 42601: syntax error: invalid character in delimited identifier: U+0009
-
 CREATE TABLE "a​b" (x INT);
--- error 42601: syntax error: invalid character in delimited identifier: U+200B
-
 CREATE TABLE foo ("a͸b" INT);
--- error 42601: syntax error: invalid character in delimited identifier: U+0378
-
 CREATE TABLE foo ("a b" INT);
+-- error 42601: syntax error: invalid character in delimited identifier: U+0009
+-- error 42601: syntax error: invalid character in delimited identifier: U+200B
+-- error 42601: syntax error: invalid character in delimited identifier: U+0378
 -- error 42601: syntax error: invalid character in delimited identifier: U+2028
 
 CREATE TABLE "a b" (x INT);
@@ -186,18 +181,14 @@ CREATE TABLE foo (bar DECIMAL(10, 2));
 -- # (6.1, Syntax Rules, 21). A scale can't be greater than the precision (6.1,
 -- # Syntax Rules, 23), but it can be the same.
 CREATE TABLE foo (x VARCHAR(0));
--- error 42601: syntax error: CHARACTER VARYING length must be greater than 0
-
 CREATE TABLE foo (x CHAR(0));
--- error 42601: syntax error: CHARACTER length must be greater than 0
-
 CREATE TABLE foo (x NUMERIC(0));
--- error 42601: syntax error: NUMERIC precision must be greater than 0
-
 CREATE TABLE foo (x NUMERIC(3, 5));
--- error 42601: syntax error: NUMERIC scale (5) must not be greater than precision (3)
-
 CREATE TABLE foo (x DECIMAL(3, 4));
+-- error 42601: syntax error: CHARACTER VARYING length must be greater than 0
+-- error 42601: syntax error: CHARACTER length must be greater than 0
+-- error 42601: syntax error: NUMERIC precision must be greater than 0
+-- error 42601: syntax error: NUMERIC scale (5) must not be greater than precision (3)
 -- error 42601: syntax error: DECIMAL scale (4) must not be greater than precision (3)
 
 CREATE TABLE foo (x NUMERIC(3, 3), y DECIMAL(1, 1));
@@ -237,9 +228,8 @@ CREATE TABLE absolute.CONTINUE (baz BIGINT);
 -- # X are the same name, but "x" isn't, because a delimited identifier isn't
 -- # changed to upper case (5.2, Syntax Rules, 28).
 CREATE TABLE foo (x INT, x INT);
--- error 42601: syntax error: column X is defined more than once
-
 CREATE TABLE foo (x INT, X VARCHAR(5));
+-- error 42601: syntax error: column X is defined more than once
 -- error 42601: syntax error: column X is defined more than once
 
 CREATE TABLE foo (x INT, "x" VARCHAR(5));

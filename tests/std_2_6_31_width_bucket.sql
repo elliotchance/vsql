@@ -68,28 +68,20 @@ VALUES WIDTH_BUCKET(5, 0, 10, CAST(NULL AS INT)), WIDTH_BUCKET(5, 1, 1, CAST(NUL
 -- COL1: NULL
 
 VALUES WIDTH_BUCKET(5, 0, 10, 0);
--- error 2201G: invalid argument for width bucket function
-
 VALUES WIDTH_BUCKET(5, 0, 10, -1);
--- error 2201G: invalid argument for width bucket function
-
 VALUES WIDTH_BUCKET(5, 1, 1, 3);
--- error 2201G: invalid argument for width bucket function
-
 VALUES WIDTH_BUCKET(5, 1.0, 1e0, 3);
--- error 2201G: invalid argument for width bucket function
-
 VALUES WIDTH_BUCKET(50, 0, 10, CAST(32767 AS SMALLINT));
--- error 22003: numeric value out of range
-
 VALUES WIDTH_BUCKET(-50, 10, 0, CAST(9 AS NUMERIC(1)));
--- error 22003: numeric value out of range
-
 VALUES WIDTH_BUCKET(5, 0, 10, 2.0);
--- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, NUMERIC(2, 1))
-
 VALUES WIDTH_BUCKET(5, 0, 10, 2e0);
--- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, DOUBLE PRECISION)
-
 VALUES WIDTH_BUCKET('a', 0, 10, 4);
+-- error 2201G: invalid argument for width bucket function
+-- error 2201G: invalid argument for width bucket function
+-- error 2201G: invalid argument for width bucket function
+-- error 2201G: invalid argument for width bucket function
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, NUMERIC(2, 1))
+-- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, DOUBLE PRECISION)
 -- error 42883: function does not exist: WIDTH_BUCKET(CHARACTER(1), SMALLINT, SMALLINT, SMALLINT)

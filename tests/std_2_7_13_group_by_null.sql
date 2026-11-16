@@ -35,9 +35,8 @@ SELECT count(x) FROM foo;
 -- COL1: 2
 
 SELECT count(*) FROM foo WHERE x IS NOT NULL;
--- COL1: 2
-
 SELECT count(x) FROM foo WHERE x IS NOT NULL;
+-- COL1: 2
 -- COL1: 2
 
 SELECT x, min(x) FROM foo GROUP BY x;

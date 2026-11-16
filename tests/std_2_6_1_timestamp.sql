@@ -10,9 +10,8 @@ VALUES TIMESTAMP '2022-06-30 21:47:32+05:12';
 -- COL1: 2022-06-30T21:47:32+0512 (TIMESTAMP(0) WITH TIME ZONE)
 
 VALUES TIMESTAMP '21:47:32';
--- error 42601: syntax error: TIMESTAMP '21:47:32' is not valid
-
 VALUES TIMESTAMP '21:47:32+05:12';
+-- error 42601: syntax error: TIMESTAMP '21:47:32' is not valid
 -- error 42601: syntax error: TIMESTAMP '21:47:32+05:12' is not valid
 
 /* types */
@@ -35,50 +34,37 @@ VALUES TIMESTAMP '2022-06-30 21:47:32.456000+05:12';
 -- # of range (5.3, Syntax Rules, 32) or a year that isn't four digits (5.3,
 -- # Syntax Rules, 31) makes it invalid.
 VALUES TIMESTAMP '2022-06-30T21:47:32';
--- error 42601: syntax error: TIMESTAMP '2022-06-30T21:47:32' is not valid
-
 VALUES TIMESTAMP 'a2022-06-30 21:47:32';
--- error 42601: syntax error: TIMESTAMP 'a2022-06-30 21:47:32' is not valid
-
 VALUES TIMESTAMP '2022-06-30 21:47:32a';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32a' is not valid
-
 VALUES TIMESTAMP '2022-06-30';
--- error 42601: syntax error: TIMESTAMP '2022-06-30' is not valid
-
 VALUES TIMESTAMP '21:47:32';
--- error 42601: syntax error: TIMESTAMP '21:47:32' is not valid
-
 VALUES TIMESTAMP 'FOO BAR';
--- error 42601: syntax error: TIMESTAMP 'FOO BAR' is not valid
-
 VALUES TIMESTAMP '2022-06-30 21:47:75';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:75' is not valid
-
 VALUES TIMESTAMP '10000-06-30T21:47:32';
--- error 42601: syntax error: TIMESTAMP '10000-06-30T21:47:32' is not valid
-
 VALUES TIMESTAMP '-1-06-30T21:47:32';
+-- error 42601: syntax error: TIMESTAMP '2022-06-30T21:47:32' is not valid
+-- error 42601: syntax error: TIMESTAMP 'a2022-06-30 21:47:32' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32a' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-06-30' is not valid
+-- error 42601: syntax error: TIMESTAMP '21:47:32' is not valid
+-- error 42601: syntax error: TIMESTAMP 'FOO BAR' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:75' is not valid
+-- error 42601: syntax error: TIMESTAMP '10000-06-30T21:47:32' is not valid
 -- error 42601: syntax error: TIMESTAMP '-1-06-30T21:47:32' is not valid
 
 -- # A time zone can be from -14:00 to +14:00 (5.3, Syntax Rules, 43), and its
 -- # minutes must be less than 60.
 VALUES TIMESTAMP '2022-06-30 21:47:32+12:00';
--- COL1: 2022-06-30T21:47:32+1200
-
 VALUES TIMESTAMP '2022-06-30 21:47:32-12:00';
--- COL1: 2022-06-30T21:47:32-1200
-
 VALUES TIMESTAMP '2022-06-30 21:47:32+14:00';
--- COL1: 2022-06-30T21:47:32+1400
-
 VALUES TIMESTAMP '2022-06-30 21:47:32-14:00';
--- COL1: 2022-06-30T21:47:32-1400
-
 VALUES TIMESTAMP '2022-06-30 21:47:32+14:01';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32+14:01' is not valid
-
 VALUES TIMESTAMP '2022-06-30 21:47:32+05:60';
+-- COL1: 2022-06-30T21:47:32+1200
+-- COL1: 2022-06-30T21:47:32-1200
+-- COL1: 2022-06-30T21:47:32+1400
+-- COL1: 2022-06-30T21:47:32-1400
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32+14:01' is not valid
 -- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32+05:60' is not valid
 
 -- # The sign applies to the minutes even when the hours are zero.
@@ -102,19 +88,16 @@ VALUES CAST('2016-12-31 23:59:60' AS TIMESTAMP(0));
 -- COL1: 2017-01-01T00:00:00
 
 VALUES TIMESTAMP '2022-06-30 23:59:62';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 23:59:62' is not valid
-
 VALUES TIMESTAMP '2022-06-30 24:00:00';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 24:00:00' is not valid
-
 VALUES TIMESTAMP '2022-06-30 23:60:00';
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 23:59:62' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 24:00:00' is not valid
 -- error 42601: syntax error: TIMESTAMP '2022-06-30 23:60:00' is not valid
 
 -- # Every field except the year has two digits (5.3, Syntax Rules, 31).
 VALUES TIMESTAMP '2022-6-30 21:47:32';
--- error 42601: syntax error: TIMESTAMP '2022-6-30 21:47:32' is not valid
-
 VALUES TIMESTAMP '2022-06-30 1:47:32';
+-- error 42601: syntax error: TIMESTAMP '2022-6-30 21:47:32' is not valid
 -- error 42601: syntax error: TIMESTAMP '2022-06-30 1:47:32' is not valid
 
 -- # Storing a TIMESTAMP in a column of the other kind casts it (9.2, General
@@ -258,19 +241,16 @@ VALUES CAST('2022-06-30 12:34:56.5+03:00' AS TIMESTAMP(3) WITH TIME ZONE);
 -- COL1: 2022-06-30T12:34:56.500+0300 (TIMESTAMP(3) WITH TIME ZONE)
 
 VALUES CAST('2022-06-30' AS TIMESTAMP);
--- error 22007: invalid datetime format
-
 VALUES CAST('2022-13-01 12:34:56' AS TIMESTAMP);
+-- error 22007: invalid datetime format
 -- error 22007: invalid datetime format
 
 -- # A timestamp literal is also accepted, but the keyword must be TIMESTAMP.
 VALUES CAST('TIMESTAMP ''2022-06-30 12:34:56''' AS TIMESTAMP(0));
--- COL1: 2022-06-30T12:34:56
-
 VALUES CAST(CAST(TIMESTAMP '2022-06-30 12:34:56.5+03:00' AS VARCHAR(40)) AS TIMESTAMP(1) WITH TIME ZONE);
--- COL1: 2022-06-30T12:34:56.5+0300
-
 VALUES CAST('DATE ''2022-06-30''' AS TIMESTAMP);
+-- COL1: 2022-06-30T12:34:56
+-- COL1: 2022-06-30T12:34:56.5+0300
 -- error 22007: invalid datetime format
 
 -- # A time zone out of the range of -14:00 to +14:00, or with more than 59
@@ -307,19 +287,14 @@ SELECT * FROM foo;
 -- # which can change the date. One without a time zone is taken to be in the
 -- # session time zone.
 VALUES TIMESTAMP '2020-01-01 10:00:00+05:00' = TIMESTAMP '2020-01-01 05:00:00+00:00';
--- COL1: TRUE
-
 VALUES TIMESTAMP '2020-01-01 10:00:00+05:00' < TIMESTAMP '2020-01-01 06:00:00+00:00';
--- COL1: TRUE
-
 VALUES TIMESTAMP '2020-03-01 01:00:00+05:00' = TIMESTAMP '2020-02-29 20:00:00+00:00';
--- COL1: TRUE
-
 VALUES TIMESTAMP '2020-01-01 10:00:00+05:00' > TIMESTAMP '2020-01-01 10:00:00+06:00';
--- COL1: TRUE
-
 VALUES TIMESTAMP '2020-01-01 10:00:00' = TIMESTAMP '2020-01-01 05:00:00+00:00';
--- COL1: TRUE
-
 VALUES TIMESTAMP '2020-01-01 10:00:00+05:00' BETWEEN TIMESTAMP '2020-01-01 04:00:00+00:00' AND TIMESTAMP '2020-01-01 06:00:00+00:00';
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
 -- COL1: TRUE

@@ -2,30 +2,22 @@
 -- # NULL (General Rules, 2.b). So a row with some NULL fields is neither, and
 -- # IS NOT NULL isn't the same as NOT ... IS NULL unless the row has one field.
 VALUES ROW(ROW(1, 2) IS NULL, ROW(1, 2) IS NOT NULL);
--- COL1: FALSE COL2: TRUE
-
 VALUES ROW((1, 2) IS NULL, (1, 2) IS NOT NULL);
--- COL1: FALSE COL2: TRUE
-
 VALUES (CAST(NULL AS INT), CAST(NULL AS VARCHAR(10))) IS NULL;
--- COL1: TRUE
-
 VALUES (CAST(NULL AS INT), CAST(NULL AS VARCHAR(10))) IS NOT NULL;
--- COL1: FALSE
-
 VALUES ROW((1, CAST(NULL AS INT)) IS NULL, (1, CAST(NULL AS INT)) IS NOT NULL);
--- COL1: FALSE COL2: FALSE
-
 VALUES NOT (1, CAST(NULL AS INT)) IS NULL;
--- COL1: TRUE
-
 VALUES ROW(ROW(CAST(NULL AS INT)) IS NULL, ROW(1) IS NULL);
--- COL1: TRUE COL2: FALSE
-
 VALUES ROW(ROW(CAST(NULL AS INT)) IS NOT NULL, ROW(1) IS NOT NULL);
--- COL1: FALSE COL2: TRUE
-
 VALUES (1, 2, 3 + 4) IS NOT NULL;
+-- COL1: FALSE COL2: TRUE
+-- COL1: FALSE COL2: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: FALSE COL2: FALSE
+-- COL1: TRUE
+-- COL1: TRUE COL2: FALSE
+-- COL1: FALSE COL2: TRUE
 -- COL1: TRUE
 
 -- # Rows of columns, including in a WHERE.
@@ -94,13 +86,10 @@ EXPLAIN SELECT * FROM foo WHERE (x, x + 1) IS NOT NULL;
 -- # A field must be a value expression, so a bare NULL or DEFAULT isn't
 -- # allowed, and its columns must exist.
 VALUES (1, NULL) IS NULL;
--- error 42601: syntax error: unexpected NULL
-
 VALUES ROW(1, NULL) IS NULL;
--- error 42601: syntax error: unexpected NULL
-
 VALUES (1, DEFAULT) IS NULL;
--- error 42601: syntax error: unexpected DEFAULT
-
 VALUES (1, no_such_column) IS NULL;
+-- error 42601: syntax error: unexpected NULL
+-- error 42601: syntax error: unexpected NULL
+-- error 42601: syntax error: unexpected DEFAULT
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NO_SUCH_COLUMN

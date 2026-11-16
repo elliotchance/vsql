@@ -1,8 +1,12 @@
 /* setup */
 CREATE TABLE t (id INT PRIMARY KEY, name VARCHAR(10));
 INSERT INTO t (id, name) VALUES (-2, 'minus two'), (1, 'one'), (2, 'two'), (3, 'three'), (5, 'five');
+
+/* define s */
 CREATE TABLE s (code VARCHAR(10) PRIMARY KEY, n INT);
 INSERT INTO s (code, n) VALUES ('a', 1), ('ab', 2), ('b', 3), ('a b', 4);
+
+/* define c */
 CREATE TABLE c (a INT, b VARCHAR(5), x INT, PRIMARY KEY (a, b));
 INSERT INTO c (a, b, x) VALUES (1, 'x', 1), (1, 'y', 2), (2, 'x', 3), (2, 'y', 4), (3, 'x', 5);
 
@@ -105,6 +109,7 @@ EXPLAIN SELECT * FROM t WHERE id = 1 + 1;
 SELECT * FROM t WHERE id = 1 + 1;
 -- ID: 2 NAME: two
 
+/* include c */
 SELECT * FROM t WHERE id = (SELECT MAX(x) FROM c);
 -- ID: 5 NAME: five
 
@@ -119,12 +124,14 @@ SELECT * FROM t WHERE id = CHARACTER_LENGTH(name) - 2;
 -- ID: 3 NAME: three
 
 -- # An outer reference is different for each row of the outer query.
+/* include c */
 SELECT a, x FROM c WHERE EXISTS (SELECT * FROM t WHERE t.id = c.a + 1);
 -- A: 1 X: 1
 -- A: 1 X: 2
 -- A: 2 X: 3
 -- A: 2 X: 4
 
+/* include c */
 SELECT a, (SELECT name FROM t WHERE id = a) AS name FROM c WHERE b = 'x';
 -- A: 1 NAME: one
 -- A: 2 NAME: two
@@ -163,9 +170,8 @@ SELECT * FROM t WHERE id > CAST(NULL AS INT) AND id = 2;
 -- # A value that fails (1 / 0) isn't used to find the rows, so the WHERE
 -- # clause raises the error when it's applied to a row.
 SELECT * FROM t WHERE id = 1 / 0;
--- error 22012: division by zero
-
 SELECT * FROM t WHERE id > 1 AND id = 1 / 0;
+-- error 22012: division by zero
 -- error 22012: division by zero
 
 -- # A value that can't be compared with the column is still an error.
@@ -175,30 +181,35 @@ SELECT * FROM t WHERE id = 'one';
 -- # A character string key. Trailing spaces are ignored when comparing, so
 -- # 'a  ' finds 'a', and 'a b' is before 'ab' because a space is before 'b'.
 -- # A value longer than the column isn't used, like 1.5 for INT.
+/* include s */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM s WHERE code = 'a';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.S (CODE CHARACTER VARYING(10) NOT NULL, N INTEGER) RANGE CODE = 'a'
 -- EXPLAIN: WHERE CODE = 'a'
 -- EXPLAIN: EXPR (":memory:".PUBLIC.S.CODE CHARACTER VARYING(10) NOT NULL, ":memory:".PUBLIC.S.N INTEGER)
 
+/* include s */
 SELECT * FROM s WHERE code = 'a';
--- CODE: a N: 1
-
 SELECT * FROM s WHERE code = 'a  ';
 -- CODE: a N: 1
+-- CODE: a N: 1
 
+/* include s */
 SELECT * FROM s WHERE code >= 'a' AND code < 'b';
 -- CODE: a N: 1
 -- CODE: a b N: 4
 -- CODE: ab N: 2
 
+/* include s */
 SELECT * FROM s WHERE code > 'a';
 -- CODE: a b N: 4
 -- CODE: ab N: 2
 -- CODE: b N: 3
 
+/* include s */
 SELECT * FROM s WHERE code = 'longer than ten';
 
+/* include s */
 SELECT * FROM s WHERE code < 'longer than ten';
 -- CODE: a N: 1
 -- CODE: a b N: 4
@@ -208,34 +219,38 @@ SELECT * FROM s WHERE code < 'longer than ten';
 -- # A PRIMARY KEY with more than one column uses = on the first columns, then
 -- # a range of the next one. Without a condition on the first column, the
 -- # whole table is read, since the key is in the order of that column.
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE a = 2 AND b = 'y';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.C (A INTEGER NOT NULL, B CHARACTER VARYING(5) NOT NULL, X INTEGER) RANGE A = 2 AND B = 'y'
 -- EXPLAIN: WHERE B = 'y'
 -- EXPLAIN: EXPR (":memory:".PUBLIC.C.A INTEGER NOT NULL, ":memory:".PUBLIC.C.B CHARACTER VARYING(5) NOT NULL, ":memory:".PUBLIC.C.X INTEGER)
 
+/* include c */
 SELECT * FROM c WHERE a = 2 AND b = 'y';
--- A: 2 B: y X: 4
-
 SELECT * FROM c WHERE b = 'x' AND a = 3;
--- A: 3 B: x X: 5
-
 SELECT * FROM c WHERE a = 1 AND b > 'x';
+-- A: 2 B: y X: 4
+-- A: 3 B: x X: 5
 -- A: 1 B: y X: 2
 
+/* include c */
 SELECT * FROM c WHERE a = 2;
 -- A: 2 B: x X: 3
 -- A: 2 B: y X: 4
 
+/* include c */
 SELECT * FROM c WHERE a <= 2 AND b = 'x';
 -- A: 1 B: x X: 1
 -- A: 2 B: x X: 3
 
+/* include c */
 SELECT * FROM c WHERE a >= 2;
 -- A: 2 B: x X: 3
 -- A: 2 B: y X: 4
 -- A: 3 B: x X: 5
 
+/* include c */
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE b = 'x';
 -- EXPLAIN: TABLE ":memory:".PUBLIC.C (A INTEGER NOT NULL, B CHARACTER VARYING(5) NOT NULL, X INTEGER)

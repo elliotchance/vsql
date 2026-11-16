@@ -17,15 +17,17 @@ SELECT * FROM DEFINITION_SCHEMA.t;
 -- error 42601: syntax error: DEFINITION_SCHEMA cannot be used as a schema name
 
 -- # A column reference can't name it as a schema either (Syntax Rules, 10).
-/* setup */
+/* define t */
 CREATE TABLE t (x INT);
 
+/* include t */
 SELECT DEFINITION_SCHEMA.t.x FROM t;
 SELECT ":memory:".DEFINITION_SCHEMA.t.x FROM t;
 -- error 42601: syntax error: DEFINITION_SCHEMA cannot be used as a schema name
 -- error 42601: syntax error: DEFINITION_SCHEMA cannot be used as a schema name
 
 -- # The name only applies to schemas, and it's case sensitive when delimited.
+/* include t */
 CREATE SCHEMA "definition_schema";
 CREATE TABLE definition_schema (definition_schema INT);
 SELECT definition_schema FROM definition_schema;

@@ -13,14 +13,12 @@ SELECT x FROM t;
 -- X: 2
 
 SELECT x, vc FROM t WHERE x = 1;
--- X: 1 VC: a b
-
 SELECT x * 10 AS y FROM t WHERE tsz IS NULL;
+-- X: 1 VC: a b
 -- Y: 20
 
 -- # A correlation name and a subquery read every column.
 SELECT a.x FROM t AS a WHERE a.n IS NOT NULL;
--- X: 1
-
 SELECT x FROM t WHERE x = (SELECT MAX(x) FROM t);
+-- X: 1
 -- X: 2

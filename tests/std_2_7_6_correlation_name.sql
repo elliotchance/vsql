@@ -52,15 +52,12 @@ SELECT x.c FROM t1 AS x (a, b, c) WHERE b = 1;
 -- C: right
 
 SELECT x.id FROM t1 AS x (a, b, c);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X.ID
-
 SELECT * FROM t1 AS x (a, b);
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
-
 SELECT * FROM t1 AS x (a, b, a);
--- error 42601: syntax error: column A is specified more than once
-
 SELECT * FROM (SELECT id, name FROM t1) AS x (a, a);
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X.ID
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- error 42601: syntax error: column A is specified more than once
 -- error 42601: syntax error: column A is specified more than once
 
 -- # The correlation name replaces the table name.
@@ -82,9 +79,8 @@ SELECT t1.name, p.name FROM t1 JOIN t1 AS p ON t1.parent_id = p.id;
 -- NAME: right NAME: root
 
 SELECT * FROM t1 AS x JOIN t1 AS x ON TRUE;
--- error 42601: syntax error: table name X specified more than once
-
 SELECT p.name, COUNT(*) FROM t1 AS c JOIN t1 AS p ON c.parent_id = p.id GROUP BY p.name;
+-- error 42601: syntax error: table name X specified more than once
 -- NAME: root COL2: 2
 
 -- # The WHERE is checked even when there are no rows.

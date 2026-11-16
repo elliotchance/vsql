@@ -349,7 +349,6 @@ The V code of the compiler (``vsql/std_2_13_*.v``) is tested by
 
 sql-test
 --------
-
 The SQL test suite contains most of the functional tests. This is likely the
 only test suite you will use when adding functionality or fixing bugs in vsql.
 
@@ -359,8 +358,8 @@ Run all SQL tests with:
 
    make sql-test
 
-All tests are in the ``tests/`` directory and each file contains individual
-tests separated by an empty line:
+All tests are in the ``tests/`` directory. Each file contains blocks of
+statements separated by an empty line:
 
 .. code-block:: sql
 
@@ -375,10 +374,16 @@ tests separated by an empty line:
    -- COL1: 2
    -- COL1: 3
 
-This describes two tests where each test is given an a brand new database (ie.
-no tables are carried between tests).
+This describes two blocks, where each block is given a brand new database (ie.
+no tables are carried between blocks). A block is only a way of grouping the
+statements that need the same database, so variations of the same thing can
+share a block, written as the statements followed by their outputs (as above).
+A case that needs its own explanation (a ``-- #`` comment), or a database that
+the statements before it haven't changed, gets its own block. Statements that every block needs go in the setup
+(see `Directive: setup`_), and statements that only some blocks need can be
+defined once and included (see `Directive: define`_).
 
-Each test is run twice, first with an in-memory database and then with a
+Each block is run twice, first with an in-memory database and then with a
 database file, and only passes if both pass. Both use 256 byte pages so that
 even small tests split pages and store large values across several pages. Tests
 that use the ``connection`` directive only run on disk, and catalogs from
@@ -387,9 +392,9 @@ that use the ``connection`` directive only run on disk, and catalogs from
 The statements are sent through the PostgreSQL server, which is embedded in the
 test like an application would (see :doc:`server`), by a PostgreSQL client over
 TCP. One server is shared by all of the tests. A PostgreSQL client can't use
-some of the directives, so tests with ``types``, ``set``, ``fault``,
-``disconnect``, ``create_catalog``, ``virtual_table``, ``out``, ``in`` or
-``clock`` use the database directly instead. When the database is used
+some of the directives, so tests with ``types``, ``flags``, ``params``,
+``fault``, ``disconnect``, ``create_catalog``, ``virtual_table``, ``out``, ``in``
+or ``clock`` use the database directly instead. When the database is used
 directly, every value is also read with the getters of a row (such as
 ``get_int``), which must give the same value.
 
@@ -446,60 +451,6 @@ Each prefix ends with ``_``, so that ``TEST=std_11_5_1_`` doesn't also run
    # every vsql extension
    TEST=/v make sql-test
 
-Setup
-^^^^^
-
-An optional ``/* setup */`` can be placed at the top of the file to be run
-before each test:
-
-.. code-block:: sql
-
-   /* setup */
-   CREATE TABLE t1 (x FLOAT);
-   INSERT INTO t1 (x) VALUES (0);
-   
-   SELECT 1 FROM t1;
-   -- COL1: 1
-   
-   SELECT 2 FROM t1;
-   -- COL1: 2
-
-Dynamic Parameters
-^^^^^^^^^^^^^^^^^^
-
-The values of the dynamic parameters (each ``?``) are set with
-``/* params value ... */``, in order. They're used by the statements that follow
-it, until the next ``params`` or the end of the test. Each statement that has a
-``?`` with a value also shows the statement with each value in place of its
-``?``, so that the values can be checked:
-
-.. code-block:: sql
-
-   /* setup */
-   CREATE TABLE t1 (x FLOAT, y VARCHAR(10));
-
-   INSERT INTO t1 (x) VALUES (?);
-   -- error 42P02: parameter does not exist: ?1
-
-   /* params 2 'a' */
-   INSERT INTO t1 (x, y) VALUES (?, ?);
-   /* params 3 */
-   UPDATE t1 SET x = x + ?;
-   SELECT * FROM t1;
-   -- sql: INSERT INTO t1 (x, y) VALUES (2.0e0, 'a')
-   -- msg: INSERT 1
-   -- sql: UPDATE t1 SET x = x + 3.0e0
-   -- msg: UPDATE 1
-   -- X: 5e0 Y: a
-
-Each value is one of:
-
-- A number, such as ``123``, which is a ``DOUBLE PRECISION``.
-- A string, such as ``'it''s'``.
-- ``NULL`` followed by its type, such as ``NULL BOOLEAN``.
-
-``/* params */`` on its own removes all of the values.
-
 Comments
 ^^^^^^^^
 
@@ -513,8 +464,8 @@ ignored comment line you can prefix the line with ``-- #``:
    -- COL1: 3
 
 While the placement of comment lines does not matter, it is by convention that
-comments pertaining to a specific test be joined (without a blank line) and
-comments relating to the entire file or group of tests below use a empty line
+comments pertaining to specific statements be joined (without a blank line) and
+comments relating to the entire file or group of blocks below use a empty line
 separator:
 
 .. code-block:: sql
@@ -523,247 +474,9 @@ separator:
 
    VALUES 1 + 2;
    -- COL1: 3
-
-   VALUES 3 * 4;
-   -- COL1: 12
-
-Multiple Connections
-^^^^^^^^^^^^^^^^^^^^
-
-If a test needs to use more than one connection (such as for testing
-transactions). You can connect or reuse an existing connection by name with the
-``connection`` directive.
-
-Tests that need to use more than one connection **must** use the ``connection``
-directive as the first line in the test. This is to avoid an in-memory database
-being used when the test begins.
-
-.. code-block:: sql
-
-   /* connection 1 */
-   START TRANSACTION;
-   /* connection 2 */
-   START TRANSACTION;
-   -- 1: msg: START TRANSACTION
-   -- 2: msg: START TRANSACTION
-
-Multiple connections only exist for the lifetime of this test. The first time a
-connection name is seen it will spawn a new connection and subsequent references
-will use the existing connection.
-
-All SQL statements are still run synchronously and sequentially and their output
-is prefixed with the connection name.
-
-Connection names can be any single word including numbers for convenience. The
-default connection name is named "main" but this should not be used or
-referenced in tests to avoid unexpected behavior.
-
-Faults
-^^^^^^
-
-A ``fault`` directive makes an operation fail the next time it's reached, so
-that the code that handles the error can be tested:
-
-.. code-block:: sql
-
-   CREATE TABLE t (x INT);
-   /* fault wal_write */
-   INSERT INTO t (x) VALUES (1);
-   SELECT * FROM t;
-   -- msg: CREATE TABLE 1
-   -- error 00000: wal_write failed (fault injected by test)
-
-A number after the name makes it fail the nth time it's reached instead, such
-as ``/* fault lock_shared 2 */``.
-
-The C tests of libvsql can't use a directive, so they call
-``vsql_arm_fault("wal_write", 1)`` (declared in ``libvsql/test.h``) instead.
-
-The faults are:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Fault
-     - What fails
-   * - ``accept``
-     - A server accepting a client. A test with a ``fault`` doesn't run through the server, so this is only used by the server tests in ``vsql/server_test.v``.
-   * - ``checkpoint``
-     - Copying a committed statement from the write-ahead log into the database file (including when it's recovered).
-   * - ``constraint_index``
-     - A new table doesn't get the indexes of its constraints, like a table from an older version of vsql. This isn't an error.
-   * - ``isolation_end``
-     - Ending the isolation block of an operation on the file, which removes the rows that were deleted outside of a transaction.
-   * - ``isolation_lock``
-     - Locking the isolation file, for a ``SERIALIZABLE`` transaction or to commit changes.
-   * - ``isolation_start``
-     - Starting the isolation block of an operation on the file.
-   * - ``lock``
-     - Locking the database file to write to it.
-   * - ``lock_shared``
-     - Locking the database file to read it.
-   * - ``open``
-     - Opening the database file.
-   * - ``read_header``
-     - Reading the header of the database file.
-   * - ``read_page``
-     - Reading a page from the database file.
-   * - ``recover``
-     - Copying a statement that was left in the write-ahead log into the database file.
-   * - ``session_shared``
-     - Changing the session lock back to shared, after recovering the transactions of a connection that stopped.
-   * - ``wal_bad_header``
-     - The header of the write-ahead log has the wrong checksum.
-   * - ``wal_bad_magic``
-     - The write-ahead log doesn't start with its magic number.
-   * - ``wal_corrupt_frame``
-     - The commit frame in the write-ahead log has the wrong checksum.
-   * - ``wal_torn_frame``
-     - Only half of the commit frame is written to the write-ahead log.
-   * - ``wal_unknown_frame``
-     - The write-ahead log has a frame of an unknown kind.
-   * - ``wal_write``
-     - Writing a statement to the write-ahead log, before it's committed.
-   * - ``write_version``
-     - The file needs a newer version of vsql to be changed.
-
-Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
-``vsql/fault.v``. A test with a fault only runs on disk.
-
-A ``disconnect`` directive closes a connection without rolling back its
-transaction, like a process that stopped:
-
-.. code-block:: sql
-
-   /* connection 1 */
-   CREATE TABLE t (x INT);
-   START TRANSACTION;
-   INSERT INTO t (x) VALUES (1);
-   /* disconnect 1 */
-   /* connection 2 */
-   SELECT * FROM t;
-
-If a connection can't be opened (such as because of a fault), the error is in
-the output, after the name of the connection, and the current connection
-doesn't change.
-
-Clock
-^^^^^
-
-Every test has the same time, 2022-07-04 09:05:03.120056 UTC, in a time zone
-of +05:00. A ``clock`` directive changes the time zone of the current
-connection, such as ``/* clock -05:00 */``, or ``/* clock real */`` uses the
-real time and time zone (so the output can't include them):
-
-.. code-block:: sql
-
-   /* clock -05:00 */
-   VALUES CURRENT_TIME;
-   -- COL1: 04:05:03-0500
-
-``/* clock tick */`` starts at the same time, but it's a second later each time
-the clock is read. Every statement reads it when it starts (for its statement
-timestamp), so the next statement has a later time:
-
-.. code-block:: sql
-
-   /* clock tick */
-   VALUES CURRENT_TIME = CURRENT_TIME;
-   VALUES CURRENT_TIME;
-   -- COL1: TRUE
-   -- COL1: 14:05:04+0500
-
-A test with ``clock`` doesn't run through the server.
-
-Page Size
-^^^^^^^^^
-
-Every database in a test has 256-byte pages, so that even a few rows are split
-across several pages (see ``sql_test_options`` in ``vsql/testing_d_vsqltest.v``). A test
-that relies on how its rows are laid out in the pages, such as one that needs a
-page to be split at a certain point, should say what page size it needs with a
-``page_size`` directive. Then it still tests the same thing if the default
-changes:
-
-.. code-block:: sql
-
-   /* page_size 256 */
-   /* connection 1 */
-   CREATE TABLE t (id INT, x INT);
-   INSERT INTO t (id, x) VALUES (1, 0), (2, 0);
-
-It's used for every database the test opens (a file keeps the page size it was
-created with), in memory and on disk, and through the server.
-
-Virtual Tables
-^^^^^^^^^^^^^^
-
-A ``virtual_table`` directive registers a virtual table (see
-:doc:`virtual-tables`) on the current connection. It's a ``CREATE TABLE``,
-followed by ``AS`` and a query for its rows:
-
-.. code-block:: sql
-
-   /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi'), ROW(2, 'pear') */
-   SELECT * FROM fruits;
-   -- ID: 1 NAME: kiwi
-   -- ID: 2 NAME: pear
-
-The query is run when the virtual table is registered. If it can't be
-registered, the error is in the output.
-
-The functions and virtual tables that the server registers for PostgreSQL
-clients (such as ``version()`` and ``pg_class``) are only registered for a test
-with the ``postgresql`` directive, so that the test has them whether or not it
-runs through the server:
-
-.. code-block:: sql
-
-   /* postgresql */
-   SELECT * FROM pg_database;
-   -- DATNAME: vsql
-
-Dump and Restore
-^^^^^^^^^^^^^^^^
-
-The ``out`` directive dumps the database like ``vsql out`` (see :doc:`cli`).
-Each line of the dump is in the output, after ``out:``. The ``in`` directive
-then replaces the database with a new one, which the last dump is loaded into
-like ``vsql in``. Only the errors from loading the dump are in the output. The
-statements after it use the restored database, so they can check that it's the
-same:
-
-.. code-block:: sql
-
-   CREATE TABLE t (x INT);
-   INSERT INTO t (x) VALUES (1);
-   /* out */
-   /* in */
-   SELECT * FROM t;
-   -- msg: CREATE TABLE 1
-   -- msg: INSERT 1
-   -- out: CREATE TABLE "PUBLIC"."T" (
-   -- out:   "X" INTEGER
-   -- out: );
-   -- out: INSERT INTO "PUBLIC"."T" ("X") VALUES (1);
-   -- X: 1
-
-``out`` and ``in`` can't be used with the ``connection`` directive.
-
-Multiple Catalogs
-^^^^^^^^^^^^^^^^^
-
-If a test needs to use more than one catalog, you can use the ``create_catalog``
-directive:
-
-.. code-block:: sql
-
-   /* create_catalog FOO */
-   CREATE TABLE foo.public.bar (baz INTEGER);
-   EXPLAIN SELECT * FROM foo.public.bar;
-   -- msg: CREATE TABLE 1
-   -- EXPLAIN: TABLE FOO.PUBLIC.BAR (BAZ INTEGER)
-   -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
+   -- # Multiplication is before addition.
+   VALUES 2 + 3 * 4;
+   -- COL1: 14
 
 Unicode and Whitespace Characters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -787,55 +500,6 @@ This will be replaced with the correct character before the test runs.
 
 This is only a feature of SQL Tests, so will not work in any other context.
 
-Exposing Types
-^^^^^^^^^^^^^^
-
-Use the ``/* types */`` directive to include each value type in the output. This
-is useful to verify that literals or expressions are being represented as the
-expected type.
-
-.. code-block:: sql
-
-   /* types */
-   VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
-   -- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
-
-vsql Extensions
-^^^^^^^^^^^^^^^
-
-A test can only use standard SQL, so that the tests show how to write SQL that
-works on other databases. Language that only vsql has (see
-:doc:`sql-flagging`) must be listed by its Feature ID in an
-``/* extensions */`` directive, and each Feature ID that's listed must be used
-by at least one statement in the test:
-
-.. code-block:: sql
-
-   /* extensions V001-01 */
-   EXPLAIN VALUES 1;
-   -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(1)
-
-A test fails if it uses an extension that isn't listed, or lists one that it
-doesn't use. The ``/* setup */`` of a file can't use any extensions, so write
-``DROP TABLE t RESTRICT`` rather than ``DROP TABLE t``.
-
-Flagging
-^^^^^^^^
-
-Use the ``/* flags */`` directive to include the features outside of Core SQL
-that each statement uses (see :doc:`sql-flagging`):
-
-.. code-block:: sql
-
-   /* flags */
-   SELECT DISTINCT COUNT(DISTINCT x) FROM t;
-   -- flags: F801
-   -- COL1: 1
-
-Every feature that can be flagged, including the vsql extensions, must be in
-the flags of at least one test with ``/* flags */``, otherwise the SQL tests
-fail. A feature that a test only happens to use doesn't count.
-
 Debugging Tests
 ^^^^^^^^^^^^^^^
 
@@ -844,16 +508,19 @@ Verbose Output
 
 By default tests will be silent, only outputting contextual information on
 failure. A summary of the SQL tests is printed at the end, including the
-location of each failed test:
+location of each failed block:
 
 .. code-block:: text
 
-   SQL tests: 1549 passed, 1 failed, 1550 total, 3120 statements
+   SQL tests: 57412 statements, 48210 assertions, 1 failed
      FAILED tests/std_2_6_30_arithmetic.sql:3 (in memory through server, on disk through server)
 
 The "Summary for running V tests" line printed by V counts all of the SQL
 tests as the one V test ``test_all``, so check the SQL tests summary to see
-which ones failed.
+which ones failed. The number of statements is every statement that was run,
+including each time that the setup or an include was run, and in each mode. The
+number of assertions is every ``--`` line that was checked against the output,
+in each mode.
 
 However, in some cases (such as debugging crashes) you might want more
 verbose output.
@@ -1016,6 +683,406 @@ You can use any commit or tag for ``OLDV``. All tags can be
 
 ``OLDV`` also works with the other suites that are V tests: ``btree-test``,
 ``unit-test`` and ``vorm-test``.
+
+Directive: clock
+^^^^^^^^^^^^^^^^
+
+Every test has the same time, 2022-07-04 09:05:03.120056 UTC, in a time zone
+of +05:00. A ``clock`` directive changes the time zone of the current
+connection, such as ``/* clock -05:00 */``, or ``/* clock real */`` uses the
+real time and time zone (so the output can't include them):
+
+.. code-block:: sql
+
+   /* clock -05:00 */
+   VALUES CURRENT_TIME;
+   -- COL1: 04:05:03-0500
+
+``/* clock tick */`` starts at the same time, but it's a second later each time
+the clock is read. Every statement reads it when it starts (for its statement
+timestamp), so the next statement has a later time:
+
+.. code-block:: sql
+
+   /* clock tick */
+   VALUES CURRENT_TIME = CURRENT_TIME;
+   VALUES CURRENT_TIME;
+   -- COL1: TRUE
+   -- COL1: 14:05:04+0500
+
+A test with ``clock`` doesn't run through the server.
+
+Directive: connection
+^^^^^^^^^^^^^^^^^^^^^
+
+If a test needs to use more than one connection (such as for testing
+transactions). You can connect or reuse an existing connection by name with the
+``connection`` directive.
+
+Tests that need to use more than one connection **must** use the ``connection``
+directive as the first line in the test. This is to avoid an in-memory database
+being used when the test begins.
+
+.. code-block:: sql
+
+   /* connection 1 */
+   START TRANSACTION;
+   /* connection 2 */
+   START TRANSACTION;
+   -- 1: msg: START TRANSACTION
+   -- 2: msg: START TRANSACTION
+
+Multiple connections only exist for the lifetime of this test. The first time a
+connection name is seen it will spawn a new connection and subsequent references
+will use the existing connection.
+
+All SQL statements are still run synchronously and sequentially and their output
+is prefixed with the connection name.
+
+Connection names can be any single word including numbers for convenience. The
+default connection name is named "main" but this should not be used or
+referenced in tests to avoid unexpected behavior.
+
+Directive: create_catalog
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If a test needs to use more than one catalog, you can use the ``create_catalog``
+directive:
+
+.. code-block:: sql
+
+   /* create_catalog FOO */
+   CREATE TABLE foo.public.bar (baz INTEGER);
+   EXPLAIN SELECT * FROM foo.public.bar;
+   -- msg: CREATE TABLE 1
+   -- EXPLAIN: TABLE FOO.PUBLIC.BAR (BAZ INTEGER)
+   -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
+
+Directive: define
+^^^^^^^^^^^^^^^^^
+
+``/* define name */`` at the start of a block names its statements, so that they
+can be run by another block with an include (see `Directive: include`_). The
+block isn't a test, so it can only have statements (and includes), not an
+expected output or other directives:
+
+.. code-block:: sql
+
+   /* define required */
+   CREATE TABLE required (x INT NOT NULL);
+
+   /* include required */
+   INSERT INTO required (x) VALUES (NULL);
+   -- error 23502: violates non-null constraint: column X
+
+A define must be before each block that includes it, and must be included at
+least once.
+
+Directive: disconnect
+^^^^^^^^^^^^^^^^^^^^^
+
+A ``disconnect`` directive closes a connection without rolling back its
+transaction, like a process that stopped:
+
+.. code-block:: sql
+
+   /* connection 1 */
+   CREATE TABLE t (x INT);
+   START TRANSACTION;
+   INSERT INTO t (x) VALUES (1);
+   /* disconnect 1 */
+   /* connection 2 */
+   SELECT * FROM t;
+
+If a connection can't be opened (such as because of a fault), the error is in
+the output, after the name of the connection, and the current connection
+doesn't change.
+
+Directive: extensions
+^^^^^^^^^^^^^^^^^^^^^
+
+A test can only use standard SQL, so that the tests show how to write SQL that
+works on other databases. Language that only vsql has (see
+:doc:`sql-flagging`) must be listed by its Feature ID in an
+``/* extensions */`` directive, and each Feature ID that's listed must be used
+by at least one statement in the test:
+
+.. code-block:: sql
+
+   /* extensions V001-01 */
+   EXPLAIN VALUES 1;
+   -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(1)
+
+A test fails if it uses an extension that isn't listed, or lists one that it
+doesn't use. The setup and the statements of a define (see `Directive: setup`_
+and `Directive: define`_) can't use any extensions, so write ``DROP TABLE t RESTRICT`` rather than ``DROP TABLE t``.
+
+Directive: fault
+^^^^^^^^^^^^^^^^
+
+A ``fault`` directive makes an operation fail the next time it's reached, so
+that the code that handles the error can be tested:
+
+.. code-block:: sql
+
+   CREATE TABLE t (x INT);
+   /* fault wal_write */
+   INSERT INTO t (x) VALUES (1);
+   SELECT * FROM t;
+   -- msg: CREATE TABLE 1
+   -- error 00000: wal_write failed (fault injected by test)
+
+A number after the name makes it fail the nth time it's reached instead, such
+as ``/* fault lock_shared 2 */``.
+
+The C tests of libvsql can't use a directive, so they call
+``vsql_arm_fault("wal_write", 1)`` (declared in ``libvsql/test.h``) instead.
+
+The faults are:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Fault
+     - What fails
+   * - ``accept``
+     - A server accepting a client. A test with a ``fault`` doesn't run through the server, so this is only used by the server tests in ``vsql/server_test.v``.
+   * - ``checkpoint``
+     - Copying a committed statement from the write-ahead log into the database file (including when it's recovered).
+   * - ``constraint_index``
+     - A new table doesn't get the indexes of its constraints, like a table from an older version of vsql. This isn't an error.
+   * - ``isolation_end``
+     - Ending the isolation block of an operation on the file, which removes the rows that were deleted outside of a transaction.
+   * - ``isolation_lock``
+     - Locking the isolation file, for a ``SERIALIZABLE`` transaction or to commit changes.
+   * - ``isolation_start``
+     - Starting the isolation block of an operation on the file.
+   * - ``lock``
+     - Locking the database file to write to it.
+   * - ``lock_shared``
+     - Locking the database file to read it.
+   * - ``open``
+     - Opening the database file.
+   * - ``read_header``
+     - Reading the header of the database file.
+   * - ``read_page``
+     - Reading a page from the database file.
+   * - ``recover``
+     - Copying a statement that was left in the write-ahead log into the database file.
+   * - ``session_shared``
+     - Changing the session lock back to shared, after recovering the transactions of a connection that stopped.
+   * - ``wal_bad_header``
+     - The header of the write-ahead log has the wrong checksum.
+   * - ``wal_bad_magic``
+     - The write-ahead log doesn't start with its magic number.
+   * - ``wal_corrupt_frame``
+     - The commit frame in the write-ahead log has the wrong checksum.
+   * - ``wal_torn_frame``
+     - Only half of the commit frame is written to the write-ahead log.
+   * - ``wal_unknown_frame``
+     - The write-ahead log has a frame of an unknown kind.
+   * - ``wal_write``
+     - Writing a statement to the write-ahead log, before it's committed.
+   * - ``write_version``
+     - The file needs a newer version of vsql to be changed.
+
+Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
+``vsql/fault.v``. A test with a fault only runs on disk.
+
+Directive: flags
+^^^^^^^^^^^^^^^^
+
+Use the ``/* flags */`` directive to include the features outside of Core SQL
+that each statement uses (see :doc:`sql-flagging`):
+
+.. code-block:: sql
+
+   /* flags */
+   SELECT DISTINCT COUNT(DISTINCT x) FROM t;
+   -- flags: F801
+   -- COL1: 1
+
+Every feature that can be flagged, including the vsql extensions, must be in
+the flags of at least one test with ``/* flags */``, otherwise the SQL tests
+fail. A feature that a test only happens to use doesn't count.
+
+Directive: in
+^^^^^^^^^^^^^
+
+The ``in`` directive replaces the database with a new one, which the last dump (see `Directive: out`_) is loaded into
+like ``vsql in``. Only the errors from loading the dump are in the output. The
+statements after it use the restored database, so they can check that it's the
+same:
+
+.. code-block:: sql
+
+   CREATE TABLE t (x INT);
+   INSERT INTO t (x) VALUES (1);
+   /* out */
+   /* in */
+   SELECT * FROM t;
+   -- msg: CREATE TABLE 1
+   -- msg: INSERT 1
+   -- out: CREATE TABLE "PUBLIC"."T" (
+   -- out:   "X" INTEGER
+   -- out: );
+   -- out: INSERT INTO "PUBLIC"."T" ("X") VALUES (1);
+   -- X: 1
+
+``out`` and ``in`` can't be used with the ``connection`` directive.
+
+Directive: include
+^^^^^^^^^^^^^^^^^^
+
+``/* include name ... */`` runs the statements of each define (see
+`Directive: define`_), in the order they're listed, where the directive is in
+the block. Like the setup, their output isn't checked, and the test fails if one
+of them fails. An include can be anywhere in a block, such as to put a table
+back the way it was:
+
+.. code-block:: sql
+
+   /* define t */
+   CREATE TABLE t (x INT);
+   INSERT INTO t (x) VALUES (1);
+
+   /* include t */
+   DELETE FROM t;
+   DROP TABLE t RESTRICT;
+   /* include t */
+   SELECT * FROM t;
+   -- msg: DELETE 1
+   -- msg: DROP TABLE 1
+   -- X: 1
+
+Directive: out
+^^^^^^^^^^^^^^
+
+The ``out`` directive dumps the database like ``vsql out`` (see :doc:`cli`).
+Each line of the dump is in the output, after ``out:``. The ``in`` directive
+loads the last dump into a new database (see `Directive: in`_).
+
+Directive: page_size
+^^^^^^^^^^^^^^^^^^^^
+
+Every database in a test has 256-byte pages, so that even a few rows are split
+across several pages (see ``sql_test_options`` in ``vsql/testing_d_vsqltest.v``). A test
+that relies on how its rows are laid out in the pages, such as one that needs a
+page to be split at a certain point, should say what page size it needs with a
+``page_size`` directive. Then it still tests the same thing if the default
+changes:
+
+.. code-block:: sql
+
+   /* page_size 256 */
+   /* connection 1 */
+   CREATE TABLE t (id INT, x INT);
+   INSERT INTO t (id, x) VALUES (1, 0), (2, 0);
+
+It's used for every database the test opens (a file keeps the page size it was
+created with), in memory and on disk, and through the server.
+
+Directive: params
+^^^^^^^^^^^^^^^^^
+
+The values of the dynamic parameters (each ``?``) are set with
+``/* params value ... */``, in order. They're used by the statements that follow
+it, until the next ``params`` or the end of the test. Each statement that has a
+``?`` with a value also shows the statement with each value in place of its
+``?``, so that the values can be checked:
+
+.. code-block:: sql
+
+   /* setup */
+   CREATE TABLE t1 (x FLOAT, y VARCHAR(10));
+
+   INSERT INTO t1 (x) VALUES (?);
+   -- error 42P02: parameter does not exist: ?1
+
+   /* params 2 'a' */
+   INSERT INTO t1 (x, y) VALUES (?, ?);
+   /* params 3 */
+   UPDATE t1 SET x = x + ?;
+   SELECT * FROM t1;
+   -- sql: INSERT INTO t1 (x, y) VALUES (2.0e0, 'a')
+   -- msg: INSERT 1
+   -- sql: UPDATE t1 SET x = x + 3.0e0
+   -- msg: UPDATE 1
+   -- X: 5e0 Y: a
+
+Each value is one of:
+
+- A number, such as ``123``, which is a ``DOUBLE PRECISION``.
+- A string, such as ``'it''s'``.
+- ``NULL`` followed by its type, such as ``NULL BOOLEAN``.
+
+``/* params */`` on its own removes all of the values.
+
+Directive: postgresql
+^^^^^^^^^^^^^^^^^^^^^
+
+The functions and virtual tables that the server registers for PostgreSQL
+clients (such as ``version()`` and ``pg_class``) are only registered for a test
+with the ``postgresql`` directive, so that the test has them whether or not it
+runs through the server:
+
+.. code-block:: sql
+
+   /* postgresql */
+   SELECT * FROM pg_database;
+   -- DATNAME: vsql
+
+Directive: setup
+^^^^^^^^^^^^^^^^
+
+A ``/* setup */`` block is run before every block of statements in the file, so
+it can only be before the first one:
+
+.. code-block:: sql
+
+   /* setup */
+   CREATE TABLE t1 (x FLOAT);
+   INSERT INTO t1 (x) VALUES (0);
+
+   SELECT 1 FROM t1;
+   -- COL1: 1
+
+   UPDATE t1 SET x = 2;
+   -- msg: UPDATE 1
+
+The output of the setup isn't checked, and the test fails if one of its
+statements fails. Statements that only some of the blocks need can be defined
+instead (see `Directive: define`_).
+
+Directive: types
+^^^^^^^^^^^^^^^^
+
+Use the ``/* types */`` directive to include each value type in the output. This
+is useful to verify that literals or expressions are being represented as the
+expected type.
+
+.. code-block:: sql
+
+   /* types */
+   VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
+   -- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
+
+Directive: virtual_table
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``virtual_table`` directive registers a virtual table (see
+:doc:`virtual-tables`) on the current connection. It's a ``CREATE TABLE``,
+followed by ``AS`` and a query for its rows:
+
+.. code-block:: sql
+
+   /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi'), ROW(2, 'pear') */
+   SELECT * FROM fruits;
+   -- ID: 1 NAME: kiwi
+   -- ID: 2 NAME: pear
+
+The query is run when the virtual table is registered. If it can't be
+registered, the error is in the output.
 
 unit-test
 ---------

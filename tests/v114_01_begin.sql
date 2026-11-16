@@ -1,33 +1,36 @@
 -- # BEGIN is a vsql extension (V114-01) for START TRANSACTION.
 
-/* setup */
-CREATE TABLE t (x INT);
-
 -- # BEGIN is START TRANSACTION.
+CREATE TABLE t (x INT);
 /* extensions V114-01 */
 BEGIN;
 INSERT INTO t (x) VALUES (1);
 COMMIT;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: COMMIT
 -- X: 1
 
+CREATE TABLE t (x INT);
 /* extensions V114-01 */
 BEGIN TRANSACTION;
 INSERT INTO t (x) VALUES (1);
 ROLLBACK;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: ROLLBACK
 
+CREATE TABLE t (x INT);
 /* extensions V114-01 */
 begin work;
 INSERT INTO t (x) VALUES (1);
 ROLLBACK WORK;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: ROLLBACK
@@ -66,6 +69,7 @@ BEGIN WORK;
 -- error 25001: invalid transaction state: active sql transaction
 
 -- # A whole transaction with only the aliases.
+CREATE TABLE t (x INT);
 /* extensions V114-01 V115-02 V116-02 */
 BEGIN;
 INSERT INTO t (x) VALUES (1);
@@ -74,6 +78,7 @@ BEGIN;
 INSERT INTO t (x) VALUES (2);
 ABORT;
 SELECT * FROM t;
+-- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
 -- msg: COMMIT
@@ -84,7 +89,9 @@ SELECT * FROM t;
 
 -- # BEGIN is a reserved word, so it can't be a column name (5.2, Syntax
 -- # Rules, 26). Only TRANSACTION or WORK can follow it.
+CREATE TABLE t (x INT);
 SELECT begin FROM t;
+-- msg: CREATE TABLE 1
 -- error 42601: syntax error: unexpected BEGIN at line 1, column 8 near "SELECT begin FROM"; hint: BEGIN is a reserved word, so it must be quoted to be used as a name, such as "BEGIN" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 
 BEGIN ROW;

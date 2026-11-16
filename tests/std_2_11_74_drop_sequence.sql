@@ -53,10 +53,8 @@ SELECT NEXT VALUE FOR foo FROM (VALUES 1) AS t;
 -- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
 
 DROP SEQUENCE foo RESTRICT;
--- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
-
 DROP SEQUENCE foo CASCADE;
--- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
-
 EXPLAIN DROP SEQUENCE foo RESTRICT;
+-- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
+-- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
 -- error 42601: syntax error: Cannot EXPLAIN DROP SEQUENCE

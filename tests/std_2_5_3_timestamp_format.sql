@@ -26,16 +26,12 @@ VALUES TIMESTAMP '2022-06-30 21:47:32..';
 -- # year has two digits (Syntax Rules, 31), and a time zone is a sign then
 -- # hours:minutes.
 VALUES TIMESTAMP '2022-06-30  21:47:32';
--- error 42601: syntax error: TIMESTAMP '2022-06-30  21:47:32' is not valid
-
 VALUES TIMESTAMP '2022-06-30 21:47:32+0512';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32+0512' is not valid
-
 VALUES TIMESTAMP '2022-06-30 21:47:32 05:12';
--- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32 05:12' is not valid
-
 VALUES TIMESTAMP '2022-6-30 21:47:32';
--- error 42601: syntax error: TIMESTAMP '2022-6-30 21:47:32' is not valid
-
 VALUES TIMESTAMP '2022-06-30 21:47:3x';
+-- error 42601: syntax error: TIMESTAMP '2022-06-30  21:47:32' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32+0512' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:32 05:12' is not valid
+-- error 42601: syntax error: TIMESTAMP '2022-6-30 21:47:32' is not valid
 -- error 42601: syntax error: TIMESTAMP '2022-06-30 21:47:3x' is not valid

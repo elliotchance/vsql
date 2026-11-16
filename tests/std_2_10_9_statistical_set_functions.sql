@@ -36,15 +36,12 @@ SELECT CORR(y, x), CORR(-y, x), REGR_R2(y, n), REGR_SLOPE(n, r) FROM p;
 -- COL1: 0.075592894602e0 COL2: -0.075592894602e0 COL3: 0.001712328767e0 COL4: 0.46e0
 
 SELECT CORR(y, 1), REGR_R2(1, x), REGR_R2(y, 1), REGR_SLOPE(1, x), REGR_INTERCEPT(1, x) FROM p WHERE g = 1;
--- COL1: NULL COL2: 1e0 COL3: NULL COL4: 0e0 COL5: 1e0
-
 SELECT CORR(1, x), REGR_SLOPE(y, 1), REGR_INTERCEPT(y, 1) FROM p WHERE g = 1;
--- COL1: NULL COL2: NULL COL3: NULL
-
 SELECT REGR_COUNT(y, x), VAR_POP(x), STDDEV_SAMP(x), CORR(y, x), REGR_SXX(y, x) FROM p WHERE g = 0;
--- COL1: 0 COL2: NULL COL3: NULL COL4: NULL COL5: NULL
-
 SELECT VAR_POP(0), REGR_SXX(0, 0), REGR_AVGX(0, 0) FROM p;
+-- COL1: NULL COL2: 1e0 COL3: NULL COL4: 0e0 COL5: 1e0
+-- COL1: NULL COL2: NULL COL3: NULL
+-- COL1: 0 COL2: NULL COL3: NULL COL4: NULL COL5: NULL
 -- COL1: 0e0 COL2: 0e0 COL3: 0e0
 
 SELECT VAR_POP(x + 1e10), VAR_SAMP(1e300), REGR_SXY(y + 1e10, x + 1e10) FROM p;
@@ -68,18 +65,14 @@ SELECT STDDEV_POP(x * 1e300), STDDEV_POP(x * 1e-300), REGR_AVGX(1, x * 1e300) FR
 -- COL1: 1.39970842445e+300 COL2: 1.39970842445e-300 COL3: 2.57142857143e+300
 
 SELECT VAR_POP(x * 1e300) FROM p;
--- error 22003: numeric value out of range
-
 SELECT VAR_SAMP(x * 1e-200) FROM p;
--- error 22003: numeric value out of range
-
 SELECT REGR_SXX(y, x * 1e200) FROM p;
--- error 22003: numeric value out of range
-
 SELECT REGR_SYY(y * 1e200, x) FROM p;
--- error 22003: numeric value out of range
-
 SELECT COVAR_POP(y * 1e200, x * 1e200) FROM p;
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
+-- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
 
 SELECT g FROM p GROUP BY g HAVING REGR_COUNT(y, x) > 1 AND STDDEV_POP(x) > 1;
@@ -103,27 +96,20 @@ EXPLAIN SELECT VAR_SAMP(x), REGR_SLOPE(y, x) FROM p;
 -- EXPLAIN: EXPR (COL1 DOUBLE PRECISION, COL2 DOUBLE PRECISION)
 
 SELECT VAR_POP(DISTINCT x) FROM p;
--- error 42601: syntax error: unexpected DISTINCT at line 1, column 16 near "SELECT VAR_POP(DISTINCT x"
-
 SELECT STDDEV_SAMP(ALL x) FROM p;
--- error 42601: syntax error: unexpected ALL at line 1, column 20 near "SELECT STDDEV_SAMP(ALL x"
-
 SELECT VAR_POP('a') FROM p;
--- error 42883: function does not exist: VAR_POP(CHARACTER(1))
-
 SELECT REGR_SLOPE('a', x) FROM p;
--- error 42883: function does not exist: REGR_SLOPE(CHARACTER(1), INTEGER)
-
 SELECT REGR_SLOPE(y) FROM p;
--- error 42601: syntax error: unexpected ")" at line 1, column 20 near "REGR_SLOPE(y) FROM", expecting ","
-
 SELECT g FROM p WHERE COVAR_SAMP(y, x) > 1;
--- error 42601: syntax error: an aggregate function cannot be used in WHERE
-
 SELECT REGR_SXX(SUM(x), x) FROM p;
--- error 42601: syntax error: nested set function: REGR_SXX(SUM(X), X)
-
 SELECT VAR_POP(STDDEV_POP(x)) FROM p;
+-- error 42601: syntax error: unexpected DISTINCT at line 1, column 16 near "SELECT VAR_POP(DISTINCT x"
+-- error 42601: syntax error: unexpected ALL at line 1, column 20 near "SELECT STDDEV_SAMP(ALL x"
+-- error 42883: function does not exist: VAR_POP(CHARACTER(1))
+-- error 42883: function does not exist: REGR_SLOPE(CHARACTER(1), INTEGER)
+-- error 42601: syntax error: unexpected ")" at line 1, column 20 near "REGR_SLOPE(y) FROM", expecting ","
+-- error 42601: syntax error: an aggregate function cannot be used in WHERE
+-- error 42601: syntax error: nested set function: REGR_SXX(SUM(X), X)
 -- error 42601: syntax error: nested set function: VAR_POP(STDDEV_POP(X))
 
 /* flags */

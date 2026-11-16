@@ -1,8 +1,6 @@
 /* setup */
 CREATE TABLE t1 (x INT, y VARCHAR(10));
-CREATE TABLE t2 (x INT);
 INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (3, 'c');
-CREATE SEQUENCE seq1;
 
 -- # A subquery in a comparison is the value of its one row (E061-09).
 SELECT * FROM t1 WHERE x = (SELECT MAX(x) FROM t1);
@@ -17,16 +15,19 @@ SELECT * FROM t1 WHERE y <> (SELECT y FROM t1 WHERE x = 2);
 -- X: 3 Y: c
 
 VALUES (SELECT COUNT(*) FROM t1) = 3;
--- COL1: TRUE
-
 VALUES (SELECT x FROM t1 WHERE x = 1) < (SELECT x FROM t1 WHERE x = 2);
+-- COL1: TRUE
 -- COL1: TRUE
 
 -- # A subquery without any rows is NULL (General Rules, 3.b), and has the type
 -- # of its column (Syntax Rules, 5).
+CREATE TABLE t2 (x INT);
 SELECT * FROM t1 WHERE x = (SELECT x FROM t2);
+-- msg: CREATE TABLE 1
 
+CREATE TABLE t2 (x INT);
 VALUES 1 = (SELECT x FROM t2);
+-- msg: CREATE TABLE 1
 -- COL1: UNKNOWN
 
 /* types */
@@ -38,7 +39,9 @@ VALUES (SELECT y FROM t1 WHERE x > 3);
 SELECT * FROM t1 WHERE x = (SELECT x FROM t1);
 -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
 
+CREATE TABLE t2 (x INT);
 SELECT * FROM t2 WHERE x = (SELECT x FROM t1);
+-- msg: CREATE TABLE 1
 
 -- # A subquery can be used as any other value (F471).
 /* types */
@@ -55,18 +58,21 @@ SELECT x, (SELECT MAX(x) FROM t1) - x AS d FROM t1;
 -- X: 3 D: 0
 
 VALUES ((SELECT MAX(x) FROM t1) + 1) * 2;
--- COL1: 8
-
 VALUES (SELECT (SELECT COUNT(*) FROM t1) FROM t1 WHERE x = 1);
+-- COL1: 8
 -- COL1: 3
 
+CREATE TABLE t2 (x INT);
 VALUES CASE WHEN (SELECT COUNT(*) FROM t2) = 0 THEN 'empty' ELSE (SELECT y FROM t1 WHERE x = 1) END;
+-- msg: CREATE TABLE 1
 -- COL1: empty
 
 VALUES 2 BETWEEN (SELECT MIN(x) FROM t1) AND (SELECT MAX(x) FROM t1);
 -- COL1: TRUE
 
+CREATE TABLE t2 (x INT);
 VALUES COALESCE((SELECT x FROM t2), 0);
+-- msg: CREATE TABLE 1
 -- COL1: 0
 
 VALUES ROW((SELECT MIN(x) FROM t1), (SELECT MAX(x) FROM t1));
@@ -100,14 +106,15 @@ SELECT a.x, b.x FROM t1 AS a INNER JOIN t1 AS b ON b.x = (SELECT MAX(x) FROM t1)
 
 -- # The subquery must have one column (Syntax Rules, 2).
 VALUES (SELECT * FROM t1);
--- error 42601: syntax error: subquery must return only one column
-
 VALUES 1 = (SELECT x, y FROM t1);
+-- error 42601: syntax error: subquery must return only one column
 -- error 42601: syntax error: subquery must return only one column
 
 -- # INSERT finds every value before any rows are written.
+CREATE TABLE t2 (x INT);
 INSERT INTO t2 (x) VALUES ((SELECT COUNT(*) FROM t2)), ((SELECT COUNT(*) FROM t2) + 10);
 SELECT * FROM t2;
+-- msg: CREATE TABLE 1
 -- msg: INSERT 2
 -- X: 0
 -- X: 10
@@ -132,7 +139,9 @@ SELECT * FROM t1;
 UPDATE t1 SET x = (SELECT x FROM t1);
 -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
 
+CREATE TABLE t2 (x INT);
 UPDATE t1 SET x = (SELECT x FROM t2) WHERE x > 5;
+-- msg: CREATE TABLE 1
 -- warning 02000: no data
 -- msg: UPDATE 0
 
@@ -142,10 +151,14 @@ UPDATE t1 SET x = (SELECT y FROM t1 WHERE x = 1) WHERE x > 5;
 -- # NEXT VALUE FOR can't be used in a subquery (6.14, Syntax Rules, 1), and has
 -- # one value for each row, however many times the row uses it (6.14, General
 -- # Rules, 1.a).
+CREATE SEQUENCE seq1;
 VALUES (SELECT NEXT VALUE FOR seq1 FROM t1 WHERE x = 1);
+-- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a subquery
 
+CREATE SEQUENCE seq1;
 SELECT NEXT VALUE FOR seq1 AS a, (SELECT COUNT(*) FROM t1) AS b, NEXT VALUE FOR seq1 AS c FROM t1;
+-- msg: CREATE SEQUENCE 1
 -- A: 1 B: 3 C: 1
 -- A: 2 B: 3 C: 2
 -- A: 3 B: 3 C: 3
@@ -158,8 +171,10 @@ SELECT * FROM t1 WHERE x = (SELECT x FROM t1 WHERE x = ?);
 
 -- # EXPLAIN shows a subquery in the WHERE, and one in the select list is named
 -- # by its position.
+CREATE TABLE t2 (x INT);
 /* extensions V001-01 */
 EXPLAIN SELECT x, (SELECT MAX(x) FROM t2) FROM t1 WHERE y = (SELECT y FROM t1 WHERE x = 1);
+-- msg: CREATE TABLE 1
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))
 -- EXPLAIN: WHERE Y = (SELECT Y FROM T1 WHERE X = 1)
 -- EXPLAIN: EXPR (X INTEGER, COL2 INTEGER)
@@ -175,10 +190,8 @@ VALUES (((SELECT MAX(x) FROM t1)) + 1), ((SELECT MAX(x) FROM t1) + 2), (SELECT M
 -- COL1: 6
 
 VALUES (((SELECT MIN(x) FROM t1)) UNION SELECT MIN(x) FROM t1);
--- COL1: 1
-
 VALUES (((SELECT MIN(x) FROM t1)) UNION SELECT MAX(x) FROM t1);
--- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
-
 SELECT (x + 2), ((x + 2)) * 2, (y || 'b'), (x = 1), (x), ((x)) FROM t1 WHERE x = 1;
+-- COL1: 1
+-- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
 -- COL1: 3 COL2: 6 COL3: ab COL4: TRUE COL5: 1 COL6: 1

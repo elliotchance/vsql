@@ -4,6 +4,8 @@
 /* setup */
 CREATE TABLE t (x INT NOT NULL, y VARCHAR(10), b BOOLEAN, d DATE);
 INSERT INTO t (x, y, b, d) VALUES (1, 'a', TRUE, DATE '2026-10-28');
+
+/* define seq */
 CREATE SEQUENCE seq;
 
 -- # Queries that only use Core SQL aren't flagged, however many Core features
@@ -237,6 +239,7 @@ SELECT SUBSTRING(y FROM 1 USING CHARACTERS), CURRENT_TIME, CURRENT_TIMESTAMP(3),
 -- flags: F411, F555, T061
 -- COL1: a COL2: 14:05:03+0500 COL3: 2022-07-04T14:05:03.120+0500 COL4: 14:05:03.12 COL5: 2022-07-04T14:05:03.120
 
+/* include seq */
 /* flags */
 SELECT CURRENT_CATALOG, CURRENT_SCHEMA, NEXT VALUE FOR seq FROM t;
 -- flags: F762, F763, T176
@@ -431,6 +434,7 @@ CREATE SCHEMA s;
 -- flags: F171
 -- msg: CREATE SCHEMA 1
 
+/* include seq */
 /* flags */
 DROP SCHEMA s CASCADE;
 -- flags: F032, F381
@@ -490,22 +494,26 @@ ALTER TABLE t DROP CONSTRAINT c;
 
 -- # A sequence needs T176, and RESTART without a value needs T177. DROP
 -- # SEQUENCE without RESTRICT is a vsql extension (V107-01).
+/* include seq */
 /* flags */
 ALTER SEQUENCE seq RESTART;
 -- flags: T176, T177
 -- msg: ALTER SEQUENCE 1
 
+/* include seq */
 /* flags */
 ALTER SEQUENCE seq RESTART WITH 1;
 -- flags: T176
 -- msg: ALTER SEQUENCE 1
 
+/* include seq */
 /* extensions V107-01 */
 /* flags */
 DROP SEQUENCE seq;
 -- flags: T176, V107-01
 -- msg: DROP SEQUENCE 1
 
+/* include seq */
 /* flags */
 DROP SEQUENCE seq RESTRICT;
 -- flags: T176

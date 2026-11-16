@@ -85,6 +85,10 @@ mut:
 	// currently being evaluated. All NEXT VALUE FOR expressions for the same
 	// sequence must return the same value within a row. See begin_row().
 	row_sequence_values map[string]i64
+	// uuid_v7_timestamp is the timestamp of the last GENERATE_UUID_V7(), in
+	// 1/4096 of a millisecond, so that each one is greater than the last (see
+	// uuid_v7_timestamp).
+	uuid_v7_timestamp u64
 	// dry_run is set when expressions are only being evaluated to check for
 	// errors (such as an UPDATE that matched no rows). Expressions must not have
 	// side effects, like advancing a sequence.

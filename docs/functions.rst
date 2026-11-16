@@ -47,3 +47,4 @@ The functions are in these categories:
    functions-statistical.rst
    functions-string.rst
    functions-trigonometric.rst
+   functions-uuid.rst

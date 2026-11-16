@@ -19,15 +19,18 @@ CEIL
 
    CEIL(DOUBLE PRECISION) DOUBLE PRECISION
    CEIL(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   CEIL(SMALLINT) SMALLINT
+   CEIL(INTEGER) INTEGER
+   CEIL(BIGINT) BIGINT
 
 Round up to the nearest integer (towards positive infinity), so ``CEIL(-3.7)``
 is -3.
 
-An exact numeric argument (such as ``INTEGER`` or ``DECIMAL``) returns a
-``NUMERIC`` with a scale of 0. It has one more digit than the integer part of
-the argument, because rounding up may need one, such as ``CEIL(9.5)`` is 10.
-An integer argument has the precision of its type, such as ``NUMERIC(10)`` for
-an ``INTEGER``. A ``REAL`` argument returns a ``DOUBLE PRECISION``.
+A ``NUMERIC`` or ``DECIMAL`` argument returns a ``NUMERIC`` with a scale of 0.
+It has one more digit than the integer part of the argument, because rounding
+up may need one, such as ``CEIL(9.5)`` is 10. A ``SMALLINT``, ``INTEGER`` or
+``BIGINT`` argument is already an integer, so it's returned as it is, with the
+same type. A ``REAL`` argument returns a ``DOUBLE PRECISION``.
 
 **Examples**
 
@@ -67,6 +70,9 @@ CEILING
 
    CEILING(DOUBLE PRECISION) DOUBLE PRECISION
    CEILING(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   CEILING(SMALLINT) SMALLINT
+   CEILING(INTEGER) INTEGER
+   CEILING(BIGINT) BIGINT
 
 ``CEILING`` is another name for ``CEIL``, see ``CEIL``.
 
@@ -92,16 +98,18 @@ FLOOR
 
    FLOOR(DOUBLE PRECISION) DOUBLE PRECISION
    FLOOR(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   FLOOR(SMALLINT) SMALLINT
+   FLOOR(INTEGER) INTEGER
+   FLOOR(BIGINT) BIGINT
 
 Round down to the nearest integer (towards negative infinity), so
 ``FLOOR(-3.3)`` is -4.
 
-An exact numeric argument (such as ``INTEGER`` or ``DECIMAL``) returns a
-``NUMERIC`` with a scale of 0. It has one more digit than the integer part of
-the argument, because rounding down may need one, such as ``FLOOR(-9.5)`` is
--10. An integer argument has the precision of its type, such as
-``NUMERIC(10)`` for an ``INTEGER``. A ``REAL`` argument returns a
-``DOUBLE PRECISION``.
+A ``NUMERIC`` or ``DECIMAL`` argument returns a ``NUMERIC`` with a scale of 0.
+It has one more digit than the integer part of the argument, because rounding
+down may need one, such as ``FLOOR(-9.5)`` is -10. A ``SMALLINT``, ``INTEGER``
+or ``BIGINT`` argument is already an integer, so it's returned as it is, with
+the same type. A ``REAL`` argument returns a ``DOUBLE PRECISION``.
 
 **Examples**
 

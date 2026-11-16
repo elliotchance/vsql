@@ -9,4 +9,5 @@ equivalent in vsql is listed too, so you can tell that it hasn't been missed.
    :maxdepth: 1
 
    compatibility-sqlite3.rst
+   compatibility-mysql.rst
    compatibility-spreadsheet.rst

@@ -222,6 +222,9 @@ Every function:
    * - :ref:`MOD <function-mod>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - T441
+   * - :ref:`MODE <function-mode>`
+     - :doc:`Aggregate <functions-aggregate>`
+     - Not standard
    * - :ref:`NOW <function-now>`
      - :doc:`Date and Time <functions-date-and-time>`
      - Not standard
@@ -252,6 +255,9 @@ Every function:
    * - :ref:`POWER <function-power>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
+   * - :ref:`PRODUCT <function-product>`
+     - :doc:`Aggregate <functions-aggregate>`
+     - Not standard
    * - :ref:`RADIANS <function-radians>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - Not standard

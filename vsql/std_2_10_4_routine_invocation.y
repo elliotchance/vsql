@@ -4,9 +4,20 @@ routine_invocation:
   routine_name sql_argument_list {
     flag_if(mut yylex, ($2.v as []ValueExpression).any(is_dynamic_parameter(it)), 'B033')
     flag_if(mut yylex, ($1.v as Identifier).entity_name == 'NOW', vsql_now)
+    parsed_routine_name(mut yylex, ($1.v as Identifier).entity_name)
     $$.v = yy_box(RoutineInvocation{
       function_name: ($1.v as Identifier).entity_name
       args:          $2.v as []ValueExpression
+    })
+  }
+// Only an aggregate function, such as PRODUCT(DISTINCT x), can have a <set
+// quantifier> (see RoutineInvocation.compile).
+| routine_name left_paren set_quantifier sql_argument right_paren {
+    parsed_routine_name(mut yylex, ($1.v as Identifier).entity_name)
+    $$.v = yy_box(RoutineInvocation{
+      function_name: ($1.v as Identifier).entity_name
+      args:          [$4.v as ValueExpression]
+      distinct:      $3.v as bool
     })
   }
 

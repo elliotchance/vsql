@@ -72,6 +72,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	if c.conn.flagging {
 		c.conn.flagged_features << found_func.features
 	}
+	// Only an aggregate function can have DISTINCT or a <filter clause>, such as
+	// PRODUCT(DISTINCT x).
+	if !found_func.is_agg && (e.distinct || e.filter != none) {
+		return sqlstate_42601('${func_name} is not an aggregate function')
+	}
 	if !found_func.is_deterministic && !found_func.is_agg {
 		c.check_deterministic('non-deterministic function ${func_name}')!
 		c.conn.vary_subqueries(0)

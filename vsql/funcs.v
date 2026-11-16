@@ -177,7 +177,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// SQLType is registered, so a new type is supported automatically. CHARACTER
 	// uses the CHARACTER VARYING one, see find_function. The result type depends
 	// on the argument (see set_function_type) and the result is calculated by
-	// eval_set_function.
+	// eval_set_function. PRODUCT is a vsql extension (V405-02) that accepts any
+	// number, like SUM.
 	//
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e, 7.g.i and 7.h
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.i
@@ -186,7 +187,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 			arg := Type{typ.value, 0, 0, false}
 			mut names := ['ANY_VALUE', 'COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {
-				names << ['AVG', 'SUM', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP']
+				names << ['AVG', 'SUM', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP', 'PRODUCT']
 			}
 			if typ.value == SQLType.is_boolean {
 				names << ['EVERY', 'ANY', 'SOME']
@@ -197,6 +198,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 					arg_types:   [arg]
 					is_agg:      true
 					return_type: set_function_type(name, arg)
+					features:    if name == 'PRODUCT' { [vsql_product] } else { []string{} }
 				})!
 			}
 		}

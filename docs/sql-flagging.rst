@@ -386,6 +386,14 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-07``
      - ``SPLIT_PART``.
+   * - ``V405``
+     - Aggregate functions (see :doc:`functions-aggregate`).
+
+   * - ``V405-01``
+     - ``MODE() WITHIN GROUP``.
+
+   * - ``V405-02``
+     - ``PRODUCT``.
 
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).

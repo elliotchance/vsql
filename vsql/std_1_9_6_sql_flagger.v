@@ -154,6 +154,10 @@ import arrays
 // V404-06: UNICODE.
 // V404-07: SPLIT_PART.
 //
+// V405: Aggregate functions.
+// V405-01: MODE() WITHIN GROUP.
+// V405-02: PRODUCT.
+//
 // V501: PostgreSQL functions.
 // V501-01: version().
 // V501-02: current_setting().
@@ -239,6 +243,8 @@ const vsql_initcap = 'V404-04'
 const vsql_chr = 'V404-05'
 const vsql_unicode = 'V404-06'
 const vsql_split_part = 'V404-07'
+const vsql_mode = 'V405-01'
+const vsql_product = 'V405-02'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'
@@ -412,6 +418,15 @@ enum SortKeyPart {
 fn parsed_sort_key_part(mut yylex YYLexer, part SortKeyPart) {
 	if mut yylex is Lexer {
 		yylex.sort_key_parts << part
+	}
+}
+
+// parsed_routine_name is called for each function that's named by an
+// identifier, so that a sort key that contains an aggregate function that isn't
+// a reserved word, such as PRODUCT(x), is flagged like one that contains SUM(x).
+fn parsed_routine_name(mut yylex YYLexer, name string) {
+	if name in named_aggregate_functions {
+		parsed_sort_key_part(mut yylex, .set_function)
 	}
 }
 

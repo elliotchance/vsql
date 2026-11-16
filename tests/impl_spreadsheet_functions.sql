@@ -63,12 +63,10 @@ VALUES 0.5 * ERFC(-(LN(2e0) - 0) / (1e0 * SQRT(2e0)));
 -- COL1: 0.755891404214e0
 
 -- # MODE
-/* extensions V202-01 V202-03 */
+/* extensions V405-01 */
 -- # =MODE(1, 2, 2, 3)
-SELECT v FROM (VALUES (1), (2), (2), (3)) AS t (v)
-GROUP BY v ORDER BY COUNT(*) DESC, v
-FETCH FIRST 1 ROW ONLY;
--- V: 2
+SELECT MODE() WITHIN GROUP (ORDER BY v) FROM (VALUES (1), (2), (2), (3)) AS t (v);
+-- COL1: 2
 
 -- # NEGBINOMDIST
 -- # =NEGBINOMDIST(2, 3, 0.5)
@@ -195,7 +193,7 @@ SELECT MIN(price) FROM products WHERE price > 1;
 
 -- # DPRODUCT
 -- # =DPRODUCT(A1:D5, "price", F1:F2), with F1 = "price" and F2 = ">1"
-SELECT EXP(SUM(LN(price))) FROM products WHERE price > 1;
+SELECT PRODUCT(price) FROM products WHERE price > 1;
 -- COL1: 18e0
 
 -- # DSTDEV
@@ -502,7 +500,7 @@ VALUES ROUND(-(-100 * (POWER(1 + 0.005e0, 12) - 1) / 0.005), 2);
 
 -- # FVSCHEDULE
 -- # =FVSCHEDULE(1000, {0.09, 0.11, 0.1})
-SELECT ROUND(1000 * EXP(SUM(LN(1 + r))), 2)
+SELECT ROUND(1000 * PRODUCT(1 + r), 2)
 FROM (VALUES (0.09e0), (0.11e0), (0.1e0)) AS s (r);
 -- COL1: 1330.89e0
 
@@ -1158,8 +1156,8 @@ VALUES POWER(2, 10);
 
 -- # PRODUCT
 -- # =PRODUCT(D2:D5)
-SELECT ROUND(EXP(SUM(LN(qty))), 6) FROM products WHERE qty IS NOT NULL;
--- COL1: 2000e0
+SELECT PRODUCT(qty) FROM products WHERE qty IS NOT NULL;
+-- COL1: 2000
 
 -- # QUOTIENT
 -- # =QUOTIENT(-7, 2)
@@ -1678,12 +1676,10 @@ ORDER BY v;
 -- V: 3
 
 -- # MODE.SNGL
-/* extensions V202-01 V202-03 */
+/* extensions V405-01 */
 -- # =MODE.SNGL(1, 2, 2, 3)
-SELECT v FROM (VALUES (1), (2), (2), (3)) AS t (v)
-GROUP BY v ORDER BY COUNT(*) DESC, v
-FETCH FIRST 1 ROW ONLY;
--- V: 2
+SELECT MODE() WITHIN GROUP (ORDER BY v) FROM (VALUES (1), (2), (2), (3)) AS t (v);
+-- COL1: 2
 
 -- # NEGBINOM.DIST
 -- # =NEGBINOM.DIST(2, 3, 0.5, FALSE)

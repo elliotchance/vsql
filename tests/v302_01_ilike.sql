@@ -374,15 +374,15 @@ VALUES 'a' ILIKE 'a' ESCAPE '';
 -- # Every operand has to be a character string (8.5, Syntax Rules, 1).
 /* extensions V302-01 */
 VALUES 1 ILIKE 'a';
--- error 42883: operator does not exist: SMALLINT ILIKE CHARACTER
+-- error 42883: operator does not exist: INTEGER ILIKE CHARACTER
 
 /* extensions V302-01 */
 VALUES 'a' NOT ILIKE 1;
--- error 42883: operator does not exist: CHARACTER ILIKE SMALLINT
+-- error 42883: operator does not exist: CHARACTER ILIKE INTEGER
 
 /* extensions V302-01 */
 VALUES 'a' ILIKE 'a' ESCAPE 1;
--- error 42883: operator does not exist: CHARACTER ILIKE SMALLINT
+-- error 42883: operator does not exist: CHARACTER ILIKE INTEGER
 
 -- # The flagger: ILIKE needs the same features as the same LIKE, and V302-01.
 /* flags */

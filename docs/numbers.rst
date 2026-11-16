@@ -157,10 +157,12 @@ The SQL type of an exact number depends on its form and size:
    [ + | - ] digit... [ . [ digit... ] ]
 
 Any number that contains a ``.`` will be treated as a ``NUMERIC``, even in the
-case of whole numbers such as ``123.``. Otherwise, the smallest integer type
-will be chosen that can contain the value. So ``100`` would be a ``SMALLINT``,
-``-1000000`` would be an ``INTEGER``, etc. If the integer does not fit into the
-range of ``BIGINT`` then it is treated as a ``NUMERIC`` with a scale of 0.
+case of whole numbers such as ``123.``. Otherwise, it's an ``INTEGER``, or a
+``BIGINT`` if it doesn't fit in an ``INTEGER``. So ``100`` and ``-1000000``
+are ``INTEGER``, and ``3000000000`` is a ``BIGINT``. If the integer does not fit
+into the range of ``BIGINT`` then it is treated as a ``NUMERIC`` with a scale of
+0. A literal is never a ``SMALLINT``, so that arithmetic on small literals, such
+as ``9000 * 8``, isn't out of range.
 
 The precision and scale of a ``NUMERIC`` literal are taken directly from the
 literal, so ``1.0`` (a ``NUMERIC(2, 1)``) and ``1.00`` (a ``NUMERIC(3, 2)``)
@@ -353,16 +355,16 @@ another to satisfy an expression. Consider the example:
 
 .. code-block:: sql
 
-   VALUES 123 + 456789;
-   -- COL1: 456912
+   VALUES 123 + 3000000000;
+   -- COL1: 3000000123
 
 This operation seems very straightforward, but the parser will read this as
-``SMALLINT + INTEGER`` due to the size of the literals. However, arithmetic
+``INTEGER + BIGINT`` due to the size of the literals. However, arithmetic
 operations must take in and produce the same type. Rather than forcing the user
-to explicitly cast one type to another we can always safely convert a
-``SMALLINT`` to an ``INTEGER`` (this is called a supertype in SQL terms). The
-implicit cast results in an actual expression of ``INTEGER + INTEGER`` that also
-produces an ``INTEGER``.
+to explicitly cast one type to another we can always safely convert an
+``INTEGER`` to a ``BIGINT`` (this is called a supertype in SQL terms). The
+implicit cast results in an actual expression of ``BIGINT + BIGINT`` that also
+produces a ``BIGINT``.
 
 It's important to know that the actual result is not taken into consideration,
 so it's still possible to overflow:

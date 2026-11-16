@@ -53,7 +53,7 @@ SELECT now.now AS now FROM now AS now;
 -- # It doesn't take arguments, and like any function, its name can be quoted.
 /* extensions V402-01 */
 SELECT NOW(1) FROM t;
--- error 42883: function does not exist: NOW(SMALLINT)
+-- error 42883: function does not exist: NOW(INTEGER)
 
 /* extensions V402-01 */
 SELECT "NOW"() = CURRENT_TIMESTAMP AS same FROM t;

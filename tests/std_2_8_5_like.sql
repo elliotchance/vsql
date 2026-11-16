@@ -121,8 +121,8 @@ VALUES 'a' LIKE 1;
 VALUES TRUE LIKE 'T%';
 VALUES 'a' LIKE 'a' ESCAPE 1;
 VALUES CAST(NULL AS INT) LIKE 'a';
--- error 42883: operator does not exist: SMALLINT LIKE CHARACTER
--- error 42883: operator does not exist: CHARACTER LIKE SMALLINT
+-- error 42883: operator does not exist: INTEGER LIKE CHARACTER
+-- error 42883: operator does not exist: CHARACTER LIKE INTEGER
 -- error 42883: operator does not exist: BOOLEAN LIKE CHARACTER
--- error 42883: operator does not exist: CHARACTER LIKE SMALLINT
+-- error 42883: operator does not exist: CHARACTER LIKE INTEGER
 -- error 42883: operator does not exist: INTEGER LIKE CHARACTER

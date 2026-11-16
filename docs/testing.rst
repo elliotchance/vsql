@@ -1068,7 +1068,7 @@ expected type.
 
    /* types */
    VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
-   -- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
+   -- COL1: 17 (INTEGER) COL2: 25 (INTEGER)
 
 Directive: virtual_table
 ^^^^^^^^^^^^^^^^^^^^^^^^

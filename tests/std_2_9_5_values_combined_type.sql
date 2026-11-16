@@ -23,8 +23,8 @@ VALUES 'a', CAST('abc' AS VARCHAR(5));
 -- COL1: abc (CHARACTER VARYING(5))
 
 -- # Exact numbers have the largest scale, and enough digits for the largest
--- # integer part (Syntax Rules, 3.c.ii.3). The literal 1 is a SMALLINT, which
--- # needs 5 digits. A DECIMAL makes them all DECIMAL, and an approximate number
+-- # integer part (Syntax Rules, 3.c.ii.3). The literal 1 is an INTEGER, which
+-- # needs 10 digits. A DECIMAL makes them all DECIMAL, and an approximate number
 -- # makes them all DOUBLE PRECISION (Syntax Rules, 3.c.ii.2).
 /* types */
 VALUES 1.5, 22.25;
@@ -33,8 +33,8 @@ VALUES 1.5, 22.25;
 
 /* types */
 VALUES 1, 22.25;
--- COL1: 1.00 (NUMERIC(7, 2))
--- COL1: 22.25 (NUMERIC(7, 2))
+-- COL1: 1.00 (NUMERIC(12, 2))
+-- COL1: 22.25 (NUMERIC(12, 2))
 
 /* types */
 VALUES CAST(1.5 AS DECIMAL(2, 1)), 22.25;
@@ -49,8 +49,8 @@ VALUES 1, 1.5e0;
 -- # Each column of rows is combined separately.
 /* types */
 VALUES ROW(1, 'a'), ROW(2.5, 'bcd');
--- COL1: 1.0 (NUMERIC(6, 1)) COL2: a   (CHARACTER(3))
--- COL1: 2.5 (NUMERIC(6, 1)) COL2: bcd (CHARACTER(3))
+-- COL1: 1.0 (NUMERIC(11, 1)) COL2: a   (CHARACTER(3))
+-- COL1: 2.5 (NUMERIC(11, 1)) COL2: bcd (CHARACTER(3))
 
 -- # A NUMERIC without a precision has no limit, so each value keeps its own
 -- # precision and scale.

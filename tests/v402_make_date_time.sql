@@ -152,13 +152,13 @@ VALUES MAKE_TIMESTAMP(2024, 2, 29, 1, 2, 3.0000019e0);
 
 -- # The other fields must be integers.
 VALUES MAKE_DATE(2024, 2, 2.0);
--- error 42883: function does not exist: MAKE_DATE(SMALLINT, SMALLINT, NUMERIC(2, 1))
+-- error 42883: function does not exist: MAKE_DATE(INTEGER, INTEGER, NUMERIC(2, 1))
 
 VALUES MAKE_TIME(1.5e0, 2, 3);
--- error 42883: function does not exist: MAKE_TIME(DOUBLE PRECISION, SMALLINT, SMALLINT)
+-- error 42883: function does not exist: MAKE_TIME(DOUBLE PRECISION, INTEGER, INTEGER)
 
 VALUES MAKE_DATE(2024, 2);
--- error 42883: function does not exist: MAKE_DATE(SMALLINT, SMALLINT)
+-- error 42883: function does not exist: MAKE_DATE(INTEGER, INTEGER)
 
 -- # NULL in any argument.
 VALUES MAKE_DATE(CAST(NULL AS INT), 1, 1);

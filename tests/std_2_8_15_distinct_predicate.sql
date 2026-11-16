@@ -91,8 +91,8 @@ VALUES 'a' IS DISTINCT FROM 1;
 VALUES (1, 'a') IS NOT DISTINCT FROM (1, 2);
 -- error 42601: syntax error: cannot compare a row of degree 2 with a row of degree 3
 -- error 42601: syntax error: cannot compare a row of degree 1 with a row of degree 2
--- error 42883: cannot compare CHARACTER(1) and SMALLINT
--- error 42883: cannot compare CHARACTER(1) and SMALLINT
+-- error 42883: cannot compare CHARACTER(1) and INTEGER
+-- error 42883: cannot compare CHARACTER(1) and INTEGER
 
 -- # A parameter that's NULL is distinct from any value but NULL, whatever its
 -- # type.

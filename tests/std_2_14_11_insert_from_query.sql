@@ -161,9 +161,9 @@ INSERT INTO small (d) VALUES (TIMESTAMP '2022-06-30 12:00:00');
 -- error 42846: cannot coerce CHARACTER(1) to SMALLINT
 -- error 42846: cannot coerce CHARACTER(1) to SMALLINT
 -- error 42846: cannot coerce CHARACTER VARYING(10) to SMALLINT
--- error 42846: cannot coerce SMALLINT to CHARACTER VARYING(3)
 -- error 42846: cannot coerce INTEGER to CHARACTER VARYING(3)
--- error 42846: cannot coerce SMALLINT to BOOLEAN
+-- error 42846: cannot coerce INTEGER to CHARACTER VARYING(3)
+-- error 42846: cannot coerce INTEGER to BOOLEAN
 -- error 42846: cannot coerce INTEGER to BOOLEAN
 -- error 42846: cannot coerce BOOLEAN to SMALLINT
 -- error 42846: cannot coerce BOOLEAN to SMALLINT

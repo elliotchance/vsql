@@ -145,4 +145,4 @@ VALUES ROW(TRUE > FALSE, FALSE < TRUE, TRUE = TRUE, FALSE = FALSE, TRUE < FALSE)
 VALUES (1 = 1) || 'a';
 VALUES (TRUE AND FALSE) + 1;
 -- error 42883: operator does not exist: BOOLEAN || CHARACTER
--- error 42883: operator does not exist: BOOLEAN + SMALLINT
+-- error 42883: operator does not exist: BOOLEAN + INTEGER

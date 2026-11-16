@@ -64,8 +64,8 @@ VALUES CAST(NULL AS INTEGER) NOT IN (1, 2);
 VALUES 1 IN ('a');
 VALUES 1 IN (1, 'a');
 VALUES CAST(NULL AS INTEGER) IN (1, 'a');
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
 -- error 42883: cannot compare INTEGER and CHARACTER(1)
 
 -- # The result is a boolean that can be used like any other.

@@ -109,8 +109,8 @@ VALUES 1 < ALL (SELECT y FROM t1);
 VALUES 1 < ANY (SELECT y FROM t1);
 -- error 42601: syntax error: subquery must return only one column
 -- error 42601: syntax error: subquery must return only one column
--- error 42883: cannot compare SMALLINT and CHARACTER VARYING(10)
--- error 42883: cannot compare SMALLINT and CHARACTER VARYING(10)
+-- error 42883: cannot compare INTEGER and CHARACTER VARYING(10)
+-- error 42883: cannot compare INTEGER and CHARACTER VARYING(10)
 
 CREATE TABLE t2 (x INT);
 VALUES 1 < ALL (SELECT foo FROM t2);

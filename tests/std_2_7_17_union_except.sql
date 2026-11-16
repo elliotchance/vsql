@@ -122,7 +122,7 @@ VALUES CAST('a' AS CHAR(3)) UNION VALUES CAST('a' AS VARCHAR(5));
 SELECT x FROM t1 UNION SELECT y FROM t1;
 VALUES ROW(1, 'a') EXCEPT VALUES ROW('a', 1);
 -- error 42804: data type mismatch in column 1 of UNION: expected INTEGER but got CHARACTER VARYING(10)
--- error 42804: data type mismatch in column 1 of EXCEPT: expected SMALLINT but got CHARACTER(1)
+-- error 42804: data type mismatch in column 1 of EXCEPT: expected INTEGER but got CHARACTER(1)
 
 -- # Both sides must have the same number of columns.
 SELECT x FROM t1 UNION SELECT x, z FROM t2;
@@ -231,13 +231,13 @@ EXPLAIN SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY x;
 EXPLAIN VALUES 1 EXCEPT ALL VALUES 2 UNION ALL VALUES 3;
 -- EXPLAIN: $1:
 -- EXPLAIN:   $1:
--- EXPLAIN:     VALUES (COL1 SMALLINT) = ROW(1)
+-- EXPLAIN:     VALUES (COL1 INTEGER) = ROW(1)
 -- EXPLAIN:   $2:
--- EXPLAIN:     VALUES (COL1 SMALLINT) = ROW(2)
--- EXPLAIN:   EXCEPT ALL (COL1 SMALLINT)
+-- EXPLAIN:     VALUES (COL1 INTEGER) = ROW(2)
+-- EXPLAIN:   EXCEPT ALL (COL1 INTEGER)
 -- EXPLAIN: $2:
--- EXPLAIN:   VALUES (COL1 SMALLINT) = ROW(3)
--- EXPLAIN: UNION ALL (COL1 SMALLINT)
+-- EXPLAIN:   VALUES (COL1 INTEGER) = ROW(3)
+-- EXPLAIN: UNION ALL (COL1 INTEGER)
 
 -- # NEXT VALUE FOR can't be used on either side, even a nested one. No value is
 -- # used.

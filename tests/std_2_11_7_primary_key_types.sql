@@ -264,4 +264,4 @@ SELECT * FROM t WHERE id = 1;
 -- msg: UPDATE 1
 -- msg: DELETE 1
 -- ID: c X: 1
--- error 42883: cannot compare CHARACTER VARYING(10) and SMALLINT
+-- error 42883: cannot compare CHARACTER VARYING(10) and INTEGER

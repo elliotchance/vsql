@@ -138,8 +138,8 @@ VALUES CASE 1 WHEN > 'a' THEN 1 END;
 VALUES CASE 1 WHEN 2, 'a' THEN 1 END;
 VALUES CASE (1, 2) WHEN (1, 2, 3) THEN 1 END;
 VALUES CASE (1, 2) WHEN 1 THEN 1 END;
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
 -- error 42601: syntax error: cannot compare a row of degree 2 with a row of degree 3
 -- error 42601: syntax error: cannot compare a row of degree 2 with a row of degree 1
 

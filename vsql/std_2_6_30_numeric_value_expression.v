@@ -168,16 +168,12 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 	// encapsulates the value. This leaves an edge case where negative values need
 	// to support one value lower than their positive counterpart.
 	//
-	// For example, SMALLINT range is -32768 to 32767. However, if we consume
-	// 32768 first it would be given an INTEGER type (because it's out of range)
-	// so the negation would also be an INTEGER when -32768 really should be
-	// stored in a SMALLINT.
+	// For example, INTEGER range is -2147483648 to 2147483647. However, if we
+	// consume 2147483648 first it would be given a BIGINT type (because it's
+	// out of range) so the negation would also be a BIGINT when -2147483648
+	// really should be an INTEGER.
 	if v := expr.value() {
 		if sign == '-' {
-			if v.typ.typ == .is_integer && v.int_value() == 32768 {
-				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_smallint_value(-32768))))
-			}
-
 			if v.typ.typ == .is_bigint && v.int_value() == 2147483648 {
 				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_integer_value(-2147483648))))
 			}

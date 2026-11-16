@@ -37,7 +37,7 @@ VALUES CASE 1 WHEN IS DISTINCT FROM (1, 2) THEN 'a' END;
 VALUES CASE 1 WHEN IS DISTINCT FROM 'a' THEN 'a' END;
 -- error 42601: syntax error: OVERLAPS needs a row of degree 2, not 1
 -- error 42601: syntax error: cannot compare a row of degree 1 with a row of degree 2
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
 
 -- # They need F262, and the features of the predicate: T151 for DISTINCT (and
 -- # T152 with NOT), and F053 for OVERLAPS (Syntax Rules, 2.k).

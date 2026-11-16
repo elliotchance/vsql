@@ -4,7 +4,7 @@ Information Schema
 .. contents::
 
 Every catalog has an ``INFORMATION_SCHEMA`` schema with tables that describe the
-tables, columns and constraints in the catalog. They can be queried like any other table:
+schemas, tables, columns, constraints and sequences in the catalog. They can be queried like any other table:
 
 .. code-block:: sql
 
@@ -30,6 +30,44 @@ anything in it (or the schema itself) is a ``42501`` error. It isn't stored in
 the database file, and isn't part of a dump. Virtual tables (see
 :doc:`virtual-tables`) aren't described because they're part of a connection,
 not the catalog.
+
+``SCHEMATA``
+------------
+
+One row for each schema, including the ``INFORMATION_SCHEMA``, ordered by name.
+
+.. code-block:: sql
+
+  CREATE SCHEMA sales;
+
+  SELECT schema_name, schema_owner FROM information_schema.schemata;
+  -- SCHEMA_NAME: INFORMATION_SCHEMA SCHEMA_OWNER: _SYSTEM
+  -- SCHEMA_NAME: PUBLIC SCHEMA_OWNER: _SYSTEM
+  -- SCHEMA_NAME: SALES SCHEMA_OWNER: _SYSTEM
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``CATALOG_NAME``, ``SCHEMA_NAME``
+    - The catalog and name of the schema.
+
+  * - ``SCHEMA_OWNER``
+    - Always ``_SYSTEM``. vsql doesn't have users yet, so ``_SYSTEM`` is the
+      default (and only) user, and it owns everything. It can only be written
+      as a delimited identifier (``"_SYSTEM"``), so it can't be the same as a
+      user that's created later. The SQL standard makes the
+      ``INFORMATION_SCHEMA`` its own owner, but in vsql it's ``_SYSTEM`` too.
+
+  * - ``DEFAULT_CHARACTER_SET_CATALOG``, ``DEFAULT_CHARACTER_SET_SCHEMA``,
+      ``DEFAULT_CHARACTER_SET_NAME``
+    - The catalog, ``INFORMATION_SCHEMA`` and ``UTF8`` (see
+      ``CHARACTER_SETS``).
+
+  * - ``SQL_PATH``
+    - Always ``NULL`` (SQL paths are not supported).
 
 ``TABLES``
 ----------
@@ -314,6 +352,187 @@ One row for each column of each ``PRIMARY KEY``, ``UNIQUE`` and ``FOREIGN KEY``
       ``PRIMARY KEY`` or ``UNIQUE`` that it references (see
       ``REFERENTIAL_CONSTRAINTS``). Otherwise, ``NULL``.
 
+``CONSTRAINT_COLUMN_USAGE``
+---------------------------
+
+One row for each column that a constraint uses, in the same order and with the
+same names as ``TABLE_CONSTRAINTS``:
+
+- The columns of a ``PRIMARY KEY`` or ``UNIQUE``.
+- The columns of the ``PRIMARY KEY`` or ``UNIQUE`` that a ``FOREIGN KEY``
+  references (see ``REFERENTIAL_CONSTRAINTS``), which are in the referenced
+  table. The columns of the ``FOREIGN KEY`` itself are in
+  ``KEY_COLUMN_USAGE``.
+- The column of a ``NOT NULL``.
+- The columns that a ``CHECK`` uses in its condition, in the order of the
+  columns of the table.
+
+.. code-block:: sql
+
+  CREATE TABLE categories (id INT PRIMARY KEY);
+  CREATE TABLE products (category_id INT REFERENCES categories, price INT CHECK (price > 0));
+
+  SELECT table_name, column_name, constraint_name
+  FROM information_schema.constraint_column_usage;
+  -- TABLE_NAME: CATEGORIES COLUMN_NAME: ID CONSTRAINT_NAME: CATEGORIES_PRIMARY_KEY
+  -- TABLE_NAME: CATEGORIES COLUMN_NAME: ID CONSTRAINT_NAME: CATEGORIES_NOT_NULL_1
+  -- TABLE_NAME: CATEGORIES COLUMN_NAME: ID CONSTRAINT_NAME: PRODUCTS_FOREIGN_KEY_1
+  -- TABLE_NAME: PRODUCTS COLUMN_NAME: PRICE CONSTRAINT_NAME: PRODUCTS_CHECK_1
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``, ``COLUMN_NAME``
+    - The column.
+
+  * - ``CONSTRAINT_CATALOG``, ``CONSTRAINT_SCHEMA``, ``CONSTRAINT_NAME``
+    - The constraint, which has the catalog and schema of its table.
+
+``CONSTRAINT_TABLE_USAGE``
+--------------------------
+
+One row for each table that a constraint uses, in the same order and with the
+same names as ``TABLE_CONSTRAINTS``: the table of a ``PRIMARY KEY`` or
+``UNIQUE``, and the referenced table of a ``FOREIGN KEY``. A ``CHECK`` can only
+use a table in a subquery, which isn't supported, so they're never in it.
+
+.. code-block:: sql
+
+  CREATE TABLE categories (id INT PRIMARY KEY);
+  CREATE TABLE products (category_id INT REFERENCES categories);
+
+  SELECT table_name, constraint_name FROM information_schema.constraint_table_usage;
+  -- TABLE_NAME: CATEGORIES CONSTRAINT_NAME: CATEGORIES_PRIMARY_KEY
+  -- TABLE_NAME: CATEGORIES CONSTRAINT_NAME: PRODUCTS_FOREIGN_KEY_1
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
+    - The table.
+
+  * - ``CONSTRAINT_CATALOG``, ``CONSTRAINT_SCHEMA``, ``CONSTRAINT_NAME``
+    - The constraint, which has the catalog and schema of its table.
+
+``COLUMN_COLUMN_USAGE``
+-----------------------
+
+One row for each column that a generated column uses in its expression,
+ordered by table, then by the generated column, then by the column that it
+uses (in the order of the columns of the table).
+
+.. code-block:: sql
+
+  CREATE TABLE products (price INT, tax INT, total INT GENERATED ALWAYS AS (price + tax));
+
+  SELECT column_name, dependent_column FROM information_schema.column_column_usage;
+  -- COLUMN_NAME: PRICE DEPENDENT_COLUMN: TOTAL
+  -- COLUMN_NAME: TAX DEPENDENT_COLUMN: TOTAL
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
+    - The table.
+
+  * - ``COLUMN_NAME``
+    - The column that's used.
+
+  * - ``DEPENDENT_COLUMN``
+    - The generated column.
+
+``SEQUENCES``
+-------------
+
+One row for each sequence (see :doc:`create-sequence`), ordered by schema and name.
+The sequence of an identity column is in ``COLUMNS`` instead.
+
+.. code-block:: sql
+
+  CREATE SEQUENCE invoice_number START WITH 1000 INCREMENT BY 10;
+
+  SELECT sequence_name, data_type, minimum_value, maximum_value, increment
+  FROM information_schema.sequences;
+  -- SEQUENCE_NAME: INVOICE_NUMBER DATA_TYPE: BIGINT MINIMUM_VALUE: 1 MAXIMUM_VALUE: 9223372036854775807 INCREMENT: 10
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``SEQUENCE_CATALOG``, ``SEQUENCE_SCHEMA``, ``SEQUENCE_NAME``
+    - The fully qualified name of the sequence.
+
+  * - ``DATA_TYPE``, ``NUMERIC_PRECISION``, ``NUMERIC_PRECISION_RADIX``,
+      ``NUMERIC_SCALE``
+    - The data type, the same as in ``COLUMNS``.
+
+  * - ``MAXIMUM_VALUE``, ``MINIMUM_VALUE``, ``INCREMENT``
+    - The ``MAXVALUE``, ``MINVALUE`` and ``INCREMENT BY``, as text. A sequence
+      without a ``MAXVALUE`` or ``MINVALUE`` has the one that's used instead.
+
+  * - ``CYCLE_OPTION``
+    - ``YES`` for a ``CYCLE``, otherwise ``NO``.
+
+``CHARACTER_SETS``
+------------------
+
+One row for each character set. ``UTF8`` is the only one.
+
+.. code-block:: sql
+
+  SELECT character_set_name, character_repertoire, form_of_use, default_collate_name
+  FROM information_schema.character_sets;
+  -- CHARACTER_SET_NAME: UTF8 CHARACTER_REPERTOIRE: UCS FORM_OF_USE: UTF8 DEFAULT_COLLATE_NAME: UCS_BASIC
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``CHARACTER_SET_CATALOG``, ``CHARACTER_SET_SCHEMA``,
+      ``CHARACTER_SET_NAME``
+    - The catalog, ``INFORMATION_SCHEMA`` and ``UTF8`` (the same as the
+      character set of a column in ``COLUMNS``).
+
+  * - ``CHARACTER_REPERTOIRE``
+    - ``UCS`` (Unicode).
+
+  * - ``FORM_OF_USE``
+    - ``UTF8``, the encoding.
+
+  * - ``DEFAULT_COLLATE_CATALOG``, ``DEFAULT_COLLATE_SCHEMA``,
+      ``DEFAULT_COLLATE_NAME``
+    - The catalog, ``INFORMATION_SCHEMA`` and ``UCS_BASIC``. Strings are
+      compared by their code points. Trailing spaces don't matter (the
+      ``PAD SPACE`` characteristic), so ``'a' = 'a  '`` is ``TRUE``, even for
+      ``VARCHAR``.
+
+``INFORMATION_SCHEMA_CATALOG_NAME``
+-----------------------------------
+
+One row, with the name of the catalog (the database file, or the name it was
+given, see :doc:`set-catalog`).
+
+.. code-block:: sql
+
+  SELECT catalog_name FROM information_schema.information_schema_catalog_name;
+  -- CATALOG_NAME: :memory:
+
+The SQL standard makes it a base table, but in vsql it's a ``VIEW`` like the
+others (in ``TABLES``).
+
 ``SQL_FEATURES``
 ----------------
 
@@ -579,12 +798,33 @@ used without Feature F391, "Long identifiers"):
     - Short name view
     - Renamed columns
 
+  * - ``CHARACTER_SETS``
+    - ``CHARACTER_SETS_S``
+    - ``CHAR_SET_CATALOG``, ``CHAR_SET_SCHEMA``, ``CHAR_REPERTOIRE``,
+      ``DEF_COLLATE_CAT``, ``DEF_COLLATE_SCHEMA`` and ``DEF_COLLATE_NAME``.
+
+  * - ``COLUMN_COLUMN_USAGE``
+    - ``COL_COL_USAGE``
+    - None.
+
   * - ``COLUMNS``
     - ``COLUMNS_S``
     - ``CHAR_MAX_LENGTH``, ``CHAR_OCTET_LENGTH``, ``NUMERIC_PREC_RADIX``,
       ``CHAR_SET_CATALOG``, ``CHAR_SET_SCHEMA``, ``MAX_CARDINALITY``,
       ``IS_SELF_REF``, ``ID_GENERATION``, ``ID_START``, ``ID_INCREMENT``,
       ``ID_MAXIMUM``, ``ID_MINIMUM``, ``ID_CYCLE`` and ``GENERATION_EXPR``.
+
+  * - ``CONSTRAINT_COLUMN_USAGE``
+    - ``CONSTR_COL_USAGE``
+    - None.
+
+  * - ``CONSTRAINT_TABLE_USAGE``
+    - ``CONSTR_TABLE_USAGE``
+    - None.
+
+  * - ``INFORMATION_SCHEMA_CATALOG_NAME``
+    - ``CATALOG_NAME``
+    - None.
 
   * - ``KEY_COLUMN_USAGE``
     - ``KEY_COLUMN_USAGE_S``
@@ -593,6 +833,14 @@ used without Feature F391, "Long identifiers"):
   * - ``REFERENTIAL_CONSTRAINTS``
     - ``REF_CONSTRAINTS``
     - ``UNIQUE_CONSTR_CAT``, ``UNIQUE_CONSTR_SCH`` and ``UNIQUE_CONSTR_NAME``.
+
+  * - ``SCHEMATA``
+    - ``SCHEMATA_S``
+    - ``DEF_CHAR_SET_CAT``, ``DEF_CHAR_SET_SCH`` and ``DEF_CHAR_SET_NAME``.
+
+  * - ``SEQUENCES``
+    - ``SEQUENCES_S``
+    - ``NUMERIC_PREC_RADIX``.
 
   * - ``SQL_IMPLEMENTATION_INFO``
     - ``SQL_IMPL_INFO``

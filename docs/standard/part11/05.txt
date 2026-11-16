@@ -3,12 +3,12 @@
 # 5, Information Schema
 5                        container    - -
 # 5.1, INFORMATION_SCHEMA Schema
-5.1                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_1_information_schema.sql always there, no owner since there are no authorization identifiers (#732)
+5.1                      deviates     vsql/std_11_5_information_schema.v,vsql/std_11_5_50_schemata.v tests/std_11_5_1_information_schema.sql,tests/std_11_5_50_schemata.sql always there; owned by _SYSTEM (like every schema in SCHEMATA) rather than by itself, until there are authorization identifiers (#732)
 # 5.2, INFORMATION_SCHEMA_CATALOG_NAME base table
-5.2                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.2/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.2/CR/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.2/CR/2                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.2                      implemented  vsql/std_11_5_2_information_schema_catalog_name.v tests/std_11_5_2_information_schema_catalog_name.sql built when it is read, so it is a VIEW in TABLES and has no constraints
+5.2/DE/1                 implemented  vsql/std_11_5_2_information_schema_catalog_name.v tests/std_11_5_2_information_schema_catalog_name.sql
+5.2/CR/1                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.2/CR/2                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.3, CARDINAL_NUMBER domain
 5.3                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql as its data type, there are no domains (F251)
 5.3/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql INTEGER, which vsql only sets to non-negative values
@@ -46,8 +46,8 @@
 5.11/CR/1                n/a          - - user-defined types (S023)
 5.11/CR/2                n/a          - - user-defined types (S023)
 # 5.12, CHARACTER_SETS view
-5.12                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.12/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.12                     implemented  vsql/std_11_5_12_character_sets.v tests/std_11_5_12_character_sets.sql UTF8 is the only character set; every one, since there are no privileges (#732)
+5.12/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.13, CHECK_CONSTRAINT_ROUTINE_USAGE view
 5.13                     missing      - - SQL-invoked routines (#733)
 5.13/CR/1                missing      - - SQL-invoked routines (#733)
@@ -63,10 +63,10 @@
 5.16/CR/1                n/a          - - collations (F690)
 5.16/CR/2                n/a          - - collations (F690)
 # 5.17, COLUMN_COLUMN_USAGE view
-5.17                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.17/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.17/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.17/CR/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.17                     implemented  vsql/std_11_5_17_column_column_usage.v tests/std_11_5_17_column_column_usage.sql every table, since every schema is owned by _SYSTEM
+5.17/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.17/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.17/CR/3                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.18, COLUMN_DOMAIN_USAGE view
 5.18                     n/a          - - domains (F251)
 5.18/CR/1                n/a          - - domains (F251)
@@ -85,13 +85,13 @@
 5.21/CR/3                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
 5.21/CR/4                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql a column reference or an asterisk
 # 5.22, CONSTRAINT_COLUMN_USAGE view
-5.22                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.22/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.22/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.22                     implemented  vsql/std_11_5_22_constraint_column_usage.v tests/std_11_5_22_constraint_column_usage.sql every constraint, since every schema is owned by _SYSTEM
+5.22/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.22/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.23, CONSTRAINT_TABLE_USAGE view
-5.23                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.23/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.23/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.23                     implemented  vsql/std_11_5_23_constraint_table_usage.v tests/std_11_5_23_constraint_table_usage.sql every constraint, since every schema is owned by _SYSTEM
+5.23/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.23/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.24, DATA_TYPE_PRIVILEGES view
 5.24                     missing      - - authorization identifiers and privileges (#732)
 5.24/CR/1                missing      - - authorization identifiers and privileges (#732)
@@ -195,12 +195,12 @@
 5.49/CR/3                missing      - - SQL-invoked routines (#733)
 5.49/CR/4                missing      - - SQL-invoked routines (#733)
 # 5.50, SCHEMATA view
-5.50                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.50/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.50                     implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql every schema, since every schema is owned by _SYSTEM
+5.50/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.51, SEQUENCES view
-5.51                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.51/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
-5.51/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.51                     implemented  vsql/std_11_5_51_sequences.v tests/std_11_5_51_sequences.sql every sequence, since there are no privileges (#732)
+5.51/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.51/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.52, SQL_FEATURES view
 5.52                     implemented  vsql/std_11_5_52_sql_features.v tests/std_11_5_52_sql_features.sql
 # 5.53, SQL_IMPLEMENTATION_INFO view
@@ -290,15 +290,15 @@
 # 5.76, VIEWS view
 5.76                     missing      - - views (#731)
 # 5.77, Short name views
-5.77                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_77_short_name_views.sql COLUMNS_S, KEY_COLUMN_USAGE_S, REF_CONSTRAINTS, SQL_IMPL_INFO, SQL_SIZING_PROFS and TABLES_S; the others need their views (#733, #736) or are for features vsql does not have
+5.77                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_77_short_name_views.sql,tests/std_11_5_2_information_schema_catalog_name.sql,tests/std_11_5_12_character_sets.sql,tests/std_11_5_17_column_column_usage.sql,tests/std_11_5_22_constraint_column_usage.sql,tests/std_11_5_23_constraint_table_usage.sql,tests/std_11_5_50_schemata.sql,tests/std_11_5_51_sequences.sql the short name views of the views that vsql has; the others need their views (#731, #733) or are for features vsql does not have
 5.77/CR/1                n/a          - - ROLE_ROUT_GRANTS: roles (T331)
 5.77/CR/2                n/a          - - DOMAINS_S: domains (F251)
 5.77/CR/3                n/a          - - COL_DOMAIN_USAGE (COL_DOMAINS_USAGE in the rule): domains (F251)
 5.77/CR/4                n/a          - - TRIG_TABLE_USAGE: triggers (T211)
 5.77/CR/5                n/a          - - TRIG_UPDATE_COLS: triggers (T211)
 5.77/CR/6                n/a          - - COL_DOMAIN_USAGE: domains (F251)
-5.77/CR/7                missing      - - CONSTR_COL_USAGE (CONST_COL_USAGE in the rule): after CONSTRAINT_COLUMN_USAGE (#736)
-5.77/CR/8                missing      - - CONSTR_TABLE_USAGE (CONST_TABLE_USAGE in the rule): after CONSTRAINT_TABLE_USAGE (#736)
+5.77/CR/7                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql CONSTR_COL_USAGE (CONST_COL_USAGE in the rule)
+5.77/CR/8                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql CONSTR_TABLE_USAGE (CONST_TABLE_USAGE in the rule)
 5.77/CR/9                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/10               missing      - - ROUTINE_COL_USAGE: after ROUTINE_COLUMN_USAGE (#733)
 5.77/CR/11               missing      - - ROUT_TABLE_USAGE: after ROUTINE_TABLE_USAGE (#733)
@@ -308,7 +308,7 @@
 5.77/CR/15               missing      - - ROUT_SEQ_USAGE_S: after ROUTINE_SEQUENCE_USAGE (#733)
 5.77/CR/16               n/a          - - TRIG_COLUMN_USAGE: triggers (T211)
 5.77/CR/17               n/a          - - TRIG_SEQ_USAGE_S: triggers (T211)
-5.77/CR/18               missing      - - COL_COL_USAGE: after COLUMN_COLUMN_USAGE (#736)
+5.77/CR/18               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/19               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/20               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/21               n/a          - - COLLATIONS_S: collations (F690)
@@ -328,11 +328,11 @@
 5.77/CR/35               n/a          - - TRIGGERS_S: triggers (T211)
 5.77/CR/36               n/a          - - FIELDS_S: row types (T051)
 5.77/CR/37               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
-5.77/CR/38               missing      - - COL_COL_USAGE: after COLUMN_COLUMN_USAGE (#736)
+5.77/CR/38               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/39               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql the rule says COLUMNS, which is the same as 5.21/CR/2, so it's taken as COLUMNS_S.IS_GENERATED
 5.77/CR/40               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/41               missing      - - ROUT_SEQ_USAGE_S: after ROUTINE_SEQUENCE_USAGE (#733)
-5.77/CR/42               missing      - - SEQUENCES_S: after SEQUENCES (#736)
+5.77/CR/42               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/43               n/a          - - TRIG_SEQ_USAGE_S (TRIGGER_SEQ_USAGE_S in the rule): triggers (T211)
 5.77/CR/44               n/a          - - TRIG_UPDATE_COLS: triggers (T211)
 5.77/CR/45               n/a          - - TRIG_TABLE_USAGE: triggers (T211)

@@ -1089,33 +1089,51 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // an asterisk resolves to it (see Column.features). A view that isn't here can
 // be referenced in Core SQL.
 //
+// ISO/IEC 9075-11:2006, 5.2, INFORMATION_SCHEMA_CATALOG_NAME base table, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2006, 5.12, CHARACTER_SETS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.17, COLUMN_COLUMN_USAGE view, Conformance Rules, 1, 2 and 3
 // ISO/IEC 9075-11:2006, 5.21, COLUMNS view, Conformance Rules, 1, 2, 3 and 4
+// ISO/IEC 9075-11:2006, 5.22, CONSTRAINT_COLUMN_USAGE view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2006, 5.23, CONSTRAINT_TABLE_USAGE view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.50, SCHEMATA view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.51, SEQUENCES view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.53, SQL_IMPLEMENTATION_INFO view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.54, SQL_PACKAGES view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.55, SQL_PARTS view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.57, SQL_SIZING_PROFILES view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.61, TABLES view, Conformance Rules, 1
-// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 9, 19, 20, 37, 39 and 40
+// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 7, 8, 9, 18, 19, 20, 37, 38, 39, 40 and 42
 const information_schema_features = {
-	'COLUMNS':                       ['F391']
-	'COLUMNS.IS_GENERATED':          ['T175']
-	'COLUMNS.GENERATION_EXPRESSION': ['T175']
-	'COLUMNS.IS_UPDATABLE':          ['T111']
-	'COLUMNS_S.IS_GENERATED':        ['T175']
-	'COLUMNS_S.GENERATION_EXPR':     ['T175']
-	'COLUMNS_S.IS_UPDATABLE':        ['T111']
-	'KEY_COLUMN_USAGE':              ['F341', 'F391']
-	'KEY_COLUMN_USAGE_S':            ['F341']
-	'REFERENTIAL_CONSTRAINTS':       ['F391']
-	'SQL_IMPLEMENTATION_INFO':       ['F391', 'F502']
-	'SQL_IMPL_INFO':                 ['F502']
-	'SQL_PACKAGES':                  ['F502']
-	'SQL_PARTS':                     ['F502']
-	'SQL_SIZING_PROFILES':           ['F391', 'F502']
-	'SQL_SIZING_PROFS':              ['F502']
-	'TABLES':                        ['F391']
+	'CHARACTER_SETS':                  ['F391']
+	'COL_COL_USAGE':                   ['F341', 'T175']
+	'COLUMN_COLUMN_USAGE':             ['F341', 'F391', 'T175']
+	'COLUMNS':                         ['F391']
+	'COLUMNS.IS_GENERATED':            ['T175']
+	'COLUMNS.GENERATION_EXPRESSION':   ['T175']
+	'COLUMNS.IS_UPDATABLE':            ['T111']
+	'COLUMNS_S.IS_GENERATED':          ['T175']
+	'COLUMNS_S.GENERATION_EXPR':       ['T175']
+	'COLUMNS_S.IS_UPDATABLE':          ['T111']
+	'CONSTR_COL_USAGE':                ['F341']
+	'CONSTR_TABLE_USAGE':              ['F341']
+	'CONSTRAINT_COLUMN_USAGE':         ['F341', 'F391']
+	'CONSTRAINT_TABLE_USAGE':          ['F341', 'F391']
+	'INFORMATION_SCHEMA_CATALOG_NAME': ['F391', 'F651']
+	'KEY_COLUMN_USAGE':                ['F341', 'F391']
+	'KEY_COLUMN_USAGE_S':              ['F341']
+	'REFERENTIAL_CONSTRAINTS':         ['F391']
+	'SCHEMATA':                        ['F391']
+	'SEQUENCES':                       ['F391', 'T176']
+	'SEQUENCES_S':                     ['T176']
+	'SQL_IMPLEMENTATION_INFO':         ['F391', 'F502']
+	'SQL_IMPL_INFO':                   ['F502']
+	'SQL_PACKAGES':                    ['F502']
+	'SQL_PARTS':                       ['F502']
+	'SQL_SIZING_PROFILES':             ['F391', 'F502']
+	'SQL_SIZING_PROFS':                ['F502']
+	'TABLES':                          ['F391']
 }
 
 // information_schema_column_features are the features that a reference to a

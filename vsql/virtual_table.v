@@ -11,6 +11,9 @@ pub struct VirtualTable {
 	// register_flagged_virtual_table). It's only used by the SQL Flagger.
 	features []string
 mut:
+	// conn is the connection that's reading the table, which is set before
+	// data is called (see VirtualTableOperation).
+	conn    &Connection = unsafe { nil }
 	is_done bool
 	rows    []Row
 	// wrong_values is the number of values of a row that doesn't have one for
@@ -92,6 +95,7 @@ fn (o VirtualTableOperation) columns() Columns {
 fn (mut o VirtualTableOperation) execute(_ []Row) ![]Row {
 	mut vt := o.table
 	vt.reset()
+	vt.conn = o.conn
 	for !vt.is_done {
 		vt.data(mut vt)!
 	}

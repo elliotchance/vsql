@@ -110,6 +110,83 @@ SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS_S WHERE TABLE_NAME = 'T' AND 
 -- flags: T175
 -- COLUMN_NAME: Y
 
+-- # COLUMN_COLUMN_USAGE needs T175, F341 and F391 (5.17, Conformance Rules,
+-- # 1-3), and its short name view needs T175 and F341 (5.77, Conformance Rules,
+-- # 18 and 38).
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMN_COLUMN_USAGE;
+-- flags: F341, F391, T175
+-- COL1: 1
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.COL_COL_USAGE;
+-- flags: F341, T175
+-- COL1: 1
+
+-- # CONSTRAINT_COLUMN_USAGE and CONSTRAINT_TABLE_USAGE need F341 and F391
+-- # (5.22 and 5.23, Conformance Rules, 1 and 2), and their short name views
+-- # need F341 (5.77, Conformance Rules, 7 and 8).
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE;
+-- flags: F341, F391
+-- COL1: 1
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.CONSTRAINT_TABLE_USAGE;
+-- flags: F341, F391
+-- COL1: 0
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.CONSTR_COL_USAGE;
+-- flags: F341
+-- COL1: 1
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.CONSTR_TABLE_USAGE;
+-- flags: F341
+-- COL1: 0
+
+-- # INFORMATION_SCHEMA_CATALOG_NAME needs F391 and F651 (5.2, Conformance
+-- # Rules, 1 and 2), but its short name view can be referenced in Core SQL.
+/* flags */
+SELECT CATALOG_NAME FROM INFORMATION_SCHEMA.INFORMATION_SCHEMA_CATALOG_NAME;
+-- flags: F391, F651
+-- CATALOG_NAME: :memory:
+
+/* flags */
+SELECT CATALOG_NAME FROM INFORMATION_SCHEMA.CATALOG_NAME;
+-- flags:
+-- CATALOG_NAME: :memory:
+
+-- # CHARACTER_SETS (5.12) and SCHEMATA (5.50) need F391 (Conformance Rules,
+-- # 1), but their short name views don't.
+/* flags */
+SELECT CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.CHARACTER_SETS;
+-- flags: F391
+-- CHARACTER_SET_NAME: UTF8
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA;
+-- flags: F391
+-- COL1: 2
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.CHARACTER_SETS_S, INFORMATION_SCHEMA.SCHEMATA_S;
+-- flags:
+-- COL1: 2
+
+-- # SEQUENCES needs T176 and F391 (5.51, Conformance Rules, 1 and 2), and its
+-- # short name view needs T176 (5.77, Conformance Rules, 42).
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SEQUENCES;
+-- flags: F391, T176
+-- COL1: 0
+
+/* flags */
+SELECT COUNT(*) FROM INFORMATION_SCHEMA.SEQUENCES_S;
+-- flags: T176
+-- COL1: 0
+
 -- # REFERENTIAL_CONSTRAINTS (5.37, Conformance Rules, 1) and TABLES (5.61,
 -- # Conformance Rules, 1) need F391.
 /* flags */

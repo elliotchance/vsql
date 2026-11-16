@@ -204,7 +204,9 @@ check() {
   root="$PWD"
   assemble "$folder" "$@"
   cd "$folder"
-  make
+  # vsql and libvsql are compiled at the same time, since each only uses one
+  # core.
+  make -j2
   "$root/.github/workflows/hello-test.sh" bin/vsql
   make example
   cd "$root"

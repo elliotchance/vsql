@@ -55,12 +55,18 @@ fn check_data_type(t Type) ! {
 
 // parse_type_with_length is used for a data type with an explicit <length>,
 // which must be greater than 0 (6.1 Syntax Rule 4).
+//
+// A length that ends with " OCTETS" is in octets (T062), otherwise it's in
+// characters.
 fn parse_type_with_length(name string, length string) !Type {
 	if length.int() < 1 {
 		return sqlstate_42601('${name} length must be greater than 0')
 	}
 
-	return new_type(name, length.int(), 0)
+	mut typ := new_type(name, length.int(), 0)
+	typ.octets = length.ends_with(' OCTETS')
+
+	return typ
 }
 
 // parse_type_with_precision is used for a data type with an explicit

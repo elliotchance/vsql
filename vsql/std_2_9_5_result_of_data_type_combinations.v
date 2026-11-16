@@ -30,10 +30,10 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		t1.typ.is_string() && t2.typ.is_string() {
 			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
 			if t1.typ == .is_character && t2.typ == .is_character {
-				return Type{.is_character, size, 0, false}
+				return Type{.is_character, size, 0, false, false}
 			}
 
-			return Type{.is_varchar, size, 0, false}
+			return Type{.is_varchar, size, 0, false, false}
 		}
 		// Approximate numeric if any of them are. It's REAL if they're all REAL,
 		// otherwise DOUBLE PRECISION.
@@ -42,10 +42,10 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		t1.typ.is_number() && t2.typ.is_number() && (t1.typ in approximate_types
 			|| t2.typ in approximate_types) {
 			if t1.typ == .is_real && t2.typ == .is_real {
-				return Type{.is_real, 0, 0, false}
+				return Type{.is_real, 0, 0, false, false}
 			}
 
-			return Type{.is_double_precision, 0, 0, false}
+			return Type{.is_double_precision, 0, 0, false, false}
 		}
 		// Exact numeric with the largest scale. The precision is
 		// implementation-defined, so it's enough for the largest integer part and
@@ -67,26 +67,26 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 			// A NUMERIC or DECIMAL without a size (such as the result of a function)
 			// has no limit.
 			if (t1.typ in fractional_types && t1.size == 0) || (t2.typ in fractional_types && t2.size == 0) {
-				return Type{typ, 0, 0, false}
+				return Type{typ, 0, 0, false, false}
 			}
 
 			scale := math.max(t1.scale, t2.scale)
 			digits := math.max(t1.integer_digits(), t2.integer_digits())
 
-			return Type{typ, math.min(digits + scale, max_numeric_precision), scale, false}
+			return Type{typ, math.min(digits + scale, max_numeric_precision), scale, false, false}
 		}
 		// All BOOLEAN.
 		//
 		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.f
 		t1.typ == .is_boolean && t2.typ == .is_boolean {
-			return Type{.is_boolean, 0, 0, false}
+			return Type{.is_boolean, 0, 0, false, false}
 		}
 		// The same datetime type (DATE, TIME or TIMESTAMP), with the largest
 		// fractional seconds precision. It has a time zone if any of them do.
 		//
 		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.d
 		t1.typ == .is_date && t2.typ == .is_date {
-			return Type{.is_date, 0, 0, false}
+			return Type{.is_date, 0, 0, false, false}
 		}
 		t1.typ in time_types && t2.typ in time_types {
 			typ := if t1.has_time_zone() || t2.has_time_zone() {
@@ -95,7 +95,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 				SQLType.is_time_without_time_zone
 			}
 
-			return Type{typ, math.max(t1.size, t2.size), 0, false}
+			return Type{typ, math.max(t1.size, t2.size), 0, false, false}
 		}
 		t1.typ in timestamp_types && t2.typ in timestamp_types {
 			typ := if t1.has_time_zone() || t2.has_time_zone() {
@@ -104,7 +104,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 				SQLType.is_timestamp_without_time_zone
 			}
 
-			return Type{typ, math.max(t1.size, t2.size), 0, false}
+			return Type{typ, math.max(t1.size, t2.size), 0, false, false}
 		}
 		else {
 			return none
@@ -116,9 +116,9 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 // NUMERIC or DECIMAL without a precision has no limit, so a value keeps its own
 // precision and scale rather than being rounded to a scale of 0.
 fn convert_to_combined_type(mut conn Connection, context string, v Value, typ Type) !Value {
-	mut to := Type{typ.typ, typ.size, typ.scale, false}
+	mut to := Type{typ.typ, typ.size, typ.scale, false, false}
 	if typ.typ in fractional_types && typ.size == 0 && v.typ.typ in fractional_types {
-		to = Type{typ.typ, v.typ.size, v.typ.scale, false}
+		to = Type{typ.typ, v.typ.size, v.typ.scale, false, false}
 	}
 
 	if v.typ.typ == to.typ && v.typ.size == to.size && v.typ.scale == to.scale {

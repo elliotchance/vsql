@@ -89,7 +89,7 @@ fn box_numeric(n Numeric) voidptr {
 // values need to have a type.
 pub fn new_null_value(typ SQLType) Value {
 	return Value{
-		typ:     Type{typ, 0, 0, false}
+		typ:     Type{typ, 0, 0, false, false}
 		is_null: true
 	}
 }
@@ -107,7 +107,7 @@ fn (v Value) with_type(typ Type) Value {
 // ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.
 pub fn new_boolean_value(b bool) Value {
 	return Value{
-		typ: Type{.is_boolean, 0, 0, false}
+		typ: Type{.is_boolean, 0, 0, false, false}
 		v:   InternalValue{
 			bool_value: if b { .is_true } else { .is_false }
 		}
@@ -118,7 +118,7 @@ pub fn new_boolean_value(b bool) Value {
 // representation of ``BOOLEAN``.
 pub fn new_unknown_value() Value {
 	return Value{
-		typ:     Type{.is_boolean, 0, 0, false}
+		typ:     Type{.is_boolean, 0, 0, false, false}
 		is_null: true
 	}
 }
@@ -126,7 +126,7 @@ pub fn new_unknown_value() Value {
 // new_double_precision_value creates a ``DOUBLE PRECISION`` value.
 pub fn new_double_precision_value(x f64) Value {
 	return Value{
-		typ: Type{.is_double_precision, 0, 0, false}
+		typ: Type{.is_double_precision, 0, 0, false, false}
 		v:   InternalValue{
 			f64_value: x
 		}
@@ -136,7 +136,7 @@ pub fn new_double_precision_value(x f64) Value {
 // new_integer_value creates an ``INTEGER`` value.
 pub fn new_integer_value(x int) Value {
 	return Value{
-		typ: Type{.is_integer, 0, 0, false}
+		typ: Type{.is_integer, 0, 0, false, false}
 		v:   InternalValue{
 			int_value: x
 		}
@@ -146,7 +146,7 @@ pub fn new_integer_value(x int) Value {
 // new_bigint_value creates a ``BIGINT`` value.
 pub fn new_bigint_value(x i64) Value {
 	return Value{
-		typ: Type{.is_bigint, 0, 0, false}
+		typ: Type{.is_bigint, 0, 0, false, false}
 		v:   InternalValue{
 			int_value: x
 		}
@@ -193,7 +193,7 @@ fn approximate_nonzero_value(x f64, typ SQLType) !Value {
 // new_real_value creates a ``REAL`` value.
 pub fn new_real_value(x f32) Value {
 	return Value{
-		typ: Type{.is_real, 0, 0, false}
+		typ: Type{.is_real, 0, 0, false, false}
 		v:   InternalValue{
 			f64_value: x
 		}
@@ -203,7 +203,7 @@ pub fn new_real_value(x f32) Value {
 // new_smallint_value creates a ``SMALLINT`` value.
 pub fn new_smallint_value(x i16) Value {
 	return Value{
-		typ: Type{.is_smallint, 0, 0, false}
+		typ: Type{.is_smallint, 0, 0, false, false}
 		v:   InternalValue{
 			int_value: x
 		}
@@ -213,7 +213,7 @@ pub fn new_smallint_value(x i16) Value {
 // new_varchar_value creates a ``CHARACTER VARYING`` value.
 pub fn new_varchar_value(x string) Value {
 	return Value{
-		typ: Type{.is_varchar, x.len_utf8(), 0, false}
+		typ: Type{.is_varchar, x.len_utf8(), 0, false, false}
 		v:   InternalValue{
 			string_value: x
 		}
@@ -224,7 +224,7 @@ pub fn new_varchar_value(x string) Value {
 // from the length of the string itself, in characters (not bytes).
 pub fn new_character_value(x string) Value {
 	return Value{
-		typ: Type{.is_character, x.len_utf8(), 0, false}
+		typ: Type{.is_character, x.len_utf8(), 0, false, false}
 		v:   InternalValue{
 			string_value: x
 		}

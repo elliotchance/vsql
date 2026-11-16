@@ -393,15 +393,28 @@ jobs:
           scripts/amalgamation.sh generate amalgamation-windows-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
           scripts/amalgamation.sh check amalgamation-windows-${{ matrix.v_arch }}
 
-      # psql is used by the server tests. PostgreSQL is installed on the x86-64
-      # runner (but isn't on the PATH), and not on the ARM64 one. choco succeeds
+      # psql is used by the server tests. Neither runner has PostgreSQL, and
+      # installing it takes 2 minutes on x86-64 and 10 on ARM64, so its bin/
+      # folder (which has psql and the DLLs it needs) is cached. It's installed
+      # when the cache is missing, or psql doesn't run from it. choco succeeds
       # even when it can't reach its feed and installs nothing, so the install
       # is retried until psql.exe exists.
+      - name: Restore psql
+        uses: actions/cache@v6
+        with:
+          path: ~/pgbin
+          key: psql-17-windows-${{ matrix.arch }}
+
       - name: Install psql
-        if: env.PGBIN == ''
         run: |
-          .github/workflows/retry.sh sh -c "choco install postgresql17 --no-progress -y --params '/Password:postgres' && test -f 'C:/Program Files/PostgreSQL/17/bin/psql.exe'"
-          echo "PGBIN=C:\Program Files\PostgreSQL\17\bin" >> $GITHUB_ENV
+          pgbin=~/pgbin
+          if ! "$pgbin/psql.exe" --version; then
+            .github/workflows/retry.sh sh -c "choco install postgresql17 --no-progress -y --params '/Password:postgres' && test -f 'C:/Program Files/PostgreSQL/17/bin/psql.exe'"
+            rm -rf "$pgbin"
+            cp -R "C:/Program Files/PostgreSQL/17/bin" "$pgbin"
+            "$pgbin/psql.exe" --version
+          fi
+          echo "PGBIN=$(cygpath -w "$pgbin")" >> $GITHUB_ENV
 
       # The C programs that use libvsql are built in bin/, next to
       # libvsql.dll, since Windows has no rpath.

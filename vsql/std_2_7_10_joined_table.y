@@ -4,7 +4,8 @@
 //
 // Specify a table derived from a Cartesian product, inner join, or outer join.
 //
-// There's no CROSS, NATURAL or FULL (F401), or join correlation name (F404).
+// There's no CROSS (F407), NATURAL (F405) or FULL (F406), or join correlation
+// name (F404).
 
 joined_table:
   qualified_join { $$.v = $1.v }

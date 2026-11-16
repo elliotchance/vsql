@@ -79,7 +79,7 @@
 5.3/SR/18.b              implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the character set is always UTF8
 5.3/SR/19                implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql
 5.3/SR/20                n/a          - - binary strings (T021)
-5.3/SR/21                unclear      - - the maximum number of digits is implementation-defined; not documented yet
+5.3/SR/21                impl-defined vsql/std_2_5_3_literal.v tests/std_2_6_1_type_limits.sql 1000 digits, not counting leading zeros
 5.3/SR/22                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/SR/23                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/SR/24                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
@@ -105,7 +105,7 @@
 5.3/SR/44                n/a          - - underscores in numeric literals (T662)
 5.3/SR/45                n/a          - - underscores in numeric literals (T662)
 5.3/SR/46                n/a          - - underscores in numeric literals (T662)
-5.3/SR/47                partial      vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql no national (F421), binary (T021) or interval (F052) literals
+5.3/SR/47                implemented  vsql/std_2_5_3_literal.v tests/std_2_6_1_boolean.sql
 5.3/GR/1                 implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the source and the literal are both UTF8
 5.3/GR/2                 implemented  vsql/lexer.v tests/std_2_5_3_literal_normalization.sql
 5.3/GR/3                 implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
@@ -147,7 +147,7 @@
 5.4/SR/3                 n/a          - - named character sets (F461)
 5.4/SR/4                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_19_6_set_schema.sql
 5.4/SR/4.a               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_19_6_set_schema.sql the default schema of the SQL-session
-5.4/SR/4.b               partial      vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql the table name that qualifies a column in a CHECK or generation expression is resolved again by each statement that writes (#886)
+5.4/SR/4.b               implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_9_check_qualified_column.sql
 5.4/SR/4.c               implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
 5.4/SR/5                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_4_catalog_qualified_names.sql
 5.4/SR/5.a               n/a          - - declared local temporary tables (F531)

@@ -235,7 +235,7 @@
 14.8/GR/2                implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/std_2_14_1_cursors.sql
 14.8/CR/1                n/a          - - ONLY (S111)
 # 14.9, <delete statement: searched>
-14.9                     partial      vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql no cursor operation conflict warning (#797)
+14.9                     implemented  vsql/std_2_14_9_delete_statement_searched.v tests/std_2_14_9_delete.sql
 14.9/SR/1                definition   - -
 14.9/SR/2                definition   - -
 14.9/SR/3                n/a          - - every table is a base table, and there are no views (F031-02)
@@ -541,7 +541,7 @@
 14.13/GR/3               implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql
 14.13/CR/1               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql flagged on the DECLARE CURSOR
 # 14.14, <update statement: searched>
-14.14                    partial      vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql no cursor operation conflict warning (#797)
+14.14                    implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_14_update.sql
 14.14/SR/1               definition   - -
 14.14/SR/2               definition   - -
 14.14/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)

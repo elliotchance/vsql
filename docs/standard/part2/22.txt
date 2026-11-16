@@ -31,7 +31,7 @@
 22.1/GR/6.b.ii.2.B       implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
 22.1/GR/6.b.ii.2.C       implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
 22.1/GR/6.b.ii.2.C.I     implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
-22.1/GR/6.b.ii.2.C.II    unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, so an INITIALLY DEFERRED constraint is deferred; the isolation level is READ COMMITTED (#664)
+22.1/GR/6.b.ii.2.C.II    unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, so an INITIALLY DEFERRED constraint is deferred; it is read-write and SERIALIZABLE
 22.1/GR/6.b.ii.2.D       implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
 22.1/GR/6.b.iii          implemented  vsql/agent.v vsql/api_test.v
 22.1/GR/7                n/a          - - authorization identifiers (E081)

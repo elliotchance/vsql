@@ -542,7 +542,7 @@
 11.9/GR/2                n/a          - - the CHECK_CLAUSE of the INFORMATION_SCHEMA is long enough for any search condition
 11.9/GR/3                implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 11.9/CR/1                n/a          - - a subquery can't be used in a CHECK constraint (F671)
-11.9/CR/2                n/a          - - CURRENT_DATE, CURRENT_TIMESTAMP and LOCALTIMESTAMP can't be used in a CHECK constraint (F672, #774)
+11.9/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 11.9/CR/3                n/a          - - SQL-invoked routines (T321)
 # 11.10, <alter table statement>
 11.10                    implemented  vsql/std_2_11_10_alter_table_statement.v tests/std_2_11_11_add_column.sql

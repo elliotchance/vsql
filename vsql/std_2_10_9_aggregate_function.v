@@ -256,7 +256,7 @@ fn distinct_values(mut conn Connection, values []Value, typ Type) ![]Value {
 // set_function_type is the declared type of the result of a general set
 // function with an argument of type t.
 //
-// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 4 and 7
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 4, 7 and 9
 fn set_function_type(name string, t Type) Type {
 	// The implementation-defined type of COUNT (SR 4), and of REGR_COUNT, which
 	// also counts rows (SR 9.c.i).

@@ -61,6 +61,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 	if has_escape {
 		check_string_operands('SIMILAR TO', compiled_l, compiled_escape)!
 	}
+	c.flag_lob_pattern(compiled_l, compiled_right)
 
 	return CompileResult{
 		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {

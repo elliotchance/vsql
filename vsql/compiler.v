@@ -226,8 +226,13 @@ fn (mut c Compiler) compile_retrospective(e RowValueConstructorPredicand) !Compi
 // of values was checked, so a prepared statement can still be described with a
 // NULL for each parameter whose type isn't known yet.
 //
+// A large object can be an operand of an equality operation (such as =, <> or
+// IN), which is Feature T042. An ordering operation (such as <) of one is
+// rejected before it's checked here, see check_ordering_operand.
+//
 // ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, Syntax Rules, 3
-fn (c Compiler) check_comparison(left Type, right Type, null_parameter bool) ! {
+// ISO/IEC 9075-2:2023, 9.11, Equality operations, Conformance Rules, 2
+fn (mut c Compiler) check_comparison(left Type, right Type, null_parameter bool) ! {
 	if null_parameter {
 		return
 	}
@@ -235,6 +240,10 @@ fn (c Compiler) check_comparison(left Type, right Type, null_parameter bool) ! {
 	if !comparable_types(left.typ, right.typ) || (left.typ.is_datetime()
 		&& right.typ.is_datetime() && datetime_fields(left.typ) != datetime_fields(right.typ)) {
 		return sqlstate_42883('cannot compare ${left} and ${right}')
+	}
+
+	if c.conn.flagging && (left.typ.is_lob() || right.typ.is_lob()) {
+		c.conn.flagged_features << 'T042'
 	}
 
 	c.check_time_zone_comparison(left, right)!

@@ -357,6 +357,10 @@ characters, and ``USING OCTETS`` counts them in bytes, like ``SUBSTRING``.
 Without ``FOR``, ``USING OCTETS`` replaces as many bytes as there are in
 ``REPLACEMENT``.
 
+``STRING`` and ``REPLACEMENT`` can also both be binary strings (see
+:doc:`binary`), which are counted in octets and can't have ``USING``. The
+result is a ``BINARY VARYING`` (or a ``BINARY LARGE OBJECT`` if either one is).
+
 **Examples**
 
 .. code-block:: sql

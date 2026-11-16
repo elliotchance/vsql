@@ -138,7 +138,7 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 // has a dynamic parameter whose value is NULL (see null_parameters).
 //
 // ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, Syntax Rules, 1 and 3
-fn (c Compiler) check_row_comparison(left []Type, right []Type, null_parameter []bool) ! {
+fn (mut c Compiler) check_row_comparison(left []Type, right []Type, null_parameter []bool) ! {
 	if left.len != right.len {
 		return sqlstate_42601('cannot compare a row of degree ${left.len} with a row of degree ${right.len}')
 	}

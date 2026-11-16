@@ -54,7 +54,9 @@ only read when it's used, and ``SUBSTRING`` and ``OCTET_LENGTH`` only read the
 part of it that they need.
 
 A ``BINARY LARGE OBJECT`` can't be in a ``PRIMARY KEY``, a ``UNIQUE`` or
-``FOREIGN KEY`` constraint or an index, and it can't be compared yet.
+``FOREIGN KEY`` constraint or an index, and it can only be compared for
+equality (such as with ``=``, ``<>`` or ``IN``), not with ``<``, ``BETWEEN``,
+``GREATEST`` or ``LEAST``.
 
 Literals
 --------
@@ -82,9 +84,13 @@ with the combined length. A ``BINARY VARYING`` result that's longer than
 10485760 octets is an error ``22001``, unless the extra octets are all
 ``X'00'``.
 
-``SUBSTRING``, ``TRIM``, ``POSITION`` and ``OCTET_LENGTH`` work on binary
-strings, and count octets (see :doc:`functions`). Without a trim octet,
-``TRIM`` removes ``X'00'``.
+``SUBSTRING``, ``TRIM``, ``OVERLAY``, ``POSITION`` and ``OCTET_LENGTH`` work
+on binary strings, and count octets (see :doc:`functions`). Without a trim
+octet, ``TRIM`` removes ``X'00'``.
+
+``LIKE`` matches binary strings octet by octet, where ``X'25'`` (``%``) is any
+number of octets and ``X'5F'`` (``_``) is any one octet. The ``ESCAPE`` must be
+one octet, otherwise it's an error ``2200D``.
 
 .. code-block:: sql
 
@@ -102,6 +108,12 @@ strings, and count octets (see :doc:`functions`). Without a trim octet,
 
   VALUES OCTET_LENGTH(X'010203');
   -- COL1: 3
+
+  VALUES OVERLAY(X'0102030405' PLACING X'AABB' FROM 2);
+  -- COL1: 01AABB0405
+
+  VALUES X'010203' LIKE X'0125';
+  -- COL1: TRUE
 
 Notes
 -----

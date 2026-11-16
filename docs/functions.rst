@@ -39,6 +39,7 @@ The functions are in these categories:
    functions-arithmetic.rst
    functions-conditional.rst
    functions-date-and-time.rst
+   functions-encryption.rst
    functions-error-and-gamma.rst
    functions-exponent-and-logarithm.rst
    functions-hash.rst

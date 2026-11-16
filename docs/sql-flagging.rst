@@ -469,6 +469,21 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V408-05``
      - ``SHA512``.
 
+   * - ``V409``
+     - Encryption functions (see :doc:`functions`).
+
+   * - ``V409-01``
+     - ``ENCRYPT``.
+
+   * - ``V409-02``
+     - ``DECRYPT``.
+
+   * - ``V409-03``
+     - ``ENCRYPT_AES``.
+
+   * - ``V409-04``
+     - ``DECRYPT_AES``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

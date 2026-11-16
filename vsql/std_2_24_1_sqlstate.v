@@ -442,6 +442,19 @@ fn sqlstate_22018() IError {
 	}
 }
 
+// Character not in repertoire: a string that should be text isn't valid UTF-8,
+// such as a binary string that's decrypted by DECRYPT_AES.
+struct SQLState22021 {
+	SQLState
+}
+
+fn sqlstate_22021() IError {
+	return SQLState22021{
+		code: sqlstate_to_int('22021')
+		msg:  'character not in repertoire'
+	}
+}
+
 // Invalid escape character: the ESCAPE of a LIKE isn't exactly one character.
 struct SQLState22019 {
 	SQLState
@@ -500,6 +513,19 @@ fn sqlstate_22023(msg string) IError {
 	return SQLState22023{
 		code: sqlstate_to_int('22023')
 		msg:  'invalid parameter value: ${msg}'
+	}
+}
+
+// Decryption failed (a vsql extension): the data wasn't encrypted with the key
+// and method, or it was changed after it was encrypted.
+struct SQLState22V01 {
+	SQLState
+}
+
+fn sqlstate_22v01() IError {
+	return SQLState22V01{
+		code: sqlstate_to_int('22V01')
+		msg:  'decryption failed: wrong key or corrupt data'
 	}
 }
 

@@ -178,6 +178,12 @@ import arrays
 // V408-04: SHA256.
 // V408-05: SHA512.
 //
+// V409: Encryption functions.
+// V409-01: ENCRYPT.
+// V409-02: DECRYPT.
+// V409-03: ENCRYPT_AES.
+// V409-04: DECRYPT_AES.
+//
 // V501: PostgreSQL functions.
 // V501-01: version().
 // V501-02: current_setting().
@@ -292,6 +298,10 @@ const vsql_md5 = 'V408-02'
 const vsql_sha1 = 'V408-03'
 const vsql_sha256 = 'V408-04'
 const vsql_sha512 = 'V408-05'
+const vsql_encrypt = 'V409-01'
+const vsql_decrypt = 'V409-02'
+const vsql_encrypt_aes = 'V409-03'
+const vsql_decrypt_aes = 'V409-04'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

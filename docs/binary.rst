@@ -74,7 +74,8 @@ There's no ``CAST`` between a binary string and a character string.
 ``BINARY_TO_HEX`` converts a binary string to its hexadecimal digits, and
 ``HEX_TO_BINARY`` converts them back. ``BINARY_TO_BASE64`` and
 ``BASE64_TO_BINARY`` do the same with base64. ``HASH`` returns the digest of a
-value as a binary string (see :doc:`functions`).
+value as a binary string, and ``ENCRYPT`` and ``DECRYPT`` encrypt and decrypt a
+value as one (see :doc:`functions`).
 
 .. code-block:: sql
 

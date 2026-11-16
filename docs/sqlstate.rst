@@ -542,6 +542,20 @@ The row count of an ``OFFSET`` must not be negative.
   VALUES 1, 2, 3 OFFSET -1 ROWS;
   -- error 2201X: invalid row count in result offset clause
 
+``22021`` character not in repertoire
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A string that should be text isn't valid UTF-8, such as a binary string that's
+decrypted by ``DECRYPT_AES``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES DECRYPT_AES(BINARY_TO_BASE64(ENCRYPT(X'FFFE', X'000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F', 'AES_256_GCM')),
+    X'000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F');
+  -- error 22021: character not in repertoire
+
 ``22023`` invalid parameter value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -596,6 +610,21 @@ the last two code points of each plane).
 
   VALUES U&'\FFFF';
   -- error 22029: non-character in character string
+
+``22V01`` decryption failed
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Data that's decrypted (by ``DECRYPT`` or ``DECRYPT_AES``) wasn't encrypted
+with the key and method, or it was changed after it was encrypted. This code
+is a vsql extension.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES DECRYPT(X'000000000000000000000000AB6E47D42CEC13BDF53A67B21257BD',
+    X'000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F', 'CHACHA20_POLY1305');
+  -- error 22V01: decryption failed: wrong key or corrupt data
 
 Class ``23``: Integrity Constraint Violation
 --------------------------------------------

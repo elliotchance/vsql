@@ -202,6 +202,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	register_string_funcs(mut conn)!
 	register_binary_funcs(mut conn)!
 	register_hash_funcs(mut conn)!
+	register_encryption_funcs(mut conn)!
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can

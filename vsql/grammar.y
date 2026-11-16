@@ -321,6 +321,7 @@ module vsql
 %token BLOB
 %token BOOLEAN
 %token BOTH
+%token BTRIM
 %token BY
 %token CALL
 %token CALLED
@@ -481,6 +482,8 @@ module vsql
 %token LOG
 %token LOG10
 %token LOWER
+%token LPAD
+%token LTRIM
 %token MATCH
 %token MATCH_NUMBER
 %token MATCH_RECOGNIZE
@@ -574,6 +577,8 @@ module vsql
 %token ROW
 %token ROW_NUMBER
 %token ROWS
+%token RPAD
+%token RTRIM
 %token RUNNING
 %token SAVEPOINT
 %token SCOPE

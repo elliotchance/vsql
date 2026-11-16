@@ -81,7 +81,8 @@ when the statement is prepared, and the value it's given is cast to that type
   the column ``x``.
 - ``CAST(? AS INTEGER)`` is an ``INTEGER``.
 - ``x + ?`` (or ``-``, ``*``, ``/``) has the type of ``x``.
-- ``x || ?``, ``x LIKE ?`` and the argument of ``CHAR_LENGTH`` are a
+- ``x || ?``, ``x LIKE ?``, the argument of ``CHAR_LENGTH`` and the value of
+  ``SET SCHEMA ?``, ``SET CATALOG ?`` and ``SET NAMES ?`` are a
   ``CHARACTER VARYING``.
 - An operand of ``AND``, ``OR`` and ``NOT``, and a ``WHERE`` or ``HAVING``, is
   a ``BOOLEAN``.
@@ -91,7 +92,9 @@ when the statement is prepared, and the value it's given is cast to that type
   function with that name and number of arguments.
 
 So ``'42'`` can be the value for ``x = ?`` when ``x`` is an ``INTEGER``, and a
-value that can't be cast (such as ``'abc'``) is an error. The type of a
+value that can't be cast (such as ``'abc'``) is an error. A value of a type
+that can never be cast to that type (such as a ``DOUBLE PRECISION`` for a
+``DATE``) is a restricted data type attribute violation (``07006``). The type of a
 dynamic parameter is returned by ``dynamic_parameter_type()``:
 
 .. code-block:: v
@@ -104,7 +107,7 @@ when the statement is prepared, such as ``VALUES ?``, ``SELECT ?``, ``ABS(?)``
 or both of the dynamic parameters in ``? + ?``. Use a ``CAST`` to give it a
 type, such as ``SELECT CAST(? AS INTEGER)``.
 
-Only a query, ``INSERT``, ``UPDATE`` and ``DELETE`` are checked like this when
-they're prepared. A dynamic parameter in any other statement, or in a
+Only a query, ``INSERT``, ``UPDATE``, ``DELETE``, ``SET SCHEMA``,
+``SET CATALOG`` and ``SET NAMES`` are checked like this when they're prepared. A dynamic parameter in any other statement, or in a
 statement that can't be checked yet (such as one from ``parse()`` that uses a
 table that doesn't exist yet), has the data type of its value.

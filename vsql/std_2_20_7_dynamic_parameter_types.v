@@ -15,8 +15,9 @@ module vsql
 // once the statement is compiled is a syntax error, such as either one in "? +
 // ?".
 //
-// Only queries (including a DECLARE CURSOR), INSERT, UPDATE and DELETE are
-// compiled, which are the statements that a dynamic parameter is useful in. A
+// Only queries (including a DECLARE CURSOR), INSERT, UPDATE, DELETE, SET
+// CATALOG, SET SCHEMA and SET NAMES are compiled, which are the statements that
+// a dynamic parameter is useful in. A
 // dynamic parameter of any other statement (or of one that couldn't be
 // compiled, such as because the table doesn't exist yet) has the type of its
 // value.
@@ -112,26 +113,50 @@ fn (mut conn Connection) describe_statement(stmt Stmt, params map[string]Value) 
 		InsertStatement {
 			stmt.describe_values(mut conn, params)!
 		}
+		SetCatalogStatement {
+			describe_session_name(mut conn, params, stmt.catalog_name)!
+		}
+		SetSchemaStatement {
+			describe_session_name(mut conn, params, stmt.schema_name)!
+		}
+		SetNamesStatement {
+			describe_session_name(mut conn, params, stmt.value)!
+		}
 		else {}
 	}
 }
 
+// describe_session_name gives a dynamic parameter that is the value of a SET
+// CATALOG, SET SCHEMA or SET NAMES the type CHARACTER VARYING(ML), which its
+// value is cast to.
+//
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxviii
+fn describe_session_name(mut conn Connection, params map[string]Value, value ValueSpecification) ! {
+	mut c := Compiler{
+		conn:   conn
+		params: params
+	}
+	c.with_type(value.compile(mut c)!, character_type(untyped_parameter_type))
+}
+
 // describe_values gives each dynamic parameter that is a value of a VALUES of
-// an INSERT the type of its column. A query is the same as any other query.
+// an INSERT the type of its column. That's also true of a VALUES that is simply
+// contained in the query of an INSERT, such as in parentheses or as an operand
+// of a UNION, but not one in a subquery. Otherwise, the query is the same as
+// any other query.
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xix.1.A
 fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string]Value) ! {
-	if query := stmt.query {
-		create_plan(query, params, mut conn)!
-		return
-	}
-
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 	columns := if stmt.columns.len > 0 { stmt.columns } else { table.columns.map(it.name) }
-	for row in stmt.values {
-		for i, element in row_elements(row) {
+	mut rows := stmt.values.map(row_elements(it))
+	if query := stmt.query {
+		rows = contained_rows(query.body)
+	}
+	for row in rows {
+		for i, element in row {
 			if i >= columns.len {
 				break
 			}
@@ -144,6 +169,48 @@ fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string
 				identity:      identity_of(table, column)
 			}
 			c.with_type(element.compile(mut c)!, column.typ)
+		}
+	}
+
+	if query := stmt.query {
+		create_plan(query, params, mut conn)!
+	}
+}
+
+// contained_rows is the elements of each row of each VALUES that is simply
+// contained in body, which can be through parentheses and set operators, but
+// not a subquery.
+fn contained_rows(body SimpleTable) [][]ContextuallyTypedRowValueConstructorElement {
+	return match body {
+		[]RowValueConstructor {
+			body.map(table_value_constructor_row(it))
+		}
+		ParenthesizedQueryExpression {
+			contained_rows(body.expr.body)
+		}
+		SetOperation {
+			mut rows := contained_rows(body.left.body)
+			rows << contained_rows(body.right.body)
+			rows
+		}
+		QuerySpecification {
+			[][]ContextuallyTypedRowValueConstructorElement{}
+		}
+	}
+}
+
+// table_value_constructor_row is the elements of a row of a VALUES, which is
+// each value of a ROW (or a parenthesized list), otherwise the value itself.
+fn table_value_constructor_row(row RowValueConstructor) []ContextuallyTypedRowValueConstructorElement {
+	return match row {
+		ExplicitRowValueConstructor {
+			row.exprs.map(ContextuallyTypedRowValueConstructorElement(it))
+		}
+		CommonValueExpression {
+			[ContextuallyTypedRowValueConstructorElement(ValueExpression(row))]
+		}
+		BooleanValueExpression {
+			[ContextuallyTypedRowValueConstructorElement(ValueExpression(row))]
 		}
 	}
 }
@@ -333,6 +400,22 @@ fn (mut c Compiler) with_pattern_types(value CompileResult, pattern CompileResul
 	}
 
 	return operands[0], operands[1], if has_escape { operands[2] } else { escape }
+}
+
+// with_similar_substring_types gives the dynamic parameters of a SUBSTRING ...
+// SIMILAR their types, as long as one of the others is a character string. The
+// value and the pattern are a CHARACTER VARYING(ML), and the escape character
+// is a CHARACTER(1). They stay untyped if they're all dynamic parameters.
+//
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.vii, 5.a.vii.1.A-D, 5.a.vii.2, 5.a.vii.2.A and 5.a.vii.2.B
+fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern CompileResult, escape CompileResult) (CompileResult, CompileResult, CompileResult) {
+	if ![value, pattern, escape].any(!c.is_untyped(it) && it.typ.typ.is_string()) {
+		return value, pattern, escape
+	}
+
+	typ := character_type(untyped_parameter_type)
+
+	return c.with_type(value, typ), c.with_type(pattern, typ), c.with_type(escape, Type{.is_character, 1, 0, false})
 }
 
 // with_argument_types gives the dynamic parameters that are arguments of a

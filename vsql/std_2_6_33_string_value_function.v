@@ -406,9 +406,8 @@ fn (e RegularExpressionSubstringFunction) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 7
 fn (e RegularExpressionSubstringFunction) compile(mut c Compiler) !CompileResult {
-	compiled_value := e.value.compile(mut c)!
-	compiled_pattern := e.pattern.compile(mut c)!
-	compiled_escape := e.escape.compile(mut c)!
+	compiled_value, compiled_pattern, compiled_escape := c.with_similar_substring_types(e.value.compile(mut c)!,
+		e.pattern.compile(mut c)!, e.escape.compile(mut c)!)
 
 	if !compiled_value.typ.typ.is_string() || !compiled_pattern.typ.typ.is_string()
 		|| !compiled_escape.typ.typ.is_string() {

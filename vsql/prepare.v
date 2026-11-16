@@ -178,9 +178,9 @@ pub fn (p PreparedStmt) dynamic_parameter_type(position int) ?Type {
 
 // with_parameters returns the parameters merged with the params of the
 // statement, where each dynamic parameter is cast to its type (see
-// parameter_types). A value that can't be cast has the error of the CAST
-// (rather than a restricted data type attribute violation), which libvsql
-// checks for itself.
+// parameter_types). A value whose type can't be cast to that type at all is a
+// restricted data type attribute violation, otherwise a value that can't be
+// cast has the error of the CAST.
 //
 // ISO/IEC 9075-2:2023, 20.11, <input using clause>, General Rules, 6.a, 6.c.ii, 6.c.ii.2.A and 6.c.ii.2.B
 fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Value {
@@ -193,7 +193,12 @@ fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Val
 
 	for name, typ in p.parameter_types {
 		if value := all_params[name] {
-			all_params[name] = cast_specification(mut p.c, value, typ)!
+			all_params[name] = cast_specification(mut p.c, value, typ) or {
+				if err is SQLState42846 {
+					return sqlstate_07006(value.typ, typ)
+				}
+				return err
+			}
 		}
 	}
 

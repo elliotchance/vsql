@@ -258,12 +258,87 @@ VALUES UPPER(?);
 SELECT x FROM t WHERE x = ?;
 -- sql: SELECT x FROM t WHERE x = CAST(NULL AS BOOLEAN)
 
--- # A statement that isn't a query, INSERT, UPDATE or DELETE isn't compiled, so
--- # its dynamic parameters have the type of their values.
+-- # The value of SET SCHEMA, SET CATALOG and SET NAMES is a CHARACTER VARYING,
+-- # so a number is cast to a character string, which isn't a schema.
 /* params 'PUBLIC' */
 SET SCHEMA ?;
 -- sql: SET SCHEMA 'PUBLIC'
 -- msg: SET SCHEMA 1
+
+/* params 1.5 */
+SET SCHEMA ?;
+-- sql: SET SCHEMA 1.5e0
+-- error 3F000: invalid schema name: 1.5E0
+
+/* params 1.5 */
+SET CATALOG ?;
+-- sql: SET CATALOG 1.5e0
+-- error 3D000: invalid catalog name: 1.5E0
+
+/* params 1.5 */
+SET NAMES ?;
+-- sql: SET NAMES 1.5e0
+-- error 2C000: invalid character set name: 1.5E0
+
+-- # The value, pattern and escape character of a SUBSTRING ... SIMILAR are
+-- # character strings, as long as one of them isn't a dynamic parameter.
+/* types */
+/* params 'a#"b#"c' */
+VALUES SUBSTRING('abc' SIMILAR ? ESCAPE '#');
+-- sql: VALUES SUBSTRING('abc' SIMILAR 'a#"b#"c' ESCAPE '#')
+-- COL1: b (CHARACTER VARYING(3))
+
+/* types */
+/* params 'abc' */
+VALUES SUBSTRING(? SIMILAR 'a#"b#"c' ESCAPE '#');
+-- sql: VALUES SUBSTRING('abc' SIMILAR 'a#"b#"c' ESCAPE '#')
+-- COL1: b (CHARACTER VARYING(10485760))
+
+/* params '#' */
+VALUES SUBSTRING('abc' SIMILAR 'a#"b#"c' ESCAPE ?);
+-- sql: VALUES SUBSTRING('abc' SIMILAR 'a#"b#"c' ESCAPE '#')
+-- COL1: b
+
+/* params 'abc' 'a#"b#"c' '#' */
+VALUES SUBSTRING(? SIMILAR ? ESCAPE ?);
+-- sql: VALUES SUBSTRING('abc' SIMILAR 'a#"b#"c' ESCAPE '#')
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+
+-- # A VALUES that's in parentheses, or an operand of a set operator, in an
+-- # INSERT also has the types of the columns. A SELECT doesn't.
+/* params '5' */
+INSERT INTO t (x) (VALUES (?));
+SELECT * FROM t WHERE x = 5;
+-- sql: INSERT INTO t (x) (VALUES ('5'))
+-- msg: INSERT 1
+-- X: 5 S: NULL B: UNKNOWN
+
+/* params '6' 7 */
+INSERT INTO t (x, s) VALUES (?, 'six') UNION VALUES (7, ?);
+SELECT * FROM t WHERE x > 5;
+-- sql: INSERT INTO t (x, s) VALUES ('6', 'six') UNION VALUES (7, 7.0e0)
+-- msg: INSERT 2
+-- X: 6 S: six B: UNKNOWN
+-- X: 7 S: 7.0E0 B: UNKNOWN
+
+/* params 'false' */
+INSERT INTO t (b) VALUES ? OR FALSE EXCEPT VALUES TRUE;
+SELECT * FROM t WHERE x IS NULL;
+-- sql: INSERT INTO t (b) VALUES 'false' OR FALSE EXCEPT VALUES TRUE
+-- msg: INSERT 1
+-- X: NULL S: NULL B: FALSE
+
+/* params 10 */
+INSERT INTO t (x) SELECT ? FROM t;
+-- sql: INSERT INTO t (x) SELECT 10.0e0 FROM t
+-- error 42601: syntax error: the data type of ?1 cannot be determined
+
+-- # A value whose type can never be cast to the type of the dynamic parameter
+-- # is a restricted data type attribute violation.
+/* params 1.5 */
+VALUES CAST(? AS DATE);
+-- sql: VALUES CAST(1.5e0 AS DATE)
+-- error 07006: restricted data type attribute violation: cannot cast DOUBLE PRECISION to DATE
 
 -- # The statement must be valid to determine the types, otherwise the error is
 -- # when it's executed.

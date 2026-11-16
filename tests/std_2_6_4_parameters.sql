@@ -112,7 +112,7 @@ VALUES CAST(? AS DATE);
 /* params 2 */
 VALUES CAST(? AS DATE);
 -- sql: VALUES CAST(2.0e0 AS DATE)
--- error 42846: cannot coerce DOUBLE PRECISION to DATE
+-- error 07006: restricted data type attribute violation: cannot cast DOUBLE PRECISION to DATE
 
 CREATE TABLE t2 (x INT NOT NULL);
 /* params NULL INT */

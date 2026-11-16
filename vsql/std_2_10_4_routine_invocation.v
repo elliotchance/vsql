@@ -108,11 +108,17 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	}
 
 	// UPPER and LOWER have the declared type of their operand (see fold_result).
+	// So does INITCAP (V404-04).
 	//
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 9
-	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
+	is_fold := func_name in ['UPPER', 'LOWER', 'INITCAP'] && arg_types[0].typ.is_string()
+	// SPLIT_PART (V404-07) is a CHARACTER VARYING with the length of the string,
+	// like SUBSTRING, and CHR (V404-05) is a CHARACTER VARYING(1).
+	is_text := func_name in ['SPLIT_PART', 'CHR']
 	mut return_type := if is_fold {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false}
+	} else if func_name == 'SPLIT_PART' {
+		Type{.is_varchar, arg_types[0].size, 0, false}
 	} else {
 		numeric_function_type(func_name, found_func.return_type, arg_types)
 	}
@@ -130,7 +136,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		&& return_type.typ in [.is_numeric, .is_decimal]
 
 	return CompileResult{
-		run:          fn [found_func, func_name, arg_types, compiled_args, is_fold, is_exact, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [found_func, func_name, arg_types, compiled_args, is_fold, is_text, is_exact, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut args := []Value{}
 			for i, typ in arg_types {
 				// The argument may need to be implicitly cast to the parameter type,
@@ -168,6 +174,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			}
 			if is_exact {
 				return with_numeric_type(result, return_type)
+			}
+			if is_text {
+				return result.with_type(return_type)
 			}
 
 			return result

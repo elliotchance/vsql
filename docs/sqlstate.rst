@@ -292,7 +292,8 @@ large enough to store it.
 A ``CAST`` to a shorter type is a ``01004`` warning instead.
 
 ``LISTAGG`` also returns this error when its result would be longer than
-10485760 characters, unless it has ``ON OVERFLOW TRUNCATE``.
+10485760 characters, unless it has ``ON OVERFLOW TRUNCATE``, and so does
+``REPEAT``.
 
 ``22003`` numeric value out of range
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -507,6 +508,20 @@ The row count of an ``OFFSET`` must not be negative.
 
   VALUES 1, 2, 3 OFFSET -1 ROWS;
   -- error 2201X: invalid row count in result offset clause
+
+``22023`` invalid parameter value
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An argument of a function isn't one that it accepts, such as ``CHR`` of a number
+that isn't a Unicode code point, or field 0 of ``SPLIT_PART`` (see
+:doc:`functions`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CHR(0);
+  -- error 22023: invalid parameter value: CHR: 0 is not a valid Unicode code point
 
 ``22025`` invalid escape sequence
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

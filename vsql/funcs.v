@@ -167,6 +167,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 		6, 0), false, false, []})!
 
 	register_math_funcs(mut conn)!
+	register_string_funcs(mut conn)!
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can

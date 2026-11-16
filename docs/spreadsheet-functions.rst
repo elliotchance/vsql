@@ -6919,13 +6919,18 @@ No equivalent.
 CHAR
 ^^^^
 
-.. code-block:: text
-
-  =CHAR(number)
-
 Returns the character for a character code.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =CHAR(number)
+  VALUES CHR(/*number*/);
+  -- =CHAR(65)
+  VALUES CHR(65);
+  -- COL1: A
+
+The number is a Unicode code point, which is the same as the spreadsheet's
+character code for plain ASCII (below 128), but not always above that.
 
 CLEAN
 ^^^^^
@@ -6941,13 +6946,19 @@ No equivalent.
 CODE
 ^^^^
 
-.. code-block:: text
-
-  =CODE(text)
-
 Returns the character code of the first character of text.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =CODE(text)
+  VALUES UNICODE(/*text*/);
+  -- =CODE("Apple")
+  VALUES UNICODE('Apple');
+  -- COL1: 65
+
+The result is a Unicode code point, which is the same as the spreadsheet's
+character code for plain ASCII (below 128), but not always above that. The code
+of empty text is 0 rather than ``#VALUE!``.
 
 CONCAT
 ^^^^^^
@@ -7220,13 +7231,18 @@ No equivalent.
 PROPER
 ^^^^^^
 
-.. code-block:: text
-
-  =PROPER(text)
-
 Capitalizes the first letter of each word.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =PROPER(text)
+  VALUES INITCAP(/*text*/);
+  -- =PROPER("hELLO wORLD")
+  VALUES INITCAP('hELLO wORLD');
+  -- COL1: Hello World
+
+A digit is part of a word, so ``INITCAP('2nd')`` is ``2nd``, where a
+spreadsheet gives ``2Nd``.
 
 REGEXEXTRACT
 ^^^^^^^^^^^^
@@ -7295,6 +7311,8 @@ Replaces characters at a position in text with other text.
   VALUES OVERLAY('Apple' PLACING 'xx' FROM 2 FOR 3);
   -- COL1: Axxe
 
+The ``REPLACE`` function of vsql is a different one, see ``SUBSTITUTE``.
+
 REPLACEB
 ^^^^^^^^
 
@@ -7313,13 +7331,17 @@ Bytes are counted in UTF-8, so text that isn't plain ASCII counts differently.
 REPT
 ^^^^
 
-.. code-block:: text
-
-  =REPT(text, number_times)
-
 Repeats text a number of times.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =REPT(text, number_times)
+  VALUES REPEAT(/*text*/, /*number_times*/);
+  -- =REPT("ab", 3)
+  VALUES REPEAT('ab', 3);
+  -- COL1: ababab
+
+A negative number of times gives empty text rather than ``#VALUE!``.
 
 RIGHT
 ^^^^^
@@ -7386,24 +7408,35 @@ No equivalent.
 SPLIT
 ^^^^^
 
-.. code-block:: text
-
-  =SPLIT(text, delimiter, [split_by_each], [remove_empty_text])
-
 Splits text into separate cells at a delimiter. Only in Google Sheets.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =INDEX(SPLIT(text, delimiter), 1, column_num)
+  VALUES SPLIT_PART(/*text*/, /*delimiter*/, /*column_num*/);
+  -- =INDEX(SPLIT("a,b,c", ","), 1, 2)
+  VALUES SPLIT_PART('a,b,c', ',', 2);
+  -- COL1: b
+
+``SPLIT_PART`` returns one piece at a time, rather than one in each cell. The
+whole delimiter is matched, like ``split_by_each`` set to ``FALSE``, and empty
+pieces are kept, like ``remove_empty_text`` set to ``FALSE``.
 
 SUBSTITUTE
 ^^^^^^^^^^
 
-.. code-block:: text
-
-  =SUBSTITUTE(text, old_text, new_text, [instance_num])
-
 Replaces occurrences of some text with other text.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =SUBSTITUTE(text, old_text, new_text)
+  VALUES REPLACE(/*text*/, /*old_text*/, /*new_text*/);
+  -- =SUBSTITUTE("Apple", "p", "b")
+  VALUES REPLACE('Apple', 'p', 'b');
+  -- COL1: Abble
+
+There's no equivalent of ``instance_num`` to replace only one occurrence, other
+than ``TRANSLATE_REGEX`` (F845), which vsql doesn't support yet.
 
 T
 ^
@@ -7440,8 +7473,16 @@ Returns the text after a delimiter. Only in Excel.
   VALUES SUBSTRING('user@example.com' FROM POSITION('@' IN 'user@example.com') + CHAR_LENGTH('@'));
   -- COL1: example.com
 
+  -- =TEXTAFTER(text, delimiter, -1)
+  VALUES SPLIT_PART(/*text*/, /*delimiter*/, -1);
+  -- =TEXTAFTER("www.example.com", ".", -1)
+  VALUES SPLIT_PART('www.example.com', '.', -1);
+  -- COL1: com
+
 When the delimiter isn't found, the result is part of the text rather than
-``#N/A``.
+``#N/A``. The text after the last delimiter (``instance_num`` -1) is the last
+piece of ``SPLIT_PART``, which is the whole text when the delimiter isn't
+found.
 
 TEXTBEFORE
 ^^^^^^^^^^
@@ -7451,12 +7492,14 @@ Returns the text before a delimiter. Only in Excel.
 .. code-block:: sql
 
   -- =TEXTBEFORE(text, delimiter)
-  VALUES SUBSTRING(/*text*/ FROM 1 FOR POSITION(/*delimiter*/ IN /*text*/) - 1);
+  VALUES SPLIT_PART(/*text*/, /*delimiter*/, 1);
   -- =TEXTBEFORE("user@example.com", "@")
-  VALUES SUBSTRING('user@example.com' FROM 1 FOR POSITION('@' IN 'user@example.com') - 1);
+  VALUES SPLIT_PART('user@example.com', '@', 1);
   -- COL1: user
 
-When the delimiter isn't found, it's an error (``22011``).
+When the delimiter isn't found, the result is the whole text rather than
+``#N/A``. This only works for the first delimiter, because the text before a
+later one also has the delimiters before it.
 
 TEXTJOIN
 ^^^^^^^^
@@ -7479,13 +7522,19 @@ Only in Excel.
 TEXTSPLIT
 ^^^^^^^^^
 
-.. code-block:: text
-
-  =TEXTSPLIT(text, col_delimiter, [row_delimiter], [ignore_empty], [match_mode], [pad_with])
-
 Splits text into rows and columns at delimiters. Only in Excel.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =INDEX(TEXTSPLIT(text, col_delimiter), 1, column_num)
+  VALUES SPLIT_PART(/*text*/, /*col_delimiter*/, /*column_num*/);
+  -- =INDEX(TEXTSPLIT("a,b,c", ","), 1, 2)
+  VALUES SPLIT_PART('a,b,c', ',', 2);
+  -- COL1: b
+
+``SPLIT_PART`` returns one piece at a time, rather than one in each cell, and it
+can't also split into rows. Empty pieces are kept, and matching is
+case-sensitive.
 
 TRANSLATE
 ^^^^^^^^^
@@ -7517,24 +7566,30 @@ A spreadsheet also turns runs of spaces inside the text into one space, which
 UNICHAR
 ^^^^^^^
 
-.. code-block:: text
-
-  =UNICHAR(number)
-
 Returns the character for a Unicode code point.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =UNICHAR(number)
+  VALUES CHR(/*number*/);
+  -- =UNICHAR(8364)
+  VALUES CHR(8364);
+  -- COL1: €
 
 UNICODE
 ^^^^^^^
 
-.. code-block:: text
-
-  =UNICODE(text)
-
 Returns the Unicode code point of the first character of text.
 
-No equivalent.
+.. code-block:: sql
+
+  -- =UNICODE(text)
+  VALUES UNICODE(/*text*/);
+  -- =UNICODE("€")
+  VALUES UNICODE('€');
+  -- COL1: 8364
+
+The code point of empty text is 0 rather than ``#VALUE!``.
 
 UPPER
 ^^^^^

@@ -439,6 +439,19 @@ fn sqlstate_2201x() IError {
 	}
 }
 
+// Invalid parameter value: an argument of a function isn't one it accepts, such
+// as CHR of a number that isn't a Unicode code point.
+struct SQLState22023 {
+	SQLState
+}
+
+fn sqlstate_22023(msg string) IError {
+	return SQLState22023{
+		code: sqlstate_to_int('22023')
+		msg:  'invalid parameter value: ${msg}'
+	}
+}
+
 // Invalid escape sequence: the escape character in a LIKE pattern isn't
 // followed by "%", "_" or itself.
 struct SQLState22025 {

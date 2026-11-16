@@ -8,7 +8,7 @@ Spreadsheet Functions
 How to write the formulas you know from Microsoft Excel and Google Sheets in
 vsql. Every function of both is here, in the same categories as Excel, and
 each one can be linked to by its name, such as
-``spreadsheet-functions.html#vlookup``. Functions that have no equivalent in
+``compatibility-spreadsheet.html#vlookup``. Functions that have no equivalent in
 vsql are listed too, so you can tell that they haven't been missed.
 
 Formulas and Queries

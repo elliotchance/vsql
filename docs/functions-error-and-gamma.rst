@@ -6,7 +6,7 @@ Error and Gamma Functions
    :depth: 1
 
 The error function and the gamma function, which are used by statistical
-distributions (see :doc:`spreadsheet-functions` for some of them). They accept
+distributions (see :doc:`compatibility-spreadsheet` for some of them). They accept
 any number, which is converted to a ``DOUBLE PRECISION``, and they return a
 ``DOUBLE PRECISION``.
 

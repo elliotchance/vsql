@@ -1,4 +1,4 @@
--- # The examples of docs/spreadsheet-functions.rst, one test per function.
+-- # The examples of docs/compatibility-spreadsheet.rst, one test per function.
 -- # Each example runs with the example tables of the page.
 
 /* setup */

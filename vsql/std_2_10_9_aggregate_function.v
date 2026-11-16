@@ -284,7 +284,7 @@ fn set_function_type(name string, t Type) Type {
 		}
 	}
 
-	// MAX and MIN have the type of their argument (SR 7.f), and EVERY, ANY and
+	// MAX, MIN and ANY_VALUE have the type of their argument (SR 7.f), and EVERY, ANY and
 	// SOME are a BOOLEAN like their argument (SR 7.e). So does AVG, which
 	// is allowed because an exact numeric only needs at least the same precision
 	// and scale (SR 7.g.iii), and an approximate numeric only needs at least the
@@ -326,6 +326,17 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 
 	if name in ['STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP'] {
 		return eval_variance(name, values)!
+	}
+
+	// ANY_VALUE is an implementation-dependent value of the group, which is the
+	// first one that isn't NULL. Which one is first depends on how the rows were
+	// read, so it's possibly non-deterministic, but an aggregate can't be in a
+	// CHECK constraint or a generated column anyway.
+	//
+	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.v
+	// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.ap
+	if name == 'ANY_VALUE' {
+		return values[0]
 	}
 
 	if name in ['MAX', 'MIN'] {

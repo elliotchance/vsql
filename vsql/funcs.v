@@ -183,7 +183,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
 			arg := Type{typ.value, 0, 0, false}
-			mut names := ['COUNT', 'MAX', 'MIN']
+			mut names := ['ANY_VALUE', 'COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {
 				names << ['AVG', 'SUM', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP']
 			}

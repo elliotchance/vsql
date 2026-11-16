@@ -8,6 +8,7 @@ CREATE TABLE ALLOCATE (x INT);
 CREATE TABLE ALTER (x INT);
 CREATE TABLE AND (x INT);
 CREATE TABLE ANY (x INT);
+CREATE TABLE ANY_VALUE (x INT);
 CREATE TABLE ARE (x INT);
 CREATE TABLE ARRAY (x INT);
 CREATE TABLE ARRAY_AGG (x INT);
@@ -18,6 +19,7 @@ CREATE TABLE ARRAY_AGG (x INT);
 -- error 42601: syntax error: unexpected ALTER at line 1, column 14 near "CREATE TABLE ALTER ("; hint: ALTER is a reserved word, so it must be quoted to be used as a name, such as "ALTER" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected AND at line 1, column 14 near "CREATE TABLE AND ("; hint: AND is a reserved word, so it must be quoted to be used as a name, such as "AND" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected ANY at line 1, column 14 near "CREATE TABLE ANY ("; hint: ANY is a reserved word, so it must be quoted to be used as a name, such as "ANY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
+-- error 42601: syntax error: unexpected ANY_VALUE at line 1, column 14 near "CREATE TABLE ANY_VALUE ("; hint: ANY_VALUE is a reserved word, so it must be quoted to be used as a name, such as "ANY_VALUE" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected ARE at line 1, column 14 near "CREATE TABLE ARE ("; hint: ARE is a reserved word, so it must be quoted to be used as a name, such as "ARE" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected ARRAY at line 1, column 14 near "CREATE TABLE ARRAY ("; hint: ARRAY is a reserved word, so it must be quoted to be used as a name, such as "ARRAY" (see https://vsql.readthedocs.io/en/latest/keywords.html)
 -- error 42601: syntax error: unexpected ARRAY_AGG at line 1, column 14 near "CREATE TABLE ARRAY_AGG ("; hint: ARRAY_AGG is a reserved word, so it must be quoted to be used as a name, such as "ARRAY_AGG" (see https://vsql.readthedocs.io/en/latest/keywords.html)

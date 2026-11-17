@@ -56,7 +56,8 @@ fn (o &JoinOperation) str() string {
 }
 
 // columns are the common columns (if any), then the other columns of each side.
-// A column of the side that's not preserved by an outer join can be NULL. A NOT
+// A column of the side that's not preserved by an outer join can be NULL (both
+// sides of a FULL join). A NOT
 // NULL column of the preserved side still can't be, which is an
 // implementation-defined rule (without T101, an outer join is otherwise only ever
 // possibly nullable).
@@ -71,12 +72,12 @@ fn (o &JoinOperation) columns() Columns {
 		hidden[common.right.name.id()] = true
 	}
 
-	left_columns := if o.join_type == .right {
+	left_columns := if o.join_type in [.right, .full] {
 		possibly_nullable_columns(o.left_columns)
 	} else {
 		o.left_columns
 	}
-	right_columns := if o.join_type == .left {
+	right_columns := if o.join_type in [.left, .full] {
 		possibly_nullable_columns(o.right_columns)
 	} else {
 		o.right_columns
@@ -110,14 +111,15 @@ fn possibly_nullable_columns(columns Columns) Columns {
 
 // execute joins the rows of both sides. A LEFT (or RIGHT) join also has each
 // row of the left (or right) side that didn't match, with NULLs for the other
-// side.
+// side. A FULL join has both.
 //
 // ISO/IEC 9075-2:2023, 7.10, <joined table>, General Rules, 3-5
 //
 // The rows are in the order of the outer side (the left side, or the right side
 // of a RIGHT join), then the inner side. Each row of the outer side is compared
 // with every row of the inner side, or only the rows that lookup finds (if
-// any). The whole join condition is still applied to them.
+// any). The whole join condition is still applied to them. The rows of the right
+// side of a FULL join that didn't match are last, in the order they were read.
 fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	outer, inner := if o.join_type == .right { '\$2', '\$1' } else { '\$1', '\$2' }
 	inner_columns := if o.join_type == .right { o.left_columns } else { o.right_columns }
@@ -131,10 +133,13 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 
 	mut rows := []Row{}
 	mut condition := []CompileResult{cap: 1}
+	// inner_matched is only for a FULL join, which never has a lookup, so the
+	// inner rows are always all_inner_rows.
+	mut inner_matched := []bool{len: all_inner_rows.len}
 	for outer_row in outer_rows {
 		inner_rows := o.inner_rows(outer_row, all_inner_rows)!
 		mut matched := false
-		for inner_row in inner_rows {
+		for i, inner_row in inner_rows {
 			mut row := new_row(map[string]Value{})
 			row.data = row.data.merged(outer_row.data)
 			row.data = row.data.merged(inner_row.data)
@@ -142,6 +147,9 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables, mut condition)! {
 				rows << row
 				matched = true
+				if o.join_type == .full {
+					inner_matched[i] = true
+				}
 			}
 		}
 
@@ -152,6 +160,20 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 				row.data.set(k.name.id(), new_null_value(k.typ.typ))
 			}
 			rows << row
+		}
+	}
+
+	// ISO/IEC 9075-2:2023, 7.10, <joined table>, General Rules, 5.d
+	if o.join_type == .full {
+		for i, inner_row in all_inner_rows {
+			if !inner_matched[i] {
+				mut row := new_row(map[string]Value{})
+				for k in o.left_columns {
+					row.data.set(k.name.id(), new_null_value(k.typ.typ))
+				}
+				row.data = row.data.merged(inner_row.data)
+				rows << row
+			}
 		}
 	}
 
@@ -213,8 +235,9 @@ fn (c CommonColumn) equality() BooleanTest {
 // join). They're always in the order of the left side, not the order of the
 // list. A column is known not null when the join can't produce a NULL for it:
 // both sides are equal (so not NULL) in a matched row, so that only depends on
-// the side that's kept for a row that isn't matched. That's the same for
-// NATURAL, although it isn't "readily" known not null.
+// the side that's kept for a row that isn't matched (both sides of a FULL
+// join). That's the same for NATURAL, although it isn't "readily" known not
+// null.
 //
 // ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 10.c, 10.e, 10.f, 13.b and 14.c
 fn new_common_columns(names []Identifier, join_type JoinType, left_columns Columns, right_columns Columns, range_variable string) ![]CommonColumn {
@@ -250,6 +273,7 @@ fn new_common_columns(names []Identifier, join_type JoinType, left_columns Colum
 					.inner { true }
 					.left { left.not_null }
 					.right { right.not_null }
+					.full { left.not_null && right.not_null }
 				}
 			}
 			left:   left

@@ -20,10 +20,10 @@ Syntax
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
   <from_item> := <table_reference>
-                 [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference>
+                 [ [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference>
                    { ON <condition> | USING ( <column_name> , ... ) }
                  | CROSS JOIN <table_reference>
-                 | NATURAL [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ] ...
+                 | NATURAL [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference> ] ...
 
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
@@ -111,11 +111,12 @@ table along with other expressions:
 JOIN
 ----
 
-vsql supports three types of JOIN operations:
+vsql supports four types of JOIN operations:
 
 1. ``INNER JOIN`` (or, more simply: ``JOIN``).
 2. ``LEFT OUTER JOIN`` (or, more simply: ``LEFT JOIN``).
 3. ``RIGHT OUTER JOIN`` (or, more simply: ``RIGHT JOIN``).
+4. ``FULL OUTER JOIN`` (or, more simply: ``FULL JOIN``).
 
 For an ``INNER JOIN``, only records that satisfy the ``<condition>`` in *both*
 tables will be included.
@@ -125,6 +126,11 @@ records from the *left* or *right* table respectively. Any record that does not
 match the other side will be given all ``NULL`` values. The *left* table is that
 defined by the ``FROM`` expressions and the *right* table is that used in the
 ``JOIN`` clause.
+
+A ``FULL OUTER JOIN`` includes all records from *both* tables: the ones that
+match, then each record of the *left* table that doesn't match (with ``NULL``
+values for the *right* table), then each record of the *right* table that
+doesn't match (with ``NULL`` values for the *left* table).
 
 Any number of tables can be joined. Each ``JOIN`` uses the result of the joins
 before it as its *left* table, unless parentheses are used to change the order:

@@ -496,7 +496,7 @@
 7.9/SR/23.b              n/a          - - row pattern recognition (R010)
 7.9/CR/1                 n/a          - - row pattern recognition (R010)
 # 7.10, <joined table>
-7.10                     partial      vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql no FULL (F406)
+7.10                     implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
 7.10/SR/1                definition   - -
 7.10/SR/2                n/a          - - data change delta tables (T495)
 7.10/SR/3                definition   - -
@@ -572,7 +572,7 @@
 7.10/SR/14.b.iii.1       n/a          - - enhanced nullability determination (T101)
 7.10/SR/14.b.iii.2       n/a          - - enhanced nullability determination (T101)
 7.10/SR/14.b.iv          n/a          - - enhanced nullability determination (T101)
-7.10/SR/14.c             impl-defined vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING or NATURAL is the same as 15.b.iii
+7.10/SR/14.c             impl-defined vsql/std_2_7_10_joined_table.v tests/std_2_7_16_result_column_nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING or NATURAL is the same as 15.b.iii (both sides for FULL)
 7.10/AR/1                n/a          - - privileges (E081, #732)
 7.10/AR/1.a              n/a          - - privileges (E081, #732)
 7.10/AR/1.a.i            n/a          - - privileges (E081, #732)
@@ -623,7 +623,7 @@
 7.10/GR/5.a              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
 7.10/GR/5.b              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_left_join.sql
 7.10/GR/5.c              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_right_join.sql
-7.10/GR/5.d              n/a          - - FULL (F406)
+7.10/GR/5.d              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_full_join.sql
 7.10/GR/6                implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
 7.10/GR/6.a              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
 7.10/GR/6.a.i            implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_join_using.sql
@@ -640,7 +640,7 @@
 7.10/GR/6.b              implemented  vsql/std_2_7_10_joined_table.v tests/std_2_7_10_inner_join.sql
 7.10/CR/1                implemented  vsql/std_2_7_10_joined_table.y tests/std_2_7_10_cross_join.sql
 7.10/CR/2                implemented  vsql/std_2_7_10_joined_table.y tests/std_2_7_10_natural_join.sql
-7.10/CR/3                n/a          - - FULL (F406)
+7.10/CR/3                implemented  vsql/std_2_7_10_joined_table.y tests/std_2_7_10_full_join.sql
 7.10/CR/4                n/a          - - LOBs (T041), arrays (S091) and multisets (S271)
 7.10/CR/5                n/a          - - partitioned join tables (F403)
 7.10/CR/6                n/a          - - join correlation names (F404)

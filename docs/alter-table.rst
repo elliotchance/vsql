@@ -14,6 +14,8 @@ Syntax
       ADD [ COLUMN ] <column_definition>
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
+    | ALTER [ COLUMN ] <column_name> SET NOT NULL
+    | ALTER [ COLUMN ] <column_name> DROP NOT NULL
     | ALTER [ COLUMN ] <column_name> SET DATA TYPE <data_type>
     | ALTER [ COLUMN ] <column_name> <identity_option> ...
     | DROP [ COLUMN ] <column_name> [ CASCADE | RESTRICT ]
@@ -82,7 +84,15 @@ column can't be changed, and the options can only be used for an identity column
 
 Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.
-Changing whether a column is ``NOT NULL`` isn't supported yet.
+
+``SET NOT NULL`` adds a ``NOT NULL`` constraint to a column, with a name like
+the ``NOT NULL`` of a :doc:`create-table` (such as ``T_NOT_NULL_2``). Every
+existing row must satisfy it, otherwise it's an error ``23502`` and nothing
+changes. ``DROP NOT NULL`` drops it, which is the same as dropping the
+constraint with ``DROP CONSTRAINT``. A column of the ``PRIMARY KEY`` is always
+``NOT NULL``, so it's an error ``42601``. Neither does anything if the column
+is already (or isn't) ``NOT NULL``, and neither can be used for an identity
+column (an error ``42601``).
 
 ``SET DATA TYPE`` changes the type of a column, and every existing value is
 cast to the new type, so a ``CHARACTER`` value is padded to its new length. The

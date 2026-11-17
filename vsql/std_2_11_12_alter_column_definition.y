@@ -18,6 +18,12 @@ alter_column_action:
 | drop_column_default_clause {
     $$.v = yy_box(AlterColumnAction($1.v as DropColumnDefaultClause))
   }
+| set_column_not_null_clause {
+    $$.v = yy_box(AlterColumnAction($1.v as SetColumnNotNullClause))
+  }
+| drop_column_not_null_clause {
+    $$.v = yy_box(AlterColumnAction($1.v as DropColumnNotNullClause))
+  }
 | alter_column_data_type_clause {
     $$.v = yy_box(AlterColumnAction($1.v as AlterColumnDataTypeClause))
   }

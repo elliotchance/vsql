@@ -785,7 +785,7 @@ Optional Features
    * - ✅ **F384**
      - **Drop identity property clause**
 
-   * - ❌ **F385**
+   * - ✅ **F385**
      - **Drop column generation expression clause**
 
    * - ❌ **F386**

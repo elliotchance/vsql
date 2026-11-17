@@ -33,5 +33,8 @@ alter_column_action:
 | drop_identity_property_clause {
     $$.v = yy_box(AlterColumnAction($1.v as DropIdentityPropertyClause))
   }
+| drop_column_generation_expression_clause {
+    $$.v = yy_box(AlterColumnAction($1.v as DropColumnGenerationExpressionClause))
+  }
 
 %%

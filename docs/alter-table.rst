@@ -19,6 +19,7 @@ Syntax
     | ALTER [ COLUMN ] <column_name> SET DATA TYPE <data_type>
     | ALTER [ COLUMN ] <column_name> <identity_option> ...
     | ALTER [ COLUMN ] <column_name> DROP IDENTITY
+    | ALTER [ COLUMN ] <column_name> DROP EXPRESSION
     | DROP [ COLUMN ] <column_name> [ CASCADE | RESTRICT ]
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
     | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
@@ -87,6 +88,11 @@ column can't be changed, and the options can only be used for an identity column
 sequence. It's an error ``42601`` if the column isn't an identity column. The
 column keeps its values and its ``NOT NULL``, so a value has to be given when a
 row is inserted, unless the ``NOT NULL`` is dropped with ``DROP NOT NULL``.
+
+``DROP EXPRESSION`` makes a generated column a normal column, so values can be
+assigned to it. The existing rows keep the values that were generated, and the
+column keeps its data type (even when it was inferred from the expression) and
+its constraints. It's an error ``42601`` if the column isn't a generated column.
 
 Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.

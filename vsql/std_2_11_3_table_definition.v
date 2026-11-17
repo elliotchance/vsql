@@ -46,6 +46,35 @@ struct AsSubqueryClause {
 // TableDefinition.with_like_columns).
 struct LikeClause {
 	table_name Identifier
+	options    []LikeOption
+}
+
+// LikeOption is an INCLUDING (included is true) or EXCLUDING of IDENTITY,
+// DEFAULTS or GENERATED in the <like options> of a <like clause>.
+struct LikeOption {
+	name     string
+	included bool
+}
+
+// included returns whether the <like options> include IDENTITY, DEFAULTS or
+// GENERATED, which they don't unless they say so. Each one can only be given
+// once.
+//
+// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.1, 9.b.iv.2, 9.b.iv.3 and 9.b.iv.4
+fn (l LikeClause) included(name string) !bool {
+	mut included := false
+	mut found := false
+	for option in l.options {
+		if option.name == name {
+			if found {
+				return sqlstate_42601('LIKE ${l.table_name} has more than one ${name} option')
+			}
+			found = true
+			included = option.included
+		}
+	}
+
+	return included
 }
 
 fn (s TableDefinition) columns() Columns {
@@ -115,7 +144,7 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 		return sqlstate_42p07_table(table_name) // duplicate table
 	}
 
-	definition := stmt.as_table_elements(mut conn)!.with_like_columns(mut conn)!
+	definition := stmt.as_table_elements(mut conn)!.with_like_columns(mut conn, table_name)!
 	definition.check_limits(table_name)!
 	mut table := definition.table(table_name, 0)!
 	mut other_names := catalog.storage.schema_constraint_names(table_name)
@@ -214,7 +243,7 @@ fn (stmt TableDefinition) as_table_elements(mut conn Connection) !TableDefinitio
 // the table aren't copied, other than NOT NULL.
 //
 // ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b
-fn (stmt TableDefinition) with_like_columns(mut conn Connection) !TableDefinition {
+fn (stmt TableDefinition) with_like_columns(mut conn Connection, table_name Identifier) !TableDefinition {
 	if !stmt.table_elements.any(it is LikeClause) {
 		return stmt
 	}
@@ -225,15 +254,66 @@ fn (stmt TableDefinition) with_like_columns(mut conn Connection) !TableDefinitio
 			// The table can be any table, including one of the
 			// INFORMATION_SCHEMA.
 			like_table := conn.like_table(element.table_name)!
+			include_identity := element.included('IDENTITY')!
+			include_defaults := element.included('DEFAULTS')!
+			include_generated := element.included('GENERATED')!
+
+			// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.ii
+			if like_table.is_virtual && element.options.len > 0 {
+				return sqlstate_42601('LIKE ${element.table_name} cannot have options, because it is a view')
+			}
+
 			for column in like_table.columns {
 				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iii and 9.b.v
-				elements << Column{
+				mut new_column := Column{
 					name:     Identifier{
 						sub_entity_name: column.name.sub_entity_name
 					}
 					typ:      column.typ
 					not_null: column.not_null
 				}
+
+				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.5
+				if identity := column.identity {
+					if include_identity {
+						new_column = Column{
+							...new_column
+							identity: &IdentityColumn{
+								always:  identity.always
+								options: [
+									SequenceGeneratorOption(SequenceGeneratorStartWithOption{new_bigint_value(identity.sequence.start_value)}),
+									SequenceGeneratorIncrementByOption{new_bigint_value(identity.sequence.increment_by)},
+									SequenceGeneratorMinvalueOption{new_bigint_value(identity.sequence.min_value)},
+									SequenceGeneratorMaxvalueOption{new_bigint_value(identity.sequence.max_value)},
+									SequenceGeneratorCycleOption{identity.sequence.cycle},
+								]
+							}
+						}
+					}
+				}
+
+				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.6
+				if generated := column.generated {
+					if include_generated {
+						new_column = Column{
+							...new_column
+							generated: like_generated_column(table_name, generated.text)!.generated
+						}
+					}
+				}
+
+				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.7
+				if default_value := column.default_value {
+					if include_defaults {
+						new_column = Column{
+							...new_column
+							default_value: default_value
+							default_text:  column.default_text
+						}
+					}
+				}
+
+				elements << new_column
 			}
 		} else {
 			elements << element
@@ -244,6 +324,36 @@ fn (stmt TableDefinition) with_like_columns(mut conn Connection) !TableDefinitio
 		...stmt
 		table_elements: elements
 	}
+}
+
+// like_generated_column returns a column with the generation clause of a
+// column that's copied by a <like clause> with INCLUDING GENERATED. A column reference in it
+// can only be to a column of the table that it's copied from, so each column
+// reference loses its qualifier, which makes it a column of the new table. The
+// expression is parsed again as part of a definition of the new table
+// (table_name), the same as when it's read from the file.
+//
+// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.6.A and 9.b.iv.6.B
+fn like_generated_column(table_name Identifier, text string) !Column {
+	runes := text.runes()
+	tokens := tokenize(text)!
+	mut new_text := ''
+	mut from := 0
+	for i, token in tokens {
+		// A name followed by a period is the qualifier of the name after it. A
+		// name may also be a keyword, such as T or PUBLIC. A number can also be
+		// followed by a period (such as "1.e5"), but that's part of the number.
+		if token.token != token_literal_number && i + 2 < tokens.len
+			&& tokens[i + 1].token == token_operator_period {
+			new_text += runes[from..token.start].string()
+			from = tokens[i + 2].start
+		}
+	}
+	new_text += runes[from..].string()
+
+	stmt := parse_definition('CREATE TABLE ${table_name.storage_sql()} (c INTEGER GENERATED ALWAYS AS ${new_text})'.bytes())!
+
+	return (stmt as TableDefinition).table_elements[0] as Column
 }
 
 // like_table returns the table of a <like clause>, which can also be a virtual

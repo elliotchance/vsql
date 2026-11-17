@@ -64,6 +64,21 @@ fn test_next_transaction_characteristics() ! {
 	db.query('COMMIT')!
 }
 
+// A connection that's a branch of another connection's SQL-transaction (T262)
+// gets its characteristics, until set_branch_of is called with itself.
+fn test_set_branch_of() ! {
+	mut a := open(':memory:')!
+	mut b := open(':memory:')!
+	b.set_branch_of(a)
+	assert b.next_transaction_characteristics() == ''
+	a.query('START TRANSACTION ISOLATION LEVEL READ COMMITTED, READ ONLY')!
+	b.set_branch_of(a)
+	assert b.next_transaction_characteristics() == 'ISOLATION LEVEL READ COMMITTED, READ ONLY, DIAGNOSTICS SIZE 100'
+	b.set_branch_of(b)
+	assert b.next_transaction_characteristics() == ''
+	a.query('COMMIT')!
+}
+
 // A direct SQL statement that starts a transaction uses the isolation level of
 // a SET TRANSACTION, and of the transaction that a query started.
 fn test_direct_isolation_level() ! {

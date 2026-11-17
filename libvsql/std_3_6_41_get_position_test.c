@@ -56,6 +56,6 @@ UTEST_F(db, 6_41_get_position_implicit_set_connection) {
   EXPECT_EQ(SQLGetPosition(stmt2, SQL_CHAR, 1, 0, (SQLCHAR *)"a", 1, 1,
                            &located_at, &indicator),
             SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+  EXPECT_STRNE(sqlstate(SQL_HANDLE_STMT, stmt2), "0A001");
   free_inactive_stmt(utest_fixture->dbc, dbc2, stmt2);
 }

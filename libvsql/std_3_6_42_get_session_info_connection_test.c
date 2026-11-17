@@ -15,26 +15,17 @@ UTEST_F(db, 6_42_get_session_info_implicit_set_connection) {
   ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 
-  /* The first connection has an active transaction, so the second one can't
-   * become current. */
-  EXPECT_EQ(SQLGetSessionInfo(dbc2, SQL_CURRENT_USER, value, sizeof(value),
-                              NULL),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "0A001");
+  /* The first connection has an active transaction, but the second one can
+   * still become current (T262), and then the InfoType is checked. */
   EXPECT_EQ(SQLGetSessionInfo(dbc2, 123, value, sizeof(value), NULL),
             SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "0A001");
+  EXPECT_STRNE(sqlstate(SQL_HANDLE_DBC, dbc2), "0A001");
   EXPECT_EQ(SQLGetSessionInfo(dbc3, SQL_CURRENT_USER, value, sizeof(value),
                               NULL),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, dbc3, "08003");
-
-  /* Failing to switch leaves the first connection current. */
   EXPECT_EQ(ACTIVE(utest_fixture->dbc), 1);
-  EXPECT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 
-  /* After the transaction ends, the second connection can become current. */
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetSessionInfo(dbc2, SQL_CURRENT_USER, value, sizeof(value),

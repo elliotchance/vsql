@@ -31,14 +31,9 @@ fn sql_connect(connection_handle SQLInteger, server_name &char, name_length1 i16
 }
 
 fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &char, name_length2 i16, authentication &char, name_length3 i16) !i16 {
-	// - 2. If an SQL-transaction is active for the current SQL-connection and
-	// the implementation does not support transactions that affect more than
-	// one SQL-server, then an exception condition is raised: feature not
-	// supported — multiple server transactions.
-	current := current_connection(dbc.env)
-	if current != 0 && connection_active(current) {
-		return cli_error('0A001', 'multiple server transactions')
-	}
+	// - 2. An SQL-transaction can be active for the current SQL-connection,
+	// since vsql supports transactions that affect more than one SQL-server
+	// (ISO/IEC 9075-2:2023, Feature T262).
 
 	// - 3. If there is an established SQL-connection associated with C, then an
 	// exception condition is raised: connection exception — connection name in

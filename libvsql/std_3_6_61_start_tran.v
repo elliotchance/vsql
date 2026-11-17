@@ -117,6 +117,9 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	mut conn := dbc.conn or { return cli_error('08003', 'connection does not exist') }
 	implicit_set_connection(h)!
+	// The SQL-transaction is already active when it has a branch on another
+	// connection, so this is 25001 (see set_branch).
+	set_branch(mut conn, h)
 	db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}${diagnostics_size(conn)}')!
 	e.start_tran = ''
 	dbc.autocommit_transaction = false

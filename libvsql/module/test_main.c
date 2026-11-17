@@ -289,9 +289,14 @@ int main(void) {
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(st.number == 1);
 
-  /* 18.1 GR 1: An active transaction blocks a connection statement. */
-  EXPECT(connect_literal(sqlstate), "0A001");
-  EXPECT(set_connection_default(sqlstate), "0A001");
+  /* 18.1 GR 1 and 18.2 GR 1: A connection statement can be run while a
+   * transaction is active, since it can have a branch on each connection
+   * (T262). The new connection doesn't have a branch until a statement is run
+   * on it, so it can be disconnected, but the active one can't be. */
+  EXPECT(connect_literal(sqlstate), "00000");
+  EXPECT(set_connection_default(sqlstate), "00000");
+  strcpy(name, "literal");
+  EXPECT(disconnect(sqlstate, name), "00000");
   EXPECT(disconnect_all(sqlstate), "25001");
   EXPECT(commit_work(sqlstate), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");

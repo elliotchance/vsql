@@ -1344,7 +1344,7 @@
 6.33/GR/12.j             container    - -
 6.33/GR/12.j.i           impl-defined libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c the CONNECTION_NAME is the SERVER_NAME
 6.33/GR/12.j.ii          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
-6.33/GR/12.j.iii         implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c the SERVER_NAME of the handle's connection, which is the dormant connection
+6.33/GR/12.j.iii         untestable   libvsql/std_3_6_33_get_diag_field.v - an implicit set connection can't raise a condition, since a transaction can be on more than one SQL-server (T262)
 6.33/GR/12.j.iv          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.j.v           implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.k             container    - -

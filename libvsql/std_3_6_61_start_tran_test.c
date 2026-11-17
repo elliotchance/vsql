@@ -144,15 +144,15 @@ UTEST_F(db, 6_61_start_tran_multiple_connections) {
                          SQL_TRANSACTION_SERIALIZABLE),
             SQL_SUCCESS);
 
-  /* It's started in the second connection, which is now the only one that
-   * can be used. AUTOCOMMIT doesn't end it. */
+  /* It's started in the second connection. AUTOCOMMIT doesn't end it. A
+   * statement on the first connection starts a branch of it (T262). */
   ASSERT_EQ(SQLSetConnectAttr(dbc2, SQL_ATTR_AUTOCOMMIT,
                               INTEGER_VALUE(SQL_AUTOCOMMIT_ON), 0),
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(stmt2, "CREATE TABLE t (x INT)"), SQL_SUCCESS);
   EXPECT_EQ(diag_int(SQL_HANDLE_DBC, dbc2, SQL_DIAG_TRANSACTION_ACTIVE), 1);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "0A001");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
 
   /* Now that the second connection is active, StartTran is 25001. */
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
@@ -188,9 +188,9 @@ UTEST_F(db, 6_61_start_tran_multiple_connections) {
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, dbc2, SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "0A001");
-  EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+  EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "25001");
+  EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLCloseCursor(stmt2), SQL_SUCCESS);
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),

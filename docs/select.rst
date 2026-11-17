@@ -21,7 +21,8 @@ Syntax
 
   <from_item> := <table_reference>
                  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference>
-                   { ON <condition> | USING ( <column_name> , ... ) } ] ...
+                   { ON <condition> | USING ( <column_name> , ... ) }
+                 | CROSS JOIN <table_reference> ] ...
 
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
@@ -135,6 +136,17 @@ before it as its *left* table, unless parentheses are used to change the order:
 
   SELECT * FROM t1
   LEFT JOIN (t2 JOIN t3 ON t2.b = t3.c) ON t1.a = t2.b;
+
+``CROSS JOIN`` pairs every row of the left side with every row of the right
+side, the same as a comma in ``FROM``. It has no ``ON`` or ``USING``, so use
+``WHERE`` to keep only some of the pairs. The right side of a ``CROSS JOIN``
+can only be a join when it's in parentheses:
+
+.. code-block:: sql
+
+  SELECT * FROM sizes CROSS JOIN colors;
+
+  SELECT * FROM t1 CROSS JOIN (t2 JOIN t3 ON t2.b = t3.c);
 
 ``USING`` joins on the equality of each named column, which must be the name of
 exactly one column on each side, and those columns must be comparable. Each

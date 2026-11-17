@@ -10,4 +10,5 @@ equivalent in vsql is listed too, so you can tell that it hasn't been missed.
 
    compatibility-sqlite3.rst
    compatibility-mysql.rst
+   compatibility-postgresql.rst
    compatibility-spreadsheet.rst

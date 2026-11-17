@@ -47,15 +47,19 @@ fn (e QueryExpression) pstr(params map[string]Value) string {
 
 // FetchFirstClause is a <fetch first clause>, or a LIMIT. count is the <fetch
 // first row count>, or the <fetch first percentage> when percent is true.
+// with_ties also keeps the rows after the last one that are its peers in the
+// ORDER BY.
 struct FetchFirstClause {
-	count   ValueSpecification
-	percent bool
+	count     ValueSpecification
+	percent   bool
+	with_ties bool
 }
 
 fn (e FetchFirstClause) pstr(params map[string]Value) string {
 	percent := if e.percent { ' PERCENT' } else { '' }
+	ending := if e.with_ties { 'WITH TIES' } else { 'ONLY' }
 
-	return 'FETCH FIRST ${e.count.pstr(params)}${percent} ROWS ONLY'
+	return 'FETCH FIRST ${e.count.pstr(params)}${percent} ROWS ${ending}'
 }
 
 // QuerySetOperator is the UNION, EXCEPT or INTERSECT of a SetOperation.
@@ -354,10 +358,21 @@ struct LimitOperation {
 	columns Columns
 mut:
 	conn &Connection
+	// order, tables and result_columns are what's needed to evaluate the sort
+	// keys of a row (see OrderOperation), to find the peers for WITH TIES.
+	order          []SortSpecification
+	tables         map[string]&Table
+	result_columns map[string][]ValueExpression
 }
 
 fn new_limit_operation(fetch ?FetchFirstClause, offset ?ValueSpecification, params map[string]Value, mut conn Connection, columns Columns) &LimitOperation {
-	return &LimitOperation{fetch, offset, params, columns, conn}
+	return &LimitOperation{
+		fetch:   fetch
+		offset:  offset
+		params:  params
+		columns: columns
+		conn:    conn
+	}
 }
 
 fn (o &LimitOperation) str() string {
@@ -420,7 +435,53 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 		fetch = rows.len - offset
 	}
 
-	return rows[offset..offset + fetch]
+	mut end := int(offset + fetch)
+	if f := o.fetch {
+		if f.with_ties && end < rows.len {
+			end = o.end_of_peers(rows, end)!
+		}
+	}
+
+	return rows[offset..end]
+}
+
+// end_of_peers returns where the rows that are peers of the last fetched row
+// (the one before end) end. The rows are already in the order of the ORDER BY,
+// so the peers are the rows straight after it that have the same value for
+// every sort key.
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 7.d.i
+fn (mut o LimitOperation) end_of_peers(rows []Row, end int) !int {
+	mut c := Compiler{
+		conn:           o.conn
+		params:         o.params
+		tables:         o.tables
+		result_columns: o.result_columns
+	}
+	mut compiled := []CompileResult{cap: o.order.len}
+	for spec in o.order {
+		compiled << spec.expr.compile(mut c)!
+	}
+
+	last := o.sort_key(compiled, rows[end - 1])!
+	mut i := end
+	for i < rows.len {
+		if sort_keys_cmp(o.conn, o.sort_key(compiled, rows[i])!, last, o.order)! != 0 {
+			break
+		}
+		i++
+	}
+
+	return i
+}
+
+fn (mut o LimitOperation) sort_key(compiled []CompileResult, row Row) ![]Value {
+	mut key := []Value{cap: compiled.len}
+	for e in compiled {
+		key << e.run(mut o.conn, row, o.params)!
+	}
+
+	return key
 }
 
 // row_count returns the value of an <offset row count> or <fetch first row

@@ -17,7 +17,7 @@ Syntax
     [ HAVING <condition> ] ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
   <from_item> := <table_reference>
                  [ [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference>
@@ -31,12 +31,12 @@ Syntax
   TABLE <table_name>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
   <query> { UNION | EXCEPT | INTERSECT } [ ALL | DISTINCT ] <query>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
 ``LIMIT`` can be used instead of ``FETCH`` in either of these (see `LIMIT`_):
 
@@ -462,6 +462,25 @@ the rows of the query, before any are skipped by ``OFFSET``:
 Like any other count, it must come to at least one row, otherwise a 2201W error
 is raised. That includes a query that has no rows at all, since any percentage
 of no rows is zero rows.
+
+``WITH TIES`` instead of ``ONLY`` also returns any rows after the last one that
+have the same values for every ``ORDER BY`` expression, so a tie for the last
+place isn't cut off. This returns the three highest prices, and every other
+product that costs the same as the third:
+
+.. code-block:: sql
+
+  SELECT * FROM products ORDER BY price DESC FETCH FIRST 3 ROWS WITH TIES;
+
+``WITH TIES`` needs an ``ORDER BY`` in the same query (or the same
+parentheses), otherwise a 42601 syntax error is raised.
+
+``PERCENT`` and ``WITH TIES`` can be used together. The percentage decides how
+many rows are fetched, and then the rows that tie with the last one are added:
+
+.. code-block:: sql
+
+  SELECT * FROM products ORDER BY price DESC FETCH FIRST 10 PERCENT ROWS WITH TIES;
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
 with any value. Both words are provided solely for grammatical benefit.

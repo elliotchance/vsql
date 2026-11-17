@@ -810,6 +810,15 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
+	// The peers of WITH TIES are decided by the ORDER BY, so there must be one.
+	//
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 30
+	if fetch := stmt.fetch {
+		if fetch.with_ties && stmt.order.len == 0 {
+			return sqlstate_42601('FETCH FIRST WITH TIES requires an ORDER BY')
+		}
+	}
+
 	mut plan, mut tables := create_basic_plan(stmt.body, params, mut conn, true,
 		correlation)!
 
@@ -857,6 +866,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		}
 	}
 
+	mut sort_key_names := map[string][]ValueExpression{}
 	if stmt.order.len > 0 {
 		// The expressions are only evaluated when rows are compared, so they're
 		// compiled here to catch errors (such as an ambiguous column) even when
@@ -894,6 +904,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			}
 		}
 
+		sort_key_names = c.result_columns.clone()
 		for mut operation in plan.operations {
 			if mut operation is GroupOperation {
 				operation.sort_keys = order
@@ -922,8 +933,12 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	}
 
 	if stmt.fetch != none || stmt.offset != none {
-		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, mut conn,
+		mut limit := new_limit_operation(stmt.fetch, stmt.offset, params, mut conn,
 			plan.columns())
+		limit.order = stmt.order
+		limit.tables = tables
+		limit.result_columns = sort_key_names
+		plan.operations << limit
 	}
 
 	if stmt.body is QuerySpecification {

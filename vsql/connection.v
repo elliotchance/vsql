@@ -302,7 +302,10 @@ fn open_connection(path string, catalog_name string, options ConnectionOptions) 
 // run by Connection.keep.
 @[heap]
 struct KeptWork {
-	open         bool
+	open bool
+	// postgresql registers the functions and tables of PostgreSQL clients,
+	// rather than adding a catalog (see Connection.register_postgresql).
+	postgresql   bool
 	catalog_name string
 	path         string
 	options      ConnectionOptions
@@ -339,6 +342,11 @@ fn (mut conn Connection) keep(mut work KeptWork) ! {
 
 fn (mut work KeptWork) run() ! {
 	mut conn := work.conn
+	if work.postgresql {
+		register_pg_functions(mut conn)!
+		register_pg_virtual_tables(mut conn)!
+		return
+	}
 	if work.open {
 		conn.make_frame_work()
 		register_builtin_funcs(mut conn)!
@@ -346,6 +354,18 @@ fn (mut work KeptWork) run() ! {
 	}
 
 	conn.add_catalog_now(work.catalog_name, work.path, work.options)!
+}
+
+// register_postgresql registers the functions and tables that PostgreSQL
+// clients use (see register_pg_functions and register_pg_virtual_tables). They
+// are registered in a frame of kept, like the built-in functions, because their
+// closures refer to the catalog. Otherwise those closures, and so the whole
+// database, would never be released, even after the connection is closed.
+fn (mut conn Connection) register_postgresql() ! {
+	mut work := &KeptWork{
+		postgresql: true
+	}
+	conn.keep(mut work)!
 }
 
 // make_frame_work makes frame_work, see Connection.lifetime.

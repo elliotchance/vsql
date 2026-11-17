@@ -378,8 +378,7 @@ fn pg_type_name(name string) string {
 fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
-	register_pg_functions(mut db)!
-	register_pg_virtual_tables(mut db)!
+	db.register_postgresql()!
 
 	if s.options.select_without_from {
 		db.query('CREATE TABLE singlerow (x INT)') or {}

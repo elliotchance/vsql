@@ -1045,22 +1045,21 @@ Date and Time
 DATE
 ^^^^
 
-🔧 vsql has no ``DATE`` function, but an expression does the same thing.
+✅ vsql has the same function: ``MAKE_DATE``.
 
 Builds a date from a year, a month and a day.
 
 .. code-block:: sql
 
   -- =DATE(year, month, day)
-  VALUES CAST(CAST(/*year*/ AS VARCHAR(4)) || '-' || SUBSTRING(CAST(100 + /*month*/ AS VARCHAR(3)) FROM 2) || '-' || SUBSTRING(CAST(100 + /*day*/ AS VARCHAR(3)) FROM 2) AS DATE);
+  VALUES MAKE_DATE(/*year*/, /*month*/, /*day*/);
   -- =DATE(2024, 3, 5)
-  VALUES CAST(CAST(2024 AS VARCHAR(4)) || '-' || SUBSTRING(CAST(100 + 3 AS VARCHAR(3)) FROM 2)
-    || '-' || SUBSTRING(CAST(100 + 5 AS VARCHAR(3)) FROM 2) AS DATE);
+  VALUES MAKE_DATE(2024, 3, 5);
   -- COL1: 2024-03-05
 
-A month or day that's out of range is an error, where a spreadsheet rolls it
-over into the next month or year. With literal values, write
-``DATE '2024-03-05'``.
+A month or day that's out of range is an error (``MAKE_DATE(2024, 13, 1)`` is
+a ``22007``), where a spreadsheet rolls it over into the next month or year.
+With literal values, write ``DATE '2024-03-05'``.
 
 DATEDIF
 ^^^^^^^
@@ -1296,21 +1295,21 @@ seconds.
 TIME
 ^^^^
 
-🔧 vsql has no ``TIME`` function, but an expression does the same thing.
+✅ vsql has the same function: ``MAKE_TIME``.
 
 Builds a time from an hour, a minute and a second.
 
 .. code-block:: sql
 
   -- =TIME(hour, minute, second)
-  VALUES CAST(SUBSTRING(CAST(100 + /*hour*/ AS VARCHAR(3)) FROM 2) || ':' || SUBSTRING(CAST(100 + /*minute*/ AS VARCHAR(3)) FROM 2) || ':' || SUBSTRING(CAST(100 + /*second*/ AS VARCHAR(3)) FROM 2) AS TIME);
+  VALUES MAKE_TIME(/*hour*/, /*minute*/, /*second*/);
   -- =TIME(14, 30, 5)
-  VALUES CAST(SUBSTRING(CAST(100 + 14 AS VARCHAR(3)) FROM 2) || ':' || SUBSTRING(CAST(100 + 30 AS VARCHAR(3)) FROM 2)
-    || ':' || SUBSTRING(CAST(100 + 5 AS VARCHAR(3)) FROM 2) AS TIME);
-  -- COL1: 14:30:05
+  VALUES MAKE_TIME(14, 30, 5);
+  -- COL1: 14:30:05.000000
 
-A value that's out of range is an error, where a spreadsheet rolls it over.
-With literal values, write ``TIME '14:30:05'``.
+The result is a ``TIME(6)``, so the second can have a fraction. A value that's
+out of range is an error (``MAKE_TIME(24, 0, 0)`` is a ``22007``), where a
+spreadsheet rolls it over. With literal values, write ``TIME '14:30:05'``.
 
 TIMEVALUE
 ^^^^^^^^^

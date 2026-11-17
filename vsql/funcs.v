@@ -166,6 +166,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'NOW', [], false, func_now, new_type('TIMESTAMP WITH TIME ZONE',
 		6, 0), false, false, []})!
 
+	register_datetime_funcs(mut conn)!
 	register_math_funcs(mut conn)!
 	register_string_funcs(mut conn)!
 

@@ -168,6 +168,15 @@ time or timestamp, such as ``EXTRACT(YEAR FROM d)``. It also has fields that
 aren't in the standard: ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``,
 ``QUARTER`` and ``EPOCH``. See :ref:`EXTRACT <functions-date-and-time:EXTRACT>`.
 
+Building a Date or Time
+-----------------------
+
+``MAKE_DATE``, ``MAKE_TIME``, ``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``
+build a value from numbers, such as ``MAKE_DATE(2024, 2, 29)``. Each field
+must be in range (a ``22007`` error otherwise). Unlike the ``DATE`` function
+of a spreadsheet, they don't roll over, so ``MAKE_DATE(2024, 1, 32)`` is an
+error rather than February 1. See :doc:`functions-date-and-time`.
+
 Casting
 -------
 

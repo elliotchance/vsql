@@ -82,6 +82,21 @@ fn main() {
 		println('${errors.len} errors (see docs/standard-index.rst)')
 		exit(1)
 	}
+
+	// The rules that vsql does in some way: as the standard says, differently
+	// (with an issue for it) or with an implementation-defined choice. The
+	// total is every row of every part. CI adds it to the "SQL tests" status.
+	mut covered := 0
+	mut total := 0
+	for _, rows in index.rows {
+		for _, row in rows {
+			total++
+			if row.status in ['implemented', 'deviates', 'impl-defined'] {
+				covered++
+			}
+		}
+	}
+	println('Standard index: ${covered} of ${total} rules (implemented, deviates or impl-defined)')
 }
 
 fn read_index(mut errors []string) Index {

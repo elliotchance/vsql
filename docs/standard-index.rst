@@ -183,7 +183,13 @@ checks (without the PDFs) that:
 - Every row has a known status, and the code, tests and note that its status
   needs. Each code file must cite the rule.
 
-It runs in CI.
+Then it prints how many rows of every part are ``implemented``, ``deviates``
+or ``impl-defined``, such as::
+
+  Standard index: 5103 of 18806 rules (implemented, deviates or impl-defined)
+
+It runs in CI, which also shows that count in the "SQL tests" status of each
+commit.
 
 Reviewing a Subclause
 ---------------------

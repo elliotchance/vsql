@@ -512,7 +512,7 @@ location of each failed block:
 
 .. code-block:: text
 
-   SQL tests: 57412 statements, 48210 assertions, 1 failed
+   SQL tests: 57412 statements, 48210 assertions, 1 failed, 52.31 seconds
      FAILED tests/std_2_6_30_arithmetic.sql:3 (in memory through server, on disk through server)
 
 The "Summary for running V tests" line printed by V counts all of the SQL
@@ -520,7 +520,10 @@ tests as the one V test ``test_all``, so check the SQL tests summary to see
 which ones failed. The number of statements is every statement that was run,
 including each time that the setup or an include was run, and in each mode. The
 number of assertions is every ``--`` line that was checked against the output,
-in each mode.
+in each mode. The time is how long they took to run, not counting the build.
+CI shows the same counts and time as the "SQL tests" status of each commit (from
+the Linux x86-64 job, where the tests are built for coverage, so they're slower
+than a normal build).
 
 However, in some cases (such as debugging crashes) you might want more
 verbose output.

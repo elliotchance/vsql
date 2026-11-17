@@ -22,7 +22,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 8 of the 15 mandatory features** of ISO/IEC 9075-11:2006.
+**vsql supports 9 of the 15 mandatory features** of ISO/IEC 9075-11:2006.
 
 .. list-table:: Table 2 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -30,7 +30,7 @@ As of the latest version (or at least the version of this documentation)
    * - Feature ID
      - Feature Name
 
-   * - ⭕ **F021**
+   * - ✅ **F021**
      - **Basic information schema**
 
    * - ✅ F021-01
@@ -39,7 +39,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F021-02
      - ``TABLES`` view
 
-   * - ❌ F021-03
+   * - ✅ F021-03
      - ``VIEWS`` view
 
    * - ✅ F021-04

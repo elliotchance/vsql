@@ -404,6 +404,7 @@ fn (test SQLTest) through_server() bool {
 }
 
 fn test_all() ! {
+	stopwatch := time.new_stopwatch()
 	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
 	if $env('MEMORY') == '0' && $env('FILE') == '0' {
@@ -485,7 +486,10 @@ fn test_all() ! {
 	}
 	failed.sort()
 
-	println('SQL tests: ${statements} statements, ${assertions} assertions, ${failed.len} failed')
+	// The time is for running the tests, not building them, so it's the same
+	// as the "SQL tests" status that CI adds to each pull request.
+	seconds := stopwatch.elapsed().seconds()
+	println('SQL tests: ${statements} statements, ${assertions} assertions, ${failed.len} failed, ${seconds:.2f} seconds')
 	for location in failed {
 		println('  FAILED ${location}')
 	}

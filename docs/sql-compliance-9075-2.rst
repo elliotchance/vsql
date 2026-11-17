@@ -788,7 +788,7 @@ Optional Features
    * - ✅ **F385**
      - **Drop column generation expression clause**
 
-   * - ❌ **F386**
+   * - ✅ **F386**
      - **Set identity column generation clause**
 
    * - ✅ **F387**

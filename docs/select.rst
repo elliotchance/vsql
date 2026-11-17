@@ -17,7 +17,7 @@ Syntax
     [ HAVING <condition> ] ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
 
   <from_item> := <table_reference>
                  [ [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference>
@@ -31,12 +31,12 @@ Syntax
   TABLE <table_name>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
 
   <query> { UNION | EXCEPT | INTERSECT } [ ALL | DISTINCT ] <query>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
 
 ``LIMIT`` can be used instead of ``FETCH`` in either of these (see `LIMIT`_):
 
@@ -450,6 +450,18 @@ number, such as ``2.0``.
 
 When the ``<integer>`` is omitted (for example ``FETCH FIRST ROW ONLY``) it
 defaults to ``1``, so only the first row is returned.
+
+``<number> PERCENT`` returns that percentage of the rows instead, rounded up to
+a whole row. It can be any number, such as ``12.5``. The percentage is of all
+the rows of the query, before any are skipped by ``OFFSET``:
+
+.. code-block:: sql
+
+  SELECT * FROM products ORDER BY price DESC FETCH FIRST 10 PERCENT ROWS ONLY;
+
+Like any other count, it must come to at least one row, otherwise a 2201W error
+is raised. That includes a query that has no rows at all, since any percentage
+of no rows is zero rows.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
 with any value. Both words are provided solely for grammatical benefit.

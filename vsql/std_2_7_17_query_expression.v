@@ -1,5 +1,6 @@
 module vsql
 
+import math
 import time
 
 // ISO/IEC 9075-2:2023, 7.17, <query expression>
@@ -12,7 +13,7 @@ import time
 
 struct QueryExpression {
 	body   SimpleTable
-	fetch  ?ValueSpecification
+	fetch  ?FetchFirstClause
 	offset ?ValueSpecification
 	order  []SortSpecification
 	// updatability is the <updatability clause> of a <dynamic select statement>
@@ -38,10 +39,23 @@ fn (e QueryExpression) pstr(params map[string]Value) string {
 	}
 
 	if fetch := e.fetch {
-		s += ' FETCH FIRST ${fetch.pstr(params)} ROWS ONLY'
+		s += ' ${fetch.pstr(params)}'
 	}
 
 	return s
+}
+
+// FetchFirstClause is a <fetch first clause>, or a LIMIT. count is the <fetch
+// first row count>, or the <fetch first percentage> when percent is true.
+struct FetchFirstClause {
+	count   ValueSpecification
+	percent bool
+}
+
+fn (e FetchFirstClause) pstr(params map[string]Value) string {
+	percent := if e.percent { ' PERCENT' } else { '' }
+
+	return 'FETCH FIRST ${e.count.pstr(params)}${percent} ROWS ONLY'
 }
 
 // QuerySetOperator is the UNION, EXCEPT or INTERSECT of a SetOperation.
@@ -334,7 +348,7 @@ fn sort_keys_cmp(conn &Connection, left []Value, right []Value, specs []SortSpec
 // A LimitOperation stops after a specified number of rows have been received.
 // It is also used for OFFSET clauses.
 struct LimitOperation {
-	fetch   ?ValueSpecification
+	fetch   ?FetchFirstClause
 	offset  ?ValueSpecification
 	params  map[string]Value
 	columns Columns
@@ -342,7 +356,7 @@ mut:
 	conn &Connection
 }
 
-fn new_limit_operation(fetch ?ValueSpecification, offset ?ValueSpecification, params map[string]Value, mut conn Connection, columns Columns) &LimitOperation {
+fn new_limit_operation(fetch ?FetchFirstClause, offset ?ValueSpecification, params map[string]Value, mut conn Connection, columns Columns) &LimitOperation {
 	return &LimitOperation{fetch, offset, params, columns, conn}
 }
 
@@ -354,7 +368,7 @@ fn (o &LimitOperation) str() string {
 	}
 
 	if fetch := o.fetch {
-		s += ' FETCH FIRST ${fetch.pstr(o.params)} ROWS ONLY'
+		s += ' ${fetch.pstr(o.params)}'
 	}
 
 	return s.trim_space()
@@ -385,9 +399,16 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 		}
 	}
 
+	// The percentage is of all the rows, before any are skipped by OFFSET
+	// (General Rules, 7.b.ii).
 	mut fetch := i64(rows.len)
 	if f := o.fetch {
-		fetch = row_count('FETCH FIRST', f.compile(mut c)!.run(mut o.conn, Row{}, o.params)!)!
+		value := f.count.compile(mut c)!.run(mut o.conn, Row{}, o.params)!
+		fetch = if f.percent {
+			fetch_percentage(value, rows.len)!
+		} else {
+			row_count('FETCH FIRST', value)!
+		}
 
 		// General Rule 7c: At least one row must be fetched.
 		if fetch < 1 {
@@ -407,6 +428,32 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 // 0.
 fn row_count(clause string, value Value) !i64 {
 	return exact_integer('${clause} row count', value)
+}
+
+// fetch_percentage returns the number of rows for a <fetch first percentage>,
+// which is the percentage of total rows, rounded up. It's at most total, so
+// that a percentage over 100 doesn't overflow, and it's 0 (an exception for the
+// caller) when it's less than 1, including when there are no rows at all.
+//
+// The product of an exact numeric percentage and the number of rows is exact,
+// so that a percentage like 0.07 of 10000 rows is 7 rows, not 8.
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 29
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 7.b.ii
+fn fetch_percentage(value Value, total int) !i64 {
+	product := match value.typ.typ {
+		.is_smallint, .is_integer, .is_bigint, .is_numeric, .is_decimal {
+			value.as_numeric()!.multiply(new_numeric_from_string(total.str())).f64()
+		}
+		.is_real, .is_double_precision {
+			value.as_f64()! * total
+		}
+		else {
+			return sqlstate_42601('FETCH FIRST percentage must be numeric, got ${value.typ}')
+		}
+	}
+
+	return i64(math.min(math.max(math.ceil(product / 100.0), 0), total))
 }
 
 // exact_integer returns the value, which must be an exact numeric with scale 0

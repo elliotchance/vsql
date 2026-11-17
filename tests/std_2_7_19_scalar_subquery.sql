@@ -104,11 +104,12 @@ SELECT a.x, b.x FROM t1 AS a INNER JOIN t1 AS b ON b.x = (SELECT MAX(x) FROM t1)
 -- X: 2 X: 3
 -- X: 3 X: 3
 
--- # The subquery must have one column (Syntax Rules, 2).
-VALUES (SELECT * FROM t1);
+-- # The subquery must have one column (Syntax Rules, 2). Where a row can be,
+-- # it's a row subquery instead (see std_2_7_19_row_subquery.sql).
+VALUES (SELECT * FROM t1) + 1;
 VALUES 1 = (SELECT x, y FROM t1);
 -- error 42601: syntax error: subquery must return only one column
--- error 42601: syntax error: subquery must return only one column
+-- error 42601: syntax error: cannot compare a row of degree 1 with a row of degree 2
 
 -- # INSERT finds every value before any rows are written.
 CREATE TABLE t2 (x INT);

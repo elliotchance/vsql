@@ -163,7 +163,11 @@ aren't equal: ``(1, NULL, 3) = (1, 5, 4)`` is ``FALSE``, but
   (1, 2) BETWEEN (1, 1) AND (1, 3)                    -- TRUE
   (1, 2) IN ((3, 4), (1, 2))                          -- TRUE
   (x, y) IN (SELECT a, b FROM t)
+  (x, y) = (SELECT a, b FROM t WHERE id = 1)
   (1, CAST(NULL AS INT)) = (1, 2)                     -- UNKNOWN
+
+A subquery with more than one column is a row where a row can be compared (or in
+a ``VALUES``), see `Row Subquery`_.
 
 CASE
 ----
@@ -444,6 +448,29 @@ error if there is more than one row.
 
 A subquery can't be used in a ``CHECK`` constraint, or in the argument of an
 aggregate function (such as ``MAX``).
+
+Row Subquery
+------------
+
+.. code-block:: text
+
+  ( <query> )
+
+A subquery with more than one column can be used as a row: in a comparison of
+rows (``(a, b) = (SELECT x, y FROM t WHERE id = 1)``), as a row compared with
+``BETWEEN``, ``IN``, ``IS DISTINCT FROM``, ``IS NULL``, ``ALL``, ``SOME`` or
+``ANY``, as the operand of a ``CASE`` (or a value it's compared with), or as a
+row of a ``VALUES``. It's the values of its only row. If there are no rows,
+every value is ``NULL``, and more than one row is a 21000 cardinality violation
+error.
+
+*Examples*
+
+.. code-block:: sql
+
+  SELECT * FROM t WHERE (a, b) = (SELECT x, y FROM u WHERE id = 1);
+  VALUES CASE (SELECT x, y FROM u WHERE id = 1) WHEN (1, 2) THEN 'yes' END;
+  VALUES (SELECT x, y FROM u WHERE id = 1), (5, 6);
 
 Correlated Subqueries
 ^^^^^^^^^^^^^^^^^^^^^

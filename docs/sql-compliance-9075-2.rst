@@ -899,7 +899,7 @@ Optional Features
    * - ❌ **F611**
      - **Indicator data types**
 
-   * - ⭕ **F641**
+   * - ✅ **F641**
      - **Row and table constructors**
 
    * - ✅ **F651**

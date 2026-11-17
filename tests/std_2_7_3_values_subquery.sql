@@ -19,9 +19,9 @@ SELECT * FROM (VALUES (SELECT a FROM t)) AS x (a);
 EXPLAIN VALUES (SELECT a FROM t);
 -- EXPLAIN: VALUES (COL1 INTEGER) = ROW((SELECT A FROM T))
 
--- # A row subquery (F641) isn't supported yet.
+-- # A subquery of more than one column is a row subquery (F641), so it's a row.
 VALUES (SELECT a, a FROM t);
--- error 42601: syntax error: subquery must return only one column
+-- COL1: 123 COL2: 123
 
 -- # A scalar subquery can be one field of a ROW, and a subquery in FROM is a
 -- # derived table.

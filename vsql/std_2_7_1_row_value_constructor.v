@@ -57,6 +57,8 @@ fn (e RowValueConstructorPredicand) compile_fields(mut c Compiler) ![]CompileRes
 		CommonValueExpression, BooleanPredicand {
 			if e.is_case_operand() {
 				c.case_operands.last()
+			} else if subquery := subquery_of(e) {
+				subquery.compile_fields(mut c)!
 			} else {
 				[e.compile(mut c)!]
 			}
@@ -64,9 +66,17 @@ fn (e RowValueConstructorPredicand) compile_fields(mut c Compiler) ![]CompileRes
 	}
 }
 
-// ExplicitRowValueConstructor is a "ROW (...)". A row subquery (F641) isn't
-// supported yet. A subquery in a row is a scalar subquery, so it must have one
-// column.
+// subquery_of returns the subquery that's an entire predicand, such as
+// "(SELECT x, y FROM t)", which can be a <row subquery>.
+fn subquery_of(e RowValueConstructorPredicand) ?Subquery {
+	primary := primary_of(e)?
+
+	return if primary is Subquery { primary } else { none }
+}
+
+// ExplicitRowValueConstructor is a "ROW (...)". A subquery in a row is a scalar
+// subquery, so it must have one column. A <row subquery> is parsed as a
+// subquery (see Subquery.compile_fields).
 struct ExplicitRowValueConstructor {
 	exprs []ValueExpression
 }
@@ -127,7 +137,20 @@ fn (r RowValueConstructor) compile_elements(mut c Compiler) ![]CompileResult {
 		ExplicitRowValueConstructor {
 			return r.exprs.map(it.compile(mut c)!)
 		}
-		CommonValueExpression, BooleanValueExpression {
+		CommonValueExpression {
+			if subquery := subquery_of(RowValueConstructorPredicand(r)) {
+				return subquery.compile_fields(mut c)!
+			}
+
+			return [r.compile(mut c)!]
+		}
+		BooleanValueExpression {
+			if predicand := boolean_predicand_of(r) {
+				if subquery := subquery_of(RowValueConstructorPredicand(predicand)) {
+					return subquery.compile_fields(mut c)!
+				}
+			}
+
 			return [r.compile(mut c)!]
 		}
 	}

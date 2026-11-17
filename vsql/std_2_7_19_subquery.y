@@ -1,7 +1,7 @@
 %%
 
-// A <row subquery> (F641) isn't supported yet, so a subquery in a row is always
-// a <scalar subquery>.
+// A <row subquery> (F641) can't be told apart from a <scalar subquery> until
+// its degree is known, so it's parsed as one (see Subquery.compile_fields).
 scalar_subquery:
   subquery { $$.v = yy_box(new_subquery(($1.v as TablePrimary).body as QueryExpression)) }
 

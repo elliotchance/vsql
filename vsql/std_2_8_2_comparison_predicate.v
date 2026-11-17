@@ -174,9 +174,11 @@ fn compare_rows(conn &Connection, x []Value, y []Value) ![]CompareResult {
 //
 // ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Syntax Rules, 7.c.ii
 fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool) !CompileResult {
-	// The case operand of a simple CASE (see CaseOperand) can be a row.
+	// The case operand of a simple CASE (see CaseOperand) and a subquery (see
+	// Subquery.compile_fields) can be a row.
 	if e.left is ExplicitRowValueConstructor || e.right is ExplicitRowValueConstructor
-		|| e.left.is_case_operand() {
+		|| e.left.is_case_operand() || subquery_of(e.left) != none
+		|| subquery_of(e.right) != none {
 		return e.compile_row_comparison(mut c)!
 	}
 

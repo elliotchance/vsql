@@ -182,6 +182,16 @@ When there aren't any, every row of the left side is paired with every row of
 the right side. The right side of a ``NATURAL`` join can only be a join when
 it's in parentheses.
 
+A ``NOT NULL`` column stays ``NOT NULL`` after an ``INNER JOIN``, and after a
+``LEFT JOIN`` (or ``RIGHT JOIN``) if it's on the left (or right) side, which
+keeps all of its rows. Every column of the other side of an outer join can be
+``NULL``, since it is for a row without a match. A named column of ``USING`` (or
+``NATURAL``) is ``NOT NULL`` after an ``INNER JOIN``, and after an outer join
+it's ``NOT NULL`` only if the column of the side that keeps its rows is. The
+SQL standard leaves this choice to each database. It's what a client sees as
+the nullability of a result column, such as the ``NULLABLE`` of ``DESCRIBE``
+(see :doc:`language-c`).
+
 The same table name cannot be used more than once in a ``FROM`` clause. Use
 correlation names to join a table to itself:
 
@@ -316,6 +326,25 @@ Both queries must have the same number of columns, and each column must have
 compatible types (such as ``INTEGER`` and ``BIGINT``, or ``CHAR`` and
 ``VARCHAR``). Each column of the result has a type that fits the values of
 both queries, and the name of that column in the left query.
+
+The type that fits is chosen the same way for ``UNION``, ``EXCEPT``,
+``INTERSECT``, ``VALUES`` with more than one row, ``CASE`` and ``COALESCE``:
+
+- Approximate numbers: ``REAL`` if every value is a ``REAL``, otherwise
+  ``DOUBLE PRECISION``.
+- Exact numbers: if they're all integers, the largest of the integer types.
+  Otherwise, a ``NUMERIC`` (or ``DECIMAL``) with enough digits for the largest
+  integer part and the largest scale of them all, up to the maximum precision.
+  For example, a ``NUMERIC(3, 1)`` and a ``NUMERIC(5, 2)`` are a
+  ``NUMERIC(5, 2)``, so ``12.5`` becomes ``12.50``.
+- Strings: a ``CHAR`` of the longest length if they're all ``CHAR``,
+  otherwise a ``VARCHAR`` of the longest length.
+
+.. code-block:: sql
+
+  VALUES CAST(12.5 AS NUMERIC(3, 1)), CAST(123.25 AS NUMERIC(5, 2));
+  -- COL1: 12.50
+  -- COL1: 123.25
 
 ``INTERSECT`` is evaluated before ``UNION`` and ``EXCEPT``, so ``a UNION b
 INTERSECT c`` is ``a UNION (b INTERSECT c)``. Otherwise, the operators are

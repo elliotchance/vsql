@@ -290,8 +290,9 @@ struct vsql_m_input {
 };
 
 /* vsql_m_bind_item binds DATA of an item descriptor area to dynamic parameter
- * i, or the null value if INDICATOR is negative. The value isn't cast to the
- * type of the dynamic parameter, since it isn't determined (#649).
+ * i, or the null value if INDICATOR is negative. The value is bound as its
+ * own type, and is cast to the type of the dynamic parameter when the
+ * statement is executed (see PreparedStmt.with_parameters).
  *
  * ISO/IEC 9075-2:2023, 20.11, <input using clause>, General Rules, 6.b.i */
 static SQLRETURN vsql_m_bind_item(SQLHSTMT stmt, SQLSMALLINT i,

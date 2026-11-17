@@ -284,7 +284,8 @@ or ``VALUES``). Use ``SELECT ... INTO`` to get one row, or a cursor (see
 `Cursors`_) to get each row. It can also be one of the connection statements:
 
 - ``CONNECT TO <server> [ AS <name> ] [ USER <user> ]`` or ``CONNECT TO
-  DEFAULT``. The server is the path to a database file (or ``:memory:``). Each
+  DEFAULT``. The server is the path to a database file (or ``:memory:``), of at
+  most 128 bytes (use a relative path or a shorter link otherwise). Each
   value is a string, or a ``CHARACTER`` or ``CHARACTER VARYING`` parameter.
   Without ``AS``, the name is the server, so it must also be a valid name
   (otherwise the ``SQLSTATE`` is ``2E000``).

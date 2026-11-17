@@ -11,6 +11,31 @@ import net
 import os
 import time
 
+$if windows {
+	#include "@VMODROOT/vsql/testing_crash_windows.h"
+}
+
+fn C.vsql_test_install_crash_report()
+fn C.vsql_test_set_location(&char)
+
+// install_sql_test_crash_report makes a crash on Windows (such as an access
+// violation) print the test that was running, the address that was read or
+// written, and the stack of the thread that crashed, as a module and an offset
+// into it. V only prints the address that crashed. See testing_crash_windows.h.
+fn install_sql_test_crash_report() {
+	$if windows {
+		C.vsql_test_install_crash_report()
+	}
+}
+
+// set_sql_test_location is what a crash report says was running, see
+// install_sql_test_crash_report.
+fn set_sql_test_location(location string) {
+	$if windows {
+		C.vsql_test_set_location(&char(location.str))
+	}
+}
+
 // sql_test_dir holds the database files of the tests that are running.
 fn sql_test_dir() string {
 	return os.join_path(os.temp_dir(), 'vsql-sql-test-${os.getpid()}')

@@ -19,10 +19,11 @@ struct KeyOrderColumn {
 // clause has the same value in every row, so it can be skipped, or be a sort key
 // in either direction.
 //
-// A NULL is in the same place in an index as in an ORDER BY (first for ASC and
-// last for DESC). Rows that are equal for every sort key (peers) are in an
-// implementation-dependent order, which is the order of the rest of the key (and
-// then the row).
+// A NULL is in the same place in an index as in an ORDER BY without a <null
+// ordering> (first for ASC and last for DESC), so a sort key with the other
+// <null ordering> isn't in the order of the key. Rows that are equal for every
+// sort key (peers) are in an implementation-dependent order, which is the order
+// of the rest of the key (and then the row).
 //
 // ISO/IEC 9075-2:2023, 10.10, <sort specification list>, General Rules, 1
 fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[string][]ValueExpression, params map[string]Value, mut conn Connection) bool {
@@ -149,7 +150,8 @@ fn is_key_order(order []SortSpecification, columns []string, key_columns []KeyOr
 			next++
 		}
 		if next >= key_columns.len || key_columns[next].name != columns[i]
-			|| key_columns[next].desc == spec.is_asc {
+			|| key_columns[next].desc == spec.is_asc
+			|| spec.nulls_first != spec.is_asc {
 			return false
 		}
 		next++

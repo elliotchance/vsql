@@ -742,13 +742,14 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	mut order := []SortSpecification{}
 	for col in group_clause {
 		order << SortSpecification{
-			expr:   ValueExpression(BooleanValueExpression{
+			expr:        ValueExpression(BooleanValueExpression{
 				term: BooleanTerm{
 					factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(col)))),
 						false, none, false)
 				}
 			})
-			is_asc: true
+			is_asc:      true
+			nulls_first: true
 		}
 	}
 
@@ -887,8 +888,9 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			}
 
 			order << SortSpecification{
-				expr:   spec.expr
-				is_asc: spec.is_asc
+				expr:        spec.expr
+				is_asc:      spec.is_asc
+				nulls_first: spec.nulls_first
 			}
 		}
 

@@ -1046,7 +1046,7 @@ Optional Features
    * - ✅ **F866**
      - **FETCH FIRST clause: PERCENT option**
 
-   * - ❌ **F867**
+   * - ✅ **F867**
      - **FETCH FIRST clause: WITH TIES option**
 
    * - ⭕ **F868**

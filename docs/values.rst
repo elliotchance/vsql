@@ -15,7 +15,7 @@ Syntax
   VALUES ( <expression> , <expression>, ... ), ...
   VALUES ROW(<expression>, ...), ...
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
 ``VALUES 1, 2`` is two rows of one column. Use parentheses or ``ROW`` for more
 than one column in a row: ``VALUES (1, 2)`` and ``VALUES ROW(1, 2)`` are the

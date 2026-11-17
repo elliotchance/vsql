@@ -301,14 +301,28 @@ result_offset_clause:
   }
 
 fetch_first_clause:
-  FETCH first_or_next fetch_first_quantity row_or_rows ONLY { $$.v = $3.v }
+  FETCH first_or_next fetch_first_quantity row_or_rows only_or_with_ties {
+    $$.v = yy_box(FetchFirstClause{
+      ...$3.v as FetchFirstClause
+      with_ties: $5.v as bool
+    })
+  }
 // Without a row count, it's 1.
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 7.b.iii
-| FETCH first_or_next row_or_rows ONLY {
+| FETCH first_or_next row_or_rows only_or_with_ties {
     $$.v = yy_box(FetchFirstClause{
-      count: ValueSpecification(new_integer_value(1))
+      count:     ValueSpecification(new_integer_value(1))
+      with_ties: $4.v as bool
     })
+  }
+
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 24
+only_or_with_ties:
+  ONLY { $$.v = false }
+| WITH TIES {
+    flag(mut yylex, 'F867')
+    $$.v = true
   }
 
 // LIMIT is a vsql extension that's the same as a fetch_first_clause (V203-01).

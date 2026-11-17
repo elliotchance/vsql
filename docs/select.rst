@@ -409,9 +409,18 @@ expressions, for example:
 
   SELECT city FROM products GROUP BY city ORDER BY MAX(price);
 
-The SQL standard doesn't define if ``NULL`` should always be ordered first or
-last. In vsql, ``NULL`` is always considered to be less than any other non
-``NULL`` value.
+Each sort key can be followed by ``NULLS FIRST`` or ``NULLS LAST`` to put the
+``NULL`` values before or after all of the other values. This doesn't depend on
+the direction, so ``NULLS FIRST`` puts them first for ``DESC`` too:
+
+.. code-block:: sql
+
+  SELECT name, price FROM products ORDER BY price DESC NULLS LAST, name;
+
+Without ``NULLS FIRST`` or ``NULLS LAST``, ``NULL`` is less than any other value
+in vsql (the SQL standard leaves that up to the database), so it's first for
+``ASC`` and last for ``DESC``. The same goes for the ``ORDER BY`` of a cursor or
+of an aggregate function's ``WITHIN GROUP``.
 
 OFFSET
 ------

@@ -244,9 +244,17 @@ within_group_sort_specification_list:
   }
 
 within_group_sort_specification:
-  value_expression { $$.v = yy_box(SortSpecification{$1.v as ValueExpression, true}) }
+  value_expression {
+    $$.v = yy_box(new_sort_specification($1.v as ValueExpression, true, none))
+  }
 | value_expression ordering_specification {
-    $$.v = yy_box(SortSpecification{$1.v as ValueExpression, $2.v as bool})
+    $$.v = yy_box(new_sort_specification($1.v as ValueExpression, $2.v as bool, none))
+  }
+| value_expression null_ordering {
+    $$.v = yy_box(new_sort_specification($1.v as ValueExpression, true, $2.v as bool))
+  }
+| value_expression ordering_specification null_ordering {
+    $$.v = yy_box(new_sort_specification($1.v as ValueExpression, $2.v as bool, $3.v as bool))
   }
 
 listagg_separator:

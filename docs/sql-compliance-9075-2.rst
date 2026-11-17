@@ -1511,7 +1511,7 @@ Optional Features
    * - ❌ **T601**
      - **Local cursor references**
 
-   * - ❌ **T611**
+   * - ⭕ **T611**
      - **Elementary OLAP operations**
 
    * - ⭕ **T612**

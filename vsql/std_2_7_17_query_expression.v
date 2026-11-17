@@ -294,11 +294,12 @@ fn sort_keys_cmp(conn &Connection, left []Value, right []Value, specs []SortSpec
 	// Each sort key is compared in turn, and the first one that isn't equal
 	// decides the order of the two rows. The values are compared like a
 	// <comparison predicate> with < (or > for DESC). Two null values are equal,
-	// and a null value is before any other value, so the implementation-defined
-	// <null ordering> is NULLS FIRST for ASC and NULLS LAST for DESC (there's no
-	// <null ordering>). Rows that are equal for every sort key (peers) are in an
-	// implementation-dependent order, which is the order they were read in since
-	// the merge sort in OrderOperation.execute is stable.
+	// and a null value is before every other value for NULLS FIRST, or after
+	// them for NULLS LAST, whichever the direction is. The implementation-defined
+	// default <null ordering> is NULLS FIRST for ASC and NULLS LAST for DESC
+	// (see new_sort_specification). Rows that are equal for every sort key
+	// (peers) are in an implementation-dependent order, which is the order they
+	// were read in since the merge sort in OrderOperation.execute is stable.
 	//
 	// ISO/IEC 9075-2:2023, 10.10, <sort specification list>, Syntax Rules, 2 and 3
 	// ISO/IEC 9075-2:2023, 10.10, <sort specification list>, General Rules, 1
@@ -308,11 +309,11 @@ fn sort_keys_cmp(conn &Connection, left []Value, right []Value, specs []SortSpec
 		}
 
 		if left[i].is_null && !right[i].is_null {
-			return if spec.is_asc { -1 } else { 1 }
+			return if spec.nulls_first { -1 } else { 1 }
 		}
 
 		if !left[i].is_null && right[i].is_null {
-			return if spec.is_asc { 1 } else { -1 }
+			return if spec.nulls_first { 1 } else { -1 }
 		}
 
 		cmp := compare(conn, left[i], right[i])!

@@ -376,7 +376,7 @@
 10.10                    implemented  vsql/std_2_10_10_sort_specification_list.v tests/std_2_7_17_order.sql
 10.10/SR/1               definition   - -
 10.10/SR/2               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql every type can be ordered
-10.10/SR/3               impl-defined vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql nulls are before any other value, so NULLS FIRST for ASC and NULLS LAST for DESC
+10.10/SR/3               impl-defined vsql/std_2_10_10_sort_specification_list.v tests/std_2_10_10_order_nulls.sql nulls are before any other value, so NULLS FIRST for ASC and NULLS LAST for DESC
 10.10/GR/1               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.a             definition   - -
 10.10/GR/1.b             definition   - -
@@ -387,16 +387,16 @@
 10.10/GR/1.e.ii          container    - -
 10.10/GR/1.e.ii.1        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
 10.10/GR/1.e.ii.2        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
-10.10/GR/1.e.ii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
-10.10/GR/1.e.ii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.2.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql,tests/std_2_10_10_null_ordering.sql
+10.10/GR/1.e.ii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql,tests/std_2_10_10_null_ordering.sql
 10.10/GR/1.e.ii.3        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
-10.10/GR/1.e.ii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
-10.10/GR/1.e.ii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql
+10.10/GR/1.e.ii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql,tests/std_2_10_10_null_ordering.sql
+10.10/GR/1.e.ii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_10_10_order_nulls.sql,tests/std_2_10_10_null_ordering.sql
 10.10/GR/1.f             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.g             n/a          - - user-defined types (S023)
 10.10/GR/1.h             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql
 10.10/GR/1.i             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_order.sql peers keep the order they were read in, since the merge sort is stable
-10.10/CR/1               n/a          - - <null ordering> (T611)
+10.10/CR/1               implemented  vsql/std_2_10_10_sort_specification_list.y tests/std_2_10_10_null_ordering.sql
 # 10.11, <JSON aggregate function>
 10.11                    n/a          - - JSON aggregate functions (T811)
 10.11/SR/1               n/a          - - JSON aggregate functions (T811)

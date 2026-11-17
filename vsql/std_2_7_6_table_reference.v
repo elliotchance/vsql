@@ -53,6 +53,7 @@ enum JoinType {
 	inner
 	left
 	right
+	full
 }
 
 fn (t JoinType) str() string {
@@ -60,6 +61,7 @@ fn (t JoinType) str() string {
 		.inner { 'INNER' }
 		.left { 'LEFT' }
 		.right { 'RIGHT' }
+		.full { 'FULL' }
 	}
 }
 

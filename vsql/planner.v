@@ -183,10 +183,16 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	before_left := tables.keys()
 	first_table := tables.len
 	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
-		params, mut conn, allow_virtual, mut tables, preserved && join.join_type != .right)!
+		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
+			.right,
+			.full,
+		])!
 	before_right := tables.keys()
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
-		params, mut conn, allow_virtual, mut tables, preserved && join.join_type != .left)!
+		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
+			.left,
+			.full,
+		])!
 	left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
 	right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
 
@@ -230,7 +236,11 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 
 	left_names := before_right.filter(it !in before_left)
 	right_names := tables.keys().filter(it !in before_right)
-	lookup := if join.join_type == .right {
+	// A FULL join needs every row of the right side to find the ones that
+	// didn't match, so it doesn't use a lookup.
+	lookup := if join.join_type == .full {
+		none
+	} else if join.join_type == .right {
 		join_lookup(join.left_table, left_names, right_names, specification, tables,
 			params, mut conn, allow_virtual)
 	} else {
@@ -257,6 +267,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		.inner { []string{} }
 		.left { tables.keys().filter(it !in before_right) }
 		.right { before_right.filter(it !in before_left) }
+		.full { tables.keys().filter(it !in before_left) }
 	}
 	for name, table in tables.clone() {
 		if name in null_extended {

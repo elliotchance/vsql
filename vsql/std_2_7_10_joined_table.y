@@ -4,7 +4,7 @@
 //
 // Specify a table derived from a Cartesian product, inner join, or outer join.
 //
-// There's no FULL (F406), or join correlation name (F404).
+// There's no join correlation name (F404).
 
 joined_table:
   cross_join { $$.v = $1.v }
@@ -74,5 +74,10 @@ join_type:
 outer_join_type:
   LEFT { $$.v = yy_box(JoinType.left) }
 | RIGHT { $$.v = yy_box(JoinType.right) }
+| FULL {
+    // ISO/IEC 9075-2:2023, 7.10, <joined table>, Conformance Rules, 3
+    flag(mut yylex, 'F406')
+    $$.v = yy_box(JoinType.full)
+  }
 
 %%

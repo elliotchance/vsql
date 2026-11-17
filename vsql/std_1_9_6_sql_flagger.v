@@ -1158,6 +1158,9 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // ISO/IEC 9075-11:2006, 5.55, SQL_PARTS view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.57, SQL_SIZING_PROFILES view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.61, TABLES view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.73, VIEW_COLUMN_USAGE view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.74, VIEW_ROUTINE_USAGE view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.75, VIEW_TABLE_USAGE view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 7, 8, 9, 18, 19, 20, 37, 38, 39, 40 and 42
 const information_schema_features = {
 	'CHARACTER_SETS':                  ['F391']
@@ -1188,6 +1191,9 @@ const information_schema_features = {
 	'SQL_SIZING_PROFILES':             ['F391', 'F502']
 	'SQL_SIZING_PROFS':                ['F502']
 	'TABLES':                          ['F391']
+	'VIEW_COLUMN_USAGE':               ['F341']
+	'VIEW_ROUTINE_USAGE':              ['F341']
+	'VIEW_TABLE_USAGE':                ['F341']
 }
 
 // information_schema_column_features are the features that a reference to a

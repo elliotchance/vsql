@@ -401,7 +401,7 @@
 6.49/DE/5                missing      - - authorization identifiers and privileges (#732)
 6.49/DE/6                missing      - - authorization identifiers and privileges (#732)
 # 6.50, TABLES base table
-6.50                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql TABLE_TYPE is VIEW for the INFORMATION_SCHEMA, but there is no VIEWS view for TABLES_CHECK_NOT_VIEW (#731)
+6.50                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql,tests/std_11_5_76_views.sql TABLE_TYPE is VIEW for the INFORMATION_SCHEMA, which are each in VIEWS
 6.50/DE/1                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql
 6.50/DE/2                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql,tests/std_11_5_1_information_schema.sql BASE TABLE or VIEW, there are no temporary tables (F531)
 6.50/DE/3                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_61_tables.sql always NULL, there are no typed tables (S081)
@@ -499,23 +499,23 @@
 6.61/DE/9                n/a          - - user-defined types (S023)
 6.61/DE/10               n/a          - - user-defined types (S023)
 # 6.62, VIEW_COLUMN_USAGE base table
-6.62                     missing      - - views (#731)
-6.62/DE/1                missing      - - views (#731)
-6.62/DE/2                missing      - - views (#731)
+6.62                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty
+6.62/DE/1                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
+6.62/DE/2                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
 # 6.63, VIEW_ROUTINE_USAGE base table
-6.63                     missing      - - views (#731)
-6.63/DE/1                missing      - - views (#731)
-6.63/DE/2                missing      - - views (#731)
-6.63/DE/3                missing      - - views (#731)
+6.63                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty
+6.63/DE/1                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
+6.63/DE/2                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
+6.63/DE/3                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
 # 6.64, VIEW_TABLE_USAGE base table
-6.64                     missing      - - views (#731)
-6.64/DE/1                missing      - - views (#731)
-6.64/DE/2                missing      - - views (#731)
+6.64                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty
+6.64/DE/1                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
+6.64/DE/2                n/a          - - no rows, the only views are the INFORMATION_SCHEMA's own until CREATE VIEW (#731)
 # 6.65, VIEWS base table
-6.65                     missing      - - views (#731)
-6.65/DE/1                missing      - - views (#731)
-6.65/DE/2                missing      - - views (#731)
-6.65/DE/2.a              missing      - - views (#731)
-6.65/DE/2.b              missing      - - views (#731)
-6.65/DE/3                missing      - - views (#731)
-6.65/DE/4                missing      - - views (#731)
+6.65                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql the views of the INFORMATION_SCHEMA, until CREATE VIEW (#731)
+6.65/DE/1                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.65/DE/2                container    - -
+6.65/DE/2.a              n/a          - - the views of the INFORMATION_SCHEMA have no query text, until CREATE VIEW (#731)
+6.65/DE/2.b              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NULL for the views of the INFORMATION_SCHEMA
+6.65/DE/3                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NONE, there is no WITH CHECK OPTION (#731)
+6.65/DE/4                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NO

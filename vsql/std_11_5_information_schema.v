@@ -337,6 +337,8 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 	catalog.register_constraint_table_usage_view()!
 	catalog.register_schemata_view()!
 	catalog.register_sequences_view()!
+	catalog.register_views_view()!
+	catalog.register_view_usage_views()!
 
 	// ISO/IEC 9075-11:2006, 5.77, Short name views
 	catalog.add_short_name_view('CATALOG_NAME', 'INFORMATION_SCHEMA_CATALOG_NAME', map[string]string{})!

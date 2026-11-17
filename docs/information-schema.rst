@@ -99,6 +99,49 @@ One row for each table, including the tables of the ``INFORMATION_SCHEMA``
       ``USER_DEFINED_TYPE_NAME``, ``COMMIT_ACTION``
     - Always ``NULL`` (typed tables and temporary tables are not supported).
 
+``VIEWS``
+---------
+
+One row for each view in ``TABLES``, in the same order. Views can't be created
+yet, so these are the tables of the ``INFORMATION_SCHEMA``.
+
+.. code-block:: sql
+
+  SELECT table_name, check_option, is_updatable FROM information_schema.views
+  WHERE table_name = 'TABLES';
+  -- TABLE_NAME: TABLES CHECK_OPTION: NONE IS_UPDATABLE: NO
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
+    - The fully qualified name of the view.
+
+  * - ``VIEW_DEFINITION``
+    - The SQL of the view's query. It's ``NULL`` for the tables of the
+      ``INFORMATION_SCHEMA``, which are built by vsql rather than by a query.
+
+  * - ``CHECK_OPTION``
+    - Always ``NONE``.
+
+  * - ``IS_UPDATABLE``, ``INSERTABLE_INTO``
+    - Always ``NO``.
+
+``VIEW_COLUMN_USAGE``, ``VIEW_ROUTINE_USAGE`` and ``VIEW_TABLE_USAGE``
+----------------------------------------------------------------------
+
+The columns, routines and tables that each view uses. They're always empty,
+because the tables of the ``INFORMATION_SCHEMA`` (the only views) aren't
+described by them. ``VIEW_COLUMN_USAGE`` and ``VIEW_TABLE_USAGE`` have the
+``VIEW_CATALOG``, ``VIEW_SCHEMA`` and ``VIEW_NAME`` of the view, then the
+``TABLE_CATALOG``, ``TABLE_SCHEMA`` and ``TABLE_NAME`` of a table that it uses
+(and ``COLUMN_NAME`` for a column). ``VIEW_ROUTINE_USAGE`` has the
+``TABLE_CATALOG``, ``TABLE_SCHEMA`` and ``TABLE_NAME`` of the view, then the
+``SPECIFIC_CATALOG``, ``SPECIFIC_SCHEMA`` and ``SPECIFIC_NAME`` of a routine.
+
 ``COLUMNS``
 -----------
 

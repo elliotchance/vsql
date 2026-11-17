@@ -10,8 +10,6 @@ Exponents and logarithms accept any number, which is converted to a
 return a ``DOUBLE PRECISION``. A result that is too large or too small to be a
 ``DOUBLE PRECISION`` is a ``22003`` error (numeric value out of range).
 
-.. _function-cbrt:
-
 CBRT
 ^^^^
 
@@ -46,8 +44,6 @@ The result is approximate, even for a perfect cube.
   - MySQL, SQLite, SQL Server and Oracle: ``POWER(x, 1.0 / 3)``, for an ``x``
     that isn't negative.
 
-.. _function-exp:
-
 EXP
 ^^^
 
@@ -80,8 +76,6 @@ result is too large) or less than about -745.13 (the result is too small) is a
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** ``EXP`` in all of them.
 
-.. _function-ln:
-
 LN
 ^^
 
@@ -113,8 +107,6 @@ it's a ``2201E`` error (invalid argument for natural logarithm).
   - PostgreSQL, MySQL, SQLite and Oracle: ``LN``.
   - SQL Server: ``LOG(x)``. MySQL also has ``LOG(x)``, which is the natural
     logarithm there too, but in PostgreSQL and SQLite ``LOG(x)`` is base 10.
-
-.. _function-log:
 
 LOG
 ^^^
@@ -156,8 +148,6 @@ disagree on its base.
   - PostgreSQL, MySQL, SQLite and Oracle: ``LOG(base, number)``.
   - SQL Server: ``LOG(number, base)``, the arguments are the other way around.
 
-.. _function-log10:
-
 LOG10
 ^^^^^
 
@@ -189,8 +179,6 @@ greater than 0, otherwise it's a ``22003`` error (numeric value out of range).
   - PostgreSQL, MySQL, SQLite and SQL Server: ``LOG10``. PostgreSQL and SQLite
     also have ``LOG(x)``, which is base 10 there.
   - Oracle: ``LOG(10, x)``.
-
-.. _function-power:
 
 POWER
 ^^^^^
@@ -234,8 +222,6 @@ POWER
   - PostgreSQL: ``POWER`` or the ``^`` operator.
   - MySQL and SQLite: ``POWER`` or ``POW``.
   - SQL Server and Oracle: ``POWER``.
-
-.. _function-sqrt:
 
 SQRT
 ^^^^

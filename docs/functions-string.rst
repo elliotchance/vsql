@@ -13,8 +13,6 @@ Lengths and positions are counted in characters, where a multibyte character
 (such as ``😊``) counts as one, unless the function says otherwise. The first
 character is at position 1.
 
-.. _function-btrim:
-
 BTRIM
 ^^^^^
 
@@ -49,8 +47,6 @@ start or the end.
 - **SQL standard:** Optional feature T056.
 - **Other databases:** ``BTRIM`` in PostgreSQL.
 
-.. _function-char_length:
-
 CHAR_LENGTH
 ^^^^^^^^^^^
 
@@ -83,8 +79,6 @@ character). The length of an empty string is 0, and the length of a
   - SQLite and Oracle: ``LENGTH``.
   - SQL Server: ``LEN``, which doesn't count spaces at the end.
 
-.. _function-character_length:
-
 CHARACTER_LENGTH
 ^^^^^^^^^^^^^^^^
 
@@ -99,8 +93,6 @@ CHARACTER_LENGTH
 
 - **SQL standard:** Core SQL (E021-04).
 - **Other databases:** see ``CHAR_LENGTH``.
-
-.. _function-chr:
 
 CHR
 ^^^
@@ -142,8 +134,6 @@ noncharacter (such as ``0xFFFF``) is a ``22029`` error, the same as in a
   - SQLite: ``CHAR``.
   - SQL Server: ``NCHAR``.
 
-.. _function-initcap:
-
 INITCAP
 ^^^^^^^
 
@@ -178,8 +168,6 @@ case mappings, so it can also be truncated with a ``01004`` warning.
   - PostgreSQL and Oracle: ``INITCAP``.
   - MySQL, SQLite and SQL Server: no equivalent.
 
-.. _function-lower:
-
 LOWER
 ^^^^^
 
@@ -210,8 +198,6 @@ spaces. See ``UPPER`` for an example.
 - **SQL standard:** Core SQL (E021-08).
 - **Other databases:** ``LOWER`` in all of them, and ``LCASE`` in MySQL. SQLite
   only converts ASCII letters (unless it's built with ICU).
-
-.. _function-lpad:
 
 LPAD
 ^^^^
@@ -249,8 +235,6 @@ characters from the end. A ``LENGTH`` of less than 1 is an empty string.
 - **SQL standard:** Optional feature T055.
 - **Other databases:** ``LPAD`` in PostgreSQL, MySQL and Oracle.
 
-.. _function-ltrim:
-
 LTRIM
 ^^^^^
 
@@ -280,8 +264,6 @@ Works like `BTRIM`_, but only removes the ``CHARACTERS`` from the start of
 - **SQL standard:** Optional feature T056.
 - **Other databases:** ``LTRIM`` in PostgreSQL, SQLite and Oracle. MySQL and
   SQL Server only remove spaces.
-
-.. _function-octet_length:
 
 OCTET_LENGTH
 ^^^^^^^^^^^^
@@ -313,8 +295,6 @@ UTF-8. A character can be 1 to 4 bytes.
   - SQL Server: ``DATALENGTH``, which is the length in the encoding of the
     value.
   - Oracle: ``LENGTHB``.
-
-.. _function-overlay:
 
 OVERLAY
 ^^^^^^^
@@ -406,8 +386,6 @@ Without ``FOR``, ``USING OCTETS`` replaces as many bytes as there are in
     is required, and a ``START`` outside of the string returns ``NULL``.
   - SQLite and Oracle: ``SUBSTR(...) || replacement || SUBSTR(...)``.
 
-.. _function-position:
-
 POSITION
 ^^^^^^^^
 
@@ -447,8 +425,6 @@ Matching is case-sensitive. An empty ``SEARCH`` is found at the start of any
   - SQLite and Oracle: ``INSTR(string, search)``.
   - SQL Server: ``CHARINDEX(search, string)``.
 
-.. _function-repeat:
-
 REPEAT
 ^^^^^^
 
@@ -483,8 +459,6 @@ than 10485760 characters is a ``22001`` error.
   - SQL Server: ``REPLICATE``.
   - Oracle: ``RPAD('', n * LENGTH(s), s)``.
   - SQLite: no equivalent.
-
-.. _function-replace:
 
 REPLACE
 ^^^^^^^
@@ -536,8 +510,6 @@ longer than ``STRING``.
   (or empty) ``FROM`` or ``TO`` isn't ``NULL``, it's treated like an empty
   string.
 
-.. _function-rpad:
-
 RPAD
 ^^^^
 
@@ -566,8 +538,6 @@ already longer is still cut by removing characters from the end.
 
 - **SQL standard:** Optional feature T055.
 - **Other databases:** ``RPAD`` in PostgreSQL, MySQL and Oracle.
-
-.. _function-rtrim:
 
 RTRIM
 ^^^^^
@@ -598,8 +568,6 @@ Works like `BTRIM`_, but only removes the ``CHARACTERS`` from the end of
 - **SQL standard:** Optional feature T056.
 - **Other databases:** ``RTRIM`` in PostgreSQL, SQLite and Oracle. MySQL and
   SQL Server only remove spaces.
-
-.. _function-split_part:
 
 SPLIT_PART
 ^^^^^^^^^^
@@ -645,8 +613,6 @@ doesn't split the string, so it's the only field. The result is a
   - Oracle: ``REGEXP_SUBSTR``.
   - SQL Server: ``STRING_SPLIT``, which returns a table.
   - SQLite: no equivalent.
-
-.. _function-substring:
 
 SUBSTRING
 ^^^^^^^^^
@@ -759,8 +725,6 @@ its own (a ``2201B`` error).
   A negative ``START`` counts from the end of the string in MySQL, SQLite and
   Oracle, so ``SUBSTR('hello', -3)`` is ``'llo'`` there.
 
-.. _function-trim:
-
 TRIM
 ^^^^
 
@@ -824,8 +788,6 @@ character is removed, not other white space such as tabs or new lines.
   - Oracle: ``TRIM``, which only allows one character like the standard, and
     ``LTRIM`` and ``RTRIM`` with any number of characters.
 
-.. _function-unicode:
-
 UNICODE
 ^^^^^^^
 
@@ -863,8 +825,6 @@ The Unicode code point of the first character of the string. An empty string is
   - SQLite: ``UNICODE``.
   - SQL Server: ``UNICODE``.
   - Oracle: ``ASCII`` (of the first byte in the database character set).
-
-.. _function-upper:
 
 UPPER
 ^^^^^

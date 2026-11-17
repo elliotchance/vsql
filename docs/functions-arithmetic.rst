@@ -18,8 +18,6 @@ is converted to a ``DOUBLE PRECISION``.
 A number literal has the smallest type that holds it, so ``-5`` is a
 ``SMALLINT`` and ``1.50`` is a ``NUMERIC(3, 2)``.
 
-.. _function-abs:
-
 ABS
 ^^^
 
@@ -62,8 +60,6 @@ literal ``-32768`` is a ``SMALLINT``, so ``ABS(-32768)`` is also an error, use
 - **SQL standard:** T441 (ABS and MOD functions).
 - **Other databases:** ``ABS`` in all of them.
 
-.. _function-factorial:
-
 FACTORIAL
 ^^^^^^^^^
 
@@ -104,8 +100,6 @@ of range).
   - PostgreSQL: ``FACTORIAL``.
   - MySQL, SQLite, SQL Server and Oracle: none.
 
-.. _function-gcd:
-
 GCD
 ^^^
 
@@ -143,8 +137,6 @@ BIGINT``. A result that doesn't fit in it, such as
 
   - PostgreSQL: ``GCD``.
   - MySQL, SQLite, SQL Server and Oracle: none.
-
-.. _function-lcm:
 
 LCM
 ^^^
@@ -184,8 +176,6 @@ out of range).
 
   - PostgreSQL: ``LCM``.
   - MySQL, SQLite, SQL Server and Oracle: none.
-
-.. _function-mod:
 
 MOD
 ^^^
@@ -243,8 +233,6 @@ vsql extension flagged by ``V403-01`` (see :doc:`sql-flagging`).
   - SQL Server: ``x % y``.
   - Oracle: ``MOD(x, y)``.
 
-.. _function-sign:
-
 SIGN
 ^^^^
 
@@ -279,8 +267,6 @@ a ``NUMERIC(1)``, and a ``REAL`` returns a ``DOUBLE PRECISION``.
 
 - **SQL standard:** not standard.
 - **Other databases:** ``SIGN`` in all of them.
-
-.. _function-width_bucket:
 
 WIDTH_BUCKET
 ^^^^^^^^^^^^

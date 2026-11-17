@@ -37,8 +37,6 @@ The examples use this table:
   INSERT INTO points (x, y) VALUES
     (1e0, 1e0), (2e0, 3e0), (3e0, 2e0), (4e0, 5e0), (5e0, NULL);
 
-.. _function-corr:
-
 CORR
 ^^^^
 
@@ -66,8 +64,6 @@ is the same.
 - **SQL standard:** T621 (enhanced numeric functions). The standard defines ``CORR`` as the square root of ``REGR_R2``, which is never negative. vsql returns the sign as well, like the other databases.
 - **Other databases:** PostgreSQL and Oracle: ``CORR``. MySQL, SQLite and SQL Server don't have it.
 
-.. _function-covar_pop:
-
 COVAR_POP
 ^^^^^^^^^
 
@@ -90,8 +86,6 @@ larger, and negative when ``Y`` tends to be smaller.
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``COVAR_POP``. MySQL, SQLite and SQL Server don't have it.
-
-.. _function-covar_samp:
 
 COVAR_SAMP
 ^^^^^^^^^^
@@ -116,8 +110,6 @@ rows.
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``COVAR_SAMP``. MySQL, SQLite and SQL Server don't have it.
 
-.. _function-regr_avgx:
-
 REGR_AVGX
 ^^^^^^^^^
 
@@ -139,8 +131,6 @@ rows where ``Y`` is ``NULL``.
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_AVGX``. MySQL, SQLite and SQL Server don't have it.
-
-.. _function-regr_avgy:
 
 REGR_AVGY
 ^^^^^^^^^
@@ -164,8 +154,6 @@ rows where ``X`` is ``NULL``.
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_AVGY``. MySQL, SQLite and SQL Server don't have it.
 
-.. _function-regr_count:
-
 REGR_COUNT
 ^^^^^^^^^^
 
@@ -187,8 +175,6 @@ REGR_COUNT
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_COUNT``. MySQL, SQLite and SQL Server don't have it. PostgreSQL returns a ``BIGINT``.
-
-.. _function-regr_intercept:
 
 REGR_INTERCEPT
 ^^^^^^^^^^^^^^
@@ -214,8 +200,6 @@ The result is ``NULL`` if there are no rows, or if every ``X`` is the same
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_INTERCEPT``. MySQL, SQLite and SQL Server don't have it.
-
-.. _function-regr_r2:
 
 REGR_R2
 ^^^^^^^
@@ -246,8 +230,6 @@ Otherwise, it's 1 if every ``Y`` is the same (because the line is horizontal).
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_R2``. MySQL, SQLite and SQL Server don't have it.
 
-.. _function-regr_slope:
-
 REGR_SLOPE
 ^^^^^^^^^^
 
@@ -277,8 +259,6 @@ The result is ``NULL`` if there are no rows, or if every ``X`` is the same
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_SLOPE``. MySQL, SQLite and SQL Server don't have it.
 
-.. _function-regr_sxx:
-
 REGR_SXX
 ^^^^^^^^
 
@@ -301,8 +281,6 @@ is the number of rows. It's 0 if every ``X`` is the same.
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_SXX``. MySQL, SQLite and SQL Server don't have it.
-
-.. _function-regr_sxy:
 
 REGR_SXY
 ^^^^^^^^
@@ -327,8 +305,6 @@ REGR_SXY
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_SXY``. MySQL, SQLite and SQL Server don't have it.
 
-.. _function-regr_syy:
-
 REGR_SYY
 ^^^^^^^^
 
@@ -351,8 +327,6 @@ is the number of rows. It's 0 if every ``Y`` is the same.
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** PostgreSQL and Oracle: ``REGR_SYY``. MySQL, SQLite and SQL Server don't have it.
-
-.. _function-stddev_pop:
 
 STDDEV_POP
 ^^^^^^^^^^
@@ -381,8 +355,6 @@ STDDEV_POP
   - SQL Server: ``STDEVP``.
   - SQLite doesn't have it.
 
-.. _function-stddev_samp:
-
 STDDEV_SAMP
 ^^^^^^^^^^^
 
@@ -410,8 +382,6 @@ STDDEV_SAMP
   - SQL Server: ``STDEV``.
   - SQLite doesn't have it.
 
-.. _function-var_pop:
-
 VAR_POP
 ^^^^^^^
 
@@ -438,8 +408,6 @@ the differences between each value and the average,
   - PostgreSQL, MySQL (also ``VARIANCE``) and Oracle: ``VAR_POP``.
   - SQL Server: ``VARP``.
   - SQLite doesn't have it.
-
-.. _function-var_samp:
 
 VAR_SAMP
 ^^^^^^^^

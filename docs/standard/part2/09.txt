@@ -594,7 +594,7 @@
 9.16/SR/1.f              implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
 9.16/SR/1.g              n/a          - - JSON data type (T801)
 9.16/SR/1.h              n/a          - - JSON data type (T801)
-9.16/SR/1.i              n/a          - - AT TIME ZONE isn't supported (F411)
+9.16/SR/1.i              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 9.16/SR/1.j              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 9.16/SR/1.k              n/a          - - intervals (F052)
 9.16/SR/1.l              n/a          - - arrays (S091)

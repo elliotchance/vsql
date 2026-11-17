@@ -63,7 +63,9 @@ statement and example. These are the other differences to watch for:
 - An empty string is not ``NULL``, as in PostgreSQL. Most functions return
   ``NULL`` when an argument is ``NULL``, and aggregates skip ``NULL`` values,
   with a ``01003`` warning when they do. ``NULL`` sorts before other values
-  in ascending order, where PostgreSQL puts it last.
+  in ascending order, where PostgreSQL puts it last, so add ``NULLS LAST``
+  (or ``NULLS FIRST`` for a descending order) to an ``ORDER BY`` to get the
+  same order as PostgreSQL.
 - There are no arrays, ``interval``, ``bytea``, ``json``, ``uuid``, geometric,
   network, range or text search types, no window functions (``OVER``) and no
   functions that return a set of rows, so the functions for them have no
@@ -2298,11 +2300,18 @@ timezone
 
   timezone(zone text, timestamp) → timestamp with time zone
   timezone(zone text, time) → time with time zone
-  timezone(timestamp) → timestamp with time zone
 
-Converts a timestamp or time to another time zone (or the session's), the same as AT TIME ZONE and AT LOCAL.
+Converts a timestamp or time to another time zone, the same as AT TIME ZONE. No equivalent.
 
-No equivalent.
+.. code-block:: sql
+
+  -- timezone(timestamp) → timestamp with time zone
+  VALUES /*timestamp*/ AT LOCAL;
+  -- timezone(timestamptz '2022-07-04 12:00:00+00') = timestamptz '2022-07-04 12:00:00+00'
+  VALUES (TIMESTAMP '2022-07-04 12:00:00+00:00' AT LOCAL) = TIMESTAMP '2022-07-04 12:00:00+00:00';
+  -- COL1: TRUE
+
+With one argument, it converts to the time zone of the session, which is ``AT LOCAL``: the same instant, shown in the session's time zone. PostgreSQL returns a ``timestamp`` without a time zone for a ``timestamptz``, and the other way around. ``AT LOCAL`` always gives a ``TIMESTAMP WITH TIME ZONE`` (or ``TIME WITH TIME ZONE``), and a value without a time zone just gets the session's.
 
 transaction_timestamp
 ^^^^^^^^^^^^^^^^^^^^^

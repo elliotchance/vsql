@@ -677,7 +677,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		return
 	}
 
-	_, time_zone := conn.now()
+	_, time_zone := conn.session_now()
 	mut sites := ChangedSites{}
 
 	// The old rows of each table are the rows that were deleted or replaced,

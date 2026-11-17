@@ -326,7 +326,7 @@ fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 	// Rule 6). If only one of them has a time zone, the other one is in the
 	// time zone of the session.
 	if xv.typ.has_time_zone() || yv.typ.has_time_zone() {
-		_, session_time_zone := conn.now()
+		_, session_time_zone := conn.session_now()
 		x = xv.time_value().utc_micros(if xv.typ.has_time_zone() {
 			xv.time_value().time_zone
 		} else {

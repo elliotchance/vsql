@@ -30,6 +30,7 @@ SQL Reference
    set-names.rst
    set-schema.rst
    set-session-characteristics.rst
+   set-time-zone.rst
    set-transaction.rst
    start-transaction.rst
    update.rst

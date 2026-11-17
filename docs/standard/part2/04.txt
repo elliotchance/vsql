@@ -461,7 +461,7 @@
 # 4.45.2, SQL-session identification
 4.45.2                   implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.45.3, SQL-session properties
-4.45.3                   partial      vsql/std_2_18_1_connect_statement.v tests/std_2_19_6_set_schema.sql no SET TIME ZONE (F411), SQL-session user (E081), roles (T331) or SQL-path (S071)
+4.45.3                   partial      vsql/std_2_18_1_connect_statement.v,vsql/time.v tests/std_2_19_6_set_schema.sql,tests/std_2_19_4_set_time_zone.sql no SET TIME ZONE to a time zone displacement (#1176), SQL-session user (E081), roles (T331) or SQL-path (S071)
 # 4.45.4, SQL-session context management
 4.45.4                   n/a          - - SQL-invoked routines (T321)
 # 4.45.5, Execution contexts

@@ -15,8 +15,9 @@ import vsql
 // Rules 3 to 5, see 5.6, "Implicit EXECUTE USING and OPEN USING clauses",
 // General Rules 4.j). There's no maximum length for a character string, and
 // there are no large objects or locators (General Rules 11.a.i.1.B, 11.a.i.2,
-// 11.a.i.3 and 14.a). The data type of a dynamic parameter isn't determined, so
-// there's no second cast (General Rules 14.b.ii and 14.b.iii), which is #649.
+// 11.a.i.3 and 14.a). The second cast, to the type of the dynamic parameter
+// (General Rules 14.b.ii and 14.b.iii), is done when the statement is executed,
+// like every other dynamic parameter (5.6, General Rules 4.p.ii).
 //
 // An exception condition raised before the last deferred parameter is done
 // (such as a cast that fails) leaves the deferred parameter number, so the

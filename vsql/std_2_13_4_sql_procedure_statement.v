@@ -239,7 +239,7 @@ fn start_transaction_statement(stmt StartTransactionStatement, text_sql string) 
 
 // begin empties the first diagnostics area for a statement that isn't a
 // <get diagnostics statement>, and sets the COMMAND_FUNCTION and
-// COMMAND_FUNCTION_CODE from Table 37, "SQL-statement codes". They're empty for
+// COMMAND_FUNCTION_CODE from Table 39, "SQL-statement codes". They're empty for
 // a statement that libvsql executes, which gives them.
 //
 // ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 7

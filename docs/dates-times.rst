@@ -226,3 +226,23 @@ Casting
 
 When casting a ``TIME`` to a ``TIMESTAMP`` the date will be the same as
 ``CURRENT_DATE``.
+
+A ``TIME`` or ``TIMESTAMP`` that has more fractional seconds than the type it's
+cast to is truncated, not rounded. The same happens when a value is stored in
+a column (or assigned to a host parameter) with a smaller precision:
+
+.. code-block:: sql
+
+  VALUES CAST(TIMESTAMP '2020-01-02 23:30:00.999' AS TIMESTAMP(1));
+  -- COL1: 2020-01-02T23:30:00.9
+
+  VALUES CAST(TIME '12:34:56.789' AS TIME(2));
+  -- COL1: 12:34:56.78
+
+  CREATE TABLE events (at TIMESTAMP(2));
+  INSERT INTO events (at) VALUES (TIMESTAMP '2020-01-02 03:04:05.129');
+  SELECT * FROM events;
+  -- AT: 2020-01-02T03:04:05.12
+
+Truncating means that a value never moves into the next second (or day), which
+rounding ``23:59:59.999`` up would.

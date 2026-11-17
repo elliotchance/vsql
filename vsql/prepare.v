@@ -206,7 +206,7 @@ fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Val
 }
 
 // command_function returns the identifier and code of the statement, from
-// Table 37, "SQL-statement codes" in ISO/IEC 9075-2 (the COMMAND_FUNCTION and
+// Table 39, "SQL-statement codes" in ISO/IEC 9075-2 (the COMMAND_FUNCTION and
 // DYNAMIC_FUNCTION of a diagnostics area). A query is a <dynamic select
 // statement> ("SELECT CURSOR"). EXPLAIN, DECLARE CURSOR, CREATE INDEX and DROP
 // INDEX aren't standard statements, so their codes are negative.

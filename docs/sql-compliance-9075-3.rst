@@ -16,7 +16,8 @@ C (Feature C002, "CLI routine invocation in C"). The declarations are in
 ``libvsql/libvsql.h``, which is C99, and :doc:`language-c` shows how to use
 them. The ``ServerName`` for ``SQLConnect`` is the path to the database file
 (or ``:memory:``), and an empty ``ServerName`` connects to a new in-memory
-database.
+database. A ``ServerName`` can be at most 128 bytes (otherwise it's ``HY090``),
+so a longer path must be given as a relative path or through a shorter link.
 
 Each connection has its own transaction, which is started when a statement is
 executed (or with ``SQLStartTran``) and ended with ``SQLEndTran``.

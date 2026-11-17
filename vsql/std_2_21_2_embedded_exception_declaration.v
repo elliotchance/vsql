@@ -39,7 +39,7 @@ struct EmbeddedConstraint {
 // declare reads the rest of a WHENEVER. schema is the default schema of the
 // implied module, for a <constraint name> that isn't qualified. Any <SQLSTATE
 // class code> and <SQLSTATE subclass code> can be used, including those of
-// vsql that aren't in Table 38.
+// vsql that aren't in Table 40.
 //
 // ISO/IEC 9075-2:2023, 21.2, <embedded exception declaration>, Syntax Rules, 4
 fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema string) ! {

@@ -219,6 +219,18 @@ const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
 const vsql_double_colon_cast = 'V303-01'
 const vsql_now = 'V402-01'
+
+// vsql_extract_fields are the fields of EXTRACT that aren't in the standard.
+const vsql_extract_fields = {
+	'DOW':     'V402-02'
+	'ISODOW':  'V402-03'
+	'DOY':     'V402-04'
+	'WEEK':    'V402-05'
+	'ISOYEAR': 'V402-06'
+	'QUARTER': 'V402-07'
+	'EPOCH':   'V402-08'
+}
+
 const vsql_mod_not_integer = 'V403-01'
 const vsql_round = 'V403-02'
 const vsql_trunc = 'V403-03'
@@ -339,9 +351,10 @@ fn name_features(names []string) []string {
 fn flag_datetime_literal(mut yylex YYLexer, value string, is_timestamp bool) {
 	time_part := value.trim_space().all_after_last(' ')
 	time_zone := time_part.index_any('+-')
-	fraction := if time_zone >= 0 { time_part[..time_zone] } else { time_part }.all_after('.')
+	time_only := if time_zone >= 0 { time_part[..time_zone] } else { time_part }
+	fraction := time_only.all_after('.')
 	flag_if(mut yylex, time_zone >= 0, 'F411')
-	if fraction != time_part {
+	if fraction != time_only {
 		flag_if(mut yylex, !is_timestamp || fraction.len > 6, 'F555')
 	}
 }

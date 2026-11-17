@@ -307,6 +307,27 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V402-01``
      - ``NOW()`` instead of ``CURRENT_TIMESTAMP``.
 
+   * - ``V402-02``
+     - ``EXTRACT(DOW FROM ...)``.
+
+   * - ``V402-03``
+     - ``EXTRACT(ISODOW FROM ...)``.
+
+   * - ``V402-04``
+     - ``EXTRACT(DOY FROM ...)``.
+
+   * - ``V402-05``
+     - ``EXTRACT(WEEK FROM ...)``.
+
+   * - ``V402-06``
+     - ``EXTRACT(ISOYEAR FROM ...)``.
+
+   * - ``V402-07``
+     - ``EXTRACT(QUARTER FROM ...)``.
+
+   * - ``V402-08``
+     - ``EXTRACT(EPOCH FROM ...)``.
+
    * - ``V403``
      - Mathematical functions: the arithmetic, exponent and logarithm, rounding
        and trigonometric functions (see :doc:`functions`).

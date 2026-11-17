@@ -509,3 +509,188 @@ fn with_numeric_type(v Value, typ Type) Value {
 
 	return new_decimal_value_from_numeric(new_numeric(t, n.numerator, n.denominator))
 }
+
+// extract_date_fields are the fields of EXTRACT that a DATE or TIMESTAMP has.
+// Only YEAR, MONTH and DAY are in the standard, the rest are vsql extensions:
+//
+//   DOW     - the day of the week, from 0 (Sunday) to 6 (Saturday).
+//   ISODOW  - the ISO 8601 day of the week, from 1 (Monday) to 7 (Sunday).
+//   DOY     - the day of the year, from 1 to 366.
+//   WEEK    - the ISO 8601 week, from 1 to 53.
+//   ISOYEAR - the ISO 8601 year that WEEK is in, which can be the year before
+//             or after for a date at the start or end of a year.
+//   QUARTER - the quarter of the year, from 1 to 4.
+//   EPOCH   - the seconds since 1970-01-01 00:00:00 UTC. A DATE or TIMESTAMP
+//             without a time zone is taken to be UTC.
+const extract_date_fields = ['YEAR', 'MONTH', 'DAY', 'DOW', 'ISODOW', 'DOY', 'WEEK', 'ISOYEAR',
+	'QUARTER', 'EPOCH']
+
+// days_from_civil is the number of days from 1970-01-01 to a date of the
+// proleptic Gregorian calendar, which is negative for an earlier date.
+fn days_from_civil(year int, month int, day int) int {
+	y := if month <= 2 { year - 1 } else { year }
+	era := (if y >= 0 { y } else { y - 399 }) / 400
+	yoe := y - era * 400
+	mp := if month > 2 { month - 3 } else { month + 9 }
+	doy := (153 * mp + 2) / 5 + day - 1
+	doe := yoe * 365 + yoe / 4 - yoe / 100 + doy
+	return era * 146097 + doe - 719468
+}
+
+// iso_day_of_week is the ISO 8601 day of the week of a day from
+// days_from_civil, from 1 (Monday) to 7 (Sunday). 1970-01-01 is a Thursday.
+fn iso_day_of_week(days int) int {
+	return ((days + 3) % 7 + 7) % 7 + 1
+}
+
+// iso_week returns the ISO 8601 week of a date and the year that the week is
+// in. A week is in the year that has its Thursday.
+fn iso_week(year int, month int, day int) (int, int) {
+	days := days_from_civil(year, month, day)
+	thursday := days + 4 - iso_day_of_week(days)
+	mut week_year := year
+	if thursday < days_from_civil(year, 1, 1) {
+		week_year--
+	} else if thursday >= days_from_civil(year + 1, 1, 1) {
+		week_year++
+	}
+	return (thursday - days_from_civil(week_year, 1, 1)) / 7 + 1, week_year
+}
+
+// epoch_string is whole seconds and a fraction from str_fractional_seconds
+// (such as ".25", or "" for none) as a number. A negative number with a
+// fraction is one second closer to zero, so -100 and .25 is -99.75.
+fn epoch_string(seconds i64, fraction string) string {
+	digits := fraction.trim_left('.')
+	if seconds >= 0 || digits.trim_right('0') == '' {
+		return '${seconds}${fraction}'
+	}
+	scale := u64(1) * u64(math.powi(10, digits.len))
+	rest := (scale - digits.u64()).str()
+	return '-${-(seconds + 1)}.${'0'.repeat(digits.len - rest.len)}${rest}'
+}
+
+// ExtractExpression is EXTRACT(field FROM source). source is a reference
+// because a ValueExpression can contain an ExtractExpression, and V stores a
+// sum type's value inline.
+struct ExtractExpression {
+	field  string
+	source &ValueExpression
+}
+
+fn (e ExtractExpression) pstr(params map[string]Value) string {
+	return 'EXTRACT(${e.field} FROM ${e.source.pstr(params)})'
+}
+
+// compile checks that the field is one of the fields of the source: a DATE has
+// YEAR, MONTH and DAY, a TIME has HOUR, MINUTE and SECOND, a TIMESTAMP has all
+// six, and only a TIME or TIMESTAMP WITH TIME ZONE has TIMEZONE_HOUR and
+// TIMEZONE_MINUTE. The result is an INTEGER, except for SECOND, which is a
+// NUMERIC that has the fractional seconds precision of the source as its scale.
+// A time zone field has the sign of the time zone, so -05:30 is -5 hours and
+// -30 minutes.
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 6.a, 6.b, 7.a and 7.b
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 4.a, 4.b.i and 4.b.ii
+fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
+	compiled := e.source.compile(mut c)!
+	typ := compiled.typ
+	mut expected := 'TIME WITH TIME ZONE or TIMESTAMP WITH TIME ZONE'
+	mut allowed := [SQLType.is_time_with_time_zone, .is_timestamp_with_time_zone]
+	if e.field !in ['TIMEZONE_HOUR', 'TIMEZONE_MINUTE', 'HOUR', 'MINUTE', 'SECOND']
+		&& e.field !in extract_date_fields {
+		return sqlstate_42601('EXTRACT has no field ${e.field}')
+	}
+	if e.field in extract_date_fields {
+		expected = 'DATE or TIMESTAMP'
+		allowed = [.is_date, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
+	} else if e.field in ['HOUR', 'MINUTE', 'SECOND'] {
+		expected = 'TIME or TIMESTAMP'
+		allowed = [.is_time_without_time_zone, .is_time_with_time_zone,
+			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
+	}
+	if typ.typ !in allowed {
+		return sqlstate_42804('in EXTRACT(${e.field} FROM ...)', expected, typ.str())
+	}
+
+	return_type := if e.field == 'SECOND' {
+		new_type('NUMERIC', typ.size + 2, i16(typ.size))
+	} else if e.field == 'EPOCH' {
+		new_type('NUMERIC', typ.size + 12, i16(typ.size))
+	} else {
+		new_type('INTEGER', 0, 0)
+	}
+
+	return CompileResult{
+		run:          fn [e, compiled, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled.run(mut conn, data, params)!
+			if value.is_null {
+				return Value{
+					typ:     return_type
+					is_null: true
+				}
+			}
+
+			t := value.time_value()
+			return match e.field {
+				'YEAR' {
+					new_integer_value(t.t.year)
+				}
+				'MONTH' {
+					new_integer_value(t.t.month)
+				}
+				'DAY' {
+					new_integer_value(t.t.day)
+				}
+				'HOUR' {
+					new_integer_value(t.t.hour)
+				}
+				'MINUTE' {
+					new_integer_value(t.t.minute)
+				}
+				'SECOND' {
+					seconds := '${t.t.second}${t.str_fractional_seconds(return_type.scale)}'
+					with_numeric_type(new_numeric_value(seconds), return_type)
+				}
+				'DOW' {
+					new_integer_value(iso_day_of_week(days_from_civil(t.t.year, t.t.month,
+						t.t.day)) % 7)
+				}
+				'ISODOW' {
+					new_integer_value(iso_day_of_week(days_from_civil(t.t.year, t.t.month,
+						t.t.day)))
+				}
+				'DOY' {
+					new_integer_value(days_from_civil(t.t.year, t.t.month, t.t.day) - days_from_civil(t.t.year,
+						1, 1) + 1)
+				}
+				'WEEK' {
+					week, _ := iso_week(t.t.year, t.t.month, t.t.day)
+					new_integer_value(week)
+				}
+				'ISOYEAR' {
+					_, year := iso_week(t.t.year, t.t.month, t.t.day)
+					new_integer_value(year)
+				}
+				'QUARTER' {
+					new_integer_value((t.t.month - 1) / 3 + 1)
+				}
+				'EPOCH' {
+					seconds := i64(days_from_civil(t.t.year, t.t.month, t.t.day)) * 86400 +
+						t.t.hour * 3600 + t.t.minute * 60 + t.t.second - i64(t.time_zone) * 60
+					with_numeric_type(new_numeric_value(epoch_string(seconds, t.str_fractional_seconds(return_type.scale))),
+						return_type)
+				}
+				'TIMEZONE_HOUR' {
+					new_integer_value(t.time_zone / 60)
+				}
+				else {
+					new_integer_value(t.time_zone % 60)
+				}
+			}
+		}
+		typ:          return_type
+		contains_agg: compiled.contains_agg
+		constant:     compiled.constant
+	}.fold()
+}

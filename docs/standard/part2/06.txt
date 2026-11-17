@@ -1117,12 +1117,12 @@
 6.31/SR/5                container    - -
 6.31/SR/5.a              untestable   - - a character string is always UTF8
 6.31/SR/5.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_length.sql USING isn't supported (T061), it's always CHARACTERS
-6.31/SR/6                n/a          - - EXTRACT (F052)
-6.31/SR/6.a              n/a          - - EXTRACT (F052)
-6.31/SR/6.b              n/a          - - EXTRACT (F052)
-6.31/SR/7                n/a          - - EXTRACT (F052)
-6.31/SR/7.a              n/a          - - EXTRACT (F052)
-6.31/SR/7.b              n/a          - - EXTRACT (F052)
+6.31/SR/6                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
+6.31/SR/6.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql there are no intervals (F052)
+6.31/SR/6.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
+6.31/SR/7                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
+6.31/SR/7.a              impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql INTEGER
+6.31/SR/7.b              impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql NUMERIC(p + 2, p), where p is the fractional seconds precision
 6.31/SR/8                impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_length.sql INTEGER
 6.31/SR/9                n/a          - - arrays (S091) and multisets (S271)
 6.31/SR/10               n/a          - - ARRAY_MAX_CARDINALITY (S403)
@@ -1166,11 +1166,11 @@
 6.31/GR/3.a              n/a          - - binary strings (T021)
 6.31/GR/3.b              n/a          - - binary strings (T021)
 6.31/GR/3.c              n/a          - - binary strings (T021)
-6.31/GR/4                n/a          - - EXTRACT (F052)
-6.31/GR/4.a              n/a          - - EXTRACT (F052)
-6.31/GR/4.b              n/a          - - EXTRACT (F052)
-6.31/GR/4.b.i            n/a          - - EXTRACT (F052)
-6.31/GR/4.b.ii           n/a          - - EXTRACT (F052)
+6.31/GR/4                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
+6.31/GR/4.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql there are no intervals (F052)
+6.31/GR/4.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
+6.31/GR/4.b.i            implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
+6.31/GR/4.b.ii           implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/GR/5                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_length.sql
 6.31/GR/5.a              untestable   - - a character string is always UTF8
 6.31/GR/5.a.i            untestable   - - a character string is always UTF8
@@ -1272,8 +1272,8 @@
 6.31/GR/20               n/a          - - row pattern recognition (R010)
 6.31/CR/1                n/a          - - row pattern recognition (R010)
 6.31/CR/2                n/a          - - arrays (S091) and multisets (S271)
-6.31/CR/3                n/a          - - EXTRACT (F052)
-6.31/CR/4                n/a          - - EXTRACT (F052)
+6.31/CR/3                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
+6.31/CR/4                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/5                n/a          - - national character (F421)
 6.31/CR/6                n/a          - - binary strings (T021)
 6.31/CR/7                n/a          - - LOBs (T041)

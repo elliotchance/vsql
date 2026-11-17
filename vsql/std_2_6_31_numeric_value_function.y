@@ -4,62 +4,110 @@
 //
 // Specify a function yielding a value of type numeric.
 //
-// Each function is flagged with its feature.
+// Each function is flagged with its feature. EXTRACT needs F052, and F411 as
+// well for a time zone field.
 //
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 3-4
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 9-11
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 13-20
 
 numeric_value_function:
-  position_expression { $$.v = $1.v }
-| length_expression { $$.v = $1.v }
+  position_expression { $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation)) }
+| length_expression { $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation)) }
 | absolute_value_expression {
     flag(mut yylex, 'T441')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | modulus_expression {
     flag(mut yylex, 'T441')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | trigonometric_function {
     flag(mut yylex, 'T622')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | general_logarithm_function {
     flag(mut yylex, 'T623')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | common_logarithm {
     flag(mut yylex, 'T624')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | natural_logarithm {
     flag(mut yylex, 'T621')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | exponential_function {
     flag(mut yylex, 'T621')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | power_function {
     flag(mut yylex, 'T621')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | square_root {
     flag(mut yylex, 'T621')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | floor_function {
     flag(mut yylex, 'T621')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | ceiling_function {
     flag(mut yylex, 'T621')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
 | width_bucket_function {
     flag(mut yylex, 'T612')
-    $$.v = $1.v
+    $$.v = yy_box(NumericPrimary($1.v as RoutineInvocation))
   }
+| extract_expression {
+    e := $1.v as ExtractExpression
+    flag(mut yylex, 'F052')
+    flag_if(mut yylex, e.field in ['TIMEZONE_HOUR', 'TIMEZONE_MINUTE'], 'F411')
+    if feature := vsql_extract_fields[e.field] {
+      flag(mut yylex, feature)
+    }
+    $$.v = yy_box(NumericPrimary(e))
+  }
+
+// The <extract source> can be any value expression (a datetime_value_expression
+// is only a datetime value function, see datetime_primary), so its type is
+// checked when it's compiled. There are no intervals (F052).
+extract_expression:
+  EXTRACT left_paren extract_field FROM value_expression right_paren {
+    source := $5.v as ValueExpression
+    $$.v = yy_box(ExtractExpression{$3.v as string, &source})
+  }
+
+extract_field:
+  primary_datetime_field { $$.v = $1.v }
+| time_zone_field { $$.v = $1.v }
+// The fields that aren't in the standard, such as DOW, are a vsql extension
+// (V402-02 to V402-08). They aren't keywords, so a field is any identifier, and
+// one that isn't a field is an error when it's compiled.
+| LITERAL_IDENTIFIER {
+    name := ($1.v as IdentifierChain).identifier
+    $$.v = if name.starts_with('"') { name } else { name.to_upper() }
+  }
+
+// primary_datetime_field and non_second_primary_datetime_field are from
+// <interval qualifier> (10.1), but there are no intervals.
+primary_datetime_field:
+  non_second_primary_datetime_field { $$.v = $1.v }
+| SECOND { $$.v = 'SECOND' }
+
+non_second_primary_datetime_field:
+  YEAR { $$.v = 'YEAR' }
+| MONTH { $$.v = 'MONTH' }
+| DAY { $$.v = 'DAY' }
+| HOUR { $$.v = 'HOUR' }
+| MINUTE { $$.v = 'MINUTE' }
+
+time_zone_field:
+  TIMEZONE_HOUR { $$.v = 'TIMEZONE_HOUR' }
+| TIMEZONE_MINUTE { $$.v = 'TIMEZONE_MINUTE' }
 
 position_expression:
   character_position_expression { $$.v = $1.v }

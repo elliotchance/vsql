@@ -63,7 +63,9 @@ statement and example. These are the other differences to watch for:
 - An empty string is not ``NULL``, as in PostgreSQL. Most functions return
   ``NULL`` when an argument is ``NULL``, and aggregates skip ``NULL`` values,
   with a ``01003`` warning when they do. ``NULL`` sorts before other values
-  in ascending order, where PostgreSQL puts it last.
+  in ascending order, where PostgreSQL puts it last, so add ``NULLS LAST``
+  (or ``NULLS FIRST`` for a descending order) to an ``ORDER BY`` to get the
+  same order as PostgreSQL.
 - There are no arrays, ``interval``, ``bytea``, ``json``, ``uuid``, geometric,
   network, range or text search types, no window functions (``OVER``) and no
   functions that return a set of rows, so the functions for them have no

@@ -12,8 +12,6 @@ number. An exact number (such as an ``INTEGER``
 or ``DECIMAL``) is converted to a ``NUMERIC``, and an approximate number (``REAL``
 or ``DOUBLE PRECISION``) to a ``DOUBLE PRECISION``.
 
-.. _function-ceil:
-
 CEIL
 ^^^^
 
@@ -62,8 +60,6 @@ an ``INTEGER``. A ``REAL`` argument returns a ``DOUBLE PRECISION``.
   - SQL Server: ``CEILING``.
   - Oracle: ``CEIL``.
 
-.. _function-ceiling:
-
 CEILING
 ^^^^^^^
 
@@ -88,8 +84,6 @@ CEILING
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** see ``CEIL``.
-
-.. _function-floor:
 
 FLOOR
 ^^^^^
@@ -138,8 +132,6 @@ the argument, because rounding down may need one, such as ``FLOOR(-9.5)`` is
 
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** ``FLOOR`` in all of them.
-
-.. _function-round:
 
 ROUND
 ^^^^^
@@ -191,8 +183,6 @@ one more digit for the integer part, because rounding up may need one, such as
 - **Other databases:** ``ROUND`` in all of them. SQL Server needs the decimal
   places. PostgreSQL and MySQL may round half of an approximate number to the
   nearest even number, and SQLite always returns a floating point number.
-
-.. _function-trunc:
 
 TRUNC
 ^^^^^

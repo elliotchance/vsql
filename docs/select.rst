@@ -88,8 +88,8 @@ A subquery can also be used in an expression, such as ``EXISTS``, ``IN``,
 A subquery can refer to the columns of the query that contains it (a correlated
 subquery).
 
-SELECT
-------
+Columns
+-------
 
 For each *expression*, the naming convention follows:
 

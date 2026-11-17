@@ -53,8 +53,6 @@ The examples use this table:
     ('San Francisco', 7.5e0), ('San Francisco', 17.5e0),
     ('San Francisco', NULL);
 
-.. _function-any:
-
 ANY
 ^^^
 
@@ -98,8 +96,6 @@ comparison, otherwise it's this aggregate function, so ``x = ANY (y)`` compares
   - SQL Server: ``MAX(CASE WHEN condition THEN 1 ELSE 0 END) = 1``.
   - Oracle: ``BOOLEAN_OR_AGG`` (Oracle 23ai).
 
-.. _function-any_value:
-
 ANY_VALUE
 ^^^^^^^^^
 
@@ -124,8 +120,6 @@ that has the same value in every row of a group, without adding it to the
 - **SQL standard:** Optional feature T626.
 - **Other databases:** ``ANY_VALUE`` in PostgreSQL (16 and later), MySQL and
   Oracle. SQLite returns a value from any row for a column that isn't grouped.
-
-.. _function-avg:
 
 AVG
 ^^^
@@ -165,8 +159,6 @@ A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
 - **Other databases:** ``AVG`` in all of them. SQL Server also truncates the
   average of integers. PostgreSQL, MySQL, SQLite and Oracle return the
   fractional part, such as 2.33 for the example above.
-
-.. _function-count:
 
 COUNT
 ^^^^^
@@ -216,8 +208,6 @@ those that have a non-``NULL`` ``price``.
   ``BIGINT`` in PostgreSQL and MySQL, and an ``INT`` in SQL Server (which has
   ``COUNT_BIG`` for a ``BIGINT``).
 
-.. _function-cume_dist:
-
 CUME_DIST
 ^^^^^^^^^
 
@@ -247,8 +237,6 @@ with a ``NULL`` sort key aren't ignored.
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``CUME_DIST`` as a window function.
 
-.. _function-dense_rank:
-
 DENSE_RANK
 ^^^^^^^^^^
 
@@ -277,8 +265,6 @@ with a ``NULL`` sort key aren't ignored.
 - **SQL standard:** T612 (Advanced OLAP operations).
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``DENSE_RANK`` as a window function.
-
-.. _function-every:
 
 EVERY
 ^^^^^
@@ -315,8 +301,6 @@ if any value is ``FALSE``. ``UNKNOWN`` values are ``NULL``, so they're ignored l
   - MySQL and SQLite: ``MIN``, because their booleans are the numbers 0 and 1.
   - SQL Server: ``MIN(CASE WHEN condition THEN 1 ELSE 0 END) = 1``.
   - Oracle: ``BOOLEAN_AND_AGG`` (Oracle 23ai).
-
-.. _function-listagg:
 
 LISTAGG
 ^^^^^^^
@@ -375,8 +359,6 @@ types, such as ``LISTAGG(CAST(id AS VARCHAR(20)), ', ')``.
   ...)``, and MySQL has ``GROUP_CONCAT(value ORDER BY ... SEPARATOR
   separator)``. SQLite has ``GROUP_CONCAT`` and ``STRING_AGG``.
 
-.. _function-max:
-
 MAX
 ^^^
 
@@ -410,8 +392,6 @@ time, or a string. The result has the same type as the values.
 - **Other databases:** ``MAX`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_OR`` instead.
 
-.. _function-min:
-
 MIN
 ^^^
 
@@ -441,8 +421,6 @@ or a string. The result has the same type as the values.
 - **SQL standard:** Core SQL (E091-04).
 - **Other databases:** ``MIN`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_AND`` instead.
-
-.. _function-mode:
 
 MODE
 ^^^^
@@ -490,8 +468,6 @@ It isn't a reserved word, so a column or a table can still be called ``mode``.
   - MySQL, SQLite and SQL Server: ``GROUP BY`` the value, sort the groups by
     ``COUNT(*) DESC`` and keep the first row.
 
-.. _function-percent_rank:
-
 PERCENT_RANK
 ^^^^^^^^^^^^
 
@@ -520,8 +496,6 @@ with a ``NULL`` sort key aren't ignored.
 - **SQL standard:** T612 (Advanced OLAP operations).
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``PERCENT_RANK`` as a window function.
-
-.. _function-percentile_cont:
 
 PERCENTILE_CONT
 ^^^^^^^^^^^^^^^
@@ -564,8 +538,6 @@ PRECISION)`` to keep the fraction.
   function) have the same syntax. PostgreSQL and Oracle don't truncate a
   percentile of integers. MySQL and SQLite don't have it.
 
-.. _function-percentile_disc:
-
 PERCENTILE_DISC
 ^^^^^^^^^^^^^^^
 
@@ -599,8 +571,6 @@ error.
 - **Other databases:** PostgreSQL, Oracle and SQL Server (only as a window
   function) have the same syntax, and return the type of the sort key. MySQL
   and SQLite don't have it.
-
-.. _function-product:
 
 PRODUCT
 ^^^^^^^
@@ -654,8 +624,6 @@ still be called ``product``.
   - PostgreSQL, MySQL, SQLite, SQL Server and Oracle don't have it.
     ``EXP(SUM(LN(x)))`` is close when every value is positive.
 
-.. _function-rank:
-
 RANK
 ^^^^
 
@@ -688,8 +656,6 @@ with a ``NULL`` sort key aren't ignored.
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``RANK`` as a window function.
 
-.. _function-some:
-
 SOME
 ^^^^
 
@@ -710,8 +676,6 @@ SOME
 
 - **SQL standard:** T031 (BOOLEAN data type).
 - **Other databases:** see ``ANY``.
-
-.. _function-sum:
 
 SUM
 ^^^

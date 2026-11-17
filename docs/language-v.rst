@@ -56,8 +56,8 @@ ORM
 
 The ``vorm`` module is a driver for V's built-in ORM (``sql db { ... }``).
 
-Example
-^^^^^^^
+ORM Example
+^^^^^^^^^^^
 
 .. code-block:: v
 

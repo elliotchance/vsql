@@ -8,8 +8,18 @@ Spreadsheet Functions
 How to write the formulas you know from Microsoft Excel and Google Sheets in
 vsql. Every function of both is here, in the same categories as Excel, and
 each one can be linked to by its name, such as
-``spreadsheet-functions.html#vlookup``. Functions that have no equivalent in
+``compatibility-spreadsheet.html#vlookup``. Functions that have no equivalent in
 vsql are listed too, so you can tell that they haven't been missed.
+
+The first paragraph of each function starts with an emoji that says what
+vsql has for it:
+
+- ✅ A vsql function (or value) that does the same thing.
+- 🔧 An expression or query that does the same thing.
+- ❌ No equivalent yet.
+- 🚫 No equivalent, and there won't be one, because it doesn't fit in a
+  database (such as calling an AI model, fetching from the web, or reading a
+  cell of the sheet).
 
 Formulas and Queries
 --------------------
@@ -78,16 +88,18 @@ Add-in and Automation
 CALL
 ^^^^
 
+🚫 vsql won't have an equivalent, because it runs code from outside the spreadsheet.
+
 .. code-block:: text
 
   =CALL(register_id, [argument1], ...)
 
 Calls a procedure in a code library or resource. Only in Excel.
 
-No equivalent.
-
 COPILOT
 ^^^^^^^
+
+🚫 vsql won't have an equivalent, because it calls an AI model or a translation service.
 
 .. code-block:: text
 
@@ -95,10 +107,10 @@ COPILOT
 
 Asks an AI model a question about the given prompt and data. Only in Excel.
 
-No equivalent.
-
 EUROCONVERT
 ^^^^^^^^^^^
+
+🔧 vsql has no ``EUROCONVERT`` function, but an expression does the same thing.
 
 Converts an amount between the euro and a former euro-zone currency at the fixed rate. Only in Excel.
 
@@ -115,16 +127,18 @@ The fixed rate (1.95583 Deutsche Mark to the euro) has to be written in.
 PY
 ^^
 
+🚫 vsql won't have an equivalent, because it runs code from outside the spreadsheet.
+
 .. code-block:: text
 
   =PY(python_code, return_type)
 
 Runs Python code in the cell and returns its result. Only in Excel.
 
-No equivalent.
-
 REGISTER.ID
 ^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it runs code from outside the spreadsheet.
 
 .. code-block:: text
 
@@ -132,13 +146,13 @@ REGISTER.ID
 
 Returns the ID of a registered code library procedure. Only in Excel.
 
-No equivalent.
-
 Compatibility
 -------------
 
 BETADIST
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -146,10 +160,10 @@ BETADIST
 
 Returns the cumulative beta distribution. Only in Excel.
 
-No equivalent.
-
 BETAINV
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -157,10 +171,10 @@ BETAINV
 
 Returns the value at which the cumulative beta distribution reaches a probability. Only in Excel.
 
-No equivalent.
-
 BINOMDIST
 ^^^^^^^^^
+
+🔧 vsql has no ``BINOMDIST`` function, but an expression does the same thing.
 
 Returns the binomial probability of a number of successes in a number of trials.
 
@@ -179,6 +193,8 @@ The binomial coefficient COMBIN(trials, number_s) is written with FACTORIAL. For
 CEILING
 ^^^^^^^
 
+🔧 vsql has no ``CEILING`` function, but an expression does the same thing.
+
 Rounds a number up to the nearest multiple of another number.
 
 .. code-block:: sql
@@ -192,16 +208,18 @@ Rounds a number up to the nearest multiple of another number.
 CHIDIST
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =CHIDIST(x, deg_freedom)
 
 Returns the right-tailed probability of the chi-squared distribution.
 
-No equivalent.
-
 CHIINV
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -209,10 +227,10 @@ CHIINV
 
 Returns the inverse of the right-tailed chi-squared distribution.
 
-No equivalent.
-
 CHITEST
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -220,10 +238,10 @@ CHITEST
 
 Returns the p-value of a chi-squared test of independence.
 
-No equivalent.
-
 CONFIDENCE
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -231,10 +249,10 @@ CONFIDENCE
 
 Returns the half-width of a confidence interval for a mean, using the normal distribution.
 
-No equivalent.
-
 COVAR
 ^^^^^
+
+✅ vsql has the same function: ``COVAR_POP``.
 
 Returns the population covariance of two sets of values.
 
@@ -249,16 +267,18 @@ Returns the population covariance of two sets of values.
 CRITBINOM
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =CRITBINOM(trials, probability_s, alpha)
 
 Returns the smallest number of successes whose cumulative binomial probability reaches a criterion.
 
-No equivalent.
-
 EXPONDIST
 ^^^^^^^^^
+
+🔧 vsql has no ``EXPONDIST`` function, but an expression does the same thing.
 
 Returns the exponential distribution.
 
@@ -281,16 +301,18 @@ For cumulative FALSE, use 2 * EXP(-2 * 0.5e0).
 FDIST
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =FDIST(x, deg_freedom1, deg_freedom2)
 
 Returns the right-tailed F probability distribution.
 
-No equivalent.
-
 FINV
 ^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -298,10 +320,10 @@ FINV
 
 Returns the inverse of the right-tailed F probability distribution.
 
-No equivalent.
-
 FLOOR
 ^^^^^
+
+🔧 vsql has no ``FLOOR`` function, but an expression does the same thing.
 
 Rounds a number down to the nearest multiple of another number.
 
@@ -316,6 +338,8 @@ Rounds a number down to the nearest multiple of another number.
 FORECAST
 ^^^^^^^^
 
+🔧 vsql has no ``FORECAST`` function, but a query does the same thing.
+
 Predicts a value on the straight line fitted to known values.
 
 .. code-block:: sql
@@ -329,16 +353,18 @@ Predicts a value on the straight line fitted to known values.
 FTEST
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =FTEST(array1, array2)
 
 Returns the p-value of an F-test on the variances of two sets of values.
 
-No equivalent.
-
 GAMMADIST
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -346,10 +372,10 @@ GAMMADIST
 
 Returns the gamma distribution.
 
-No equivalent.
-
 GAMMAINV
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -357,10 +383,10 @@ GAMMAINV
 
 Returns the inverse of the cumulative gamma distribution.
 
-No equivalent.
-
 HYPGEOMDIST
 ^^^^^^^^^^^
+
+🔧 vsql has no ``HYPGEOMDIST`` function, but an expression does the same thing.
 
 Returns the probability of a number of successes in a sample drawn without replacement.
 
@@ -382,16 +408,18 @@ This is COMBIN(3, 1) * COMBIN(3, 1) / COMBIN(6, 2), each written with FACTORIAL,
 LOGINV
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =LOGINV(probability, mean, standard_dev)
 
 Returns the inverse of the cumulative lognormal distribution.
 
-No equivalent.
-
 LOGNORMDIST
 ^^^^^^^^^^^
+
+🔧 vsql has no ``LOGNORMDIST`` function, but an expression does the same thing.
 
 Returns the cumulative lognormal distribution.
 
@@ -405,6 +433,8 @@ Returns the cumulative lognormal distribution.
 
 MODE
 ^^^^
+
+🔧 vsql has no ``MODE`` function, but a query does the same thing.
 
 Returns the most frequent value.
 
@@ -423,6 +453,8 @@ sheet.
 NEGBINOMDIST
 ^^^^^^^^^^^^
 
+🔧 vsql has no ``NEGBINOMDIST`` function, but an expression does the same thing.
+
 Returns the probability of a number of failures before a number of successes.
 
 .. code-block:: sql
@@ -439,6 +471,8 @@ The binomial coefficient COMBIN(number_f + number_s - 1, number_s - 1) is writte
 
 NORMDIST
 ^^^^^^^^
+
+🔧 vsql has no ``NORMDIST`` function, but an expression does the same thing.
 
 Returns the normal distribution.
 
@@ -460,16 +494,18 @@ Returns the normal distribution.
 NORMINV
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =NORMINV(probability, mean, standard_dev)
 
 Returns the inverse of the cumulative normal distribution.
 
-No equivalent.
-
 NORMSDIST
 ^^^^^^^^^
+
+🔧 vsql has no ``NORMSDIST`` function, but an expression does the same thing.
 
 Returns the cumulative standard normal distribution.
 
@@ -484,16 +520,18 @@ Returns the cumulative standard normal distribution.
 NORMSINV
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =NORMSINV(probability)
 
 Returns the inverse of the cumulative standard normal distribution.
 
-No equivalent.
-
 PERCENTILE
 ^^^^^^^^^^
+
+🔧 vsql has no ``PERCENTILE`` function, but a query does the same thing.
 
 Returns the k-th percentile, interpolating between values.
 
@@ -508,6 +546,8 @@ Returns the k-th percentile, interpolating between values.
 
 PERCENTRANK
 ^^^^^^^^^^^
+
+🔧 vsql has no ``PERCENTRANK`` function, but a query does the same thing.
 
 Returns the rank of a value as a fraction of the other values.
 
@@ -525,6 +565,8 @@ This is only right when x is one of the values; the spreadsheet interpolates bet
 POISSON
 ^^^^^^^
 
+🔧 vsql has no ``POISSON`` function, but an expression does the same thing.
+
 Returns the Poisson probability of a number of events.
 
 .. code-block:: sql
@@ -540,6 +582,8 @@ For cumulative TRUE, add up the terms for 0 to x.
 QUARTILE
 ^^^^^^^^
 
+🔧 vsql has no ``QUARTILE`` function, but a query does the same thing.
+
 Returns a quartile, interpolating between values.
 
 .. code-block:: sql
@@ -553,6 +597,8 @@ Returns a quartile, interpolating between values.
 
 RANK
 ^^^^
+
+🔧 vsql has no ``RANK`` function, but a query does the same thing.
 
 Returns the rank of a number among other numbers, with ties sharing a rank.
 
@@ -576,6 +622,8 @@ Use ORDER BY price (ascending) for order 1.
 STDEV
 ^^^^^
 
+✅ vsql has the same function: ``STDDEV_SAMP``.
+
 Returns the standard deviation of a sample.
 
 .. code-block:: sql
@@ -588,6 +636,8 @@ Returns the standard deviation of a sample.
 
 STDEVP
 ^^^^^^
+
+✅ vsql has the same function: ``STDDEV_POP``.
 
 Returns the standard deviation of a whole population.
 
@@ -602,16 +652,18 @@ Returns the standard deviation of a whole population.
 TDIST
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =TDIST(x, deg_freedom, tails)
 
 Returns the one- or two-tailed Student's t-distribution.
 
-No equivalent.
-
 TINV
 ^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -619,10 +671,10 @@ TINV
 
 Returns the inverse of the two-tailed Student's t-distribution.
 
-No equivalent.
-
 TTEST
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -630,10 +682,10 @@ TTEST
 
 Returns the p-value of a Student's t-test.
 
-No equivalent.
-
 VAR
 ^^^
+
+✅ vsql has the same function: ``VAR_SAMP``.
 
 Returns the variance of a sample.
 
@@ -648,6 +700,8 @@ Returns the variance of a sample.
 VARP
 ^^^^
 
+✅ vsql has the same function: ``VAR_POP``.
+
 Returns the variance of a whole population.
 
 .. code-block:: sql
@@ -660,6 +714,8 @@ Returns the variance of a whole population.
 
 WEIBULL
 ^^^^^^^
+
+🔧 vsql has no ``WEIBULL`` function, but an expression does the same thing.
 
 Returns the Weibull distribution.
 
@@ -675,6 +731,8 @@ For cumulative FALSE, use 1.5 / 3 * POWER(2 / 3e0, 0.5) * EXP(-POWER(2 / 3e0, 1.
 
 ZTEST
 ^^^^^
+
+🔧 vsql has no ``ZTEST`` function, but a query does the same thing.
 
 Returns the one-tailed p-value of a z-test.
 
@@ -700,16 +758,18 @@ Cube
 CUBEKPIMEMBER
 ^^^^^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
+
 .. code-block:: text
 
   =CUBEKPIMEMBER(connection, kpi_name, kpi_property, [caption])
 
 Returns a property of a key performance indicator from a cube. Only in Excel.
 
-No equivalent.
-
 CUBEMEMBER
 ^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
 
 .. code-block:: text
 
@@ -717,10 +777,10 @@ CUBEMEMBER
 
 Returns a member or tuple from a cube. Only in Excel.
 
-No equivalent.
-
 CUBEMEMBERPROPERTY
 ^^^^^^^^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
 
 .. code-block:: text
 
@@ -728,10 +788,10 @@ CUBEMEMBERPROPERTY
 
 Returns the value of a property of a cube member. Only in Excel.
 
-No equivalent.
-
 CUBERANKEDMEMBER
 ^^^^^^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
 
 .. code-block:: text
 
@@ -739,10 +799,10 @@ CUBERANKEDMEMBER
 
 Returns the member at a given rank in a cube set. Only in Excel.
 
-No equivalent.
-
 CUBESET
 ^^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
 
 .. code-block:: text
 
@@ -750,10 +810,10 @@ CUBESET
 
 Defines a set of members or tuples on a cube server. Only in Excel.
 
-No equivalent.
-
 CUBESETCOUNT
 ^^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
 
 .. code-block:: text
 
@@ -761,10 +821,10 @@ CUBESETCOUNT
 
 Returns the number of items in a cube set. Only in Excel.
 
-No equivalent.
-
 CUBEVALUE
 ^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads an OLAP cube.
 
 .. code-block:: text
 
@@ -772,13 +832,13 @@ CUBEVALUE
 
 Returns an aggregated value from a cube. Only in Excel.
 
-No equivalent.
-
 Database
 --------
 
 DAVERAGE
 ^^^^^^^^
+
+🔧 vsql has no ``DAVERAGE`` function, but a query does the same thing.
 
 Returns the average of a field over the rows that match the criteria.
 
@@ -795,6 +855,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 DCOUNT
 ^^^^^^
 
+🔧 vsql has no ``DCOUNT`` function, but a query does the same thing.
+
 Counts the numbers in a field over the rows that match the criteria.
 
 .. code-block:: sql
@@ -809,6 +871,8 @@ The criteria range F1:F2 becomes the WHERE. COUNT skips NULLs, like DCOUNT skips
 
 DCOUNTA
 ^^^^^^^
+
+🔧 vsql has no ``DCOUNTA`` function, but a query does the same thing.
 
 Counts the non-blank values in a field over the rows that match the criteria.
 
@@ -825,6 +889,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 DGET
 ^^^^
 
+🔧 vsql has no ``DGET`` function, but a query does the same thing.
+
 Returns the single value of a field from the one row that matches the criteria.
 
 .. code-block:: sql
@@ -839,6 +905,8 @@ The criteria range F1:F2 becomes the WHERE. Several matching rows is an error, l
 
 DMAX
 ^^^^
+
+🔧 vsql has no ``DMAX`` function, but a query does the same thing.
 
 Returns the largest value of a field over the rows that match the criteria.
 
@@ -855,6 +923,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 DMIN
 ^^^^
 
+🔧 vsql has no ``DMIN`` function, but a query does the same thing.
+
 Returns the smallest value of a field over the rows that match the criteria.
 
 .. code-block:: sql
@@ -869,6 +939,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 
 DPRODUCT
 ^^^^^^^^
+
+🔧 vsql has no ``DPRODUCT`` function, but a query does the same thing.
 
 Multiplies the values of a field over the rows that match the criteria.
 
@@ -885,6 +957,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 DSTDEV
 ^^^^^^
 
+🔧 vsql has no ``DSTDEV`` function, but a query does the same thing.
+
 Returns the sample standard deviation of a field over the rows that match the criteria.
 
 .. code-block:: sql
@@ -899,6 +973,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 
 DSTDEVP
 ^^^^^^^
+
+🔧 vsql has no ``DSTDEVP`` function, but a query does the same thing.
 
 Returns the population standard deviation of a field over the rows that match the criteria.
 
@@ -915,6 +991,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 DSUM
 ^^^^
 
+🔧 vsql has no ``DSUM`` function, but a query does the same thing.
+
 Adds up a field over the rows that match the criteria.
 
 .. code-block:: sql
@@ -930,6 +1008,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 DVAR
 ^^^^
 
+🔧 vsql has no ``DVAR`` function, but a query does the same thing.
+
 Returns the sample variance of a field over the rows that match the criteria.
 
 .. code-block:: sql
@@ -944,6 +1024,8 @@ The criteria range F1:F2 holds the header "price" and the condition ">1", which 
 
 DVARP
 ^^^^^
+
+🔧 vsql has no ``DVARP`` function, but a query does the same thing.
 
 Returns the population variance of a field over the rows that match the criteria.
 
@@ -963,6 +1045,8 @@ Date and Time
 DATE
 ^^^^
 
+🔧 vsql has no ``DATE`` function, but an expression does the same thing.
+
 Builds a date from a year, a month and a day.
 
 .. code-block:: sql
@@ -981,16 +1065,18 @@ over into the next month or year. With literal values, write
 DATEDIF
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =DATEDIF(start_date, end_date, unit)
 
 Counts the whole days, months or years between two dates.
 
-No equivalent.
-
 DATEVALUE
 ^^^^^^^^^
+
+✅ vsql has the same function: ``CAST(... AS DATE)``.
 
 Converts text that looks like a date into a date.
 
@@ -1005,8 +1091,10 @@ Converts text that looks like a date into a date.
 The text must be in the form ``YYYY-MM-DD``, and the result is a ``DATE``
 rather than a serial number.
 
-✅ DAY
-^^^^^^
+DAY
+^^^
+
+✅ vsql has the same function: ``EXTRACT(DAY FROM ...)``.
 
 Returns the day of the month of a date, from 1 to 31.
 
@@ -1023,16 +1111,18 @@ It also works on a ``TIMESTAMP``.
 DAYS
 ^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =DAYS(end_date, start_date)
 
 Counts the days between two dates.
 
-No equivalent.
-
 DAYS360
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1040,10 +1130,10 @@ DAYS360
 
 Counts the days between two dates as if every month had 30 days.
 
-No equivalent.
-
 EDATE
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1051,10 +1141,10 @@ EDATE
 
 Returns the date a number of months before or after a date.
 
-No equivalent.
-
 EOMONTH
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1062,10 +1152,10 @@ EOMONTH
 
 Returns the last day of the month a number of months before or after a date.
 
-No equivalent.
-
 EPOCHTODATE
 ^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1073,10 +1163,10 @@ EPOCHTODATE
 
 Converts a Unix timestamp into a date and time. Only in Google Sheets.
 
-No equivalent.
+HOUR
+^^^^
 
-✅ HOUR
-^^^^^^^
+✅ vsql has the same function: ``EXTRACT(HOUR FROM ...)``.
 
 Returns the hour of a time, from 0 to 23.
 
@@ -1091,8 +1181,10 @@ Returns the hour of a time, from 0 to 23.
 It also works on a ``TIMESTAMP``. A ``DATE`` has no hour, so it's an error,
 where a spreadsheet returns 0.
 
-✅ ISOWEEKNUM
-^^^^^^^^^^^^^
+ISOWEEKNUM
+^^^^^^^^^^
+
+✅ vsql has the same function: ``EXTRACT(WEEK FROM ...)``.
 
 Returns the ISO week number of the year for a date.
 
@@ -1107,8 +1199,10 @@ Returns the ISO week number of the year for a date.
 A week starts on a Monday and is in the year that has its Thursday, so January
 1, 2027 is in the last week of 2026. ``EXTRACT(ISOYEAR FROM date)`` is that year.
 
-✅ MINUTE
-^^^^^^^^^
+MINUTE
+^^^^^^
+
+✅ vsql has the same function: ``EXTRACT(MINUTE FROM ...)``.
 
 Returns the minute of a time, from 0 to 59.
 
@@ -1122,8 +1216,10 @@ Returns the minute of a time, from 0 to 59.
 
 It also works on a ``TIMESTAMP``.
 
-✅ MONTH
-^^^^^^^^
+MONTH
+^^^^^
+
+✅ vsql has the same function: ``EXTRACT(MONTH FROM ...)``.
 
 Returns the month of a date, from 1 to 12.
 
@@ -1140,16 +1236,18 @@ It also works on a ``TIMESTAMP``.
 NETWORKDAYS
 ^^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =NETWORKDAYS(start_date, end_date, [holidays])
 
 Counts the working days between two dates, leaving out weekends and holidays.
 
-No equivalent.
-
 NETWORKDAYS.INTL
 ^^^^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1158,10 +1256,10 @@ NETWORKDAYS.INTL
 Counts the working days between two dates, with a choice of which days are the
 weekend.
 
-No equivalent.
-
 NOW
 ^^^
+
+✅ vsql has the same function: ``NOW``.
 
 Returns the current date and time.
 
@@ -1176,8 +1274,10 @@ Returns the current date and time.
 ``NOW()`` includes the time zone. Use ``LOCALTIMESTAMP`` for the date and time
 without it.
 
-✅ SECOND
-^^^^^^^^^
+SECOND
+^^^^^^
+
+✅ vsql has the same function: ``EXTRACT(SECOND FROM ...)``.
 
 Returns the second of a time, from 0 to 59.
 
@@ -1196,6 +1296,8 @@ seconds.
 TIME
 ^^^^
 
+🔧 vsql has no ``TIME`` function, but an expression does the same thing.
+
 Builds a time from an hour, a minute and a second.
 
 .. code-block:: sql
@@ -1213,6 +1315,8 @@ With literal values, write ``TIME '14:30:05'``.
 TIMEVALUE
 ^^^^^^^^^
 
+✅ vsql has the same function: ``CAST(... AS TIME)``.
+
 Converts text that looks like a time into a time.
 
 .. code-block:: sql
@@ -1229,6 +1333,8 @@ rather than a fraction of a day.
 TODAY
 ^^^^^
 
+✅ vsql has the same value: ``CURRENT_DATE``.
+
 Returns the current date.
 
 .. code-block:: sql
@@ -1241,8 +1347,10 @@ Returns the current date.
 
 There are no parentheses after ``CURRENT_DATE``.
 
-🔧 WEEKDAY
-^^^^^^^^^^
+WEEKDAY
+^^^^^^^
+
+🔧 vsql has no ``WEEKDAY`` function, but an expression does the same thing.
 
 Returns the day of the week of a date as a number.
 
@@ -1268,8 +1376,10 @@ Returns the day of the week of a date as a number.
 
 2026-11-15 is a Sunday. ``DOW`` and ``ISODOW`` aren't in the SQL standard.
 
-🔧 WEEKNUM
-^^^^^^^^^^
+WEEKNUM
+^^^^^^^
+
+🔧 vsql has no ``WEEKNUM`` function, but an expression does the same thing.
 
 Returns the week number of the year for a date.
 
@@ -1294,16 +1404,18 @@ which is ``WEEK``.
 WORKDAY
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =WORKDAY(start_date, days, [holidays])
 
 Returns the date a number of working days before or after a date.
 
-No equivalent.
-
 WORKDAY.INTL
 ^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1312,10 +1424,10 @@ WORKDAY.INTL
 Returns the date a number of working days before or after a date, with a choice
 of which days are the weekend.
 
-No equivalent.
+YEAR
+^^^^
 
-✅ YEAR
-^^^^^^^
+✅ vsql has the same function: ``EXTRACT(YEAR FROM ...)``.
 
 Returns the year of a date.
 
@@ -1332,13 +1444,13 @@ It also works on a ``TIMESTAMP``.
 YEARFRAC
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =YEARFRAC(start_date, end_date, [basis])
 
 Returns the fraction of a year between two dates.
-
-No equivalent.
 
 Engineering
 -----------
@@ -1346,16 +1458,18 @@ Engineering
 BESSELI
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =BESSELI(x, n)
 
 Returns the modified Bessel function In(x).
 
-No equivalent.
-
 BESSELJ
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1363,10 +1477,10 @@ BESSELJ
 
 Returns the Bessel function Jn(x).
 
-No equivalent.
-
 BESSELK
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1374,10 +1488,10 @@ BESSELK
 
 Returns the modified Bessel function Kn(x).
 
-No equivalent.
-
 BESSELY
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1385,10 +1499,10 @@ BESSELY
 
 Returns the Bessel function Yn(x), also called the Weber or Neumann function.
 
-No equivalent.
-
 BIN2DEC
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1396,10 +1510,10 @@ BIN2DEC
 
 Converts a binary number written as text to a decimal number.
 
-No equivalent.
-
 BIN2HEX
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1407,10 +1521,10 @@ BIN2HEX
 
 Converts a binary number to hexadecimal text.
 
-No equivalent.
-
 BIN2OCT
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1418,10 +1532,10 @@ BIN2OCT
 
 Converts a binary number to octal text.
 
-No equivalent.
-
 BITAND
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1429,10 +1543,10 @@ BITAND
 
 Returns the bitwise AND of two whole numbers.
 
-No equivalent.
-
 BITLSHIFT
 ^^^^^^^^^
+
+🔧 vsql has no ``BITLSHIFT`` function, but an expression does the same thing.
 
 Shifts the bits of a number to the left, which multiplies it by a power of 2.
 
@@ -1450,16 +1564,18 @@ expression for that.
 BITOR
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =BITOR(number1, number2)
 
 Returns the bitwise OR of two whole numbers.
 
-No equivalent.
-
 BITRSHIFT
 ^^^^^^^^^
+
+🔧 vsql has no ``BITRSHIFT`` function, but an expression does the same thing.
 
 Shifts the bits of a number to the right, which divides it by a power of 2 and
 drops the remainder.
@@ -1475,16 +1591,18 @@ drops the remainder.
 BITXOR
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =BITXOR(number1, number2)
 
 Returns the bitwise exclusive OR of two whole numbers.
 
-No equivalent.
-
 COMPLEX
 ^^^^^^^
+
+🔧 vsql has no ``COMPLEX`` function, but an expression does the same thing.
 
 Builds the text of a complex number from its real and imaginary parts.
 
@@ -1502,16 +1620,18 @@ gives ``3+-4i``, which the spreadsheet would write as ``3-4i``.
 CONVERT
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =CONVERT(number, from_unit, to_unit)
 
 Converts a measurement from one unit to another, such as miles to kilometers.
 
-No equivalent.
-
 DEC2BIN
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1519,10 +1639,10 @@ DEC2BIN
 
 Converts a decimal number to binary text.
 
-No equivalent.
-
 DEC2HEX
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1530,10 +1650,10 @@ DEC2HEX
 
 Converts a decimal number to hexadecimal text.
 
-No equivalent.
-
 DEC2OCT
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1541,10 +1661,10 @@ DEC2OCT
 
 Converts a decimal number to octal text.
 
-No equivalent.
-
 DELTA
 ^^^^^
+
+🔧 vsql has no ``DELTA`` function, but an expression does the same thing.
 
 Returns 1 when two numbers are equal and 0 otherwise.
 
@@ -1565,6 +1685,8 @@ Returns 1 when two numbers are equal and 0 otherwise.
 ERF
 ^^^
 
+🔧 vsql has no ``ERF`` function, but an expression does the same thing.
+
 Returns the error function, integrated between two limits.
 
 .. code-block:: sql
@@ -1584,6 +1706,8 @@ Returns the error function, integrated between two limits.
 ERF.PRECISE
 ^^^^^^^^^^^
 
+✅ vsql has the same function: ``ERF``.
+
 Returns the error function integrated from 0 to a value.
 
 .. code-block:: sql
@@ -1596,6 +1720,8 @@ Returns the error function integrated from 0 to a value.
 
 ERFC
 ^^^^
+
+✅ vsql has the same function: ``ERFC``.
 
 Returns the complementary error function, which is 1 minus ERF.
 
@@ -1610,6 +1736,8 @@ Returns the complementary error function, which is 1 minus ERF.
 ERFC.PRECISE
 ^^^^^^^^^^^^
 
+✅ vsql has the same function: ``ERFC``.
+
 Returns the complementary error function integrated from a value to infinity.
 
 .. code-block:: sql
@@ -1622,6 +1750,8 @@ Returns the complementary error function integrated from a value to infinity.
 
 GESTEP
 ^^^^^^
+
+🔧 vsql has no ``GESTEP`` function, but an expression does the same thing.
 
 Returns 1 when a number is at least a threshold and 0 otherwise.
 
@@ -1642,16 +1772,18 @@ Returns 1 when a number is at least a threshold and 0 otherwise.
 HEX2BIN
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =HEX2BIN(number, [places])
 
 Converts a hexadecimal number to binary text.
 
-No equivalent.
-
 HEX2DEC
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1659,10 +1791,10 @@ HEX2DEC
 
 Converts a hexadecimal number written as text to a decimal number.
 
-No equivalent.
-
 HEX2OCT
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1670,10 +1802,10 @@ HEX2OCT
 
 Converts a hexadecimal number to octal text.
 
-No equivalent.
-
 IMABS
 ^^^^^
+
+🔧 vsql has no ``IMABS`` function, but an expression does the same thing.
 
 Returns the absolute value (modulus) of a complex number.
 
@@ -1691,16 +1823,18 @@ numbers (or two columns).
 IMAGINARY
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IMAGINARY(inumber)
 
 Returns the imaginary part of a complex number.
 
-No equivalent.
-
 IMARGUMENT
 ^^^^^^^^^^
+
+✅ vsql has the same function: ``ATAN2``.
 
 Returns the angle of a complex number, in radians.
 
@@ -1717,16 +1851,18 @@ The imaginary part comes first in ``ATAN2``.
 IMCONJUGATE
 ^^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IMCONJUGATE(inumber)
 
 Returns the complex conjugate of a complex number.
 
-No equivalent.
-
 IMCOS
 ^^^^^
+
+🔧 vsql has no ``IMCOS`` function, but a query does the same thing.
 
 Returns the cosine of a complex number.
 
@@ -1741,6 +1877,8 @@ Returns the cosine of a complex number.
 IMCOSH
 ^^^^^^
 
+🔧 vsql has no ``IMCOSH`` function, but a query does the same thing.
+
 Returns the hyperbolic cosine of a complex number.
 
 .. code-block:: sql
@@ -1754,16 +1892,18 @@ Returns the hyperbolic cosine of a complex number.
 IMCOT
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IMCOT(inumber)
 
 Returns the cotangent of a complex number.
 
-No equivalent.
-
 IMCSC
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1771,10 +1911,10 @@ IMCSC
 
 Returns the cosecant of a complex number.
 
-No equivalent.
-
 IMCSCH
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1782,10 +1922,10 @@ IMCSCH
 
 Returns the hyperbolic cosecant of a complex number.
 
-No equivalent.
-
 IMDIV
 ^^^^^
+
+🔧 vsql has no ``IMDIV`` function, but a query does the same thing.
 
 Divides one complex number by another.
 
@@ -1802,6 +1942,8 @@ Divides one complex number by another.
 IMEXP
 ^^^^^
 
+🔧 vsql has no ``IMEXP`` function, but a query does the same thing.
+
 Returns e raised to the power of a complex number.
 
 .. code-block:: sql
@@ -1814,6 +1956,8 @@ Returns e raised to the power of a complex number.
 
 IMLN
 ^^^^
+
+🔧 vsql has no ``IMLN`` function, but a query does the same thing.
 
 Returns the natural logarithm of a complex number.
 
@@ -1828,6 +1972,8 @@ Returns the natural logarithm of a complex number.
 IMLOG10
 ^^^^^^^
 
+🔧 vsql has no ``IMLOG10`` function, but a query does the same thing.
+
 Returns the base-10 logarithm of a complex number.
 
 .. code-block:: sql
@@ -1841,6 +1987,8 @@ Returns the base-10 logarithm of a complex number.
 IMLOG2
 ^^^^^^
 
+🔧 vsql has no ``IMLOG2`` function, but a query does the same thing.
+
 Returns the base-2 logarithm of a complex number.
 
 .. code-block:: sql
@@ -1853,6 +2001,8 @@ Returns the base-2 logarithm of a complex number.
 
 IMPOWER
 ^^^^^^^
+
+🔧 vsql has no ``IMPOWER`` function, but a query does the same thing.
 
 Raises a complex number to a real power.
 
@@ -1869,6 +2019,8 @@ Raises a complex number to a real power.
 IMPRODUCT
 ^^^^^^^^^
 
+🔧 vsql has no ``IMPRODUCT`` function, but a query does the same thing.
+
 Multiplies complex numbers.
 
 .. code-block:: sql
@@ -1882,16 +2034,18 @@ Multiplies complex numbers.
 IMREAL
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IMREAL(inumber)
 
 Returns the real part of a complex number.
 
-No equivalent.
-
 IMSEC
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1899,10 +2053,10 @@ IMSEC
 
 Returns the secant of a complex number.
 
-No equivalent.
-
 IMSECH
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -1910,10 +2064,10 @@ IMSECH
 
 Returns the hyperbolic secant of a complex number.
 
-No equivalent.
-
 IMSIN
 ^^^^^
+
+🔧 vsql has no ``IMSIN`` function, but a query does the same thing.
 
 Returns the sine of a complex number.
 
@@ -1928,6 +2082,8 @@ Returns the sine of a complex number.
 IMSINH
 ^^^^^^
 
+🔧 vsql has no ``IMSINH`` function, but a query does the same thing.
+
 Returns the hyperbolic sine of a complex number.
 
 .. code-block:: sql
@@ -1940,6 +2096,8 @@ Returns the hyperbolic sine of a complex number.
 
 IMSQRT
 ^^^^^^
+
+🔧 vsql has no ``IMSQRT`` function, but a query does the same thing.
 
 Returns the square root of a complex number.
 
@@ -1956,6 +2114,8 @@ Returns the square root of a complex number.
 IMSUB
 ^^^^^
 
+🔧 vsql has no ``IMSUB`` function, but a query does the same thing.
+
 Subtracts one complex number from another.
 
 .. code-block:: sql
@@ -1968,6 +2128,8 @@ Subtracts one complex number from another.
 
 IMSUM
 ^^^^^
+
+🔧 vsql has no ``IMSUM`` function, but a query does the same thing.
 
 Adds complex numbers.
 
@@ -1984,16 +2146,18 @@ With the parts in two columns, ``SUM(re)`` and ``SUM(im)`` add a whole range.
 IMTAN
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IMTAN(inumber)
 
 Returns the tangent of a complex number.
 
-No equivalent.
-
 OCT2BIN
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2001,10 +2165,10 @@ OCT2BIN
 
 Converts an octal number to binary text.
 
-No equivalent.
-
 OCT2DEC
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2012,10 +2176,10 @@ OCT2DEC
 
 Converts an octal number written as text to a decimal number.
 
-No equivalent.
-
 OCT2HEX
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2023,13 +2187,13 @@ OCT2HEX
 
 Converts an octal number to hexadecimal text.
 
-No equivalent.
-
 Financial
 ---------
 
 ACCRINT
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2037,10 +2201,10 @@ ACCRINT
 
 Returns the interest accrued on a security that pays periodic interest.
 
-No equivalent.
-
 ACCRINTM
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2048,10 +2212,10 @@ ACCRINTM
 
 Returns the interest accrued on a security that pays interest at maturity.
 
-No equivalent.
-
 AMORDEGRC
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2059,10 +2223,10 @@ AMORDEGRC
 
 Returns the depreciation for a period under the French declining accounting system. Only in Excel.
 
-No equivalent.
-
 AMORLINC
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2070,10 +2234,10 @@ AMORLINC
 
 Returns the depreciation for a period under the French linear accounting system.
 
-No equivalent.
-
 COUPDAYBS
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2081,10 +2245,10 @@ COUPDAYBS
 
 Returns the number of days from the start of the coupon period to the settlement date.
 
-No equivalent.
-
 COUPDAYS
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2092,10 +2256,10 @@ COUPDAYS
 
 Returns the number of days in the coupon period that holds the settlement date.
 
-No equivalent.
-
 COUPDAYSNC
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2103,10 +2267,10 @@ COUPDAYSNC
 
 Returns the number of days from the settlement date to the next coupon date.
 
-No equivalent.
-
 COUPNCD
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2114,10 +2278,10 @@ COUPNCD
 
 Returns the next coupon date after the settlement date.
 
-No equivalent.
-
 COUPNUM
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2125,10 +2289,10 @@ COUPNUM
 
 Returns the number of coupons payable between settlement and maturity.
 
-No equivalent.
-
 COUPPCD
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2136,10 +2300,10 @@ COUPPCD
 
 Returns the last coupon date before the settlement date.
 
-No equivalent.
-
 CUMIPMT
 ^^^^^^^
+
+🔧 vsql has no ``CUMIPMT`` function, but a query does the same thing.
 
 Returns the total interest paid on a loan between two periods.
 
@@ -2160,6 +2324,8 @@ This is for payments at the end of each period (type 0).
 CUMPRINC
 ^^^^^^^^
 
+🔧 vsql has no ``CUMPRINC`` function, but a query does the same thing.
+
 Returns the total principal paid on a loan between two periods.
 
 .. code-block:: sql
@@ -2179,6 +2345,8 @@ This is for payments at the end of each period (type 0).
 DB
 ^^
 
+🔧 vsql has no ``DB`` function, but a query does the same thing.
+
 Returns the depreciation of an asset for a period using the fixed-declining balance method.
 
 .. code-block:: sql
@@ -2195,6 +2363,8 @@ This is for a full first year (month 12). DB rounds the rate to three decimals, 
 
 DDB
 ^^^
+
+🔧 vsql has no ``DDB`` function, but an expression does the same thing.
 
 Returns the depreciation of an asset for a period using the double-declining balance method.
 
@@ -2217,16 +2387,18 @@ DDB never takes the book value below salvage; the SQL doesn't check that, so lat
 DISC
 ^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =DISC(settlement, maturity, pr, redemption, [basis])
 
 Returns the discount rate of a security.
 
-No equivalent.
-
 DOLLARDE
 ^^^^^^^^
+
+🔧 vsql has no ``DOLLARDE`` function, but an expression does the same thing.
 
 Converts a dollar price written as a fraction into a decimal number.
 
@@ -2241,6 +2413,8 @@ Converts a dollar price written as a fraction into a decimal number.
 DOLLARFR
 ^^^^^^^^
 
+🔧 vsql has no ``DOLLARFR`` function, but an expression does the same thing.
+
 Converts a decimal dollar price into one written as a fraction.
 
 .. code-block:: sql
@@ -2254,16 +2428,18 @@ Converts a decimal dollar price into one written as a fraction.
 DURATION
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =DURATION(settlement, maturity, coupon, yld, frequency, [basis])
 
 Returns the Macaulay duration of a security that pays periodic interest.
 
-No equivalent.
-
 EFFECT
 ^^^^^^
+
+🔧 vsql has no ``EFFECT`` function, but an expression does the same thing.
 
 Returns the effective annual interest rate from a nominal rate.
 
@@ -2277,6 +2453,8 @@ Returns the effective annual interest rate from a nominal rate.
 
 FV
 ^^
+
+🔧 vsql has no ``FV`` function, but an expression does the same thing.
 
 Returns the future value of an investment with constant payments and rate.
 
@@ -2299,6 +2477,8 @@ This is for payments at the end of each period (type 0).
 FVSCHEDULE
 ^^^^^^^^^^
 
+🔧 vsql has no ``FVSCHEDULE`` function, but a query does the same thing.
+
 Returns the future value of a principal after applying a series of interest rates.
 
 .. code-block:: sql
@@ -2313,16 +2493,18 @@ Returns the future value of a principal after applying a series of interest rate
 INTRATE
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =INTRATE(settlement, maturity, investment, redemption, [basis])
 
 Returns the interest rate of a fully invested security.
 
-No equivalent.
-
 IPMT
 ^^^^
+
+🔧 vsql has no ``IPMT`` function, but a query does the same thing.
 
 Returns the interest part of a loan payment for a period.
 
@@ -2343,16 +2525,18 @@ This is for payments at the end of each period (type 0).
 IRR
 ^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IRR(values, [guess])
 
 Returns the internal rate of return of a series of cash flows.
 
-No equivalent.
-
 ISPMT
 ^^^^^
+
+🔧 vsql has no ``ISPMT`` function, but an expression does the same thing.
 
 Returns the interest paid in a period of a loan with even principal payments.
 
@@ -2367,16 +2551,18 @@ Returns the interest paid in a period of a loan with even principal payments.
 MDURATION
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =MDURATION(settlement, maturity, coupon, yld, frequency, [basis])
 
 Returns the modified duration of a security.
 
-No equivalent.
-
 MIRR
 ^^^^
+
+🔧 vsql has no ``MIRR`` function, but a query does the same thing.
 
 Returns the modified internal rate of return of a series of cash flows.
 
@@ -2397,6 +2583,8 @@ The 4 is the number of periods and 3 is one less.
 NOMINAL
 ^^^^^^^
 
+🔧 vsql has no ``NOMINAL`` function, but an expression does the same thing.
+
 Returns the nominal annual interest rate from an effective rate.
 
 .. code-block:: sql
@@ -2409,6 +2597,8 @@ Returns the nominal annual interest rate from an effective rate.
 
 NPER
 ^^^^
+
+🔧 vsql has no ``NPER`` function, but an expression does the same thing.
 
 Returns the number of periods needed to pay off a loan.
 
@@ -2425,6 +2615,8 @@ This is for payments at the end of each period with no future value.
 NPV
 ^^^
 
+🔧 vsql has no ``NPV`` function, but a query does the same thing.
+
 Returns the net present value of a series of cash flows at a discount rate.
 
 .. code-block:: sql
@@ -2440,16 +2632,18 @@ The period number comes from the n column, where NPV uses the position in the ra
 ODDFPRICE
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ODDFPRICE(settlement, maturity, issue, first_coupon, rate, yld, redemption, frequency, [basis])
 
 Returns the price of a security with an odd first period. Only in Excel.
 
-No equivalent.
-
 ODDFYIELD
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2457,10 +2651,10 @@ ODDFYIELD
 
 Returns the yield of a security with an odd first period. Only in Excel.
 
-No equivalent.
-
 ODDLPRICE
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2468,10 +2662,10 @@ ODDLPRICE
 
 Returns the price of a security with an odd last period. Only in Excel.
 
-No equivalent.
-
 ODDLYIELD
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2479,10 +2673,10 @@ ODDLYIELD
 
 Returns the yield of a security with an odd last period. Only in Excel.
 
-No equivalent.
-
 PDURATION
 ^^^^^^^^^
+
+🔧 vsql has no ``PDURATION`` function, but an expression does the same thing.
 
 Returns the number of periods an investment needs to reach a value.
 
@@ -2496,6 +2690,8 @@ Returns the number of periods an investment needs to reach a value.
 
 PMT
 ^^^
+
+🔧 vsql has no ``PMT`` function, but an expression does the same thing.
 
 Returns the payment per period of a loan with constant payments and rate.
 
@@ -2511,6 +2707,8 @@ This is for payments at the end of each period with no future value.
 
 PPMT
 ^^^^
+
+🔧 vsql has no ``PPMT`` function, but a query does the same thing.
 
 Returns the principal part of a loan payment for a period.
 
@@ -2531,16 +2729,18 @@ This is for payments at the end of each period (type 0).
 PRICE
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =PRICE(settlement, maturity, rate, yld, redemption, frequency, [basis])
 
 Returns the price per 100 face value of a security that pays periodic interest.
 
-No equivalent.
-
 PRICEDISC
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2548,10 +2748,10 @@ PRICEDISC
 
 Returns the price per 100 face value of a discounted security.
 
-No equivalent.
-
 PRICEMAT
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2559,10 +2759,10 @@ PRICEMAT
 
 Returns the price per 100 face value of a security that pays interest at maturity.
 
-No equivalent.
-
 PV
 ^^
+
+🔧 vsql has no ``PV`` function, but an expression does the same thing.
 
 Returns the present value of a series of equal future payments.
 
@@ -2579,16 +2779,18 @@ This is for payments at the end of each period with no future value.
 RATE
 ^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =RATE(nper, pmt, pv, [fv], [type], [guess])
 
 Returns the interest rate per period of a loan or annuity.
 
-No equivalent.
-
 RECEIVED
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2596,10 +2798,10 @@ RECEIVED
 
 Returns the amount received at maturity for a fully invested security.
 
-No equivalent.
-
 RRI
 ^^^
+
+🔧 vsql has no ``RRI`` function, but an expression does the same thing.
 
 Returns the equivalent interest rate for the growth of an investment.
 
@@ -2614,6 +2816,8 @@ Returns the equivalent interest rate for the growth of an investment.
 SLN
 ^^^
 
+🔧 vsql has no ``SLN`` function, but an expression does the same thing.
+
 Returns the straight-line depreciation of an asset for one period.
 
 .. code-block:: sql
@@ -2627,16 +2831,18 @@ Returns the straight-line depreciation of an asset for one period.
 STOCKHISTORY
 ^^^^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
+
 .. code-block:: text
 
   =STOCKHISTORY(stock, start_date, [end_date], [interval], [headers], [property0], ...)
 
 Returns historical market data for a financial instrument. Only in Excel.
 
-No equivalent.
-
 SYD
 ^^^
+
+🔧 vsql has no ``SYD`` function, but an expression does the same thing.
 
 Returns the sum-of-years' digits depreciation of an asset for a period.
 
@@ -2651,16 +2857,18 @@ Returns the sum-of-years' digits depreciation of an asset for a period.
 TBILLEQ
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =TBILLEQ(settlement, maturity, discount)
 
 Returns the bond-equivalent yield of a Treasury bill.
 
-No equivalent.
-
 TBILLPRICE
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2668,10 +2876,10 @@ TBILLPRICE
 
 Returns the price per 100 face value of a Treasury bill.
 
-No equivalent.
-
 TBILLYIELD
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2679,10 +2887,10 @@ TBILLYIELD
 
 Returns the yield of a Treasury bill.
 
-No equivalent.
-
 VDB
 ^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2690,10 +2898,10 @@ VDB
 
 Returns the declining balance depreciation of an asset over any range of periods.
 
-No equivalent.
-
 XIRR
 ^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2701,10 +2909,10 @@ XIRR
 
 Returns the internal rate of return of cash flows on irregular dates.
 
-No equivalent.
-
 XNPV
 ^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2712,10 +2920,10 @@ XNPV
 
 Returns the net present value of cash flows on irregular dates.
 
-No equivalent.
-
 YIELD
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2723,10 +2931,10 @@ YIELD
 
 Returns the yield of a security that pays periodic interest.
 
-No equivalent.
-
 YIELDDISC
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2734,10 +2942,10 @@ YIELDDISC
 
 Returns the annual yield of a discounted security.
 
-No equivalent.
-
 YIELDMAT
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2745,13 +2953,13 @@ YIELDMAT
 
 Returns the annual yield of a security that pays interest at maturity.
 
-No equivalent.
-
 Google
 ------
 
 AI
 ^^
+
+🚫 vsql won't have an equivalent, because it calls an AI model or a translation service.
 
 .. code-block:: text
 
@@ -2759,10 +2967,10 @@ AI
 
 Asks an AI model to generate or analyse text. Only in Google Sheets.
 
-No equivalent.
-
 ARRAYFORMULA
 ^^^^^^^^^^^^
+
+🔧 vsql has no ``ARRAYFORMULA`` function, but a query does the same thing.
 
 Applies a formula to whole ranges instead of single cells. Only in Google Sheets.
 
@@ -2782,16 +2990,18 @@ Every SQL expression already runs once per row. A blank cell counts as 0 in the 
 GOOGLEFINANCE
 ^^^^^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
+
 .. code-block:: text
 
   =GOOGLEFINANCE(ticker, [attribute], [start_date], [end_date], [interval])
 
 Returns current or historical market data for a security. Only in Google Sheets.
 
-No equivalent.
-
 GOOGLETRANSLATE
 ^^^^^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it calls an AI model or a translation service.
 
 .. code-block:: text
 
@@ -2799,10 +3009,10 @@ GOOGLETRANSLATE
 
 Translates text into another language. Only in Google Sheets.
 
-No equivalent.
-
 QUERY
 ^^^^^
+
+🔧 vsql has no ``QUERY`` function, but an expression does the same thing.
 
 Runs a query written in the Google Visualization query language over a range. Only in Google Sheets.
 
@@ -2821,13 +3031,13 @@ Columns are named instead of lettered.
 SPARKLINE
 ^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it only changes how the sheet looks.
+
 .. code-block:: text
 
   =SPARKLINE(data, [options])
 
 Draws a small chart inside a cell. Only in Google Sheets.
-
-No equivalent.
 
 Information
 -----------
@@ -2835,16 +3045,18 @@ Information
 CELL
 ^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =CELL(info_type, [reference])
 
 Returns information about a cell, such as its address or format.
 
-No equivalent.
-
 ERROR.TYPE
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2852,10 +3064,10 @@ ERROR.TYPE
 
 Returns a number for the kind of error value.
 
-No equivalent.
-
 INFO
 ^^^^
+
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
 
 .. code-block:: text
 
@@ -2863,10 +3075,10 @@ INFO
 
 Returns information about the environment the workbook runs in. Only in Excel.
 
-No equivalent.
-
 ISBLANK
 ^^^^^^^
+
+🔧 vsql has no ``ISBLANK`` function, but an expression does the same thing.
 
 Checks whether a value is empty.
 
@@ -2880,6 +3092,8 @@ Checks whether a value is empty.
 
 ISEMAIL
 ^^^^^^^
+
+🔧 vsql has no ``ISEMAIL`` function, but an expression does the same thing.
 
 Checks whether text looks like an email address. Only in Google Sheets.
 
@@ -2897,16 +3111,18 @@ match the whole text, and ``.`` is an ordinary character in it.
 ISERR
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ISERR(value)
 
 Checks whether a value is any error other than ``#N/A``.
 
-No equivalent.
-
 ISERROR
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2914,10 +3130,10 @@ ISERROR
 
 Checks whether a value is any error.
 
-No equivalent.
-
 ISEVEN
 ^^^^^^
+
+🔧 vsql has no ``ISEVEN`` function, but an expression does the same thing.
 
 Checks whether a number is even.
 
@@ -2932,16 +3148,18 @@ Checks whether a number is even.
 ISFORMULA
 ^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =ISFORMULA(reference)
 
 Checks whether a cell holds a formula.
 
-No equivalent.
-
 ISLOGICAL
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2949,10 +3167,10 @@ ISLOGICAL
 
 Checks whether a value is TRUE or FALSE.
 
-No equivalent.
-
 ISNA
 ^^^^
+
+🔧 vsql has no ``ISNA`` function, but an expression does the same thing.
 
 Checks whether a value is the ``#N/A`` error.
 
@@ -2969,16 +3187,18 @@ A lookup that finds nothing gives ``NULL`` rather than ``#N/A``.
 ISNONTEXT
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ISNONTEXT(value)
 
 Checks whether a value is anything other than text.
 
-No equivalent.
-
 ISNUMBER
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -2986,10 +3206,10 @@ ISNUMBER
 
 Checks whether a value is a number.
 
-No equivalent.
-
 ISODD
 ^^^^^
+
+🔧 vsql has no ``ISODD`` function, but an expression does the same thing.
 
 Checks whether a number is odd.
 
@@ -3004,16 +3224,18 @@ Checks whether a number is odd.
 ISOMITTED
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ISOMITTED(argument)
 
 Checks whether an argument of a ``LAMBDA`` was left out. Only in Excel.
 
-No equivalent.
-
 ISREF
 ^^^^^
+
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
 
 .. code-block:: text
 
@@ -3021,10 +3243,10 @@ ISREF
 
 Checks whether a value is a cell reference.
 
-No equivalent.
-
 ISTEXT
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3032,10 +3254,10 @@ ISTEXT
 
 Checks whether a value is text.
 
-No equivalent.
-
 ISURL
 ^^^^^
+
+🔧 vsql has no ``ISURL`` function, but an expression does the same thing.
 
 Checks whether text looks like a web address. Only in Google Sheets.
 
@@ -3053,6 +3275,8 @@ address without ``http://``.
 N
 ^
 
+🔧 vsql has no ``N`` function, but an expression does the same thing.
+
 Converts a value to a number, with TRUE as 1 and FALSE as 0.
 
 .. code-block:: sql
@@ -3067,6 +3291,8 @@ A number needs no conversion, and text would be 0 in a spreadsheet.
 
 NA
 ^^
+
+✅ vsql has the same value: ``NULL``.
 
 Returns the ``#N/A`` error value.
 
@@ -3084,16 +3310,18 @@ can't be worked out.
 SHEET
 ^^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =SHEET([value])
 
 Returns the number of a sheet.
 
-No equivalent.
-
 SHEETS
 ^^^^^^
+
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
 
 .. code-block:: text
 
@@ -3101,10 +3329,10 @@ SHEETS
 
 Returns the number of sheets.
 
-No equivalent.
-
 TYPE
 ^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3112,13 +3340,13 @@ TYPE
 
 Returns a number for the kind of value, such as number, text or logical.
 
-No equivalent.
-
 Logical
 -------
 
 AND
 ^^^
+
+🔧 vsql has no ``AND`` function, but an expression does the same thing.
 
 Returns TRUE when every condition is true.
 
@@ -3136,6 +3364,8 @@ For a whole range, such as ``=AND(C2:C5 > 0)``, use
 BYCOL
 ^^^^^
 
+🔧 vsql has no ``BYCOL`` function, but a query does the same thing.
+
 Applies a calculation to each column of a range.
 
 .. code-block:: sql
@@ -3148,6 +3378,8 @@ Applies a calculation to each column of a range.
 
 BYROW
 ^^^^^
+
+🔧 vsql has no ``BYROW`` function, but a query does the same thing.
 
 Applies a calculation to each row of a range.
 
@@ -3164,6 +3396,8 @@ Applies a calculation to each row of a range.
 FALSE
 ^^^^^
 
+✅ vsql has the same value: ``FALSE``.
+
 Returns the logical value FALSE.
 
 .. code-block:: sql
@@ -3176,6 +3410,8 @@ Returns the logical value FALSE.
 
 IF
 ^^
+
+🔧 vsql has no ``IF`` function, but an expression does the same thing.
 
 Returns one value when a condition is true and another when it's false.
 
@@ -3190,16 +3426,18 @@ Returns one value when a condition is true and another when it's false.
 IFERROR
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =IFERROR(value, value_if_error)
 
 Returns a fallback value when a calculation gives an error.
 
-No equivalent.
-
 IFNA
 ^^^^
+
+✅ vsql has the same function: ``COALESCE``.
 
 Returns a fallback value when a calculation gives ``#N/A``.
 
@@ -3215,6 +3453,8 @@ A lookup that finds nothing gives ``NULL`` rather than ``#N/A``.
 
 IFS
 ^^^
+
+🔧 vsql has no ``IFS`` function, but an expression does the same thing.
 
 Returns the value for the first condition that is true.
 
@@ -3234,16 +3474,18 @@ When no condition is true, the result is ``NULL`` rather than ``#N/A``.
 LAMBDA
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =LAMBDA([parameter1, parameter2, ...], calculation)
 
 Defines a reusable calculation with parameters.
 
-No equivalent.
-
 LET
 ^^^
+
+🔧 vsql has no ``LET`` function, but a query does the same thing.
 
 Gives names to values so a calculation can use them.
 
@@ -3257,6 +3499,8 @@ Gives names to values so a calculation can use them.
 
 MAKEARRAY
 ^^^^^^^^^
+
+🔧 vsql has no ``MAKEARRAY`` function, but a query does the same thing.
 
 Builds an array of a given size by calculating each element from its row and
 column.
@@ -3275,6 +3519,8 @@ The number of columns is fixed by the query.
 MAP
 ^^^
 
+🔧 vsql has no ``MAP`` function, but a query does the same thing.
+
 Applies a calculation to each value of a range.
 
 .. code-block:: sql
@@ -3291,6 +3537,8 @@ Applies a calculation to each value of a range.
 NOT
 ^^^
 
+🔧 vsql has no ``NOT`` function, but an expression does the same thing.
+
 Reverses a logical value.
 
 .. code-block:: sql
@@ -3303,6 +3551,8 @@ Reverses a logical value.
 
 OR
 ^^
+
+🔧 vsql has no ``OR`` function, but an expression does the same thing.
 
 Returns TRUE when any condition is true.
 
@@ -3320,6 +3570,8 @@ For a whole range, such as ``=OR(C2:C5 > 3)``, use
 REDUCE
 ^^^^^^
 
+✅ vsql's aggregate functions, such as ``SUM``, do the same thing.
+
 Combines the values of a range into one result, one value at a time.
 
 .. code-block:: sql
@@ -3335,6 +3587,8 @@ does can be written this way.
 
 SCAN
 ^^^^
+
+🔧 vsql has no ``SCAN`` function, but a query does the same thing.
 
 Combines the values of a range one at a time and returns every step along the
 way.
@@ -3357,6 +3611,8 @@ position in the sheet.
 SWITCH
 ^^^^^^
 
+🔧 vsql has no ``SWITCH`` function, but an expression does the same thing.
+
 Compares a value against a list and returns the result for the first match.
 
 .. code-block:: sql
@@ -3376,6 +3632,8 @@ Compares a value against a list and returns the result for the first match.
 TRUE
 ^^^^
 
+✅ vsql has the same value: ``TRUE``.
+
 Returns the logical value TRUE.
 
 .. code-block:: sql
@@ -3388,6 +3646,8 @@ Returns the logical value TRUE.
 
 XOR
 ^^^
+
+🔧 vsql has no ``XOR`` function, but an expression does the same thing.
 
 Returns TRUE when an odd number of conditions are true.
 
@@ -3407,16 +3667,18 @@ Lookup and Reference
 ADDRESS
 ^^^^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =ADDRESS(row_num, column_num, [abs_num], [a1], [sheet_text])
 
 Returns a cell reference as text from row and column numbers.
 
-No equivalent.
-
 AREAS
 ^^^^^
+
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
 
 .. code-block:: text
 
@@ -3424,10 +3686,10 @@ AREAS
 
 Returns the number of areas in a reference.
 
-No equivalent.
-
 ARRAY_CONSTRAIN
 ^^^^^^^^^^^^^^^
+
+🔧 vsql has no ``ARRAY_CONSTRAIN`` function, but a query does the same thing.
 
 Returns the top-left part of a range with a given number of rows and columns. Only in Google Sheets.
 
@@ -3445,6 +3707,8 @@ Rows have no fixed order without ORDER BY.
 CHOOSE
 ^^^^^^
 
+🔧 vsql has no ``CHOOSE`` function, but an expression does the same thing.
+
 Returns the value at a given position in a list of values.
 
 .. code-block:: sql
@@ -3457,6 +3721,8 @@ Returns the value at a given position in a list of values.
 
 CHOOSECOLS
 ^^^^^^^^^^
+
+🔧 vsql has no ``CHOOSECOLS`` function, but a query does the same thing.
 
 Returns the chosen columns of an array.
 
@@ -3473,6 +3739,8 @@ Returns the chosen columns of an array.
 
 CHOOSEROWS
 ^^^^^^^^^^
+
+🔧 vsql has no ``CHOOSEROWS`` function, but a query does the same thing.
 
 Returns the chosen rows of an array.
 
@@ -3491,16 +3759,18 @@ The subquery numbers the rows in sku order.
 COLUMN
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =COLUMN([reference])
 
 Returns the column number of a reference.
 
-No equivalent.
-
 COLUMNS
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3508,10 +3778,10 @@ COLUMNS
 
 Returns the number of columns in a range or array.
 
-No equivalent.
-
 DROP
 ^^^^
+
+🔧 vsql has no ``DROP`` function, but a query does the same thing.
 
 Removes a number of rows or columns from the start or end of an array. Only in Excel.
 
@@ -3526,6 +3796,8 @@ Removes a number of rows or columns from the start or end of an array. Only in E
 
 EXPAND
 ^^^^^^
+
+🔧 vsql has no ``EXPAND`` function, but a query does the same thing.
 
 Pads an array out to a given number of rows and columns. Only in Excel.
 
@@ -3543,6 +3815,8 @@ Pads an array out to a given number of rows and columns. Only in Excel.
 FILTER
 ^^^^^^
 
+🔧 vsql has no ``FILTER`` function, but a query does the same thing.
+
 Returns the rows of an array that meet a condition.
 
 .. code-block:: sql
@@ -3557,6 +3831,8 @@ Returns the rows of an array that meet a condition.
 
 FLATTEN
 ^^^^^^^
+
+🔧 vsql has no ``FLATTEN`` function, but a query does the same thing.
 
 Puts the values of one or more ranges into a single column. Only in Google Sheets.
 
@@ -3575,16 +3851,18 @@ Puts the values of one or more ranges into a single column. Only in Google Sheet
 FORMULATEXT
 ^^^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =FORMULATEXT(reference)
 
 Returns the formula in a cell as text.
 
-No equivalent.
-
 GETPIVOTDATA
 ^^^^^^^^^^^^
+
+🔧 vsql has no ``GETPIVOTDATA`` function, but a query does the same thing.
 
 Returns a value from a pivot table.
 
@@ -3600,6 +3878,8 @@ Write the aggregate the pivot table would use, with WHERE for each field and ite
 
 GROUPBY
 ^^^^^^^
+
+🔧 vsql has no ``GROUPBY`` function, but a query does the same thing.
 
 Groups rows by a field and aggregates the values of each group. Only in Excel.
 
@@ -3619,6 +3899,8 @@ GROUPBY also adds a grand total row; a second query or UNION ALL gives that.
 HLOOKUP
 ^^^^^^^
 
+🔧 vsql has no ``HLOOKUP`` function, but a query does the same thing.
+
 Finds a value in the top row of a table and returns the value from a row below it.
 
 .. code-block:: sql
@@ -3633,6 +3915,8 @@ Headers are column names, so the lookup is just naming the column.
 
 HSTACK
 ^^^^^^
+
+🔧 vsql has no ``HSTACK`` function, but a query does the same thing.
 
 Joins arrays side by side.
 
@@ -3652,16 +3936,18 @@ Columns from different tables need a JOIN on a shared key instead.
 HYPERLINK
 ^^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it only changes how the sheet looks.
+
 .. code-block:: text
 
   =HYPERLINK(link_location, [friendly_name])
 
 Makes a cell into a clickable link.
 
-No equivalent.
-
 IMAGE
 ^^^^^
+
+🚫 vsql won't have an equivalent, because it only changes how the sheet looks.
 
 .. code-block:: text
 
@@ -3669,10 +3955,10 @@ IMAGE
 
 Shows an image inside a cell.
 
-No equivalent.
-
 INDEX
 ^^^^^
+
+🔧 vsql has no ``INDEX`` function, but a query does the same thing.
 
 Returns the value at a given row and column of an array.
 
@@ -3687,16 +3973,18 @@ Returns the value at a given row and column of an array.
 INDIRECT
 ^^^^^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =INDIRECT(ref_text, [a1])
 
 Returns the reference named by a text string.
 
-No equivalent.
-
 LOOKUP
 ^^^^^^
+
+🔧 vsql has no ``LOOKUP`` function, but a query does the same thing.
 
 Finds the largest value not greater than the lookup value in a sorted range and returns the matching result.
 
@@ -3711,6 +3999,8 @@ Finds the largest value not greater than the lookup value in a sorted range and 
 
 MATCH
 ^^^^^
+
+🔧 vsql has no ``MATCH`` function, but a query does the same thing.
 
 Returns the position of a value in a range.
 
@@ -3728,16 +4018,18 @@ The position is counted in sku order.
 OFFSET
 ^^^^^^
 
+🚫 vsql won't have an equivalent, because it reads the cells or sheets of the spreadsheet.
+
 .. code-block:: text
 
   =OFFSET(reference, rows, cols, [height], [width])
 
 Returns a reference shifted a number of rows and columns from another.
 
-No equivalent.
-
 PIVOTBY
 ^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3745,10 +4037,10 @@ PIVOTBY
 
 Groups values by row and column fields into a pivot table. Only in Excel.
 
-No equivalent.
-
 ROW
 ^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3756,10 +4048,10 @@ ROW
 
 Returns the row number of a reference.
 
-No equivalent.
-
 ROWS
 ^^^^
+
+🔧 vsql has no ``ROWS`` function, but a query does the same thing.
 
 Returns the number of rows in a range or array.
 
@@ -3774,16 +4066,18 @@ Returns the number of rows in a range or array.
 RTD
 ^^^
 
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
+
 .. code-block:: text
 
   =RTD(prog_id, server, topic1, [topic2], ...)
 
 Returns data from a real-time data server. Only in Excel.
 
-No equivalent.
-
 SORT
 ^^^^
+
+🔧 vsql has no ``SORT`` function, but a query does the same thing.
 
 Sorts the rows of an array.
 
@@ -3810,6 +4104,8 @@ Sorts the rows of an array.
 SORTBY
 ^^^^^^
 
+🔧 vsql has no ``SORTBY`` function, but a query does the same thing.
+
 Sorts an array by the values of another array. Only in Excel.
 
 .. code-block:: sql
@@ -3835,6 +4131,8 @@ Sorts an array by the values of another array. Only in Excel.
 SORTN
 ^^^^^
 
+🔧 vsql has no ``SORTN`` function, but a query does the same thing.
+
 Returns the first n rows of a range after sorting. Only in Google Sheets.
 
 .. code-block:: sql
@@ -3848,6 +4146,8 @@ Returns the first n rows of a range after sorting. Only in Google Sheets.
 
 TAKE
 ^^^^
+
+🔧 vsql has no ``TAKE`` function, but a query does the same thing.
 
 Returns a number of rows or columns from the start or end of an array. Only in Excel.
 
@@ -3864,6 +4164,8 @@ A negative count takes from the end, which is ORDER BY … DESC.
 
 TOCOL
 ^^^^^
+
+🔧 vsql has no ``TOCOL`` function, but a query does the same thing.
 
 Returns the values of an array as a single column.
 
@@ -3883,6 +4185,8 @@ Returns the values of an array as a single column.
 TOROW
 ^^^^^
 
+🔧 vsql has no ``TOROW`` function, but a query does the same thing.
+
 Returns the values of an array as a single row.
 
 .. code-block:: sql
@@ -3898,16 +4202,18 @@ This returns one text value, not one column per value.
 TRANSPOSE
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =TRANSPOSE(array)
 
 Swaps the rows and columns of an array.
 
-No equivalent.
-
 TRIMRANGE
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3915,10 +4221,10 @@ TRIMRANGE
 
 Removes empty rows and columns from the edges of a range. Only in Excel.
 
-No equivalent.
-
 UNIQUE
 ^^^^^^
+
+🔧 vsql has no ``UNIQUE`` function, but a query does the same thing.
 
 Returns the distinct values of a range.
 
@@ -3936,6 +4242,8 @@ With exactly_once, use GROUP BY with HAVING COUNT(*) = 1 instead.
 VLOOKUP
 ^^^^^^^
 
+🔧 vsql has no ``VLOOKUP`` function, but a query does the same thing.
+
 Finds a value in the first column of a table and returns the value from another column of that row.
 
 .. code-block:: sql
@@ -3950,6 +4258,8 @@ If several rows match, the subquery is an error, where VLOOKUP takes the first o
 
 VSTACK
 ^^^^^^
+
+🔧 vsql has no ``VSTACK`` function, but a query does the same thing.
 
 Stacks arrays on top of each other.
 
@@ -3968,16 +4278,18 @@ Stacks arrays on top of each other.
 WRAPCOLS
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =WRAPCOLS(vector, wrap_count, [pad_with])
 
 Wraps a row or column of values into columns of a given length.
 
-No equivalent.
-
 WRAPROWS
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -3985,10 +4297,10 @@ WRAPROWS
 
 Wraps a row or column of values into rows of a given length.
 
-No equivalent.
-
 XLOOKUP
 ^^^^^^^
+
+🔧 vsql has no ``XLOOKUP`` function, but a query does the same thing.
 
 Finds a value in a range and returns the matching value from another range.
 
@@ -4011,6 +4323,8 @@ If several rows match, the subquery is an error, where XLOOKUP takes the first o
 XMATCH
 ^^^^^^
 
+🔧 vsql has no ``XMATCH`` function, but a query does the same thing.
+
 Returns the position of a value in a range or array.
 
 .. code-block:: sql
@@ -4030,6 +4344,8 @@ Math and Trigonometry
 ABS
 ^^^
 
+✅ vsql has the same function: ``ABS``.
+
 Returns the absolute value of a number.
 
 .. code-block:: sql
@@ -4042,6 +4358,8 @@ Returns the absolute value of a number.
 
 ACOS
 ^^^^
+
+✅ vsql has the same function: ``ACOS``.
 
 Returns the arccosine of a number, in radians.
 
@@ -4056,6 +4374,8 @@ Returns the arccosine of a number, in radians.
 ACOSH
 ^^^^^
 
+🔧 vsql has no ``ACOSH`` function, but an expression does the same thing.
+
 Returns the inverse hyperbolic cosine of a number.
 
 .. code-block:: sql
@@ -4068,6 +4388,8 @@ Returns the inverse hyperbolic cosine of a number.
 
 ACOT
 ^^^^
+
+🔧 vsql has no ``ACOT`` function, but an expression does the same thing.
 
 Returns the arccotangent of a number, in radians.
 
@@ -4082,6 +4404,8 @@ Returns the arccotangent of a number, in radians.
 ACOTH
 ^^^^^
 
+🔧 vsql has no ``ACOTH`` function, but an expression does the same thing.
+
 Returns the inverse hyperbolic cotangent of a number.
 
 .. code-block:: sql
@@ -4094,6 +4418,8 @@ Returns the inverse hyperbolic cotangent of a number.
 
 AGGREGATE
 ^^^^^^^^^
+
+✅ vsql's aggregate functions, such as ``SUM`` and ``AVG``, do the same thing.
 
 Applies a chosen aggregate, such as a sum or average, to a range while skipping
 errors or hidden rows. Only in Excel.
@@ -4112,16 +4438,18 @@ so on). NULLs are always skipped.
 ARABIC
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ARABIC(text)
 
 Converts a Roman numeral to a number.
 
-No equivalent.
-
 ASIN
 ^^^^
+
+✅ vsql has the same function: ``ASIN``.
 
 Returns the arcsine of a number, in radians.
 
@@ -4136,6 +4464,8 @@ Returns the arcsine of a number, in radians.
 ASINH
 ^^^^^
 
+🔧 vsql has no ``ASINH`` function, but an expression does the same thing.
+
 Returns the inverse hyperbolic sine of a number.
 
 .. code-block:: sql
@@ -4149,6 +4479,8 @@ Returns the inverse hyperbolic sine of a number.
 ATAN
 ^^^^
 
+✅ vsql has the same function: ``ATAN``.
+
 Returns the arctangent of a number, in radians.
 
 .. code-block:: sql
@@ -4161,6 +4493,8 @@ Returns the arctangent of a number, in radians.
 
 ATAN2
 ^^^^^
+
+✅ vsql has the same function: ``ATAN2``.
 
 Returns the angle, in radians, of the point (x, y) from the x-axis.
 
@@ -4177,6 +4511,8 @@ The arguments are the other way around: vsql takes y first, then x.
 ATANH
 ^^^^^
 
+🔧 vsql has no ``ATANH`` function, but an expression does the same thing.
+
 Returns the inverse hyperbolic tangent of a number.
 
 .. code-block:: sql
@@ -4190,16 +4526,18 @@ Returns the inverse hyperbolic tangent of a number.
 BASE
 ^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =BASE(number, radix, [min_length])
 
 Converts a number to text in another base, such as binary or hexadecimal.
 
-No equivalent.
-
 CEILING.MATH
 ^^^^^^^^^^^^
+
+🔧 vsql has no ``CEILING.MATH`` function, but an expression does the same thing.
 
 Rounds a number up to the nearest multiple of a significance.
 
@@ -4223,6 +4561,8 @@ Negative numbers round towards zero, like the default ``mode``. For a nonzero
 CEILING.PRECISE
 ^^^^^^^^^^^^^^^
 
+🔧 vsql has no ``CEILING.PRECISE`` function, but an expression does the same thing.
+
 Rounds a number up to the nearest multiple of a significance, whatever the sign
 of the significance.
 
@@ -4237,6 +4577,8 @@ of the significance.
 COMBIN
 ^^^^^^
 
+🔧 vsql has no ``COMBIN`` function, but an expression does the same thing.
+
 Returns the number of ways to choose some items from a set, ignoring order.
 
 .. code-block:: sql
@@ -4249,6 +4591,8 @@ Returns the number of ways to choose some items from a set, ignoring order.
 
 COMBINA
 ^^^^^^^
+
+🔧 vsql has no ``COMBINA`` function, but an expression does the same thing.
 
 Returns the number of ways to choose some items from a set, ignoring order and
 allowing repeats.
@@ -4266,6 +4610,8 @@ This is COMBIN(number + number_chosen - 1, number_chosen).
 COS
 ^^^
 
+✅ vsql has the same function: ``COS``.
+
 Returns the cosine of an angle in radians.
 
 .. code-block:: sql
@@ -4278,6 +4624,8 @@ Returns the cosine of an angle in radians.
 
 COSH
 ^^^^
+
+✅ vsql has the same function: ``COSH``.
 
 Returns the hyperbolic cosine of a number.
 
@@ -4292,6 +4640,8 @@ Returns the hyperbolic cosine of a number.
 COT
 ^^^
 
+🔧 vsql has no ``COT`` function, but an expression does the same thing.
+
 Returns the cotangent of an angle in radians.
 
 .. code-block:: sql
@@ -4304,6 +4654,8 @@ Returns the cotangent of an angle in radians.
 
 COTH
 ^^^^
+
+🔧 vsql has no ``COTH`` function, but an expression does the same thing.
 
 Returns the hyperbolic cotangent of a number.
 
@@ -4318,6 +4670,8 @@ Returns the hyperbolic cotangent of a number.
 CSC
 ^^^
 
+🔧 vsql has no ``CSC`` function, but an expression does the same thing.
+
 Returns the cosecant of an angle in radians.
 
 .. code-block:: sql
@@ -4330,6 +4684,8 @@ Returns the cosecant of an angle in radians.
 
 CSCH
 ^^^^
+
+🔧 vsql has no ``CSCH`` function, but an expression does the same thing.
 
 Returns the hyperbolic cosecant of a number.
 
@@ -4344,16 +4700,18 @@ Returns the hyperbolic cosecant of a number.
 DECIMAL
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =DECIMAL(text, radix)
 
 Converts text that holds a number in another base to a decimal number.
 
-No equivalent.
-
 DEGREES
 ^^^^^^^
+
+✅ vsql has the same function: ``DEGREES``.
 
 Converts radians to degrees.
 
@@ -4368,6 +4726,8 @@ Converts radians to degrees.
 EVEN
 ^^^^
 
+🔧 vsql has no ``EVEN`` function, but an expression does the same thing.
+
 Rounds a number away from zero to the nearest even whole number.
 
 .. code-block:: sql
@@ -4381,6 +4741,8 @@ Rounds a number away from zero to the nearest even whole number.
 EXP
 ^^^
 
+✅ vsql has the same function: ``EXP``.
+
 Returns e raised to the power of a number.
 
 .. code-block:: sql
@@ -4393,6 +4755,8 @@ Returns e raised to the power of a number.
 
 FACT
 ^^^^
+
+✅ vsql has the same function: ``FACTORIAL``.
 
 Returns the factorial of a number.
 
@@ -4409,6 +4773,8 @@ The result is an exact NUMERIC, so a large factorial keeps every digit.
 FACTDOUBLE
 ^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =FACTDOUBLE(number)
@@ -4416,10 +4782,10 @@ FACTDOUBLE
 Returns the double factorial of a number, the product of every second number
 down to 1 or 2.
 
-No equivalent.
-
 FLOOR.MATH
 ^^^^^^^^^^
+
+🔧 vsql has no ``FLOOR.MATH`` function, but an expression does the same thing.
 
 Rounds a number down to the nearest multiple of a significance.
 
@@ -4443,6 +4809,8 @@ Negative numbers round away from zero, like the default ``mode``. For a nonzero
 FLOOR.PRECISE
 ^^^^^^^^^^^^^
 
+🔧 vsql has no ``FLOOR.PRECISE`` function, but an expression does the same thing.
+
 Rounds a number down to the nearest multiple of a significance, whatever the
 sign of the significance.
 
@@ -4456,6 +4824,8 @@ sign of the significance.
 
 GCD
 ^^^
+
+🔧 vsql has no ``GCD`` function, but an expression does the same thing.
 
 Returns the greatest common divisor of whole numbers.
 
@@ -4472,6 +4842,8 @@ GCD takes two numbers, so nest it for more.
 INT
 ^^^
 
+✅ vsql has the same function: ``FLOOR``.
+
 Rounds a number down to the nearest whole number.
 
 .. code-block:: sql
@@ -4484,6 +4856,8 @@ Rounds a number down to the nearest whole number.
 
 ISO.CEILING
 ^^^^^^^^^^^
+
+🔧 vsql has no ``ISO.CEILING`` function, but an expression does the same thing.
 
 Rounds a number up to the nearest multiple of a significance, whatever the sign
 of the significance.
@@ -4498,6 +4872,8 @@ of the significance.
 
 LCM
 ^^^
+
+🔧 vsql has no ``LCM`` function, but an expression does the same thing.
 
 Returns the least common multiple of whole numbers.
 
@@ -4514,6 +4890,8 @@ LCM takes two numbers, so nest it for more.
 LN
 ^^
 
+✅ vsql has the same function: ``LN``.
+
 Returns the natural logarithm of a number.
 
 .. code-block:: sql
@@ -4526,6 +4904,8 @@ Returns the natural logarithm of a number.
 
 LOG
 ^^^
+
+✅ vsql has the same function: ``LOG``.
 
 Returns the logarithm of a number in a base, which is 10 when left out.
 
@@ -4548,6 +4928,8 @@ The base comes first in vsql. Use ``LOG10(x)`` when there's no base.
 LOG10
 ^^^^^
 
+✅ vsql has the same function: ``LOG10``.
+
 Returns the base-10 logarithm of a number.
 
 .. code-block:: sql
@@ -4561,16 +4943,18 @@ Returns the base-10 logarithm of a number.
 MDETERM
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =MDETERM(array)
 
 Returns the determinant of a square matrix.
 
-No equivalent.
-
 MINVERSE
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -4578,10 +4962,10 @@ MINVERSE
 
 Returns the inverse of a square matrix.
 
-No equivalent.
-
 MMULT
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -4589,10 +4973,10 @@ MMULT
 
 Returns the matrix product of two arrays.
 
-No equivalent.
-
 MOD
 ^^^
+
+🔧 vsql has no ``MOD`` function, but an expression does the same thing.
 
 Returns the remainder after dividing a number by a divisor, with the sign of the
 divisor.
@@ -4611,6 +4995,8 @@ the number. When both are positive, plain ``MOD`` is enough.
 MROUND
 ^^^^^^
 
+🔧 vsql has no ``MROUND`` function, but an expression does the same thing.
+
 Rounds a number to the nearest multiple of another number.
 
 .. code-block:: sql
@@ -4623,6 +5009,8 @@ Rounds a number to the nearest multiple of another number.
 
 MULTINOMIAL
 ^^^^^^^^^^^
+
+🔧 vsql has no ``MULTINOMIAL`` function, but an expression does the same thing.
 
 Returns the factorial of a sum divided by the product of the factorials of its
 parts.
@@ -4639,16 +5027,18 @@ parts.
 MUNIT
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =MUNIT(dimension)
 
 Returns an identity matrix of a given size.
 
-No equivalent.
-
 ODD
 ^^^
+
+🔧 vsql has no ``ODD`` function, but an expression does the same thing.
 
 Rounds a number away from zero to the nearest odd whole number.
 
@@ -4665,6 +5055,8 @@ Rounds a number away from zero to the nearest odd whole number.
 PERCENTOF
 ^^^^^^^^^
 
+🔧 vsql has no ``PERCENTOF`` function, but a query does the same thing.
+
 Returns the sum of a subset as a fraction of the sum of all the data. Only in
 Excel.
 
@@ -4680,6 +5072,8 @@ Excel.
 PI
 ^^
 
+✅ vsql has the same function: ``PI``.
+
 Returns the number pi.
 
 .. code-block:: sql
@@ -4692,6 +5086,8 @@ Returns the number pi.
 
 POWER
 ^^^^^
+
+✅ vsql has the same function: ``POWER``.
 
 Raises a number to a power.
 
@@ -4706,6 +5102,8 @@ Raises a number to a power.
 PRODUCT
 ^^^^^^^
 
+🔧 vsql has no ``PRODUCT`` function, but a query does the same thing.
+
 Multiplies numbers together.
 
 .. code-block:: sql
@@ -4718,6 +5116,8 @@ Multiplies numbers together.
 
 QUOTIENT
 ^^^^^^^^
+
+🔧 vsql has no ``QUOTIENT`` function, but an expression does the same thing.
 
 Returns the whole-number part of a division.
 
@@ -4734,6 +5134,8 @@ Dividing two integers already drops the remainder, so ``-7 / 2`` is -3 too.
 RADIANS
 ^^^^^^^
 
+✅ vsql has the same function: ``RADIANS``.
+
 Converts degrees to radians.
 
 .. code-block:: sql
@@ -4746,6 +5148,8 @@ Converts degrees to radians.
 
 RAND
 ^^^^
+
+✅ vsql has the same function: ``RANDOM``.
 
 Returns a random number that is at least 0 and less than 1.
 
@@ -4763,16 +5167,18 @@ its range.
 RANDARRAY
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =RANDARRAY([rows], [columns], [min], [max], [whole_number])
 
 Returns an array of random numbers.
 
-No equivalent.
-
 RANDBETWEEN
 ^^^^^^^^^^^
+
+🔧 vsql has no ``RANDBETWEEN`` function, but an expression does the same thing.
 
 Returns a random whole number between two numbers, inclusive.
 
@@ -4790,16 +5196,18 @@ checks its range.
 ROMAN
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ROMAN(number, [form])
 
 Converts a number to a Roman numeral.
 
-No equivalent.
-
 ROUND
 ^^^^^
+
+✅ vsql has the same function: ``ROUND``.
 
 Rounds a number to a number of decimal places, with halves away from zero.
 
@@ -4814,6 +5222,8 @@ Rounds a number to a number of decimal places, with halves away from zero.
 ROUNDDOWN
 ^^^^^^^^^
 
+✅ vsql has the same function: ``TRUNC``.
+
 Rounds a number towards zero to a number of decimal places.
 
 .. code-block:: sql
@@ -4826,6 +5236,8 @@ Rounds a number towards zero to a number of decimal places.
 
 ROUNDUP
 ^^^^^^^
+
+🔧 vsql has no ``ROUNDUP`` function, but an expression does the same thing.
 
 Rounds a number away from zero to a number of decimal places.
 
@@ -4842,6 +5254,8 @@ The 10 is ``POWER(10, num_digits)``.
 SEC
 ^^^
 
+🔧 vsql has no ``SEC`` function, but an expression does the same thing.
+
 Returns the secant of an angle in radians.
 
 .. code-block:: sql
@@ -4854,6 +5268,8 @@ Returns the secant of an angle in radians.
 
 SECH
 ^^^^
+
+🔧 vsql has no ``SECH`` function, but an expression does the same thing.
 
 Returns the hyperbolic secant of a number.
 
@@ -4868,16 +5284,18 @@ Returns the hyperbolic secant of a number.
 SEQUENCE
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =SEQUENCE(rows, [columns], [start], [step])
 
 Returns an array of numbers counting up in steps.
 
-No equivalent.
-
 SERIESSUM
 ^^^^^^^^^
+
+🔧 vsql has no ``SERIESSUM`` function, but a query does the same thing.
 
 Returns the sum of a power series.
 
@@ -4895,6 +5313,8 @@ Each coefficient needs its position ``i``, counting from 1.
 SIGN
 ^^^^
 
+✅ vsql has the same function: ``SIGN``.
+
 Returns 1 for a positive number, -1 for a negative number and 0 for zero.
 
 .. code-block:: sql
@@ -4907,6 +5327,8 @@ Returns 1 for a positive number, -1 for a negative number and 0 for zero.
 
 SIN
 ^^^
+
+✅ vsql has the same function: ``SIN``.
 
 Returns the sine of an angle in radians.
 
@@ -4921,6 +5343,8 @@ Returns the sine of an angle in radians.
 SINH
 ^^^^
 
+✅ vsql has the same function: ``SINH``.
+
 Returns the hyperbolic sine of a number.
 
 .. code-block:: sql
@@ -4933,6 +5357,8 @@ Returns the hyperbolic sine of a number.
 
 SQRT
 ^^^^
+
+✅ vsql has the same function: ``SQRT``.
 
 Returns the square root of a number.
 
@@ -4947,6 +5373,8 @@ Returns the square root of a number.
 SQRTPI
 ^^^^^^
 
+🔧 vsql has no ``SQRTPI`` function, but an expression does the same thing.
+
 Returns the square root of a number multiplied by pi.
 
 .. code-block:: sql
@@ -4959,6 +5387,8 @@ Returns the square root of a number multiplied by pi.
 
 SUBTOTAL
 ^^^^^^^^
+
+✅ vsql's aggregate functions, such as ``SUM`` and ``AVG``, do the same thing.
 
 Applies a chosen aggregate, such as a sum or average, to a range, ignoring other
 subtotals.
@@ -4976,6 +5406,8 @@ so on). Add ``GROUP BY`` for one subtotal per group.
 
 SUM
 ^^^
+
+✅ vsql has the same function: ``SUM``.
 
 Adds numbers.
 
@@ -4996,6 +5428,8 @@ Adds numbers.
 SUMIF
 ^^^^^
 
+🔧 vsql has no ``SUMIF`` function, but a query does the same thing.
+
 Adds the values that meet one condition.
 
 .. code-block:: sql
@@ -5015,6 +5449,8 @@ Adds the values that meet one condition.
 SUMIFS
 ^^^^^^
 
+🔧 vsql has no ``SUMIFS`` function, but a query does the same thing.
+
 Adds the values that meet several conditions.
 
 .. code-block:: sql
@@ -5027,6 +5463,8 @@ Adds the values that meet several conditions.
 
 SUMPRODUCT
 ^^^^^^^^^^
+
+🔧 vsql has no ``SUMPRODUCT`` function, but a query does the same thing.
 
 Multiplies matching values in ranges and adds the products.
 
@@ -5041,6 +5479,8 @@ Multiplies matching values in ranges and adds the products.
 SUMSQ
 ^^^^^
 
+🔧 vsql has no ``SUMSQ`` function, but a query does the same thing.
+
 Adds the squares of numbers.
 
 .. code-block:: sql
@@ -5053,6 +5493,8 @@ Adds the squares of numbers.
 
 SUMX2MY2
 ^^^^^^^^
+
+🔧 vsql has no ``SUMX2MY2`` function, but a query does the same thing.
 
 Adds the differences of the squares of matching values in two ranges.
 
@@ -5067,6 +5509,8 @@ Adds the differences of the squares of matching values in two ranges.
 SUMX2PY2
 ^^^^^^^^
 
+🔧 vsql has no ``SUMX2PY2`` function, but a query does the same thing.
+
 Adds the sums of the squares of matching values in two ranges.
 
 .. code-block:: sql
@@ -5079,6 +5523,8 @@ Adds the sums of the squares of matching values in two ranges.
 
 SUMXMY2
 ^^^^^^^
+
+🔧 vsql has no ``SUMXMY2`` function, but a query does the same thing.
 
 Adds the squares of the differences of matching values in two ranges.
 
@@ -5093,6 +5539,8 @@ Adds the squares of the differences of matching values in two ranges.
 TAN
 ^^^
 
+✅ vsql has the same function: ``TAN``.
+
 Returns the tangent of an angle in radians.
 
 .. code-block:: sql
@@ -5106,6 +5554,8 @@ Returns the tangent of an angle in radians.
 TANH
 ^^^^
 
+✅ vsql has the same function: ``TANH``.
+
 Returns the hyperbolic tangent of a number.
 
 .. code-block:: sql
@@ -5118,6 +5568,8 @@ Returns the hyperbolic tangent of a number.
 
 TRUNC
 ^^^^^
+
+✅ vsql has the same function: ``TRUNC``.
 
 Cuts a number towards zero to a number of decimal places, which is 0 when left
 out.
@@ -5142,6 +5594,8 @@ Operator
 ADD
 ^^^
 
+🔧 vsql has no ``ADD`` function, but an expression does the same thing.
+
 Returns the sum of two numbers. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5154,6 +5608,8 @@ Returns the sum of two numbers. Only in Google Sheets.
 
 DIVIDE
 ^^^^^^
+
+🔧 vsql has no ``DIVIDE`` function, but an expression does the same thing.
 
 Returns one number divided by another. Only in Google Sheets.
 
@@ -5170,6 +5626,8 @@ Dividing two integers truncates (10 / 4 is 2), and a decimal result keeps the de
 EQ
 ^^
 
+🔧 vsql has no ``EQ`` function, but an expression does the same thing.
+
 Returns TRUE if two values are equal. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5185,6 +5643,8 @@ Text comparison is case-sensitive, where EQ ignores case.
 GT
 ^^
 
+🔧 vsql has no ``GT`` function, but an expression does the same thing.
+
 Returns TRUE if the first value is greater than the second. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5198,6 +5658,8 @@ Returns TRUE if the first value is greater than the second. Only in Google Sheet
 GTE
 ^^^
 
+🔧 vsql has no ``GTE`` function, but an expression does the same thing.
+
 Returns TRUE if the first value is greater than or equal to the second. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5210,6 +5672,8 @@ Returns TRUE if the first value is greater than or equal to the second. Only in 
 
 ISBETWEEN
 ^^^^^^^^^
+
+🔧 vsql has no ``ISBETWEEN`` function, but an expression does the same thing.
 
 Returns TRUE if a value lies between two others. Only in Google Sheets.
 
@@ -5232,6 +5696,8 @@ BETWEEN includes both ends; for exclusive ends write 5 > 1 AND 5 < 10.
 LT
 ^^
 
+🔧 vsql has no ``LT`` function, but an expression does the same thing.
+
 Returns TRUE if the first value is less than the second. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5244,6 +5710,8 @@ Returns TRUE if the first value is less than the second. Only in Google Sheets.
 
 LTE
 ^^^
+
+🔧 vsql has no ``LTE`` function, but an expression does the same thing.
 
 Returns TRUE if the first value is less than or equal to the second. Only in Google Sheets.
 
@@ -5258,6 +5726,8 @@ Returns TRUE if the first value is less than or equal to the second. Only in Goo
 MINUS
 ^^^^^
 
+🔧 vsql has no ``MINUS`` function, but an expression does the same thing.
+
 Returns the difference of two numbers. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5270,6 +5740,8 @@ Returns the difference of two numbers. Only in Google Sheets.
 
 MULTIPLY
 ^^^^^^^^
+
+🔧 vsql has no ``MULTIPLY`` function, but an expression does the same thing.
 
 Returns the product of two numbers. Only in Google Sheets.
 
@@ -5284,6 +5756,8 @@ Returns the product of two numbers. Only in Google Sheets.
 NE
 ^^
 
+🔧 vsql has no ``NE`` function, but an expression does the same thing.
+
 Returns TRUE if two values are not equal. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5296,6 +5770,8 @@ Returns TRUE if two values are not equal. Only in Google Sheets.
 
 POW
 ^^^
+
+✅ vsql has the same function: ``POWER``.
 
 Returns a number raised to a power. Only in Google Sheets.
 
@@ -5310,6 +5786,8 @@ Returns a number raised to a power. Only in Google Sheets.
 UMINUS
 ^^^^^^
 
+🔧 vsql has no ``UMINUS`` function, but an expression does the same thing.
+
 Returns a number with its sign flipped. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5323,6 +5801,8 @@ Returns a number with its sign flipped. Only in Google Sheets.
 UNARY_PERCENT
 ^^^^^^^^^^^^^
 
+🔧 vsql has no ``UNARY_PERCENT`` function, but an expression does the same thing.
+
 Returns a number divided by 100. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5335,6 +5815,8 @@ Returns a number divided by 100. Only in Google Sheets.
 
 UPLUS
 ^^^^^
+
+🔧 vsql has no ``UPLUS`` function, but an expression does the same thing.
 
 Returns a number unchanged. Only in Google Sheets.
 
@@ -5352,16 +5834,18 @@ Parser
 TO_DATE
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =TO_DATE(value)
 
 Converts a number to a date. Only in Google Sheets.
 
-No equivalent.
-
 TO_DOLLARS
 ^^^^^^^^^^
+
+🔧 vsql has no ``TO_DOLLARS`` function, but an expression does the same thing.
 
 Formats a number as a dollar amount. Only in Google Sheets.
 
@@ -5378,6 +5862,8 @@ The result is text, and there are no thousands separators.
 TO_PERCENT
 ^^^^^^^^^^
 
+🔧 vsql has no ``TO_PERCENT`` function, but an expression does the same thing.
+
 Formats a number as a percentage. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5393,6 +5879,8 @@ The result is text, not a number.
 TO_PURE_NUMBER
 ^^^^^^^^^^^^^^
 
+🔧 vsql has no ``TO_PURE_NUMBER`` function, but an expression does the same thing.
+
 Returns a value as a plain number without its formatting. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5407,6 +5895,8 @@ Numbers carry no display format, so there is nothing to remove.
 
 TO_TEXT
 ^^^^^^^
+
+🔧 vsql has no ``TO_TEXT`` function, but an expression does the same thing.
 
 Converts a number to text. Only in Google Sheets.
 
@@ -5424,6 +5914,8 @@ Statistical
 AVEDEV
 ^^^^^^
 
+🔧 vsql has no ``AVEDEV`` function, but a query does the same thing.
+
 Returns the average of the absolute distances of values from their mean.
 
 .. code-block:: sql
@@ -5437,6 +5929,8 @@ Returns the average of the absolute distances of values from their mean.
 
 AVERAGE
 ^^^^^^^
+
+🔧 vsql has no ``AVERAGE`` function, but a query does the same thing.
 
 Returns the arithmetic mean.
 
@@ -5453,6 +5947,8 @@ AVG of a DECIMAL or INTEGER column keeps that type, so AVG(price) is 2.18; cast 
 AVERAGE.WEIGHTED
 ^^^^^^^^^^^^^^^^
 
+🔧 vsql has no ``AVERAGE.WEIGHTED`` function, but a query does the same thing.
+
 Returns a mean in which each value has a weight. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5466,6 +5962,8 @@ Returns a mean in which each value has a weight. Only in Google Sheets.
 
 AVERAGEA
 ^^^^^^^^
+
+🔧 vsql has no ``AVERAGEA`` function, but a query does the same thing.
 
 Returns the mean, counting text as 0 and logical values as 0 or 1.
 
@@ -5483,6 +5981,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 AVERAGEIF
 ^^^^^^^^^
 
+🔧 vsql has no ``AVERAGEIF`` function, but a query does the same thing.
+
 Returns the mean of the values that meet a condition.
 
 .. code-block:: sql
@@ -5495,6 +5995,8 @@ Returns the mean of the values that meet a condition.
 
 AVERAGEIFS
 ^^^^^^^^^^
+
+🔧 vsql has no ``AVERAGEIFS`` function, but a query does the same thing.
 
 Returns the mean of the values that meet several conditions.
 
@@ -5509,16 +6011,18 @@ Returns the mean of the values that meet several conditions.
 BETA.DIST
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =BETA.DIST(x, alpha, beta, cumulative, [a], [b])
 
 Returns the beta distribution.
 
-No equivalent.
-
 BETA.INV
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5526,10 +6030,10 @@ BETA.INV
 
 Returns the value at which the cumulative beta distribution reaches a probability.
 
-No equivalent.
-
 BINOM.DIST
 ^^^^^^^^^^
+
+🔧 vsql has no ``BINOM.DIST`` function, but an expression does the same thing.
 
 Returns the binomial probability of a number of successes in a number of trials.
 
@@ -5547,6 +6051,8 @@ The binomial coefficient COMBIN(trials, number_s) is written with FACTORIAL. For
 
 BINOM.DIST.RANGE
 ^^^^^^^^^^^^^^^^
+
+🔧 vsql has no ``BINOM.DIST.RANGE`` function, but a query does the same thing.
 
 Returns the binomial probability that the number of successes falls in a range.
 
@@ -5567,16 +6073,18 @@ Each row is a number of successes k, and COMBIN(3, k) is written with FACTORIAL.
 BINOM.INV
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =BINOM.INV(trials, probability_s, alpha)
 
 Returns the smallest number of successes whose cumulative binomial probability reaches a criterion.
 
-No equivalent.
-
 CHISQ.DIST
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5584,10 +6092,10 @@ CHISQ.DIST
 
 Returns the left-tailed chi-squared distribution.
 
-No equivalent.
-
 CHISQ.DIST.RT
 ^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5595,10 +6103,10 @@ CHISQ.DIST.RT
 
 Returns the right-tailed probability of the chi-squared distribution.
 
-No equivalent.
-
 CHISQ.INV
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5606,10 +6114,10 @@ CHISQ.INV
 
 Returns the inverse of the left-tailed chi-squared distribution.
 
-No equivalent.
-
 CHISQ.INV.RT
 ^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5617,10 +6125,10 @@ CHISQ.INV.RT
 
 Returns the inverse of the right-tailed chi-squared distribution.
 
-No equivalent.
-
 CHISQ.TEST
 ^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5628,10 +6136,10 @@ CHISQ.TEST
 
 Returns the p-value of a chi-squared test of independence.
 
-No equivalent.
-
 CONFIDENCE.NORM
 ^^^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5639,10 +6147,10 @@ CONFIDENCE.NORM
 
 Returns the half-width of a confidence interval for a mean, using the normal distribution.
 
-No equivalent.
-
 CONFIDENCE.T
 ^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5650,10 +6158,10 @@ CONFIDENCE.T
 
 Returns the half-width of a confidence interval for a mean, using Student's t-distribution.
 
-No equivalent.
-
 CORREL
 ^^^^^^
+
+✅ vsql has the same function: ``CORR``.
 
 Returns the correlation coefficient of two sets of values.
 
@@ -5667,6 +6175,8 @@ Returns the correlation coefficient of two sets of values.
 
 COUNT
 ^^^^^
+
+✅ vsql has the same function: ``COUNT``.
 
 Counts the cells that contain numbers.
 
@@ -5683,6 +6193,8 @@ COUNT counts every non-NULL value, whatever its type; a column holds only one ty
 COUNTA
 ^^^^^^
 
+✅ vsql has the same function: ``COUNT``.
+
 Counts the cells that are not empty.
 
 .. code-block:: sql
@@ -5695,6 +6207,8 @@ Counts the cells that are not empty.
 
 COUNTBLANK
 ^^^^^^^^^^
+
+🔧 vsql has no ``COUNTBLANK`` function, but a query does the same thing.
 
 Counts the empty cells in a range.
 
@@ -5711,6 +6225,8 @@ The spreadsheet also counts cells holding an empty string; for text, add OR x = 
 COUNTIF
 ^^^^^^^
 
+🔧 vsql has no ``COUNTIF`` function, but a query does the same thing.
+
 Counts the cells that meet a condition.
 
 .. code-block:: sql
@@ -5723,6 +6239,8 @@ Counts the cells that meet a condition.
 
 COUNTIFS
 ^^^^^^^^
+
+🔧 vsql has no ``COUNTIFS`` function, but a query does the same thing.
 
 Counts the rows that meet several conditions.
 
@@ -5738,6 +6256,8 @@ Counts the rows that meet several conditions.
 COUNTUNIQUE
 ^^^^^^^^^^^
 
+✅ vsql has the same function: ``COUNT(DISTINCT ...)``.
+
 Counts the distinct values. Only in Google Sheets.
 
 .. code-block:: sql
@@ -5750,6 +6270,8 @@ Counts the distinct values. Only in Google Sheets.
 
 COUNTUNIQUEIFS
 ^^^^^^^^^^^^^^
+
+🔧 vsql has no ``COUNTUNIQUEIFS`` function, but a query does the same thing.
 
 Counts the distinct values in the rows that meet conditions. Only in Google Sheets.
 
@@ -5765,6 +6287,8 @@ Counts the distinct values in the rows that meet conditions. Only in Google Shee
 COVARIANCE.P
 ^^^^^^^^^^^^
 
+✅ vsql has the same function: ``COVAR_POP``.
+
 Returns the population covariance of two sets of values.
 
 .. code-block:: sql
@@ -5777,6 +6301,8 @@ Returns the population covariance of two sets of values.
 
 COVARIANCE.S
 ^^^^^^^^^^^^
+
+✅ vsql has the same function: ``COVAR_SAMP``.
 
 Returns the sample covariance of two sets of values.
 
@@ -5791,6 +6317,8 @@ Returns the sample covariance of two sets of values.
 DEVSQ
 ^^^^^
 
+🔧 vsql has no ``DEVSQ`` function, but a query does the same thing.
+
 Returns the sum of the squared distances of values from their mean.
 
 .. code-block:: sql
@@ -5803,6 +6331,8 @@ Returns the sum of the squared distances of values from their mean.
 
 EXPON.DIST
 ^^^^^^^^^^
+
+🔧 vsql has no ``EXPON.DIST`` function, but an expression does the same thing.
 
 Returns the exponential distribution.
 
@@ -5825,16 +6355,18 @@ For cumulative FALSE, use 2 * EXP(-2 * 0.5e0).
 F.DIST
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =F.DIST(x, deg_freedom1, deg_freedom2, cumulative)
 
 Returns the F probability distribution.
 
-No equivalent.
-
 F.DIST.RT
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5842,10 +6374,10 @@ F.DIST.RT
 
 Returns the right-tailed F probability distribution.
 
-No equivalent.
-
 F.INV
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5853,10 +6385,10 @@ F.INV
 
 Returns the inverse of the F probability distribution.
 
-No equivalent.
-
 F.INV.RT
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5864,10 +6396,10 @@ F.INV.RT
 
 Returns the inverse of the right-tailed F probability distribution.
 
-No equivalent.
-
 F.TEST
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5875,10 +6407,10 @@ F.TEST
 
 Returns the p-value of an F-test on the variances of two sets of values.
 
-No equivalent.
-
 FISHER
 ^^^^^^
+
+🔧 vsql has no ``FISHER`` function, but an expression does the same thing.
 
 Returns the Fisher transformation of a correlation.
 
@@ -5893,6 +6425,8 @@ Returns the Fisher transformation of a correlation.
 FISHERINV
 ^^^^^^^^^
 
+✅ vsql has the same function: ``TANH``.
+
 Returns the inverse of the Fisher transformation.
 
 .. code-block:: sql
@@ -5906,16 +6440,18 @@ Returns the inverse of the Fisher transformation.
 FORECAST.ETS
 ^^^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =FORECAST.ETS(target_date, values, timeline, [seasonality], [data_completion], [aggregation])
 
 Predicts a future value with exponential smoothing. Only in Excel.
 
-No equivalent.
-
 FORECAST.ETS.CONFINT
 ^^^^^^^^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5923,10 +6459,10 @@ FORECAST.ETS.CONFINT
 
 Returns the confidence interval of an exponential smoothing forecast. Only in Excel.
 
-No equivalent.
-
 FORECAST.ETS.SEASONALITY
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5934,10 +6470,10 @@ FORECAST.ETS.SEASONALITY
 
 Returns the length of the repeating pattern found in a time series. Only in Excel.
 
-No equivalent.
-
 FORECAST.ETS.STAT
 ^^^^^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -5945,10 +6481,10 @@ FORECAST.ETS.STAT
 
 Returns a statistic of an exponential smoothing forecast. Only in Excel.
 
-No equivalent.
-
 FORECAST.LINEAR
 ^^^^^^^^^^^^^^^
+
+🔧 vsql has no ``FORECAST.LINEAR`` function, but a query does the same thing.
 
 Predicts a value on the straight line fitted to known values.
 
@@ -5962,6 +6498,8 @@ Predicts a value on the straight line fitted to known values.
 
 FREQUENCY
 ^^^^^^^^^
+
+🔧 vsql has no ``FREQUENCY`` function, but a query does the same thing.
 
 Counts how many values fall into each bin.
 
@@ -5984,6 +6522,8 @@ The counts come back as columns of one row, where the spreadsheet returns them d
 GAMMA
 ^^^^^
 
+✅ vsql has the same function: ``GAMMA``.
+
 Returns the gamma function of a number.
 
 .. code-block:: sql
@@ -5997,16 +6537,18 @@ Returns the gamma function of a number.
 GAMMA.DIST
 ^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =GAMMA.DIST(x, alpha, beta, cumulative)
 
 Returns the gamma distribution.
 
-No equivalent.
-
 GAMMA.INV
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6014,10 +6556,10 @@ GAMMA.INV
 
 Returns the inverse of the cumulative gamma distribution.
 
-No equivalent.
-
 GAMMALN
 ^^^^^^^
+
+✅ vsql has the same function: ``LGAMMA``.
 
 Returns the natural logarithm of the gamma function.
 
@@ -6034,6 +6576,8 @@ The spreadsheet returns #NUM! for a negative x, where LGAMMA returns the logarit
 GAMMALN.PRECISE
 ^^^^^^^^^^^^^^^
 
+✅ vsql has the same function: ``LGAMMA``.
+
 Returns the natural logarithm of the gamma function.
 
 .. code-block:: sql
@@ -6049,6 +6593,8 @@ The spreadsheet returns #NUM! for a negative x, where LGAMMA returns the logarit
 GAUSS
 ^^^^^
 
+🔧 vsql has no ``GAUSS`` function, but an expression does the same thing.
+
 Returns the probability that a standard normal value lies between the mean and z standard deviations from it.
 
 .. code-block:: sql
@@ -6062,6 +6608,8 @@ Returns the probability that a standard normal value lies between the mean and z
 GEOMEAN
 ^^^^^^^
 
+🔧 vsql has no ``GEOMEAN`` function, but a query does the same thing.
+
 Returns the geometric mean of positive values.
 
 .. code-block:: sql
@@ -6074,6 +6622,8 @@ Returns the geometric mean of positive values.
 
 GROWTH
 ^^^^^^
+
+🔧 vsql has no ``GROWTH`` function, but a query does the same thing.
 
 Predicts values on the exponential curve fitted to known values.
 
@@ -6091,6 +6641,8 @@ This works for a single x column only.
 HARMEAN
 ^^^^^^^
 
+🔧 vsql has no ``HARMEAN`` function, but a query does the same thing.
+
 Returns the harmonic mean of positive values.
 
 .. code-block:: sql
@@ -6103,6 +6655,8 @@ Returns the harmonic mean of positive values.
 
 HYPGEOM.DIST
 ^^^^^^^^^^^^
+
+🔧 vsql has no ``HYPGEOM.DIST`` function, but an expression does the same thing.
 
 Returns the probability of a number of successes in a sample drawn without replacement.
 
@@ -6124,6 +6678,8 @@ This is COMBIN(3, 1) * COMBIN(3, 1) / COMBIN(6, 2), each written with FACTORIAL,
 INTERCEPT
 ^^^^^^^^^
 
+✅ vsql has the same function: ``REGR_INTERCEPT``.
+
 Returns where the straight line fitted to known values crosses the y-axis.
 
 .. code-block:: sql
@@ -6136,6 +6692,8 @@ Returns where the straight line fitted to known values crosses the y-axis.
 
 KURT
 ^^^^
+
+🔧 vsql has no ``KURT`` function, but a query does the same thing.
 
 Returns the sample excess kurtosis, a measure of how heavy the tails are.
 
@@ -6155,6 +6713,8 @@ Returns the sample excess kurtosis, a measure of how heavy the tails are.
 LARGE
 ^^^^^
 
+🔧 vsql has no ``LARGE`` function, but a query does the same thing.
+
 Returns the k-th largest value.
 
 .. code-block:: sql
@@ -6171,6 +6731,8 @@ OFFSET is k - 1.
 LINEST
 ^^^^^^
 
+🔧 vsql has no ``LINEST`` function, but a query does the same thing.
+
 Returns the slope and intercept of the straight line fitted to known values.
 
 .. code-block:: sql
@@ -6185,6 +6747,8 @@ This works for a single x column only, and without the extra statistics.
 
 LOGEST
 ^^^^^^
+
+🔧 vsql has no ``LOGEST`` function, but a query does the same thing.
 
 Returns the base and constant of the exponential curve fitted to known values.
 
@@ -6201,6 +6765,8 @@ This works for a single x column only, and without the extra statistics.
 
 LOGNORM.DIST
 ^^^^^^^^^^^^
+
+🔧 vsql has no ``LOGNORM.DIST`` function, but an expression does the same thing.
 
 Returns the lognormal distribution.
 
@@ -6222,16 +6788,18 @@ Returns the lognormal distribution.
 LOGNORM.INV
 ^^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =LOGNORM.INV(probability, mean, standard_dev)
 
 Returns the inverse of the cumulative lognormal distribution.
 
-No equivalent.
-
 MARGINOFERROR
 ^^^^^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6239,10 +6807,10 @@ MARGINOFERROR
 
 Returns the margin of error of a sample mean at a confidence level. Only in Google Sheets.
 
-No equivalent.
-
 MAX
 ^^^
+
+✅ vsql has the same function: ``MAX``.
 
 Returns the largest value.
 
@@ -6256,6 +6824,8 @@ Returns the largest value.
 
 MAXA
 ^^^^
+
+🔧 vsql has no ``MAXA`` function, but a query does the same thing.
 
 Returns the largest value, counting text as 0 and logical values as 0 or 1.
 
@@ -6272,6 +6842,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 MAXIFS
 ^^^^^^
 
+🔧 vsql has no ``MAXIFS`` function, but a query does the same thing.
+
 Returns the largest value in the rows that meet conditions.
 
 .. code-block:: sql
@@ -6284,6 +6856,8 @@ Returns the largest value in the rows that meet conditions.
 
 MEDIAN
 ^^^^^^
+
+🔧 vsql has no ``MEDIAN`` function, but a query does the same thing.
 
 Returns the middle value.
 
@@ -6299,6 +6873,8 @@ Returns the middle value.
 MIN
 ^^^
 
+✅ vsql has the same function: ``MIN``.
+
 Returns the smallest value.
 
 .. code-block:: sql
@@ -6311,6 +6887,8 @@ Returns the smallest value.
 
 MINA
 ^^^^
+
+🔧 vsql has no ``MINA`` function, but a query does the same thing.
 
 Returns the smallest value, counting text as 0 and logical values as 0 or 1.
 
@@ -6327,6 +6905,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 MINIFS
 ^^^^^^
 
+🔧 vsql has no ``MINIFS`` function, but a query does the same thing.
+
 Returns the smallest value in the rows that meet conditions.
 
 .. code-block:: sql
@@ -6339,6 +6919,8 @@ Returns the smallest value in the rows that meet conditions.
 
 MODE.MULT
 ^^^^^^^^^
+
+🔧 vsql has no ``MODE.MULT`` function, but a query does the same thing.
 
 Returns every value that is the most frequent.
 
@@ -6358,6 +6940,8 @@ Returns every value that is the most frequent.
 MODE.SNGL
 ^^^^^^^^^
 
+🔧 vsql has no ``MODE.SNGL`` function, but a query does the same thing.
+
 Returns the most frequent value.
 
 .. code-block:: sql
@@ -6375,6 +6959,8 @@ sheet.
 NEGBINOM.DIST
 ^^^^^^^^^^^^^
 
+🔧 vsql has no ``NEGBINOM.DIST`` function, but an expression does the same thing.
+
 Returns the probability of a number of failures before a number of successes.
 
 .. code-block:: sql
@@ -6391,6 +6977,8 @@ The binomial coefficient COMBIN(number_f + number_s - 1, number_s - 1) is writte
 
 NORM.DIST
 ^^^^^^^^^
+
+🔧 vsql has no ``NORM.DIST`` function, but an expression does the same thing.
 
 Returns the normal distribution.
 
@@ -6412,16 +7000,18 @@ Returns the normal distribution.
 NORM.INV
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =NORM.INV(probability, mean, standard_dev)
 
 Returns the inverse of the cumulative normal distribution.
 
-No equivalent.
-
 NORM.S.DIST
 ^^^^^^^^^^^
+
+🔧 vsql has no ``NORM.S.DIST`` function, but an expression does the same thing.
 
 Returns the standard normal distribution.
 
@@ -6442,16 +7032,18 @@ Returns the standard normal distribution.
 NORM.S.INV
 ^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =NORM.S.INV(probability)
 
 Returns the inverse of the cumulative standard normal distribution.
 
-No equivalent.
-
 PEARSON
 ^^^^^^^
+
+✅ vsql has the same function: ``CORR``.
 
 Returns the Pearson correlation coefficient of two sets of values.
 
@@ -6465,6 +7057,8 @@ Returns the Pearson correlation coefficient of two sets of values.
 
 PERCENTILE.EXC
 ^^^^^^^^^^^^^^
+
+🔧 vsql has no ``PERCENTILE.EXC`` function, but a query does the same thing.
 
 Returns the k-th percentile, interpolating between values, for k strictly between 0 and 1.
 
@@ -6482,6 +7076,8 @@ The 4 is the number of values: this percentile is PERCENTILE.INC at ((n + 1) * k
 PERCENTILE.INC
 ^^^^^^^^^^^^^^
 
+🔧 vsql has no ``PERCENTILE.INC`` function, but a query does the same thing.
+
 Returns the k-th percentile, interpolating between values.
 
 .. code-block:: sql
@@ -6495,6 +7091,8 @@ Returns the k-th percentile, interpolating between values.
 
 PERCENTRANK.EXC
 ^^^^^^^^^^^^^^^
+
+🔧 vsql has no ``PERCENTRANK.EXC`` function, but a query does the same thing.
 
 Returns the rank of a value as a fraction strictly between 0 and 1.
 
@@ -6512,6 +7110,8 @@ This is only right when x is one of the values; the spreadsheet interpolates bet
 PERCENTRANK.INC
 ^^^^^^^^^^^^^^^
 
+🔧 vsql has no ``PERCENTRANK.INC`` function, but a query does the same thing.
+
 Returns the rank of a value as a fraction from 0 to 1.
 
 .. code-block:: sql
@@ -6528,6 +7128,8 @@ This is only right when x is one of the values; the spreadsheet interpolates bet
 PERMUT
 ^^^^^^
 
+🔧 vsql has no ``PERMUT`` function, but an expression does the same thing.
+
 Returns the number of ordered ways to choose some items from a set.
 
 .. code-block:: sql
@@ -6540,6 +7142,8 @@ Returns the number of ordered ways to choose some items from a set.
 
 PERMUTATIONA
 ^^^^^^^^^^^^
+
+✅ vsql has the same function: ``POWER``.
 
 Returns the number of ordered ways to choose some items from a set when items can repeat.
 
@@ -6554,6 +7158,8 @@ Returns the number of ordered ways to choose some items from a set when items ca
 PHI
 ^^^
 
+🔧 vsql has no ``PHI`` function, but an expression does the same thing.
+
 Returns the density of the standard normal distribution.
 
 .. code-block:: sql
@@ -6566,6 +7172,8 @@ Returns the density of the standard normal distribution.
 
 POISSON.DIST
 ^^^^^^^^^^^^
+
+🔧 vsql has no ``POISSON.DIST`` function, but an expression does the same thing.
 
 Returns the Poisson probability of a number of events.
 
@@ -6581,6 +7189,8 @@ For cumulative TRUE, add up the terms for 0 to x.
 
 PROB
 ^^^^
+
+🔧 vsql has no ``PROB`` function, but a query does the same thing.
 
 Returns the probability that a value falls between two limits.
 
@@ -6602,6 +7212,8 @@ Returns the probability that a value falls between two limits.
 QUARTILE.EXC
 ^^^^^^^^^^^^
 
+🔧 vsql has no ``QUARTILE.EXC`` function, but a query does the same thing.
+
 Returns a quartile, interpolating between values, for quartiles 1 to 3.
 
 .. code-block:: sql
@@ -6618,6 +7230,8 @@ The 4 is the number of values, as for PERCENTILE.EXC with k = quart / 4.
 QUARTILE.INC
 ^^^^^^^^^^^^
 
+🔧 vsql has no ``QUARTILE.INC`` function, but a query does the same thing.
+
 Returns a quartile, interpolating between values.
 
 .. code-block:: sql
@@ -6631,6 +7245,8 @@ Returns a quartile, interpolating between values.
 
 RANK.AVG
 ^^^^^^^^
+
+🔧 vsql has no ``RANK.AVG`` function, but a query does the same thing.
 
 Returns the rank of a number among other numbers, with ties sharing their average rank.
 
@@ -6647,6 +7263,8 @@ Use price < 3 for order 1.
 
 RANK.EQ
 ^^^^^^^
+
+🔧 vsql has no ``RANK.EQ`` function, but a query does the same thing.
 
 Returns the rank of a number among other numbers, with ties sharing a rank.
 
@@ -6670,6 +7288,8 @@ Use ORDER BY price (ascending) for order 1.
 RSQ
 ^^^
 
+✅ vsql has the same function: ``REGR_R2``.
+
 Returns the square of the correlation coefficient.
 
 .. code-block:: sql
@@ -6682,6 +7302,8 @@ Returns the square of the correlation coefficient.
 
 SKEW
 ^^^^
+
+🔧 vsql has no ``SKEW`` function, but a query does the same thing.
 
 Returns the sample skewness, a measure of how lopsided the values are.
 
@@ -6699,6 +7321,8 @@ Returns the sample skewness, a measure of how lopsided the values are.
 SKEW.P
 ^^^^^^
 
+🔧 vsql has no ``SKEW.P`` function, but a query does the same thing.
+
 Returns the population skewness, a measure of how lopsided the values are.
 
 .. code-block:: sql
@@ -6714,6 +7338,8 @@ Returns the population skewness, a measure of how lopsided the values are.
 SLOPE
 ^^^^^
 
+✅ vsql has the same function: ``REGR_SLOPE``.
+
 Returns the slope of the straight line fitted to known values.
 
 .. code-block:: sql
@@ -6726,6 +7352,8 @@ Returns the slope of the straight line fitted to known values.
 
 SMALL
 ^^^^^
+
+🔧 vsql has no ``SMALL`` function, but a query does the same thing.
 
 Returns the k-th smallest value.
 
@@ -6743,6 +7371,8 @@ OFFSET is k - 1.
 STANDARDIZE
 ^^^^^^^^^^^
 
+🔧 vsql has no ``STANDARDIZE`` function, but an expression does the same thing.
+
 Returns how many standard deviations a value is from a mean.
 
 .. code-block:: sql
@@ -6755,6 +7385,8 @@ Returns how many standard deviations a value is from a mean.
 
 STDEV.P
 ^^^^^^^
+
+✅ vsql has the same function: ``STDDEV_POP``.
 
 Returns the standard deviation of a whole population.
 
@@ -6769,6 +7401,8 @@ Returns the standard deviation of a whole population.
 STDEV.S
 ^^^^^^^
 
+✅ vsql has the same function: ``STDDEV_SAMP``.
+
 Returns the standard deviation of a sample.
 
 .. code-block:: sql
@@ -6781,6 +7415,8 @@ Returns the standard deviation of a sample.
 
 STDEVA
 ^^^^^^
+
+🔧 vsql has no ``STDEVA`` function, but a query does the same thing.
 
 Returns the standard deviation of a sample, counting text as 0 and logical values as 0 or 1.
 
@@ -6797,6 +7433,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 STDEVPA
 ^^^^^^^
 
+🔧 vsql has no ``STDEVPA`` function, but a query does the same thing.
+
 Returns the standard deviation of a whole population, counting text as 0 and logical values as 0 or 1.
 
 .. code-block:: sql
@@ -6811,6 +7449,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 
 STEYX
 ^^^^^
+
+🔧 vsql has no ``STEYX`` function, but a query does the same thing.
 
 Returns the standard error of the y values predicted by a straight-line fit.
 
@@ -6827,16 +7467,18 @@ Returns the standard error of the y values predicted by a straight-line fit.
 T.DIST
 ^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =T.DIST(x, deg_freedom, cumulative)
 
 Returns the left-tailed Student's t-distribution.
 
-No equivalent.
-
 T.DIST.2T
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6844,10 +7486,10 @@ T.DIST.2T
 
 Returns the two-tailed Student's t-distribution.
 
-No equivalent.
-
 T.DIST.RT
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6855,10 +7497,10 @@ T.DIST.RT
 
 Returns the right-tailed Student's t-distribution.
 
-No equivalent.
-
 T.INV
 ^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6866,10 +7508,10 @@ T.INV
 
 Returns the inverse of the left-tailed Student's t-distribution.
 
-No equivalent.
-
 T.INV.2T
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6877,10 +7519,10 @@ T.INV.2T
 
 Returns the inverse of the two-tailed Student's t-distribution.
 
-No equivalent.
-
 T.TEST
 ^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -6888,10 +7530,10 @@ T.TEST
 
 Returns the p-value of a Student's t-test.
 
-No equivalent.
-
 TREND
 ^^^^^
+
+🔧 vsql has no ``TREND`` function, but a query does the same thing.
 
 Predicts values on the straight line fitted to known values.
 
@@ -6907,6 +7549,8 @@ This works for a single x column only.
 
 TRIMMEAN
 ^^^^^^^^
+
+🔧 vsql has no ``TRIMMEAN`` function, but a query does the same thing.
 
 Returns the mean after leaving out a fraction of the smallest and largest values.
 
@@ -6925,6 +7569,8 @@ OFFSET is the number left out at each end, n * percent / 2 rounded down, and FET
 VAR.P
 ^^^^^
 
+✅ vsql has the same function: ``VAR_POP``.
+
 Returns the variance of a whole population.
 
 .. code-block:: sql
@@ -6938,6 +7584,8 @@ Returns the variance of a whole population.
 VAR.S
 ^^^^^
 
+✅ vsql has the same function: ``VAR_SAMP``.
+
 Returns the variance of a sample.
 
 .. code-block:: sql
@@ -6950,6 +7598,8 @@ Returns the variance of a sample.
 
 VARA
 ^^^^
+
+🔧 vsql has no ``VARA`` function, but a query does the same thing.
 
 Returns the variance of a sample, counting text as 0 and logical values as 0 or 1.
 
@@ -6966,6 +7616,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 VARPA
 ^^^^^
 
+🔧 vsql has no ``VARPA`` function, but a query does the same thing.
+
 Returns the variance of a whole population, counting text as 0 and logical values as 0 or 1.
 
 .. code-block:: sql
@@ -6981,6 +7633,8 @@ A column holds only one type, so the nearest match to text counting as 0 is a NU
 WEIBULL.DIST
 ^^^^^^^^^^^^
 
+🔧 vsql has no ``WEIBULL.DIST`` function, but an expression does the same thing.
+
 Returns the Weibull distribution.
 
 .. code-block:: sql
@@ -6995,6 +7649,8 @@ For cumulative FALSE, use 1.5 / 3 * POWER(2 / 3e0, 0.5) * EXP(-POWER(2 / 3e0, 1.
 
 Z.TEST
 ^^^^^^
+
+🔧 vsql has no ``Z.TEST`` function, but a query does the same thing.
 
 Returns the one-tailed p-value of a z-test.
 
@@ -7020,6 +7676,8 @@ Text Functions
 ARRAYTOTEXT
 ^^^^^^^^^^^
 
+🔧 vsql has no ``ARRAYTOTEXT`` function, but a query does the same thing.
+
 Joins the values of a range into one piece of text. Only in Excel.
 
 .. code-block:: sql
@@ -7033,16 +7691,18 @@ Joins the values of a range into one piece of text. Only in Excel.
 ASC
 ^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ASC(text)
 
 Changes full-width characters to half-width ones. Only in Excel.
 
-No equivalent.
-
 BAHTTEXT
 ^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -7050,10 +7710,10 @@ BAHTTEXT
 
 Spells out a number in Thai words as an amount of baht. Only in Excel.
 
-No equivalent.
-
 CHAR
 ^^^^
+
+✅ vsql has the same function: ``CHR``.
 
 Returns the character for a character code.
 
@@ -7071,16 +7731,18 @@ character code for plain ASCII (below 128), but not always above that.
 CLEAN
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =CLEAN(text)
 
 Removes the characters that can't be printed from text.
 
-No equivalent.
-
 CODE
 ^^^^
+
+✅ vsql has the same function: ``UNICODE``.
 
 Returns the character code of the first character of text.
 
@@ -7099,6 +7761,8 @@ of empty text is 0 rather than ``#VALUE!``.
 CONCAT
 ^^^^^^
 
+🔧 vsql has no ``CONCAT`` function, but an expression does the same thing.
+
 Joins pieces of text together.
 
 .. code-block:: sql
@@ -7114,6 +7778,8 @@ Joining ``NULL`` gives ``NULL``, where an empty cell adds nothing, so use
 
 CONCATENATE
 ^^^^^^^^^^^
+
+🔧 vsql has no ``CONCATENATE`` function, but an expression does the same thing.
 
 Joins pieces of text together.
 
@@ -7131,16 +7797,18 @@ Joining ``NULL`` gives ``NULL``, where an empty cell adds nothing, so use
 DBCS
 ^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =DBCS(text)
 
 Changes half-width characters to full-width ones. Only in Excel.
 
-No equivalent.
-
 DETECTLANGUAGE
 ^^^^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it calls an AI model or a translation service.
 
 .. code-block:: text
 
@@ -7148,10 +7816,10 @@ DETECTLANGUAGE
 
 Works out which language text is written in.
 
-No equivalent.
-
 DOLLAR
 ^^^^^^
+
+🔧 vsql has no ``DOLLAR`` function, but an expression does the same thing.
 
 Formats a number as currency text.
 
@@ -7168,6 +7836,8 @@ There are no thousands separators, and a negative number shows as ``$-4.50``.
 EXACT
 ^^^^^
 
+🔧 vsql has no ``EXACT`` function, but an expression does the same thing.
+
 Checks whether two pieces of text are the same, including their case.
 
 .. code-block:: sql
@@ -7182,6 +7852,8 @@ Spaces at the end are ignored, so ``'a' = 'a '`` is TRUE.
 
 FIND
 ^^^^
+
+✅ vsql has the same function: ``POSITION``.
 
 Returns the position of text within other text, matching case.
 
@@ -7198,6 +7870,8 @@ When the text isn't found, the result is 0 rather than ``#VALUE!``.
 FINDB
 ^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =FINDB(find_text, within_text, [start_num])
@@ -7205,10 +7879,10 @@ FINDB
 Returns the position of text within other text, counted in bytes. Only in
 Excel.
 
-No equivalent.
-
 FIXED
 ^^^^^
+
+🔧 vsql has no ``FIXED`` function, but an expression does the same thing.
 
 Formats a number as text with a fixed number of decimal places.
 
@@ -7225,6 +7899,8 @@ There are no thousands separators.
 JOIN
 ^^^^
 
+🔧 vsql has no ``JOIN`` function, but a query does the same thing.
+
 Joins values with a delimiter between them. Only in Google Sheets.
 
 .. code-block:: sql
@@ -7237,6 +7913,8 @@ Joins values with a delimiter between them. Only in Google Sheets.
 
 LEFT
 ^^^^
+
+🔧 vsql has no ``LEFT`` function, but an expression does the same thing.
 
 Returns the first characters of text.
 
@@ -7257,6 +7935,8 @@ Returns the first characters of text.
 LEFTB
 ^^^^^
 
+🔧 vsql has no ``LEFTB`` function, but an expression does the same thing.
+
 Returns the first bytes of text. Only in Excel.
 
 .. code-block:: sql
@@ -7272,6 +7952,8 @@ Bytes are counted in UTF-8, so text that isn't plain ASCII counts differently.
 LEN
 ^^^
 
+✅ vsql has the same function: ``CHAR_LENGTH``.
+
 Returns the number of characters in text.
 
 .. code-block:: sql
@@ -7284,6 +7966,8 @@ Returns the number of characters in text.
 
 LENB
 ^^^^
+
+✅ vsql has the same function: ``OCTET_LENGTH``.
 
 Returns the number of bytes in text. Only in Excel.
 
@@ -7300,6 +7984,8 @@ Bytes are counted in UTF-8, so text that isn't plain ASCII counts differently.
 LOWER
 ^^^^^
 
+✅ vsql has the same function: ``LOWER``.
+
 Changes text to lower case.
 
 .. code-block:: sql
@@ -7313,6 +7999,8 @@ Changes text to lower case.
 MID
 ^^^
 
+✅ vsql has the same function: ``SUBSTRING``.
+
 Returns characters from the middle of text.
 
 .. code-block:: sql
@@ -7325,6 +8013,8 @@ Returns characters from the middle of text.
 
 MIDB
 ^^^^
+
+✅ vsql has the same function: ``SUBSTRING``.
 
 Returns bytes from the middle of text. Only in Excel.
 
@@ -7341,6 +8031,8 @@ Bytes are counted in UTF-8, so text that isn't plain ASCII counts differently.
 NUMBERVALUE
 ^^^^^^^^^^^
 
+🔧 vsql has no ``NUMBERVALUE`` function, but an expression does the same thing.
+
 Converts text to a number, with a choice of separators.
 
 .. code-block:: sql
@@ -7356,16 +8048,18 @@ The text must use ``.`` for the decimal point and no group separators.
 PHONETIC
 ^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =PHONETIC(reference)
 
 Returns the phonetic guide stored with Japanese text in a cell. Only in Excel.
 
-No equivalent.
-
 PROPER
 ^^^^^^
+
+✅ vsql has the same function: ``INITCAP``.
 
 Capitalizes the first letter of each word.
 
@@ -7383,16 +8077,18 @@ spreadsheet gives ``2Nd``.
 REGEXEXTRACT
 ^^^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =REGEXEXTRACT(text, pattern, [return_mode], [case_sensitivity])
 
 Returns the part of text that matches a regular expression.
 
-No equivalent.
-
 REGEXMATCH
 ^^^^^^^^^^
+
+🔧 vsql has no ``REGEXMATCH`` function, but an expression does the same thing.
 
 Checks whether text matches a regular expression. Only in Google Sheets.
 
@@ -7410,16 +8106,18 @@ The pattern must match the whole text, and ``%`` and ``_`` take the place of
 REGEXREPLACE
 ^^^^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =REGEXREPLACE(text, pattern, replacement, [occurrence], [case_sensitivity])
 
 Replaces the parts of text that match a regular expression.
 
-No equivalent.
-
 REGEXTEST
 ^^^^^^^^^
+
+🔧 vsql has no ``REGEXTEST`` function, but an expression does the same thing.
 
 Checks whether text matches a regular expression. Only in Excel.
 
@@ -7437,6 +8135,8 @@ The pattern must match the whole text, and ``%`` and ``_`` take the place of
 REPLACE
 ^^^^^^^
 
+✅ vsql has the same function: ``OVERLAY``.
+
 Replaces characters at a position in text with other text.
 
 .. code-block:: sql
@@ -7451,6 +8151,8 @@ The ``REPLACE`` function of vsql is a different one, see ``SUBSTITUTE``.
 
 REPLACEB
 ^^^^^^^^
+
+✅ vsql has the same function: ``OVERLAY``.
 
 Replaces bytes at a position in text with other text. Only in Excel.
 
@@ -7467,6 +8169,8 @@ Bytes are counted in UTF-8, so text that isn't plain ASCII counts differently.
 REPT
 ^^^^
 
+✅ vsql has the same function: ``REPEAT``.
+
 Repeats text a number of times.
 
 .. code-block:: sql
@@ -7481,6 +8185,8 @@ A negative number of times gives empty text rather than ``#VALUE!``.
 
 RIGHT
 ^^^^^
+
+🔧 vsql has no ``RIGHT`` function, but an expression does the same thing.
 
 Returns the last characters of text.
 
@@ -7501,6 +8207,8 @@ Returns the last characters of text.
 RIGHTB
 ^^^^^^
 
+🔧 vsql has no ``RIGHTB`` function, but an expression does the same thing.
+
 Returns the last bytes of text. Only in Excel.
 
 .. code-block:: sql
@@ -7515,6 +8223,8 @@ Bytes are counted in UTF-8, so text that isn't plain ASCII counts differently.
 
 SEARCH
 ^^^^^^
+
+🔧 vsql has no ``SEARCH`` function, but an expression does the same thing.
 
 Returns the position of text within other text, ignoring case.
 
@@ -7532,6 +8242,8 @@ wildcards ``?`` and ``*`` aren't supported.
 SEARCHB
 ^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =SEARCHB(find_text, within_text, [start_num])
@@ -7539,10 +8251,10 @@ SEARCHB
 Returns the position of text within other text, ignoring case and counted in
 bytes. Only in Excel.
 
-No equivalent.
-
 SPLIT
 ^^^^^
+
+✅ vsql has the same function: ``SPLIT_PART``.
 
 Splits text into separate cells at a delimiter. Only in Google Sheets.
 
@@ -7561,6 +8273,8 @@ pieces are kept, like ``remove_empty_text`` set to ``FALSE``.
 SUBSTITUTE
 ^^^^^^^^^^
 
+✅ vsql has the same function: ``REPLACE``.
+
 Replaces occurrences of some text with other text.
 
 .. code-block:: sql
@@ -7577,16 +8291,18 @@ than ``TRANSLATE_REGEX`` (F845), which vsql doesn't support yet.
 T
 ^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =T(value)
 
 Returns a value if it's text, and empty text otherwise.
 
-No equivalent.
-
 TEXT
 ^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -7594,10 +8310,10 @@ TEXT
 
 Formats a value as text using a number format.
 
-No equivalent.
-
 TEXTAFTER
 ^^^^^^^^^
+
+🔧 vsql has no ``TEXTAFTER`` function, but an expression does the same thing.
 
 Returns the text after a delimiter. Only in Excel.
 
@@ -7623,6 +8339,8 @@ found.
 TEXTBEFORE
 ^^^^^^^^^^
 
+🔧 vsql has no ``TEXTBEFORE`` function, but an expression does the same thing.
+
 Returns the text before a delimiter. Only in Excel.
 
 .. code-block:: sql
@@ -7639,6 +8357,8 @@ later one also has the delimiters before it.
 
 TEXTJOIN
 ^^^^^^^^
+
+🔧 vsql has no ``TEXTJOIN`` function, but a query does the same thing.
 
 Joins values with a delimiter between them, optionally skipping empty ones.
 Only in Excel.
@@ -7658,6 +8378,8 @@ Only in Excel.
 TEXTSPLIT
 ^^^^^^^^^
 
+✅ vsql has the same function: ``SPLIT_PART``.
+
 Splits text into rows and columns at delimiters. Only in Excel.
 
 .. code-block:: sql
@@ -7675,16 +8397,18 @@ case-sensitive.
 TRANSLATE
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =TRANSLATE(text, [source_language], [target_language])
 
 Translates text from one language to another. Only in Excel.
 
-No equivalent.
-
 TRIM
 ^^^^
+
+✅ vsql has the same function: ``TRIM``.
 
 Removes spaces from the start and end of text.
 
@@ -7702,6 +8426,8 @@ A spreadsheet also turns runs of spaces inside the text into one space, which
 UNICHAR
 ^^^^^^^
 
+✅ vsql has the same function: ``CHR``.
+
 Returns the character for a Unicode code point.
 
 .. code-block:: sql
@@ -7714,6 +8440,8 @@ Returns the character for a Unicode code point.
 
 UNICODE
 ^^^^^^^
+
+✅ vsql has the same function: ``UNICODE``.
 
 Returns the Unicode code point of the first character of text.
 
@@ -7730,6 +8458,8 @@ The code point of empty text is 0 rather than ``#VALUE!``.
 UPPER
 ^^^^^
 
+✅ vsql has the same function: ``UPPER``.
+
 Changes text to upper case.
 
 .. code-block:: sql
@@ -7742,6 +8472,8 @@ Changes text to upper case.
 
 VALUE
 ^^^^^
+
+🔧 vsql has no ``VALUE`` function, but an expression does the same thing.
 
 Converts text that looks like a number into a number.
 
@@ -7759,6 +8491,8 @@ percentages.
 VALUETOTEXT
 ^^^^^^^^^^^
 
+🔧 vsql has no ``VALUETOTEXT`` function, but an expression does the same thing.
+
 Converts a value to text. Only in Excel.
 
 .. code-block:: sql
@@ -7775,16 +8509,18 @@ Web
 ENCODEURL
 ^^^^^^^^^
 
+❌ vsql has no equivalent yet.
+
 .. code-block:: text
 
   =ENCODEURL(text)
 
 Returns text encoded for use in a URL.
 
-No equivalent.
-
 FILTERXML
 ^^^^^^^^^
+
+❌ vsql has no equivalent yet.
 
 .. code-block:: text
 
@@ -7792,10 +8528,10 @@ FILTERXML
 
 Returns the parts of an XML document that match an XPath expression. Only in Excel.
 
-No equivalent.
-
 IMPORTCSV
 ^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7803,10 +8539,10 @@ IMPORTCSV
 
 Imports data from a CSV file. Only in Excel.
 
-No equivalent.
-
 IMPORTDATA
 ^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7814,10 +8550,10 @@ IMPORTDATA
 
 Imports a CSV or TSV file from a URL. Only in Google Sheets.
 
-No equivalent.
-
 IMPORTFEED
 ^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7825,10 +8561,10 @@ IMPORTFEED
 
 Imports an RSS or Atom feed. Only in Google Sheets.
 
-No equivalent.
-
 IMPORTHTML
 ^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7836,10 +8572,10 @@ IMPORTHTML
 
 Imports a table or list from a web page. Only in Google Sheets.
 
-No equivalent.
-
 IMPORTRANGE
 ^^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7847,10 +8583,10 @@ IMPORTRANGE
 
 Imports a range from another spreadsheet. Only in Google Sheets.
 
-No equivalent.
-
 IMPORTTEXT
 ^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7858,10 +8594,10 @@ IMPORTTEXT
 
 Imports data from a delimited text file. Only in Excel.
 
-No equivalent.
-
 IMPORTXML
 ^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
@@ -7869,15 +8605,13 @@ IMPORTXML
 
 Imports data from a web page or XML file using an XPath query. Only in Google Sheets.
 
-No equivalent.
-
 WEBSERVICE
 ^^^^^^^^^^
+
+🚫 vsql won't have an equivalent, because it fetches data from the web or a live service.
 
 .. code-block:: text
 
   =WEBSERVICE(url)
 
 Returns the response from a web service. Only in Excel.
-
-No equivalent.

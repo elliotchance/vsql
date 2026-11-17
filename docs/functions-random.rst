@@ -5,8 +5,6 @@ Random Functions
    :local:
    :depth: 1
 
-.. _function-random:
-
 RANDOM
 ^^^^^^
 

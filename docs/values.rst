@@ -26,8 +26,8 @@ Unlike in :doc:`insert`, ``NULL`` and ``DEFAULT`` can't be a value in a row
 because there's no column to get a type from, which is an error ``42601``. Use
 ``CAST(NULL AS INT)`` instead.
 
-VALUES
-------
+Columns
+-------
 
 For each *expression*, the names ``COL1``, ``COL2``, etc will be used. The
 names of the columns cannot be overridden directly in the ``VALUES`` statement,

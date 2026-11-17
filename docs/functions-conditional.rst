@@ -9,8 +9,6 @@ Conditional functions choose between values. Unlike other functions, their
 result isn't always ``NULL`` when an argument is ``NULL``. See also ``CASE`` in
 :doc:`expressions`.
 
-.. _function-coalesce:
-
 COALESCE
 ^^^^^^^^
 
@@ -58,8 +56,6 @@ The values are checked in order, and the values after the first one that is not
   argument versions: ``IFNULL`` (MySQL, SQLite), ``ISNULL`` (SQL Server) and
   ``NVL`` (Oracle).
 
-.. _function-greatest:
-
 GREATEST
 ^^^^^^^^
 
@@ -98,8 +94,6 @@ See also `LEAST`_.
   PostgreSQL ignores ``NULL`` values instead. SQLite uses ``MAX`` with more
   than one argument.
 
-.. _function-least:
-
 LEAST
 ^^^^^
 
@@ -137,8 +131,6 @@ See also `GREATEST`_.
 - **Other databases:** ``LEAST`` in MySQL, PostgreSQL and SQL Server, but
   PostgreSQL ignores ``NULL`` values instead. SQLite uses ``MIN`` with more
   than one argument.
-
-.. _function-nullif:
 
 NULLIF
 ^^^^^^

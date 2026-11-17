@@ -2,8 +2,9 @@
 
 // ISO/IEC 9075-2:2023, 11.3, <table definition>
 //
-// Define a persistent base table. An <as subquery clause> is flagged with T172
-// (Conformance Rules, 7).
+// Define a persistent base table. A <like clause> is flagged with T171
+// (Conformance Rules, 1) and an <as subquery clause> with T172 (Conformance
+// Rules, 7).
 
 table_definition:
   CREATE TABLE table_name table_contents_source {
@@ -99,6 +100,13 @@ table_element_list:
 table_element:
   column_definition { $$.v = $1.v }
 | table_constraint_definition { $$.v = yy_box([$1.v as TableElement]) }
+| like_clause {
+    flag(mut yylex, 'T171')
+    $$.v = yy_box([TableElement($1.v as LikeClause)])
+  }
+
+like_clause:
+  LIKE table_name { $$.v = yy_box(LikeClause{table_name: $2.v as Identifier}) }
 
 table_elements:
   table_element { $$.v = $1.v }

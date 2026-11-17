@@ -21,6 +21,7 @@ Syntax
                  [ <characteristics> ] ... ]
              | [ CONSTRAINT <constraint_name> ] <table_constraint>
                [ <characteristics> ]
+             | LIKE <table_name>
 
   <table_constraint> := PRIMARY KEY ( <column_name> , ... )
                       | UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <column_name> , ... )
@@ -138,6 +139,24 @@ the same as ``WITH DATA`` (flagged as ``V103-03``, see :doc:`sql-flagging`):
 A ``WITH`` straight after a ``TIME`` or ``TIMESTAMP`` type is always the start
 of ``WITH TIME ZONE``, so a query that ends with one (such as ``x::TIME``) must
 be in parentheses to be followed by ``WITH DATA``.
+
+LIKE
+----
+
+``LIKE`` copies the columns of another table, in that place among the other
+columns. Each column has the same name and type, and is ``NOT NULL`` if it's
+``NOT NULL`` (or in the ``PRIMARY KEY``) of the other table. Nothing else is
+copied: no defaults, identity columns, generated columns, constraints or rows.
+The new table can have its own constraints on them.
+
+.. code-block:: sql
+
+  CREATE TABLE products (id INT PRIMARY KEY, title VARCHAR(100));
+  CREATE TABLE archived_products (LIKE products, archived_at TIMESTAMP);
+
+The table can be in any schema, including a view of the ``INFORMATION_SCHEMA``.
+A column that's copied can't have the same name as another column of the new
+table (an error ``42601``).
 
 Defaults
 --------

@@ -15,6 +15,7 @@ import time
 
 type TableElement = CheckConstraintDefinition
 	| Column
+	| LikeClause
 	| NotNullConstraint
 	| ReferentialConstraintDefinition
 	| UniqueConstraintDefinition
@@ -38,6 +39,13 @@ struct AsSubqueryClause {
 	columns   []Identifier
 	query     QueryExpression
 	with_data bool
+}
+
+// LikeClause is a <like clause> in a <table element list>, which is replaced by
+// the columns of another table when the table is created (see
+// TableDefinition.with_like_columns).
+struct LikeClause {
+	table_name Identifier
 }
 
 fn (s TableDefinition) columns() Columns {
@@ -107,7 +115,7 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 		return sqlstate_42p07_table(table_name) // duplicate table
 	}
 
-	definition := stmt.as_table_elements(mut conn)!
+	definition := stmt.as_table_elements(mut conn)!.with_like_columns(mut conn)!
 	definition.check_limits(table_name)!
 	mut table := definition.table(table_name, 0)!
 	mut other_names := catalog.storage.schema_constraint_names(table_name)
@@ -198,6 +206,60 @@ fn (stmt TableDefinition) as_table_elements(mut conn Connection) !TableDefinitio
 		table_elements: elements
 		as_subquery:    none
 	}
+}
+
+// with_like_columns returns the definition with each <like clause> replaced by
+// the columns of its table, in the same place. Each column only has the name,
+// type and nullability of the column it's copied from, and the constraints of
+// the table aren't copied, other than NOT NULL.
+//
+// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b
+fn (stmt TableDefinition) with_like_columns(mut conn Connection) !TableDefinition {
+	if !stmt.table_elements.any(it is LikeClause) {
+		return stmt
+	}
+
+	mut elements := []TableElement{}
+	for element in stmt.table_elements {
+		if element is LikeClause {
+			// The table can be any table, including one of the
+			// INFORMATION_SCHEMA.
+			like_table := conn.like_table(element.table_name)!
+			for column in like_table.columns {
+				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iii and 9.b.v
+				elements << Column{
+					name:     Identifier{
+						sub_entity_name: column.name.sub_entity_name
+					}
+					typ:      column.typ
+					not_null: column.not_null
+				}
+			}
+		} else {
+			elements << element
+		}
+	}
+
+	return TableDefinition{
+		...stmt
+		table_elements: elements
+	}
+}
+
+// like_table returns the table of a <like clause>, which can also be a virtual
+// table.
+fn (mut conn Connection) like_table(name Identifier) !Table {
+	table_name := conn.resolve_table_identifier(name, true)!
+	catalog := conn.catalog_for(table_name)
+	id := table_name.storage_id()
+	if table := catalog.storage.tables[id] {
+		return table
+	}
+
+	// resolve_table_identifier found it, so it's a virtual table.
+	virtual_table := unsafe { catalog.virtual_tables[id] }
+
+	return virtual_table.table()
 }
 
 // table checks the definition and returns the table that it describes. It's
@@ -314,6 +376,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				} else {
 					unique_constraints << UniqueConstraint{name, unique_columns, table_element.characteristics, table_element.nulls_not_distinct}
 				}
+			}
+			LikeClause {
+				// Replaced by with_like_columns.
 			}
 			ReferentialConstraintDefinition {
 				// Each referencing column must be a column of the table, and only

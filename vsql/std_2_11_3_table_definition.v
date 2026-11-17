@@ -273,6 +273,14 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						}
 					}
 					referenced_columns: referenced_columns
+					// SIMPLE is the same as no MATCH.
+					//
+					// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 1
+					match_type:         if table_element.match_type == 'SIMPLE' {
+						''
+					} else {
+						table_element.match_type
+					}
 					// NO ACTION is the same as no ON UPDATE or ON DELETE.
 					//
 					// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 12 and 13

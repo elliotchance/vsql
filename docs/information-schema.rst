@@ -347,7 +347,7 @@ and with the same names as ``TABLE_CONSTRAINTS``.
       referenced columns, with its name in ``TABLE_CONSTRAINTS``.
 
   * - ``MATCH_OPTION``
-    - Always ``NONE`` (``MATCH`` is not supported).
+    - ``FULL`` or ``PARTIAL`` (the ``MATCH``), or ``NONE`` for ``MATCH SIMPLE``.
 
   * - ``UPDATE_RULE``
     - ``CASCADE``, ``SET NULL``, ``SET DEFAULT`` or ``NO ACTION`` (the

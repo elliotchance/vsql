@@ -941,7 +941,7 @@ Optional Features
    * - ❌ **F731**
      - **INSERT column privileges**
 
-   * - ❌ **F741**
+   * - ✅ **F741**
      - **Referential MATCH types**
 
    * - ❌ **F751**

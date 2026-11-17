@@ -280,7 +280,34 @@ changed, otherwise it's an error ``23503``. A ``FOREIGN KEY`` is checked once
 all of the rows of an :doc:`insert`, :doc:`update` or :doc:`delete` have been
 changed, so a statement can delete a row along with the rows that reference
 it, or insert a row along with a row that references it. If any row violates
-the constraint, none of the rows are changed. ``MATCH`` is not supported yet.
+the constraint, none of the rows are changed.
+
+``MATCH`` after the referenced table says which rows must reference a row when
+some of the columns of a ``FOREIGN KEY`` are ``NULL``:
+
+- ``MATCH SIMPLE`` (the default) means a row with a ``NULL`` in any column
+  doesn't need to reference a row.
+- ``MATCH FULL`` means every column must be ``NULL``, or none of them, otherwise
+  it's an error ``23503``. A row where every column is ``NULL`` doesn't need to
+  reference a row.
+- ``MATCH PARTIAL`` means a row needs to reference a row that has the same
+  values in the columns that aren't ``NULL`` (the referenced row can have a
+  ``NULL`` in the other columns). A row can reference more than one row, and a
+  referenced row can only be deleted or changed if each of its rows still
+  references another row. Only a row where every column is ``NULL`` doesn't
+  need to reference a row. A row with a ``NULL`` is found by reading every row
+  of the referenced table, so it's slower, and another transaction changing
+  any row of either table at the same time is an error ``40001``.
+
+.. code-block:: sql
+
+  CREATE TABLE rooms (building VARCHAR(10), room INTEGER, UNIQUE (building, room));
+  CREATE TABLE bookings (
+      building VARCHAR(10),
+      room INTEGER,
+      FOREIGN KEY (building, room) REFERENCES rooms (building, room) MATCH FULL
+  );
+
 
 ``ON DELETE`` says what happens to the rows that reference a row that's
 deleted, and ``ON UPDATE`` says what happens to the rows that reference a row
@@ -302,6 +329,12 @@ in either order:
   that reference it.
 - ``SET DEFAULT`` sets each column of the ``FOREIGN KEY`` to its ``DEFAULT``
   (or ``NULL`` when there isn't one) in the rows that reference it.
+
+``ON UPDATE`` only changes the columns that correspond to the referenced
+columns that were changed, except that ``ON UPDATE SET NULL`` with
+``MATCH FULL`` sets every column to ``NULL``. With ``MATCH PARTIAL``, the
+actions only change the rows that don't reference any other row, and
+``ON UPDATE`` never changes a column that's ``NULL``.
 
 .. code-block:: sql
 

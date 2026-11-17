@@ -1,6 +1,6 @@
 -- # Each FOREIGN KEY has the name of the unique constraint that it references,
--- # which is the PRIMARY KEY when the referenced columns aren't given. It can't
--- # have a MATCH yet.
+-- # which is the PRIMARY KEY when the referenced columns aren't given. Without
+-- # a MATCH, the MATCH_OPTION is NONE.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent);
 SELECT * FROM information_schema.referential_constraints;

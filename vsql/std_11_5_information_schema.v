@@ -688,8 +688,8 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 // the ith FOREIGN KEY of a table, which references the referenced table. The
 // unique constraint (Description, 2) is the PRIMARY KEY or UNIQUE of the
 // referenced table that has the referenced columns, with its name in the
-// TABLE_CONSTRAINTS view. A
-// FOREIGN KEY can't have a MATCH yet (F741), so it's NONE (Description, 3).
+// TABLE_CONSTRAINTS view. The MATCH_OPTION is NONE for MATCH SIMPLE (or no
+// MATCH) (Description, 3).
 // The UPDATE_RULE and DELETE_RULE are NO ACTION when they're not specified
 // (Description, 4 and 5).
 //
@@ -706,7 +706,11 @@ fn referential_constraints_view_row(catalog_name string, table Table, i int, ref
 		new_varchar_value(catalog_name), // UNIQUE_CONSTRAINT_CATALOG
 		new_varchar_value(referenced.name.schema_name), // UNIQUE_CONSTRAINT_SCHEMA
 		new_varchar_value(unique_constraint_name), // UNIQUE_CONSTRAINT_NAME
-		new_varchar_value('NONE'), // MATCH_OPTION
+		new_varchar_value(if table.foreign_keys[i].match_type == '' {
+			'NONE'
+		} else {
+			table.foreign_keys[i].match_type
+		}), // MATCH_OPTION
 		new_varchar_value(table.foreign_keys[i].update_action()), // UPDATE_RULE
 		new_varchar_value(table.foreign_keys[i].delete_action()), // DELETE_RULE
 	]

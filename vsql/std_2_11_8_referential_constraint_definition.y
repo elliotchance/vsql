@@ -22,6 +22,29 @@ references_specification:
       delete_rule: ($3.v as ReferentialConstraintDefinition).delete_rule
     })
   }
+| REFERENCES referenced_table_and_columns MATCH match_type {
+    // ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Conformance Rules, 2
+    flag(mut yylex, 'F741')
+    $$.v = yy_box(ReferentialConstraintDefinition{
+      ...$2.v as ReferentialConstraintDefinition
+      match_type: $4.v as string
+    })
+  }
+| REFERENCES referenced_table_and_columns MATCH match_type
+  referential_triggered_action {
+    flag(mut yylex, 'F741')
+    $$.v = yy_box(ReferentialConstraintDefinition{
+      ...$2.v as ReferentialConstraintDefinition
+      match_type:  $4.v as string
+      update_rule: ($5.v as ReferentialConstraintDefinition).update_rule
+      delete_rule: ($5.v as ReferentialConstraintDefinition).delete_rule
+    })
+  }
+
+match_type:
+  FULL { $$.v = 'FULL' }
+| PARTIAL { $$.v = 'PARTIAL' }
+| SIMPLE { $$.v = 'SIMPLE' }
 
 referencing_column_list:
   column_name_list { $$.v = $1.v }

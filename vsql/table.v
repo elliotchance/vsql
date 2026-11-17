@@ -287,6 +287,7 @@ fn (t Table) elements() []TableElement {
 			referenced_columns: key.referenced_columns.map(Identifier{
 				sub_entity_name: it
 			})
+			match_type:         key.match_type
 			update_rule:        key.update_rule
 			delete_rule:        key.delete_rule
 			characteristics:    key.characteristics

@@ -244,3 +244,18 @@ SELECT * FROM d;
 -- msg: INSERT 1
 -- error 27000: triggered data change violation: a row of ":memory:".PUBLIC.D that was updated is deleted
 -- B: 1 A: 1
+
+-- # An exact numeric that references an approximate numeric (or the other way
+-- # around) is compared as a DOUBLE PRECISION, so 1.5 and 1.5e0 match.
+CREATE TABLE parent (n NUMERIC(5, 2) PRIMARY KEY);
+CREATE TABLE child (d DOUBLE PRECISION REFERENCES parent ON DELETE CASCADE);
+INSERT INTO parent (n) VALUES (1.5), (2.5);
+INSERT INTO child (d) VALUES (1.5e0), (2.5e0);
+DELETE FROM parent WHERE n = 1.5;
+SELECT * FROM child;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: INSERT 2
+-- msg: DELETE 1
+-- D: 2.5e0

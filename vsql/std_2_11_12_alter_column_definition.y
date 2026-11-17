@@ -30,5 +30,8 @@ alter_column_action:
 | alter_identity_column_specification {
     $$.v = yy_box(AlterColumnAction($1.v as AlterIdentityColumnSpecification))
   }
+| drop_identity_property_clause {
+    $$.v = yy_box(AlterColumnAction($1.v as DropIdentityPropertyClause))
+  }
 
 %%

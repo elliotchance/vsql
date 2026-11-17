@@ -571,14 +571,14 @@
 11.11/GR/3               n/a          - - privileges (E081, #732)
 11.11/GR/4               implemented  vsql/std_2_11_11_add_column_definition.v tests/std_2_11_11_add_column.sql
 # 11.12, <alter column definition>
-11.12                    partial      vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql only SET DEFAULT, DROP DEFAULT, SET NOT NULL, DROP NOT NULL, SET DATA TYPE and the <alter identity column specification>
+11.12                    partial      vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql only SET DEFAULT, DROP DEFAULT, SET NOT NULL, DROP NOT NULL, SET DATA TYPE, DROP IDENTITY and the <alter identity column specification>
 11.12/SR/1               definition   - -
 11.12/SR/2               n/a          - - system-versioned tables (T180)
 11.12/SR/3               definition   - -
 11.12/SR/4               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
 11.12/SR/5               n/a          - - scope clauses (S043)
 11.12/SR/6               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_20_identity_column_alter.sql
-11.12/SR/7               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_20_identity_column_alter.sql
+11.12/SR/7               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_20_identity_column_alter.sql,tests/std_2_11_21_drop_identity_property.sql
 11.12/SR/8               n/a          - - DROP EXPRESSION (F385)
 11.12/SR/9               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
 11.12/GR/1               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_12_alter_column.sql
@@ -740,15 +740,15 @@
 11.20/CR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_9_6_flagging.sql
 11.20/CR/3               n/a          - - SET GENERATED (F386)
 # 11.21, <drop identity property clause>
-11.21                    n/a          - - DROP IDENTITY (F384)
-11.21/GR/1               n/a          - - DROP IDENTITY (F384)
-11.21/GR/2               n/a          - - DROP IDENTITY (F384)
-11.21/GR/2.a             n/a          - - DROP IDENTITY (F384)
-11.21/GR/2.b             n/a          - - DROP IDENTITY (F384)
-11.21/GR/2.c             n/a          - - DROP IDENTITY (F384)
-11.21/GR/2.d             n/a          - - DROP IDENTITY (F384)
-11.21/GR/3               n/a          - - DROP IDENTITY (F384)
-11.21/CR/1               n/a          - - DROP IDENTITY (F384)
+11.21                    implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
+11.21/GR/1               definition   - -
+11.21/GR/2               implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
+11.21/GR/2.a             implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
+11.21/GR/2.b             implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
+11.21/GR/2.c             implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
+11.21/GR/2.d             implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
+11.21/GR/3               implemented  vsql/std_2_11_12_alter_column_definition.v tests/std_2_11_21_drop_identity_property.sql
+11.21/CR/1               implemented  vsql/std_2_11_21_drop_identity_property_clause.y tests/std_2_11_21_drop_identity_property.sql
 # 11.22, <drop column generation expression clause>
 11.22                    n/a          - - DROP EXPRESSION (F385)
 11.22/GR/1               n/a          - - DROP EXPRESSION (F385)

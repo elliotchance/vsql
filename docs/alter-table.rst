@@ -18,6 +18,7 @@ Syntax
     | ALTER [ COLUMN ] <column_name> DROP NOT NULL
     | ALTER [ COLUMN ] <column_name> SET DATA TYPE <data_type>
     | ALTER [ COLUMN ] <column_name> <identity_option> ...
+    | ALTER [ COLUMN ] <column_name> DROP IDENTITY
     | DROP [ COLUMN ] <column_name> [ CASCADE | RESTRICT ]
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
     | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
@@ -81,6 +82,11 @@ an identity column (see :doc:`create-table`). The ``DEFAULT`` of an identity
 column can't be changed, and the options can only be used for an identity column
 (both are an error ``42601``). A generated column can't have a ``DEFAULT``
 (an error ``42601``).
+
+``DROP IDENTITY`` makes an identity column a normal column, and drops its
+sequence. It's an error ``42601`` if the column isn't an identity column. The
+column keeps its values and its ``NOT NULL``, so a value has to be given when a
+row is inserted, unless the ``NOT NULL`` is dropped with ``DROP NOT NULL``.
 
 Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.

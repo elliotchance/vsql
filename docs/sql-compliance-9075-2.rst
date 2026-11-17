@@ -560,7 +560,7 @@ Optional Features
    * - ✅ **B035**
      - **Non-extended descriptor names**
 
-   * - ❌ **B036**
+   * - ✅ **B036**
      - **Describe input statement**
 
    * - ✅ **B041**

@@ -76,18 +76,18 @@ fn (mut t ModuleTokens) deallocate_prepared_statement(p ExternallyInvokedProcedu
 		'  vsql_m_deallocate_prepare(SQLSTATE, ${c_string(name)});\n'}
 }
 
-// describe_statement compiles a <describe output statement>, after DESCRIBE. A
-// <describe input statement> is Feature B036, and the structure of a
-// received cursor is Feature T472, "DESCRIBE CURSOR". vsql doesn't have a ROW,
-// ARRAY or MULTISET, so WITH NESTING doesn't change anything.
+// describe_statement compiles a <describe input statement> or a <describe
+// output statement>, after DESCRIBE. The structure of a received cursor is
+// Feature T472, "DESCRIBE CURSOR". vsql doesn't have a ROW, ARRAY or MULTISET,
+// so WITH NESTING doesn't change anything.
 //
 // ISO/IEC 9075-2:2023, 20.10, <describe statement>, Syntax Rules, 2
-// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Conformance Rules, 1 to 3
+// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Conformance Rules, 2 and 3
 fn (mut t ModuleTokens) describe_statement(p ExternallyInvokedProcedure, prepared []string) !ModuleStatement {
-	if t.accept('INPUT') {
-		return sqlstate_42601('procedure ${p.name}: DESCRIBE INPUT is not supported')
+	input := t.accept('INPUT')
+	if !input {
+		t.accept('OUTPUT')
 	}
-	t.accept('OUTPUT')
 	name := t.statement_name(p, prepared)!
 	t.expect('USING')!
 	t.descriptor_keyword(p)!
@@ -96,9 +96,10 @@ fn (mut t ModuleTokens) describe_statement(p ExternallyInvokedProcedure, prepare
 		t.expect('NESTING')!
 	}
 	t.end_of_statement(p)!
+	section := if input { 'describe_input' } else { 'describe' }
 
-	return ModuleStatement{['describe'], [], begin('DESCRIBE', 20) +
-		'  vsql_m_describe(SQLSTATE, ${c_string(name)}, ${descriptor});\n'}
+	return ModuleStatement{[section], [], begin('DESCRIBE', 20) +
+		'  vsql_m_${section}(SQLSTATE, ${c_string(name)}, ${descriptor});\n'}
 }
 
 // execute_statement compiles an <execute statement>, after EXECUTE. Its <result

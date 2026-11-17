@@ -396,13 +396,13 @@
 20.9/GR/3                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no extended dynamic cursors (B032)
 20.9/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 # 20.10, <describe statement>
-20.10                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only DESCRIBE OUTPUT
+20.10                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
 20.10/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.10/SR/1.a             n/a          - - SQL-invoked routines (T321)
 20.10/SR/1.b             implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.10/SR/2               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v
 20.10/SR/3               n/a          - - DESCRIBE CURSOR (T472)
-20.10/SR/4               n/a          - - DESCRIBE INPUT (B036)
+20.10/SR/4               n/a          - - PTF descriptors (B200)
 20.10/GR/1               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/2               n/a          - - DESCRIBE CURSOR (T472)
 20.10/GR/2.a             n/a          - - DESCRIBE CURSOR (T472)
@@ -410,7 +410,7 @@
 20.10/GR/3               implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.10/GR/4               definition   - -
 20.10/GR/5               container    - -
-20.10/GR/5.a             n/a          - - DESCRIBE INPUT (B036)
+20.10/GR/5.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c every ? is a separate dynamic parameter
 20.10/GR/5.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/5.c             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters, so it's always 0 (zero)
 20.10/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
@@ -424,7 +424,7 @@
 20.10/GR/6.e             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.10/GR/6.f.i.1         n/a          - - DESCRIBE INPUT (B036)
+20.10/GR/6.f.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/6.f.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters
 20.10/GR/6.f.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
@@ -439,10 +439,10 @@
 20.10/GR/7.c.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c,vsql/api_test.v
-20.10/GR/7.c.ii          n/a          - - DESCRIBE INPUT (B036)
-20.10/GR/7.c.ii.1        n/a          - - DESCRIBE INPUT (B036)
-20.10/GR/7.c.ii.2        n/a          - - DESCRIBE INPUT (B036)
-20.10/GR/7.c.ii.3        n/a          - - DESCRIBE INPUT (B036)
+20.10/GR/7.c.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.c.ii.1        implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.c.ii.2        implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c NAME is the zero-length string
+20.10/GR/7.c.ii.3        implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.c.iii         container    - -
 20.10/GR/7.c.iii.1       n/a          - - row types (T051), arrays (S091) and multisets (S271)
 20.10/GR/7.c.iii.2       container    - -
@@ -477,7 +477,7 @@
 20.10/GR/7.e.iv          n/a          - - SQL-invoked routines (T321)
 20.10/GR/7.e.v           n/a          - - SQL-invoked routines (T321)
 20.10/GR/7.e.vi          n/a          - - SQL-invoked routines (T321)
-20.10/CR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/module_test.v DESCRIBE INPUT isn't supported
+20.10/CR/1               implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 20.10/CR/2               implemented  vsql/std_1_9_6_sql_flagger.v vsql/module_test.v
 20.10/CR/3               n/a          - - DESCRIBE CURSOR (T472)
 20.10/CR/4               n/a          - - polymorphic table functions (B200)

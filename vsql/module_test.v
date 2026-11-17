@@ -449,6 +449,7 @@ PROCEDURE pr2 (SQLSTATE); PREPARE s FROM \'SELECT 1\';
 PROCEDURE dp (SQLSTATE); DEALLOCATE PREPARE s;
 PROCEDURE ds (SQLSTATE); DESCRIBE s USING DESCRIPTOR d WITH NESTING;
 PROCEDURE ds2 (SQLSTATE); DESCRIBE OUTPUT s USING SQL DESCRIPTOR d WITHOUT NESTING;
+PROCEDURE di (SQLSTATE); DESCRIBE INPUT s USING DESCRIPTOR d;
 PROCEDURE ex (SQLSTATE); EXECUTE s;
 PROCEDURE ex2 (SQLSTATE, :n INTEGER, :s VARCHAR(5), :i INTEGER); EXECUTE s INTO :n, :s INDICATOR :i USING :s :i, :n;
 PROCEDURE ex3 (SQLSTATE); EXECUTE s INTO DESCRIPTOR d USING DESCRIPTOR GLOBAL \'g\';
@@ -482,6 +483,7 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 	assert m.source.contains('  vsql_m_prepare(SQLSTATE, "S", "SELECT 1");\n')
 	assert m.source.contains('  vsql_m_begin("DEALLOCATE PREPARE", 16);\n  vsql_m_deallocate_prepare(SQLSTATE, "S");\n')
 	assert m.source.contains('  vsql_m_begin("DESCRIBE", 20);\n  vsql_m_describe(SQLSTATE, "S", "D", &vsql_m_own);\n')
+	assert m.source.contains('  vsql_m_begin("DESCRIBE", 20);\n  vsql_m_describe_input(SQLSTATE, "S", "D", &vsql_m_own);\n')
 	assert m.source.contains('  struct vsql_m_input vsql_m_in = {-1, NULL, NULL, NULL};\n  struct vsql_m_output vsql_m_out = {-1, NULL, NULL, NULL};\n  vsql_m_execute_prepared(SQLSTATE, "S", &vsql_m_in, &vsql_m_out);\n')
 	assert m.source.contains('  struct vsql_m_input vsql_m_in = {2, vsql_m_p, NULL, NULL};\n  struct vsql_m_target vsql_m_t[2] = {\n')
 	assert m.source.contains('  struct vsql_m_output vsql_m_out = {2, vsql_m_t, NULL, NULL};\n  if (vsql_m_execute_prepared(SQLSTATE, "S", &vsql_m_in, &vsql_m_out)) {\n    *i = (long)vsql_m_t[1].indicator;\n  }\n')
@@ -524,7 +526,6 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 		'PREPARE s FROM :s x;':                         'procedure p: unexpected near x'
 		'DEALLOCATE PREPARE x;':                        'procedure p: statement X is not prepared in the module'
 		'DEALLOCATE x;':                                'procedure p: expected DESCRIPTOR near x'
-		'DESCRIBE INPUT s USING DESCRIPTOR d;':         'procedure p: DESCRIBE INPUT is not supported'
 		'DESCRIBE s d;':                                'expected USING near d'
 		'DESCRIBE s USING DESCRIPTOR d WITH x;':        'expected NESTING near x'
 		'EXECUTE x;':                                   'procedure p: statement X is not prepared in the module'

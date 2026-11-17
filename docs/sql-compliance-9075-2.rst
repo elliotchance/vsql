@@ -1043,7 +1043,7 @@ Optional Features
    * - ❌ **F865**
      - **dynamic <offset row count> in <result offset clause>**
 
-   * - ❌ **F866**
+   * - ✅ **F866**
      - **FETCH FIRST clause: PERCENT option**
 
    * - ❌ **F867**

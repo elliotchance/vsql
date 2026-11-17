@@ -43,62 +43,62 @@ query_expression_clauses:
   }
 | fetch_first_clause {
     $$.v = yy_box(QueryExpression{
-      fetch: $1.v as ValueSpecification
+      fetch: $1.v as FetchFirstClause
     })
   }
 | order_by_clause fetch_first_clause {
     $$.v = yy_box(QueryExpression{
-      fetch: $2.v as ValueSpecification
+      fetch: $2.v as FetchFirstClause
       order: $1.v as []SortSpecification
     })
   }
 | order_by_clause result_offset_clause fetch_first_clause {
     $$.v = yy_box(QueryExpression{
       offset: $2.v as ValueSpecification
-      fetch:  $3.v as ValueSpecification
+      fetch:  $3.v as FetchFirstClause
       order:  $1.v as []SortSpecification
     })
   }
 | result_offset_clause fetch_first_clause {
     $$.v = yy_box(QueryExpression{
       offset: $1.v as ValueSpecification
-      fetch:  $2.v as ValueSpecification
+      fetch:  $2.v as FetchFirstClause
     })
   }
 | limit_clause {
     $$.v = yy_box(QueryExpression{
-      fetch: $1.v as ValueSpecification
+      fetch: $1.v as FetchFirstClause
     })
   }
 | order_by_clause limit_clause {
     $$.v = yy_box(QueryExpression{
-      fetch: $2.v as ValueSpecification
+      fetch: $2.v as FetchFirstClause
       order: $1.v as []SortSpecification
     })
   }
 | limit_clause limit_offset_clause {
     $$.v = yy_box(QueryExpression{
       offset: $2.v as ValueSpecification
-      fetch:  $1.v as ValueSpecification
+      fetch:  $1.v as FetchFirstClause
     })
   }
 | order_by_clause limit_clause limit_offset_clause {
     $$.v = yy_box(QueryExpression{
       offset: $3.v as ValueSpecification
-      fetch:  $2.v as ValueSpecification
+      fetch:  $2.v as FetchFirstClause
       order:  $1.v as []SortSpecification
     })
   }
 | result_offset_clause limit_clause {
     $$.v = yy_box(QueryExpression{
       offset: $1.v as ValueSpecification
-      fetch:  $2.v as ValueSpecification
+      fetch:  $2.v as FetchFirstClause
     })
   }
 | order_by_clause result_offset_clause limit_clause {
     $$.v = yy_box(QueryExpression{
       offset: $2.v as ValueSpecification
-      fetch:  $3.v as ValueSpecification
+      fetch:  $3.v as FetchFirstClause
       order:  $1.v as []SortSpecification
     })
   }
@@ -107,7 +107,7 @@ query_expression_clauses:
     flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
     $$.v = yy_box(QueryExpression{
       offset: $2.v as ValueSpecification
-      fetch:  $3.v as ValueSpecification
+      fetch:  $3.v as FetchFirstClause
     })
   }
 | order_by_clause OFFSET offset_row_count limit_clause {
@@ -115,7 +115,7 @@ query_expression_clauses:
     flag_row_count(mut yylex, $3.v as ValueSpecification, 'F865')
     $$.v = yy_box(QueryExpression{
       offset: $3.v as ValueSpecification
-      fetch:  $4.v as ValueSpecification
+      fetch:  $4.v as FetchFirstClause
       order:  $1.v as []SortSpecification
     })
   }
@@ -139,7 +139,7 @@ query_expression_clauses:
     flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
     $$.v = yy_box(QueryExpression{
       offset: $2.v as ValueSpecification
-      fetch:  $3.v as ValueSpecification
+      fetch:  $3.v as FetchFirstClause
     })
   }
 | order_by_clause OFFSET offset_row_count fetch_first_clause {
@@ -147,7 +147,7 @@ query_expression_clauses:
     flag_row_count(mut yylex, $3.v as ValueSpecification, 'F865')
     $$.v = yy_box(QueryExpression{
       offset: $3.v as ValueSpecification
-      fetch:  $4.v as ValueSpecification
+      fetch:  $4.v as FetchFirstClause
       order:  $1.v as []SortSpecification
     })
   }
@@ -157,7 +157,9 @@ query_expression_clauses:
     flag_row_count(mut yylex, $4.v as ValueSpecification, 'F860')
     $$.v = yy_box(QueryExpression{
       offset: $2.v as ValueSpecification
-      fetch:  $4.v as ValueSpecification
+      fetch:  FetchFirstClause{
+        count: $4.v as ValueSpecification
+      }
     })
   }
 | order_by_clause LIMIT fetch_first_row_count comma fetch_first_row_count {
@@ -166,7 +168,9 @@ query_expression_clauses:
     flag_row_count(mut yylex, $5.v as ValueSpecification, 'F860')
     $$.v = yy_box(QueryExpression{
       offset: $3.v as ValueSpecification
-      fetch:  $5.v as ValueSpecification
+      fetch:  FetchFirstClause{
+        count: $5.v as ValueSpecification
+      }
       order:  $1.v as []SortSpecification
     })
   }
@@ -297,14 +301,15 @@ result_offset_clause:
   }
 
 fetch_first_clause:
-  FETCH first_or_next fetch_first_quantity row_or_rows ONLY {
-    flag_row_count(mut yylex, $3.v as ValueSpecification, 'F860')
-    $$.v = $3.v
-  }
+  FETCH first_or_next fetch_first_quantity row_or_rows ONLY { $$.v = $3.v }
 // Without a row count, it's 1.
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 7.b.iii
-| FETCH first_or_next row_or_rows ONLY { $$.v = yy_box(ValueSpecification(new_integer_value(1))) }
+| FETCH first_or_next row_or_rows ONLY {
+    $$.v = yy_box(FetchFirstClause{
+      count: ValueSpecification(new_integer_value(1))
+    })
+  }
 
 // LIMIT is a vsql extension that's the same as a fetch_first_clause (V203-01).
 // "LIMIT offset, count" is in query_expression_with_clauses (V203-03), since it
@@ -313,7 +318,9 @@ limit_clause:
   LIMIT fetch_first_row_count {
     flag(mut yylex, vsql_limit)
     flag_row_count(mut yylex, $2.v as ValueSpecification, 'F860')
-    $$.v = $2.v
+    $$.v = yy_box(FetchFirstClause{
+      count: $2.v as ValueSpecification
+    })
   }
 
 // An OFFSET without ROW or ROWS is also a vsql extension (V203-02).
@@ -330,7 +337,23 @@ first_or_next:
 | NEXT
 
 fetch_first_quantity:
-  fetch_first_row_count { $$.v = $1.v }
+  fetch_first_row_count {
+    flag_row_count(mut yylex, $1.v as ValueSpecification, 'F860')
+    $$.v = yy_box(FetchFirstClause{
+      count: $1.v as ValueSpecification
+    })
+  }
+| fetch_first_percentage { $$.v = $1.v }
+
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 23
+fetch_first_percentage:
+  simple_value_specification PERCENT {
+    flag(mut yylex, 'F866')
+    $$.v = yy_box(FetchFirstClause{
+      count:   $1.v as ValueSpecification
+      percent: true
+    })
+  }
 
 offset_row_count:
   simple_value_specification { $$.v = $1.v }

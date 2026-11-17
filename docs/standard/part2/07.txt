@@ -1401,7 +1401,7 @@
 7.17/SR/26.e             definition   - -
 7.17/SR/27               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/SR/28               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
-7.17/SR/29               n/a          - - FETCH FIRST PERCENT (F866)
+7.17/SR/29               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_fetch_percent.sql
 7.17/SR/30               n/a          - - FETCH FIRST WITH TIES (F867)
 7.17/GR/1                n/a          - - WITH (T121)
 7.17/GR/1.a              n/a          - - WITH (T121)
@@ -1472,7 +1472,7 @@
 7.17/GR/7.a              definition   - -
 7.17/GR/7.b              container    - -
 7.17/GR/7.b.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
-7.17/GR/7.b.ii           n/a          - - FETCH FIRST PERCENT (F866)
+7.17/GR/7.b.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_fetch_percent.sql
 7.17/GR/7.b.iii          implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_offset_fetch.sql
 7.17/GR/7.c              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/7.d              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
@@ -1500,7 +1500,7 @@
 7.17/CR/20               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 7.17/CR/21               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 7.17/CR/22               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
-7.17/CR/23               n/a          - - FETCH FIRST PERCENT (F866)
+7.17/CR/23               implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_fetch_percent.sql
 7.17/CR/24               n/a          - - FETCH FIRST WITH TIES (F867)
 7.17/CR/25               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_17_order_by_grouped.sql
 # 7.18, <search or cycle clause>

@@ -90,6 +90,8 @@ row_value_constructor_predicand:
     $$.v = yy_box(RowValueConstructorPredicand($1.v as CommonValueExpression))
   }
 | boolean_predicand {
+    // ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 5
+    flag_if(mut yylex, is_boolean_operation_predicand($1.v as BooleanPredicand), 'T031')
     $$.v = yy_box(RowValueConstructorPredicand($1.v as BooleanPredicand))
   }
 | explicit_row_value_constructor {

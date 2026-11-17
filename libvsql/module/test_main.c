@@ -531,6 +531,18 @@ int main(void) {
   CHECK(padded(table, "CHECKED", 10) && padded(column, "Y", 10));
 
   /*
+   * 23.1 GR 4.h.i.1.A: The table that already exists, and the table that has
+   * a duplicate column.
+   */
+  EXPECT(create_checked_again(sqlstate), "42P07");
+  EXPECT(get_table(sqlstate, catalog, schema, table, column), "00000");
+  CHECK(padded(catalog, ":memory:", 10) && padded(schema, "PUBLIC", 10));
+  CHECK(padded(table, "CHECKED", 10) && padded(column, "", 10));
+  EXPECT(add_checked_column(sqlstate), "42601");
+  EXPECT(get_table(sqlstate, catalog, schema, table, column), "00000");
+  CHECK(padded(table, "CHECKED", 10) && padded(column, "", 10));
+
+  /*
    * An INTEGER host parameter is a long, which can be wider than an SQLINTEGER.
    * All of it is set, whatever it held before and whatever the sign is.
    */

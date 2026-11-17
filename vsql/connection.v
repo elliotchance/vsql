@@ -1205,7 +1205,7 @@ fn (mut conn Connection) register_flagged_virtual_table(create_table string, dat
 		exists := id in catalog.storage.tables || id in catalog.virtual_tables
 		conn.release_read_connection()
 		if exists {
-			return sqlstate_42p07('table', table_name.str()) // duplicate table
+			return sqlstate_42p07_table(table_name) // duplicate table
 		}
 
 		catalog.virtual_tables[id] = VirtualTable{

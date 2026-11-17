@@ -92,7 +92,7 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 		}
 
 		// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 7
-		return sqlstate_42p07('table', table_name.str()) // duplicate table
+		return sqlstate_42p07_table(table_name) // duplicate table
 	}
 
 	stmt.check_limits(table_name)!
@@ -127,7 +127,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	//
 	// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.a
 	if !stmt.table_elements.any(it is Column) {
-		return sqlstate_42601('a table must have at least one column')
+		return sqlstate_42601_table('a table must have at least one column', table_name)
 	}
 
 	mut columns := []Column{}
@@ -142,7 +142,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		match table_element {
 			Column {
 				if table_element.name.sub_entity_name in column_names {
-					return sqlstate_42601('column ${table_element.name.sub_entity_name} is defined more than once')
+					return sqlstate_42601_table('column ${table_element.name.sub_entity_name} is defined more than once', table_name)
 				}
 				column_names[table_element.name.sub_entity_name] = true
 
@@ -167,7 +167,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						columns: columns
 					}.identity_column()
 					{
-						return sqlstate_42601('table ${table_name} has more than one identity column')
+						return sqlstate_42601_table('table ${table_name} has more than one identity column', table_name)
 					}
 					column = Column{
 						...column
@@ -194,7 +194,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					continue
 				}
 				if not_null_names[table_element.column] != '' {
-					return sqlstate_42601('column ${table_element.column} has more than one named NOT NULL')
+					return sqlstate_42601_table('column ${table_element.column} has more than one named NOT NULL', table_name)
 				}
 				not_null_names[table_element.column] = table_constraint_name(table_element.name,
 					table_name)!
@@ -202,14 +202,14 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 			UniqueConstraintDefinition {
 				// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 9
 				if table_element.is_primary_key && primary_key.len > 0 {
-					return sqlstate_42601('only one PRIMARY KEY can be defined')
+					return sqlstate_42601_table('only one PRIMARY KEY can be defined', table_name)
 				}
 
 				constraint := if table_element.is_primary_key { 'PRIMARY KEY' } else { 'UNIQUE' }
 				mut unique_columns := []string{}
 				for column in table_element.columns {
 					if column.sub_entity_name in unique_columns {
-						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in ${constraint}')
+						return sqlstate_42601_table('column ${column.sub_entity_name} appears more than once in ${constraint}', table_name)
 					}
 
 					// Each column must be a column of the table, and only once. A
@@ -218,7 +218,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					//
 					// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 1 and 6.a
 					if !stmt.has_column(column.sub_entity_name) {
-						return sqlstate_42601('unknown column ${column} in ${constraint}')
+						return sqlstate_42601_table('unknown column ${column} in ${constraint}', table_name)
 					}
 					unique_columns << column.sub_entity_name
 				}
@@ -240,10 +240,10 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				mut referencing_columns := []string{}
 				for column in table_element.columns {
 					if column.sub_entity_name in referencing_columns {
-						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in FOREIGN KEY')
+						return sqlstate_42601_table('column ${column.sub_entity_name} appears more than once in FOREIGN KEY', table_name)
 					}
 					if !stmt.has_column(column.sub_entity_name) {
-						return sqlstate_42601('unknown column ${column} in FOREIGN KEY')
+						return sqlstate_42601_table('unknown column ${column} in FOREIGN KEY', table_name)
 					}
 					referencing_columns << column.sub_entity_name
 				}
@@ -256,7 +256,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				mut referenced_columns := []string{}
 				for column in table_element.referenced_columns {
 					if column.sub_entity_name in referenced_columns {
-						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in REFERENCES')
+						return sqlstate_42601_table('column ${column.sub_entity_name} appears more than once in REFERENCES', table_name)
 					}
 					referenced_columns << column.sub_entity_name
 				}
@@ -306,7 +306,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		sorted.sort()
 		set := sorted.map(delimit_identifier(it)).join(', ')
 		if set in column_sets {
-			return sqlstate_42601('UNIQUE (${unique_columns.map(requote_identifier(it)).join(', ')}) has the same columns as another unique constraint')
+			return sqlstate_42601_table('UNIQUE (${unique_columns.map(requote_identifier(it)).join(', ')}) has the same columns as another unique constraint', table_name)
 		}
 		column_sets[set] = true
 	}
@@ -344,7 +344,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 fn table_constraint_name(name Identifier, table_name Identifier) !string {
 	if (name.catalog_name != '' && name.catalog_name != table_name.catalog_name)
 		|| (name.schema_name != '' && name.schema_name != table_name.schema_name) {
-		return sqlstate_42601('constraint ${name} must be in the same schema as table ${table_name}')
+		return sqlstate_42601_table('constraint ${name} must be in the same schema as table ${table_name}', table_name)
 	}
 
 	return name.entity_name

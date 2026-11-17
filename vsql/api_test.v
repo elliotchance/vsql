@@ -1023,7 +1023,15 @@ fn test_condition_table() ! {
 	assert table_of_condition(mut db, 'SELECT * FROM c JOIN s.p USING (z)') == '...Z'
 	assert table_of_condition(mut db, 'SELECT id FROM c GROUP BY z') == '...Z'
 
+	// A duplicate table, or a syntax error in the definition of a table, is of
+	// the table that's defined (or changed).
+	assert table_of_condition(mut db, 'CREATE TABLE s.p (x INT)') == ':memory:.S.P.'
+	assert table_of_condition(mut db, 'CREATE TABLE u (a INT, a INT)') == ':memory:.PUBLIC.U.'
+	assert table_of_condition(mut db, 'ALTER TABLE s.p ADD COLUMN x INT') == ':memory:.S.P.'
+	assert table_of_condition(mut db, 'CREATE TABLE u (a INT, PRIMARY KEY (b))') == ':memory:.PUBLIC.U.'
+
 	// Any other condition doesn't identify a table.
+	assert table_of_condition(mut db, 'CREATE UNIQUE INDEX ci ON c (y)') == 'none'
 	assert table_of_condition(mut db, 'SELECT NEXT VALUE FOR q FROM c') == '...'
 	assert table_of_condition(mut db, 'VALUES NEXT VALUE FOR q') == 'none'
 	assert table_of_condition(mut db, 'SELECT 1 / 0 FROM c') == 'none'

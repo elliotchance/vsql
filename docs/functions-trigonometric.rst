@@ -11,8 +11,6 @@ radians and degrees. They accept any number, which is converted to a
 ``DOUBLE PRECISION`` (so ``SIN(1)`` is the same as ``SIN(1e0)``), and they
 return a ``DOUBLE PRECISION``.
 
-.. _function-acos:
-
 ACOS
 ^^^^
 
@@ -42,8 +40,6 @@ between -1 and 1, otherwise it's a ``22003`` error.
 - **Other databases:** ``ACOS`` in all of them. MySQL and SQLite return
   ``NULL`` for an argument outside of -1 to 1.
 
-.. _function-asin:
-
 ASIN
 ^^^^
 
@@ -70,8 +66,6 @@ between -1 and 1, otherwise it's a ``22003`` error.
 - **Other databases:** ``ASIN`` in all of them. MySQL and SQLite return
   ``NULL`` for an argument outside of -1 to 1.
 
-.. _function-atan:
-
 ATAN
 ^^^^
 
@@ -95,8 +89,6 @@ Inverse (arc) tangent. The result is between -π/2 and π/2, for any argument.
 
 - **SQL standard:** T622 (trigonometric functions).
 - **Other databases:** ``ATAN`` in all of them.
-
-.. _function-atan2:
 
 ATAN2
 ^^^^^
@@ -127,8 +119,6 @@ axis. It's the inverse tangent of ``Y / X``, but the result is between -π and
 - **Other databases:** ``ATAN2(y, x)`` in all of them, except SQL Server, which
   calls it ``ATN2(y, x)``.
 
-.. _function-cos:
-
 COS
 ^^^
 
@@ -153,8 +143,6 @@ Cosine of an angle in radians. The result is between -1 and 1.
 - **SQL standard:** T622 (trigonometric functions).
 - **Other databases:** ``COS`` in all of them.
 
-.. _function-cosh:
-
 COSH
 ^^^^
 
@@ -178,8 +166,6 @@ Hyperbolic cosine. The result is at least 1.
 
   - PostgreSQL, SQLite and Oracle: ``COSH``.
   - MySQL and SQL Server: ``(EXP(x) + EXP(-x)) / 2``.
-
-.. _function-degrees:
 
 DEGREES
 ^^^^^^^
@@ -209,8 +195,6 @@ Converts an angle in radians to degrees. A result that is too large to be a
 - **Other databases:** ``DEGREES`` in all of them, except Oracle, use
   ``x * 180 / ACOS(-1)``.
 
-.. _function-pi:
-
 PI
 ^^
 
@@ -234,8 +218,6 @@ PI
 - **SQL standard:** not standard.
 - **Other databases:** ``PI()`` in all of them, except Oracle, use
   ``ACOS(-1)``.
-
-.. _function-radians:
 
 RADIANS
 ^^^^^^^
@@ -264,8 +246,6 @@ Converts an angle in degrees to radians.
 - **Other databases:** ``RADIANS`` in all of them, except Oracle, use
   ``x * ACOS(-1) / 180``.
 
-.. _function-sin:
-
 SIN
 ^^^
 
@@ -286,8 +266,6 @@ Sine of an angle in radians. The result is between -1 and 1.
 
 - **SQL standard:** T622 (trigonometric functions).
 - **Other databases:** ``SIN`` in all of them.
-
-.. _function-sinh:
 
 SINH
 ^^^^
@@ -313,8 +291,6 @@ Hyperbolic sine.
   - PostgreSQL, SQLite and Oracle: ``SINH``.
   - MySQL and SQL Server: ``(EXP(x) - EXP(-x)) / 2``.
 
-.. _function-tan:
-
 TAN
 ^^^
 
@@ -335,8 +311,6 @@ Tangent of an angle in radians.
 
 - **SQL standard:** T622 (trigonometric functions).
 - **Other databases:** ``TAN`` in all of them.
-
-.. _function-tanh:
 
 TANH
 ^^^^

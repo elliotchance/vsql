@@ -13,8 +13,6 @@ prepared statement has a new time.
 
 The time zone is the time zone of the session.
 
-.. _function-current_date:
-
 CURRENT_DATE
 ^^^^^^^^^^^^
 
@@ -35,8 +33,6 @@ session. There are no parentheses (``CURRENT_DATE()`` is a syntax error).
   - SQL Server: ``CAST(GETDATE() AS DATE)``.
   - Oracle: ``CURRENT_DATE``, but it also has the time, use
     ``TRUNC(CURRENT_DATE)``.
-
-.. _function-current_time:
 
 CURRENT_TIME
 ^^^^^^^^^^^^
@@ -67,8 +63,6 @@ without the time zone.
   - SQL Server: ``CAST(SYSDATETIMEOFFSET() AS TIME)``, but without a time
     zone.
   - Oracle has no ``TIME`` type.
-
-.. _function-current_timestamp:
 
 CURRENT_TIMESTAMP
 ^^^^^^^^^^^^^^^^^
@@ -101,8 +95,6 @@ date and time, but without the time zone.
   - MySQL, SQL Server and SQLite: ``CURRENT_TIMESTAMP``, but without a time
     zone. The SQLite timestamp is a string in UTC. SQL Server has
     ``SYSDATETIMEOFFSET()`` for the time zone.
-
-.. _function-extract:
 
 EXTRACT
 ^^^^^^^
@@ -191,8 +183,6 @@ There are no intervals, so the source can't be an ``INTERVAL``.
   - SQL Server: ``DATEPART(year, d)``.
   - SQLite: ``STRFTIME('%Y', d)``, as a string.
 
-.. _function-localtime:
-
 LOCALTIME
 ^^^^^^^^^
 
@@ -222,8 +212,6 @@ also includes the time zone.
   - SQLite: ``TIME('now', 'localtime')``.
   - Oracle has no ``TIME`` type.
 
-.. _function-localtimestamp:
-
 LOCALTIMESTAMP
 ^^^^^^^^^^^^^^
 
@@ -250,8 +238,6 @@ date and time, but also includes the time zone.
   - PostgreSQL, MySQL and Oracle: ``LOCALTIMESTAMP``.
   - SQL Server: ``SYSDATETIME()``.
   - SQLite: ``DATETIME('now', 'localtime')``.
-
-.. _function-now:
 
 NOW
 ^^^

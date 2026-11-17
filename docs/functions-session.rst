@@ -8,8 +8,6 @@ Session Functions
 Session functions return information about the current connection. There are
 no parentheses after their names.
 
-.. _function-current_catalog:
-
 CURRENT_CATALOG
 ^^^^^^^^^^^^^^^
 
@@ -39,8 +37,6 @@ When using in-memory databases, the ``CURRENT_CATALOG`` will be ``:memory:``.
   - PostgreSQL: ``CURRENT_CATALOG`` or ``CURRENT_DATABASE()``.
   - SQL Server: ``DB_NAME()``.
   - MySQL, SQLite and Oracle have no catalogs.
-
-.. _function-current_schema:
 
 CURRENT_SCHEMA
 ^^^^^^^^^^^^^^

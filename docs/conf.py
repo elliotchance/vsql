@@ -28,7 +28,12 @@ author = 'Elliot Chance'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.autosectionlabel',
 ]
+
+# A heading can be linked to with :ref:`page:Heading`, such as
+# :ref:`functions-arithmetic:ABS`, without a label of its own.
+autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

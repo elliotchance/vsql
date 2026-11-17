@@ -57,315 +57,315 @@ Every function:
      - Category
      - SQL standard
 
-   * - :ref:`ABS <function-abs>`
+   * - :ref:`ABS <functions-arithmetic:ABS>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - T441
-   * - :ref:`ACOS <function-acos>`
+   * - :ref:`ACOS <functions-trigonometric:ACOS>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`ANY <function-any>`
+   * - :ref:`ANY <functions-aggregate:ANY>`
      - :doc:`Aggregate <functions-aggregate>`
      - T031
-   * - :ref:`ANY_VALUE <function-any_value>`
+   * - :ref:`ANY_VALUE <functions-aggregate:ANY_VALUE>`
      - :doc:`Aggregate <functions-aggregate>`
      - T626
-   * - :ref:`ASIN <function-asin>`
+   * - :ref:`ASIN <functions-trigonometric:ASIN>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`ATAN <function-atan>`
+   * - :ref:`ATAN <functions-trigonometric:ATAN>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`ATAN2 <function-atan2>`
+   * - :ref:`ATAN2 <functions-trigonometric:ATAN2>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - Not standard
-   * - :ref:`AVG <function-avg>`
+   * - :ref:`AVG <functions-aggregate:AVG>`
      - :doc:`Aggregate <functions-aggregate>`
      - Core (E091-01)
-   * - :ref:`BTRIM <function-btrim>`
+   * - :ref:`BTRIM <functions-string:BTRIM>`
      - :doc:`String <functions-string>`
      - T056
-   * - :ref:`CBRT <function-cbrt>`
+   * - :ref:`CBRT <functions-exponent-and-logarithm:CBRT>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - Not standard
-   * - :ref:`CEIL <function-ceil>`
+   * - :ref:`CEIL <functions-rounding:CEIL>`
      - :doc:`Rounding <functions-rounding>`
      - T621
-   * - :ref:`CEILING <function-ceiling>`
+   * - :ref:`CEILING <functions-rounding:CEILING>`
      - :doc:`Rounding <functions-rounding>`
      - T621
-   * - :ref:`CHARACTER_LENGTH <function-character_length>`
+   * - :ref:`CHARACTER_LENGTH <functions-string:CHARACTER_LENGTH>`
      - :doc:`String <functions-string>`
      - Core (E021-04)
-   * - :ref:`CHAR_LENGTH <function-char_length>`
+   * - :ref:`CHAR_LENGTH <functions-string:CHAR_LENGTH>`
      - :doc:`String <functions-string>`
      - Core (E021-04)
-   * - :ref:`CHR <function-chr>`
+   * - :ref:`CHR <functions-string:CHR>`
      - :doc:`String <functions-string>`
      - Not standard
-   * - :ref:`COALESCE <function-coalesce>`
+   * - :ref:`COALESCE <functions-conditional:COALESCE>`
      - :doc:`Conditional <functions-conditional>`
      - Core (F261-04)
-   * - :ref:`CORR <function-corr>`
+   * - :ref:`CORR <functions-statistical:CORR>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`COS <function-cos>`
+   * - :ref:`COS <functions-trigonometric:COS>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`COSH <function-cosh>`
+   * - :ref:`COSH <functions-trigonometric:COSH>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`COUNT <function-count>`
+   * - :ref:`COUNT <functions-aggregate:COUNT>`
      - :doc:`Aggregate <functions-aggregate>`
      - Core (E091-02)
-   * - :ref:`COVAR_POP <function-covar_pop>`
+   * - :ref:`COVAR_POP <functions-statistical:COVAR_POP>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`COVAR_SAMP <function-covar_samp>`
+   * - :ref:`COVAR_SAMP <functions-statistical:COVAR_SAMP>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`CUME_DIST <function-cume_dist>`
+   * - :ref:`CUME_DIST <functions-aggregate:CUME_DIST>`
      - :doc:`Aggregate <functions-aggregate>`
      - T612
-   * - :ref:`CURRENT_CATALOG <function-current_catalog>`
+   * - :ref:`CURRENT_CATALOG <functions-session:CURRENT_CATALOG>`
      - :doc:`Session <functions-session>`
      - F762
-   * - :ref:`CURRENT_DATE <function-current_date>`
+   * - :ref:`CURRENT_DATE <functions-date-and-time:CURRENT_DATE>`
      - :doc:`Date and Time <functions-date-and-time>`
      - Core (F051-06)
-   * - :ref:`CURRENT_SCHEMA <function-current_schema>`
+   * - :ref:`CURRENT_SCHEMA <functions-session:CURRENT_SCHEMA>`
      - :doc:`Session <functions-session>`
      - F763
-   * - :ref:`CURRENT_TIME <function-current_time>`
+   * - :ref:`CURRENT_TIME <functions-date-and-time:CURRENT_TIME>`
      - :doc:`Date and Time <functions-date-and-time>`
      - F411
-   * - :ref:`CURRENT_TIMESTAMP <function-current_timestamp>`
+   * - :ref:`CURRENT_TIMESTAMP <functions-date-and-time:CURRENT_TIMESTAMP>`
      - :doc:`Date and Time <functions-date-and-time>`
      - F411
-   * - :ref:`DEGREES <function-degrees>`
+   * - :ref:`DEGREES <functions-trigonometric:DEGREES>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - Not standard
-   * - :ref:`DENSE_RANK <function-dense_rank>`
+   * - :ref:`DENSE_RANK <functions-aggregate:DENSE_RANK>`
      - :doc:`Aggregate <functions-aggregate>`
      - T612
-   * - :ref:`ERF <function-erf>`
+   * - :ref:`ERF <functions-error-and-gamma:ERF>`
      - :doc:`Error and Gamma <functions-error-and-gamma>`
      - Not standard
-   * - :ref:`ERFC <function-erfc>`
+   * - :ref:`ERFC <functions-error-and-gamma:ERFC>`
      - :doc:`Error and Gamma <functions-error-and-gamma>`
      - Not standard
-   * - :ref:`EVERY <function-every>`
+   * - :ref:`EVERY <functions-aggregate:EVERY>`
      - :doc:`Aggregate <functions-aggregate>`
      - T031
-   * - :ref:`EXP <function-exp>`
+   * - :ref:`EXP <functions-exponent-and-logarithm:EXP>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
-   * - :ref:`EXTRACT <function-extract>`
+   * - :ref:`EXTRACT <functions-date-and-time:EXTRACT>`
      - :doc:`Date and Time <functions-date-and-time>`
      - F052
-   * - :ref:`FACTORIAL <function-factorial>`
+   * - :ref:`FACTORIAL <functions-arithmetic:FACTORIAL>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - Not standard
-   * - :ref:`FLOOR <function-floor>`
+   * - :ref:`FLOOR <functions-rounding:FLOOR>`
      - :doc:`Rounding <functions-rounding>`
      - T621
-   * - :ref:`GAMMA <function-gamma>`
+   * - :ref:`GAMMA <functions-error-and-gamma:GAMMA>`
      - :doc:`Error and Gamma <functions-error-and-gamma>`
      - Not standard
-   * - :ref:`GCD <function-gcd>`
+   * - :ref:`GCD <functions-arithmetic:GCD>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - Not standard
-   * - :ref:`GREATEST <function-greatest>`
+   * - :ref:`GREATEST <functions-conditional:GREATEST>`
      - :doc:`Conditional <functions-conditional>`
      - T054
-   * - :ref:`INITCAP <function-initcap>`
+   * - :ref:`INITCAP <functions-string:INITCAP>`
      - :doc:`String <functions-string>`
      - Not standard
-   * - :ref:`LCM <function-lcm>`
+   * - :ref:`LCM <functions-arithmetic:LCM>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - Not standard
-   * - :ref:`LEAST <function-least>`
+   * - :ref:`LEAST <functions-conditional:LEAST>`
      - :doc:`Conditional <functions-conditional>`
      - T054
-   * - :ref:`LGAMMA <function-lgamma>`
+   * - :ref:`LGAMMA <functions-error-and-gamma:LGAMMA>`
      - :doc:`Error and Gamma <functions-error-and-gamma>`
      - Not standard
-   * - :ref:`LISTAGG <function-listagg>`
+   * - :ref:`LISTAGG <functions-aggregate:LISTAGG>`
      - :doc:`Aggregate <functions-aggregate>`
      - T625
-   * - :ref:`LN <function-ln>`
+   * - :ref:`LN <functions-exponent-and-logarithm:LN>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
-   * - :ref:`LOCALTIME <function-localtime>`
+   * - :ref:`LOCALTIME <functions-date-and-time:LOCALTIME>`
      - :doc:`Date and Time <functions-date-and-time>`
      - Core (F051-07)
-   * - :ref:`LOCALTIMESTAMP <function-localtimestamp>`
+   * - :ref:`LOCALTIMESTAMP <functions-date-and-time:LOCALTIMESTAMP>`
      - :doc:`Date and Time <functions-date-and-time>`
      - Core (F051-08)
-   * - :ref:`LOG <function-log>`
+   * - :ref:`LOG <functions-exponent-and-logarithm:LOG>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T623
-   * - :ref:`LOG10 <function-log10>`
+   * - :ref:`LOG10 <functions-exponent-and-logarithm:LOG10>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T624
-   * - :ref:`LOWER <function-lower>`
+   * - :ref:`LOWER <functions-string:LOWER>`
      - :doc:`String <functions-string>`
      - Core (E021-08)
-   * - :ref:`LPAD <function-lpad>`
+   * - :ref:`LPAD <functions-string:LPAD>`
      - :doc:`String <functions-string>`
      - T055
-   * - :ref:`LTRIM <function-ltrim>`
+   * - :ref:`LTRIM <functions-string:LTRIM>`
      - :doc:`String <functions-string>`
      - T056
-   * - :ref:`MAX <function-max>`
+   * - :ref:`MAX <functions-aggregate:MAX>`
      - :doc:`Aggregate <functions-aggregate>`
      - Core (E091-03)
-   * - :ref:`MIN <function-min>`
+   * - :ref:`MIN <functions-aggregate:MIN>`
      - :doc:`Aggregate <functions-aggregate>`
      - Core (E091-04)
-   * - :ref:`MOD <function-mod>`
+   * - :ref:`MOD <functions-arithmetic:MOD>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - T441
-   * - :ref:`MODE <function-mode>`
+   * - :ref:`MODE <functions-aggregate:MODE>`
      - :doc:`Aggregate <functions-aggregate>`
      - Not standard
-   * - :ref:`NOW <function-now>`
+   * - :ref:`NOW <functions-date-and-time:NOW>`
      - :doc:`Date and Time <functions-date-and-time>`
      - Not standard
-   * - :ref:`NULLIF <function-nullif>`
+   * - :ref:`NULLIF <functions-conditional:NULLIF>`
      - :doc:`Conditional <functions-conditional>`
      - Core (F261-03)
-   * - :ref:`OCTET_LENGTH <function-octet_length>`
+   * - :ref:`OCTET_LENGTH <functions-string:OCTET_LENGTH>`
      - :doc:`String <functions-string>`
      - Core (E021-05)
-   * - :ref:`OVERLAY <function-overlay>`
+   * - :ref:`OVERLAY <functions-string:OVERLAY>`
      - :doc:`String <functions-string>`
      - T312
-   * - :ref:`PERCENTILE_CONT <function-percentile_cont>`
+   * - :ref:`PERCENTILE_CONT <functions-aggregate:PERCENTILE_CONT>`
      - :doc:`Aggregate <functions-aggregate>`
      - T612
-   * - :ref:`PERCENTILE_DISC <function-percentile_disc>`
+   * - :ref:`PERCENTILE_DISC <functions-aggregate:PERCENTILE_DISC>`
      - :doc:`Aggregate <functions-aggregate>`
      - T612
-   * - :ref:`PERCENT_RANK <function-percent_rank>`
+   * - :ref:`PERCENT_RANK <functions-aggregate:PERCENT_RANK>`
      - :doc:`Aggregate <functions-aggregate>`
      - T612
-   * - :ref:`PI <function-pi>`
+   * - :ref:`PI <functions-trigonometric:PI>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - Not standard
-   * - :ref:`POSITION <function-position>`
+   * - :ref:`POSITION <functions-string:POSITION>`
      - :doc:`String <functions-string>`
      - Core (E021-11)
-   * - :ref:`POWER <function-power>`
+   * - :ref:`POWER <functions-exponent-and-logarithm:POWER>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
-   * - :ref:`PRODUCT <function-product>`
+   * - :ref:`PRODUCT <functions-aggregate:PRODUCT>`
      - :doc:`Aggregate <functions-aggregate>`
      - Not standard
-   * - :ref:`RADIANS <function-radians>`
+   * - :ref:`RADIANS <functions-trigonometric:RADIANS>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - Not standard
-   * - :ref:`RANDOM <function-random>`
+   * - :ref:`RANDOM <functions-random:RANDOM>`
      - :doc:`Random <functions-random>`
      - Not standard
-   * - :ref:`RANK <function-rank>`
+   * - :ref:`RANK <functions-aggregate:RANK>`
      - :doc:`Aggregate <functions-aggregate>`
      - T612
-   * - :ref:`REGR_AVGX <function-regr_avgx>`
+   * - :ref:`REGR_AVGX <functions-statistical:REGR_AVGX>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_AVGY <function-regr_avgy>`
+   * - :ref:`REGR_AVGY <functions-statistical:REGR_AVGY>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_COUNT <function-regr_count>`
+   * - :ref:`REGR_COUNT <functions-statistical:REGR_COUNT>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_INTERCEPT <function-regr_intercept>`
+   * - :ref:`REGR_INTERCEPT <functions-statistical:REGR_INTERCEPT>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_R2 <function-regr_r2>`
+   * - :ref:`REGR_R2 <functions-statistical:REGR_R2>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_SLOPE <function-regr_slope>`
+   * - :ref:`REGR_SLOPE <functions-statistical:REGR_SLOPE>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_SXX <function-regr_sxx>`
+   * - :ref:`REGR_SXX <functions-statistical:REGR_SXX>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_SXY <function-regr_sxy>`
+   * - :ref:`REGR_SXY <functions-statistical:REGR_SXY>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REGR_SYY <function-regr_syy>`
+   * - :ref:`REGR_SYY <functions-statistical:REGR_SYY>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`REPEAT <function-repeat>`
+   * - :ref:`REPEAT <functions-string:REPEAT>`
      - :doc:`String <functions-string>`
      - Not standard
-   * - :ref:`REPLACE <function-replace>`
+   * - :ref:`REPLACE <functions-string:REPLACE>`
      - :doc:`String <functions-string>`
      - Not standard
-   * - :ref:`ROUND <function-round>`
+   * - :ref:`ROUND <functions-rounding:ROUND>`
      - :doc:`Rounding <functions-rounding>`
      - Not standard
-   * - :ref:`RPAD <function-rpad>`
+   * - :ref:`RPAD <functions-string:RPAD>`
      - :doc:`String <functions-string>`
      - T055
-   * - :ref:`RTRIM <function-rtrim>`
+   * - :ref:`RTRIM <functions-string:RTRIM>`
      - :doc:`String <functions-string>`
      - T056
-   * - :ref:`SIGN <function-sign>`
+   * - :ref:`SIGN <functions-arithmetic:SIGN>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - Not standard
-   * - :ref:`SIN <function-sin>`
+   * - :ref:`SIN <functions-trigonometric:SIN>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`SINH <function-sinh>`
+   * - :ref:`SINH <functions-trigonometric:SINH>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`SOME <function-some>`
+   * - :ref:`SOME <functions-aggregate:SOME>`
      - :doc:`Aggregate <functions-aggregate>`
      - T031
-   * - :ref:`SPLIT_PART <function-split_part>`
+   * - :ref:`SPLIT_PART <functions-string:SPLIT_PART>`
      - :doc:`String <functions-string>`
      - Not standard
-   * - :ref:`SQRT <function-sqrt>`
+   * - :ref:`SQRT <functions-exponent-and-logarithm:SQRT>`
      - :doc:`Exponent and Logarithm <functions-exponent-and-logarithm>`
      - T621
-   * - :ref:`STDDEV_POP <function-stddev_pop>`
+   * - :ref:`STDDEV_POP <functions-statistical:STDDEV_POP>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`STDDEV_SAMP <function-stddev_samp>`
+   * - :ref:`STDDEV_SAMP <functions-statistical:STDDEV_SAMP>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`SUBSTRING <function-substring>`
+   * - :ref:`SUBSTRING <functions-string:SUBSTRING>`
      - :doc:`String <functions-string>`
      - Core (E021-06), T581
-   * - :ref:`SUM <function-sum>`
+   * - :ref:`SUM <functions-aggregate:SUM>`
      - :doc:`Aggregate <functions-aggregate>`
      - Core (E091-05)
-   * - :ref:`TAN <function-tan>`
+   * - :ref:`TAN <functions-trigonometric:TAN>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`TANH <function-tanh>`
+   * - :ref:`TANH <functions-trigonometric:TANH>`
      - :doc:`Trigonometric <functions-trigonometric>`
      - T622
-   * - :ref:`TRIM <function-trim>`
+   * - :ref:`TRIM <functions-string:TRIM>`
      - :doc:`String <functions-string>`
      - Core (E021-09)
-   * - :ref:`TRUNC <function-trunc>`
+   * - :ref:`TRUNC <functions-rounding:TRUNC>`
      - :doc:`Rounding <functions-rounding>`
      - Not standard
-   * - :ref:`UNICODE <function-unicode>`
+   * - :ref:`UNICODE <functions-string:UNICODE>`
      - :doc:`String <functions-string>`
      - Not standard
-   * - :ref:`UPPER <function-upper>`
+   * - :ref:`UPPER <functions-string:UPPER>`
      - :doc:`String <functions-string>`
      - Core (E021-08)
-   * - :ref:`VAR_POP <function-var_pop>`
+   * - :ref:`VAR_POP <functions-statistical:VAR_POP>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`VAR_SAMP <function-var_samp>`
+   * - :ref:`VAR_SAMP <functions-statistical:VAR_SAMP>`
      - :doc:`Statistical <functions-statistical>`
      - T621
-   * - :ref:`WIDTH_BUCKET <function-width_bucket>`
+   * - :ref:`WIDTH_BUCKET <functions-arithmetic:WIDTH_BUCKET>`
      - :doc:`Arithmetic <functions-arithmetic>`
      - T612

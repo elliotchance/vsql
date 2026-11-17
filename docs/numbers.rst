@@ -19,8 +19,8 @@ representations can give very close approximations for most numbers we use
 day-to-day the accuracy cannot be guaranteed in storage or string
 representation.
 
-Advantages and Disadvantages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Advantages and Disadvantages of Approximate Numbers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Advantages** over exact numbers:
 
@@ -50,8 +50,8 @@ numbers that are converted from base 10 (decimal).
 ``0.1e0 + 0.2e0`` is shown as ``0.3e0`` which is very close but not exactly
 equal to the value.
 
-Literals and Formatting
-^^^^^^^^^^^^^^^^^^^^^^^
+Literals and Formatting of Approximate Numbers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Literals for approximate numbers will always be ``DOUBLE PRECISION`` and must be
 provided in scientific notation, in the form:
@@ -123,8 +123,8 @@ of digits after the decimal point), written as ``NUMERIC(precision, scale)``.
 For example, ``NUMERIC(5, 2)`` can hold numbers from ``-999.99`` to
 ``999.99``.
 
-Advantages and Disadvantages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Advantages and Disadvantages of Exact Numbers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Advantages** over approximate numbers:
 
@@ -146,8 +146,8 @@ numbers because the operations are not natively supported by the CPU.
 3. Can only represent numbers in the given precision, any extra precision will
 be truncated by operations.
 
-Literals and Formatting
-^^^^^^^^^^^^^^^^^^^^^^^
+Literals and Formatting of Exact Numbers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SQL type of an exact number depends on its form and size:
 

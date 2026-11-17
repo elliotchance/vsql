@@ -10,8 +10,6 @@ distributions (see :doc:`spreadsheet-functions` for some of them). They accept
 any number, which is converted to a ``DOUBLE PRECISION``, and they return a
 ``DOUBLE PRECISION``.
 
-.. _function-erf:
-
 ERF
 ^^^
 
@@ -46,8 +44,6 @@ SQRT(2)))``.
   - PostgreSQL: ``ERF``.
   - MySQL, SQLite, SQL Server and Oracle: none.
 
-.. _function-erfc:
-
 ERFC
 ^^^^
 
@@ -81,8 +77,6 @@ very small.
 
   - PostgreSQL: ``ERFC``.
   - MySQL, SQLite, SQL Server and Oracle: none.
-
-.. _function-gamma:
 
 GAMMA
 ^^^^^
@@ -123,8 +117,6 @@ error (numeric value out of range), as is a result that is too large, such as
 
   - PostgreSQL: ``GAMMA``.
   - MySQL, SQLite, SQL Server and Oracle: none.
-
-.. _function-lgamma:
 
 LGAMMA
 ^^^^^^

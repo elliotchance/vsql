@@ -4,11 +4,29 @@
 //
 // Specify a table derived from a Cartesian product, inner join, or outer join.
 //
-// There's no CROSS (F407), NATURAL (F405) or FULL (F406), or join correlation
-// name (F404).
+// There's no NATURAL (F405) or FULL (F406), or join correlation name (F404).
 
 joined_table:
-  qualified_join { $$.v = $1.v }
+  cross_join { $$.v = $1.v }
+| qualified_join { $$.v = $1.v }
+
+// A CROSS JOIN is the same as a comma in FROM, so it's an inner join on TRUE.
+// The right side can't be a joined table without parentheses.
+//
+// ISO/IEC 9075-2:2023, 7.10, <joined table>, General Rules, 1.a
+cross_join:
+  table_reference CROSS JOIN table_factor {
+    // ISO/IEC 9075-2:2023, 7.10, <joined table>, Conformance Rules, 1
+    flag(mut yylex, 'F407')
+    $$.v = yy_box(new_cross_join($1.v as TableReference,
+      TableReference($4.v as TablePrimary)))
+  }
+| table_reference CROSS JOIN parenthesized_joined_table {
+    // ISO/IEC 9075-2:2023, 7.10, <joined table>, Conformance Rules, 1
+    flag(mut yylex, 'F407')
+    $$.v = yy_box(new_cross_join($1.v as TableReference,
+      TableReference($4.v as QualifiedJoin)))
+  }
 
 join_specification:
   join_condition { $$.v = yy_box(JoinSpecification($1.v as BooleanValueExpression)) }

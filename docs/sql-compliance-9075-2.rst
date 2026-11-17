@@ -809,7 +809,7 @@ Optional Features
    * - ❌ **F394**
      - **Optional normal form specification**
 
-   * - ❌ **F401**
+   * - ⭕ **F401**
      - **Extended joined table**
 
    * - ❌ **F402**
@@ -827,7 +827,7 @@ Optional Features
    * - ❌ **F406**
      - **FULL OUTER JOIN**
 
-   * - ❌ **F407**
+   * - ✅ **F407**
      - **CROSS JOIN**
 
    * - ⭕ **F411**

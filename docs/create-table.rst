@@ -589,10 +589,17 @@ insert a row before the row that it references.
   always checked immediately.
 
 Outside of a transaction, each statement is its own transaction, so a deferred
-constraint is still checked when the statement finishes. A ``UNIQUE``,
-``FOREIGN KEY`` or ``CHECK`` can be deferred, but a ``PRIMARY KEY`` or ``NOT
-NULL`` can't (an error ``0A000``). The referential actions of a ``FOREIGN KEY``
-(such as ``ON DELETE CASCADE``) are never deferred.
+constraint is still checked when the statement finishes. Any constraint can
+be deferred. The referential actions of a ``FOREIGN KEY`` (such as
+``ON DELETE CASCADE``) are never deferred.
+
+A ``DEFERRABLE PRIMARY KEY`` works like a ``UNIQUE``: the rows are stored in
+the order they were inserted (rather than by the ``PRIMARY KEY``), so finding a
+row by its ``PRIMARY KEY`` uses the index of the constraint. Its columns are
+still ``NOT NULL`` straight away, and a ``FOREIGN KEY`` can't reference it (an
+error ``42830``). A column with a ``DEFERRABLE NOT NULL`` is nullable (see
+``IS_NULLABLE`` in :doc:`information-schema`), and the ``NOT NULL`` is checked
+like a ``CHECK``, but it's still an error ``23502``.
 
 A deferred constraint is checked against every row of its table, rather than
 just the rows that were changed. ``NOT ENFORCED`` is not supported.

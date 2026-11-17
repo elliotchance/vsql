@@ -622,7 +622,7 @@ fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 
 	mut rows := [][]Value{}
 	for column in table.columns {
-		if column.not_null {
+		if table.has_not_null(column) {
 			rows << check_constraints_view_row(catalog_name, table, table.not_null_names[column.name.sub_entity_name],
 				'${requote_identifier(column.name.sub_entity_name)} IS NOT NULL')
 		}
@@ -659,7 +659,7 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	mut rows := [][]Value{}
 	if table.primary_key.len > 0 {
 		rows << table_constraints_view_row(catalog_name, table, table.primary_key_name,
-			'PRIMARY KEY', ConstraintCharacteristics{})
+			'PRIMARY KEY', table.primary_key_characteristics)
 	}
 	for constraint in table.unique_constraints {
 		rows << table_constraints_view_row(catalog_name, table, constraint.name, 'UNIQUE',
@@ -670,9 +670,9 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 			key.characteristics)
 	}
 	for column in table.columns {
-		if column.not_null {
+		if table.has_not_null(column) {
 			rows << table_constraints_view_row(catalog_name, table, table.not_null_names[column.name.sub_entity_name],
-				'CHECK', ConstraintCharacteristics{})
+				'CHECK', table.deferrable_not_nulls[column.name.sub_entity_name])
 		}
 	}
 	for constraint in table.check_constraints {

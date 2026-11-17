@@ -47,17 +47,21 @@ fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog Ca
 			}
 			mut not_null_names := table.not_null_names.clone()
 			not_null_names.delete(column.name.sub_entity_name)
+			mut deferrable_not_nulls := table.deferrable_not_nulls.clone()
+			deferrable_not_nulls.delete(column.name.sub_entity_name)
 			new_table = Table{
 				...table
-				columns:        columns
-				not_null_names: not_null_names
+				columns:              columns
+				not_null_names:       not_null_names
+				deferrable_not_nulls: deferrable_not_nulls
 			}
 		}
 		.primary_key {
 			new_table = Table{
 				...table
-				primary_key:      []string{}
-				primary_key_name: ''
+				primary_key:                 []string{}
+				primary_key_name:            ''
+				primary_key_characteristics: ConstraintCharacteristics{}
 			}
 		}
 		.unique {

@@ -56,8 +56,8 @@ fn best_key_operation(factors []BooleanTest, base_table Table, table Table, valu
 
 	mut best := ?&KeyOperation(none)
 	mut best_score := 0
-	if base_table.primary_key.len > 0 {
-		conditions := key_conditions_of(factors, base_table, table, base_table.primary_key,
+	if base_table.key_columns().len > 0 {
+		conditions := key_conditions_of(factors, base_table, table, base_table.key_columns(),
 			value_tables, params, mut conn)
 		best_score = key_score(conditions)
 		if best_score > 0 {

@@ -388,6 +388,8 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
 	mut primary_key_name := ''
+	mut primary_key_characteristics := ConstraintCharacteristics{}
+	mut deferrable_not_nulls := map[string]ConstraintCharacteristics{}
 	mut not_null_names := map[string]string{}
 	mut check_constraints := []CheckConstraintDefinition{}
 	mut unique_constraints := []UniqueConstraint{}
@@ -444,7 +446,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 			}
 			NotNullConstraint {
-				table_element.characteristics.check_not_deferrable('NOT NULL')!
+				if table_element.characteristics.is_deferrable() {
+					deferrable_not_nulls[table_element.column] = table_element.characteristics
+				}
 				if table_element.name.entity_name == '' {
 					continue
 				}
@@ -480,11 +484,18 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 
 				name := table_constraint_name(table_element.name, table_name)!
 				if table_element.is_primary_key {
-					table_element.characteristics.check_not_deferrable('PRIMARY KEY')!
 					primary_key = unique_columns.clone()
 					primary_key_name = name
+					if table_element.characteristics.is_deferrable() {
+						primary_key_characteristics = table_element.characteristics
+					}
 				} else {
-					unique_constraints << UniqueConstraint{name, unique_columns, table_element.characteristics, table_element.nulls_not_distinct}
+					unique_constraints << UniqueConstraint{
+						name:               name
+						columns:            unique_columns
+						characteristics:    table_element.characteristics
+						nulls_not_distinct: table_element.nulls_not_distinct
+					}
 				}
 			}
 			LikeClause {
@@ -577,28 +588,32 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		column_sets[set] = true
 	}
 
-	// Columns in the PRIMARY KEY are implicitly NOT NULL.
+	// Columns in the PRIMARY KEY are implicitly NOT NULL, even when the
+	// PRIMARY KEY is DEFERRABLE, because the column is known not nullable. Any
+	// other column with a DEFERRABLE NOT NULL is nullable (see
+	// Table.deferrable_not_nulls).
 	//
 	// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 8
 	for i, column in columns {
-		if column.name.sub_entity_name in primary_key {
-			columns[i] = Column{
-				...column
-				not_null: true
-			}
+		columns[i] = Column{
+			...column
+			not_null: column.name.sub_entity_name in primary_key
+				|| (column.not_null && column.name.sub_entity_name !in deferrable_not_nulls)
 		}
 	}
 
 	return Table{
-		tid:                tid
-		name:               table_name
-		columns:            columns
-		primary_key:        primary_key
-		primary_key_name:   primary_key_name
-		not_null_names:     not_null_names
-		check_constraints:  check_constraints
-		unique_constraints: unique_constraints
-		foreign_keys:       foreign_keys
+		tid:                         tid
+		name:                        table_name
+		columns:                     columns
+		primary_key:                 primary_key
+		primary_key_name:            primary_key_name
+		primary_key_characteristics: primary_key_characteristics
+		not_null_names:              not_null_names
+		deferrable_not_nulls:        deferrable_not_nulls
+		check_constraints:           check_constraints
+		unique_constraints:          unique_constraints
+		foreign_keys:                foreign_keys
 	}
 }
 

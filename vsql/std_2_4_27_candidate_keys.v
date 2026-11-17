@@ -67,7 +67,7 @@ fn set_result_key(mut columns []Column, body QuerySpecification, tables map[stri
 		}
 	}
 
-	mut key := key_counterparts(base, base.primary_key, sources)
+	mut key := key_counterparts(base, base.key_columns(), sources)
 	mut key_type := 1
 	if key.len == 0 {
 		key_type = 2

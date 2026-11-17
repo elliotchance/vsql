@@ -67,7 +67,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	// deleted and written again (like an UPDATE).
 	mut moved := []Row{}
 	mut updated := []Row{}
-	if !value.is_null || column.not_null || column.generated != none {
+	if !value.is_null || new_table.has_not_null(column) || column.generated != none {
 		for row in catalog.storage.read_rows(table.name)! {
 			if sequence := identity_sequence {
 				next_sequence := sequence.next()!

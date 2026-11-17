@@ -144,15 +144,18 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 	columns := table.columns.filter(it.name.sub_entity_name != name)
 	mut not_null_names := table.not_null_names.clone()
 	not_null_names.delete(name)
+	mut deferrable_not_nulls := table.deferrable_not_nulls.clone()
+	deferrable_not_nulls.delete(name)
 	new_table := Table{
 		...table
-		columns:            columns
-		primary_key:        primary_key
-		primary_key_name:   primary_key_name
-		not_null_names:     not_null_names
-		unique_constraints: unique_constraints
-		check_constraints:  check_constraints
-		foreign_keys:       foreign_keys
+		columns:              columns
+		primary_key:          primary_key
+		primary_key_name:     primary_key_name
+		deferrable_not_nulls: deferrable_not_nulls
+		not_null_names:       not_null_names
+		unique_constraints:   unique_constraints
+		check_constraints:    check_constraints
+		foreign_keys:         foreign_keys
 	}
 
 	for referencing in referencing_tables {

@@ -1182,7 +1182,7 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 // ID. Writes hold an exclusive lock on the file, so the header we have is
 // current, and flush saves the new value.
 fn (mut f Storage) assign_row_id(mut r Row, t Table) {
-	if t.primary_key.len > 0 || r.id.len > 0 {
+	if t.key_columns().len > 0 || r.id.len > 0 {
 		return
 	}
 

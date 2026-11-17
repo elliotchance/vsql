@@ -1402,8 +1402,16 @@ struct Table
    	unique_constraints []UniqueConstraint
    	// The name of the PRIMARY KEY, if there is one.
    	primary_key_name string
+   	// The <constraint characteristics> of a DEFERRABLE PRIMARY KEY (see
+   	// key_columns). They're empty for any other PRIMARY KEY.
+   	primary_key_characteristics ConstraintCharacteristics
    	// The names of the NOT NULL constraints, keyed by the column name.
    	not_null_names map[string]string
+   	// The <constraint characteristics> of each DEFERRABLE NOT NULL, keyed by
+   	// the column name. Its column isn't Column.not_null (unless it's in the
+   	// PRIMARY KEY), so it's stored and typed like a nullable column, and the
+   	// constraint is checked like a CHECK (see CheckConstraints.verify).
+   	deferrable_not_nulls map[string]ConstraintCharacteristics
    	// The FOREIGN KEY constraints of the table, in the order they were defined.
    	// A REFERENCES on a column is the same as a FOREIGN KEY on the table.
    	foreign_keys []ForeignKey

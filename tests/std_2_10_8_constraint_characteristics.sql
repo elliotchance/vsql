@@ -12,16 +12,10 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1
 
--- # A PRIMARY KEY or NOT NULL can't be deferred.
-CREATE TABLE t (x INT PRIMARY KEY DEFERRABLE);
-CREATE TABLE t (x INT, PRIMARY KEY (x) DEFERRABLE INITIALLY IMMEDIATE);
-CREATE TABLE t (x INT NOT NULL DEFERRABLE);
-CREATE TABLE t (x INT CONSTRAINT nn NOT NULL DEFERRABLE);
+-- # A PRIMARY KEY and NOT NULL can have characteristics too (see
+-- # std_2_10_8_deferrable_primary_key.sql and
+-- # std_2_10_8_deferrable_not_null.sql).
 CREATE TABLE t (x INT NOT NULL NOT DEFERRABLE PRIMARY KEY INITIALLY IMMEDIATE);
--- error 0A000: PRIMARY KEY cannot be DEFERRABLE
--- error 0A000: PRIMARY KEY cannot be DEFERRABLE
--- error 0A000: NOT NULL cannot be DEFERRABLE
--- error 0A000: NOT NULL cannot be DEFERRABLE
 -- msg: CREATE TABLE 1
 
 -- # The characteristics must follow a constraint, and DEFERRABLE (or NOT

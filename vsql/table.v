@@ -120,8 +120,16 @@ mut:
 	unique_constraints []UniqueConstraint
 	// The name of the PRIMARY KEY, if there is one.
 	primary_key_name string
+	// The <constraint characteristics> of a DEFERRABLE PRIMARY KEY (see
+	// key_columns). They're empty for any other PRIMARY KEY.
+	primary_key_characteristics ConstraintCharacteristics
 	// The names of the NOT NULL constraints, keyed by the column name.
 	not_null_names map[string]string
+	// The <constraint characteristics> of each DEFERRABLE NOT NULL, keyed by
+	// the column name. Its column isn't Column.not_null (unless it's in the
+	// PRIMARY KEY), so it's stored and typed like a nullable column, and the
+	// constraint is checked like a CHECK (see CheckConstraints.verify).
+	deferrable_not_nulls map[string]ConstraintCharacteristics
 	// The FOREIGN KEY constraints of the table, in the order they were defined.
 	// A REFERENCES on a column is the same as a FOREIGN KEY on the table.
 	foreign_keys []ForeignKey
@@ -199,14 +207,14 @@ fn (t Table) bytes() []u8 {
 		if generated := col.generated {
 			element += ' ${*generated}'
 		}
-		if col.not_null {
-			element += ' ${constraint_name_definition(t.not_null_names[col.name.sub_entity_name], constraint_name(t, 'NOT_NULL', i))}NOT NULL'
+		if t.has_not_null(col) {
+			element += ' ${constraint_name_definition(t.not_null_names[col.name.sub_entity_name], constraint_name(t, 'NOT_NULL', i))}NOT NULL${t.deferrable_not_nulls[col.name.sub_entity_name]}'
 		}
 		elements << '  ${element}'
 	}
 
 	if t.primary_key.len > 0 {
-		elements << '  ${constraint_name_definition(t.primary_key_name, constraint_name(t, 'PRIMARY_KEY', 0))}PRIMARY KEY (${t.primary_key.map(delimit_identifier(it)).join(', ')})'
+		elements << '  ${constraint_name_definition(t.primary_key_name, constraint_name(t, 'PRIMARY_KEY', 0))}PRIMARY KEY (${t.primary_key.map(delimit_identifier(it)).join(', ')})${t.primary_key_characteristics}'
 	}
 
 	for i, constraint in t.unique_constraints {
@@ -244,24 +252,26 @@ fn (t Table) elements() []TableElement {
 	mut elements := []TableElement{}
 	for column in t.columns {
 		elements << column
-		if column.not_null {
+		if t.has_not_null(column) {
 			elements << NotNullConstraint{
-				name:   Identifier{
+				name:            Identifier{
 					entity_name: t.not_null_names[column.name.sub_entity_name]
 				}
-				column: column.name.sub_entity_name
+				column:          column.name.sub_entity_name
+				characteristics: t.deferrable_not_nulls[column.name.sub_entity_name]
 			}
 		}
 	}
 	if t.primary_key.len > 0 {
 		elements << UniqueConstraintDefinition{
-			name:           Identifier{
+			name:            Identifier{
 				entity_name: t.primary_key_name
 			}
-			columns:        t.primary_key.map(Identifier{
+			columns:         t.primary_key.map(Identifier{
 				sub_entity_name: it
 			})
-			is_primary_key: true
+			is_primary_key:  true
+			characteristics: t.primary_key_characteristics
 		}
 	}
 	for constraint in t.unique_constraints {
@@ -317,7 +327,7 @@ fn (t Table) constraint_identifier(name string) Identifier {
 fn (t Table) constraint_names() []string {
 	mut names := []string{}
 	for column in t.columns {
-		if column.not_null {
+		if t.has_not_null(column) {
 			names << t.not_null_names[column.name.sub_entity_name]
 		}
 	}
@@ -389,7 +399,7 @@ fn (mut t Table) default_constraint_names() {
 // name_constraints).
 fn (mut t Table) fill_constraint_names(mut used map[string]bool, is_new bool) {
 	for i, column in t.columns {
-		if column.not_null && t.not_null_names[column.name.sub_entity_name] == '' {
+		if t.has_not_null(column) && t.not_null_names[column.name.sub_entity_name] == '' {
 			t.not_null_names[column.name.sub_entity_name] = t.new_constraint_name(mut used,
 				is_new, 'NOT_NULL', i)
 		}
@@ -474,7 +484,7 @@ enum ConstraintKind {
 fn (t Table) find_constraint(name Identifier) !(ConstraintKind, int) {
 	if name.catalog_name in ['', t.name.catalog_name] && name.schema_name in ['', t.name.schema_name] {
 		for i, column in t.columns {
-			if column.not_null && t.not_null_names[column.name.sub_entity_name] == name.entity_name {
+			if t.has_not_null(column) && t.not_null_names[column.name.sub_entity_name] == name.entity_name {
 				return .not_null, i
 			}
 		}
@@ -505,11 +515,49 @@ fn (t Table) find_constraint(name Identifier) !(ConstraintKind, int) {
 // find_constraint found. A NOT NULL or PRIMARY KEY is never deferrable.
 fn (t Table) constraint_characteristics(kind ConstraintKind, i int) ConstraintCharacteristics {
 	return match kind {
+		.not_null { t.deferrable_not_nulls[t.columns[i].name.sub_entity_name] }
+		.primary_key { t.primary_key_characteristics }
 		.unique { t.unique_constraints[i].characteristics }
 		.foreign_key { t.foreign_keys[i].characteristics }
 		.check { t.check_constraints[i].characteristics }
-		else { ConstraintCharacteristics{} }
 	}
+}
+
+// has_not_null is true if the column has a NOT NULL constraint, which can be
+// DEFERRABLE (see deferrable_not_nulls).
+fn (t Table) has_not_null(column Column) bool {
+	return column.not_null || column.name.sub_entity_name in t.deferrable_not_nulls
+}
+
+// key_columns are the columns that the rows are stored by (see
+// Row.object_key): the PRIMARY KEY, unless it's DEFERRABLE. A DEFERRABLE
+// PRIMARY KEY can have duplicates until it's checked, so its rows are stored by
+// row ID like a table without a PRIMARY KEY, and it's checked like a UNIQUE
+// (see unique_constraints_to_check).
+fn (t Table) key_columns() []string {
+	return if t.primary_key_characteristics.is_deferrable() { []string{} } else { t.primary_key }
+}
+
+// unique_constraints_to_check are the UNIQUE constraints of the table, after a
+// DEFERRABLE PRIMARY KEY (see key_columns), which has an index with its name
+// like a UNIQUE (see build_constraint_indexes).
+fn (t Table) unique_constraints_to_check() []UniqueConstraint {
+	// The characteristics are kept when a DROP COLUMN drops the PRIMARY KEY.
+	if t.primary_key.len == 0 || !t.primary_key_characteristics.is_deferrable() {
+		return t.unique_constraints
+	}
+
+	mut constraints := [
+		UniqueConstraint{
+			name:            t.primary_key_name
+			columns:         t.primary_key
+			characteristics: t.primary_key_characteristics
+			is_primary_key:  true
+		},
+	]
+	constraints << t.unique_constraints
+
+	return constraints
 }
 
 // table_object_key is the key of the definition of a table.

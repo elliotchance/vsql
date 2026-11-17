@@ -189,6 +189,10 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 		mut primary_key := referenced.primary_key.clone()
 		primary_key.sort()
 		if primary_key.len > 0 && primary_key == sorted {
+			// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 5
+			if referenced.primary_key_characteristics.is_deferrable() {
+				return sqlstate_42830('FOREIGN KEY cannot reference a DEFERRABLE constraint: ${referenced.primary_key_name}')
+			}
 			found = true
 		}
 		for constraint in referenced.unique_constraints {

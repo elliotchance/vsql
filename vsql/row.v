@@ -700,10 +700,10 @@ fn write_key_value(mut buf Bytes, value Value, typ SQLType) {
 
 fn (mut r Row) object_key(t Table) ![]u8 {
 	// If there is a PRIMARY KEY, generate the row key.
-	if t.primary_key.len > 0 {
+	if t.key_columns().len > 0 {
 		mut pk := new_empty_bytes()
 
-		for col_name in t.primary_key {
+		for col_name in t.key_columns() {
 			write_key_value(mut pk, r.data.value(col_name), t.column(col_name)!.typ.typ)
 		}
 

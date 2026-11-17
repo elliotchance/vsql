@@ -776,7 +776,7 @@ Optional Features
    * - ✅ **F381**
      - **Extended schema manipulation**
 
-   * - ❌ **F382**
+   * - ✅ **F382**
      - **Alter column data type**
 
    * - ❌ **F383**

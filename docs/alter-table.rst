@@ -14,6 +14,7 @@ Syntax
       ADD [ COLUMN ] <column_definition>
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
+    | ALTER [ COLUMN ] <column_name> SET DATA TYPE <data_type>
     | ALTER [ COLUMN ] <column_name> <identity_option> ...
     | DROP [ COLUMN ] <column_name> [ CASCADE | RESTRICT ]
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
@@ -81,8 +82,32 @@ column can't be changed, and the options can only be used for an identity column
 
 Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.
-Changing the type of a column, or whether it's ``NOT NULL``, isn't supported
-yet.
+Changing whether a column is ``NOT NULL`` isn't supported yet.
+
+``SET DATA TYPE`` changes the type of a column, and every existing value is
+cast to the new type, so a ``CHARACTER`` value is padded to its new length. The
+new type must be able to hold every value of the old one, otherwise it's an
+error ``42601``. So it must be the same kind of type, and at least as big:
+
+- A ``CHARACTER`` or ``CHARACTER VARYING`` can be either, with at least the
+  same length. A length in ``OCTETS`` must have room for 4 octets for each
+  character of a length in ``CHARACTERS``.
+- An exact numeric (``SMALLINT``, ``INTEGER``, ``BIGINT``, ``NUMERIC`` or
+  ``DECIMAL``) needs at least the same scale and the same number of digits
+  before the decimal point. ``SMALLINT``, ``INTEGER`` and ``BIGINT`` can always
+  hold 4, 9 and 18 digits, and need 5, 10 and 19 digits.
+- ``REAL`` can be ``DOUBLE PRECISION``.
+- A ``TIME`` or ``TIMESTAMP`` can have a bigger precision, with the same time
+  zone.
+- ``DATE`` and ``BOOLEAN`` can only stay the same.
+
+The column can be in the ``PRIMARY KEY``, a ``UNIQUE``, a ``FOREIGN KEY`` or an
+index, but it can't be used by a ``CHECK`` that also uses other columns, or by a
+generated column (both are an error ``42601``). Every row is written again.
+
+.. code-block:: sql
+
+  ALTER TABLE products ALTER COLUMN quantity SET DATA TYPE BIGINT;
 
 DROP COLUMN
 -----------

@@ -130,10 +130,14 @@ jobs:
             name: x86-64
             v_arch: amd64
             runner: ubuntu-latest
+          # The ARM64 runner was being shut down partway through the SQL tests
+          # (exit code 143) with a process for each CPU, each collecting
+          # coverage, so it runs fewer at a time.
           - arch: arm64
             name: ARM64
             v_arch: arm64
             runner: ubuntu-24.04-arm
+            sql_test_jobs: 2
     runs-on: ${{ matrix.runner }}
     # statuses is for the "SQL tests" status (see "Report the SQL tests").
     permissions:
@@ -220,6 +224,10 @@ jobs:
       # docs/testing.rst).
       # The output is also kept for "Report the SQL tests".
       - name: Run tests
+        # An empty SQL_TEST_JOBS runs a process for each CPU. It's read when the
+        # SQL tests are compiled.
+        env:
+          SQL_TEST_JOBS: ${{ matrix.sql_test_jobs }}
         run: |
           set -o pipefail
           make test MAX_RUN_TIME=100 2>&1 | tee "$RUNNER_TEMP/test.log"

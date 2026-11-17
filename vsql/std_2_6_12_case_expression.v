@@ -121,22 +121,24 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			}
 		}
 		CaseExpressionSimple {
+			// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 2.c
+			e.check_overlaps_when_operands()!
+
 			// The case operand is compiled (and evaluated) once, rather than once
 			// for each <when operand> of the equivalent searched CASE (Syntax
 			// Rules, 2.i). That's the same, since it must be deterministic and
 			// can't modify SQL-data (Syntax Rules, 2.a and 2.b).
-			// A dynamic parameter in the case operand or a <when operand> that's a
-			// value has the type of the others in the same position. The types are
-			// recorded, so the operand and the WHENs are compiled with them.
+			// A dynamic parameter in the case operand or a <when operand> has the
+			// type of the others in the same position (see
+			// CaseWhenOperand.compile_typed). The types are recorded, so the
+			// operand and the WHENs are compiled with them.
 			//
 			// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xviii
 			if c.conn.describing {
 				mut rows := [e.operand.compile_fields(mut c)!]
 				for when in e.whens {
 					for when_operand in when.operands {
-						if when_operand.is_value {
-							rows << (when_operand.predicate as ComparisonPredicate).right.compile_fields(mut c)!
-						}
+						rows << when_operand.compile_typed(mut c)!
 					}
 				}
 				c.with_row_types(rows)
@@ -339,6 +341,83 @@ struct CaseExpressionSimpleWhen {
 struct CaseWhenOperand {
 	predicate Predicate
 	is_value  bool
+}
+
+// compile_typed compiles the parts of a <when operand> that have a declared
+// type that's combined with the case operand's, to find the type of a dynamic
+// parameter: a value, the <row value predicand>s of a predicate (and the pattern
+// of a LIKE or SIMILAR), the rows of an IN list, and the row type of a subquery
+// (as fields that are never evaluated). A <null predicate part 2> has none.
+//
+// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xviii.1
+fn (e CaseWhenOperand) compile_typed(mut c Compiler) ![][]CompileResult {
+	predicate := e.predicate
+	return match predicate {
+		// B and C
+		ComparisonPredicate {
+			[predicate.right.compile_fields(mut c)!]
+		}
+		BetweenPredicate {
+			[predicate.left.compile_fields(mut c)!, predicate.right.compile_fields(mut c)!]
+		}
+		CharacterLikePredicate {
+			[[predicate.right.compile(mut c)!]]
+		}
+		SimilarPredicate {
+			[[predicate.right.compile(mut c)!]]
+		}
+		DistinctPredicate, OverlapsPredicate {
+			[predicate.right.compile_fields(mut c)!]
+		}
+		// D and E
+		InPredicate {
+			if subquery := predicate.subquery {
+				[subquery_row_type(mut c, subquery)!]
+			} else {
+				predicate.values.map(it.compile_fields(mut c)!)
+			}
+		}
+		QuantifiedComparisonPredicate {
+			[subquery_row_type(mut c, predicate.subquery)!]
+		}
+		MatchPredicate {
+			[subquery_row_type(mut c, predicate.subquery)!]
+		}
+		NullPredicate, ExistsPredicate, UniquePredicate {
+			[][]CompileResult{}
+		}
+	}
+}
+
+// subquery_row_type is a field for each column of a subquery, with its type.
+// They're only for finding the type of a dynamic parameter, so they're never
+// evaluated.
+fn subquery_row_type(mut c Compiler, subquery Subquery) ![]CompileResult {
+	plan := subquery.plan(mut c)!
+
+	return plan.plan.columns().map(parameter_result('', it.typ))
+}
+
+// check_overlaps_when_operands checks that either every <when operand> is an
+// OVERLAPS (the case operand is an <overlaps predicate part 1>) or none of them
+// are (it's a <row value predicand>). Both are parsed the same.
+//
+// ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 2.c
+fn (e CaseExpressionSimple) check_overlaps_when_operands() ! {
+	mut overlaps := 0
+	mut total := 0
+	for when in e.whens {
+		for when_operand in when.operands {
+			total++
+			if when_operand.predicate is OverlapsPredicate {
+				overlaps++
+			}
+		}
+	}
+
+	if overlaps > 0 && overlaps < total {
+		return sqlstate_42601('either every WHEN operand of a CASE is OVERLAPS, or none of them are')
+	}
 }
 
 fn (e CaseWhenOperand) pstr(params map[string]Value) string {

@@ -292,9 +292,9 @@
 20.7/GR/5.a.xviii.1      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xviii.1.A    implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xviii.1.B    implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.xviii.1.C    n/a          - - a <when operand> is a value, the other forms are an extended CASE expression (F262)
-20.7/GR/5.a.xviii.1.D    n/a          - - a <when operand> is a value, the other forms are an extended CASE expression (F262)
-20.7/GR/5.a.xviii.1.E    n/a          - - a <when operand> is a value, the other forms are an extended CASE expression (F262)
+20.7/GR/5.a.xviii.1.C    implemented  vsql/std_2_6_12_case_expression.v tests/std_2_20_7_dynamic_parameter_types_case_when.sql
+20.7/GR/5.a.xviii.1.D    implemented  vsql/std_2_6_12_case_expression.v tests/std_2_20_7_dynamic_parameter_types_case_when.sql
+20.7/GR/5.a.xviii.1.E    implemented  vsql/std_2_6_12_case_expression.v tests/std_2_20_7_dynamic_parameter_types_case_when.sql
 20.7/GR/5.a.xviii.2      implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xviii.3      container    - -
 20.7/GR/5.a.xviii.3.A    implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql

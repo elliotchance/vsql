@@ -185,10 +185,17 @@ that matches ``X``. ``X`` is only evaluated once. Each ``Y`` is either:
   equal to anything, so ``CASE NULL WHEN NULL ...`` does not match.
 - The rest of a predicate, with ``X`` as the missing left side: a comparison
   (such as ``> 5``), ``[ NOT ] BETWEEN``, ``[ NOT ] IN``, ``[ NOT ] LIKE``,
-  ``[ NOT ] SIMILAR TO``, ``IS [ NOT ] NULL`` or a quantified comparison (such
-  as ``= ANY (SELECT ...)``). It matches if the predicate is ``TRUE``.
+  ``[ NOT ] SIMILAR TO``, ``IS [ NOT ] NULL``, ``IS [ NOT ] DISTINCT FROM``,
+  ``OVERLAPS`` or a quantified comparison (such as ``= ANY (SELECT ...)``). It
+  matches if the predicate is ``TRUE``.
 
-A ``WHEN`` with more than one ``Y`` matches if any of them do.
+A ``WHEN`` with more than one ``Y`` matches if any of them do. If any ``Y`` is
+an ``OVERLAPS`` (so ``X`` is a period, such as ``(start_date, end_date)``), then
+every ``Y`` must be.
+
+A ``?`` parameter as ``X`` gets a type that can hold every value it's compared
+with, so in ``CASE ? WHEN 1 THEN 'a' WHEN > 2.5 THEN 'b' END`` it's a
+``NUMERIC``.
 
 The second form (a searched ``CASE``) returns the result for the first ``WHEN``
 condition that is ``TRUE``. Conditions that are ``FALSE`` or ``UNKNOWN`` are
@@ -211,6 +218,8 @@ since whether it's evaluated depends on the other values.
   CASE 7 WHEN < 5 THEN 'low' WHEN BETWEEN 5 AND 9 THEN 'mid' END -- 'mid'
   CASE 3 WHEN 1, 2, 3 THEN 'small' ELSE 'big' END              -- 'small'
   CASE name WHEN IS NULL THEN 'unknown' WHEN LIKE 'A%' THEN 'A' END
+  CASE x WHEN IS NOT DISTINCT FROM y THEN 'same' ELSE 'different' END
+  CASE (start_date, end_date) WHEN OVERLAPS (DATE '2020-01-01', DATE '2020-12-31') THEN '2020' END
   CASE WHEN 5 > 10 THEN 'big' ELSE 'small' END                 -- 'small'
 
 CAST

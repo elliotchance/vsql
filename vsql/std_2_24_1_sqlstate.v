@@ -67,6 +67,7 @@ struct SQLState {
 // (40002). It's none for any other error.
 pub fn violated_constraint(err IError) ?Identifier {
 	return match err {
+		SQLState23001 { err.constraint }
 		SQLState23502 { err.constraint }
 		SQLState23503 { err.constraint }
 		SQLState23505 { err.constraint }
@@ -93,6 +94,7 @@ pub fn violated_constraint(err IError) ?Identifier {
 // ISO/IEC 9075-3:2003, 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
 pub fn condition_table(err IError) ?Identifier {
 	return match err {
+		SQLState23001 { err.table }
 		SQLState23502 { err.table }
 		SQLState23503 { err.table }
 		SQLState23505 { err.table }
@@ -496,6 +498,22 @@ fn sqlstate_22029() IError {
 	return SQLState22029{
 		code: sqlstate_to_int('22029')
 		msg:  'non-character in character string'
+	}
+}
+
+// restrict violation
+struct SQLState23001 {
+	SQLState
+	constraint Identifier
+	table      Identifier
+}
+
+fn sqlstate_23001(msg string, constraint Identifier, table Identifier) IError {
+	return SQLState23001{
+		code:       sqlstate_to_int('23001')
+		msg:        'restrict violation: ${msg}'
+		constraint: constraint
+		table:      table
 	}
 }
 

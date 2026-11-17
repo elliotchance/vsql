@@ -19,8 +19,8 @@ struct ReferentialConstraintDefinition {
 	columns            []Identifier
 	referenced_table   Identifier
 	referenced_columns []Identifier
-	update_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
-	delete_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
+	update_rule        string // CASCADE, SET NULL, SET DEFAULT, RESTRICT or NO ACTION
+	delete_rule        string // CASCADE, SET NULL, SET DEFAULT, RESTRICT or NO ACTION
 	characteristics    ConstraintCharacteristics
 }
 
@@ -40,8 +40,8 @@ struct ForeignKey {
 	columns            []string
 	referenced_table   Identifier
 	referenced_columns []string
-	update_rule        string // CASCADE, SET NULL or SET DEFAULT
-	delete_rule        string // CASCADE, SET NULL or SET DEFAULT
+	update_rule        string // CASCADE, SET NULL, SET DEFAULT or RESTRICT
+	delete_rule        string // CASCADE, SET NULL, SET DEFAULT or RESTRICT
 	characteristics    ConstraintCharacteristics
 }
 
@@ -113,14 +113,15 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			return sqlstate_42830('FOREIGN KEY has ${key.columns.len} ${pluralize(key.columns.len, 'column')} but REFERENCES ${name} has ${referenced_columns.len}')
 		}
 
-		// A generated column can't be changed by a referential action.
+		// A generated column can't be changed by a referential action, but
+		// RESTRICT doesn't change it.
 		//
 		// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 14
 		for column in key.columns {
 			if table.column(column)!.generated == none {
 				continue
 			}
-			action := if key.update_rule != '' {
+			action := if key.update_rule !in ['', 'RESTRICT'] {
 				'ON UPDATE ${key.update_rule}'
 			} else if key.delete_rule in ['SET NULL', 'SET DEFAULT'] {
 				'ON DELETE ${key.delete_rule}'
@@ -627,27 +628,42 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 
 				// A key is deleted when its row is deleted, and updated when a
 				// row has a different key afterwards (15.17 GR 10).
-				// keys are the old rows that have each deleted or updated key.
+				// keys are the old rows that have each deleted or updated key,
+				// and restricted are the keys that RESTRICT doesn't allow to
+				// be deleted or updated.
 				types := foreign_key_types(referencing, key.columns, table, key.referenced_columns)!
 				mut deleted_keys := map[string]bool{}
 				mut updated_keys := map[string]Row{}
 				mut keys := map[string]Row{}
+				mut restricted := map[string]Row{}
 				for change in table_changes {
 					value := key_value(change.old, key.referenced_columns, types, time_zone)
 					if value.len == 0 {
 						continue
 					}
 
-					if change.is_delete {
-						if key.delete_rule != '' {
-							deleted_keys[value.bytestr()] = true
-							keys[value.bytestr()] = change.old
-						}
-					} else if key.update_rule != ''
-						&& key_value(change.new, key.referenced_columns, types, time_zone) != value {
+					rule := if change.is_delete {
+						key.delete_rule
+					} else if key_value(change.new, key.referenced_columns, types, time_zone) != value {
+						key.update_rule
+					} else {
+						''
+					}
+					if rule == 'RESTRICT' {
+						restricted[value.bytestr()] = change.old
+					} else if rule != '' && change.is_delete {
+						deleted_keys[value.bytestr()] = true
+						keys[value.bytestr()] = change.old
+					} else if rule != '' {
 						updated_keys[value.bytestr()] = change.new
 						keys[value.bytestr()] = change.old
 					}
+				}
+
+				if restricted.len > 0 {
+					f.check_restrict(mut conn, key, referencing, types, restricted, old[table_name] or {
+						[]Row{}
+					}, time_zone)!
 				}
 				if keys.len == 0 {
 					continue
@@ -785,6 +801,31 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		table_changes := action_changes[table_name] or { []RowChange{} }
 		conn.note_row_changes(f.table(table_name), table_changes.map(it.old), table_changes,
 			none)!
+	}
+}
+
+// check_restrict returns an error (23001) if a row of the referencing table
+// references one of the keys that RESTRICT doesn't allow to be deleted or
+// updated, where keys has a row of the referenced table with each key. Unlike
+// NO ACTION, this is checked straight away, before any other referential
+// actions, and even when the FOREIGN KEY is deferred.
+//
+// The matching rows are the rows from before the statement (General Rule 7),
+// so a row of the referencing table that this statement (or one of its
+// referential actions) has already deleted or replaced is also a matching row.
+// Those are the old rows of the referencing table. For example, a DELETE of
+// every row of a table that references itself is still an error.
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9.a.iv and 10.a.iv
+fn (mut f Storage) check_restrict(mut conn Connection, key ForeignKey, referencing Table, types []SQLType, keys map[string]Row, old []Row, time_zone i16) ! {
+	mut is_matched := old.any(key_value(it, key.columns, types, time_zone).bytestr() in keys)
+	if !is_matched {
+		is_matched = f.matching_rows(mut conn, key, referencing, types, keys, time_zone)!.len > 0
+	}
+
+	if is_matched {
+		return sqlstate_23001('FOREIGN KEY (${key.columns.map(requote_identifier(it)).join(', ')}) REFERENCES ${key.referenced_table} (${key.referenced_columns.map(requote_identifier(it)).join(', ')}) on ${referencing.name}',
+			referencing.constraint_identifier(key.name), referencing.name)
 	}
 }
 

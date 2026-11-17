@@ -79,11 +79,15 @@ update_rule:
 delete_rule:
   ON DELETE referential_action { $$.v = $3.v as string }
 
-// RESTRICT isn't supported (T191).
 referential_action:
   CASCADE { $$.v = 'CASCADE' }
 | SET NULL { $$.v = 'SET NULL' }
 | SET DEFAULT { $$.v = 'SET DEFAULT' }
+| RESTRICT {
+    // ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Conformance Rules, 1
+    flag(mut yylex, 'T191')
+    $$.v = 'RESTRICT'
+  }
 | NO ACTION { $$.v = 'NO ACTION' }
 
 %%

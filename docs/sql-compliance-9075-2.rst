@@ -1346,7 +1346,7 @@ Optional Features
    * - ❌ **T181**
      - **Application-time period tables**
 
-   * - ❌ **T191**
+   * - ✅ **T191**
      - **Referential action RESTRICT**
 
    * - ❌ **T200**

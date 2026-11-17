@@ -967,6 +967,9 @@ fn test_violated_constraint() ! {
 	assert constraint_violated(mut db, 'INSERT INTO c (id, y) VALUES (2, 1)') == ':memory:.PUBLIC.FK'
 	assert constraint_violated(mut db, 'INSERT INTO p (id, x) VALUES (1, 1)') == ':memory:.PUBLIC.P_PRIMARY_KEY'
 	assert constraint_violated(mut db, 'INSERT INTO p (id, x) VALUES (2, 0)') == ':memory:.PUBLIC.X_POSITIVE'
+	db.query('CREATE TABLE r (id INT CONSTRAINT rk REFERENCES p (id) ON DELETE RESTRICT)')!
+	db.query('INSERT INTO r (id) VALUES (1)')!
+	assert constraint_violated(mut db, 'DELETE FROM p') == ':memory:.PUBLIC.RK'
 	db.query('START TRANSACTION')!
 	db.query('INSERT INTO c (id, y) VALUES (1, 0)')!
 	assert constraint_violated(mut db, 'COMMIT') == ':memory:.PUBLIC.Y_POSITIVE'
@@ -1002,6 +1005,9 @@ fn test_condition_table() ! {
 	assert table_of_condition(mut db, 'INSERT INTO s.p (id, x, u) VALUES (2, 1, 1)') == ':memory:.S.P.'
 	assert table_of_condition(mut db, 'INSERT INTO s.p (id, x) VALUES (2, 0)') == ':memory:.S.P.'
 	assert table_of_condition(mut db, 'INSERT INTO c (id, y) VALUES (1, 1)') == ':memory:.PUBLIC.C.'
+	db.query('CREATE TABLE r (id INT REFERENCES s.p (u) ON UPDATE RESTRICT)')!
+	db.query('INSERT INTO r (id) VALUES (1)')!
+	assert table_of_condition(mut db, 'UPDATE s.p SET u = 2') == ':memory:.PUBLIC.R.'
 	db.query('START TRANSACTION')!
 	db.query('INSERT INTO c (id, y) VALUES (NULL, 0)')!
 	assert table_of_condition(mut db, 'COMMIT') == ':memory:.PUBLIC.C.'

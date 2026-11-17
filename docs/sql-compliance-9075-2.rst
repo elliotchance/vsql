@@ -782,7 +782,7 @@ Optional Features
    * - ✅ **F383**
      - **Set column not null clause**
 
-   * - ❌ **F384**
+   * - ✅ **F384**
      - **Drop identity property clause**
 
    * - ❌ **F385**

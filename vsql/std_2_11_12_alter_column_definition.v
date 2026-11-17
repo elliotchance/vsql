@@ -4,13 +4,14 @@ module vsql
 //
 // Change a column and its definition.
 
-// SET DEFAULT, DROP DEFAULT, SET NOT NULL, DROP NOT NULL, SET DATA TYPE and the
-// <alter identity column specification> are the only <alter column action>s
-// that are supported.
+// SET DEFAULT, DROP DEFAULT, SET NOT NULL, DROP NOT NULL, SET DATA TYPE, DROP
+// IDENTITY and the <alter identity column specification> are the only <alter
+// column action>s that are supported.
 type AlterColumnAction = AlterColumnDataTypeClause
 	| AlterIdentityColumnSpecification
 	| DropColumnDefaultClause
 	| DropColumnNotNullClause
+	| DropIdentityPropertyClause
 	| SetColumnDefaultClause
 	| SetColumnNotNullClause
 
@@ -31,7 +32,8 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 
 	// ISO/IEC 9075-2:2023, 11.12, <alter column definition>, Syntax Rules, 6 and 7
 	is_identity := column.identity != none
-	if is_identity != (d.action is AlterIdentityColumnSpecification) {
+	if is_identity != (d.action is AlterIdentityColumnSpecification
+		|| d.action is DropIdentityPropertyClause) {
 		return sqlstate_42601(if is_identity {
 			'cannot change the ${match d.action {
 				AlterColumnDataTypeClause { 'data type' }
@@ -63,6 +65,9 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 		}
 		DropColumnNotNullClause {
 			d.action.execute(table, column)!
+		}
+		DropIdentityPropertyClause {
+			d.action.execute(column)
 		}
 		SetColumnDefaultClause {
 			d.action.execute(mut conn, column)!
@@ -98,5 +103,10 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 	}
 	if s := sequence {
 		catalog.storage.update_identity(table.id, s)!
+	}
+
+	// ISO/IEC 9075-2:2023, 11.21, <drop identity property clause>, General Rules, 3
+	if d.action is DropIdentityPropertyClause {
+		catalog.storage.delete_identity(table.id)!
 	}
 }

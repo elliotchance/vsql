@@ -196,6 +196,11 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		BooleanValueExpression {
 			join.specification
 		}
+		NaturalJoin {
+			common_columns = new_common_columns(natural_join_columns(left_columns, right_columns),
+				join.join_type, left_columns, right_columns, range_variable)!
+			join_equalities(common_columns)
+		}
 		[]Identifier {
 			common_columns = new_common_columns(join.specification, join.join_type, left_columns,
 				right_columns, range_variable)!

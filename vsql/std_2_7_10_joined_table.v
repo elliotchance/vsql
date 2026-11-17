@@ -209,13 +209,14 @@ fn (c CommonColumn) equality() BooleanTest {
 	return new_boolean_test(BooleanPrimary(Predicate(ComparisonPredicate{RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(c.left.name)))), ComparisonOperator.equal, RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(c.right.name))))})), false, none, false)
 }
 
-// new_common_columns finds the columns of a named columns join. They're always
-// in the order of the left side, not the order of the list. A column is known
-// not null when the join can't produce a NULL for it: both sides are equal (so
-// not NULL) in a matched row, so that only depends on the side that's kept for a
-// row that isn't matched.
+// new_common_columns finds the columns of a named columns join (or a NATURAL
+// join). They're always in the order of the left side, not the order of the
+// list. A column is known not null when the join can't produce a NULL for it:
+// both sides are equal (so not NULL) in a matched row, so that only depends on
+// the side that's kept for a row that isn't matched. That's the same for
+// NATURAL, although it isn't "readily" known not null.
 //
-// ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 10.c, 10.e, 10.f and 14.c
+// ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 10.c, 10.e, 10.f, 13.b and 14.c
 fn new_common_columns(names []Identifier, join_type JoinType, left_columns Columns, right_columns Columns, range_variable string) ![]CommonColumn {
 	mut seen := map[string]bool{}
 	for name in names {
@@ -275,10 +276,39 @@ fn join_column(columns Columns, name string) !Column {
 	return matching[0]
 }
 
-// join_equalities is the join condition of a named columns join.
+// natural_join_columns are the names of the columns of the left side of a
+// NATURAL join that are also on the right side, once each. A name that's on
+// either side more than once is an error later (see join_column), only when
+// it's on both sides.
+//
+// ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 10.b
+fn natural_join_columns(left_columns Columns, right_columns Columns) []Identifier {
+	mut names := []Identifier{}
+	mut seen := map[string]bool{}
+	for left in left_columns {
+		name := left.name.sub_entity_name
+		if name !in seen && right_columns.any(it.name.sub_entity_name == name) {
+			names << Identifier{
+				sub_entity_name: name
+			}
+		}
+		seen[name] = true
+	}
+
+	return names
+}
+
+// join_equalities is the join condition of a named columns join, or a NATURAL
+// join. Without any common columns, it's TRUE (the join is the same as a CROSS
+// JOIN).
 //
 // ISO/IEC 9075-2:2023, 7.10, <joined table>, General Rules, 1.c
 fn join_equalities(common_columns []CommonColumn) BooleanValueExpression {
+	if common_columns.len == 0 {
+		// ISO/IEC 9075-2:2023, 7.10, <joined table>, General Rules, 1.c.ii
+		return true_condition()
+	}
+
 	mut term := BooleanTerm{
 		factor: common_columns[0].equality()
 	}

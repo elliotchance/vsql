@@ -4,11 +4,12 @@
 //
 // Specify a table derived from a Cartesian product, inner join, or outer join.
 //
-// There's no NATURAL (F405) or FULL (F406), or join correlation name (F404).
+// There's no FULL (F406), or join correlation name (F404).
 
 joined_table:
   cross_join { $$.v = $1.v }
 | qualified_join { $$.v = $1.v }
+| natural_join { $$.v = $1.v }
 
 // A CROSS JOIN is the same as a comma in FROM, so it's an inner join on TRUE.
 // The right side can't be a joined table without parentheses.
@@ -26,6 +27,30 @@ cross_join:
     flag(mut yylex, 'F407')
     $$.v = yy_box(new_cross_join($1.v as TableReference,
       TableReference($4.v as QualifiedJoin)))
+  }
+
+// A NATURAL join is a USING of every column name that's on both sides. Like a
+// CROSS JOIN, the right side can't be a joined table without parentheses.
+//
+// ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 5 and 10.b
+natural_join:
+  table_reference NATURAL JOIN natural_join_right {
+    // ISO/IEC 9075-2:2023, 7.10, <joined table>, Conformance Rules, 2
+    flag(mut yylex, 'F405')
+    $$.v = yy_box(new_qualified_join($1.v as TableReference, JoinType.inner,
+      $4.v as TableReference, NaturalJoin{}))
+  }
+| table_reference NATURAL join_type JOIN natural_join_right {
+    // ISO/IEC 9075-2:2023, 7.10, <joined table>, Conformance Rules, 2
+    flag(mut yylex, 'F405')
+    $$.v = yy_box(new_qualified_join($1.v as TableReference, $3.v as JoinType,
+      $5.v as TableReference, NaturalJoin{}))
+  }
+
+natural_join_right:
+  table_factor { $$.v = yy_box(TableReference($1.v as TablePrimary)) }
+| parenthesized_joined_table {
+    $$.v = yy_box(TableReference($1.v as QualifiedJoin))
   }
 
 join_specification:

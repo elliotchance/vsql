@@ -22,7 +22,8 @@ Syntax
   <from_item> := <table_reference>
                  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference>
                    { ON <condition> | USING ( <column_name> , ... ) }
-                 | CROSS JOIN <table_reference> ] ...
+                 | CROSS JOIN <table_reference>
+                 | NATURAL [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ] ...
 
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
@@ -167,6 +168,19 @@ right side, so it's only ``NULL`` when both are.
 
 Refer to a named column without a table (``x``). ``t.x`` and ``u.x`` no longer
 exist, and ``t.*`` doesn't include ``x``.
+
+``NATURAL`` is a ``USING`` of every column name that's on both sides, so
+these are the same:
+
+.. code-block:: sql
+
+  SELECT * FROM t NATURAL LEFT JOIN u;
+  SELECT * FROM t LEFT JOIN u USING (x);
+
+Each of those column names must be the name of only one column on each side.
+When there aren't any, every row of the left side is paired with every row of
+the right side. The right side of a ``NATURAL`` join can only be a join when
+it's in parentheses.
 
 The same table name cannot be used more than once in a ``FROM`` clause. Use
 correlation names to join a table to itself:

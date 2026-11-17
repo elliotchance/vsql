@@ -821,7 +821,7 @@ Optional Features
    * - ❌ **F404**
      - **Range variable for common column names**
 
-   * - ❌ **F405**
+   * - ✅ **F405**
      - **NATURAL JOIN**
 
    * - ❌ **F406**

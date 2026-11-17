@@ -141,6 +141,14 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V103-01``
      - ``CREATE TABLE IF NOT EXISTS`` (see :doc:`create-table`).
 
+   * - ``V103-02``
+     - ``CREATE TABLE AS`` with a query that isn't in parentheses (see
+       :doc:`create-table`).
+
+   * - ``V103-03``
+     - ``CREATE TABLE AS`` without ``WITH DATA`` or ``WITH NO DATA`` (it's
+       ``WITH DATA``).
+
    * - ``V104``
      - ``DROP TABLE``.
 

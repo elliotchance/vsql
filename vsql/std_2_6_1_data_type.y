@@ -130,8 +130,8 @@ boolean_type:
 
 datetime_type:
   DATE { $$.v = yy_box(new_type('DATE', 0, 0)) }
-| TIME { $$.v = yy_box(parse_time_prec_tz_type('0', false)!) }
-| TIME left_paren time_precision right_paren {
+| TIME %prec TIME_TYPE { $$.v = yy_box(parse_time_prec_tz_type('0', false)!) }
+| TIME left_paren time_precision right_paren %prec TIME_TYPE {
     flag_if(mut yylex, ($3.v as string).int() != 0, 'F555')
     $$.v = yy_box(parse_time_prec_tz_type($3.v as string, false)!)
   }
@@ -142,12 +142,12 @@ datetime_type:
     flag_if(mut yylex, ($3.v as string).int() != 0, 'F555')
     $$.v = yy_box(parse_time_prec_tz_type($3.v as string, $5.v as bool)!)
   }
-| TIMESTAMP {
+| TIMESTAMP %prec TIME_TYPE {
     // ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 38: the default
     // <timestamp precision> is 6.
     $$.v = yy_box(parse_timestamp_prec_tz_type('6', false)!)
   }
-| TIMESTAMP left_paren timestamp_precision right_paren {
+| TIMESTAMP left_paren timestamp_precision right_paren %prec TIME_TYPE {
     flag_if(mut yylex, ($3.v as string).int() !in [0, 6], 'F555')
     $$.v = yy_box(parse_timestamp_prec_tz_type($3.v as string, false)!)
   }

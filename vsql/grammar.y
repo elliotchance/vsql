@@ -701,6 +701,13 @@ module vsql
 %nonassoc SUBQUERY;
 %nonassoc OPERATOR_RIGHT_PAREN;
 
+// A WITH after TIME or TIMESTAMP is always the start of WITH TIME ZONE, rather
+// than the WITH DATA of a CREATE TABLE AS whose query (not in parentheses) ends
+// with a "::TIME" (see as_subquery_clause). TIME_TYPE is only used for this
+// precedence, it's not a token.
+%nonassoc TIME_TYPE;
+%nonassoc WITH;
+
 // The grammar must not have any conflicts. A conflict is when the parser could
 // do two different things at the same point, and yacc picks one of them, so a
 // new conflict fails the build. See "Grammar Conflicts" in

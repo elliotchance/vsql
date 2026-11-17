@@ -88,7 +88,7 @@
 11.2/CR/1                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_9_6_flagging.sql
 11.2/CR/2                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_9_6_flagging.sql
 # 11.3, <table definition>
-11.3                     partial      vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql only persistent base tables with a <table element list> of <column definition>s and <table constraint definition>s
+11.3                     partial      vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql,tests/std_2_11_3_as_subquery_clause.sql only persistent base tables with a <table element list> of <column definition>s and <table constraint definition>s, or an <as subquery clause>
 11.3/SR/1                n/a          - - periods (T180, T181)
 11.3/SR/2                n/a          - - periods (T180, T181)
 11.3/SR/2.a              n/a          - - periods (T180, T181)
@@ -106,7 +106,7 @@
 11.3/SR/2.e.v.2.A        n/a          - - periods (T180, T181)
 11.3/SR/2.e.v.2.B        n/a          - - periods (T180, T181)
 11.3/SR/3                n/a          - - periods (T180, T181)
-11.3/SR/4                implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql a parameter can only be in a DEFAULT, CHECK or generation expression, which reject it
+11.3/SR/4                implemented  vsql/compiler.v,vsql/std_2_11_3_table_definition.v tests/std_2_11_9_check_constraint.sql,tests/std_2_11_3_as_subquery_clause.sql a parameter can only be in a DEFAULT, CHECK or generation expression, which reject it, or the query of an <as subquery clause>, which is planned without parameters
 11.3/SR/5                definition   - -
 11.3/SR/6                implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql
 11.3/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
@@ -143,20 +143,20 @@
 11.3/SR/9.b.iv.6.B       n/a          - - <like clause> (T171)
 11.3/SR/9.b.iv.7         n/a          - - <like clause> (T171)
 11.3/SR/9.b.v            n/a          - - <like clause> (T171)
-11.3/SR/10               n/a          - - <as subquery clause> (T172)
-11.3/SR/10.a             n/a          - - <as subquery clause> (T172)
-11.3/SR/10.b             n/a          - - <as subquery clause> (T172)
-11.3/SR/10.c             n/a          - - <as subquery clause> (T172)
-11.3/SR/10.d             n/a          - - <as subquery clause> (T172)
-11.3/SR/10.e             n/a          - - <as subquery clause> (T172)
-11.3/SR/10.f             n/a          - - <as subquery clause> (T172)
+11.3/SR/10               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.a             definition   - -
+11.3/SR/10.b             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.c             definition   - -
+11.3/SR/10.d             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.e             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.f             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
 11.3/SR/10.f.i           container    - -
-11.3/SR/10.f.i.1         n/a          - - <as subquery clause> (T172)
-11.3/SR/10.f.i.2         n/a          - - <as subquery clause> (T172)
-11.3/SR/10.f.ii          n/a          - - <as subquery clause> (T172)
-11.3/SR/10.f.iii         n/a          - - <as subquery clause> (T172)
-11.3/SR/10.f.iv          n/a          - - <as subquery clause> (T172)
-11.3/SR/10.g             n/a          - - <as subquery clause> (T172)
+11.3/SR/10.f.i.1         implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.f.i.2         implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.f.ii          implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.f.iii         implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.f.iv          implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
+11.3/SR/10.g             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
 11.3/SR/11               n/a          - - typed tables (S051)
 11.3/SR/11.a             n/a          - - typed tables (S051)
 11.3/SR/11.b             n/a          - - typed tables (S051)
@@ -205,7 +205,7 @@
 11.3/SR/14.b             n/a          - - reference types (S043)
 11.3/SR/14.c             n/a          - - reference types (S043)
 11.3/SR/15               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_4_identity_column.sql
-11.3/SR/16               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_9_check_constraint.sql
+11.3/SR/16               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_9_check_constraint.sql,tests/std_2_11_3_as_subquery_clause.sql
 11.3/AR/1                n/a          - - privileges (E081, #732)
 11.3/AR/2                n/a          - - <like clause> (T171)
 11.3/AR/3                n/a          - - subtables (S081)
@@ -252,14 +252,14 @@
 11.3/GR/8.a              n/a          - - subtables (S081)
 11.3/GR/8.b              n/a          - - subtables (S081)
 11.3/GR/9                definition   - -
-11.3/GR/10               n/a          - - <as subquery clause> (T172)
+11.3/GR/10               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
 11.3/CR/1                n/a          - - <like clause> (T171)
 11.3/CR/2                n/a          - - temporary tables (F531)
 11.3/CR/3                n/a          - - typed tables (S051)
 11.3/CR/4                n/a          - - reference types (S043)
 11.3/CR/5                n/a          - - reference types (S043)
 11.3/CR/6                n/a          - - subtables (S081)
-11.3/CR/7                n/a          - - <as subquery clause> (T172)
+11.3/CR/7                implemented  vsql/std_2_11_3_table_definition.y tests/std_2_11_3_as_subquery_clause.sql
 11.3/CR/8                n/a          - - <like options> (T173)
 11.3/CR/9                n/a          - - periods (T180, T181)
 11.3/CR/10               n/a          - - periods (T180, T181)

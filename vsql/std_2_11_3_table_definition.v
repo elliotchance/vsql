@@ -22,10 +22,22 @@ type TableElement = CheckConstraintDefinition
 // max_columns is the maximum number of columns in a table.
 const max_columns = 1600
 
+// A TableDefinition has either table_elements (a <table element list>) or
+// as_subquery (an <as subquery clause>).
 struct TableDefinition {
 	table_name     Identifier
 	table_elements []TableElement
+	as_subquery    ?AsSubqueryClause
 	if_not_exists  bool // V103-01, a table that already exists isn't an error
+}
+
+// AsSubqueryClause is an <as subquery clause>, which defines the columns of the
+// table from the columns of a query (and optionally names them with columns),
+// and also inserts the rows of the query when with_data is true.
+struct AsSubqueryClause {
+	columns   []Identifier
+	query     QueryExpression
+	with_data bool
 }
 
 fn (s TableDefinition) columns() Columns {
@@ -95,8 +107,9 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 		return sqlstate_42p07_table(table_name) // duplicate table
 	}
 
-	stmt.check_limits(table_name)!
-	mut table := stmt.table(table_name, 0)!
+	definition := stmt.as_table_elements(mut conn)!
+	definition.check_limits(table_name)!
+	mut table := definition.table(table_name, 0)!
 	mut other_names := catalog.storage.schema_constraint_names(table_name)
 	other_names << reserved_names
 	table.name_constraints(other_names, catalog.storage.schema_index_names(table_name))!
@@ -114,7 +127,77 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 		foreign_keys: if defer_foreign_keys { []ForeignKey{} } else { table.foreign_keys }
 	})!
 
+	// WITH DATA inserts the rows of the query into the new table.
+	//
+	// ISO/IEC 9075-2:2023, 11.3, <table definition>, General Rules, 10
+	if as_subquery := stmt.as_subquery {
+		if as_subquery.with_data {
+			InsertStatement{
+				table_name: table_name
+				query:      as_subquery.query
+			}.insert(mut conn, map[string]Value{})!
+		}
+	}
+
 	return true, table
+}
+
+// as_table_elements returns the definition with the columns of its <as subquery
+// clause> as a <table element list>. Each column has the name (unless the
+// <column name list> gives one), type and nullability of a column of the
+// query, but nothing else, such as a default. A definition that already has a
+// <table element list> is returned as it is.
+//
+// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 10
+fn (stmt TableDefinition) as_table_elements(mut conn Connection) !TableDefinition {
+	as_subquery := stmt.as_subquery or { return stmt }
+
+	// The table isn't a range variable in the query, so the query can't refer
+	// to the table, which doesn't exist yet anyway. The query is planned
+	// without any parameters, because it can't use them.
+	//
+	// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 4 and 16
+	plan := create_plan(as_subquery.query, map[string]Value{}, mut conn) or {
+		if err is SQLState42P02 {
+			return sqlstate_42601('parameter ${err.parameter_name} cannot be used in CREATE TABLE')
+		}
+		return err
+	}
+	query_columns := plan.columns()
+
+	// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 10.e
+	if as_subquery.columns.len > 0 && as_subquery.columns.len != query_columns.len {
+		return sqlstate_42601('CREATE TABLE has ${as_subquery.columns.len} column names, but the query has ${query_columns.len} columns')
+	}
+
+	// Two columns with the same name are an error of table, the same as for a
+	// <table element list>.
+	//
+	// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 10.b, 10.d and 10.f.i
+	mut elements := []TableElement{}
+	for i, column in query_columns {
+		name := if as_subquery.columns.len > 0 {
+			as_subquery.columns[i].sub_entity_name
+		} else if column.unnamed {
+			return sqlstate_42601('column ${i + 1} of the query needs a name, or a column name list is needed')
+		} else {
+			column.name.sub_entity_name
+		}
+		// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 10.f.ii, 10.f.iii, 10.f.iv and 10.g
+		elements << Column{
+			name:     Identifier{
+				sub_entity_name: name
+			}
+			typ:      column.typ
+			not_null: column.not_null
+		}
+	}
+
+	return TableDefinition{
+		...stmt
+		table_elements: elements
+		as_subquery:    none
+	}
 }
 
 // table checks the definition and returns the table that it describes. It's

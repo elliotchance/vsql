@@ -288,6 +288,12 @@ when its referenced columns are changed by an :doc:`update`. They can be given
 in either order:
 
 - ``NO ACTION`` (the default) is the error ``23503`` described above.
+- ``RESTRICT`` is an error ``23001`` as soon as a row that references it is
+  found, before any other actions are carried out and even when the
+  ``FOREIGN KEY`` is deferred (see `Deferrable Constraints`_). The rows that
+  reference it are the rows from before the statement, so it's still an error
+  when the same statement (or an action) deletes or changes those rows too,
+  such as ``DELETE FROM emp`` when ``emp`` references itself.
 - ``CASCADE`` deletes the rows that reference it (``ON DELETE``), or changes
   their columns of the ``FOREIGN KEY`` to the new values of the referenced
   columns (``ON UPDATE``). Those rows can be referenced by other rows, so this

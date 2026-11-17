@@ -559,6 +559,28 @@ Class ``23``: Integrity Constraint Violation
 A change to a table would break one of its constraints. The statement has no
 effect.
 
+``23001`` restrict violation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A row that's referenced by a ``FOREIGN KEY`` with ``ON DELETE RESTRICT`` was
+deleted, or its referenced columns were changed when the ``FOREIGN KEY`` has
+``ON UPDATE RESTRICT``.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (id INT PRIMARY KEY);
+  CREATE TABLE t2 (t1_id INT REFERENCES t1 ON DELETE RESTRICT);
+  INSERT INTO t1 (id) VALUES (1);
+  INSERT INTO t2 (t1_id) VALUES (1);
+  DELETE FROM t1;
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: INSERT 1
+  -- error 23001: restrict violation: FOREIGN KEY (T1_ID) REFERENCES ":memory:".PUBLIC.T1 (ID) on ":memory:".PUBLIC.T2
+
 ``23502`` violates not-null constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

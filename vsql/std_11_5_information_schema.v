@@ -690,8 +690,8 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 // referenced table that has the referenced columns, with its name in the
 // TABLE_CONSTRAINTS view. A
 // FOREIGN KEY can't have a MATCH yet (F741), so it's NONE (Description, 3).
-// The UPDATE_RULE and DELETE_RULE are NO ACTION when they're not specified,
-// and there's no RESTRICT (T191) (Description, 4 and 5).
+// The UPDATE_RULE and DELETE_RULE are NO ACTION when they're not specified
+// (Description, 4 and 5).
 //
 // The view only has the constraints that are in the TABLE_CONSTRAINTS view,
 // which is every one, because there are no privileges (#732) (ISO/IEC

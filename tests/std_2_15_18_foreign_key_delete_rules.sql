@@ -165,15 +165,11 @@ SELECT constraint_name, delete_rule FROM information_schema.referential_constrai
 -- CONSTRAINT_NAME: C_FK DELETE_RULE: SET NULL
 -- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_3 DELETE_RULE: SET DEFAULT
 
--- # ON DELETE can only be given once, and RESTRICT isn't supported (T191).
+-- # ON DELETE can only be given once.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (id INT REFERENCES parent ON DELETE CASCADE ON DELETE CASCADE);
-CREATE TABLE child (id INT REFERENCES parent ON DELETE RESTRICT);
-CREATE TABLE child (id INT REFERENCES parent ON UPDATE RESTRICT);
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: unexpected DELETE at line 1, column 67 near "DELETE CASCADE ON DELETE CASCADE", expecting UPDATE
--- error 42601: syntax error: unexpected RESTRICT at line 1, column 56 near "parent ON DELETE RESTRICT)", expecting CASCADE or NO or SET
--- error 42601: syntax error: unexpected RESTRICT at line 1, column 56 near "parent ON UPDATE RESTRICT)", expecting CASCADE or NO or SET
 
 -- # A row can't be changed by a delete action while another transaction is
 -- # writing it. Once that transaction has finished, its rows are changed too.

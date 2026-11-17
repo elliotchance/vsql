@@ -515,7 +515,7 @@
 15.18/GR/9.a.iii.1       implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_delete_rules.sql
 15.18/GR/9.a.iii.2       n/a          - - subtables (S081)
 15.18/GR/9.a.iii.3       implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_delete_rules.sql
-15.18/GR/9.a.iv          n/a          - - RESTRICT (T191)
+15.18/GR/9.a.iv          implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_restrict.sql
 15.18/GR/9.b             n/a          - - MATCH PARTIAL (F741)
 15.18/GR/9.b.i           n/a          - - MATCH PARTIAL (F741)
 15.18/GR/9.b.i.1         n/a          - - MATCH PARTIAL (F741)
@@ -548,7 +548,7 @@
 15.18/GR/10.a.iii.1      implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_update_rules.sql
 15.18/GR/10.a.iii.2      n/a          - - subtables (S081)
 15.18/GR/10.a.iii.3      implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_update_rules.sql
-15.18/GR/10.a.iv         n/a          - - RESTRICT (T191)
+15.18/GR/10.a.iv         implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_restrict.sql
 15.18/GR/10.b            n/a          - - MATCH PARTIAL (F741)
 15.18/GR/10.b.i          n/a          - - MATCH PARTIAL (F741)
 15.18/GR/10.b.i.1        n/a          - - MATCH PARTIAL (F741)

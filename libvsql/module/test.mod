@@ -425,6 +425,12 @@ PROCEDURE insert_checked (SQLSTATE);
 PROCEDURE insert_checked_column (SQLSTATE);
   INSERT INTO checked (y) VALUES (1);
 
+PROCEDURE create_checked_again (SQLSTATE);
+  CREATE TABLE checked (x INTEGER);
+
+PROCEDURE add_checked_column (SQLSTATE);
+  ALTER TABLE checked ADD COLUMN x INTEGER;
+
 PROCEDURE get_table (SQLSTATE, :catalog VARCHAR(10), :schema VARCHAR(10),
     :table VARCHAR(10), :column VARCHAR(10));
   GET DIAGNOSTICS CONDITION 1 :catalog = CATALOG_NAME, :schema = SCHEMA_NAME,

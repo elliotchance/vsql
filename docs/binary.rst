@@ -72,7 +72,8 @@ of octets in it, and it's shown the same way (in upper case).
 
 There's no ``CAST`` between a binary string and a character string.
 ``BINARY_TO_HEX`` converts a binary string to its hexadecimal digits, and
-``HEX_TO_BINARY`` converts them back (see :doc:`functions`).
+``HEX_TO_BINARY`` converts them back. ``UUID_TO_BINARY`` and ``BINARY_TO_UUID`` store a
+UUID as a ``BINARY(16)`` (see :doc:`functions`).
 
 .. code-block:: sql
 

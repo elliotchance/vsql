@@ -16,6 +16,12 @@ A random number that is at least 0 and less than 1. It's a different number
 each time it's called, even in the same statement, so it can't be used in a
 ``CHECK`` constraint.
 
+.. warning::
+
+   ``RANDOM`` isn't cryptographically secure: the numbers that it returns can
+   be predicted from the ones before it. Use ``GENERATE_UUID_V4`` for a value
+   that must not be guessed, such as a token.
+
 ``RANDOM`` is a vsql extension flagged by ``V403-06`` (see :doc:`sql-flagging`).
 
 **Examples**

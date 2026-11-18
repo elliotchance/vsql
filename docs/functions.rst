@@ -41,6 +41,7 @@ The functions are in these categories:
    functions-date-and-time.rst
    functions-error-and-gamma.rst
    functions-exponent-and-logarithm.rst
+   functions-hash.rst
    functions-random.rst
    functions-rounding.rst
    functions-session.rst

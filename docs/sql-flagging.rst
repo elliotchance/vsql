@@ -451,6 +451,24 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V406-04``
      - ``BASE64_TO_BINARY``.
 
+   * - ``V408``
+     - Hash functions (see :doc:`functions`).
+
+   * - ``V408-01``
+     - ``HASH``.
+
+   * - ``V408-02``
+     - ``MD5``.
+
+   * - ``V408-03``
+     - ``SHA1``.
+
+   * - ``V408-04``
+     - ``SHA256``.
+
+   * - ``V408-05``
+     - ``SHA512``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

@@ -445,6 +445,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V406-02``
      - ``HEX_TO_BINARY``.
 
+   * - ``V406-03``
+     - ``BINARY_TO_BASE64``.
+
+   * - ``V406-04``
+     - ``BASE64_TO_BINARY``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

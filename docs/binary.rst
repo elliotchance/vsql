@@ -72,7 +72,8 @@ of octets in it, and it's shown the same way (in upper case).
 
 There's no ``CAST`` between a binary string and a character string.
 ``BINARY_TO_HEX`` converts a binary string to its hexadecimal digits, and
-``HEX_TO_BINARY`` converts them back (see :doc:`functions`).
+``HEX_TO_BINARY`` converts them back. ``BINARY_TO_BASE64`` and
+``BASE64_TO_BINARY`` do the same with base64 (see :doc:`functions`).
 
 .. code-block:: sql
 
@@ -80,6 +81,12 @@ There's no ``CAST`` between a binary string and a character string.
   -- COL1: CAFE
 
   VALUES HEX_TO_BINARY('cafe');
+  -- COL1: CAFE
+
+  VALUES BINARY_TO_BASE64(X'CAFE');
+  -- COL1: yv4=
+
+  VALUES BASE64_TO_BINARY('yv4=');
   -- COL1: CAFE
 
 Operations

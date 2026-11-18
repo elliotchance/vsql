@@ -717,6 +717,14 @@ fn is_boolean_operation(e BooleanValueExpression) bool {
 	return true
 }
 
+// is_boolean_operation_predicand is true if a <boolean predicand> is a
+// <boolean value expression> in parentheses that's an operation (see
+// is_boolean_operation), such as the "(x = 1)" of "(x = 1) = b". A comparison
+// (or other predicate) of one needs T031.
+fn is_boolean_operation_predicand(p BooleanPredicand) bool {
+	return p is BooleanValueExpression && is_boolean_operation(p)
+}
+
 // is_parenthesized_boolean is true if a <boolean value expression> is in
 // parentheses, such as "(x = 1)" or "(1)".
 fn is_parenthesized_boolean(e BooleanValueExpression) bool {

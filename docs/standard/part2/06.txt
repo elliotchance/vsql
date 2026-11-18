@@ -560,7 +560,7 @@
 6.13/SR/4.b.ii           n/a          - - cast templates (T839)
 6.13/SR/5                definition   - -
 6.13/SR/6                n/a          - - collection types (S091, S271)
-6.13/SR/7                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
+6.13/SR/7                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
 6.13/SR/8                n/a          - - intervals (F052)
 6.13/SR/9                n/a          - - intervals (F052)
 6.13/SR/10               impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql there are no character sets other than UTF8
@@ -736,14 +736,14 @@
 6.13/GR/12.f.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.f.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.f.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/GR/13               n/a          - - binary strings (T021)
-6.13/GR/13.a             n/a          - - binary strings (T021)
-6.13/GR/13.a.i           n/a          - - binary strings (T021)
-6.13/GR/13.a.ii          n/a          - - binary strings (T021)
-6.13/GR/13.a.iii         n/a          - - binary strings (T021)
-6.13/GR/13.b             n/a          - - binary strings (T021)
-6.13/GR/13.b.i           n/a          - - binary strings (T021)
-6.13/GR/13.b.ii          n/a          - - binary strings (T021)
+6.13/GR/13               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.a.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.b             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.b.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
+6.13/GR/13.b.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_binary.sql
 6.13/GR/14               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
 6.13/GR/14.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
 6.13/GR/14.a.i           n/a          - - cast templates (T839)
@@ -1162,10 +1162,10 @@
 6.31/GR/2.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
 6.31/GR/2.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql USING isn't supported (T061), it's always CHARACTERS
 6.31/GR/2.c              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
-6.31/GR/3                n/a          - - binary strings (T021)
-6.31/GR/3.a              n/a          - - binary strings (T021)
-6.31/GR/3.b              n/a          - - binary strings (T021)
-6.31/GR/3.c              n/a          - - binary strings (T021)
+6.31/GR/3                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql
+6.31/GR/3.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql
+6.31/GR/3.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql
+6.31/GR/3.c              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql
 6.31/GR/4                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/GR/4.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql there are no intervals (F052)
 6.31/GR/4.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
@@ -1275,9 +1275,9 @@
 6.31/CR/3                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/4                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/5                n/a          - - national character (F421)
-6.31/CR/6                n/a          - - binary strings (T021)
+6.31/CR/6                implemented  vsql/funcs.v tests/std_2_6_31_binary_position.sql T047 when either is a BINARY LARGE OBJECT, otherwise T021
 6.31/CR/7                n/a          - - LOBs (T041)
-6.31/CR/8                n/a          - - LOBs (T041)
+6.31/CR/8                partial      vsql/funcs.v tests/std_2_6_31_binary_octet_length.sql only a BINARY LARGE OBJECT, there are no CHARACTER LARGE OBJECT string functions yet (T050)
 6.31/CR/9                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/10               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/11               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
@@ -1309,13 +1309,13 @@
 6.32/SR/4                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/SR/4.a              n/a          - - COLLATE (F690)
 6.32/SR/4.b              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
-6.32/SR/5                n/a          - - binary strings (T021)
+6.32/SR/5                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
 6.32/SR/6                container    - -
-6.32/SR/6.a              n/a          - - binary strings (T021)
-6.32/SR/6.a.i            n/a          - - binary strings (T021)
-6.32/SR/6.a.ii           n/a          - - binary strings (T021)
-6.32/SR/6.a.iii          n/a          - - binary strings (T021)
-6.32/SR/6.b              n/a          - - binary strings (T021)
+6.32/SR/6.a              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/SR/6.a.i            implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/SR/6.a.ii           implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/SR/6.a.iii          implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/SR/6.b              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
 6.32/GR/1                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.a              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
@@ -1336,22 +1336,22 @@
 6.32/GR/2.b.ii.3.B.II    implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.B.III   implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
 6.32/GR/2.b.ii.3.C       implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_concatenation.sql
-6.32/GR/3                n/a          - - binary strings (T021)
-6.32/GR/3.a              n/a          - - binary strings (T021)
-6.32/GR/3.b              n/a          - - binary strings (T021)
-6.32/GR/3.b.i            n/a          - - binary strings (T021)
-6.32/GR/3.b.i.1          n/a          - - binary strings (T021)
-6.32/GR/3.b.i.2          n/a          - - binary strings (T021)
-6.32/GR/3.b.i.3          n/a          - - binary strings (T021)
-6.32/GR/3.b.ii           n/a          - - binary strings (T021)
-6.32/GR/3.b.ii.1         n/a          - - binary strings (T021)
-6.32/GR/3.b.ii.2         n/a          - - binary strings (T021)
-6.32/GR/3.b.ii.3         n/a          - - binary strings (T021)
-6.32/GR/3.b.iii          n/a          - - binary strings (T021)
+6.32/GR/3                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.a              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.b              implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.b.i            impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql LOL is 2147483647, the same as the longest BINARY LARGE OBJECT
+6.32/GR/3.b.i.1          impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql LOL is 2147483647, the same as the longest BINARY LARGE OBJECT
+6.32/GR/3.b.i.2          impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql LOL is 2147483647, the same as the longest BINARY LARGE OBJECT
+6.32/GR/3.b.i.3          impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql LOL is 2147483647, the same as the longest BINARY LARGE OBJECT
+6.32/GR/3.b.ii           implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.b.ii.1         implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.b.ii.2         implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.b.ii.3         implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
+6.32/GR/3.b.iii          implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
 6.32/GR/4                impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_1_character.sql a zero-length string isn't an error
 6.32/CR/1                n/a          - - national character (F421)
-6.32/CR/2                n/a          - - binary strings (T021)
-6.32/CR/3                n/a          - - LOBs (T041)
+6.32/CR/2                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql a binary string literal, type or concatenation is T021
+6.32/CR/3                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql T048 for a BINARY LARGE OBJECT, otherwise T021
 6.32/CR/4                n/a          - - LOBs (T041)
 # 6.33, <string value function>
 6.33                     implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql
@@ -1470,20 +1470,20 @@
 6.33/SR/18.c.ii.2        n/a          - - NORMALIZE (T061)
 6.33/SR/18.c.ii.3        n/a          - - NORMALIZE (T061)
 6.33/SR/19               n/a          - - specific type method (S261)
-6.33/SR/20               n/a          - - binary strings (T021)
-6.33/SR/21               n/a          - - binary strings (T021)
-6.33/SR/21.a             n/a          - - binary strings (T021)
-6.33/SR/21.b             n/a          - - binary strings (T021)
-6.33/SR/22               n/a          - - binary strings (T021)
-6.33/SR/22.a             container    - -
-6.33/SR/22.a.i           n/a          - - binary strings (T021)
-6.33/SR/22.a.i.1         n/a          - - binary strings (T021)
-6.33/SR/22.a.i.2         n/a          - - binary strings (T021)
-6.33/SR/22.a.i.3         n/a          - - binary strings (T021)
-6.33/SR/22.a.ii          n/a          - - binary strings (T021)
-6.33/SR/22.b             container    - -
-6.33/SR/22.b.i           n/a          - - binary strings (T021)
-6.33/SR/22.b.ii          n/a          - - binary strings (T021)
+6.33/SR/20               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql there's no <binary overlay function> yet (T022)
+6.33/SR/21               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/SR/21.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/SR/21.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/SR/22               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.a.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.a.i.1         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.a.i.2         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.a.i.3         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.a.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.b.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/SR/22.b.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
 6.33/SR/23               n/a          - - binary strings (T021)
 6.33/SR/23.a             n/a          - - binary strings (T021)
 6.33/SR/23.b             n/a          - - binary strings (T021)
@@ -1637,26 +1637,26 @@
 6.33/GR/15.b.ii.2        n/a          - - specific type method (S261)
 6.33/GR/15.b.ii.3        n/a          - - specific type method (S261)
 6.33/GR/15.c             n/a          - - specific type method (S261)
-6.33/GR/16               n/a          - - binary strings (T021)
-6.33/GR/17               n/a          - - binary strings (T021)
-6.33/GR/17.a             n/a          - - binary strings (T021)
-6.33/GR/17.b             n/a          - - binary strings (T021)
-6.33/GR/17.c             n/a          - - binary strings (T021)
-6.33/GR/17.d             n/a          - - binary strings (T021)
-6.33/GR/17.e             container    - -
-6.33/GR/17.e.i           n/a          - - binary strings (T021)
-6.33/GR/17.e.ii          container    - -
-6.33/GR/17.e.ii.1        n/a          - - binary strings (T021)
-6.33/GR/17.e.ii.2        n/a          - - binary strings (T021)
-6.33/GR/18               n/a          - - binary strings (T021)
-6.33/GR/18.a             n/a          - - binary strings (T021)
-6.33/GR/18.b             n/a          - - binary strings (T021)
-6.33/GR/18.c             n/a          - - binary strings (T021)
-6.33/GR/18.d             n/a          - - binary strings (T021)
-6.33/GR/18.e             container    - -
-6.33/GR/18.e.i           n/a          - - binary strings (T021)
-6.33/GR/18.e.ii          n/a          - - binary strings (T021)
-6.33/GR/18.e.iii         n/a          - - binary strings (T021)
+6.33/GR/16               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql there's no <binary overlay function> yet (T022)
+6.33/GR/17               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.d             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.e             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.e.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.e.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.e.ii.1        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/17.e.ii.2        implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
+6.33/GR/18               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.d             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.e             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.e.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.e.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
+6.33/GR/18.e.iii         implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
 6.33/GR/19               impl-defined vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_substring.sql a zero-length string isn't an error
 6.33/GR/20               n/a          - - row pattern recognition (R010)
 6.33/GR/20.a             container    - -
@@ -1681,7 +1681,7 @@
 6.33/CR/2                implemented  vsql/std_2_6_33_string_value_function.y tests/std_1_9_6_flagging.sql
 6.33/CR/3                implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_overlay.sql
 6.33/CR/4                n/a          - - OVERLAY (T312)
-6.33/CR/5                n/a          - - binary strings (T022)
+6.33/CR/5                implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql
 6.33/CR/6                n/a          - - transliteration (F695)
 6.33/CR/7                n/a          - - transcoding (F695)
 6.33/CR/8                n/a          - - NORMALIZE (T061)
@@ -1694,7 +1694,7 @@
 6.33/CR/15               n/a          - - regular expressions (F846)
 6.33/CR/16               n/a          - - regular expressions (F847)
 6.33/CR/17               n/a          - - LOBs (T041)
-6.33/CR/18               n/a          - - LOBs (T041)
+6.33/CR/18               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql
 6.33/CR/19               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/CR/20               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
 # 6.34, <JSON value constructor>

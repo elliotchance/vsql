@@ -43,7 +43,11 @@ struct CharacterSubstringFunction {
 	value &CharacterValueExpression
 	from  ?&NumericValueExpression
 	@for  ?&NumericValueExpression
-	using string // CHARACTERS or OCTETS or ''
+	// CHARACTERS or OCTETS, or '' without USING, which is CHARACTERS for a
+	// character string. A binary string can't have USING.
+	//
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 6
+	using string
 }
 
 fn new_character_substring_function(value CharacterValueExpression, from NumericValueExpression, @for ?NumericValueExpression, using string) CharacterSubstringFunction {
@@ -69,7 +73,11 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 		s += ' FOR ${@for.pstr(params)}'
 	}
 
-	return s + ' USING ${e.using})'
+	if e.using != '' {
+		s += ' USING ${e.using}'
+	}
+
+	return s + ')'
 }
 
 // A dynamic parameter that is the start position or string length has the type
@@ -101,6 +109,10 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
+	if compiled_value.typ.typ.is_binary_string() {
+		return e.compile_binary(mut c, compiled_value, compiled_from, compiled_for)
+	}
+
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 4
 	typ := varying_string_type('SUBSTRING', compiled_value.typ)!
 
@@ -123,7 +135,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
 
-			if e.using == 'CHARACTERS' {
+			if e.using != 'OCTETS' {
 				characters := value.string_value().runes()
 				start, end := substring_range(characters.len, substring_position('SUBSTRING',
 					'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
@@ -142,6 +154,78 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		typ:          typ
 		contains_agg: compiled_value.contains_agg || compiled_from.contains_agg
 			|| compiled_for.contains_agg
+	}
+}
+
+// compile_binary is a <binary substring function>, which is a <binary value
+// function> (Feature T022). The value is counted in octets, and only the octets
+// of a large value that are in the result are read. It needs Feature T047 for a
+// BINARY LARGE OBJECT.
+//
+// ISO/IEC 9075-2:2023, 4.4.3, Operations involving binary strings
+// ISO/IEC 9075-2:2023, 4.4.3.1, Operators that operate on binary strings and return binary strings
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5 and 18
+fn (e CharacterSubstringFunction) compile_binary(mut c Compiler, compiled_value CompileResult, compiled_from CompileResult, compiled_for CompileResult) !CompileResult {
+	if e.using != '' {
+		return sqlstate_42601('SUBSTRING of ${compiled_value.typ} cannot have USING ${e.using}')
+	}
+
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 20 and 21
+	typ := binary_value_function_type(compiled_value.typ)
+	c.flag_binary_value_function(typ)
+
+	return CompileResult{
+		run:          fn [e, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value.run(mut conn, data, params)!
+			from_value := compiled_from.run(mut conn, data, params)!
+			for_value := if e.@for != none {
+				compiled_for.run(mut conn, data, params)!
+			} else {
+				new_integer_value(0)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 17.c
+			if value.is_null || from_value.is_null || for_value.is_null {
+				return new_null_value(typ.typ).with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 17.a, 17.b, 17.d and 17.e
+			start, end := substring_range(value.octet_length(), substring_position('SUBSTRING',
+				'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
+				'string length', for_value)!)!
+
+			return new_binary_string_value(typ.typ, value.octets(start, end)!).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: compiled_value.contains_agg || compiled_from.contains_agg
+			|| compiled_for.contains_agg
+	}
+}
+
+// binary_value_function_type is the declared type of a <binary substring
+// function> or <binary trim function>, which is a BINARY VARYING with the
+// (maximum) length of the source, or a BINARY LARGE OBJECT of the same maximum
+// length if the source is one.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 21 and 22.b
+fn binary_value_function_type(source Type) Type {
+	if source.typ == .is_blob {
+		return Type{.is_blob, source.size, 0, false, false}
+	}
+
+	return Type{.is_varbinary, source.size, 0, false, false}
+}
+
+// flag_binary_value_function flags a <binary value function> (T022), and one
+// whose source is a BINARY LARGE OBJECT (T047).
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5 and 18
+fn (mut c Compiler) flag_binary_value_function(typ Type) {
+	if c.conn.flagging {
+		c.conn.flagged_features << 'T022'
+		if typ.typ == .is_blob {
+			c.conn.flagged_features << 'T047'
+		}
 	}
 }
 
@@ -512,22 +596,45 @@ fn similar_substring(value string, pattern string, escape rune) !(string, bool) 
 struct TrimFunction {
 	// LEADING, TRAILING or BOTH
 	specification string
-	// When not provided, it will default to ' '.
-	character &CharacterValueExpression
+	// Without a trim character it's a space, or X'00' for a binary string.
+	//
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14.a.i.3 and 22.a.i.3
+	character ?&CharacterValueExpression
 	source    &CharacterValueExpression
 }
 
-fn new_trim_function(specification string, character CharacterValueExpression, source CharacterValueExpression) TrimFunction {
-	return TrimFunction{specification, &character, &source}
+fn new_trim_function(specification string, character ?CharacterValueExpression, source CharacterValueExpression) TrimFunction {
+	mut character_ref := ?&CharacterValueExpression(none)
+	if ch := character {
+		character_ref = ref_character_value_expression(ch)
+	}
+
+	return TrimFunction{specification, character_ref, &source}
 }
 
 fn (e TrimFunction) pstr(params map[string]Value) string {
-	return 'TRIM(${e.specification} ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
+	if character := e.character {
+		return 'TRIM(${e.specification} ${character.pstr(params)} FROM ${e.source.pstr(params)})'
+	}
+
+	return 'TRIM(${e.specification} FROM ${e.source.pstr(params)})'
 }
 
 fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	compiled_source := e.source.compile(mut c)!
-	compiled_character := e.character.compile(mut c)!
+	is_binary := compiled_source.typ.typ.is_binary_string()
+	compiled_character := if character := e.character {
+		character.compile(mut c)!
+	} else if is_binary {
+		ValueSpecification(new_binary_value([u8(0)])).compile(mut c)!
+	} else {
+		ValueSpecification(new_varchar_value(' ')).compile(mut c)!
+	}
+
+	if is_binary {
+		return e.compile_binary(mut c, compiled_source, compiled_character)
+	}
+
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14
 	typ := varying_string_type('TRIM', compiled_source.typ)!
 
@@ -572,6 +679,61 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 		}
 		typ:          typ
 		contains_agg: compiled_source.contains_agg || compiled_character.contains_agg
+	}
+}
+
+// compile_binary is a <binary trim function>, which is a <binary value
+// function> (Feature T022). The trim octet must be a binary string. It needs
+// Feature T047 for a BINARY LARGE OBJECT.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5 and 18
+fn (e TrimFunction) compile_binary(mut c Compiler, compiled_source CompileResult, compiled_octet CompileResult) !CompileResult {
+	// The <trim octet> is a <binary value expression>.
+	//
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Format
+	if !compiled_octet.typ.typ.is_binary_string() {
+		return sqlstate_42883('function does not exist: TRIM(${compiled_octet.typ} FROM ${compiled_source.typ})')
+	}
+
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 22.b
+	typ := binary_value_function_type(compiled_source.typ)
+	c.flag_binary_value_function(typ)
+
+	return CompileResult{
+		run:          fn [e, compiled_source, compiled_octet, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			source := compiled_source.run(mut conn, data, params)!
+			octet := compiled_octet.run(mut conn, data, params)!
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 18.c
+			if source.is_null || octet.is_null {
+				return new_null_value(typ.typ).with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 18.d
+			trim_octet := octet.string_value()
+			if trim_octet.len != 1 {
+				return sqlstate_22027()
+			}
+
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 18.e
+			s := source.string_value()
+			mut start := 0
+			mut end := s.len
+			if e.specification != 'TRAILING' {
+				for start < end && s[start] == trim_octet[0] {
+					start++
+				}
+			}
+			if e.specification != 'LEADING' {
+				for end > start && s[end - 1] == trim_octet[0] {
+					end--
+				}
+			}
+
+			return new_binary_string_value(typ.typ, s[start..end]).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: compiled_source.contains_agg || compiled_octet.contains_agg
 	}
 }
 

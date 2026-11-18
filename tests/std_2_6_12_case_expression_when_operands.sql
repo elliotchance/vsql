@@ -147,10 +147,6 @@ VALUES CASE (1, 2) WHEN 1 THEN 1 END;
 VALUES CASE (1, 2) WHEN LIKE 'a' THEN 1 END;
 -- error 42601: syntax error: a row value cannot be used here
 
--- # Predicates that vsql doesn't have can't be a <when operand>.
-VALUES CASE 1 WHEN OVERLAPS (2, 3) THEN 1 END;
--- error 42601: syntax error: unexpected OVERLAPS at line 1, column 20 near "CASE 1 WHEN OVERLAPS ("; hint: OVERLAPS is a reserved word, so it must be quoted to be used as a name, such as "OVERLAPS" (see https://vsql.readthedocs.io/en/latest/keywords.html)
-
 -- # A <when operand> that's a predicate or a row needs F262, and so does a
 -- # case operand that's a row (Conformance Rules, 1 and 2). More than one
 -- # <when operand> needs F263 (Conformance Rules, 3). SIMILAR needs T141

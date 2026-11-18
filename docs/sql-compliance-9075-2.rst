@@ -725,7 +725,7 @@ Optional Features
    * - ❌ **F251**
      - **Domain support**
 
-   * - ⭕ **F262**
+   * - ✅ **F262**
      - **Extended CASE expression**
 
    * - ✅ **F263**

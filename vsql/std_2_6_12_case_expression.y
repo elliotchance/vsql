@@ -70,8 +70,8 @@ searched_when_clause:
 else_clause:
   ELSE result { $$.v = $2.v }
 
-// There's no <overlaps predicate part 1> because there's no <overlaps
-// predicate> (F053).
+// An <overlaps predicate part 1> is only a <row value predicand>, so it's
+// parsed as one (see check_overlaps_when_operands).
 case_operand:
   row_value_predicand { $$.v = $1.v }
 
@@ -88,7 +88,7 @@ when_operand_list:
 //
 // ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 2.f and 2.i
 //
-// The predicates that vsql doesn't have (such as <overlaps predicate part 2>)
+// The predicates that vsql doesn't have (such as <octet like predicate part 2>)
 // can't be a <when operand>.
 //
 // ISO/IEC 9075-2:2023, 6.12, <caseexpression>, Conformance Rules, 2; ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Conformance Rules, 1
@@ -165,6 +165,24 @@ when_operand:
         ...$1.v as MatchPredicate
         expr: case_operand()
       }
+    })
+  }
+
+| distinct_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    // ISO/IEC 9075-2:2023, 8.15, <distinct predicate>, Conformance Rules, 1
+    // and 2
+    flag(mut yylex, 'T151')
+    distinct := $1.v as DistinctPredicatePart2
+    flag_if(mut yylex, distinct.not, 'T152')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: DistinctPredicate{case_operand(), distinct.right, distinct.not}
+    })
+  }
+| overlaps_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: OverlapsPredicate{case_operand(), $1.v as RowValueConstructorPredicand}
     })
   }
 

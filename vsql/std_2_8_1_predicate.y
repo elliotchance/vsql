@@ -12,6 +12,7 @@ predicate:
   }
 | exists_predicate { $$.v = yy_box(Predicate($1.v as ExistsPredicate)) }
 | unique_predicate { $$.v = yy_box(Predicate($1.v as UniquePredicate)) }
+| match_predicate { $$.v = yy_box(Predicate($1.v as MatchPredicate)) }
 | distinct_predicate { $$.v = yy_box(Predicate($1.v as DistinctPredicate)) }
 | overlaps_predicate { $$.v = yy_box(Predicate($1.v as OverlapsPredicate)) }
 

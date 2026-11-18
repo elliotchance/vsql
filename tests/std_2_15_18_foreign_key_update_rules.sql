@@ -58,33 +58,36 @@ SELECT * FROM emp;
 -- ID: 20 MANAGER_ID: 10
 -- ID: 30 MANAGER_ID: 20
 
--- # ON UPDATE SET NULL and SET DEFAULT are like ON DELETE, and a composite key
--- # only changes when any of its columns change. The new values must satisfy
--- # the constraints.
+-- # ON UPDATE SET NULL and SET DEFAULT are like ON DELETE, but only change the
+-- # columns that correspond to the referenced columns that were updated
+-- # (General Rules, 10.a.ii.1.A and 10.a.iii.1). A composite key only changes
+-- # when any of its columns change. The new values must satisfy the
+-- # constraints.
 CREATE TABLE parent (a INT, b INT, UNIQUE (a, b));
 CREATE TABLE child (x INT, y INT DEFAULT 5, FOREIGN KEY (x, y) REFERENCES parent (a, b) ON UPDATE SET NULL);
 CREATE TABLE child2 (x INT DEFAULT 0, y INT DEFAULT 0, FOREIGN KEY (x, y) REFERENCES parent (a, b) ON UPDATE SET DEFAULT ON DELETE CASCADE);
-INSERT INTO parent (a, b) VALUES (0, 0), (1, 1), (1, 2);
+INSERT INTO parent (a, b) VALUES (0, 0), (1, 0), (1, 1), (1, 2);
 INSERT INTO child (x, y) VALUES (1, 1), (1, 2);
 INSERT INTO child2 (x, y) VALUES (1, 1), (1, 2);
 UPDATE parent SET b = 3 WHERE b = 1;
 SELECT * FROM child;
 SELECT * FROM child2;
-UPDATE parent SET a = 5 WHERE a = 0;
+UPDATE parent SET a = 5 WHERE a = 1;
 SELECT * FROM parent;
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
--- msg: INSERT 3
+-- msg: INSERT 4
 -- msg: INSERT 2
 -- msg: INSERT 2
 -- msg: UPDATE 1
--- X: NULL Y: NULL
+-- X: 1 Y: NULL
 -- X: 1 Y: 2
--- X: 0 Y: 0
+-- X: 1 Y: 0
 -- X: 1 Y: 2
 -- error 23503: violates foreign key constraint: FOREIGN KEY (X, Y) REFERENCES ":memory:".PUBLIC.PARENT (A, B) on ":memory:".PUBLIC.CHILD2
 -- A: 0 B: 0
+-- A: 1 B: 0
 -- A: 1 B: 3
 -- A: 1 B: 2
 

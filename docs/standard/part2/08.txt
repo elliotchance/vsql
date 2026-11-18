@@ -301,37 +301,37 @@
 8.12/CR/1                n/a          - - IS NORMALIZED (T061)
 8.12/CR/2                n/a          - - IS NORMALIZED (T061)
 # 8.13, <match predicate>
-8.13                     n/a          - - MATCH predicate (F741)
-8.13/SR/1                n/a          - - MATCH predicate (F741)
-8.13/SR/2                n/a          - - MATCH predicate (F741)
-8.13/SR/3                n/a          - - MATCH predicate (F741)
-8.13/GR/1                n/a          - - MATCH predicate (F741)
-8.13/GR/2                n/a          - - MATCH predicate (F741)
-8.13/GR/2.a              n/a          - - MATCH predicate (F741)
+8.13                     implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/SR/1                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/SR/2                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/SR/3                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/1                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/2                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/2.a              implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
 8.13/GR/2.b              container    - -
-8.13/GR/2.b.i            n/a          - - MATCH predicate (F741)
-8.13/GR/2.b.ii           n/a          - - MATCH predicate (F741)
-8.13/GR/2.b.ii.1         n/a          - - MATCH predicate (F741)
-8.13/GR/2.b.ii.2         n/a          - - MATCH predicate (F741)
-8.13/GR/2.b.ii.3         n/a          - - MATCH predicate (F741)
-8.13/GR/3                n/a          - - MATCH predicate (F741)
-8.13/GR/3.a              n/a          - - MATCH predicate (F741)
-8.13/GR/3.b              n/a          - - MATCH predicate (F741)
-8.13/GR/3.b.i            n/a          - - MATCH predicate (F741)
-8.13/GR/3.b.ii           n/a          - - MATCH predicate (F741)
-8.13/GR/3.b.ii.1         n/a          - - MATCH predicate (F741)
-8.13/GR/3.b.ii.2         n/a          - - MATCH predicate (F741)
-8.13/GR/3.b.ii.3         n/a          - - MATCH predicate (F741)
-8.13/GR/4                n/a          - - MATCH predicate (F741)
-8.13/GR/4.a              n/a          - - MATCH predicate (F741)
-8.13/GR/4.b              n/a          - - MATCH predicate (F741)
-8.13/GR/4.b.i            n/a          - - MATCH predicate (F741)
-8.13/GR/4.b.ii           n/a          - - MATCH predicate (F741)
-8.13/GR/4.b.ii.1         n/a          - - MATCH predicate (F741)
-8.13/GR/4.b.ii.2         n/a          - - MATCH predicate (F741)
-8.13/GR/4.b.ii.3         n/a          - - MATCH predicate (F741)
-8.13/GR/4.b.iii          n/a          - - MATCH predicate (F741)
-8.13/CR/1                n/a          - - MATCH predicate (F741)
+8.13/GR/2.b.i            implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/2.b.ii           implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/2.b.ii.1         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/2.b.ii.2         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/2.b.ii.3         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.a              implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.b              implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.b.i            implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.b.ii           implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.b.ii.1         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.b.ii.2         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/3.b.ii.3         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4                implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.a              implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b              implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b.i            implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b.ii           implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b.ii.1         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b.ii.2         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b.ii.3         implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/GR/4.b.iii          implemented  vsql/std_2_8_13_match_predicate.v tests/std_2_8_13_match_predicate.sql
+8.13/CR/1                implemented  vsql/std_2_8_13_match_predicate.y tests/std_2_8_13_match_predicate.sql
 # 8.14, <overlaps predicate>
 8.14                     implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/SR/1                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql

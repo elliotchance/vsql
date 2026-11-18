@@ -157,6 +157,16 @@ when_operand:
       }
     })
   }
+| match_predicate_part_2 {
+    flag(mut yylex, 'F262')
+    flag(mut yylex, 'F741')
+    $$.v = yy_box(CaseWhenOperand{
+      predicate: MatchPredicate{
+        ...$1.v as MatchPredicate
+        expr: case_operand()
+      }
+    })
+  }
 
 result:
   result_expression { $$.v = yy_box(CaseResult($1.v as ValueExpression)) }

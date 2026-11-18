@@ -10,8 +10,8 @@ module vsql
 
 // A FOREIGN KEY, or a REFERENCES on a column. The referenced_columns are empty
 // when they aren't given, which means the PRIMARY KEY of the referenced table.
-// There is no MATCH (F741), so it's always MATCH SIMPLE. The update_rule and
-// delete_rule are empty when there's no ON UPDATE or ON DELETE.
+// The match_type, update_rule and delete_rule are empty when there's no MATCH,
+// ON UPDATE or ON DELETE.
 //
 // ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 1 and 4.b
 struct ReferentialConstraintDefinition {
@@ -19,6 +19,7 @@ struct ReferentialConstraintDefinition {
 	columns            []Identifier
 	referenced_table   Identifier
 	referenced_columns []Identifier
+	match_type         string // SIMPLE, PARTIAL or FULL
 	update_rule        string // CASCADE, SET NULL, SET DEFAULT, RESTRICT or NO ACTION
 	delete_rule        string // CASCADE, SET NULL, SET DEFAULT, RESTRICT or NO ACTION
 	characteristics    ConstraintCharacteristics
@@ -34,12 +35,14 @@ fn new_referential_constraint_definition(columns []Identifier, references Refere
 // A ForeignKey is a referential constraint of a table. Once the table has been
 // created, the referenced_table is fully qualified and the referenced_columns
 // are always known (see resolve_foreign_keys), in the order of the columns that
-// they correspond to. The update_rule and delete_rule are empty for NO ACTION.
+// they correspond to. The match_type is empty for MATCH SIMPLE, and the
+// update_rule and delete_rule are empty for NO ACTION.
 struct ForeignKey {
 	name               string
 	columns            []string
 	referenced_table   Identifier
 	referenced_columns []string
+	match_type         string // PARTIAL or FULL
 	update_rule        string // CASCADE, SET NULL, SET DEFAULT or RESTRICT
 	delete_rule        string // CASCADE, SET NULL, SET DEFAULT or RESTRICT
 	characteristics    ConstraintCharacteristics
@@ -49,6 +52,9 @@ struct ForeignKey {
 // (see Table.bytes).
 fn (k ForeignKey) str() string {
 	mut s := 'FOREIGN KEY (${k.columns.map(delimit_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table.storage_sql()} (${k.referenced_columns.map(delimit_identifier(it)).join(', ')})'
+	if k.match_type != '' {
+		s += ' MATCH ${k.match_type}'
+	}
 	if k.update_rule != '' {
 		s += ' ON UPDATE ${k.update_rule}'
 	}
@@ -67,6 +73,40 @@ fn (k ForeignKey) update_action() string {
 // delete_action is the referential action of the ON DELETE.
 fn (k ForeignKey) delete_action() string {
 	return if k.delete_rule == '' { 'NO ACTION' } else { k.delete_rule }
+}
+
+// is_referencing is true if a row must reference a row of the referenced
+// table. With MATCH SIMPLE, a row with a NULL in any of the columns doesn't,
+// and with MATCH PARTIAL or FULL, a row where every column is NULL doesn't.
+//
+// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 18.b
+fn (k ForeignKey) is_referencing(row Row) bool {
+	nulls := k.columns.filter(row.data.value(it).is_null).len
+
+	return if k.match_type == '' { nulls == 0 } else { nulls < k.columns.len }
+}
+
+// has_null is true if any column of the FOREIGN KEY is NULL in row.
+fn (k ForeignKey) has_null(row Row) bool {
+	return k.columns.any(row.data.value(it).is_null)
+}
+
+// is_partial_match is true if each column of row (a row of the referencing
+// table) that isn't NULL has the same value as the corresponding column of
+// referenced (a row of the referenced table), which is how MATCH PARTIAL finds
+// the rows that a row references. The values are compared as their key types
+// (see key_value).
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 6.b.i
+fn (k ForeignKey) is_partial_match(row Row, referenced Row, types []SQLType, time_zone i16) bool {
+	for i, column in k.columns {
+		if !row.data.value(column).is_null && key_value(row, [column], [types[i]], time_zone) != key_value(referenced,
+			[k.referenced_columns[i]], [types[i]], time_zone) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // violation is the error for a row of t (the referencing table) that doesn't
@@ -228,8 +268,11 @@ fn foreign_key_type(a SQLType, b SQLType) SQLType {
 
 // check_foreign_keys returns an error if a row in rows doesn't reference a row
 // of the referenced table of each FOREIGN KEY of t, or might not once another
-// transaction finishes. A row that has a NULL in any of the columns of the
-// FOREIGN KEY doesn't need to reference a row (MATCH SIMPLE). Like
+// transaction finishes. Only some rows need to reference a row (see
+// is_referencing), and a row with some (but not all) NULLs never does with
+// MATCH FULL. With MATCH PARTIAL, a row with a NULL is found by reading every
+// row of the referenced table (see is_partial_match), and another transaction
+// writing any of its rows is an error (see read_existing_rows). Like
 // check_unique_constraints, the rows must have already been written, so a row
 // can reference a row of the same table that's written by the same statement.
 // A deferred constraint isn't checked (see defer_check).
@@ -245,10 +288,11 @@ fn (mut f Storage) check_foreign_keys(mut conn Connection, t Table, rows []Row) 
 		f.end_isolation()
 	}
 
+	// The time zone of the statement, rather than conn.now(), which would read
+	// the clock again.
+	time_zone := conn.statement_time_zone
 	for key in t.foreign_keys {
-		referencing_rows := rows.filter(fn [key] (row Row) bool {
-			return !key.columns.any(row.data.value(it).is_null)
-		})
+		referencing_rows := rows.filter(key.is_referencing(it))
 		if referencing_rows.len == 0 || f.defer_check(t, key.name, key.characteristics) {
 			continue
 		}
@@ -257,9 +301,23 @@ fn (mut f Storage) check_foreign_keys(mut conn Connection, t Table, rows []Row) 
 		// isn't another row with the same key, so the result doesn't depend on
 		// the order of the rows.
 		referenced := f.table(key.referenced_table.storage_id())
+		types := foreign_key_types(t, key.columns, referenced, key.referenced_columns)!
+		has_nulls := referencing_rows.any(key.has_null(it))
+		partial_rows := if has_nulls && key.match_type == 'PARTIAL' {
+			f.read_existing_rows(referenced)!
+		} else {
+			[]Row{}
+		}
 		mut is_missing := false
 		mut is_concurrent := false
 		for row in referencing_rows {
+			// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 18.b.ii and 18.b.iii
+			if key.has_null(row) {
+				is_missing = is_missing || key.match_type == 'FULL'
+					|| !partial_rows.any(key.is_partial_match(row, it, types, time_zone))
+				continue
+			}
+
 			// A value that the referenced column can't hold can't be
 			// referenced.
 			search := search_row(mut conn, row, key.columns, referenced, key.referenced_columns) or {
@@ -354,6 +412,20 @@ fn (mut f Storage) find_objects(start []u8, end []u8) !(bool, bool) {
 	return found, concurrent
 }
 
+// read_existing_rows are the rows of t that exist (see
+// read_existing_objects). It's an error if another transaction is writing any
+// of them. Every row is read, so it's only used for MATCH PARTIAL, where a row
+// with a NULL can't be found by its key.
+fn (mut f Storage) read_existing_rows(t Table) ![]Row {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	return f.read_existing_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))!.map(new_row_from_bytes(t,
+		it.value, it.tid).for_storage())
+}
+
 // referencing_prefix is the start of the key of every entry of the index that
 // a FOREIGN KEY of referencing uses (see foreign_key_index) for the rows that
 // reference row (a row of the referenced table). It's empty when no row of
@@ -407,6 +479,13 @@ fn (mut f Storage) check_referencing_rows(mut conn Connection, t Table, old_rows
 			}
 
 			types := foreign_key_types(referencing, key.columns, t, key.referenced_columns)!
+			if key.match_type == 'PARTIAL' {
+				if old_rows.len > 0 && !f.defer_check(referencing, key.name, key.characteristics) {
+					f.check_partial_references(key, referencing, t, types, old_rows, time_zone)!
+				}
+				continue
+			}
+
 			mut removed := map[string]Row{}
 			for row in old_rows {
 				value := key_value(row, key.referenced_columns, types, time_zone)
@@ -439,6 +518,22 @@ fn (mut f Storage) check_referencing_rows(mut conn Connection, t Table, old_rows
 			if is_concurrent {
 				return sqlstate_40001('avoiding concurrent write on individual row')
 			}
+		}
+	}
+}
+
+// check_partial_references is check_referencing_rows for a FOREIGN KEY of
+// referencing with MATCH PARTIAL. A row that matched one of the old rows of t
+// must still match a row of t (see is_partial_match), so every row of both
+// tables is read.
+//
+// ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Syntax Rules, 18.b.ii
+fn (mut f Storage) check_partial_references(key ForeignKey, referencing Table, t Table, types []SQLType, old_rows []Row, time_zone i16) ! {
+	referenced := f.read_existing_rows(t)!
+	for row in f.read_existing_rows(referencing)! {
+		if key.is_referencing(row) && old_rows.any(key.is_partial_match(row, it, types, time_zone))
+			&& !referenced.any(key.is_partial_match(row, it, types, time_zone)) {
+			return key.violation(referencing)
 		}
 	}
 }
@@ -550,7 +645,7 @@ fn is_distinct(conn &Connection, a Value, b Value) !bool {
 // ChangedSites), and there's a finite number of sites, so there can only be a
 // finite number of rounds.
 //
-// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9.a, 10.a and 17
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9, 10 and 17
 // ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 12 and 13
 fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
 	if changes.len == 0 {
@@ -626,61 +721,68 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 					continue
 				}
 
-				// A key is deleted when its row is deleted, and updated when a
-				// row has a different key afterwards (15.17 GR 10).
-				// keys are the old rows that have each deleted or updated key,
-				// and restricted are the keys that RESTRICT doesn't allow to
-				// be deleted or updated.
+				// A referenced row has an action when it's deleted, or when a
+				// referenced column that isn't NULL is updated to a different
+				// value (General Rules, 9 and 10). The actions are those
+				// changes, except for the changes that RESTRICT doesn't allow
+				// (restricted). keys are the old rows that have each deleted
+				// or updated key, and changes are the changes of those rows,
+				// for MATCH SIMPLE or FULL.
 				types := foreign_key_types(referencing, key.columns, table, key.referenced_columns)!
-				mut deleted_keys := map[string]bool{}
-				mut updated_keys := map[string]Row{}
-				mut keys := map[string]Row{}
-				mut restricted := map[string]Row{}
+				mut actions := []RowChange{}
+				mut restricted := []RowChange{}
 				for change in table_changes {
-					value := key_value(change.old, key.referenced_columns, types, time_zone)
-					if value.len == 0 {
-						continue
-					}
-
 					rule := if change.is_delete {
 						key.delete_rule
-					} else if key_value(change.new, key.referenced_columns, types, time_zone) != value {
+					} else if is_updated(key, change, types, time_zone) {
 						key.update_rule
 					} else {
 						''
 					}
 					if rule == 'RESTRICT' {
-						restricted[value.bytestr()] = change.old
-					} else if rule != '' && change.is_delete {
-						deleted_keys[value.bytestr()] = true
-						keys[value.bytestr()] = change.old
+						restricted << change
 					} else if rule != '' {
-						updated_keys[value.bytestr()] = change.new
-						keys[value.bytestr()] = change.old
+						actions << change
 					}
 				}
 
 				if restricted.len > 0 {
-					f.check_restrict(mut conn, key, referencing, types, restricted, old[table_name] or {
-						[]Row{}
-					}, time_zone)!
+					f.check_restrict(mut conn, key, referencing, table, types, restricted,
+						old[table_name] or { []Row{} }, time_zone)!
 				}
-				if keys.len == 0 {
+				if actions.len == 0 {
 					continue
+				}
+				mut keys := map[string]Row{}
+				mut changes_by_key := map[string]RowChange{}
+				for change in actions {
+					value := key_value(change.old, key.referenced_columns, types, time_zone)
+					if value.len > 0 {
+						keys[value.bytestr()] = change.old
+						changes_by_key[value.bytestr()] = change
+					}
 				}
 
 				// A row that was deleted can't also be updated by an action
 				// (General Rule 13). It's no longer stored, so it isn't one
 				// of the matching rows.
-				for row in sites.deleted[table_name] or { []Row{} } {
-					value := key_value(row, key.columns, types, time_zone).bytestr()
-					if value in updated_keys
-						|| (value in deleted_keys && key.delete_rule != 'CASCADE') {
+				referenced_rows := if key.match_type == 'PARTIAL' {
+					f.read_existing_rows(table)!
+				} else {
+					[]Row{}
+				}
+				for m in key.referential_matches(sites.deleted[table_name] or { []Row{} }, referenced_rows,
+					actions, changes_by_key, types, time_zone) {
+					if !m.referenced.is_delete || key.delete_rule != 'CASCADE' {
 						return sqlstate_27000('a row of ${referencing.name} that was deleted is updated')
 					}
 				}
 
-				matching := f.matching_rows(mut conn, key, referencing, types, keys, time_zone)!
+				matching := key.referential_matches(if key.match_type == 'PARTIAL' {
+					f.read_existing_rows(referencing)!
+				} else {
+					f.matching_rows(mut conn, key, referencing, types, keys, time_zone)!
+				}, referenced_rows, actions, changes_by_key, types, time_zone)
 				if matching.len == 0 {
 					continue
 				}
@@ -688,11 +790,10 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				check_constraints := new_check_constraints(mut conn, referencing)!
 				generated_columns := new_generated_columns(mut conn, referencing)!
 				mut new_changes := []RowChange{}
-				for row in matching {
-					value := key_value(row, key.columns, types, time_zone).bytestr()
-					is_delete := value in deleted_keys
-					rule := if is_delete { key.delete_rule } else { key.update_rule }
-					if rule == 'CASCADE' && is_delete {
+				for m in matching {
+					row := m.row
+					rule := if m.referenced.is_delete { key.delete_rule } else { key.update_rule }
+					if rule == 'CASCADE' && m.referenced.is_delete {
 						new_changes << RowChange{
 							old:       row
 							is_delete: true
@@ -705,11 +806,12 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						tid:  row.tid
 						data: row.data.clone()
 					}
-					for i, column_name in key.columns {
+					for i in key.changed_columns(m, types, time_zone) {
+						column_name := key.columns[i]
 						column := referencing.column(column_name)!
 						new_value := match rule {
 							'CASCADE' {
-								v := cast(mut conn, 'for column ${column_name}', (updated_keys[value] or { Row{} }).data.value(key.referenced_columns[i]),
+								v := cast(mut conn, 'for column ${column_name}', m.referenced.new.data.value(key.referenced_columns[i]),
 									column.typ)!
 								if column.not_null && v.is_null {
 									return sqlstate_23502(referencing, column_name)
@@ -816,17 +918,160 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 // Those are the old rows of the referencing table. For example, a DELETE of
 // every row of a table that references itself is still an error.
 //
-// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9.a.iv and 10.a.iv
-fn (mut f Storage) check_restrict(mut conn Connection, key ForeignKey, referencing Table, types []SQLType, keys map[string]Row, old []Row, time_zone i16) ! {
-	mut is_matched := old.any(key_value(it, key.columns, types, time_zone).bytestr() in keys)
-	if !is_matched {
-		is_matched = f.matching_rows(mut conn, key, referencing, types, keys, time_zone)!.len > 0
+// With MATCH PARTIAL, only a unique matching row is an error (see
+// is_restricted_partial).
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9.a.iv, 9.b.iv, 10.a.iv and 10.b.iv
+fn (mut f Storage) check_restrict(mut conn Connection, key ForeignKey, referencing Table, referenced Table, types []SQLType, restricted []RowChange, old []Row, time_zone i16) ! {
+	mut is_matched := false
+	if key.match_type == 'PARTIAL' {
+		mut rows := old.clone()
+		rows << f.read_existing_rows(referencing)!
+		is_matched = key.is_restricted_partial(rows, referenced, f.read_existing_rows(referenced)!,
+			restricted, types, time_zone)!
+	} else {
+		mut keys := map[string]Row{}
+		for change in restricted {
+			value := key_value(change.old, key.referenced_columns, types, time_zone)
+			if value.len > 0 {
+				keys[value.bytestr()] = change.old
+			}
+		}
+		is_matched = keys.len > 0
+			&& (old.any(key_value(it, key.columns, types, time_zone).bytestr() in keys)
+				|| f.matching_rows(mut conn, key, referencing, types, keys, time_zone)!.len > 0)
 	}
 
 	if is_matched {
 		return sqlstate_23001('FOREIGN KEY (${key.columns.map(requote_identifier(it)).join(', ')}) REFERENCES ${key.referenced_table} (${key.referenced_columns.map(requote_identifier(it)).join(', ')}) on ${referencing.name}',
 			referencing.constraint_identifier(key.name), referencing.name)
 	}
+}
+
+// is_restricted_partial is true if one of rows (of the referencing table) is a
+// unique matching row of the old row of one of the restricted changes, for
+// MATCH PARTIAL. That's a row that matches the old row (see is_partial_match),
+// and doesn't match any other row of the referenced table (referenced_rows,
+// which exist now). The association with every other row that was deleted or
+// updated was dropped (General Rule 7), so they're not in referenced_rows. The
+// new row of an update is the same row, so a row that still matches it (because
+// the updated columns are NULL in the row) is still a unique matching row.
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 7, 9.b.iv and 10.b.iv
+fn (k ForeignKey) is_restricted_partial(rows []Row, referenced Table, referenced_rows []Row, restricted []RowChange, types []SQLType, time_zone i16) !bool {
+	for change in restricted {
+		mut same := []u8{}
+		if !change.is_delete {
+			mut after := change.new
+			same = after.object_key(referenced)!
+		}
+		mut others := []Row{}
+		for row in referenced_rows {
+			mut other := row
+			if same.len == 0 || other.object_key(referenced)! != same {
+				others << row
+			}
+		}
+
+		for row in rows {
+			if k.is_referencing(row) && k.is_partial_match(row, change.old, types, time_zone)
+				&& !others.any(k.is_partial_match(row, it, types, time_zone)) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// A ReferentialMatch is a matching row of a referential action: a row of the
+// referencing table that references a row of the referenced table that was
+// deleted or updated.
+struct ReferentialMatch {
+	row        Row
+	referenced RowChange
+}
+
+// is_updated is true if a referenced column of the FOREIGN KEY is updated by
+// change (see is_updated_column).
+fn is_updated(key ForeignKey, change RowChange, types []SQLType, time_zone i16) bool {
+	for i, column in key.referenced_columns {
+		if is_updated_column(change, column, types[i], time_zone) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// is_updated_column is true if change updates a referenced column that isn't
+// NULL to a different value (including NULL).
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 10
+fn is_updated_column(change RowChange, column string, typ SQLType, time_zone i16) bool {
+	old := key_value(change.old, [column], [typ], time_zone)
+
+	return old.len > 0 && old != key_value(change.new, [column], [typ], time_zone)
+}
+
+// referential_matches are the rows (of the referencing table) that are matching
+// rows of one of the actions (the changes of the referenced rows that have a
+// referential action). With MATCH SIMPLE or FULL, a row matches the action that
+// has the same key (in changes_by_key). With MATCH PARTIAL, only a unique
+// matching row has an action, which is a row that matches the old row of an
+// action, and doesn't match any row of the referenced table (referenced) now.
+// The rows that match a deleted or updated row more than once only matched
+// that row, because the association with every other row was dropped when it
+// was deleted or updated (General Rule 7). A row that only matches the new row
+// of an update isn't a matching row, but it can't have changed columns anyway
+// (see changed_columns).
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 6 and 7
+fn (k ForeignKey) referential_matches(rows []Row, referenced []Row, actions []RowChange, changes_by_key map[string]RowChange, types []SQLType, time_zone i16) []ReferentialMatch {
+	mut matches := []ReferentialMatch{}
+	for row in rows {
+		if k.match_type != 'PARTIAL' {
+			if change := changes_by_key[key_value(row, k.columns, types, time_zone).bytestr()] {
+				matches << ReferentialMatch{row, change}
+			}
+			continue
+		}
+
+		if !k.is_referencing(row) || referenced.any(k.is_partial_match(row, it, types, time_zone)) {
+			continue
+		}
+		for change in actions {
+			if k.is_partial_match(row, change.old, types, time_zone) {
+				matches << ReferentialMatch{row, change}
+				break
+			}
+		}
+	}
+
+	return matches
+}
+
+// changed_columns are the indexes of the columns of the FOREIGN KEY that the
+// referential action of m changes. A delete changes every column. An update
+// only changes the columns that correspond to an updated referenced column
+// (see is_updated_column), except that SET NULL with MATCH FULL changes every
+// column. With MATCH PARTIAL, a column that's NULL is never changed.
+//
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9.a.ii.1, 9.a.iii.1, 9.b.ii.1 and 9.b.iii.1
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 10.a.i.1, 10.a.ii.1.A, 10.a.ii.2.A and 10.a.iii.1
+// ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 10.b.i.1, 10.b.ii.1 and 10.b.iii.1
+fn (k ForeignKey) changed_columns(m ReferentialMatch, types []SQLType, time_zone i16) []int {
+	is_every_column := m.referenced.is_delete
+		|| (k.match_type == 'FULL' && k.update_rule == 'SET NULL')
+	mut columns := []int{}
+	for i, column in k.columns {
+		if is_every_column || (is_updated_column(m.referenced, k.referenced_columns[i], types[i],
+			time_zone) && !m.row.data.value(column).is_null) {
+			columns << i
+		}
+	}
+
+	return columns
 }
 
 // matching_rows are the rows of the referencing table that reference one of

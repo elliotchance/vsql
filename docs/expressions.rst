@@ -366,6 +366,39 @@ character string, such as ``UPPER`` or ``CAST``, or it's in parentheses.
   'ß' ILIKE 'S%'                 -- FALSE
   '100%' ILIKE '%!%' ESCAPE '!'  -- TRUE
 
+MATCH
+-----
+
+.. code-block:: text
+
+  X MATCH [ UNIQUE ] [ SIMPLE | PARTIAL | FULL ] ( <query> )
+  ( X1 , X2 [ , X3 ... ] ) MATCH [ UNIQUE ] [ SIMPLE | PARTIAL | FULL ] ( <query> )
+
+Returns ``TRUE`` if a row of the subquery is equal to ``X``, otherwise
+``FALSE``. It's never ``UNKNOWN``. The subquery must have the same number of
+columns as ``X``, and their values must be comparable. With ``UNIQUE``, exactly
+one row of the subquery must be equal. The ``NULL`` values of ``X`` depend on
+the match type:
+
+- ``SIMPLE`` (the default) is ``TRUE`` if ``X`` has a ``NULL`` in any column.
+- ``PARTIAL`` only compares the columns that aren't ``NULL``, and is ``TRUE``
+  if every column is ``NULL``.
+- ``FULL`` is ``TRUE`` if every column is ``NULL``, and ``FALSE`` if only some
+  of them are.
+
+These are the same rules as the ``MATCH`` of a ``FOREIGN KEY`` (see
+:doc:`create-table`).
+
+*Examples*
+
+.. code-block:: sql
+
+  (1, 2) MATCH (VALUES ROW(1, 2), ROW(3, 4))                        -- TRUE
+  (1, CAST(NULL AS INT)) MATCH (VALUES ROW(5, 6))                   -- TRUE
+  (1, CAST(NULL AS INT)) MATCH PARTIAL (VALUES ROW(1, 2))           -- TRUE
+  (1, CAST(NULL AS INT)) MATCH FULL (VALUES ROW(1, 2))              -- FALSE
+  1 MATCH UNIQUE (VALUES 1, 1)                                      -- FALSE
+
 NEXT VALUE FOR
 --------------
 

@@ -1322,7 +1322,7 @@ Optional Features
    * - ✅ **T172**
      - **AS subquery clause in table definition**
 
-   * - ❌ **T173**
+   * - ✅ **T173**
      - **Extended LIKE clause in table definition**
 
    * - ✅ **T174**

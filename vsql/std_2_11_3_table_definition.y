@@ -3,8 +3,8 @@
 // ISO/IEC 9075-2:2023, 11.3, <table definition>
 //
 // Define a persistent base table. A <like clause> is flagged with T171
-// (Conformance Rules, 1) and an <as subquery clause> with T172 (Conformance
-// Rules, 7).
+// (Conformance Rules, 1), its <like options> with T173 (Conformance Rules, 8),
+// and an <as subquery clause> with T172 (Conformance Rules, 7).
 
 table_definition:
   CREATE TABLE table_name table_contents_source {
@@ -107,6 +107,27 @@ table_element:
 
 like_clause:
   LIKE table_name { $$.v = yy_box(LikeClause{table_name: $2.v as Identifier}) }
+| LIKE table_name like_options {
+    flag(mut yylex, 'T173')
+    $$.v = yy_box(LikeClause{
+      table_name: $2.v as Identifier
+      options:    $3.v as []LikeOption
+    })
+  }
+
+like_options:
+  like_option { $$.v = yy_box([$1.v as LikeOption]) }
+| like_options like_option {
+    $$.v = yy_box(append_list($1.v as []LikeOption, $2.v as LikeOption))
+  }
+
+like_option:
+  INCLUDING IDENTITY { $$.v = yy_box(LikeOption{'IDENTITY', true}) }
+| EXCLUDING IDENTITY { $$.v = yy_box(LikeOption{'IDENTITY', false}) }
+| INCLUDING DEFAULTS { $$.v = yy_box(LikeOption{'DEFAULTS', true}) }
+| EXCLUDING DEFAULTS { $$.v = yy_box(LikeOption{'DEFAULTS', false}) }
+| INCLUDING GENERATED { $$.v = yy_box(LikeOption{'GENERATED', true}) }
+| EXCLUDING GENERATED { $$.v = yy_box(LikeOption{'GENERATED', false}) }
 
 table_elements:
   table_element { $$.v = $1.v }

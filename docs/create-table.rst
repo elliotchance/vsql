@@ -21,7 +21,9 @@ Syntax
                  [ <characteristics> ] ... ]
              | [ CONSTRAINT <constraint_name> ] <table_constraint>
                [ <characteristics> ]
-             | LIKE <table_name>
+             | LIKE <table_name> [ <like_option> ... ]
+
+  <like_option> := { INCLUDING | EXCLUDING } { IDENTITY | DEFAULTS | GENERATED }
 
   <table_constraint> := PRIMARY KEY ( <column_name> , ... )
                       | UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <column_name> , ... )
@@ -157,6 +159,28 @@ The new table can have its own constraints on them.
 The table can be in any schema, including a view of the ``INFORMATION_SCHEMA``.
 A column that's copied can't have the same name as another column of the new
 table (an error ``42601``).
+
+Options copy more of each column (each option can only be given once):
+
+- ``INCLUDING IDENTITY`` copies an identity column, with the options of its
+  sequence (such as ``START WITH`` and ``INCREMENT BY``). The new table's
+  sequence starts again from its ``START WITH``, rather than continuing from the
+  other table's.
+- ``INCLUDING DEFAULTS`` copies the ``DEFAULT`` of each column.
+- ``INCLUDING GENERATED`` copies the expression of each generated column, which
+  then uses the columns of the new table.
+
+``EXCLUDING`` (the default) doesn't copy it. A view of the
+``INFORMATION_SCHEMA`` can't have options.
+
+.. code-block:: sql
+
+  CREATE TABLE orders (
+    id INT GENERATED ALWAYS AS IDENTITY,
+    qty INT DEFAULT 1,
+    total INT GENERATED ALWAYS AS (qty * 10)
+  );
+  CREATE TABLE orders_copy (LIKE orders INCLUDING IDENTITY INCLUDING DEFAULTS INCLUDING GENERATED);
 
 Defaults
 --------

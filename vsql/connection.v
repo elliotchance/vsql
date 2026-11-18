@@ -389,18 +389,43 @@ fn (mut conn Connection) make_frame_work() {
 }
 
 // close releases the session lock of each file catalog, closes its files, and
-// releases the closures it kept (see keep). The connection must not be used
-// after it's closed.
+// releases the closures it kept (see keep). The last connection to a file also
+// removes its lock files. The connection must not be used after it's closed.
 pub fn (mut conn Connection) close() {
 	conn.kept.dispose() or {}
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
-			catalog.storage.session.close()
 			catalog.storage.isolation.close()
 			catalog.storage.deferral.close()
 			catalog.storage.close_files()
+			catalog.remove_lock_files()
+			catalog.storage.session.close()
 		}
 	}
+}
+
+// remove_lock_files deletes the lock files of the database file when the last
+// connection to it is closed (it can get the session lock exclusively), so
+// that only the database file (and its log) is left behind. Each one is
+// deleted while it's locked exclusively, so a connection that gets a lock on a
+// file after it's deleted knows to use the new file instead, see
+// lock_path_file. The session file is deleted last. Windows lets a file that's
+// locked be deleted without that check, so the lock files are kept there.
+fn (mut conn CatalogConnection) remove_lock_files() {
+	$if windows {
+		return
+	}
+
+	if !(conn.storage.session.try_exclusive() or { false }) {
+		return
+	}
+
+	isolation := isolation_path(conn.path)
+	deferral := deferral_path(conn.path)
+	for path in [isolation, isolation_queue_path(isolation), deferral, isolation_queue_path(deferral)] {
+		remove_lock_file(path)
+	}
+	conn.storage.session.remove()
 }
 
 pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {

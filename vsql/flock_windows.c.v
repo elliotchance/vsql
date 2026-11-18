@@ -92,6 +92,15 @@ fn (mut l SessionLock) shared() ! {
 	l.lock.acquire() or { return sqlstate_58030('cannot acquire session lock: ${err}') }
 }
 
+// remove does nothing on Windows, where the lock files are kept, see
+// CatalogConnection.remove_lock_files.
+fn (mut l SessionLock) remove() {
+}
+
+// remove_lock_file does nothing on Windows, see SessionLock.remove.
+fn remove_lock_file(_ string) {
+}
+
 // close releases the lock.
 fn (mut l SessionLock) close() {
 	l.lock.release()

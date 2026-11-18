@@ -332,6 +332,115 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 	db.close()
 }
 
+// lock_files are the lock files next to the database file at path.
+fn lock_files(path string) []string {
+	return [session_path(path), isolation_path(path), isolation_queue_path(isolation_path(path)),
+		deferral_path(path), isolation_queue_path(deferral_path(path))]
+}
+
+// The last connection to a file deletes its lock files, except on Windows, see
+// CatalogConnection.remove_lock_files. A connection that isn't the last one
+// keeps them.
+fn test_last_connection_removes_lock_files() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-lock-files-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), '${path}.lock'] {
+			os.rm(file) or {}
+		}
+		for file in lock_files(path) {
+			os.rm(file) or {}
+		}
+	}
+
+	// A SERIALIZABLE transaction that changes the database (with nothing else
+	// active) creates every lock file.
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	db.query('COMMIT')!
+	assert os.exists(session_path(path))
+	assert os.exists(isolation_path(path))
+
+	mut other := open(path)!
+	db.close()
+	assert os.exists(session_path(path))
+	assert os.exists(isolation_path(path))
+	assert other.query('SELECT * FROM t')!.rows.len == 1
+	other.close()
+
+	$if windows {
+		assert os.exists(session_path(path))
+	} $else {
+		for file in lock_files(path) {
+			assert !os.exists(file), file
+		}
+	}
+
+	// The files are created again when they're needed.
+	db = open(path)!
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (2)')!
+	db.query('COMMIT')!
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+	db.close()
+}
+
+// A lock that's taken on a lock file after it was deleted (by the last
+// connection, see CatalogConnection.remove_lock_files) isn't the lock that
+// anyone else uses, so it's taken on the new file instead, see lock_path_file.
+// Windows keeps the lock files.
+fn test_lock_on_deleted_file() ! {
+	$if windows {
+		return
+	}
+
+	path := os.join_path(os.temp_dir(), 'vsql-lock-deleted-${os.getpid()}.vsql')
+	defer {
+		for file in lock_files(path) {
+			os.rm(file) or {}
+		}
+	}
+
+	mut isolation := IsolationLock{
+		path: isolation_path(path)
+	}
+	assert isolation.try_lock(.exclusive)!
+	isolation.release()
+	old := open_file_identity(isolation.file)
+	os.rm(isolation.path)!
+	assert isolation.try_lock(.exclusive)!
+	assert open_file_identity(isolation.file) != old
+	assert lock_is_path_file(isolation.file, isolation.path)
+	isolation.close()
+
+	// The session lock is converted to exclusive on the deleted file, so this
+	// connection can't tell that it's the only one. It takes the shared lock on
+	// the new file instead.
+	mut session := session_lock(session_path(path))!
+	os.rm(session_path(path))!
+	assert !session.try_exclusive()!
+	assert lock_is_path_file(session.file, session_path(path))
+	assert session.try_exclusive()!
+	session.remove()
+	assert !os.exists(session_path(path))
+	session.close()
+
+	// A lock file that can't be opened or locked.
+	if _ := session_lock(os.join_path(path, 'missing', 'x.session')) {
+		assert false
+	} else {
+		assert err.msg().starts_with('unable to open ')
+	}
+	mut file := os.File{}
+	if _ := lock_path_file(mut file, session_path(path), 0) {
+		assert false
+	} else {
+		assert err.msg().starts_with('cannot acquire lock on ')
+	}
+	file.close()
+}
+
 // A statement in an explicit transaction doesn't sync the log when every page
 // it changes already has a synced frame in the log, or is a new page (see
 // WalLog.can_skip_sync). This simulates the power failing during the

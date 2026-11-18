@@ -28,6 +28,13 @@ waits for a transaction to start, and a sixth, followed by ``.deferred``, which
 is created the first time a ``SERIALIZABLE`` transaction keeps its changes in
 memory until it ends.
 
+The last connection to close deletes these lock files (except on Windows), so
+that only the database file and its log are left behind. Each one is deleted
+while that connection holds its lock exclusively, and a connection that locks a
+file checks that it's still the file with that name afterwards (otherwise it
+locked a file that was deleted, so it locks the new one instead). On Windows a
+lock file can be deleted while it's locked, so they are kept.
+
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero
 pages.

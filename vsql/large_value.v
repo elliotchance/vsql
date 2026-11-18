@@ -292,6 +292,23 @@ fn (v Value) octet_length() int {
 	return v.string_value().len
 }
 
+// char_length is the length in characters of a character string, which
+// doesn't read a large value.
+fn (v Value) char_length() int {
+	if v.is_large {
+		return v.large_value().characters
+	}
+
+	return v.string_value().len_utf8()
+}
+
+// is_large_single_octet is true for a large value where every character is one
+// octet (or a binary string), so the characters can be found by their octets
+// without reading the rest of the value.
+fn (v Value) is_large_single_octet() bool {
+	return v.is_large && v.large_value().characters == v.large_value().octets
+}
+
 // octets is part of a character string or binary string, from the octet start
 // to end (exclusive). Only the chunks of a large value that have them are read.
 fn (v Value) octets(start int, end int) !string {

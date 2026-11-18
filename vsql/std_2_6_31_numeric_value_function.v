@@ -44,7 +44,7 @@ fn func_binary_position(_ FunctionContext, args []Value) !Value {
 //
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 5.b
 fn func_char_length(_ FunctionContext, args []Value) !Value {
-	return new_integer_value(args[0].string_value().runes().len)
+	return new_integer_value(args[0].char_length())
 }
 
 // OCTET_LENGTH(CHARACTER VARYING) INTEGER, and for a binary string. The length

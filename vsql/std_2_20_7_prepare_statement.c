@@ -275,6 +275,109 @@ static void vsql_m_describe(char *sqlstate, const char *statement,
   vsql_m_status(sqlstate, "00000");
 }
 
+/* section describe_input */
+/*
+ * vsql_m_describe_parameter sets the item descriptor area to the description
+ * of dynamic parameter i, from the IPD of the prepared statement, which is set
+ * when it's prepared. Like a column, a datetime is SQL_DATETIME. A dynamic
+ * parameter is nullable and unnamed, its NAME is the zero-length string, and
+ * it's never a KEY_MEMBER.
+ *
+ * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.c.ii
+ */
+static void vsql_m_describe_parameter(SQLHDESC ipd, SQLSMALLINT i,
+                                      struct vsql_m_item *item) {
+  /* The field, the item component, and whether it's an SQLSMALLINT. */
+  static const int numbers[][3] = {
+      {SQL_DESC_TYPE, VSQL_M_TYPE, 1},
+      {SQL_DESC_DATETIME_INTERVAL_CODE, VSQL_M_DATETIME_INTERVAL_CODE, 1},
+      {SQL_DESC_LENGTH, VSQL_M_LENGTH, 0},
+      {SQL_DESC_OCTET_LENGTH, VSQL_M_OCTET_LENGTH, 0},
+      {SQL_DESC_PRECISION, VSQL_M_PRECISION, 1},
+      {SQL_DESC_SCALE, VSQL_M_SCALE, 1},
+      {SQL_DESC_NULLABLE, VSQL_M_NULLABLE, 1},
+      {SQL_DESC_UNNAMED, VSQL_M_UNNAMED, 1}};
+  static const int strings[][2] = {
+      {SQL_DESC_CHARACTER_SET_CATALOG, VSQL_M_CHARACTER_SET_CATALOG},
+      {SQL_DESC_CHARACTER_SET_SCHEMA, VSQL_M_CHARACTER_SET_SCHEMA},
+      {SQL_DESC_CHARACTER_SET_NAME, VSQL_M_CHARACTER_SET_NAME},
+      {SQL_DESC_COLLATION_CATALOG, VSQL_M_COLLATION_CATALOG},
+      {SQL_DESC_COLLATION_SCHEMA, VSQL_M_COLLATION_SCHEMA},
+      {SQL_DESC_COLLATION_NAME, VSQL_M_COLLATION_NAME}};
+  SQLSMALLINT small;
+  SQLINTEGER value;
+  char s[129];
+  size_t j;
+
+  vsql_m_reset_item(item);
+  for (j = 0; j < sizeof(numbers) / sizeof(numbers[0]); j++) {
+    small = 0;
+    value = 0;
+    if (numbers[j][2]) {
+      SQLGetDescField(ipd, i, (SQLSMALLINT)numbers[j][0], &small, 0, NULL);
+      value = small;
+    } else {
+      SQLGetDescField(ipd, i, (SQLSMALLINT)numbers[j][0], &value, 0, NULL);
+    }
+    item->number[numbers[j][1]] = value;
+  }
+  for (j = 0; j < sizeof(strings) / sizeof(strings[0]); j++) {
+    s[0] = '\0';
+    SQLGetDescField(ipd, i, (SQLSMALLINT)strings[j][0], s,
+                    (SQLINTEGER)sizeof(s), NULL);
+    if (s[0] != '\0') {
+      vsql_m_copy(&item->string[strings[j][1]], s);
+    }
+  }
+  item->number[VSQL_M_KEY_MEMBER] = 0;
+
+  if (item->number[VSQL_M_TYPE] >= SQL_TYPE_DATE &&
+      item->number[VSQL_M_TYPE] <= SQL_TYPE_TIMESTAMP_WITH_TIMEZONE) {
+    item->number[VSQL_M_TYPE] = SQL_DATETIME;
+  }
+}
+
+/*
+ * vsql_m_describe_input is a <describe input statement>. Each "?" is one
+ * input dynamic parameter, and none of them have subordinate descriptors.
+ *
+ * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 5.a and 6.f.i.1
+ */
+static void vsql_m_describe_input(char *sqlstate, const char *statement,
+                                  const char *name, const void *module) {
+  struct vsql_m_prepared *p = vsql_m_prepared_statement(sqlstate, statement);
+  struct vsql_m_descriptor *d;
+  SQLSMALLINT params = 0, i;
+  SQLHDESC ipd = 0;
+
+  if (p == NULL) {
+    return;
+  }
+  d = vsql_m_descriptor(sqlstate, name, module);
+  if (d == NULL) {
+    return;
+  }
+
+  /* ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 6.a to 6.c */
+  SQLGetStmtAttr(p->stmt, SQL_ATTR_IMP_PARAM_DESC, &ipd, 0, NULL);
+  SQLGetDescField(ipd, 0, SQL_DESC_COUNT, &params, 0, NULL);
+  d->count = params;
+  d->top_level_count = params;
+  strcpy(d->dynamic_function, p->dynamic_function);
+  d->dynamic_function_code = p->dynamic_function_code;
+
+  /* ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 6.e and 6.f */
+  if (params > d->max) {
+    vsql_m_status(sqlstate, "01005");
+    return;
+  }
+
+  for (i = 1; i <= params; i++) {
+    vsql_m_describe_parameter(ipd, i, &d->items[i - 1]);
+  }
+  vsql_m_status(sqlstate, "00000");
+}
+
 /* section input */
 /*
  * An <input using clause> is the host parameters (n of them) or an SQL

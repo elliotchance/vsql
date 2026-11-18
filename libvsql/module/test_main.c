@@ -755,6 +755,40 @@ int main(void) {
   n = 2;
   EXPECT(get_key_member(sqlstate, &n, &x), "00000");
   CHECK(x == 1);
+
+  /* 20.10 GR 5.a, 6.f.i.1 and 7.c.ii: DESCRIBE INPUT describes each "?",
+   * which is nullable and never a KEY_MEMBER. */
+  strcpy(sql, "SELECT x FROM dyn WHERE x > ? AND y = ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(describe_input_s1(sqlstate), "00000");
+  EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
+  CHECK(count == 2 && top == 2 && padded(function, "SELECT CURSOR", 30) &&
+        code == 85);
+  n = 1;
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "00000");
+  CHECK(type == 4 && padded(name, "", 20) && nullable == 1);
+  EXPECT(get_key_member(sqlstate, &n, &x), "00000");
+  CHECK(x == 0);
+  n = 2;
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "00000");
+  CHECK(type == 12 && length == 10 && nullable == 1);
+  strcpy(sql, "SELECT x FROM dyn WHERE x > ? AND x < ? AND y = ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(describe_input_s1(sqlstate), "01005");
+  EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
+  CHECK(count == 3 && top == 3);
+  strcpy(sql, "SELECT x FROM dyn");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(describe_input_s1(sqlstate), "00000");
+  EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
+  CHECK(count == 0 && top == 0);
+  EXPECT(deallocate_s1(sqlstate), "00000");
+  EXPECT(describe_input_s1(sqlstate), "26000");
+
   strcpy(sql, "SELECT x, y FROM dyn WHERE x > ?");
   EXPECT(prepare_s1(sqlstate, sql), "00000");
 

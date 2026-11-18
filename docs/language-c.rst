@@ -553,6 +553,7 @@ in every module (see `Multiple Modules`_):
    ALLOCATE [ SQL ] DESCRIPTOR <descriptor name> [ WITH MAX <occurrences> ]
    DEALLOCATE [ SQL ] DESCRIPTOR <descriptor name>
    DESCRIBE [ OUTPUT ] <statement name> USING [ SQL ] DESCRIPTOR <descriptor name>
+   DESCRIBE INPUT <statement name> USING [ SQL ] DESCRIPTOR <descriptor name>
    GET [ SQL ] DESCRIPTOR <descriptor name> <parameter> = <header item> [, ...]
    GET [ SQL ] DESCRIPTOR <descriptor name> VALUE <n> <parameter> = <item> [, ...]
    SET [ SQL ] DESCRIPTOR <descriptor name> COUNT = <value>
@@ -569,6 +570,15 @@ columns include the ``PRIMARY KEY`` of the table, ``2`` when they only include a
 ``KEY_MEMBER`` of each column of that key is ``1``. A key is only known for a
 query of one table that isn't grouped (so not for a join, a derived table,
 ``GROUP BY``, an aggregate function or ``UNION``). If there are more columns than items, the ``SQLSTATE`` is ``01005``, and only
+``COUNT`` is set.
+
+``DESCRIBE INPUT`` describes the ``?`` of the statement instead, in the order
+they're written: ``COUNT`` is how many there are, and each item has the type
+that the ``?`` was given when the statement was prepared, such as ``INTEGER``
+for the ``?`` of ``x > ?`` when ``x`` is an ``INTEGER``. Every ``?`` is
+``NULLABLE``, has an empty ``NAME`` and has a ``KEY_MEMBER`` of ``0``. It's an
+easy way to set up the items for ``USING SQL DESCRIPTOR``. Like ``DESCRIBE``, if
+there are more ``?`` than items, the ``SQLSTATE`` is ``01005``, and only
 ``COUNT`` is set.
 
 ``USING SQL DESCRIPTOR`` gives the value of each ``?`` from the ``DATA`` (or
@@ -611,8 +621,7 @@ value without ``INDICATOR`` is ``22002``. These are the other errors:
 
 Like the prepared statements, each SQL-connection has its own SQL descriptor
 areas. Each dynamic SQL statement starts an SQL-transaction, like any other
-statement. ``DESCRIBE INPUT``, and names that are a parameter, aren't supported
-yet.
+statement. Names that are a parameter aren't supported yet.
 
 Multiple Modules
 ^^^^^^^^^^^^^^^^

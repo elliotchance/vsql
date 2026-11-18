@@ -893,7 +893,7 @@ fn parse_module_sql(text_sql string) !(Stmt, []string) {
 // ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 20.9, <deallocate prepared statement>, Conformance Rules, 1
-// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Conformance Rules, 2
+// ISO/IEC 9075-2:2023, 20.10, <describe statement>, Conformance Rules, 1 and 2
 // ISO/IEC 9075-2:2023, 20.11, <input using clause>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 20.12, <output using clause>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 20.13, <execute statement>, Conformance Rules, 1 and 2
@@ -943,6 +943,9 @@ fn module_statement_features(text string, p ExternallyInvokedProcedure, cursors 
 			return features
 		}
 		'DESCRIBE' {
+			if t.accept('INPUT') {
+				features << 'B036'
+			}
 			return features
 		}
 		'PREPARE' {

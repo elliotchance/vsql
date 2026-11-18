@@ -450,6 +450,10 @@ const flagging_modules = {
 		'B032',
 	]
 	flagging_prepare + "PROCEDURE p (SQLSTATE); DESCRIBE s USING DESCRIPTOR 'd';":                                                                                                                                                                                                      ['B031']
+	flagging_prepare + "PROCEDURE p (SQLSTATE); DESCRIBE INPUT s USING DESCRIPTOR 'd';":                                                                                                                                                                                                [
+		'B031',
+		'B036',
+	]
 	flagging_prepare + 'PROCEDURE p (SQLSTATE); DESCRIBE s USING SQL DESCRIPTOR d;':                                                                                                                                                                                                    [
 		'B031',
 		'B035',

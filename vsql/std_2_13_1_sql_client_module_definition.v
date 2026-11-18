@@ -87,6 +87,7 @@ const c_runtime_requires = {
 	'prepare':               ['prepared']
 	'deallocate_prepare':    ['prepared']
 	'describe':              ['prepared_statement', 'descriptor']
+	'describe_input':        ['prepared_statement', 'descriptor']
 	'input':                 ['param', 'scan', 'descriptor', 'items']
 	'output':                ['target', 'assigned', 'descriptor', 'items']
 	'execute_prepared':      ['prepared_statement', 'input', 'output']

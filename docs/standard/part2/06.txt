@@ -136,10 +136,10 @@
 6.1/GR/17                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/17.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/17.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
-6.1/GR/18                n/a          - - DECFLOAT (T076)
-6.1/GR/18.a              n/a          - - DECFLOAT (T076)
-6.1/GR/18.b              n/a          - - DECFLOAT (T076)
-6.1/GR/18.c              n/a          - - DECFLOAT (T076)
+6.1/GR/18                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
+6.1/GR/18.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
+6.1/GR/18.b              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
+6.1/GR/18.c              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.1/GR/19                n/a          - - intervals (F052)
 6.1/GR/19.a              n/a          - - intervals (F052)
 6.1/GR/19.b              n/a          - - intervals (F052)
@@ -177,7 +177,7 @@
 6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/25                n/a          - - binary strings (T021)
 6.1/CR/26                n/a          - - binary strings (T021)
-6.1/CR/27                n/a          - - DECFLOAT (T076)
+6.1/CR/27                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
 6.1/CR/28                n/a          - - JSON data type (T801)
 # 6.2, <field definition>
 6.2                      n/a          - - row types (T051)
@@ -644,13 +644,13 @@
 6.13/GR/9.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/9.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/9.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
-6.13/GR/10               n/a          - - DECFLOAT (T076)
-6.13/GR/10.a             n/a          - - DECFLOAT (T076)
-6.13/GR/10.a.i           n/a          - - DECFLOAT (T076)
-6.13/GR/10.a.ii          n/a          - - DECFLOAT (T076)
-6.13/GR/10.b             n/a          - - DECFLOAT (T076)
-6.13/GR/10.b.i           n/a          - - DECFLOAT (T076)
-6.13/GR/10.b.ii          n/a          - - DECFLOAT (T076)
+6.13/GR/10               implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/10.a             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/10.a.i           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/10.a.ii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/10.b             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/10.b.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/10.b.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_decfloat_cast.sql
 6.13/GR/11               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a.i           deviates     vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql the 0 before the period is kept (0.5, not .5) unless the result only fits without it (#1543)
@@ -674,11 +674,11 @@
 6.13/GR/11.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.b.iii.4       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
-6.13/GR/11.c             n/a          - - DECFLOAT (T076)
-6.13/GR/11.c.i           n/a          - - DECFLOAT (T076)
-6.13/GR/11.c.ii          n/a          - - DECFLOAT (T076)
-6.13/GR/11.c.iii         n/a          - - DECFLOAT (T076)
-6.13/GR/11.c.iv          n/a          - - DECFLOAT (T076)
+6.13/GR/11.c             impl-defined vsql/decfloat.v tests/std_2_6_13_decfloat_cast.sql the IEEE 754 to-scientific-string form, such as 1.50 or 1.5E+300
+6.13/GR/11.c.i           n/a          - - the literal only has characters that are in every character set (vsql only has UTF8)
+6.13/GR/11.c.ii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/11.c.iii         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/11.c.iv          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
 6.13/GR/11.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
@@ -717,10 +717,10 @@
 6.13/GR/12.b.iii.1       untestable   vsql/std_2_9_2_store_assignment.v - a character string is always UTF8, which contains every <SQL language character>
 6.13/GR/12.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/12.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast_numeric_to_character.sql
-6.13/GR/12.c             n/a          - - DECFLOAT (T076)
-6.13/GR/12.c.i           n/a          - - DECFLOAT (T076)
-6.13/GR/12.c.ii          n/a          - - DECFLOAT (T076)
-6.13/GR/12.c.iii         n/a          - - DECFLOAT (T076)
+6.13/GR/12.c             impl-defined vsql/decfloat.v tests/std_2_6_13_decfloat_cast.sql the IEEE 754 to-scientific-string form, such as 1.50 or 1.5E+300
+6.13/GR/12.c.i           n/a          - - the literal only has characters that are in every character set (vsql only has UTF8)
+6.13/GR/12.c.ii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
+6.13/GR/12.c.iii         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_decfloat_cast.sql
 6.13/GR/12.d             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.d.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
@@ -1072,7 +1072,7 @@
 # 6.30, <numeric value expression>
 6.30                     implemented  vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql
 6.30/SR/1                container    - -
-6.30/SR/1.a              n/a          - - DECFLOAT (T076)
+6.30/SR/1.a              impl-defined vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_decfloat_arithmetic.sql the largest precision of the DECFLOAT operands
 6.30/SR/1.b              impl-defined vsql/std_2_6_30_numeric_value_expression.v tests/std_2_6_30_arithmetic.sql DOUBLE PRECISION
 6.30/SR/1.c              implemented  vsql/type.v tests/std_2_6_30_arithmetic.sql
 6.30/SR/1.c.i            definition   - -
@@ -1090,7 +1090,7 @@
 6.30/GR/5.a              implemented  vsql/operators.v tests/std_2_6_30_arithmetic.sql,tests/std_2_6_1_integer.sql
 6.30/GR/5.b              impl-defined vsql/operators.v tests/std_2_6_1_numeric.sql a division is truncated
 6.30/GR/6                implemented  vsql/value.v tests/std_2_6_31_approximate_errors.sql
-6.30/GR/7                n/a          - - DECFLOAT (T076)
+6.30/GR/7                impl-defined vsql/decfloat.v tests/std_2_6_30_decfloat_arithmetic.sql rounded half to even, with the exponent IEEE 754 prefers (so trailing zeros are kept); an exponent out of range is 22003
 # 6.31, <numeric value function>
 6.31                     implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/1                impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql INTEGER
@@ -1128,29 +1128,29 @@
 6.31/SR/10               n/a          - - ARRAY_MAX_CARDINALITY (S403)
 6.31/SR/11               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/12               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql a scale and approximate numbers are also allowed (V403-01, only flagged for a literal)
-6.31/SR/12.a             n/a          - - DECFLOAT (T076)
+6.31/SR/12.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/12.b             implemented  vsql/funcs.v tests/std_2_6_31_numeric_function_types.sql
 6.31/SR/13               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
-6.31/SR/13.a             n/a          - - DECFLOAT (T076)
+6.31/SR/13.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/13.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/14               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
-6.31/SR/14.a             n/a          - - DECFLOAT (T076)
+6.31/SR/14.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/14.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/15               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/SR/16               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
-6.31/SR/16.a             n/a          - - DECFLOAT (T076)
+6.31/SR/16.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/16.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/17               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
-6.31/SR/17.a             n/a          - - DECFLOAT (T076)
+6.31/SR/17.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/17.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/18               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
-6.31/SR/18.a             n/a          - - DECFLOAT (T076)
+6.31/SR/18.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/18.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/19               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/SR/20               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql
 6.31/SR/20.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql
 6.31/SR/20.b             implemented  vsql/funcs.v tests/std_2_6_31_math.sql
-6.31/SR/20.c             n/a          - - DECFLOAT (T076)
+6.31/SR/20.c             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
 6.31/SR/21               implemented  vsql/std_2_6_31_numeric_value_function.v,vsql/funcs.v,vsql/std_2_10_4_routine_invocation.v tests/std_2_6_31_width_bucket.sql
 6.31/SR/22               n/a          - - row pattern recognition (R010)
 6.31/SR/22.a             n/a          - - row pattern recognition (R010)

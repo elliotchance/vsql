@@ -151,10 +151,10 @@
 10.9/SR/7.g.ii           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql BIGINT for an integer, otherwise the NUMERIC or DECIMAL of the argument without a precision
 10.9/SR/7.g.iii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
 10.9/SR/7.g.iv           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
-10.9/SR/7.g.v            n/a          - - DECFLOAT (T076)
+10.9/SR/7.g.v            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_decfloat_set_functions.sql the precision of DT
 10.9/SR/7.g.vi           n/a          - - intervals (F052)
 10.9/SR/7.h              implemented  vsql/funcs.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/SR/7.h.i            n/a          - - DECFLOAT (T076)
+10.9/SR/7.h.i            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_decfloat_set_functions.sql the precision of DT
 10.9/SR/7.h.ii           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql DOUBLE PRECISION
 10.9/SR/7.i              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
 10.9/SR/7.j              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql

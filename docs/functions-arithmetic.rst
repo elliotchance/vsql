@@ -13,7 +13,11 @@ function).
 They accept any number. If there is no version of the function
 for the argument types, an exact number (such as an ``INTEGER``) is converted to
 a ``NUMERIC`` when possible, otherwise to a ``DOUBLE PRECISION``, and a ``REAL``
-is converted to a ``DOUBLE PRECISION``.
+is converted to a ``DOUBLE PRECISION``. If any argument is a ``DECFLOAT``, every
+argument is converted to a ``DECFLOAT`` with the largest precision of the
+``DECFLOAT`` arguments, and so is the result (see :doc:`numbers` for which
+functions are exact). A function without a ``DECFLOAT`` version converts it to
+a ``DOUBLE PRECISION``.
 
 A number literal has the smallest type that holds it, so ``-5`` is a
 ``SMALLINT`` and ``1.50`` is a ``NUMERIC(3, 2)``.
@@ -30,6 +34,7 @@ ABS
    ABS(DOUBLE PRECISION) DOUBLE PRECISION
    ABS(DECIMAL(p, s)) DECIMAL(p, s)
    ABS(NUMERIC(p, s)) NUMERIC(p, s)
+   ABS(DECFLOAT(p)) DECFLOAT(p)
 
 Absolute value. The result is the same type as the argument, including the
 precision and scale of a ``DECIMAL`` or ``NUMERIC``.
@@ -187,6 +192,7 @@ MOD
    MOD(SMALLINT, SMALLINT) SMALLINT
    MOD(INTEGER, INTEGER) INTEGER
    MOD(BIGINT, BIGINT) BIGINT
+   MOD(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``MOD(DIVIDEND, DIVISOR)`` is the modulus, the remainder of dividing
 ``DIVIDEND`` by ``DIVISOR``. The result has
@@ -243,6 +249,7 @@ SIGN
    SIGN(BIGINT) BIGINT
    SIGN(DOUBLE PRECISION) DOUBLE PRECISION
    SIGN(NUMERIC(p, s)) NUMERIC(1)
+   SIGN(DECFLOAT(p)) DECFLOAT(p)
 
 The sign of a number: -1 if it's negative, 0 if it's zero and 1 if it's
 positive. An integer returns the same type, a ``NUMERIC`` or ``DECIMAL`` returns

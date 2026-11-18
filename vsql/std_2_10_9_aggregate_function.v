@@ -2,6 +2,7 @@ module vsql
 
 import math
 import math.bits
+import math.big
 
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>
 //
@@ -269,6 +270,13 @@ fn set_function_type(name string, t Type) Type {
 	// standard deviation (SR 7.h.ii, 7.i and 7.j), and of the other binary set
 	// functions (SR 9.c.ii.2). A DOUBLE PRECISION is at least as precise as any
 	// argument.
+	// SUM, AVG and the variance and standard deviation of a DECFLOAT have the
+	// same precision (SR 7.g.v and 7.h.i).
+	if t.typ == .is_decfloat && name in ['SUM', 'AVG', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP',
+		'VAR_SAMP'] {
+		return Type{.is_decfloat, decfloat_precision([t]), 0, false, false}
+	}
+
 	if name in ['STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP']
 		|| name in binary_set_functions {
 		return new_type('DOUBLE PRECISION', 0, 0)
@@ -334,6 +342,10 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	}
 	if name in ['ANY', 'SOME'] {
 		return new_boolean_value(values.any(it.bool_value() == .is_true))
+	}
+
+	if typ.typ == .is_decfloat && name != 'MAX' && name != 'MIN' {
+		return eval_decfloat_set_function(name, values, typ)!
 	}
 
 	if name in ['STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP'] {
@@ -1193,4 +1205,58 @@ fn inverse_distribution_function(mut conn Connection, name string, p Value, all_
 	exact := cast(mut conn, name, new_double_precision_value(interpolated), typ)!
 
 	return cast(mut conn, name, exact, result_type)!, null_eliminated
+}
+
+// eval_decfloat_set_function is SUM, AVG, STDDEV_POP, STDDEV_SAMP, VAR_POP or
+// VAR_SAMP of the (non-null) DECFLOAT values of one group. The sums are exact,
+// and only the result is rounded to the precision of typ, so the order of the
+// values doesn't matter. A standard deviation is the square root of the
+// variance with a few more digits.
+//
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.v, 7.d.vi and 7.d.ix
+fn eval_decfloat_set_function(name string, values []Value, typ Type) !Value {
+	p := typ.size
+	mut e := values[0].decfloat_value().exponent
+	for value in values {
+		e = int_min(e, value.decfloat_value().exponent)
+	}
+
+	// Every value is a coefficient with the exponent e.
+	mut s1 := big.zero_int
+	mut s2 := big.zero_int
+	for value in values {
+		d := value.decfloat_value()
+		c := d.coefficient * pow10(d.exponent - e)
+		s1 += c
+		s2 += c * c
+	}
+
+	n := big.integer_from_int(values.len)
+	result := match name {
+		'SUM' {
+			round_decfloat(s1, e, false, p)!
+		}
+		'AVG' {
+			DecFloat{s1, e}.divide(DecFloat{n, 0}, p)!
+		}
+		else {
+			if name.ends_with('_SAMP') && values.len == 1 {
+				return Value{
+					typ:     typ
+					is_null: true
+				}
+			}
+
+			// The variance is (n * s2 - s1^2) / (n * n) for the population, or
+			// divided by n * (n - 1) for a sample, with the exponent 2e.
+			d := if name.ends_with('_POP') { n * n } else { n * (n - big.one_int) }
+			if name.starts_with('VAR') {
+				DecFloat{n * s2 - s1 * s1, 2 * e}.divide(DecFloat{d, 0}, p)!
+			} else {
+				DecFloat{n * s2 - s1 * s1, 2 * e}.divide(DecFloat{d, 0}, p + 5)!.sqrt(p)!
+			}
+		}
+	}
+
+	return new_decfloat_value(typ, result)
 }

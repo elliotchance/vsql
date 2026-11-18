@@ -52,7 +52,7 @@ fn (mut catalog CatalogConnection) register_constraint_column_usage_view() ! {
 					usages << ConstraintUsage{referenced, unique_columns, key.name}
 				}
 				for column in table.columns {
-					if column.not_null {
+					if table.has_not_null(column) {
 						name := column.name.sub_entity_name
 						usages << ConstraintUsage{table, [name], table.not_null_names[name]}
 					}

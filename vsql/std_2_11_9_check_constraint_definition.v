@@ -118,6 +118,8 @@ fn check_new_check_constraints(mut conn Connection, table Table, first int) ! {
 }
 
 // verify returns an error if a new row doesn't satisfy one of the CHECK
+// constraints, or has a NULL in a column with a DEFERRABLE NOT NULL (see
+// Table.deferrable_not_nulls), which is checked first, like the other NOT NULL
 // constraints. The row is how it's written to the table, keyed by the column
 // names (see Row.for_storage). A constraint is only violated when its search
 // condition is FALSE, so UNKNOWN (such as when a column is NULL) satisfies it.
@@ -129,8 +131,18 @@ fn check_new_check_constraints(mut conn Connection, table Table, first int) ! {
 // ISO/IEC 9075-2:2023, 4.25.2, Checking of constraints
 // ISO/IEC 9075-2:2023, 4.25.3.4, Table check constraints
 fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
-	if c.constraints.len == 0 {
+	if c.constraints.len == 0 && c.table.deferrable_not_nulls.len == 0 {
 		return
+	}
+
+	mut catalog := conn.catalog_for(c.table.name)
+	for column in c.table.columns {
+		column_name := column.name.sub_entity_name
+		characteristics := c.table.deferrable_not_nulls[column_name] or { continue }
+		if row.data.value(column_name).is_null
+			&& !catalog.storage.defer_check(c.table, c.table.not_null_names[column_name], characteristics) {
+			return sqlstate_23502(c.table, column_name)
+		}
 	}
 
 	// The search condition uses the full column names, like a row that's read
@@ -141,7 +153,6 @@ fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 	}
 	full_row := new_row(data)
 
-	mut catalog := conn.catalog_for(c.table.name)
 	for i, constraint in c.constraints {
 		definition := c.table.check_constraints[i]
 		if catalog.storage.defer_check(c.table, definition.name.entity_name, definition.characteristics) {

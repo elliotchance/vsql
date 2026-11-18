@@ -60,7 +60,7 @@ fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[st
 		return is_key_order(order, columns, k.order_columns(), k.equal_columns())
 	}
 
-	if is_key_order(order, columns, table.primary_key.map(KeyOrderColumn{it, false}),
+	if is_key_order(order, columns, table.key_columns().map(KeyOrderColumn{it, false}),
 		[]int{})
 	{
 		return true

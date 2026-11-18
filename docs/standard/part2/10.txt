@@ -123,8 +123,8 @@
 10.8/SR/2.b              implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_constraint_characteristics.sql
 10.8/SR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_2_10_8_constraint_characteristics.sql <constraint enforcement> isn't supported (F492)
 10.8/GR/1                definition   - -
-10.8/GR/2                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
-10.8/GR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql
+10.8/GR/2                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql,tests/std_2_10_8_deferrable_primary_key.sql,tests/std_2_10_8_deferrable_not_null.sql
+10.8/GR/3                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql,tests/std_2_10_8_deferrable_primary_key.sql,tests/std_2_10_8_deferrable_not_null.sql
 10.8/GR/4                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_2_10_8_constraint_characteristics.sql every constraint is enforced
 10.8/CR/1                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.y tests/std_1_9_6_flagging.sql
 10.8/CR/2                implemented  vsql/std_2_5_4_names_and_identifiers.y tests/std_1_9_6_flagging.sql

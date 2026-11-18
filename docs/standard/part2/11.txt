@@ -434,7 +434,7 @@
 11.7/SR/6.e.i            implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/6.e.ii           implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/7                n/a          - - UNIQUE (VALUE) (S291)
-11.7/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql,tests/std_2_10_8_deferrable_primary_key.sql
 11.7/SR/9                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/SR/10               implemented  vsql/std_2_11_24_add_table_constraint_definition.v tests/std_2_11_24_add_table_constraint.sql
 11.7/GR/1                definition   - -
@@ -443,7 +443,7 @@
 11.7/GR/2.b              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_7_unique_constraint.sql
 11.7/GR/2.c              n/a          - - application-time periods (T181)
 11.7/GR/2.d              implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql always NULLS DISTINCT, so it isn't stored
-11.7/GR/3                implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql
+11.7/GR/3                implemented  vsql/std_2_11_7_unique_constraint_definition.v tests/std_2_11_7_unique_constraint.sql,tests/std_2_10_8_deferrable_primary_key.sql
 11.7/CR/1                n/a          - - UNIQUE (VALUE) (S291)
 11.7/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 11.7/CR/3                n/a          - - application-time periods (T181)

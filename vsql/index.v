@@ -463,7 +463,7 @@ fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row, nulls_dist
 // t, which has the same name. It's created and dropped with the constraint, see
 // build_constraint_indexes.
 fn (t Table) is_constraint_index(index Index) bool {
-	return t.unique_constraints.any(it.name == index.name.entity_name)
+	return t.unique_constraints_to_check().any(it.name == index.name.entity_name)
 }
 
 // is_foreign_key_index is true when the index is the one that a FOREIGN KEY of
@@ -535,8 +535,8 @@ fn (f Storage) find_foreign_key_index(t Table, key ForeignKey, except string) ?I
 // A new constraint can't have the same name as an index in the schema of the
 // table, because its index would need the name.
 fn (mut f Storage) build_constraint_indexes(old Table, t Table) ! {
-	for constraint in old.unique_constraints {
-		if t.unique_constraints.any(it.name == constraint.name) {
+	for constraint in old.unique_constraints_to_check() {
+		if t.unique_constraints_to_check().any(it.name == constraint.name) {
 			continue
 		}
 
@@ -546,8 +546,8 @@ fn (mut f Storage) build_constraint_indexes(old Table, t Table) ! {
 		}
 	}
 
-	for constraint in t.unique_constraints {
-		if !old.unique_constraints.any(it.name == constraint.name) {
+	for constraint in t.unique_constraints_to_check() {
+		if !old.unique_constraints_to_check().any(it.name == constraint.name) {
 			f.create_constraint_index(t, t.constraint_identifier(constraint.name), constraint.columns,
 				true)!
 		}

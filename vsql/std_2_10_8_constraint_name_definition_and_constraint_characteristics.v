@@ -55,16 +55,6 @@ fn (c ConstraintCharacteristics) is_initially_deferred() bool {
 	return 'INITIALLY DEFERRED' in c.clauses
 }
 
-// check_not_deferrable returns an error if the constraint is DEFERRABLE, for a
-// PRIMARY KEY or NOT NULL, which can't be deferred. Rows are stored by their
-// PRIMARY KEY (see Row.object_key) and a NOT NULL column doesn't store whether
-// it's NULL (see Row.bytes), so neither can be violated, even for a moment.
-fn (c ConstraintCharacteristics) check_not_deferrable(constraint string) ! {
-	if c.is_deferrable() {
-		return sqlstate_0a000('${constraint} cannot be DEFERRABLE')
-	}
-}
-
 // str is the characteristics, each after a space, as they're stored in the
 // file after the constraint (see Table.bytes).
 fn (c ConstraintCharacteristics) str() string {
@@ -135,7 +125,10 @@ fn (mut f Storage) set_constraint_mode(t Table, name string, characteristics Con
 // ISO/IEC 9075-2:2023, 17.4, <set constraints mode statement>, General Rules, 2.a and 3.a
 fn (mut f Storage) set_all_constraint_modes(is_deferred bool) {
 	for _, t in f.tables {
-		for constraint in t.unique_constraints {
+		for column_name, characteristics in t.deferrable_not_nulls {
+			f.set_constraint_mode(t, t.not_null_names[column_name], characteristics, is_deferred) or {}
+		}
+		for constraint in t.unique_constraints_to_check() {
 			f.set_constraint_mode(t, constraint.name, constraint.characteristics, is_deferred) or {}
 		}
 		for key in t.foreign_keys {
@@ -200,12 +193,17 @@ fn (mut conn Connection) check_deferred_constraints() ! {
 			catalog.storage.deferred_checks.delete(key)
 			table := catalog.storage.tables[storage_id] or { continue }
 
+			mut deferrable_not_nulls := map[string]ConstraintCharacteristics{}
+			for column_name, characteristics in table.deferrable_not_nulls {
+				if constraint_key(table, table.not_null_names[column_name]) == key {
+					deferrable_not_nulls[column_name] = characteristics
+				}
+			}
 			constraint := Table{
 				...table
-				unique_constraints: table.unique_constraints.filter(constraint_key(table,
-					it.name) == key)
-				foreign_keys:       table.foreign_keys.filter(constraint_key(table, it.name) == key)
-				check_constraints:  table.check_constraints.filter(constraint_key(table,
+				deferrable_not_nulls: deferrable_not_nulls
+				foreign_keys:         table.foreign_keys.filter(constraint_key(table, it.name) == key)
+				check_constraints:    table.check_constraints.filter(constraint_key(table,
 					it.name.entity_name) == key)
 			}
 			rows := catalog.storage.read_rows(table.name)!.map(it.for_storage())
@@ -213,7 +211,8 @@ fn (mut conn Connection) check_deferred_constraints() ! {
 			for row in rows {
 				check_constraints.verify(mut conn, row)!
 			}
-			catalog.storage.check_unique_constraints(constraint, rows)!
+			catalog.storage.check_unique_list(table, table.unique_constraints_to_check().filter(constraint_key(table,
+				it.name) == key), rows)!
 			catalog.storage.check_foreign_keys(mut conn, constraint, rows)!
 		}
 	}

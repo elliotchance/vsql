@@ -40,6 +40,9 @@ struct UniqueConstraint {
 	// nulls_not_distinct is UNIQUE NULLS NOT DISTINCT, where NULLs are the same
 	// as each other (see check_unique_constraints).
 	nulls_not_distinct bool
+	// is_primary_key is only true for a DEFERRABLE PRIMARY KEY, which isn't
+	// one of the Table.unique_constraints (see unique_constraints_to_check).
+	is_primary_key bool
 }
 
 // str is how the constraint is stored in the file as part of the CREATE TABLE
@@ -57,7 +60,7 @@ fn (c UniqueConstraint) str() string {
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 6.e.i
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 3
 fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
-	if t.primary_key.len == 0 {
+	if t.key_columns().len == 0 {
 		return
 	}
 
@@ -104,19 +107,26 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 // ISO/IEC 9075-2:2023, 4.25.3.2, Unique constraints
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, General Rules, 2.d
 fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
+	f.check_unique_list(t, t.unique_constraints_to_check(), rows)!
+}
+
+// check_unique_list is check_unique_constraints for some of the UNIQUE
+// constraints of t (see Table.unique_constraints_to_check).
+fn (mut f Storage) check_unique_list(t Table, constraints []UniqueConstraint, rows []Row) ! {
 	if rows.len == 0 {
 		return
 	}
 
-	for constraint in t.unique_constraints {
+	for constraint in constraints {
 		if f.defer_check(t, constraint.name, constraint.characteristics) {
 			continue
 		}
 
 		index := f.constraint_index(t, constraint)!
+		kind := if constraint.is_primary_key { 'PRIMARY KEY' } else { 'UNIQUE' }
 		for row in rows {
 			if f.has_duplicate_entry(index, t, row, !constraint.nulls_not_distinct)! {
-				return sqlstate_23505('UNIQUE (${constraint.columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
+				return sqlstate_23505('${kind} (${constraint.columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
 					t.constraint_identifier(constraint.name), t.name)
 			}
 		}

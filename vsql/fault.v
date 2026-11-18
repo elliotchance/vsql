@@ -31,6 +31,9 @@ module vsql
 //   read_page:         reading a page from the database file.
 //   recover:           copying a statement that was left in the write-ahead log
 //                      into the database file.
+//   remove_log:        removing the write-ahead log when the last connection
+//                      to the file is closed, see
+//                      CatalogConnection.remove_log.
 //   session_shared:    changing the session lock back to shared, after
 //                      recovering the transactions of a connection that
 //                      stopped, see Storage.recover.
@@ -49,8 +52,8 @@ module vsql
 //   write_version:     the file needs a newer version of vsql to be changed.
 const fault_names = ['accept', 'checkpoint', 'constraint_index', 'isolation_end', 'isolation_lock',
 	'isolation_start', 'lock', 'lock_shared', 'open', 'read_header', 'read_page', 'recover',
-	'session_shared', 'wal_bad_header', 'wal_bad_magic', 'wal_corrupt_frame', 'wal_torn_frame',
-	'wal_unknown_frame', 'wal_write', 'write_version']
+	'remove_log', 'session_shared', 'wal_bad_header', 'wal_bad_magic', 'wal_corrupt_frame',
+	'wal_torn_frame', 'wal_unknown_frame', 'wal_write', 'write_version']
 
 struct FaultPoints {
 mut:

@@ -187,10 +187,12 @@ fn test_direct_query_isolation() ! {
 
 	// Queries don't conflict with each other, and don't create the isolation
 	// file, which may not be possible. A connection keeps the file open, which
-	// stops it being removed on Windows, so they're reopened.
+	// stops it being removed on Windows, so they're reopened. The last one to
+	// close has already removed it, except on Windows.
 	a.close()
 	b.close()
-	os.rm(isolation_path(path))!
+	os.rm(isolation_path(path)) or {}
+	assert !os.exists(isolation_path(path))
 	a = open_database(path, options)!
 	b = open_database(path, options)!
 	mut c := open_database(path, options)!

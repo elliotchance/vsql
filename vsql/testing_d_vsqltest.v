@@ -367,6 +367,26 @@ fn child_function(name string) fn () {
 				eprintln('second crash point passed')
 			}
 		}
+		'remove_log' {
+			// It stops at the crash point in CatalogConnection.remove_log, see
+			// test_last_connection_stops_before_removing_log.
+			fn () {
+				mut db := open(os.getenv('VSQL_TEST_REMOVE_LOG_PATH')) or { panic(err) }
+				db.query('CREATE TABLE t (x INT)') or { panic(err) }
+				db.query('INSERT INTO t (x) VALUES (1)') or { panic(err) }
+				db.query('INSERT INTO t (x) VALUES (2)') or { panic(err) }
+				mut state := unsafe { &CrashPoint(crash_point_state) }
+				unsafe {
+					*state = CrashPoint{
+						at:    state.count + 1
+						count: state.count
+					}
+				}
+				eprintln('closing')
+				db.close()
+				eprintln('closed')
+			}
+		}
 		else {
 			panic('unknown child function: ${name}')
 		}

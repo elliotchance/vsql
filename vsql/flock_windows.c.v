@@ -92,6 +92,12 @@ fn (mut l SessionLock) shared() ! {
 	l.lock.acquire() or { return sqlstate_58030('cannot acquire session lock: ${err}') }
 }
 
+// remove_lock_files does nothing on Windows, which lets a file that's locked
+// be deleted, so a connection couldn't tell that its lock is on a deleted file.
+// The lock files are kept instead.
+fn (mut conn CatalogConnection) remove_lock_files() {
+}
+
 // close releases the lock.
 fn (mut l SessionLock) close() {
 	l.lock.release()

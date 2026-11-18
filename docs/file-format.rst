@@ -16,7 +16,8 @@ database.
 
 A third file, with the same name followed by ``.wal``, is the `Write-Ahead
 Log`_. It must not be deleted, because it may contain the only copy of a
-statement that was committed when the process stopped.
+statement that was committed when the process stopped. It's removed when the
+last connection to the database is closed.
 
 A fourth file, with the same name followed by ``.isolation``, is created the
 first time a ``SERIALIZABLE`` transaction (the default) is started (see
@@ -27,6 +28,13 @@ that name followed by ``.queue``, which is created the first time a connection
 waits for a transaction to start, and a sixth, followed by ``.deferred``, which
 is created the first time a ``SERIALIZABLE`` transaction keeps its changes in
 memory until it ends.
+
+The last connection to close deletes these lock files (except on Windows), as
+well as the log, so that only the database file is left behind. Each one is deleted
+while that connection holds its lock exclusively, and a connection that locks a
+file checks that it's still the file with that name afterwards (otherwise it
+locked a file that was deleted, so it locks the new one instead). On Windows a
+lock file can be deleted while it's locked, so they are kept.
 
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero
@@ -974,6 +982,16 @@ is emptied (with a *Tail* of 0) in these two cases:
   the log header. This is because the power may have failed since the last
   connection, in which case any part of the changes that weren't synced may be
   missing from the database file, even if the log header says *Checkpointed*.
+
+The log is removed when the last connection to the database file is closed,
+like SQLite removes its ``-wal`` file. The connection knows that it's the last
+one when it can lock the ``.session`` file exclusively (see :doc:`mvcc`). Then,
+with the database file locked exclusively, it copies the log into the database
+file if the *State* isn't *Checkpointed*, syncs the database file (if the *Tail*
+is past the log header) and deletes the log. If the process stops before the
+log is deleted, the next connection copies it again as above. A connection that
+isn't the last one leaves the log as it is, because the other connections are
+still using it. The lock files are never deleted.
 
 Reading the log stops at the first frame that isn't valid, so a statement without
 a valid *Commit* frame is ignored, because it didn't change the database file.

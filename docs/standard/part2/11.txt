@@ -88,7 +88,7 @@
 11.2/CR/1                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_9_6_flagging.sql
 11.2/CR/2                implemented  vsql/std_2_11_2_drop_schema_statement.y tests/std_1_9_6_flagging.sql
 # 11.3, <table definition>
-11.3                     partial      vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql,tests/std_2_11_3_as_subquery_clause.sql only persistent base tables with a <table element list> of <column definition>s and <table constraint definition>s, or an <as subquery clause>
+11.3                     partial      vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql,tests/std_2_11_3_as_subquery_clause.sql,tests/std_2_11_3_like_clause.sql only persistent base tables with a <table element list> of <column definition>s, <table constraint definition>s and <like clause>s without <like options>, or an <as subquery clause>
 11.3/SR/1                n/a          - - periods (T180, T181)
 11.3/SR/2                n/a          - - periods (T180, T181)
 11.3/SR/2.a              n/a          - - periods (T180, T181)
@@ -112,37 +112,37 @@
 11.3/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
 11.3/SR/8                definition   - -
 11.3/SR/9                container    - -
-11.3/SR/9.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql
-11.3/SR/9.b              n/a          - - <like clause> (T171)
-11.3/SR/9.b.i            n/a          - - <like clause> (T171)
-11.3/SR/9.b.ii           n/a          - - <like clause> (T171)
-11.3/SR/9.b.iii          n/a          - - <like clause> (T171)
-11.3/SR/9.b.iii.1        n/a          - - <like clause> (T171)
-11.3/SR/9.b.iii.2        n/a          - - <like clause> (T171)
-11.3/SR/9.b.iii.3        n/a          - - <like clause> (T171)
-11.3/SR/9.b.iii.4        n/a          - - <like clause> (T171)
-11.3/SR/9.b.iii.5        n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv           n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.1         n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.2         n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.3         n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.4         n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5         n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.A       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.B       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.C       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.D       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.E       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.F       n/a          - - <like clause> (T171)
+11.3/SR/9.a              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql,tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b              implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.i            n/a          - - system-versioned tables (T180)
+11.3/SR/9.b.ii           n/a          - - <like options> (T173)
+11.3/SR/9.b.iii          implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.iii.1        implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.iii.2        implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.iii.3        implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.iii.4        implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.iii.5        implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
+11.3/SR/9.b.iv           n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.1         n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.2         n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.3         n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.4         n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5         n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.A       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.B       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.C       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.D       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.E       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.F       n/a          - - <like options> (T173)
 11.3/SR/9.b.iv.5.G       container    - -
-11.3/SR/9.b.iv.5.G.I     n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.G.II    n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.5.H       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.6         n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.6.A       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.6.B       n/a          - - <like clause> (T171)
-11.3/SR/9.b.iv.7         n/a          - - <like clause> (T171)
-11.3/SR/9.b.v            n/a          - - <like clause> (T171)
+11.3/SR/9.b.iv.5.G.I     n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.G.II    n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.5.H       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.6         n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.6.A       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.6.B       n/a          - - <like options> (T173)
+11.3/SR/9.b.iv.7         n/a          - - <like options> (T173)
+11.3/SR/9.b.v            implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_like_clause.sql
 11.3/SR/10               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
 11.3/SR/10.a             definition   - -
 11.3/SR/10.b             implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
@@ -207,7 +207,7 @@
 11.3/SR/15               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_4_identity_column.sql
 11.3/SR/16               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_9_check_constraint.sql,tests/std_2_11_3_as_subquery_clause.sql
 11.3/AR/1                n/a          - - privileges (E081, #732)
-11.3/AR/2                n/a          - - <like clause> (T171)
+11.3/AR/2                n/a          - - privileges (E081, #732)
 11.3/AR/3                n/a          - - subtables (S081)
 11.3/AR/4                n/a          - - typed tables (S051)
 11.3/GR/1                implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_create_table.sql only a regular persistent base table
@@ -253,7 +253,7 @@
 11.3/GR/8.b              n/a          - - subtables (S081)
 11.3/GR/9                definition   - -
 11.3/GR/10               implemented  vsql/std_2_11_3_table_definition.v tests/std_2_11_3_as_subquery_clause.sql
-11.3/CR/1                n/a          - - <like clause> (T171)
+11.3/CR/1                implemented  vsql/std_2_11_3_table_definition.y tests/std_2_11_3_like_clause.sql
 11.3/CR/2                n/a          - - temporary tables (F531)
 11.3/CR/3                n/a          - - typed tables (S051)
 11.3/CR/4                n/a          - - reference types (S043)

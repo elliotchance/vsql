@@ -1316,7 +1316,7 @@ Optional Features
    * - ✅ **T152**
      - **DISTINCT predicate with negation**
 
-   * - ❌ **T171**
+   * - ✅ **T171**
      - **LIKE clause in table definition**
 
    * - ✅ **T172**

@@ -79,7 +79,7 @@ fn with_constraint_characteristic(elements []TableElement, clause string) ![]Tab
 	mut new_elements := elements.clone()
 	element := elements.last()
 	new_elements[elements.len - 1] = match element {
-		Column {
+		Column, LikeClause {
 			return sqlstate_42601('${clause} must follow a constraint')
 		}
 		CheckConstraintDefinition {

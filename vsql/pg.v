@@ -469,7 +469,13 @@ const pg_user_oid = 10
 // the objects that a PostgreSQL user creates.
 fn pg_oids(c &CatalogConnection) (map[string]int, map[string]int) {
 	mut names := c.storage.schemas.keys()
-	names << information_schema_name
+	// A file from before the VSQL schema could already have a schema with
+	// that name.
+	for name in system_schema_names {
+		if name !in names {
+			names << name
+		}
+	}
 	names.sort()
 
 	mut oid := 16384

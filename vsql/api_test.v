@@ -596,6 +596,27 @@ fn test_features_of_routine_invocation() ! {
 	assert db.prepare('VALUES twice(?)')!.features() == ['B031', 'B033', 'F641', 'F661']
 }
 
+// A function that's registered with register_function is a routine of the VSQL
+// schema (see tests/std_11_5_49_routines.sql), which is always called and can
+// use its connection for anything.
+fn test_registered_function_is_routine() ! {
+	mut db := open(':memory:')!
+	db.register_function('twice(float) float', fn (_ FunctionContext, a []Value) !Value {
+		return new_double_precision_value(a[0].f64_value() * 2)
+	})!
+
+	row := db.query("SELECT specific_name, is_deterministic, sql_data_access, is_null_call FROM information_schema.routines WHERE routine_name = 'TWICE'")!.rows[0]
+	assert row.get_string('SPECIFIC_NAME')! == 'TWICE_1'
+	assert row.get_string('IS_DETERMINISTIC')! == 'NO'
+	assert row.get_string('SQL_DATA_ACCESS')! == 'MODIFIES SQL DATA'
+	assert row.get_string('IS_NULL_CALL')! == 'NO'
+
+	param := db.query("SELECT data_type FROM information_schema.parameters WHERE specific_name = 'TWICE_1'")!.rows[0]
+	assert param.get_string('DATA_TYPE')! == 'DOUBLE PRECISION'
+
+	assert db.query('VALUES VSQL.twice(3)')!.rows[0].get_string('COL1')! == '6e0'
+}
+
 // A rule that needs the catalog isn't flagged if the catalog can't be read, but
 // it's not an error (see tests/std_1_9_6_flagging_name_resolution.sql).
 fn test_features_without_catalog() ! {

@@ -59,8 +59,14 @@ SELECT NOW(1) FROM t;
 SELECT "NOW"() = CURRENT_TIMESTAMP AS same FROM t;
 -- SAME: TRUE
 
+-- # NOW() is a routine of the VSQL schema, not of any other schema.
+/* extensions V402-01 */
 SELECT PUBLIC.NOW() FROM t;
--- error 42601: syntax error: unexpected "(" at line 1, column 18 near "PUBLIC.NOW()"
+-- error 42883: function does not exist: PUBLIC.NOW()
+
+/* extensions V402-01 */
+SELECT VSQL.NOW() = CURRENT_TIMESTAMP AS same FROM t;
+-- SAME: TRUE
 
 -- # The flagger: what CURRENT_TIMESTAMP needs, and which alias was used.
 /* flags */

@@ -11,9 +11,9 @@ SELECT * FROM information_schema.views WHERE table_name IN ('T', 'TABLES', 'VIEW
 SELECT COUNT(*) FROM information_schema.views;
 SELECT COUNT(*) FROM information_schema.tables WHERE table_type = 'VIEW';
 SELECT COUNT(*) FROM information_schema.tables t JOIN information_schema.views v ON t.table_name = v.table_name;
--- COL1: 36
--- COL1: 36
--- COL1: 36
+-- COL1: 40
+-- COL1: 40
+-- COL1: 40
 
 -- # A view's usage of columns, routines and tables. The views of the
 -- # INFORMATION_SCHEMA don't have any.

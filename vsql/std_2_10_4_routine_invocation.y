@@ -6,6 +6,8 @@ routine_invocation:
     flag_if(mut yylex, ($1.v as Identifier).entity_name == 'NOW', vsql_now)
     parsed_routine_name(mut yylex, ($1.v as Identifier).entity_name)
     $$.v = yy_box(RoutineInvocation{
+      catalog_name:  ($1.v as Identifier).catalog_name
+      schema_name:   ($1.v as Identifier).schema_name
       function_name: ($1.v as Identifier).entity_name
       args:          $2.v as []ValueExpression
     })
@@ -15,14 +17,19 @@ routine_invocation:
 | routine_name left_paren set_quantifier sql_argument right_paren {
     parsed_routine_name(mut yylex, ($1.v as Identifier).entity_name)
     $$.v = yy_box(RoutineInvocation{
+      catalog_name:  ($1.v as Identifier).catalog_name
+      schema_name:   ($1.v as Identifier).schema_name
       function_name: ($1.v as Identifier).entity_name
       args:          [$4.v as ValueExpression]
       distinct:      $3.v as bool
     })
   }
 
+// A <routine name> can be qualified by a schema (and catalog), such as
+// VSQL.GCD. It's parsed as an identifier chain, like a <column reference>,
+// which it can only be told apart from by the "(" that follows it.
 routine_name:
-  qualified_identifier {
+  identifier_chain {
     $$.v = yy_box(new_function_identifier(($1.v as IdentifierChain).identifier)!)
   }
 

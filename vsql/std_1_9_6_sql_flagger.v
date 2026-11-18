@@ -1186,7 +1186,9 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // ISO/IEC 9075-11:2006, 5.22, CONSTRAINT_COLUMN_USAGE view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.23, CONSTRAINT_TABLE_USAGE view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.32, KEY_COLUMN_USAGE view, Conformance Rules, 1 and 2
+// ISO/IEC 9075-11:2006, 5.35, PARAMETERS view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
+// ISO/IEC 9075-11:2006, 5.49, ROUTINES view, Conformance Rules, 1, 2, 3 and 4
 // ISO/IEC 9075-11:2006, 5.50, SCHEMATA view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.51, SEQUENCES view, Conformance Rules, 1 and 2
 // ISO/IEC 9075-11:2006, 5.53, SQL_IMPLEMENTATION_INFO view, Conformance Rules, 1 and 2
@@ -1197,7 +1199,7 @@ fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 // ISO/IEC 9075-11:2006, 5.73, VIEW_COLUMN_USAGE view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.74, VIEW_ROUTINE_USAGE view, Conformance Rules, 1
 // ISO/IEC 9075-11:2006, 5.75, VIEW_TABLE_USAGE view, Conformance Rules, 1
-// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 7, 8, 9, 18, 19, 20, 37, 38, 39, 40 and 42
+// ISO/IEC 9075-11:2006, 5.77, Short name views, Conformance Rules, 7, 8, 9, 18, 19, 20, 33, 34, 37, 38, 39, 40, 42 and 50
 const information_schema_features = {
 	'CHARACTER_SETS':                  ['F391']
 	'COL_COL_USAGE':                   ['F341', 'T175']
@@ -1216,7 +1218,15 @@ const information_schema_features = {
 	'INFORMATION_SCHEMA_CATALOG_NAME': ['F391', 'F651']
 	'KEY_COLUMN_USAGE':                ['F341', 'F391']
 	'KEY_COLUMN_USAGE_S':              ['F341']
+	'PARAMETERS':                      ['F391']
 	'REFERENTIAL_CONSTRAINTS':         ['F391']
+	'ROUTINES':                        ['F391']
+	'ROUTINES.CREATED':                ['T011']
+	'ROUTINES.LAST_ALTERED':           ['T011']
+	'ROUTINES.NEW_SAVEPOINT_LEVEL':    ['T272']
+	'ROUTINES_S.CREATED':              ['T011']
+	'ROUTINES_S.LAST_ALTERED':         ['T011']
+	'ROUTINES_S.NEW_SAVEPOINT_LVL':    ['T272']
 	'SCHEMATA':                        ['F391']
 	'SEQUENCES':                       ['F391', 'T176']
 	'SEQUENCES_S':                     ['T176']

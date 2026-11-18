@@ -51,7 +51,7 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 	//
 	// ISO/IEC 9075-2:2023, 19.6, <set schema statement>, General Rules, 3.a
 	catalog := conn.catalogs[new_catalog] or { return sqlstate_3d000(new_catalog) }
-	if new_schema !in catalog.storage.schemas && new_schema != information_schema_name {
+	if new_schema !in catalog.storage.schemas && new_schema !in system_schema_names {
 		return sqlstate_3f000(new_schema) // schema does not exist
 	}
 

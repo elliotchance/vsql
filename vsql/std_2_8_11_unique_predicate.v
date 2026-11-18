@@ -19,6 +19,11 @@ fn (e UniquePredicate) pstr(params map[string]Value) string {
 fn (e UniquePredicate) compile(mut c Compiler) !CompileResult {
 	plan := e.subquery.plan(mut c)!
 
+	// ISO/IEC 9075-2:2023, 9.12, Grouping operations, Syntax Rules, 1.h
+	for i, column in plan.plan.columns() {
+		check_grouping_operand(column.typ, 'column ${i + 1} of UNIQUE')!
+	}
+
 	return CompileResult{
 		run:          fn [plan, e] (mut conn Connection, data Row, params map[string]Value) !Value {
 			rows := subquery_rows(mut conn, plan, data)!

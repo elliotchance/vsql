@@ -64,6 +64,19 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	arg_types := c.with_argument_types(e.function_name, args).map(it.typ)
 	if is_agg {
 		c.flag_set_function(e, arg_columns)
+		if arg_types.len > 0 {
+			// A DISTINCT argument is an operand of a grouping operation, and MAX or
+			// MIN is an ordering operation.
+			//
+			// ISO/IEC 9075-2:2023, 9.12, Grouping operations, Syntax Rules, 1.c
+			// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 1.d
+			if e.distinct {
+				check_grouping_operand(arg_types[0], 'DISTINCT argument of ${e.function_name}')!
+			}
+			if e.function_name in ['MAX', 'MIN'] {
+				check_ordering_operand(arg_types[0], 'argument of ${e.function_name}')!
+			}
+		}
 	}
 
 	func_name := e.function_name

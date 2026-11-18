@@ -35,6 +35,11 @@ fn plan_compared_subquery(mut c Compiler, subquery Subquery, mut expr []CompileR
 fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	mut compiled_expr := e.expr.compile_fields(mut c)!
 	plan := plan_compared_subquery(mut c, e.subquery, mut compiled_expr)!
+	mut types := compiled_expr.map(it.typ)
+	for column in plan.plan.columns() {
+		types << column.typ
+	}
+	e.op.check_ordering_operands(types)!
 
 	return CompileResult{
 		run:          fn [e, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {

@@ -1238,10 +1238,10 @@ Optional Features
    * - ❌ **T044**
      - **Multiplier P**
 
-   * - ⭕ **T045**
+   * - ✅ **T045**
      - **BLOB data type**
 
-   * - ⭕ **T046**
+   * - ✅ **T046**
      - **CLOB data type**
 
    * - ❌ **T047**

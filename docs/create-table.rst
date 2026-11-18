@@ -10,6 +10,9 @@ Syntax
 
   CREATE TABLE [ IF NOT EXISTS ] <table_name> ( <element> , ... )
 
+  CREATE TABLE [ IF NOT EXISTS ] <table_name> [ ( <column_name> , ... ) ]
+    AS ( <query> ) WITH [ NO ] DATA
+
   <element> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
                [ [ CONSTRAINT <constraint_name> ] <column_constraint>
                  [ <characteristics> ] ... ]
@@ -86,6 +89,55 @@ of ``vsql out`` (see :doc:`cli`) or the ``INFORMATION_SCHEMA``.
   CREATE TABLE IF NOT EXISTS products (price FLOAT);
   -- msg: CREATE TABLE 1
   -- msg: CREATE TABLE 0
+
+CREATE TABLE AS
+---------------
+
+``CREATE TABLE ... AS`` creates a table with the columns of a query. Each
+column has the name and type of the column of the query, and is ``NOT NULL``
+when the query's column can't be ``NULL`` (such as a column of a table that is
+``NOT NULL``). Nothing else is copied: the new table has no defaults, identity
+columns, generated columns or constraints.
+
+``WITH DATA`` also inserts the rows of the query, the same as an
+:doc:`insert` of the query would (including the ``02000`` warning when there are
+no rows). ``WITH NO DATA`` only creates the table.
+
+.. code-block:: sql
+
+  CREATE TABLE products (title VARCHAR(100) NOT NULL, price FLOAT);
+  INSERT INTO products (title, price) VALUES ('Box', 1.5), ('Bag', 2.25);
+  CREATE TABLE cheap AS (SELECT title FROM products WHERE price < 2) WITH DATA;
+  SELECT * FROM cheap;
+  -- TITLE: Box
+
+A list of column names after the table name names the columns instead. It
+must have one name for each column of the query. Without it, every column of
+the query must have a name of its own (a column reference, or an ``AS``), and
+the names must be different, otherwise it's an error ``42601``:
+
+.. code-block:: sql
+
+  CREATE TABLE totals AS (SELECT COUNT(*) FROM products) WITH DATA;
+  -- error 42601: syntax error: column 1 of the query needs a name, or a column name list is needed
+
+  CREATE TABLE totals (n) AS (SELECT COUNT(*) FROM products) WITH DATA;
+  -- msg: CREATE TABLE 1
+
+The query can't use the new table, because it doesn't exist yet.
+
+The standard needs the query in parentheses, and ``WITH DATA`` or
+``WITH NO DATA``. Like other databases, vsql also allows the query without
+parentheses (flagged as ``V103-02``), and leaving out ``WITH DATA``, which is
+the same as ``WITH DATA`` (flagged as ``V103-03``, see :doc:`sql-flagging`):
+
+.. code-block:: sql
+
+  CREATE TABLE cheap AS SELECT title FROM products WHERE price < 2;
+
+A ``WITH`` straight after a ``TIME`` or ``TIMESTAMP`` type is always the start
+of ``WITH TIME ZONE``, so a query that ends with one (such as ``x::TIME``) must
+be in parentheses to be followed by ``WITH DATA``.
 
 Defaults
 --------

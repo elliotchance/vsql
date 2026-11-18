@@ -49,6 +49,8 @@ import arrays
 //
 // V103: CREATE TABLE.
 // V103-01: CREATE TABLE IF NOT EXISTS.
+// V103-02: CREATE TABLE AS with a query that isn't in parentheses.
+// V103-03: CREATE TABLE AS without WITH DATA or WITH NO DATA (it's WITH DATA).
 //
 // V104: DROP TABLE.
 // V104-01: DROP TABLE without a <drop behavior> (it's RESTRICT).
@@ -192,6 +194,8 @@ const vsql_drop_index_if_exists = 'V003-02'
 const vsql_create_schema_if_not_exists = 'V101-01'
 const vsql_drop_schema_if_exists = 'V102-01'
 const vsql_create_table_if_not_exists = 'V103-01'
+const vsql_create_table_as_query = 'V103-02'
+const vsql_create_table_as_with_data = 'V103-03'
 const vsql_drop_table_behavior = 'V104-01'
 const vsql_drop_table_if_exists = 'V104-02'
 const vsql_drop_column_behavior = 'V105-01'
@@ -1139,6 +1143,9 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 			create_plan(stmt, params, mut conn) or {}
 		}
 		TableDefinition {
+			if as_subquery := stmt.as_subquery {
+				create_plan(as_subquery.query, params, mut conn) or {}
+			}
 			conn.flag_foreign_keys(stmt, conn.resolve_identifier(stmt.table_name), 0)
 		}
 		UpdateStatementPositioned {
@@ -1292,7 +1299,7 @@ fn (mut conn Connection) flag_alter_table(stmt AlterTableStatement) {
 		AddTableConstraintDefinition { elements << stmt.action.constraint }
 		else { return }
 	}
-	conn.flag_foreign_keys(TableDefinition{table.name, elements, false}, table.name, table.foreign_keys.len)
+	conn.flag_foreign_keys(TableDefinition{ table_name: table.name, table_elements: elements }, table.name, table.foreign_keys.len)
 }
 
 // flag_foreign_keys flags each FOREIGN KEY of a definition, other than the

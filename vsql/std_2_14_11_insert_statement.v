@@ -44,6 +44,14 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		conn.release_write_connection()
 	}
 
+	count := stmt.insert(mut conn, params)!
+
+	return new_result_msg('INSERT ${count}', elapsed_parse, t.elapsed())
+}
+
+// insert inserts the rows and returns how many there are. The caller must have
+// the write connection open.
+fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !int {
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
@@ -99,7 +107,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		conn.add_warning(sqlstate_02000())
 	}
 
-	return new_result_msg('INSERT ${rows.len}', elapsed_parse, t.elapsed())
+	return rows.len
 }
 
 // row_elements returns each value of one row of the VALUES. A row with more than

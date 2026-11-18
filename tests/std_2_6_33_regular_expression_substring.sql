@@ -107,11 +107,11 @@ VALUES SUBSTRING(123 SIMILAR '%#"2#"%' ESCAPE '#');
 -- error 2201B: invalid regular expression
 -- error 2201B: invalid regular expression
 -- error 2200C: invalid use of escape character
--- error 42883: function does not exist: SUBSTRING(SMALLINT SIMILAR CHARACTER(7) ESCAPE CHARACTER(1))
+-- error 42883: function does not exist: SUBSTRING(INTEGER SIMILAR CHARACTER(7) ESCAPE CHARACTER(1))
 
 VALUES SUBSTRING('123' SIMILAR 2 ESCAPE '#');
 VALUES SUBSTRING('123' SIMILAR '%#"2#"%' ESCAPE 1);
 VALUES SUBSTRING('abc' SIMILAR '%#"b#"%');
--- error 42883: function does not exist: SUBSTRING(CHARACTER(3) SIMILAR SMALLINT ESCAPE CHARACTER(1))
--- error 42883: function does not exist: SUBSTRING(CHARACTER(3) SIMILAR CHARACTER(7) ESCAPE SMALLINT)
+-- error 42883: function does not exist: SUBSTRING(CHARACTER(3) SIMILAR INTEGER ESCAPE CHARACTER(1))
+-- error 42883: function does not exist: SUBSTRING(CHARACTER(3) SIMILAR CHARACTER(7) ESCAPE INTEGER)
 -- error 42601: syntax error: unexpected ")" at line 1, column 41 near "'abc' SIMILAR '%#"b#"%')", expecting ESCAPE or "||"

@@ -1082,7 +1082,7 @@ see :doc:`custom-functions`.
 .. code-block:: sql
 
   VALUES 1, 'a';
-  -- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(1)
+  -- error 42804: data type mismatch in row 2, column 1 of VALUES: expected INTEGER but got CHARACTER(1)
 
 ``42830`` invalid foreign key
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

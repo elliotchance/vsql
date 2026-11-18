@@ -5,11 +5,11 @@ VALUES SUBSTRING(DATE '2024-01-02' FROM 1);
 VALUES TRIM(' ' FROM 123);
 VALUES TRIM(TRUE);
 VALUES TRIM(123 FROM 'abc');
--- error 42883: function does not exist: SUBSTRING(SMALLINT)
+-- error 42883: function does not exist: SUBSTRING(INTEGER)
 -- error 42883: function does not exist: SUBSTRING(DATE)
--- error 42883: function does not exist: TRIM(SMALLINT)
+-- error 42883: function does not exist: TRIM(INTEGER)
 -- error 42883: function does not exist: TRIM(BOOLEAN)
--- error 42883: function does not exist: TRIM(SMALLINT FROM CHARACTER(3))
+-- error 42883: function does not exist: TRIM(INTEGER FROM CHARACTER(3))
 
 -- # A NULL source gives NULL (General Rules, 3.d), and the result is a
 -- # CHARACTER VARYING as long as the source (Syntax Rules, 4.a.i and 13.b.i).

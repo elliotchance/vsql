@@ -145,7 +145,7 @@ VALUES 1 = ANY (SELECT x, y FROM t);
 
 -- # The corresponding fields must be comparable.
 VALUES (1, 'a') = (1, 2);
--- error 42883: cannot compare CHARACTER(1) and SMALLINT
+-- error 42883: cannot compare CHARACTER(1) and INTEGER
 
 -- # NULL isn't a value in a row.
 VALUES (1, NULL) = (1, 2);

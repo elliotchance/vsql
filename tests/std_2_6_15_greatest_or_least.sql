@@ -17,7 +17,7 @@ SELECT GREATEST(x, y), LEAST(x, y, 2.75) FROM t;
 
 /* types */
 VALUES ROW(GREATEST(1, 2.5), LEAST(1.25, 10));
--- COL1: 2.5 (NUMERIC(6, 1)) COL2: 1.25 (NUMERIC(7, 2))
+-- COL1: 2.5 (NUMERIC(11, 1)) COL2: 1.25 (NUMERIC(12, 2))
 
 SELECT GREATEST(s, 'a', 'c'), LEAST(s, 'a', 'c') FROM t;
 -- COL1: c COL2: a

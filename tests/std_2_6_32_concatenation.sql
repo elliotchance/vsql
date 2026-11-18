@@ -6,7 +6,7 @@ VALUES 'foo' || 'bar';
 -- COL1: foobar (CHARACTER(6))
 
 VALUES 123 || 'bar';
--- error 42883: operator does not exist: SMALLINT || CHARACTER
+-- error 42883: operator does not exist: INTEGER || CHARACTER
 
 /* extensions V001-01 */
 CREATE TABLE t (a VARCHAR(10), b CHAR(4));

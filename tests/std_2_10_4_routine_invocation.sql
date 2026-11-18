@@ -5,8 +5,8 @@ VALUES no_such_function();
 VALUES no_such_function(1);
 VALUES no_such_function(1, 'a', 2.5);
 -- error 42883: function does not exist: NO_SUCH_FUNCTION()
--- error 42883: function does not exist: NO_SUCH_FUNCTION(SMALLINT)
--- error 42883: function does not exist: NO_SUCH_FUNCTION(SMALLINT, CHARACTER(1), NUMERIC(2, 1))
+-- error 42883: function does not exist: NO_SUCH_FUNCTION(INTEGER)
+-- error 42883: function does not exist: NO_SUCH_FUNCTION(INTEGER, CHARACTER(1), NUMERIC(2, 1))
 
 -- # An argument can't be left out.
 VALUES no_such_function(1,);

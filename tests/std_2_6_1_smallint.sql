@@ -109,8 +109,13 @@ VALUES CAST(-30000 AS SMALLINT) / CAST(0.1 AS SMALLINT);
 -- error 22012: division by zero
 -- error 22012: division by zero
 
--- # -32768 has no positive SMALLINT, so negating it or dividing it by -1 is out
--- # of range (6.29, General Rules, 5.a and 5.b).
+-- # Negating a SMALLINT keeps its type. -32768 has no positive SMALLINT, so
+-- # negating it or dividing it by -1 is out of range (6.30, General Rules, 5.a
+-- # and 5.b).
+/* types */
+VALUES -CAST(-32767 AS SMALLINT);
+-- COL1: 32767 (SMALLINT)
+
 VALUES -CAST(-32768 AS SMALLINT);
 VALUES CAST(-32768 AS SMALLINT) / CAST(-1 AS SMALLINT);
 -- error 22003: numeric value out of range

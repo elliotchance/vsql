@@ -48,7 +48,7 @@ SELECT * FROM t WHERE x = 1;
 /* types */
 /* extensions V201-01 */
 SELECT 1 + 2 AS x, 'a';
--- X: 3 (SMALLINT) COL2: a (CHARACTER(1))
+-- X: 3 (INTEGER) COL2: a (CHARACTER(1))
 
 /* extensions V201-01 */
 SELECT 1, 2 AS b, 3;
@@ -265,7 +265,7 @@ SELECT y FROM t WHERE x = 1;
 /* extensions V001-01 V201-01 */
 EXPLAIN SELECT 1;
 -- EXPLAIN: SINGLE ROW
--- EXPLAIN: EXPR (COL1 SMALLINT)
+-- EXPLAIN: EXPR (COL1 INTEGER)
 
 /* extensions V001-01 V201-01 */
 EXPLAIN SELECT COUNT(*) AS c;
@@ -278,7 +278,7 @@ EXPLAIN SELECT 1 AS a ORDER BY 1 + 1 FETCH FIRST 1 ROW ONLY;
 -- EXPLAIN: SINGLE ROW
 -- EXPLAIN: ORDER BY 1 + 1 ASC
 -- EXPLAIN: FETCH FIRST 1 ROWS ONLY
--- EXPLAIN: EXPR (A SMALLINT)
+-- EXPLAIN: EXPR (A INTEGER)
 
 -- # A cursor can read it, but it isn't updatable since there's no table.
 /* extensions V108-01 V109-01 V110-01 V201-01 */

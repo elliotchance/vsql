@@ -54,7 +54,7 @@ INSERT INTO t (a) VALUES (12);
 -- msg: CREATE TABLE 1
 -- error 42846: cannot coerce CHARACTER(2) to BINARY VARYING(10)
 -- error 42846: cannot coerce BINARY(2) to CHARACTER VARYING(10)
--- error 42846: cannot coerce SMALLINT to BINARY VARYING(10)
+-- error 42846: cannot coerce INTEGER to BINARY VARYING(10)
 
 -- # The length must be at least 1, and a BINARY or BINARY VARYING can't be
 -- # longer than 10485760 octets.
@@ -123,10 +123,10 @@ INSERT INTO t VALUES (X'0000', 5);
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM (VALUES ROW(1)) AS t (x) WHERE X'01' IS NOT NULL AND INTERVAL '1' DAY IS NOT NULL;
 -- EXPLAIN: T:
--- EXPLAIN:   VALUES (X SMALLINT) = ROW(1)
--- EXPLAIN: TABLE T (X SMALLINT)
+-- EXPLAIN:   VALUES (X INTEGER) = ROW(1)
+-- EXPLAIN: TABLE T (X INTEGER)
 -- EXPLAIN: WHERE X'01' IS NOT NULL AND INTERVAL '1' DAY(2) IS NOT NULL
--- EXPLAIN: EXPR (T.X SMALLINT)
+-- EXPLAIN: EXPR (T.X INTEGER)
 
 -- # An index on a binary string has its values in order, so it can be read in
 -- # the order of an ORDER BY.

@@ -82,7 +82,7 @@ VALUES DATE '2022-07-04' AT LOCAL;
 VALUES 123 AT LOCAL;
 VALUES 'foo' AT LOCAL;
 -- error 42804: data type mismatch in DATE '2022-07-04' AT LOCAL: expected TIME or TIMESTAMP but got DATE
--- error 42804: data type mismatch in 123 AT LOCAL: expected TIME or TIMESTAMP but got SMALLINT
+-- error 42804: data type mismatch in 123 AT LOCAL: expected TIME or TIMESTAMP but got INTEGER
 -- error 42804: data type mismatch in 'foo' AT LOCAL: expected TIME or TIMESTAMP but got CHARACTER(3)
 
 -- # A datetime without a time zone depends on the time zone of the session, so

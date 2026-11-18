@@ -41,7 +41,10 @@ A binary string is a sequence of octets (bytes), rather than characters.
     - Is an alias for ``BINARY LARGE OBJECT(n)``. [2]_
 
 The length *n* must be from 1 to 10485760 (or 2147483647 for a ``BINARY LARGE
-OBJECT``). A ``BINARY VARYING`` must have a length.
+OBJECT``). A ``BINARY VARYING`` must have a length. The length of a ``BINARY
+LARGE OBJECT`` can have a multiplier: ``K`` (1024), ``M`` (1048576) or ``G``
+(1073741824), such as ``BLOB(2M)``. ``T`` and ``P`` are also multipliers, but
+they're always longer than the maximum.
 
 A value that's too long for a column is an error ``22001``, unless the extra
 octets at the end are all ``X'00'``, which are removed. A binary string can only

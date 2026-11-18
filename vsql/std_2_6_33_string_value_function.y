@@ -75,7 +75,8 @@ fold:
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression))]})
   }
 
-// Without USING, it's USING CHARACTERS (like SUBSTRING).
+// Without USING, it's USING CHARACTERS for a character string, and a binary
+// string can't have USING (like SUBSTRING).
 //
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 17
 
@@ -84,14 +85,14 @@ character_overlay_function:
   character_value_expression FROM start_position right_paren {
     $$.v = yy_box(new_overlay_function($3.v as CharacterValueExpression,
       $5.v as CharacterValueExpression, $7.v as NumericValueExpression, none,
-      'CHARACTERS'))
+      ''))
   }
 | OVERLAY left_paren character_value_expression PLACING
   character_value_expression FROM start_position FOR string_length
   right_paren {
     $$.v = yy_box(new_overlay_function($3.v as CharacterValueExpression,
       $5.v as CharacterValueExpression, $7.v as NumericValueExpression,
-      $9.v as NumericValueExpression, 'CHARACTERS'))
+      $9.v as NumericValueExpression, ''))
   }
 | OVERLAY left_paren character_value_expression PLACING
   character_value_expression FROM start_position USING char_length_units

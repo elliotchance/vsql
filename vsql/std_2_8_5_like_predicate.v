@@ -73,10 +73,15 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 	has_escape := e.escape != none
 	compiled_l, compiled_right, compiled_escape = c.with_pattern_types(compiled_l, compiled_right,
 		compiled_escape, has_escape)
+	if compiled_l.typ.typ.is_binary_string() && !e.insensitive {
+		return e.compile_octet_like(mut c, compiled_l, compiled_right, compiled_escape,
+			has_escape)
+	}
 	check_string_operands(e.operator(), compiled_l, compiled_right)!
 	if has_escape {
 		check_string_operands(e.operator(), compiled_l, compiled_escape)!
 	}
+	c.flag_lob_pattern(compiled_l, compiled_right)
 
 	return CompileResult{
 		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -124,6 +129,82 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// flag_lob_pattern flags a LIKE or SIMILAR TO of a CHARACTER LARGE OBJECT
+// (T042).
+//
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Conformance Rules, 5 and 6
+// ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Conformance Rules, 2
+fn (mut c Compiler) flag_lob_pattern(value CompileResult, pattern CompileResult) {
+	if c.conn.flagging && (value.typ.typ == .is_clob || pattern.typ.typ == .is_clob) {
+		c.conn.flagged_features << 'T042'
+	}
+}
+
+// compile_octet_like is an <octet like predicate>, which is a LIKE of binary
+// strings (Feature T022). The pattern and the escape octet must be binary
+// strings, and they're matched octet by octet, where the octets of "%" and "_"
+// are the wildcards.
+//
+// ISO/IEC 9075-2:2023, 4.4.3.2, Other operators involving binary strings
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 2 and 4
+// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Conformance Rules, 1
+fn (e CharacterLikePredicate) compile_octet_like(mut c Compiler, compiled_l CompileResult, compiled_right CompileResult, compiled_escape CompileResult, has_escape bool) !CompileResult {
+	if !compiled_right.typ.typ.is_binary_string()
+		|| (has_escape && !compiled_escape.typ.typ.is_binary_string()) {
+		return sqlstate_42883('operator does not exist: ${compiled_l.typ.typ} LIKE ${compiled_right.typ.typ}')
+	}
+	if c.conn.flagging {
+		c.conn.flagged_features << 'T022'
+	}
+
+	return CompileResult{
+		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
+			left := compiled_l.run(mut conn, data, params)!
+			right := compiled_right.run(mut conn, data, params)!
+
+			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 4.a.i
+			if left.is_null || right.is_null {
+				return new_unknown_value()
+			}
+
+			mut escape := ?rune(none)
+			if has_escape {
+				escape_value := compiled_escape.run(mut conn, data, params)!
+
+				// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 4.a.ii
+				if escape_value.is_null {
+					return new_unknown_value()
+				}
+
+				// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 4.d.i.1
+				escape_octet := escape_value.string_value()
+				if escape_octet.len != 1 {
+					return sqlstate_2200d()
+				}
+				escape = rune(escape_octet[0])
+			}
+
+			// Each octet is a "character" of the pattern and the value, so the
+			// LIKE of character strings matches them the same way.
+			//
+			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 4.b-4.f
+			pattern := like_pattern_runes(right.string_value().bytes().map(rune(it)), escape)!
+			result := like_matches(left.string_value().bytes().map(LikeValueChar{rune(it), false}),
+				pattern)
+
+			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 4.b and 4.c
+			if e.not {
+				return new_boolean_value(!result)
+			}
+
+			return new_boolean_value(result)
+		}
+		typ:          new_type('BOOLEAN', 0, 0)
+		contains_agg: compiled_right.contains_agg || compiled_l.contains_agg
+			|| compiled_escape.contains_agg
+	}
+}
+
 // escape_character is the character of the ESCAPE of a LIKE or SIMILAR TO, or a
 // SQLSTATE 22019 error if it isn't exactly one character.
 //
@@ -153,7 +234,12 @@ struct LikeChar {
 // ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.b.i.2
 // ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 3.b.ii
 fn like_pattern(pattern string, escape ?rune) ![]LikeChar {
-	runes := pattern.runes()
+	return like_pattern_runes(pattern.runes(), escape)
+}
+
+// like_pattern_runes is like_pattern for the characters of a pattern, or the
+// octets of a binary string pattern.
+fn like_pattern_runes(runes []rune, escape ?rune) ![]LikeChar {
 	mut chars := []LikeChar{cap: runes.len}
 	mut i := 0
 	for i < runes.len {

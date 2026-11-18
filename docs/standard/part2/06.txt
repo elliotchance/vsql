@@ -821,9 +821,9 @@
 6.13/GR/22               n/a          - - JSON data type (T801)
 6.13/GR/23               n/a          - - domains (F251)
 6.13/GR/24               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/CR/1                n/a          - - LOBs (T042)
+6.13/CR/1                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_lob.sql
 6.13/CR/2                n/a          - - national character (F421)
-6.13/CR/3                n/a          - - LOBs (T042)
+6.13/CR/3                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_lob.sql the national character set is UTF8, so NCLOB is CLOB
 6.13/CR/4                n/a          - - reference types (S041, S043)
 6.13/CR/5                n/a          - - cast templates (T839)
 # 6.14, <next value expression>
@@ -1470,7 +1470,7 @@
 6.33/SR/18.c.ii.2        n/a          - - NORMALIZE (T061)
 6.33/SR/18.c.ii.3        n/a          - - NORMALIZE (T061)
 6.33/SR/19               n/a          - - specific type method (S261)
-6.33/SR/20               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql there's no <binary overlay function> yet (T022)
+6.33/SR/20               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql,tests/std_2_6_33_binary_overlay.sql
 6.33/SR/21               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
 6.33/SR/21.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
 6.33/SR/21.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
@@ -1484,10 +1484,10 @@
 6.33/SR/22.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
 6.33/SR/22.b.i           implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
 6.33/SR/22.b.ii          implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_trim.sql
-6.33/SR/23               n/a          - - binary strings (T021)
-6.33/SR/23.a             n/a          - - binary strings (T021)
-6.33/SR/23.b             n/a          - - binary strings (T021)
-6.33/SR/23.c             n/a          - - binary strings (T021)
+6.33/SR/23               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_overlay.sql
+6.33/SR/23.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_overlay.sql
+6.33/SR/23.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_overlay.sql
+6.33/SR/23.c             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_overlay.sql
 6.33/SR/24               n/a          - - row pattern recognition (R010)
 6.33/SR/24.a             n/a          - - row pattern recognition (R010)
 6.33/SR/24.b             n/a          - - row pattern recognition (R010)
@@ -1637,7 +1637,7 @@
 6.33/GR/15.b.ii.2        n/a          - - specific type method (S261)
 6.33/GR/15.b.ii.3        n/a          - - specific type method (S261)
 6.33/GR/15.c             n/a          - - specific type method (S261)
-6.33/GR/16               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql there's no <binary overlay function> yet (T022)
+6.33/GR/16               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql,tests/std_2_6_33_binary_overlay.sql
 6.33/GR/17               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
 6.33/GR/17.a             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
 6.33/GR/17.b             implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
@@ -1681,7 +1681,7 @@
 6.33/CR/2                implemented  vsql/std_2_6_33_string_value_function.y tests/std_1_9_6_flagging.sql
 6.33/CR/3                implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_overlay.sql
 6.33/CR/4                n/a          - - OVERLAY (T312)
-6.33/CR/5                implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql
+6.33/CR/5                implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql,tests/std_2_6_33_binary_overlay.sql
 6.33/CR/6                n/a          - - transliteration (F695)
 6.33/CR/7                n/a          - - transcoding (F695)
 6.33/CR/8                n/a          - - NORMALIZE (T061)

@@ -1229,7 +1229,7 @@ Optional Features
    * - ❌ **T041**
      - **Basic LOB data type support**
 
-   * - ❌ **T042**
+   * - ⭕ **T042**
      - **Extended LOB data type support**
 
    * - ❌ **T043**

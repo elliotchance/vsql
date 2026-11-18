@@ -345,6 +345,18 @@ fn sqlstate_2200c() IError {
 	}
 }
 
+// Invalid escape octet: the ESCAPE of a LIKE of binary strings isn't one octet.
+struct SQLState2200D {
+	SQLState
+}
+
+fn sqlstate_2200d() IError {
+	return SQLState2200D{
+		code: sqlstate_to_int('2200D')
+		msg:  'invalid escape octet'
+	}
+}
+
 // Sequence generator limit exceeded.
 struct SQLState2200H {
 	SQLState

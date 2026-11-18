@@ -567,7 +567,7 @@ fn (t Time) str_time_zone(allow_time_zone bool, sql_formatting bool) string {
 
 // time_zone_value is the current time zone of the session, such as "+05:00".
 fn time_zone_value(conn &Connection) string {
-	_, offset := conn.now()
+	_, offset := conn.session_now()
 
 	return time_zone_str(offset)
 }
@@ -602,7 +602,19 @@ fn time_zone_str(time_zone i16) string {
 // ISO/IEC 9075-3:2003, 5.4, Implicit cursor, General Rules, 8.a.iii
 // ISO/IEC 9075-3:2003, 6.49, ParamData, General Rules, 17.b.i.6.C
 fn (mut conn Connection) set_statement_timestamp() {
-	conn.statement_timestamp, conn.statement_time_zone = conn.now()
+	conn.statement_timestamp, conn.statement_time_zone = conn.session_now()
+}
+
+// session_now is the time from conn.now() (in UTC), and the current default
+// time zone displacement of the SQL-session (in minutes). The SQL-session starts
+// in the time zone of conn.now(), which is its original time zone displacement,
+// and only SET TIME ZONE changes it.
+//
+// ISO/IEC 9075-2:2023, 4.45.3, SQL-session properties
+fn (conn &Connection) session_now() (time.Time, i16) {
+	now, original := conn.now()
+
+	return now, conn.session_time_zone or { original }
 }
 
 // local_now is the statement timestamp in the session's time zone (the UTC

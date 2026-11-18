@@ -34,6 +34,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SavepointStatement
 	| ReleaseSavepointStatement
 	| SetNamesStatement
+	| SetLocalTimeZoneStatement
 	| SetSessionCharacteristicsStatement
 	| SetTransactionStatement
 	| StartTransactionStatement
@@ -245,6 +246,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		SavepointStatement { 'SAVEPOINT', 63 }
 		ReleaseSavepointStatement { 'RELEASE SAVEPOINT', 57 }
 		SetNamesStatement { 'SET NAMES', 72 }
+		SetLocalTimeZoneStatement { 'SET TIME ZONE', 71 }
 		SetSessionCharacteristicsStatement { 'SET SESSION CHARACTERISTICS', 109 }
 		SetTransactionStatement { 'SET TRANSACTION', 75 }
 		StartTransactionStatement { 'START TRANSACTION', 111 }
@@ -668,6 +670,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetNamesStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		SetLocalTimeZoneStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

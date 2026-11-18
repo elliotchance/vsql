@@ -123,6 +123,35 @@ of day in UTC is compared, which may wrap around midnight
 When a value with a time zone is compared to one without a time zone, the value
 without a time zone is treated as being in the time zone of the connection.
 
+Time Zones
+----------
+
+Each connection has a time zone, which starts as the time zone of its clock (the
+local time zone of the computer, or the one returned by ``Connection.now``). It's
+the time zone of ``CURRENT_TIME`` and ``CURRENT_TIMESTAMP``, and the time zone
+that a value without a time zone is in when it's compared to or cast to a value
+with a time zone. :doc:`set-time-zone` sets it back to the time zone of the clock.
+
+``<expr> AT LOCAL`` puts a ``TIME`` or ``TIMESTAMP`` into the time zone of the
+connection. A value with a time zone becomes the same instant in the time zone
+of the connection, and a value without a time zone is taken to already be in that
+time zone. The result is always ``WITH TIME ZONE``, with the same precision:
+
+.. code-block:: sql
+
+  -- The time zone of the connection is +05:00.
+  VALUES TIMESTAMP '2022-07-04 12:00:00-03:30' AT LOCAL;
+  -- COL1: 2022-07-04T20:30:00+0500
+
+  VALUES TIME '22:30:00-03:00' AT LOCAL;
+  -- COL1: 06:30:00+0500
+
+  VALUES TIMESTAMP '2022-07-04 12:00:00' AT LOCAL;
+  -- COL1: 2022-07-04T12:00:00+0500
+
+``AT LOCAL`` on a ``DATE`` (or any other type) is a ``42804`` error.
+``AT TIME ZONE`` isn't supported yet, because it needs an ``INTERVAL``.
+
 Casting From Strings
 --------------------
 

@@ -53,7 +53,7 @@ pub fn (ctx FunctionContext) current_timestamp() !Value {
 // current_timestamp, two calls in the same statement can return different
 // times. NOW() returns this.
 pub fn (ctx FunctionContext) clock_timestamp() !Value {
-	now, time_zone := ctx.conn.now()
+	now, time_zone := ctx.conn.session_now()
 	return new_timestamp_value(timestamp_with_time_zone_str(now, time_zone, 6))
 }
 

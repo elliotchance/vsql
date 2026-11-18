@@ -554,6 +554,7 @@ fn test_command_function() {
 		"SET CATALOG 'c'":                       'SET CATALOG 66'
 		'SET CONSTRAINTS ALL DEFERRED':          'SET CONSTRAINT 68'
 		"SET SCHEMA 's'":                        'SET SCHEMA 74'
+		'SET TIME ZONE LOCAL':                   'SET TIME ZONE 71'
 		'START TRANSACTION':                     'START TRANSACTION 111'
 		'CREATE TABLE t (x INT)':                'CREATE TABLE 77'
 		'UPDATE t SET x = 1':                    'UPDATE WHERE 82'

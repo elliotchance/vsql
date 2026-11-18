@@ -1922,39 +1922,39 @@
 6.41/CR/1                n/a          - - JSON data type (T801)
 # 6.42, <datetime value expression>
 6.42                     implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
-6.42/SR/1                n/a          - - only matters for datetime arithmetic (F052) or AT LOCAL and AT TIME ZONE (F411)
+6.42/SR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql only AT LOCAL, there's no datetime arithmetic (F052)
 6.42/SR/2                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
-6.42/SR/3                n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/SR/3                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/SR/4                container    - -
-6.42/SR/4.a              n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/SR/4.a              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/SR/4.b              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/SR/5                n/a          - - datetime arithmetic (F052)
 6.42/SR/5.a              n/a          - - datetime arithmetic (F052)
 6.42/SR/5.b              n/a          - - datetime arithmetic (F052)
-6.42/SR/6                n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/SR/6                missing      - - AT TIME ZONE needs intervals (#1176)
 6.42/GR/1                n/a          - - datetime arithmetic (F052)
-6.42/GR/2                n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/GR/2                missing      - - AT TIME ZONE needs intervals (#1176)
 6.42/GR/3                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/GR/4                n/a          - - datetime arithmetic (F052)
 6.42/GR/5                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/GR/5.a              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/GR/5.b              container    - -
 6.42/GR/5.b.i            container    - -
-6.42/GR/5.b.i.1          n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.42/GR/5.b.i.2          n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/GR/5.b.i.1          implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
+6.42/GR/5.b.i.2          implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/GR/5.b.ii           container    - -
-6.42/GR/5.b.ii.1         n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.42/GR/5.b.ii.2         n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.42/GR/5.b.ii.2.A       n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.42/GR/5.b.ii.2.B       n/a          - - AT LOCAL and AT TIME ZONE (F411)
-6.42/GR/5.b.iii          n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/GR/5.b.ii.1         implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
+6.42/GR/5.b.ii.2         missing      - - AT TIME ZONE needs intervals (#1176)
+6.42/GR/5.b.ii.2.A       missing      - - AT TIME ZONE needs intervals (#1176)
+6.42/GR/5.b.ii.2.B       missing      - - AT TIME ZONE needs intervals (#1176)
+6.42/GR/5.b.iii          implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/GR/6                n/a          - - datetime arithmetic (F052)
 6.42/GR/6.a              container    - -
 6.42/GR/6.a.i            n/a          - - datetime arithmetic (F052)
 6.42/GR/6.a.ii           n/a          - - datetime arithmetic (F052)
 6.42/GR/6.b              n/a          - - datetime arithmetic (F052)
 6.42/CR/1                n/a          - - datetime arithmetic (F052)
-6.42/CR/2                n/a          - - AT LOCAL and AT TIME ZONE (F411)
+6.42/CR/2                implemented  vsql/std_2_6_42_datetime_value_expression.y tests/std_2_6_42_at_local.sql
 # 6.43, <datetime value function>
 6.43                     implemented  vsql/std_2_6_43_datetime_value_function.v tests/std_2_6_43_date_time_value_function.sql
 6.43/SR/1                implemented  vsql/std_2_6_43_datetime_value_function.v tests/std_2_6_43_date_time_value_function.sql

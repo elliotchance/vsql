@@ -65,6 +65,7 @@ sql_session_statement:
   set_schema_statement { $$.v = yy_box(Stmt($1.v as SetSchemaStatement)) }
 | set_session_characteristics_statement { $$.v = $1.v }
 | set_names_statement { $$.v = $1.v }
+| set_local_time_zone_statement { $$.v = $1.v }
 | set_catalog_statement { $$.v = $1.v }
 
 %%

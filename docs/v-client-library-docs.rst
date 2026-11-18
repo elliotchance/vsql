@@ -806,6 +806,10 @@ struct Connection
    	// set_statement_timestamp.
    	statement_timestamp time.Time
    	statement_time_zone i16
+   	// session_time_zone is the current default time zone displacement of the
+   	// SQL-session (in minutes), when SET TIME ZONE has changed it. Otherwise it's
+   	// none, and the time zone comes from now (see session_now).
+   	session_time_zone ?i16
    	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
    	// whether it's started by START TRANSACTION or implicitly by a statement.
    	next_transaction ?TransactionCharacteristics

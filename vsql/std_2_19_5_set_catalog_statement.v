@@ -49,7 +49,7 @@ fn (stmt SetCatalogStatement) explain(mut _ Connection, _ map[string]Value, _ ti
 // NULL is the empty string, which isn't a name.
 fn session_name_value(mut conn Connection, mut c Compiler, value ValueSpecification, statement string) !string {
 	v := value.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!
-	if !v.typ.uses_string() {
+	if !v.typ.typ.is_string() {
 		return sqlstate_42804('for ${statement}', 'character string', v.typ.str())
 	}
 	if v.is_null {

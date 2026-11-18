@@ -120,6 +120,18 @@ fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			v.typ.typ == t.typ && v.typ.size <= t.size
 		}
+		.is_clob {
+			v.typ.typ.is_string()
+		}
+		.is_binary, .is_varbinary, .is_blob {
+			v.typ.typ.is_binary_string() && (t.size == 0 || v.string_value().len <= t.size)
+		}
+		.is_decfloat {
+			v.typ.typ.is_number() || v.typ.typ == .is_decfloat
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			v.typ.typ == t.typ
+		}
 	}
 }
 

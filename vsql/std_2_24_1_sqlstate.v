@@ -240,6 +240,20 @@ fn sqlstate_34000(msg string) IError {
 	}
 }
 
+// Invalid LOB locator: a large value can't be read, because the version of the
+// row that had it was removed after a transaction that changed the row
+// committed.
+struct SQLState0F001 {
+	SQLState
+}
+
+fn sqlstate_0f001() IError {
+	return SQLState0F001{
+		code: sqlstate_to_int('0F001')
+		msg:  'invalid LOB locator: the value is no longer available'
+	}
+}
+
 // string data right truncation - the character value is too long for the
 // destination.
 struct SQLState22001 {
@@ -276,6 +290,19 @@ fn sqlstate_22007() IError {
 	return SQLState22007{
 		code: sqlstate_to_int('22007')
 		msg:  'invalid datetime format'
+	}
+}
+
+// Interval field overflow: an interval has more digits in its leading field
+// than the leading field precision of its type.
+struct SQLState22015 {
+	SQLState
+}
+
+fn sqlstate_22015() IError {
+	return SQLState22015{
+		code: sqlstate_to_int('22015')
+		msg:  'interval field overflow'
 	}
 }
 

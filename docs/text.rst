@@ -37,14 +37,44 @@ Text Types
     - See ``CHARACTER(n)``.
     - Is an alias for ``CHARACTER(1)``.
 
-The length *n* must be from 1 to 10485760. It's the number of characters, but
-it can also be the number of octets (bytes of UTF-8), such as
-``VARCHAR(10 OCTETS)``. ``VARCHAR(10 CHARACTERS)`` is the same as
+  * - ``CHARACTER LARGE OBJECT(n)``
+    - 4 bytes, plus the bytes of the value. [2]_
+    - Can store up to *n* characters, like ``CHARACTER VARYING(n)``. Without a
+      length, it can store a value of any length that fits in a row.
+
+  * - ``CHAR LARGE OBJECT(n)``, ``CLOB(n)``
+    - See ``CHARACTER LARGE OBJECT(n)``.
+    - Is an alias for ``CHARACTER LARGE OBJECT(n)``. [1]_
+
+The length *n* must be from 1 to 10485760 (or 2147483647 for a ``CHARACTER
+LARGE OBJECT``). It's the number of characters, but for a ``CHARACTER`` or
+``CHARACTER VARYING`` it can also be the number of octets (bytes of UTF-8),
+such as ``VARCHAR(10 OCTETS)``. ``VARCHAR(10 CHARACTERS)`` is the same as
 ``VARCHAR(10)``. A string that has more octets than that is the same as one
 that's too long. A ``CHARACTER(n OCTETS)`` is padded with spaces to *n* octets,
 and a cast to it never cuts a character in half. A ``CHARACTER VARYING`` (or
 ``CHAR VARYING`` or ``VARCHAR``) without a length is a
 ``CHARACTER VARYING(10485760)``, the maximum length.
+
+A string of any type that's longer than a quarter of a page (1024 bytes, with
+the default page size) is stored outside of its row, so that reading the row
+doesn't read it. A long ``CHARACTER LARGE OBJECT`` is only read when it's used,
+such as when the result is read, and an application can read part of it at a
+time instead (see ``Row.get_lob`` in :doc:`v-client-library-docs`). Other
+string types are read with the row.
+
+A ``CHARACTER LARGE OBJECT`` can't be in a ``PRIMARY KEY``, a ``UNIQUE`` or
+``FOREIGN KEY`` constraint, or an index. It can only be stored and cast for
+now. Operators and functions don't accept one yet.
+
+The only character set is UTF-8, which is also the national character set. So
+each national character string type is the same as the character string type:
+``NATIONAL CHARACTER(n)``, ``NATIONAL CHAR(n)`` and ``NCHAR(n)`` are
+``CHARACTER(n)``, ``NATIONAL CHARACTER VARYING(n)``, ``NATIONAL CHAR
+VARYING(n)`` and ``NCHAR VARYING(n)`` are ``CHARACTER VARYING(n)``, and
+``NATIONAL CHARACTER LARGE OBJECT(n)``, ``NCHAR LARGE OBJECT(n)`` and
+``NCLOB(n)`` are ``CHARACTER LARGE OBJECT(n)``. A national character string
+literal (such as ``N'hello'``) is the same as a character string literal.
 
 Literals
 --------

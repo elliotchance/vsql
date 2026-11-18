@@ -460,7 +460,8 @@ fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8
 			break
 		}
 		if catalog.storage.is_visible(object.tid, object.xid) {
-			rows << new_row_from_bytes_with_ids(o.table, ids, object.value, object.tid)
+			mut row := new_row_from_bytes_with_ids(o.table, ids, object.value, object.tid)
+			rows << catalog.storage.resolve_row(mut row)!
 		}
 	}
 	if err := iter.err {

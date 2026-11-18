@@ -434,6 +434,7 @@ fn (mut conn Connection) add_catalog_now(catalog_name string, path string, optio
 		storage:      new_storage(btree)
 		options:      options
 	}
+	catalog.storage.catalog = catalog
 
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
@@ -541,6 +542,7 @@ fn (mut conn CatalogConnection) lock_file(exclusive bool) ! {
 		} else {
 			flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)!
 		}
+		conn.storage.file_locks++
 
 		$if !windows {
 			if conn.storage.file_replaced(conn.path) {
@@ -558,6 +560,7 @@ fn (mut conn CatalogConnection) lock_file(exclusive bool) ! {
 
 // unlock_file unlocks the database file, which stays open.
 fn (mut conn CatalogConnection) unlock_file(exclusive bool) {
+	conn.storage.file_locks--
 	if exclusive {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 	} else {

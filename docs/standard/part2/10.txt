@@ -3,34 +3,34 @@
 # 10, Additional common elements
 10                       container    - -
 # 10.1, <interval qualifier>
-10.1                     n/a          - - intervals (F052)
-10.1/SR/1                n/a          - - intervals (F052)
-10.1/SR/2                n/a          - - intervals (F052)
-10.1/SR/3                n/a          - - intervals (F052)
-10.1/SR/4                n/a          - - intervals (F052)
-10.1/SR/5                n/a          - - intervals (F052)
-10.1/SR/6                n/a          - - intervals (F052)
-10.1/SR/7                n/a          - - intervals (F052)
-10.1/SR/7.a              n/a          - - intervals (F052)
-10.1/SR/7.b              n/a          - - intervals (F052)
-10.1/GR/1                n/a          - - intervals (F052)
-10.1/GR/1.a              n/a          - - intervals (F052)
-10.1/GR/1.b              n/a          - - intervals (F052)
-10.1/GR/2                n/a          - - intervals (F052)
-10.1/GR/2.a              n/a          - - intervals (F052)
-10.1/GR/2.b              n/a          - - intervals (F052)
-10.1/GR/3                n/a          - - intervals (F052)
-10.1/GR/4                n/a          - - intervals (F052)
-10.1/GR/4.a              n/a          - - intervals (F052)
-10.1/GR/4.a.i            n/a          - - intervals (F052)
-10.1/GR/4.a.ii           n/a          - - intervals (F052)
-10.1/GR/4.b              n/a          - - intervals (F052)
-10.1/GR/4.b.i            n/a          - - intervals (F052)
-10.1/GR/4.b.ii           n/a          - - intervals (F052)
-10.1/GR/4.b.iii          n/a          - - intervals (F052)
-10.1/GR/4.b.iii.1        n/a          - - intervals (F052)
-10.1/GR/4.b.iii.2        n/a          - - intervals (F052)
-10.1/CR/1                n/a          - - intervals (F052)
+10.1                     implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/1                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/2                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/3                impl-defined vsql/interval.v tests/std_2_6_1_interval.sql the maximum leading field precision is 8
+10.1/SR/4                impl-defined vsql/interval.v tests/std_2_6_1_interval.sql the maximum fractional seconds precision is 6
+10.1/SR/5                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/6                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/7                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/7.a              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/SR/7.b              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/1                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/1.a              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/1.b              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/2                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/2.a              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/2.b              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/3                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+10.1/GR/4                n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.a              n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.a.i            n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.a.ii           n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.b              n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.b.i            n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.b.ii           n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.b.iii          n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.b.iii.1        n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4.b.iii.2        n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/CR/1                implemented  vsql/interval.v tests/std_2_6_1_data_types.sql
 # 10.2, <languageclause>
 10.2                     partial      vsql/std_2_13_1_sql_client_module_definition.v libvsql/module/test.mod only LANGUAGE C (B112)
 10.2/SR/1                n/a          - - MUMPS (B115)

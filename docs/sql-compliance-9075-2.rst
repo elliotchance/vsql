@@ -833,7 +833,7 @@ Optional Features
    * - ⭕ **F411**
      - **Time zone specification**
 
-   * - ❌ **F421**
+   * - ✅ **F421**
      - **National character**
 
    * - ✅ **F431**
@@ -1205,7 +1205,7 @@ Optional Features
    * - ❌ **S404**
      - **TRIM_ARRAY**
 
-   * - ❌ **T021**
+   * - ⭕ **T021**
      - **BINARY and VARBINARY data types**
 
    * - ❌ **T022**
@@ -1238,10 +1238,10 @@ Optional Features
    * - ❌ **T044**
      - **Multiplier P**
 
-   * - ❌ **T045**
+   * - ⭕ **T045**
      - **BLOB data type**
 
-   * - ❌ **T046**
+   * - ⭕ **T046**
      - **CLOB data type**
 
    * - ❌ **T047**
@@ -1280,7 +1280,7 @@ Optional Features
    * - ✅ **T071**
      - **BIGINT data type**
 
-   * - ❌ **T076**
+   * - ⭕ **T076**
      - **DECFLOAT data type**
 
    * - ✅ **T081**

@@ -164,9 +164,29 @@ pub fn (r Row) get_int(name string) !int {
 // (including non-strings like numbers, booleans, NULL, etc) into some kind of
 // string.
 //
-// An error is only returned if the column does not exist.
+// An error is returned if the column does not exist, or if it's a large value
+// (see get_lob) that can't be read anymore.
 pub fn (r Row) get_string(name string) !string {
-	return (r.get(name)!).str()
+	value := r.get(name)!
+	if value.is_large && !value.is_null {
+		mut lv := value.large_value()
+		lv.load()!
+	}
+
+	return value.str()
+}
+
+// get_lob returns a reader for a character string or binary string value, which
+// only reads the part of the value that's asked for. It's meant for a CHARACTER
+// LARGE OBJECT or BINARY LARGE OBJECT, which isn't read with the row when it's
+// long (only when it's used), but any string can be read this way.
+pub fn (r Row) get_lob(name string) !Lob {
+	value := r.get(name)!
+	if !value.typ.uses_string() {
+		return error("cannot use get_lob('${name}') when type is ${value.typ}")
+	}
+
+	return Lob{value}
 }
 
 // get_bool only works on a BOOLEAN value. If the column permits NULL values it
@@ -270,6 +290,18 @@ fn new_empty_value(typ Type) Value {
 		.is_numeric, .is_decimal {
 			new_numeric_value('0')
 		}
+		.is_clob {
+			new_clob_value('')
+		}
+		.is_binary, .is_varbinary, .is_blob {
+			new_binary_string_value(typ.typ, '')
+		}
+		.is_decfloat {
+			new_decfloat_value(typ, DecFloat{})
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			new_interval_value(typ, 0)
+		}
 	}
 
 	return Value{
@@ -293,7 +325,7 @@ fn (r Row) size_hint(t Table) i64 {
 	mut size := i64(4 + r.id.len)
 	for col in t.columns {
 		v := r.data.value(col.name.sub_entity_name)
-		size += 1 + if !v.is_null && col.typ.typ in [.is_varchar, .is_character] {
+		size += 1 + if !v.is_null && !v.is_large && col.typ.uses_string() {
 			4 + v.string_value().len
 		} else {
 			16
@@ -310,7 +342,7 @@ fn (r Row) bytes(t Table) ![]u8 {
 }
 
 // bytes_with_limit is bytes, but with a smaller limit for tests. Only a
-// CHARACTER or CHARACTER VARYING value can be big enough to reach the limit, so
+// character string or binary string can be big enough to reach the limit, so
 // the size is checked before each one is written, rather than after the buffer
 // has already grown too big.
 fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
@@ -334,7 +366,9 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
-				.is_real, .is_smallint, .is_numeric, .is_decimal {
+				.is_real, .is_smallint, .is_numeric, .is_decimal, .is_clob, .is_binary,
+				.is_varbinary, .is_blob, .is_decfloat, .is_interval_year_month,
+				.is_interval_day_time {
 					buf.write_bool(v.is_null)
 				}
 				.is_boolean {
@@ -365,7 +399,18 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 				.is_smallint {
 					buf.write_i16(i16(v.int_value()))
 				}
-				.is_varchar, .is_character {
+				.is_varchar, .is_character, .is_clob, .is_binary, .is_varbinary, .is_blob {
+					// A large value is a reference, see large_value_marker.
+					if v.is_large {
+						lv := v.large_value()
+						buf.write_i32(large_value_marker)
+						buf.write_u64(lv.value_id)
+						buf.write_i32(lv.octets)
+						buf.write_i32(lv.characters)
+						buf.write_i32(lv.chunk_size)
+						continue
+					}
+
 					s := v.string_value()
 					if i64(buf.data.len) + 4 + s.len > limit {
 						return sqlstate_54000('row is bigger than the maximum of ${limit} bytes')
@@ -380,6 +425,12 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 					bytes := v.numeric_value().bytes()
 					buf.write_i16(i16(bytes.len))
 					buf.write_u8s(bytes)
+				}
+				.is_decfloat {
+					buf.write_u8s(v.decfloat_value().bytes())
+				}
+				.is_interval_year_month, .is_interval_day_time {
+					buf.write_i64(v.int_value())
 				}
 			}
 		}
@@ -414,8 +465,18 @@ fn skip_value(mut buf Bytes, typ SQLType) {
 			8
 		}
 		.is_time_with_time_zone, .is_timestamp_with_time_zone { 10 }
-		.is_varchar, .is_character { int(buf.read_i32()) }
+		.is_varchar, .is_character, .is_clob, .is_binary, .is_varbinary, .is_blob {
+			// A large value is a reference of 20 more bytes, see
+			// large_value_marker.
+			length := buf.read_i32()
+			if length == large_value_marker { 20 } else { length }
+		}
 		.is_numeric, .is_decimal { int(buf.read_i16()) }
+		.is_interval_year_month, .is_interval_day_time { 8 }
+		.is_decfloat {
+			buf.at += 2
+			int(buf.read_u8())
+		}
 	}
 }
 
@@ -445,6 +506,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 
 		// Some types do not need a NULL flag because it's built into the value.
 		mut is_null := false
+		mut is_large := false
 		mut iv := InternalValue{}
 
 		// If the column is allows for NULL we need to read the prepended a NULL
@@ -456,7 +518,9 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
-				.is_real, .is_smallint, .is_numeric, .is_decimal {
+				.is_real, .is_smallint, .is_numeric, .is_decimal, .is_clob, .is_binary,
+				.is_varbinary, .is_blob, .is_decfloat, .is_interval_year_month,
+				.is_interval_day_time {
 					is_null = buf.read_bool()
 				}
 				.is_boolean {
@@ -507,8 +571,31 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 				.is_smallint {
 					iv.int_value = buf.read_i16()
 				}
-				.is_varchar, .is_character {
-					iv.string_value = buf.read_string4()
+				.is_varchar, .is_character, .is_clob, .is_binary, .is_varbinary, .is_blob {
+					// A large value is a reference, see large_value_marker. It's
+					// read once the row is resolved (see Storage.resolve_row).
+					length := buf.read_i32()
+					if length == large_value_marker {
+						is_large = true
+						iv.large_value = voidptr(&LargeValue{
+							table_id:   t.id
+							value_id:   buf.read_u64()
+							octets:     buf.read_i32()
+							characters: buf.read_i32()
+							chunk_size: buf.read_i32()
+						})
+					} else {
+						// bytestr copies the bytes, so they don't need to be copied
+						// by read_u8s.
+						buf.at += length
+						iv.string_value = buf.data[buf.at - length..buf.at].bytestr()
+					}
+				}
+				.is_decfloat {
+					iv.decfloat_value = box_decfloat(read_decfloat(mut buf))
+				}
+				.is_interval_year_month, .is_interval_day_time {
+					iv.int_value = buf.read_i64()
 				}
 				.is_date {
 					typ := Type{.is_date, col.typ.size, col.typ.scale, col.not_null, false}
@@ -542,9 +629,10 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 		}
 
 		values << Value{
-			typ:     col.typ
-			is_null: is_null
-			v:       iv
+			typ:      col.typ
+			is_null:  is_null
+			is_large: is_large
+			v:        iv
 		}
 	}
 
@@ -615,6 +703,13 @@ fn write_key_numeric(mut buf Bytes, value Numeric) {
 		fraction_digits.trim_left('0').len - fraction_digits.len
 	}
 
+	write_key_digits(mut buf, is_negative, digits, exponent)
+}
+
+// write_key_digits writes a number that isn't zero in a PRIMARY KEY, from its
+// significant digits (without leading or trailing zeros) and the position of
+// the decimal point (the exponent, see write_key_numeric).
+fn write_key_digits(mut buf Bytes, is_negative bool, digits string, exponent int) {
 	mut key := new_empty_bytes()
 	write_key_integer(mut key, exponent, 2)
 	for digit in digits {
@@ -626,6 +721,38 @@ fn write_key_numeric(mut buf Bytes, value Numeric) {
 	for b in key.bytes() {
 		buf.write_u8(if is_negative { ~b } else { b })
 	}
+}
+
+// write_key_decfloat writes a DECFLOAT in a PRIMARY KEY, the same way as a
+// NUMERIC (see write_key_numeric), so that values that are equal (such as 1.5
+// and 1.50) have the same key.
+fn write_key_decfloat(mut buf Bytes, value DecFloat) {
+	coefficient := value.coefficient.abs().str()
+	digits := coefficient.trim_right('0')
+	if digits == '' {
+		buf.write_u8(1)
+		return
+	}
+
+	write_key_digits(mut buf, value.coefficient.signum < 0, digits, value.exponent +
+		coefficient.len)
+}
+
+// write_key_binary writes a binary string in a PRIMARY KEY. Binary strings are
+// compared octet by octet, and one that's the start of a longer one is less
+// than it. Each X'00' is written as 00 FF, and the string ends with 00 00, so
+// that the keys sort the same way and the end can be found.
+//
+// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 4
+fn write_key_binary(mut buf Bytes, value string) {
+	for b in value.bytes() {
+		buf.write_u8(b)
+		if b == 0 {
+			buf.write_u8(0xff)
+		}
+	}
+	buf.write_u8(0)
+	buf.write_u8(0)
 }
 
 // write_key_string writes a CHARACTER or CHARACTER VARYING in a PRIMARY KEY.
@@ -683,8 +810,19 @@ fn write_key_value(mut buf Bytes, value Value, typ SQLType) {
 		.is_numeric, .is_decimal {
 			write_key_numeric(mut buf, value.numeric_value())
 		}
-		.is_character, .is_varchar {
+		.is_character, .is_varchar, .is_clob {
 			write_key_string(mut buf, value.string_value())
+		}
+		.is_binary, .is_varbinary, .is_blob {
+			write_key_binary(mut buf, value.string_value())
+		}
+		.is_decfloat {
+			write_key_decfloat(mut buf, value.decfloat_value())
+		}
+		// An interval is a number of months or microseconds, so the values sort
+		// in the same order as the integers.
+		.is_interval_year_month, .is_interval_day_time {
+			write_key_integer(mut buf, value.int_value(), 8)
 		}
 		// Datetimes with a time zone are compared in UTC, so 12:00:00+05:00 is
 		// the same key as 07:00:00+00:00.

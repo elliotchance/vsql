@@ -59,17 +59,17 @@
 # 4.6.3, Predefined types
 4.6.3                    implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
 # 4.6.3.1, Numeric types
-4.6.3.1                  partial      vsql/numeric.v tests/std_2_6_1_numeric.sql no decimal floating point (DECFLOAT, T076)
+4.6.3.1                  partial      vsql/decfloat.v tests/std_2_6_1_decfloat.sql DECFLOAT (T076) can only be stored and cast, it has no operations yet
 # 4.6.3.2, Character string types
 4.6.3.2                  implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 # 4.6.3.3, Binary string types
-4.6.3.3                  n/a          - - binary strings (T021)
+4.6.3.3                  partial      vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql binary strings (T021, T045) can only be stored and cast, they have no operations yet
 # 4.6.3.4, Boolean type
 4.6.3.4                  implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_1_boolean.sql BOOLEAN (T031)
 # 4.6.3.5, Datetime types
 4.6.3.5                  implemented  vsql/time.v tests/std_2_6_1_date.sql
 # 4.6.3.6, Interval types
-4.6.3.6                  n/a          - - intervals (F052)
+4.6.3.6                  partial      vsql/interval.v tests/std_2_6_1_interval.sql intervals (F052) can only be stored and cast, they have no operations yet
 # 4.6.3.7, XML type
 4.6.3.7                  n/a          - - XML (Part 14)
 # 4.6.3.8, JSON type

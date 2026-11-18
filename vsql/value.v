@@ -27,6 +27,9 @@ pub fn (b Boolean) str() string {
 
 // A single value. It contains it's type information in ``typ``.
 pub struct Value {
+	// is_large is true for a string that's stored outside of its row, see
+	// LargeValue.
+	is_large bool
 pub:
 	// The type of this Value.
 	typ Type
@@ -55,9 +58,11 @@ mut:
 	// DOUBLE PRECISION and REAL
 	f64_value f64
 	// BIGINT, INTEGER and SMALLINT
+	// INTERVAL: a number of months (year-month) or microseconds (day-time)
 	int_value i64
-	// CHARACTER VARYING(n) and CHARACTER(n)
-	// NUMERIC
+	// CHARACTER VARYING(n), CHARACTER(n) and CHARACTER LARGE OBJECT(n)
+	// BINARY(n), BINARY VARYING(n) and BINARY LARGE OBJECT(n) (each byte of the
+	// string is an octet)
 	string_value string
 	// DATE
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
@@ -69,6 +74,11 @@ mut:
 	// DECIMAL(n,m)
 	// NUMERIC(n,m)
 	numeric_value voidptr
+	// DECFLOAT(p), see box_decfloat.
+	decfloat_value voidptr
+	// A string that's stored outside of its row (when Value.is_large), see
+	// LargeValue.
+	large_value voidptr
 }
 
 // box_time is t on the heap, for InternalValue.time_value.
@@ -105,6 +115,9 @@ fn (v Value) with_type(typ Type) Value {
 
 // new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the
 // ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.
+// It's also the value of a <boolean literal>, which is a BOOLEAN.
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 47
 pub fn new_boolean_value(b bool) Value {
 	return Value{
 		typ: Type{.is_boolean, 0, 0, false, false}
@@ -225,6 +238,33 @@ pub fn new_varchar_value(x string) Value {
 pub fn new_character_value(x string) Value {
 	return Value{
 		typ: Type{.is_character, x.len_utf8(), 0, false, false}
+		v:   InternalValue{
+			string_value: x
+		}
+	}
+}
+
+// new_clob_value creates a ``CHARACTER LARGE OBJECT`` value.
+pub fn new_clob_value(x string) Value {
+	return Value{
+		typ: Type{.is_clob, x.len_utf8(), 0, false, false}
+		v:   InternalValue{
+			string_value: x
+		}
+	}
+}
+
+// new_binary_value creates a ``BINARY`` value of the octets of x. The size is
+// the number of octets.
+pub fn new_binary_value(x []u8) Value {
+	return new_binary_string_value(.is_binary, x.bytestr())
+}
+
+// new_binary_string_value is a BINARY, BINARY VARYING or BINARY LARGE OBJECT
+// of the octets of x.
+fn new_binary_string_value(typ SQLType, x string) Value {
+	return Value{
+		typ: Type{typ, x.len, 0, false, false}
 		v:   InternalValue{
 			string_value: x
 		}
@@ -373,6 +413,10 @@ fn (v Value) as_f64() !f64 {
 		return v.numeric_value().f64()
 	}
 
+	if v.typ.typ == .is_decfloat {
+		return v.decfloat_value().str().f64()
+	}
+
 	if v.typ.uses_int() {
 		return f64(v.int_value())
 	}
@@ -389,6 +433,10 @@ fn (v Value) as_numeric() !Numeric {
 		return v.numeric_value()
 	}
 
+	if v.typ.typ == .is_decfloat {
+		return new_numeric_from_string(v.decfloat_value().exact_str())
+	}
+
 	s := v.str()
 	if s.contains('e') {
 		// This covers the approximate to exact number conversion.
@@ -403,6 +451,10 @@ fn (v Value) pstr(_ map[string]Value) string {
 	// character string.
 	if v.typ.typ.is_datetime() && !v.is_null {
 		return v.time_value().str_literal()
+	}
+
+	if v.typ.typ.is_binary_string() || v.typ.typ.is_interval() || v.typ.typ == .is_decfloat {
+		return v.literal()
 	}
 
 	if v.typ.typ != .is_numeric && (v.typ.uses_string() || v.typ.uses_time()) {
@@ -437,6 +489,23 @@ pub fn (v Value) literal() string {
 		}
 		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_decimal, .is_numeric {
 			v.str()
+		}
+		// A <character string literal> and a <binary string literal> are a
+		// CHARACTER and a BINARY, but they can be assigned to any character or
+		// binary string type.
+		.is_clob {
+			"'${v.string_value().replace("'", "''")}'"
+		}
+		.is_binary, .is_varbinary, .is_blob {
+			"X'${v.str()}'"
+		}
+		// There's no DECFLOAT literal, so it's a character string cast to a
+		// DECFLOAT, which keeps every digit and the exponent.
+		.is_decfloat {
+			"CAST('${v.str()}' AS DECFLOAT(${v.typ.size}))"
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			"INTERVAL '${v.str()}' ${v.typ.interval_qualifier()}"
 		}
 	}
 }
@@ -481,6 +550,20 @@ pub fn (v Value) str() string {
 			// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.a.i
 			v.numeric_value().str()
 		}
+		.is_clob {
+			v.string_value()
+		}
+		// A binary string is shown as the hexadecimal digits of each octet, like
+		// a <binary string literal>.
+		.is_binary, .is_varbinary, .is_blob {
+			v.string_value().bytes().hex().to_upper()
+		}
+		.is_decfloat {
+			v.decfloat_value().str()
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			interval_string(v.typ, v.int_value())
+		}
 	}
 }
 
@@ -502,7 +585,16 @@ pub fn (v Value) f64_value() f64 {
 	}
 }
 
+// string_value is the value of a character string or binary string. A large
+// value (see LargeValue) is read the first time, and is empty if it can't be
+// read, such as when the row was changed by another transaction that committed
+// before it was read. Row.get_string and Row.get_lob return that error instead.
 pub fn (v Value) string_value() string {
+	if v.is_large {
+		mut lv := v.large_value()
+		return lv.load() or { '' }
+	}
+
 	unsafe {
 		return v.v.string_value
 	}
@@ -512,6 +604,12 @@ pub fn (v Value) time_value() Time {
 	// A NULL has the zero Time.
 	p := unsafe { v.v.time_value }
 	return if isnil(p) { Time{} } else { unsafe { *(&Time(p)) } }
+}
+
+fn (v Value) decfloat_value() DecFloat {
+	// A NULL has the zero DecFloat.
+	p := unsafe { v.v.decfloat_value }
+	return if isnil(p) { DecFloat{} } else { unsafe { *(&DecFloat(p)) } }
 }
 
 pub fn (v Value) numeric_value() Numeric {

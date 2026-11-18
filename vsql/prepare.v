@@ -103,8 +103,8 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 		return p.query_statement(params)
 	}
 
-	if c.frame_err !is none {
-		return c.frame_err
+	if err := c.frame_err {
+		return err.ierror()
 	}
 
 	return c.frame_result
@@ -356,50 +356,60 @@ fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connecti
 			create_plan(stmt, params, mut conn)!
 		}
 		InsertStatement {
-			table := conn.resolved_table(stmt.table_name)!
-			for column in stmt.columns {
-				table.column(column.sub_entity_name)!
-			}
-			if query := stmt.query {
-				create_plan(query, params, mut conn)!
-			}
+			resolve_insert_names(stmt, params, mut conn)!
 		}
 		UpdateStatementPositioned {
-			table := conn.resolved_table(stmt.table_name)!
-			for clause in stmt.set {
-				table.column(clause.column_name)!
-			}
+			resolve_set_columns(stmt.table_name, stmt.set, mut conn)!
 		}
 		UpdateStatementSearched {
-			table := conn.resolved_table(stmt.table_name)!
-			for clause in stmt.set {
-				table.column(clause.column_name)!
-			}
-			mut plan := create_plan(stmt, params, mut conn)!
-
-			// The value of each <set clause> is compiled like it is for each row
-			// (see UpdateStatementSearched.execute), which might not have any.
-			has_correlation := stmt.correlation_name.sub_entity_name != ''
-			mut tables := map[string]&Table{}
-			if has_correlation {
-				tables[stmt.correlation_name.id()] = &Table{
-					name:    stmt.correlation_name
-					columns: plan.columns()
-				}
-			}
-			mut c := Compiler{
-				conn:    conn
-				params:  params
-				tables:  tables
-				context: if has_correlation { Identifier{} } else { table.name }
-			}
-			for clause in stmt.set {
-				if clause.source is ValueExpression {
-					clause.source.compile(mut c)!
-				}
-			}
+			resolve_update_names(stmt, params, mut conn)!
 		}
 		else {}
+	}
+}
+
+// resolve_insert_names checks the table, columns and query of an INSERT. It's
+// separate from resolve_statement_names so that -autofree only cleans up its
+// own variables.
+fn resolve_insert_names(stmt InsertStatement, params map[string]Value, mut conn Connection) ! {
+	table := conn.resolved_table(stmt.table_name)!
+	for column in stmt.columns {
+		table.column(column.sub_entity_name)!
+	}
+	if query := stmt.query {
+		create_plan(query, params, mut conn)!
+	}
+}
+
+// resolve_update_names checks the table and columns of an UPDATE, and compiles
+// the value of each <set clause>.
+fn resolve_update_names(stmt UpdateStatementSearched, params map[string]Value, mut conn Connection) ! {
+	table := conn.resolved_table(stmt.table_name)!
+	for clause in stmt.set {
+		table.column(clause.column_name)!
+	}
+	mut plan := create_plan(stmt, params, mut conn)!
+
+	// The value of each <set clause> is compiled like it is for each row
+	// (see UpdateStatementSearched.execute), which might not have any.
+	has_correlation := stmt.correlation_name.sub_entity_name != ''
+	mut tables := map[string]&Table{}
+	if has_correlation {
+		tables[stmt.correlation_name.id()] = &Table{
+			name:    stmt.correlation_name
+			columns: plan.columns()
+		}
+	}
+	mut c := Compiler{
+		conn:    conn
+		params:  params
+		tables:  tables
+		context: if has_correlation { Identifier{} } else { table.name }
+	}
+	for clause in stmt.set {
+		if clause.source is ValueExpression {
+			clause.source.compile(mut c)!
+		}
 	}
 }
 
@@ -711,5 +721,14 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
+	}
+}
+
+// resolve_set_columns checks that the table and each column that's set by an
+// UPDATE exist.
+fn resolve_set_columns(table_name Identifier, set []SetClause, mut conn Connection) ! {
+	table := conn.resolved_table(table_name)!
+	for clause in set {
+		table.column(clause.column_name)!
 	}
 }

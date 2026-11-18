@@ -916,3 +916,15 @@ pub fn (e Identifier) str() string {
 
 	return parts.join('.')
 }
+
+// clone is a copy of the identifier that owns its own strings (for -autofree).
+pub fn (i Identifier) clone() Identifier {
+	return Identifier{
+		catalog_name:    i.catalog_name.clone()
+		schema_name:     i.schema_name.clone()
+		entity_name:     i.entity_name.clone()
+		sub_entity_name: i.sub_entity_name.clone()
+		custom_id:       i.custom_id.clone()
+		custom_typ:      i.custom_typ
+	}
+}

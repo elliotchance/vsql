@@ -69,9 +69,12 @@ fn (e RowValueConstructorPredicand) compile_fields(mut c Compiler) ![]CompileRes
 // subquery_of returns the subquery that's an entire predicand, such as
 // "(SELECT x, y FROM t)", which can be a <row subquery>.
 fn subquery_of(e RowValueConstructorPredicand) ?Subquery {
-	primary := primary_of(e)?
+	primary := primary_of(e) or { return none }
+	if primary is Subquery {
+		return primary
+	}
 
-	return if primary is Subquery { primary } else { none }
+	return none
 }
 
 // ExplicitRowValueConstructor is a "ROW (...)". A subquery in a row is a scalar

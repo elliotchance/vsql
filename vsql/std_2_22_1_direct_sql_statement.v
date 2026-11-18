@@ -74,13 +74,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			} else {
 				conn.next_transaction or { conn.branch_of or { conn.enduring_characteristics() } }
 			}
-			mut start := PreparedStmt{
-				stmt: Stmt(StartTransactionStatement{
-					implicit: characteristics
-				})
-				c:    &conn
-			}
-			start.query(map[string]Value{})!
+			conn.start_implicit_transaction(characteristics)!
 			if conn.direct_query_transaction {
 				conn.check_direct_transaction() or {
 					conn.query('ROLLBACK')!
@@ -196,4 +190,17 @@ fn (p PreparedStmt) is_transaction_initiating() bool {
 // including one that Connection.direct hasn't started in storage yet.
 fn (conn Connection) is_active() bool {
 	return conn.in_transaction() || conn.direct_query_transaction
+}
+
+// start_implicit_transaction starts an SQL-transaction the same way as a START
+// TRANSACTION with the characteristics. It's a separate function so conn isn't
+// borrowed by the statement afterwards.
+fn (mut conn Connection) start_implicit_transaction(characteristics TransactionCharacteristics) ! {
+	mut start := PreparedStmt{
+		stmt: Stmt(StartTransactionStatement{
+			implicit: characteristics
+		})
+		c:    conn
+	}
+	start.query(map[string]Value{})!
 }

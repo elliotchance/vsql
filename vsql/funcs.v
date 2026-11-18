@@ -164,7 +164,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// a function it can't be where only a datetime value function can, such as a
 	// DEFAULT.
 	conn.register_func(Func{'NOW', [], false, func_now, new_type('TIMESTAMP WITH TIME ZONE',
-		6, 0), false, false, []})!
+		6, 0), false, false, [vsql_now]})!
 
 	register_datetime_funcs(mut conn)!
 	register_math_funcs(mut conn)!

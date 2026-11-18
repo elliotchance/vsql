@@ -9,3 +9,4 @@ The SQL Language
    information-schema.rst
    numbers.rst
    text.rst
+   vsql-schema.rst

@@ -1065,6 +1065,37 @@ fn (mut conn Connection) catalog_for(ident Identifier) &CatalogConnection {
 }
 
 fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
+	return conn.find_function_in('', func_name, arg_types)
+}
+
+// find_function_in finds the function that's called by a name and arguments.
+// A name that isn't qualified by a schema (schema_name is empty) finds a
+// standard function first, and only then a routine of the VSQL schema, which is
+// always the last schema of the SQL-path. That's because only the first schema
+// of the path that has a function with that name and arguments is used. A name
+// that's qualified by VSQL only finds its routines, and no other schema has
+// any.
+//
+// ISO/IEC 9075-2:2023, 9.18, Invoking an SQL-invoked routine, Syntax Rules, 9.c and 9.e
+fn (conn Connection) find_function_in(schema_name string, func_name string, arg_types []Type) !Func {
+	if schema_name == '' {
+		if f := conn.best_function(func_name, arg_types, false) {
+			return f
+		}
+	}
+	if schema_name in ['', vsql_schema_name] {
+		if f := conn.best_function(func_name, arg_types, true) {
+			return f
+		}
+	}
+
+	name := if schema_name == '' { func_name } else { '${schema_name}.${func_name}' }
+	return sqlstate_42883('function does not exist: ${name}(${arg_types.map(it.str()).join(', ')})')
+}
+
+// best_function is the function (that is or isn't a routine of the VSQL
+// schema) that's the best match for the arguments, if any.
+fn (conn Connection) best_function(func_name string, arg_types []Type, vsql_routine bool) ?Func {
 	// An exact match on the argument types always wins. Otherwise, numeric
 	// arguments may be implicitly cast to a wider numeric parameter type. The
 	// standard defines the numeric functions for any <numeric value expression>
@@ -1074,7 +1105,8 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 	mut best := ?Func(none)
 	mut best_cost := -1
 	for f in conn.funcs {
-		if func_name != f.name || arg_types.len != f.arg_types.len {
+		if func_name != f.name || arg_types.len != f.arg_types.len
+			|| f.is_vsql_routine() != vsql_routine {
 			continue
 		}
 
@@ -1114,11 +1146,7 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 		}
 	}
 
-	if f := best {
-		return f
-	}
-
-	return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
+	return best
 }
 
 // implicit_numeric_cast_cost returns 0 if the types are the same, or a
@@ -1249,8 +1277,8 @@ fn (mut conn Connection) register_flagged_virtual_table(create_table string, dat
 }
 
 // schemas returns the schemas in this catalog (database). This includes the
-// INFORMATION_SCHEMA (and the schema of any other virtual table), which has
-// is_virtual set.
+// INFORMATION_SCHEMA and VSQL schemas (and the schema of any other virtual
+// table), which have is_virtual set.
 pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	conn.open_read_connection()!
 	defer {
@@ -1261,8 +1289,11 @@ pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	for _, schema in conn.storage.schemas {
 		schemas << schema
 	}
+	mut names := system_schema_names.clone()
 	for _, virtual_table in conn.virtual_tables {
-		name := virtual_table.create_table_stmt.table_name.schema_name
+		names << virtual_table.create_table_stmt.table_name.schema_name
+	}
+	for name in names {
 		if !schemas.any(it.name == name) {
 			schemas << Schema{
 				name:       name
@@ -1397,7 +1428,7 @@ fn (mut conn Connection) resolve_schema_identifier(identifier Identifier) !Ident
 	ident := conn.resolve_catalog_identifier(identifier)!
 
 	if ident.schema_name !in conn.catalog_for(ident).storage.schemas
-		&& ident.schema_name != information_schema_name {
+		&& ident.schema_name !in system_schema_names {
 		return sqlstate_3f000(ident.schema_name) // schema does not exist
 	}
 

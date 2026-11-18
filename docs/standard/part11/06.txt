@@ -221,18 +221,18 @@
 6.30/DE/15.b.i           n/a          - - user-defined types (S023)
 6.30/DE/15.b.ii          n/a          - - user-defined types (S023)
 # 6.31, PARAMETERS base table
-6.31                     missing      - - SQL-invoked routines (#733)
-6.31/DE/1                missing      - - SQL-invoked routines (#733)
-6.31/DE/2                missing      - - SQL-invoked routines (#733)
-6.31/DE/3                missing      - - SQL-invoked routines (#733)
-6.31/DE/4                missing      - - SQL-invoked routines (#733)
-6.31/DE/5                missing      - - SQL-invoked routines (#733)
-6.31/DE/6                missing      - - SQL-invoked routines (#733)
-6.31/DE/7                missing      - - SQL-invoked routines (#733)
-6.31/DE/7.a              missing      - - SQL-invoked routines (#733)
-6.31/DE/7.b              missing      - - SQL-invoked routines (#733)
-6.31/DE/8                missing      - - SQL-invoked routines (#733)
-6.31/DE/9                missing      - - SQL-invoked routines (#733)
+6.31                     implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/1                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/2                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/3                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/4                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql every parameter is IN
+6.31/DE/5                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/6                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/7                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/7.a              implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/7.b              implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql parameters have no names
+6.31/DE/8                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
+6.31/DE/9                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql
 # 6.32, REFERENCED_TYPES base table
 6.32                     n/a          - - reference types (S041)
 6.32/DE/1                n/a          - - reference types (S041)
@@ -289,51 +289,51 @@
 6.39/DE/2                missing      - - SQL-invoked routines (#733)
 6.39/DE/3                missing      - - SQL-invoked routines (#733)
 # 6.40, ROUTINES base table
-6.40                     missing      - - SQL-invoked routines (#733)
-6.40/DE/1                missing      - - SQL-invoked routines (#733)
-6.40/DE/2                missing      - - SQL-invoked routines (#733)
-6.40/DE/3                missing      - - SQL-invoked routines (#733)
-6.40/DE/4                missing      - - SQL-invoked routines (#733)
-6.40/DE/4.a              missing      - - SQL-invoked routines (#733)
-6.40/DE/4.b              missing      - - SQL-invoked routines (#733)
-6.40/DE/5                missing      - - SQL-invoked routines (#733)
-6.40/DE/6                missing      - - SQL-invoked routines (#733)
-6.40/DE/7                missing      - - SQL-invoked routines (#733)
-6.40/DE/8                missing      - - SQL-invoked routines (#733)
-6.40/DE/9                missing      - - SQL-invoked routines (#733)
-6.40/DE/10               missing      - - SQL-invoked routines (#733)
-6.40/DE/11               missing      - - SQL-invoked routines (#733)
-6.40/DE/11.a             missing      - - SQL-invoked routines (#733)
-6.40/DE/11.b             missing      - - SQL-invoked routines (#733)
-6.40/DE/12               missing      - - SQL-invoked routines (#733)
-6.40/DE/12.a             missing      - - SQL-invoked routines (#733)
-6.40/DE/12.a.i           missing      - - SQL-invoked routines (#733)
-6.40/DE/12.a.ii          missing      - - SQL-invoked routines (#733)
-6.40/DE/12.a.iii         missing      - - SQL-invoked routines (#733)
-6.40/DE/12.b             missing      - - SQL-invoked routines (#733)
-6.40/DE/13               missing      - - SQL-invoked routines (#733)
-6.40/DE/13.a             missing      - - SQL-invoked routines (#733)
-6.40/DE/13.b             missing      - - SQL-invoked routines (#733)
-6.40/DE/14               missing      - - SQL-invoked routines (#733)
-6.40/DE/14.a             missing      - - SQL-invoked routines (#733)
-6.40/DE/14.b             missing      - - SQL-invoked routines (#733)
-6.40/DE/15               missing      - - SQL-invoked routines (#733)
-6.40/DE/15.a             missing      - - SQL-invoked routines (#733)
-6.40/DE/15.b             missing      - - SQL-invoked routines (#733)
-6.40/DE/16               missing      - - SQL-invoked routines (#733)
-6.40/DE/17               missing      - - SQL-invoked routines (#733)
-6.40/DE/18               missing      - - SQL-invoked routines (#733)
-6.40/DE/19               missing      - - SQL-invoked routines (#733)
-6.40/DE/20               missing      - - SQL-invoked routines (#733)
-6.40/DE/21               missing      - - SQL-invoked routines (#733)
-6.40/DE/22               missing      - - SQL-invoked routines (#733)
-6.40/DE/23               missing      - - SQL-invoked routines (#733)
-6.40/DE/23.a             missing      - - SQL-invoked routines (#733)
-6.40/DE/23.b             missing      - - SQL-invoked routines (#733)
-6.40/DE/23.b.i           missing      - - SQL-invoked routines (#733)
-6.40/DE/23.b.ii          missing      - - SQL-invoked routines (#733)
-6.40/DE/24               missing      - - SQL-invoked routines (#733)
-6.40/DE/25               missing      - - SQL-invoked routines (#733)
+6.40                     implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/1                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/2                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/3                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/4                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/4.a              implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/4.b              implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/5                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/6                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/7                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/8                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql NO SQL, or MODIFIES SQL DATA for a function registered with register_function
+6.40/DE/9                implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/10               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/11               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/11.a             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/11.b             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/12               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/12.a             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/12.a.i           implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql the name of the function
+6.40/DE/12.a.ii          implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql C, which vsql is compiled to
+6.40/DE/12.a.iii         implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql GENERAL
+6.40/DE/12.b             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/13               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/13.a             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/13.b             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/14               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/14.a             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/14.b             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/15               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/15.a             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/15.b             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/16               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/17               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/18               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql IMPLEMENTATION DEFINED, until there are authorization identifiers (#732)
+6.40/DE/19               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/20               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/21               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/22               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/23               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/23.a             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/23.b             implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/23.b.i           implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/23.b.ii          implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql
+6.40/DE/24               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql NULL, the routines are built in
+6.40/DE/25               implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql NULL, the routines are built in
 # 6.41, SCHEMATA base table
 6.41                     implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql
 6.41/DE/1                implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql

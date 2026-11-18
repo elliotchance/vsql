@@ -899,7 +899,7 @@ Returns the Julian day number of a time value, a number of days with a fraction.
   VALUES EXTRACT(EPOCH FROM /*time-value*/) / 86400.00000000 + 2440587.5;
   -- SELECT julianday('2024-03-05 14:30:15');
   VALUES EXTRACT(EPOCH FROM TIMESTAMP '2024-03-05 14:30:15') / 86400.00000000 + 2440587.5;
-  -- COL1: 2460375.10434027
+  -- COL1: 2460375.1043402777777777
 
 The Julian day is the seconds since 1970 divided into days, plus the Julian day
 of 1970-01-01 (2440587.5). The decimal places of ``86400.00000000`` set the

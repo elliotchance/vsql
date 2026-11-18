@@ -126,18 +126,19 @@ AVG
 
 .. code-block:: sql
 
-   AVG(SMALLINT) SMALLINT
-   AVG(INTEGER) INTEGER
-   AVG(BIGINT) BIGINT
-   AVG(NUMERIC(p, s)) NUMERIC(p, s)
-   AVG(DECIMAL(p, s)) DECIMAL(p, s)
+   AVG(SMALLINT) NUMERIC(21, 16)
+   AVG(INTEGER) NUMERIC(26, 16)
+   AVG(BIGINT) NUMERIC(35, 16)
+   AVG(NUMERIC(p, s)) NUMERIC(p - s + MAX(s, 16), MAX(s, 16))
+   AVG(DECIMAL(p, s)) DECIMAL(p - s + MAX(s, 16), MAX(s, 16))
    AVG(REAL) REAL
    AVG(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the average value. The result has the same type as the values, so the
-average of exact numbers is truncated to their scale. For example, the average
-of the ``INTEGER`` values 1, 2 and 4 is 2. Use a ``CAST`` to get more digits,
-such as ``AVG(CAST(x AS NUMERIC(10, 2)))`` which is 2.33.
+Returns the average value. The average of exact numbers (including integers)
+has the scale of a division (see :doc:`numbers`): at least 16 digits after the
+decimal point, truncated. For example, the average of the ``INTEGER`` values 1,
+2 and 4 is 2.3333333333333333. The average of approximate numbers has the same
+type as the values.
 
 A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
 
@@ -154,11 +155,11 @@ A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
 
 **Compatibility**
 
-- **SQL standard:** Core SQL (E091-01). The standard lets the result of exact
-  numbers have more digits than the values, vsql keeps the same type.
-- **Other databases:** ``AVG`` in all of them. SQL Server also truncates the
+- **SQL standard:** Core SQL (E091-01). The precision and scale of the average
+  of exact numbers are implementation-defined, but at least those of the values.
+- **Other databases:** ``AVG`` in all of them. SQL Server truncates the
   average of integers. PostgreSQL, MySQL, SQLite and Oracle return the
-  fractional part, such as 2.33 for the example above.
+  fractional part, such as 2.3333333333333333 for the example above.
 
 COUNT
 ^^^^^

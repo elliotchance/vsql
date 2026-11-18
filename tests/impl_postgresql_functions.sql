@@ -631,7 +631,7 @@ SELECT ANY_VALUE(sku) FROM products WHERE qty = 40;
 -- # avg
 -- # SELECT avg(price) FROM products
 SELECT AVG(price) FROM products;
--- COL1: 2.18
+-- COL1: 2.1875000000000000
 
 -- # bool_and
 -- # SELECT bool_and(qty > 4) FROM products

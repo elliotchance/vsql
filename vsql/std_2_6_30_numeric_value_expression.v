@@ -191,7 +191,7 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 // arithmetic_type is the declared type of a binary arithmetic expression. Two
 // numbers of the same category have the more general type, except that an
 // exact result with a NUMERIC or DECIMAL operand follows exact_arithmetic_type
-// (division is done as multiplication, see Numeric.divide), and it's an error
+// (see division_scale for a division), and it's an error
 // if its scale is more than the maximum (see check_derived_scale). See
 // arithmetic_supertype for an exact and an approximate number.
 //
@@ -201,8 +201,7 @@ fn arithmetic_type(t1 Type, t2 Type, op string) !Type {
 	t2_category, _ := t2.typ.supertype()
 	if t1_category == 2 && t2_category == 2
 		&& (t1.typ in [.is_numeric, .is_decimal] || t2.typ in [.is_numeric, .is_decimal]) {
-		exact_op := if op == '/' { '*' } else { op }
-		return check_derived_scale(exact_arithmetic_type(t1, t2, exact_op))!
+		return check_derived_scale(exact_arithmetic_type(t1, t2, op))!
 	}
 
 	// Two numbers always have one. The operator doesn't exist for anything else,

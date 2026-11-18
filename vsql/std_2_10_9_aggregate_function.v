@@ -296,11 +296,23 @@ fn set_function_type(name string, t Type) Type {
 		}
 	}
 
+	// The average of exact numbers is a NUMERIC (or a DECIMAL for a DECIMAL)
+	// with the scale of a division (see division_scale), and at least the same
+	// number of digits before the decimal point (SR 7.g.iii). An integer has a
+	// scale of 0, so its average is a NUMERIC too. The average is truncated to
+	// that scale.
+	if name == 'AVG' && t.typ in [.is_smallint, .is_integer, .is_bigint, .is_numeric, .is_decimal] {
+		p := t.exact_precision()
+		scale := division_scale(t.scale, 0)
+		size := if p == 0 { 0 } else { math.min(p - t.scale + scale, max_numeric_precision) }
+		typ := if t.typ == .is_decimal { SQLType.is_decimal } else { SQLType.is_numeric }
+		return Type{typ, size, scale, false, false}
+	}
+
 	// MAX, MIN and ANY_VALUE have the type of their argument (SR 7.f), and EVERY, ANY and
-	// SOME are a BOOLEAN like their argument (SR 7.e). So does AVG, which
-	// is allowed because an exact numeric only needs at least the same precision
-	// and scale (SR 7.g.iii), and an approximate numeric only needs at least the
-	// same precision (SR 7.g.iv). The average is truncated to that scale.
+	// SOME are a BOOLEAN like their argument (SR 7.e). So does AVG of an
+	// approximate numeric, which only needs at least the same precision (SR
+	// 7.g.iv).
 	return Type{t.typ, t.size, t.scale, false, false}
 }
 

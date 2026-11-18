@@ -766,7 +766,7 @@ Counts the days from one date to another.
   -- DATEDIFF('2024-03-15 23:00:00', '2024-03-01 08:00:00')
   VALUES (EXTRACT(EPOCH FROM CAST(TIMESTAMP '2024-03-15 23:00:00' AS DATE))
     - EXTRACT(EPOCH FROM CAST(TIMESTAMP '2024-03-01 08:00:00' AS DATE))) / 86400;
-  -- COL1: 14
+  -- COL1: 14.0000000000000000
 
 The cast to ``DATE`` leaves out the time, as MySQL does.
 
@@ -1298,7 +1298,7 @@ Counts the days from year 0 to a date.
   VALUES EXTRACT(EPOCH FROM /*date*/) / 86400 + 719528;
   -- TO_DAYS('2024-03-05')
   VALUES EXTRACT(EPOCH FROM DATE '2024-03-05') / 86400 + 719528;
-  -- COL1: 739315
+  -- COL1: 739315.0000000000000000
 
 719528 is ``TO_DAYS('1970-01-01')``, the day that ``EPOCH`` counts seconds
 from. Cast a ``TIMESTAMP`` to ``DATE`` first.
@@ -4553,7 +4553,7 @@ Returns the average of the values that aren't ``NULL``.
   SELECT AVG(/*expr*/) FROM /*table*/;
   -- SELECT AVG(price) FROM products
   SELECT AVG(price) FROM products;
-  -- COL1: 2.18
+  -- COL1: 2.1875000000000000
 
 The average of a ``DECIMAL`` keeps its number of decimal places, so it's
 rounded down to 2.18, where MySQL adds 4 decimal places (2.187500). Use

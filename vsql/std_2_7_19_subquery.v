@@ -246,7 +246,10 @@ fn subquery_rows(mut conn Connection, plan SubqueryPlan, data Row) ![][]Value {
 // ISO/IEC 9075-2:2023, 7.19, <subquery>, Syntax Rules, 2 and 5
 // ISO/IEC 9075-2:2023, 7.19, <subquery>, General Rules, 3
 fn (e Subquery) compile(mut c Compiler) !CompileResult {
-	plan := e.plan_column(mut c)!
+	return compile_scalar_subquery(e.plan_column(mut c)!)
+}
+
+fn compile_scalar_subquery(plan SubqueryPlan) CompileResult {
 	typ := plan.plan.columns()[0].typ
 
 	return CompileResult{
@@ -268,4 +271,73 @@ fn (e Subquery) compile(mut c Compiler) !CompileResult {
 		typ:          typ
 		contains_agg: plan.contains_agg
 	}
+}
+
+// compile_fields is for a subquery that's an entire <row value constructor> or
+// <row value constructor predicand>, such as "(a, b) = (SELECT x, y FROM t)".
+// The parser can't tell a <scalar subquery> from a <row subquery> (F641), so
+// it's a row subquery when it has more than one column, with a field for each
+// column (see RowValueConstructorPredicand.compile_fields).
+//
+// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Syntax Rules, 3.a
+// ISO/IEC 9075-2:2023, 7.19, <subquery>, Syntax Rules, 3 and 6
+fn (e Subquery) compile_fields(mut c Compiler) ![]CompileResult {
+	plan := e.plan(mut c)!
+	columns := plan.plan.columns()
+	if columns.len == 1 {
+		return [compile_scalar_subquery(plan)]
+	}
+
+	// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 4
+	if c.conn.flagging {
+		c.conn.flagged_features << 'F641'
+	}
+
+	// The fields are always evaluated in order (see run_fields), so the
+	// subquery is evaluated by the first field, and the others are from the
+	// same row.
+	mut row := &RowSubqueryValues{}
+	mut fields := []CompileResult{}
+	for i, column in columns {
+		fields << CompileResult{
+			run:          fn [plan, mut row, i] (mut conn Connection, data Row, params map[string]Value) !Value {
+				if i == 0 {
+					row.values = row_subquery_values(mut conn, plan, data)!
+				}
+
+				return row.values[i]
+			}
+			typ:          column.typ
+			contains_agg: plan.contains_agg
+		}
+	}
+
+	return fields
+}
+
+// RowSubqueryValues is the row of a <row subquery> that's being evaluated.
+@[heap]
+struct RowSubqueryValues {
+mut:
+	values []Value
+}
+
+// row_subquery_values is the value of a <row subquery>. It must have at most
+// one row, and it's all NULLs when there are no rows.
+//
+// ISO/IEC 9075-2:2023, 7.19, <subquery>, General Rules, 2
+fn row_subquery_values(mut conn Connection, plan SubqueryPlan, data Row) ![]Value {
+	rows := subquery_rows(mut conn, plan, data)!
+	if rows.len > 1 {
+		return sqlstate_21000()
+	}
+
+	if rows.len == 0 {
+		return plan.plan.columns().map(Value{
+			typ:     it.typ
+			is_null: true
+		})
+	}
+
+	return rows[0]
 }

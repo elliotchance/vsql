@@ -728,19 +728,28 @@ fn is_boolean_operation_predicand(p BooleanPredicand) bool {
 // is_parenthesized_boolean is true if a <boolean value expression> is in
 // parentheses, such as "(x = 1)" or "(1)".
 fn is_parenthesized_boolean(e BooleanValueExpression) bool {
+	predicand := boolean_predicand_of(e) or { return false }
+
+	return predicand is BooleanValueExpression
+}
+
+// boolean_predicand_of returns the <boolean predicand> that is an entire
+// <boolean value expression> (without AND, OR, NOT or IS), or none if it's
+// anything else.
+fn boolean_predicand_of(e BooleanValueExpression) ?BooleanPredicand {
 	if e.expr != none || e.term.term != none {
-		return false
+		return none
 	}
 	test := e.term.factor
 	if test.value != none || test.inverse {
-		return false
+		return none
 	}
 	primary := *test.expr
 	if primary is BooleanPredicand {
-		return BooleanPredicand(primary) is BooleanValueExpression
+		return BooleanPredicand(primary)
 	}
 
-	return false
+	return none
 }
 
 // flag_set_quantifier flags a <general set function> with a <set quantifier>:

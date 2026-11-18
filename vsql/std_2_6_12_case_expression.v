@@ -143,6 +143,16 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			}
 
 			compiled_operand := e.operand.compile_fields(mut c)!
+
+			// A case operand that's a <row subquery> needs F262, like any other
+			// row (see flag_simple_case), and then so does a <when operand> that's
+			// a value, since it must be a row of the same degree.
+			//
+			// ISO/IEC 9075-2:2023, 6.12, <case expression>, Conformance Rules, 1 and 2
+			if c.conn.flagging && compiled_operand.len > 1 {
+				c.conn.flagged_features << 'F262'
+			}
+
 			mut operand := &CaseOperandValues{}
 			mut fields := []CompileResult{}
 			for i, compiled_field in compiled_operand {

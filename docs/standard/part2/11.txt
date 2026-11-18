@@ -725,20 +725,20 @@
 11.19/GR/1               implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/CR/1               implemented  vsql/std_2_11_19_alter_column_data_type_clause.y tests/std_2_11_19_alter_column_data_type.sql
 # 11.20, <alter identity column specification>
-11.20                    partial      vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql SET GENERATED isn't supported (F386)
+11.20                    implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql,tests/std_2_11_20_set_identity_column_generation.sql
 11.20/SR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
 11.20/SR/1.a             definition   - -
 11.20/SR/1.b             implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
 11.20/SR/1.c             implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
 11.20/GR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_identity_column_alter.sql
-11.20/GR/2               n/a          - - SET GENERATED (F386)
-11.20/GR/2.a             n/a          - - SET GENERATED (F386)
+11.20/GR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_set_identity_column_generation.sql
+11.20/GR/2.a             definition   - -
 11.20/GR/2.b             container    - -
-11.20/GR/2.b.i           n/a          - - SET GENERATED (F386)
-11.20/GR/2.b.ii          n/a          - - SET GENERATED (F386)
+11.20/GR/2.b.i           implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_set_identity_column_generation.sql
+11.20/GR/2.b.ii          implemented  vsql/std_2_11_20_alter_identity_column_specification.v tests/std_2_11_20_set_identity_column_generation.sql
 11.20/CR/1               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_9_6_flagging.sql
 11.20/CR/2               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_1_9_6_flagging.sql
-11.20/CR/3               n/a          - - SET GENERATED (F386)
+11.20/CR/3               implemented  vsql/std_2_11_20_alter_identity_column_specification.y tests/std_2_11_20_set_identity_column_generation.sql
 # 11.21, <drop identity property clause>
 11.21                    implemented  vsql/std_2_11_21_drop_identity_property_clause.v tests/std_2_11_21_drop_identity_property.sql
 11.21/GR/1               definition   - -

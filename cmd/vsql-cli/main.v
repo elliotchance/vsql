@@ -18,6 +18,7 @@ fn main() {
 	register_precompile_command(mut cmd)
 	register_out_command(mut cmd)
 	register_server_command(mut cmd)
+	register_up_command(mut cmd)
 	register_version_command(mut cmd)
 
 	cmd.setup()

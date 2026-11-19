@@ -6,10 +6,16 @@ Command Line Interface (CLI)
 Installing
 ----------
 
-Download a binary from the
+On Linux or macOS, install the latest binary into ``~/.local/bin`` with:
+
+.. code-block:: sh
+
+   curl -fsSL https://raw.githubusercontent.com/elliotchance/vsql/main/install.sh | sh
+
+Or download a binary from the
 `Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
-These binaries do not require V to be installed. See :doc:`install` for other
-options.
+These binaries do not require V to be installed. Run ``vsql up`` to update it
+(see `up`_). See :doc:`install` for other options.
 
 Commands
 --------
@@ -709,6 +715,34 @@ Options are:
   ``::`` to accept clients from other machines.
 - ``-port`` or ``-p``: Port number (default 3210).
 - ``-verbose`` or ``-v``: Verbose (show all messages in and out of the server).
+
+up
+^^
+
+``up`` replaces the ``vsql`` binary that's running with the one from the
+`latest release <https://github.com/elliotchance/vsql/releases/latest>`_ for the
+same OS and architecture, so that it can be kept up to date:
+
+.. code-block:: text
+
+   $ vsql up
+   Downloading vsql-v1.6.78-macos-arm64.zip
+   Replaced /Users/me/.local/bin/vsql with vsql v1.6.78
+
+It does nothing if it's already the latest release. It needs ``curl``, which
+macOS, Windows 10 and most Linux distributions include, and it must be able to
+write to the directory of the binary (use ``sudo`` for one that's installed in
+``/usr/local/bin``). Only the ``vsql`` binary is replaced, not the library in
+the zip (see :doc:`language-c`).
+
+On Windows the binary can't be replaced while it's running, so the old one is
+renamed to ``vsql.exe.old``, which the next ``vsql up`` deletes.
+
+Options are:
+
+- ``-force`` or ``-f``: Replace it even if it's already the latest release, or
+  if it wasn't built for a release (such as one compiled from source), which is
+  otherwise an error.
 
 version
 ^^^^^^^

@@ -40,29 +40,34 @@ fn flock_unlock_shared(mut _ DataFileLock, file os.File, _ string) {
 // SessionLock is a shared lock held on the session file for as long as a
 // connection is open. The operating system releases it when the process dies,
 // so a connection that can get it exclusively knows that it is the only
-// connection to the database.
+// connection to the database. The last connection deletes the file (see
+// CatalogConnection.remove_lock_files), so every lock is taken with
+// lock_path_file.
 struct SessionLock {
+	path string
 mut:
 	file os.File
 }
 
 fn session_lock(path string) !SessionLock {
-	file := os.open_file(path, 'a') or { return sqlstate_58030('unable to open ${path}: ${err}') }
-	if C.flock(file.fd, C.LOCK_SH) != 0 {
-		return sqlstate_58030('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+	mut l := SessionLock{
+		path: path
 	}
+	lock_path_file(mut l.file, path, C.LOCK_SH)!
 
-	return SessionLock{file}
+	return l
 }
 
 // try_exclusive returns true if the lock was converted to an exclusive lock.
 // Use shared() to convert it back.
 fn (mut l SessionLock) try_exclusive() !bool {
-	if C.flock(l.file.fd, C.LOCK_EX | C.LOCK_NB) == 0 {
+	// Converting a lock is not atomic, so the shared lock may have been lost,
+	// and the last connection may have deleted the file in the meantime. The
+	// lock is only the session lock if it's still the file at the path.
+	if C.flock(l.file.fd, C.LOCK_EX | C.LOCK_NB) == 0 && lock_is_path_file(l.file, l.path) {
 		return true
 	}
 
-	// Converting a lock is not atomic, so the shared lock may have been lost.
 	l.shared()!
 
 	return false
@@ -70,8 +75,14 @@ fn (mut l SessionLock) try_exclusive() !bool {
 
 fn (mut l SessionLock) shared() ! {
 	fault_point('session_shared')!
-	if C.flock(l.file.fd, C.LOCK_SH) != 0 {
-		return sqlstate_58030('cannot acquire session lock: ${os.posix_get_error_msg(C.errno)}')
+	lock_path_file(mut l.file, l.path, C.LOCK_SH)!
+}
+
+// remove deletes the session file, which must be locked exclusively, see
+// CatalogConnection.remove_lock_files. The lock is still held until close().
+fn (mut l SessionLock) remove() {
+	if lock_is_path_file(l.file, l.path) {
+		os.rm(l.path) or {}
 	}
 }
 
@@ -98,14 +109,8 @@ mut:
 // another connection holds a lock that conflicts.
 fn (mut l IsolationLock) try_lock(state IsolationLockState) !bool {
 	fault_point('isolation_lock')!
-	if !l.file.is_opened {
-		l.file = os.open_file(l.path, 'a') or {
-			return sqlstate_58030('unable to open ${l.path}: ${err}')
-		}
-	}
-
 	operation := if state == .shared { C.LOCK_SH } else { C.LOCK_EX }
-	if C.flock(l.file.fd, operation | C.LOCK_NB) != 0 {
+	if !lock_path_file(mut l.file, l.path, operation | C.LOCK_NB)! {
 		return false
 	}
 	l.state = state
@@ -124,6 +129,79 @@ fn (mut l IsolationLock) release() {
 // close_file closes the file, if it's open. The lock must be released first.
 fn (mut l IsolationLock) close_file() {
 	l.file.close()
+}
+
+// lock_path_file locks the file at path with operation (for flock), opening
+// it first if file isn't open, and creating it if it doesn't exist. It returns
+// false if operation has LOCK_NB and the file can't be locked straight away.
+//
+// A lock file is deleted by the last connection to the database, while it
+// holds the lock exclusively (see CatalogConnection.remove_lock_files). A
+// connection that was waiting for the lock, or that opened the file before it
+// was deleted, gets a lock on the deleted file, which isn't the lock that
+// anyone else uses. So the lock only counts if the file is still the one at
+// path. Otherwise, the deleted file is closed, and the new one at path is
+// locked instead.
+fn lock_path_file(mut file os.File, path string, operation int) !bool {
+	for {
+		if !file.is_opened {
+			file = os.open_file(path, 'a') or {
+				return sqlstate_58030('unable to open ${path}: ${err}')
+			}
+		}
+
+		if C.flock(file.fd, operation) != 0 {
+			if operation & C.LOCK_NB != 0 {
+				return false
+			}
+			return sqlstate_58030('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+		}
+
+		if lock_is_path_file(file, path) {
+			break
+		}
+
+		C.flock(file.fd, C.LOCK_UN)
+		file.close()
+	}
+
+	return true
+}
+
+// remove_lock_files deletes the lock files of the database file when the last
+// connection to it is closed (see Connection.close), so that only the database
+// file is left behind. Each one is deleted while it's locked exclusively, so a
+// connection that gets a lock on a file after it's deleted knows to use the new
+// file instead, see lock_path_file. The session file is deleted last.
+fn (mut conn CatalogConnection) remove_lock_files() {
+	isolation := isolation_path(conn.path)
+	deferral := deferral_path(conn.path)
+	for path in [isolation, isolation_queue_path(isolation), deferral, isolation_queue_path(deferral)] {
+		remove_lock_file(path)
+	}
+	conn.storage.session.remove()
+}
+
+// remove_lock_file deletes a lock file, if it exists and no other connection
+// has it locked. It's locked exclusively while it's deleted, see
+// lock_path_file.
+fn remove_lock_file(path string) {
+	mut file := os.open_file(path, 'r') or { return }
+	defer {
+		file.close()
+	}
+
+	if C.flock(file.fd, C.LOCK_EX | C.LOCK_NB) == 0 && lock_is_path_file(file, path) {
+		os.rm(path) or {}
+	}
+}
+
+// lock_is_path_file returns true if the open file is still the file at path,
+// see lock_path_file.
+fn lock_is_path_file(file os.File, path string) bool {
+	identity := path_file_identity(path) or { return false }
+
+	return identity == open_file_identity(file)
 }
 
 fn C.fsync(int) int

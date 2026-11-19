@@ -270,14 +270,15 @@ SELECT * FROM t;
 
 -- # A statement that recovers the transactions of a connection that stopped
 -- # fails if the session lock can't be changed back to shared afterwards. The
--- # next statement works. (The first time the lock is changed back is when
--- # connection 2 copies the log, see recover_log.)
+-- # next statement works. (Connection 2 doesn't copy the log, which would also
+-- # change the lock back, because closing connection 1 removed it, see
+-- # remove_log.)
 /* connection 1 */
 CREATE TABLE t (x INT);
 START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (x) VALUES (1);
 /* disconnect 1 */
-/* fault session_shared 2 */
+/* fault session_shared */
 /* connection 2 */
 INSERT INTO t (x) VALUES (2);
 INSERT INTO t (x) VALUES (3);

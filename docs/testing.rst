@@ -872,6 +872,8 @@ The faults are:
      - Reading a page from the database file.
    * - ``recover``
      - Copying a statement that was left in the write-ahead log into the database file.
+   * - ``remove_log``
+     - Removing the write-ahead log when the last connection to the database file is closed.
    * - ``session_shared``
      - Changing the session lock back to shared, after recovering the transactions of a connection that stopped.
    * - ``wal_bad_header``

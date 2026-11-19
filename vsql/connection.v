@@ -389,16 +389,28 @@ fn (mut conn Connection) make_frame_work() {
 }
 
 // close releases the session lock of each file catalog, closes its files, and
-// releases the closures it kept (see keep). The connection must not be used
-// after it's closed.
+// releases the closures it kept (see keep). The last connection to a file also
+// removes its write-ahead log and lock files, see remove_log and
+// remove_lock_files. The connection must not be used after it's closed.
 pub fn (mut conn Connection) close() {
 	conn.kept.dispose() or {}
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
-			catalog.storage.session.close()
 			catalog.storage.isolation.close()
 			catalog.storage.deferral.close()
+
+			// It's the last connection if it can get the session lock exclusively.
+			last := catalog.storage.session.try_exclusive() or { false }
+			if last {
+				// The log is kept if it can't be removed, and the next connection
+				// recovers it as usual.
+				catalog.remove_log() or {}
+			}
 			catalog.storage.close_files()
+			if last {
+				catalog.remove_lock_files()
+			}
+			catalog.storage.session.close()
 		}
 	}
 }
@@ -511,6 +523,38 @@ fn (mut conn CatalogConnection) recover_log() ! {
 		return err
 	}
 	conn.storage.session.shared()!
+}
+
+// remove_log removes the log when the last connection to the file is closed
+// (see Connection.close), like SQLite removes its -wal file. A connection that
+// isn't the last one leaves it as it is, because another connection is using
+// it. The database file is synced first, so the log has nothing that isn't on
+// the disk. If the process stops before the log is removed, the next
+// connection copies it again, which doesn't change the file.
+fn (mut conn CatalogConnection) remove_log() ! {
+	conn.options.mutex.@lock()
+	defer {
+		conn.options.mutex.unlock()
+	}
+
+	conn.lock_file(true)!
+	defer {
+		conn.unlock_file(true)
+	}
+
+	if !conn.storage.log.file.is_opened {
+		return
+	}
+
+	if wal_has_statements(mut conn.storage.log) {
+		wal_recover(mut conn.storage.file, conn.path, mut conn.storage.log)!
+		fsync(conn.storage.file, conn.path, conn.storage.log.full_fsync)!
+	}
+
+	crash_point()
+	fault_point('remove_log')!
+	conn.storage.log.file.close()
+	os.rm(conn.storage.log.path)!
 }
 
 // replay_log copies the log into the database file, see recover_log.

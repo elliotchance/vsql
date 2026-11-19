@@ -303,13 +303,20 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 	assert log_has_statements(path)
 	assert !log_needs_recovery(path)
 
-	// Nothing is copied while there's another connection.
+	// Nothing is copied while there's another connection, and closing it keeps
+	// the log.
 	mut other := open(path)!
 	assert log_has_statements(path)
 	other.close()
-	db.close()
+	assert log_has_statements(path)
 
+	// The power fails now, before the last connection is closed (which removes
+	// the log).
+	log := os.read_bytes(wal_path(path))!
+	db.close()
+	assert !os.exists(wal_path(path))
 	os.write_file_array(path, on_disk)!
+	os.write_file_array(wal_path(path), log)!
 	db = open(path)!
 	assert !log_has_statements(path)
 	assert db.query('SELECT * FROM t')!.rows.len == 2
@@ -321,15 +328,198 @@ fn test_wal_recovers_statements_lost_from_the_file() ! {
 	assert db.query('SELECT * FROM t')!.rows.len == 3
 	db.close()
 
-	// A log isn't kept for a file that has been deleted.
+	// A log isn't kept for a file that has been deleted. The last connection
+	// removes the log, so this one is left behind by a process that stopped.
 	db = open(path)!
 	db.query('INSERT INTO t (x) VALUES (4)')!
+	stopped_log := os.read_bytes(wal_path(path))!
 	db.close()
 	os.rm(path)!
+	os.write_file_array(wal_path(path), stopped_log)!
 	db = open(path)!
 	db.query('CREATE TABLE t (x INT)')!
 	assert db.query('SELECT * FROM t')!.rows.len == 0
 	db.close()
+}
+
+// Closing the last connection to a file removes the log, like SQLite removes
+// its -wal file. A connection that isn't the last one keeps it, because the
+// other connections are still using it.
+fn test_last_connection_removes_log() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-wal-last-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path)] {
+			os.rm(file) or {}
+		}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	assert log_has_statements(path)
+	db.close()
+	assert !os.exists(wal_path(path))
+
+	// A connection that only reads doesn't create the log.
+	db = open(path)!
+	assert db.query('SELECT * FROM t')!.rows.len == 1
+	db.close()
+	assert !os.exists(wal_path(path))
+
+	mut first := open(path)!
+	mut second := open(path)!
+	first.query('INSERT INTO t (x) VALUES (2)')!
+	first.close()
+	assert log_has_statements(path)
+	second.query('INSERT INTO t (x) VALUES (3)')!
+	second.close()
+	assert !os.exists(wal_path(path))
+
+	// The log is kept when it can't be removed, and it's copied again by the
+	// next connection.
+	db = open(path)!
+	db.query('INSERT INTO t (x) VALUES (4)')!
+	arm_fault('remove_log', 1)!
+	db.close()
+	disarm_faults()
+	assert log_has_statements(path)
+
+	db = open(path)!
+	assert !log_has_statements(path)
+	assert db.query('SELECT * FROM t')!.rows.len == 4
+	db.close()
+	assert !os.exists(wal_path(path))
+}
+
+// The process stops after the database file is synced, but before the log is
+// removed. The next connection copies the log again, which doesn't change the
+// file.
+fn test_last_connection_stops_before_removing_log() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-wal-last-stops-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path)] {
+			os.rm(file) or {}
+		}
+	}
+
+	os.setenv('VSQL_TEST_REMOVE_LOG_PATH', path, true)
+	code, stderr := run_in_child('remove_log')!
+	os.unsetenv('VSQL_TEST_REMOVE_LOG_PATH')
+	assert code == 1, stderr
+	assert stderr.contains('closing\n')
+	assert log_has_statements(path)
+
+	mut db := open(path)!
+	assert !log_has_statements(path)
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+	db.close()
+	assert !os.exists(wal_path(path))
+}
+
+// lock_files are the lock files next to the database file at path.
+fn lock_files(path string) []string {
+	return [session_path(path), isolation_path(path), isolation_queue_path(isolation_path(path)),
+		deferral_path(path), isolation_queue_path(deferral_path(path))]
+}
+
+// The last connection to a file deletes its lock files, except on Windows, see
+// CatalogConnection.remove_lock_files. A connection that isn't the last one
+// keeps them.
+fn test_last_connection_removes_lock_files() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-lock-files-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), '${path}.lock'] {
+			os.rm(file) or {}
+		}
+		for file in lock_files(path) {
+			os.rm(file) or {}
+		}
+	}
+
+	// A SERIALIZABLE transaction that changes the database (with nothing else
+	// active) creates every lock file.
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	db.query('COMMIT')!
+	assert os.exists(session_path(path))
+	assert os.exists(isolation_path(path))
+
+	mut other := open(path)!
+	db.close()
+	assert os.exists(session_path(path))
+	assert os.exists(isolation_path(path))
+	assert other.query('SELECT * FROM t')!.rows.len == 1
+	other.close()
+
+	$if windows {
+		assert os.exists(session_path(path))
+	} $else {
+		for file in lock_files(path) {
+			assert !os.exists(file), file
+		}
+	}
+
+	// The files are created again when they're needed.
+	db = open(path)!
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (2)')!
+	db.query('COMMIT')!
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+	db.close()
+}
+
+// A lock that's taken on a lock file after it was deleted (by the last
+// connection, see CatalogConnection.remove_lock_files) isn't the lock that
+// anyone else uses, so it's taken on the new file instead, see lock_path_file.
+// Windows keeps the lock files.
+fn test_lock_on_deleted_file() ! {
+	// The lock functions used here only exist on other systems.
+	$if !windows {
+		path := os.join_path(os.temp_dir(), 'vsql-lock-deleted-${os.getpid()}.vsql')
+		defer {
+			for file in lock_files(path) {
+				os.rm(file) or {}
+			}
+		}
+
+		mut isolation := IsolationLock{
+			path: isolation_path(path)
+		}
+		assert isolation.try_lock(.exclusive)!
+		isolation.release()
+		os.rm(isolation.path)!
+		assert isolation.try_lock(.exclusive)!
+		assert lock_is_path_file(isolation.file, isolation.path)
+		isolation.close()
+
+		// The session lock is converted to exclusive on the deleted file, so this
+		// connection can't tell that it's the only one. It takes the shared lock on
+		// the new file instead.
+		mut session := session_lock(session_path(path))!
+		os.rm(session_path(path))!
+		assert !session.try_exclusive()!
+		assert lock_is_path_file(session.file, session_path(path))
+		assert session.try_exclusive()!
+		session.remove()
+		assert !os.exists(session_path(path))
+		session.close()
+
+		// A lock file that can't be opened or locked.
+		if _ := session_lock(os.join_path(path, 'missing', 'x.session')) {
+			assert false
+		} else {
+			assert err.msg().starts_with('unable to open ')
+		}
+		mut file := os.File{}
+		if _ := lock_path_file(mut file, session_path(path), 0) {
+			assert false
+		} else {
+			assert err.msg().starts_with('cannot acquire lock on ')
+		}
+		file.close()
+	}
 }
 
 // A statement in an explicit transaction doesn't sync the log when every page
@@ -427,11 +617,12 @@ fn test_kept_files_are_replaced() ! {
 	other.query('CREATE TABLE t (x INT)')!
 	other.query('INSERT INTO t (x) VALUES (2)')!
 	other.query('INSERT INTO t (x) VALUES (3)')!
-	other.close()
 
-	// Both files are replaced (with new inodes).
+	// Both files are replaced (with new inodes). The other connection is still
+	// open, otherwise closing it would remove its log.
 	os.mv(other_path, path)!
 	os.mv(wal_path(other_path), wal_path(path))!
+	other.close()
 	assert db.query('SELECT * FROM t')!.rows.len == 2
 	db.query('INSERT INTO t (x) VALUES (4)')!
 	assert db.query('SELECT * FROM t')!.rows.len == 3
@@ -462,9 +653,13 @@ fn test_wal_recover_log_fails() ! {
 		}
 	}
 
+	// The log is only copied when it's left behind, otherwise the last
+	// connection removes it.
 	mut db := open(path)!
 	db.query('CREATE TABLE t (x INT)')!
+	arm_fault('remove_log', 1)!
 	db.close()
+	disarm_faults()
 
 	for fault in ['recover', 'session_shared'] {
 		arm_fault(fault, 1)!
@@ -475,7 +670,9 @@ fn test_wal_recover_log_fails() ! {
 
 		db = open(path)!
 		db.query('INSERT INTO t (x) VALUES (1)')!
+		arm_fault('remove_log', 1)!
 		db.close()
+		disarm_faults()
 	}
 
 	db = open(path)!

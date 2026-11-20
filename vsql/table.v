@@ -625,7 +625,7 @@ struct TableOperation {
 	params           map[string]Value
 mut:
 	conn     &Connection
-	subplans map[string]Plan
+	subplans map[string]&Plan
 }
 
 fn (o TableOperation) str() string {
@@ -675,7 +675,7 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		mut subplan := o.subplans[o.table_name.id()] or { Plan{} }
+		mut subplan := o.subplans[o.table_name.id()] or { &Plan{} }
 
 		// The columns may have been renamed by a derived column list, such as
 		// "(SELECT a FROM t) AS x (b)". A row of a table (such as "t AS x (b)")

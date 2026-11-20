@@ -1399,3 +1399,572 @@ fn sqlstate_xx001(msg string) IError {
 		msg:  msg
 	}
 }
+
+// clone is a copy of the error that owns its own strings. -autofree needs it to
+// keep an error, such as a warning.
+fn (e SQLState) clone() SQLState {
+	return SQLState{
+		msg:  e.msg.clone()
+		code: e.code
+	}
+}
+
+fn (e SQLState01001) clone() SQLState01001 {
+	return SQLState01001{
+		SQLState:    e.SQLState.clone()
+		cursor_name: e.cursor_name.clone()
+	}
+}
+
+fn (e SQLState01003) clone() SQLState01003 {
+	return SQLState01003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState02000) clone() SQLState02000 {
+	return SQLState02000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState01004) clone() SQLState01004 {
+	return SQLState01004{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState21000) clone() SQLState21000 {
+	return SQLState21000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState24000) clone() SQLState24000 {
+	return SQLState24000{
+		SQLState:    e.SQLState.clone()
+		cursor_name: e.cursor_name.clone()
+	}
+}
+
+fn (e SQLState34000) clone() SQLState34000 {
+	return SQLState34000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22001) clone() SQLState22001 {
+	return SQLState22001{
+		SQLState: e.SQLState.clone()
+		to:       e.to
+	}
+}
+
+fn (e SQLState22003) clone() SQLState22003 {
+	return SQLState22003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22007) clone() SQLState22007 {
+	return SQLState22007{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22009) clone() SQLState22009 {
+	return SQLState22009{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2200B) clone() SQLState2200B {
+	return SQLState2200B{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2200C) clone() SQLState2200C {
+	return SQLState2200C{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2200H) clone() SQLState2200H {
+	return SQLState2200H{
+		SQLState:       e.SQLState.clone()
+		generator_name: e.generator_name.clone()
+	}
+}
+
+fn (e SQLState22011) clone() SQLState22011 {
+	return SQLState22011{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22012) clone() SQLState22012 {
+	return SQLState22012{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201E) clone() SQLState2201E {
+	return SQLState2201E{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201F) clone() SQLState2201F {
+	return SQLState2201F{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201G) clone() SQLState2201G {
+	return SQLState2201G{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22018) clone() SQLState22018 {
+	return SQLState22018{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22019) clone() SQLState22019 {
+	return SQLState22019{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201B) clone() SQLState2201B {
+	return SQLState2201B{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201W) clone() SQLState2201W {
+	return SQLState2201W{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201X) clone() SQLState2201X {
+	return SQLState2201X{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22023) clone() SQLState22023 {
+	return SQLState22023{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22025) clone() SQLState22025 {
+	return SQLState22025{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22027) clone() SQLState22027 {
+	return SQLState22027{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22029) clone() SQLState22029 {
+	return SQLState22029{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState23001) clone() SQLState23001 {
+	return SQLState23001{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23502) clone() SQLState23502 {
+	return SQLState23502{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23503) clone() SQLState23503 {
+	return SQLState23503{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23505) clone() SQLState23505 {
+	return SQLState23505{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23514) clone() SQLState23514 {
+	return SQLState23514{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState2BP01) clone() SQLState2BP01 {
+	return SQLState2BP01{
+		SQLState:    e.SQLState.clone()
+		object_name: e.object_name.clone()
+	}
+}
+
+fn (e SQLState3B001) clone() SQLState3B001 {
+	return SQLState3B001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState3D000) clone() SQLState3D000 {
+	return SQLState3D000{
+		SQLState:     e.SQLState.clone()
+		catalog_name: e.catalog_name.clone()
+	}
+}
+
+fn (e SQLState3F000) clone() SQLState3F000 {
+	return SQLState3F000{
+		SQLState:    e.SQLState.clone()
+		schema_name: e.schema_name.clone()
+	}
+}
+
+fn (e SQLState42601) clone() SQLState42601 {
+	return SQLState42601{
+		SQLState: e.SQLState.clone()
+		table:    e.table.clone()
+	}
+}
+
+fn (e SQLState42P03) clone() SQLState42P03 {
+	return SQLState42P03{
+		SQLState:    e.SQLState.clone()
+		cursor_name: e.cursor_name.clone()
+	}
+}
+
+fn (e SQLState42702) clone() SQLState42702 {
+	return SQLState42702{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42703) clone() SQLState42703 {
+	return SQLState42703{
+		SQLState:    e.SQLState.clone()
+		table:       e.table.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42704) clone() SQLState42704 {
+	return SQLState42704{
+		SQLState:    e.SQLState.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42710) clone() SQLState42710 {
+	return SQLState42710{
+		SQLState:    e.SQLState.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42803) clone() SQLState42803 {
+	return SQLState42803{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42804) clone() SQLState42804 {
+	return SQLState42804{
+		SQLState: e.SQLState.clone()
+		expected: e.expected.clone()
+		actual:   e.actual.clone()
+	}
+}
+
+fn (e SQLState42830) clone() SQLState42830 {
+	return SQLState42830{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42846) clone() SQLState42846 {
+	return SQLState42846{
+		SQLState: e.SQLState.clone()
+		from:     e.from
+		to:       e.to
+	}
+}
+
+fn (e SQLState428C9) clone() SQLState428C9 {
+	return SQLState428C9{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42P01) clone() SQLState42P01 {
+	return SQLState42P01{
+		SQLState:    e.SQLState.clone()
+		table:       e.table.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42P06) clone() SQLState42P06 {
+	return SQLState42P06{
+		SQLState:    e.SQLState.clone()
+		schema_name: e.schema_name.clone()
+	}
+}
+
+fn (e SQLState42P07) clone() SQLState42P07 {
+	return SQLState42P07{
+		SQLState:    e.SQLState.clone()
+		table:       e.table.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42P10) clone() SQLState42P10 {
+	return SQLState42P10{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42723) clone() SQLState42723 {
+	return SQLState42723{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42883) clone() SQLState42883 {
+	return SQLState42883{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42P02) clone() SQLState42P02 {
+	return SQLState42P02{
+		SQLState:       e.SQLState.clone()
+		parameter_name: e.parameter_name.clone()
+	}
+}
+
+fn (e SQLState07006) clone() SQLState07006 {
+	return SQLState07006{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState08001) clone() SQLState08001 {
+	return SQLState08001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState08002) clone() SQLState08002 {
+	return SQLState08002{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState08003) clone() SQLState08003 {
+	return SQLState08003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2C000) clone() SQLState2C000 {
+	return SQLState2C000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState28000) clone() SQLState28000 {
+	return SQLState28000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2E000) clone() SQLState2E000 {
+	return SQLState2E000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState01012) clone() SQLState01012 {
+	return SQLState01012{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState35000) clone() SQLState35000 {
+	return SQLState35000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25001) clone() SQLState25001 {
+	return SQLState25001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25002) clone() SQLState25002 {
+	return SQLState25002{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25003) clone() SQLState25003 {
+	return SQLState25003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25004) clone() SQLState25004 {
+	return SQLState25004{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25005) clone() SQLState25005 {
+	return SQLState25005{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25006) clone() SQLState25006 {
+	return SQLState25006{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25008) clone() SQLState25008 {
+	return SQLState25008{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState27000) clone() SQLState27000 {
+	return SQLState27000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState0B000) clone() SQLState0B000 {
+	return SQLState0B000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState40001) clone() SQLState40001 {
+	return SQLState40001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState40002) clone() SQLState40002 {
+	return SQLState40002{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState40V01) clone() SQLState40V01 {
+	return SQLState40V01{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState0A000) clone() SQLState0A000 {
+	return SQLState0A000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42501) clone() SQLState42501 {
+	return SQLState42501{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42P04) clone() SQLState42P04 {
+	return SQLState42P04{
+		SQLState:     e.SQLState.clone()
+		catalog_name: e.catalog_name.clone()
+	}
+}
+
+fn (e SQLState42602) clone() SQLState42602 {
+	return SQLState42602{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState55P03) clone() SQLState55P03 {
+	return SQLState55P03{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState54000) clone() SQLState54000 {
+	return SQLState54000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState57014) clone() SQLState57014 {
+	return SQLState57014{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState58030) clone() SQLState58030 {
+	return SQLState58030{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLStateXX000) clone() SQLStateXX000 {
+	return SQLStateXX000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLStateXX001) clone() SQLStateXX001 {
+	return SQLStateXX001{
+		SQLState: e.SQLState.clone()
+	}
+}

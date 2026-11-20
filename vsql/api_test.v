@@ -808,7 +808,7 @@ fn test_cursor_operation_conflict() ! {
 	db.query('DELETE FROM t WHERE x = 2')!
 	db.clear_warnings()
 	db.query('DELETE FROM t WHERE CURRENT OF c')!
-	assert conflicting_cursor(db.warnings[0])? == 'C'
+	assert conflicting_cursor(db.warnings[0].ierror())? == 'C'
 }
 
 // A cursor opened by PreparedStmt.open_cursor (for the SQL/CLI) is positioned

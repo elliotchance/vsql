@@ -36,20 +36,9 @@ fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[st
 		}
 	}
 
-	mut operation := plan.operations[0]
-	mut table := Table{}
-	mut key := ?&KeyOperation(none)
-	if mut operation is TableOperation {
-		if operation.table_is_subplan {
-			return false
-		}
-		table = operation.table
-	} else if mut operation is KeyOperation {
-		table = operation.table
-		key = operation
-	} else {
-		return false
-	}
+	read := key_order_read(mut plan) or { return false }
+	table := read.table
+	key := read.key
 
 	mut columns := []string{}
 	for spec in order {
@@ -181,4 +170,33 @@ fn (o &KeyOperation) equal_columns() []int {
 	}
 
 	return columns
+}
+
+// KeyOrderRead is the table that the first operation of a plan reads, and the
+// key operation when it reads the rows of a key.
+struct KeyOrderRead {
+	table Table
+	key   ?&KeyOperation
+}
+
+// key_order_read is none when the first operation doesn't read the rows of a
+// table (or reads a subquery). It's a separate function so the operation isn't
+// borrowed when use_key_order replaces it.
+fn key_order_read(mut plan Plan) ?KeyOrderRead {
+	mut operation := &plan.operations[0]
+	if mut operation is TableOperation {
+		if operation.table_is_subplan {
+			return none
+		}
+		return KeyOrderRead{
+			table: operation.table
+		}
+	} else if mut operation is KeyOperation {
+		return KeyOrderRead{
+			table: operation.table
+			key:   operation
+		}
+	}
+
+	return none
 }

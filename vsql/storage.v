@@ -414,9 +414,8 @@ fn (f Storage) is_only_transaction() bool {
 fn (mut f Storage) finish_commit(path string) ! {
 	f.snapshot.in_statement = false
 	if path == ':memory:' {
-		mut pager := f.btree.pager
-		if mut pager is MemoryPager {
-			pager.commit()
+		if mut f.btree.pager is MemoryPager {
+			f.btree.pager.commit()
 		}
 
 		return

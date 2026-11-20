@@ -58,7 +58,7 @@ fn (mut conn Connection) describe_parameters(stmt Stmt, params map[string]Value)
 	conn.frame_describe = none
 	mut described := true
 	if ran {
-		described = conn.frame_err is none
+		described = conn.frame_err == none
 	} else {
 		conn.describe_statement(stmt, params) or { described = false }
 	}

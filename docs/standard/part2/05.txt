@@ -52,12 +52,12 @@
 5.2/CR/5                 n/a          - - large objects (T041)
 5.2/CR/6                 n/a          - - large objects (T041)
 # 5.3, <literal>
-5.3                      partial      vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql no spaces in binary literals (T024)
+5.3                      implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
 5.3/SR/1                 implemented  vsql/lexer.v tests/std_2_5_3_literal.sql
 5.3/SR/2                 implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
 5.3/SR/3                 implemented  vsql/lexer.v tests/std_2_5_2_unicode_escapes.sql
-5.3/SR/4                 n/a          - - spaces in binary literals (T024)
-5.3/SR/5                 implemented  vsql/lexer.v tests/std_2_6_1_data_types.sql
+5.3/SR/4                 implemented  vsql/lexer.v tests/std_2_5_3_binary_literals.sql
+5.3/SR/5                 implemented  vsql/lexer.v tests/std_2_6_1_data_types.sql,tests/std_2_5_3_binary_literals.sql
 5.3/SR/6                 implemented  vsql/lexer.v tests/std_2_6_1_binary.sql
 5.3/SR/7                 implemented  vsql/lexer.v tests/std_2_5_3_literal.sql
 5.3/SR/8                 impl-defined vsql/lexer.v tests/std_2_6_1_character_large_object.sql the national character set is UTF8, the same as every other character string
@@ -135,8 +135,8 @@
 5.3/CR/6                 implemented  vsql/lexer.v tests/std_1_9_6_flagging.sql
 5.3/CR/7                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 5.3/CR/8                 implemented  vsql/lexer.v tests/std_2_6_1_data_types.sql
-5.3/CR/9                 implemented  vsql/lexer.v tests/std_2_6_1_data_types.sql
-5.3/CR/10                n/a          - - spaces in binary literals (T024)
+5.3/CR/9                 implemented  vsql/lexer.v tests/std_2_6_1_data_types.sql,tests/std_2_5_3_binary_literals.sql
+5.3/CR/10                implemented  vsql/lexer.v tests/std_2_5_3_binary_literals.sql
 5.3/CR/11                implemented  vsql/lexer.v tests/std_1_9_6_flagging.sql
 5.3/CR/12                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/CR/13                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql

@@ -102,9 +102,17 @@ Try It
 
 ### 1. Download
 
-Download `vsql` for macOS, Linux or Windows from the
+On Linux or macOS, install the latest `vsql` into `~/.local/bin` with:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/elliotchance/vsql/main/install.sh | sh
+```
+
+Or download it for macOS, Linux or Windows from the
 [latest release](https://github.com/elliotchance/vsql/releases/latest) and
 unzip it. Nothing else needs to be installed.
+
+Run `vsql up` at any time to update it to the latest release.
 
 Or, with Docker:
 

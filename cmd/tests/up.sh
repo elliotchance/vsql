@@ -17,12 +17,16 @@ esac
 mkdir "$DIR/bin"
 cp "$VSQL" "$DIR/bin/$EXE"
 
-# A build that isn't for a release is only replaced with -force.
-if "$DIR/bin/$EXE" up > "$DIR/out.txt" 2>&1; then
-	exit 1
+# A build that isn't for a release is only replaced with -force. The build of
+# a tag is a release (see set_version.sh), so it isn't refused.
+eval "$("$DIR/bin/$EXE" version -verbose)"
+if [ -z "$VSQL_BUILD_VERSION" ]; then
+	if "$DIR/bin/$EXE" up > "$DIR/out.txt" 2>&1; then
+		exit 1
+	fi
+	cat "$DIR/out.txt"
+	grep -q 'not built for a release' "$DIR/out.txt"
 fi
-cat "$DIR/out.txt"
-grep -q 'not built for a release' "$DIR/out.txt"
 
 # zip isn't installed on Windows.
 if ! command -v zip > /dev/null; then

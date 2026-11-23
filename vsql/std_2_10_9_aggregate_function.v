@@ -781,6 +781,15 @@ fn (e ListaggSetFunction) compile(mut c Compiler) !CompileResult {
 		return sqlstate_42883('function does not exist: LISTAGG(${value.typ})')
 	}
 
+	// ISO/IEC 9075-2:2023, 9.12, Grouping operations, Syntax Rules, 1.c
+	// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 1.e
+	if e.distinct {
+		check_grouping_operand(value.typ, 'DISTINCT argument of LISTAGG')!
+	}
+	for spec in e.order {
+		check_ordering_operand(spec.expr.compile(mut c)!.typ, '${spec.expr.pstr(c.params)} in WITHIN GROUP')!
+	}
+
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
 	check_listagg_literal(e.separator)!
 	check_listagg_literal(e.overflow.filler)!
@@ -807,9 +816,8 @@ fn check_listagg_literal(literal Value) ! {
 // value is then in the order of its row. With DISTINCT, the first of the
 // duplicate values (in that order) is kept, so the position of each value is
 // where it's first seen. Rows that are equal for every sort key are in the
-// order they were read in (see OrderOperation.execute). Every string type can
-// be compared, so the value can always be an operand of a grouping operation
-// for DISTINCT.
+// order they were read in (see OrderOperation.execute). A large object can't be
+// an operand of the grouping operation for DISTINCT (see compile).
 //
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 11.b
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 11

@@ -22,6 +22,31 @@ VALUES 'a', CAST('abc' AS VARCHAR(5));
 -- COL1: a (CHARACTER VARYING(5))
 -- COL1: abc (CHARACTER VARYING(5))
 
+-- # A CHARACTER LARGE OBJECT makes them all a CHARACTER LARGE OBJECT (Syntax
+-- # Rules, 3.a.iii.1).
+/* types */
+VALUES 'a', CAST('abc' AS CLOB(5));
+-- COL1: a (CHARACTER LARGE OBJECT(5))
+-- COL1: abc (CHARACTER LARGE OBJECT(5))
+
+-- # Binary strings have the longest length, and are a BINARY LARGE OBJECT if
+-- # one of them is, otherwise only BINARY VARYING if one of them is (Syntax
+-- # Rules, 3.b).
+/* types */
+VALUES X'01', X'0203';
+-- COL1: 0100 (BINARY(2))
+-- COL1: 0203 (BINARY(2))
+
+/* types */
+VALUES X'01', CAST(X'0203' AS VARBINARY(4));
+-- COL1: 01 (BINARY VARYING(4))
+-- COL1: 0203 (BINARY VARYING(4))
+
+/* types */
+VALUES CAST(X'01' AS VARBINARY(4)), CAST(X'0203' AS BLOB(3));
+-- COL1: 01 (BINARY LARGE OBJECT(4))
+-- COL1: 0203 (BINARY LARGE OBJECT(4))
+
 -- # Exact numbers have the largest scale, and enough digits for the largest
 -- # integer part (Syntax Rules, 3.c.ii.3). The literal 1 is a SMALLINT, which
 -- # needs 5 digits. A DECIMAL makes them all DECIMAL, and an approximate number

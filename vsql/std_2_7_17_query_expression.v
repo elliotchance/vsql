@@ -567,6 +567,11 @@ fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn 
 			return sqlstate_42804('in column ${i + 1} of ${op.op}', column.typ.str(),
 				right_columns[i].typ.str())
 		}
+		// UNION ALL keeps every row, but any other set operation is a grouping
+		// operation (9.12, Syntax Rules, 1.e-1.g).
+		if op.op != 'UNION' || !op.all {
+			check_grouping_operand(typ, 'column ${i + 1} of ${op.op}')!
+		}
 		// A column of "SELECT *" is named by the column it refers to, such as
 		// T.A, but the result only has the column name (and the key of a
 		// duplicate name, see new_expr_operation), which is what each row of the

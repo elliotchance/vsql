@@ -43,7 +43,9 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, h
 	mut columns := []Column{}
 
 	for expr in group_exprs {
-		columns << group_column(expr, tables)!
+		column := group_column(expr, tables)!
+		check_grouping_operand(column.typ, 'column ${requote_identifier(expr.sub_entity_name)} in GROUP BY')!
+		columns << column
 	}
 
 	mut c := Compiler{

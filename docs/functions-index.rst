@@ -51,6 +51,9 @@ Every function, in alphabetical order:
    * - :ref:`AVG <functions-aggregate:AVG>`
      - Average value
      - Aggregate
+   * - :ref:`BINARY_TO_HEX <functions-string:BINARY_TO_HEX>`
+     - Convert a binary string to hexadecimal digits
+     - String
    * - :ref:`BTRIM <functions-string:BTRIM>`
      - Remove characters from both ends of a string
      - String
@@ -153,6 +156,9 @@ Every function, in alphabetical order:
    * - :ref:`GREATEST <functions-conditional:GREATEST>`
      - Greatest of the values
      - Conditional
+   * - :ref:`HEX_TO_BINARY <functions-string:HEX_TO_BINARY>`
+     - Convert hexadecimal digits to a binary string
+     - String
    * - :ref:`INITCAP <functions-string:INITCAP>`
      - Capitalize the first letter of each word
      - String

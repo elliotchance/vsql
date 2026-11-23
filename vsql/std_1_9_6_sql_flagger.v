@@ -179,6 +179,10 @@ import arrays
 // V405-02: PRODUCT.
 // V405-03: MEDIAN.
 //
+// V406: Binary string functions.
+// V406-01: BINARY_TO_HEX.
+// V406-02: HEX_TO_BINARY.
+//
 // V501: PostgreSQL functions.
 // V501-01: version().
 // V501-02: current_setting().
@@ -301,6 +305,8 @@ const vsql_concat_ws = 'V404-09'
 const vsql_mode = 'V405-01'
 const vsql_product = 'V405-02'
 const vsql_median = 'V405-03'
+const vsql_binary_to_hex = 'V406-01'
+const vsql_hex_to_binary = 'V406-02'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

@@ -11,7 +11,14 @@ Syntax
   INSERT INTO <table_name> [ ( <column_name> , ... ) ]
   [ OVERRIDING { SYSTEM | USER } VALUE ]
   { VALUES ( <value> , ... ) , ... | <query> }
+  [ ON CONFLICT [ <conflict_target> ] DO NOTHING
+  | ON CONFLICT <conflict_target> DO UPDATE SET <column_name> = <value> , ...
+    [ WHERE <condition> ] ]
   [ RETURNING { * | <expression> [ AS <name> ] } , ... ]
+
+  <conflict_target> ::=
+      ( <column_name> , ... )
+    | ON CONSTRAINT <constraint_name>
 
   INSERT INTO <table_name> DEFAULT VALUES
 
@@ -83,6 +90,61 @@ It's the same as ``SELECT ... FROM NEW TABLE (INSERT ...)`` (see
 :doc:`select`). ``UPDATE`` and ``DELETE`` can also have a ``RETURNING`` (see
 :doc:`update` and :doc:`delete`). ``RETURNING`` isn't standard SQL, so it's
 flagged as ``V119-01`` (see :doc:`sql-flagging`).
+
+ON CONFLICT
+-----------
+
+``ON CONFLICT`` (an "upsert") handles a new row that has the same values as an
+existing row in a ``PRIMARY KEY``, ``UNIQUE`` constraint or ``UNIQUE`` index,
+rather than failing with an error ``23505``. It works like PostgreSQL and
+SQLite:
+
+- ``DO NOTHING`` skips the new row.
+- ``DO UPDATE SET ...`` updates the existing row instead, like an
+  :doc:`update`. ``EXCLUDED`` is the row that would have been inserted
+  (including its defaults), and the name of the table is the existing row. A
+  column must be qualified with one of them, since it's in both. A ``WHERE``
+  only updates the rows where it's true, and skips the others.
+
+.. code-block:: sql
+
+  CREATE TABLE pages (slug VARCHAR(20) NOT NULL PRIMARY KEY, title VARCHAR(50), views INT DEFAULT 0);
+  INSERT INTO pages (slug, title) VALUES ('home', 'Home');
+  INSERT INTO pages (slug, title) VALUES ('home', 'Welcome'), ('about', 'About')
+    ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, views = pages.views + 1;
+  SELECT * FROM pages;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: INSERT 2
+  -- SLUG: about TITLE: About VIEWS: 0
+  -- SLUG: home TITLE: Welcome VIEWS: 1
+
+The conflict target chooses which constraints are checked: a list of columns
+matches each ``PRIMARY KEY``, ``UNIQUE`` constraint or ``UNIQUE`` index with
+exactly those columns (in any order), and ``ON CONSTRAINT`` names a
+``PRIMARY KEY`` or ``UNIQUE`` constraint. A conflict in any other constraint is
+still an error ``23505``. ``DO NOTHING`` can leave out the conflict target to
+skip a row that conflicts in any of them, but ``DO UPDATE`` needs one. It's an
+error ``42601`` if nothing matches the columns, or if one of the constraints is
+``DEFERRABLE``, and an error ``42704`` if the named constraint doesn't exist.
+
+Each row is checked in order, so a row also conflicts with a row that the same
+``INSERT`` inserted (``DO NOTHING`` keeps the first one). ``DO UPDATE`` can't
+change the same row more than once, since the result would depend on the order
+of the rows, which is an error ``21000``. A row with a ``NULL`` in one of the
+columns never conflicts, unless the constraint is ``NULLS NOT DISTINCT``. Like
+a ``PRIMARY KEY`` or ``UNIQUE`` constraint, a row that another transaction has
+inserted or deleted, and not yet committed, is an error ``40001`` (serialization
+failure) instead of waiting for it.
+
+The count (such as ``INSERT 2``) and the rows of ``RETURNING`` (or
+``NEW TABLE``) are the rows that were inserted or updated, including a row that
+was updated to the same values, but not the rows that were skipped.
+
+``ON CONFLICT`` isn't standard SQL, so it's flagged as ``V119-02`` (see
+:doc:`sql-flagging`). The standard way to do the same thing is :doc:`merge`.
+``CONFLICT``, ``DO``, ``NOTHING`` and ``EXCLUDED`` aren't key words, so they can
+still be used as names.
 
 Examples
 --------

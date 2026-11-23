@@ -11,6 +11,52 @@ insert_statement:
       table_name: $3.v as Identifier
     }))
   }
+| INSERT INTO insertion_target insert_columns_and_source on_conflict_clause {
+    flag(mut yylex, vsql_insert_on_conflict)
+    $$.v = yy_box(Stmt(InsertStatement{
+      ...$4.v as InsertStatement
+      table_name:  $3.v as Identifier
+      on_conflict: $5.v as OnConflict
+    }))
+  }
+
+// ON CONFLICT is a vsql extension (V119-02), see OnConflict. DO UPDATE needs a
+// conflict target.
+on_conflict_clause:
+  OPERATOR_ON_CONFLICT OPERATOR_DO OPERATOR_NOTHING {
+    $$.v = yy_box(OnConflict{})
+  }
+| OPERATOR_ON_CONFLICT conflict_target OPERATOR_DO OPERATOR_NOTHING {
+    $$.v = $2.v
+  }
+| OPERATOR_ON_CONFLICT conflict_target OPERATOR_DO UPDATE SET set_clause_list {
+    $$.v = yy_box(OnConflict{
+      ...$2.v as OnConflict
+      do_update: true
+      set:       $6.v as []SetClause
+    })
+  }
+| OPERATOR_ON_CONFLICT conflict_target OPERATOR_DO UPDATE SET set_clause_list
+  WHERE search_condition {
+    $$.v = yy_box(OnConflict{
+      ...$2.v as OnConflict
+      do_update: true
+      set:       $6.v as []SetClause
+      condition: $8.v as BooleanValueExpression
+    })
+  }
+
+conflict_target:
+  left_paren column_name_list right_paren {
+    $$.v = yy_box(OnConflict{
+      columns: $2.v as []Identifier
+    })
+  }
+| ON CONSTRAINT identifier {
+    $$.v = yy_box(OnConflict{
+      constraint_name: new_table_identifier(($3.v as IdentifierChain).identifier)!.entity_name
+    })
+  }
 
 // RETURNING is a vsql extension (V119-01), see returning_query.
 

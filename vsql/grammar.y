@@ -704,6 +704,11 @@ module vsql
 // apart from the next token alone.
 %token OPERATOR_RETURNING;
 
+// The ON CONFLICT of an INSERT, and its DO and NOTHING, aren't key words, so
+// they're only these tokens after an INSERT's ON CONFLICT (see
+// on_conflict_tokens in lexer.v).
+%token OPERATOR_ON_CONFLICT OPERATOR_DO OPERATOR_NOTHING;
+
 // pseudo keywords
 %token IS_TRUE IS_FALSE IS_UNKNOWN IS_NOT_TRUE IS_NOT_FALSE IS_NOT_UNKNOWN;
 

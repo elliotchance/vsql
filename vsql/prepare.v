@@ -385,6 +385,9 @@ fn resolve_statement_names(stmt Stmt, params map[string]Value, mut conn Connecti
 			if query := stmt.query {
 				create_query_expression_plan(query, params, mut conn, Correlation{})!
 			}
+			if on_conflict := stmt.on_conflict {
+				on_conflict.check(table)!
+			}
 		}
 		MergeStatement {
 			stmt.resolve(params, mut conn)!

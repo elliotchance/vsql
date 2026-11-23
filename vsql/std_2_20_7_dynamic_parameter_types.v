@@ -183,6 +183,26 @@ fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string
 	if query := stmt.query {
 		create_plan(query, params, mut conn)!
 	}
+
+	// A dynamic parameter in the DO UPDATE of an ON CONFLICT is the type of its
+	// column, like an UPDATE.
+	if on_conflict := stmt.on_conflict {
+		mut c := Compiler{
+			conn:   conn
+			params: params
+			tables: on_conflict.tables(table_name, table)
+		}
+		for clause in on_conflict.set {
+			table_column := table.column(clause.column_name)!
+			c.null_type = table_column.typ
+			c.default_value = table_column.default_value
+			c.identity = identity_of(table, table_column)
+			c.with_type(clause.source.compile(mut c)!, table_column.typ)
+		}
+		if condition := on_conflict.condition {
+			condition.compile(mut c)!
+		}
+	}
 }
 
 // contained_rows is the elements of each row of each VALUES that is simply

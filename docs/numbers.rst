@@ -307,6 +307,41 @@ Examples:
 
 These are a ``DECIMAL(9, 3)`` and a ``DECIMAL(12, 5)``.
 
+Decimal Floating-Point Numbers
+------------------------------
+
+A ``DECFLOAT(p)`` is a decimal number with *p* significant digits and an
+exponent, like an IEEE 754 decimal floating-point number. Unlike an approximate
+number, it holds decimal fractions such as 0.1 exactly. Unlike an exact number,
+it has a fixed number of significant digits rather than a fixed scale:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Type
+    - Significant Digits
+    - Exponent
+
+  * - ``DECFLOAT(16)``
+    - 16
+    - -383 to 384
+
+  * - ``DECFLOAT(34)``, ``DECFLOAT``
+    - 34
+    - -6143 to 6144
+
+The exponent is of the first significant digit, so the largest ``DECFLOAT(16)``
+is about ``9.999999999999999E+384``. There's no ``DECFLOAT`` literal. Any number
+can be stored in a ``DECFLOAT`` column, and a character string can be cast to a
+``DECFLOAT`` (such as ``CAST('1.5E+20' AS DECFLOAT)``). A value with more
+significant digits than the type is rounded (half to even), and a value with an
+exponent outside of the range is an error (``22003``). Trailing zeros are kept,
+so ``1.50`` is shown as ``1.50``, but it's equal to ``1.5``. A very large or
+very small value is shown with an exponent, such as ``1.5E+20``.
+
+A ``DECFLOAT`` can only be stored, compared as a ``PRIMARY KEY`` and cast for
+now. Arithmetic, comparisons and functions don't accept one yet.
+
 Casting
 -------
 

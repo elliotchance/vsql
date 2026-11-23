@@ -683,7 +683,7 @@ module vsql
 %token OPERATOR_PERIOD_ASTERISK OPERATOR_LEFT_PAREN_ASTERISK;
 
 // literals
-%token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_NUMBER;
+%token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_NUMBER LITERAL_BINARY;
 %token E;
 
 // LIMIT is only a token directly before a row count, otherwise it's a regular

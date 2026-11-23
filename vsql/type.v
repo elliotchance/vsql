@@ -43,6 +43,13 @@ pub enum SQLType {
 	is_timestamp_with_time_zone    // TIMESTAMP WITH TIME ZONE
 	is_decimal                     // DECIMAL
 	is_numeric                     // NUMERIC
+	is_clob                        // CHARACTER LARGE OBJECT, CHAR LARGE OBJECT and CLOB
+	is_binary                      // BINARY(n) and BINARY
+	is_varbinary                   // BINARY VARYING(n) and VARBINARY(n)
+	is_blob                        // BINARY LARGE OBJECT and BLOB
+	is_decfloat                    // DECFLOAT(p) and DECFLOAT
+	is_interval_year_month         // INTERVAL YEAR, MONTH or YEAR TO MONTH
+	is_interval_day_time           // INTERVAL DAY, HOUR, MINUTE, SECOND or a range of them
 }
 
 // The SQL representation, such as ``TIME WITHOUT TIME ZONE``.
@@ -63,6 +70,12 @@ fn (t SQLType) str() string {
 		.is_timestamp_with_time_zone { 'TIMESTAMP WITH TIME ZONE' }
 		.is_numeric { 'NUMERIC' }
 		.is_decimal { 'DECIMAL' }
+		.is_clob { 'CHARACTER LARGE OBJECT' }
+		.is_binary { 'BINARY' }
+		.is_varbinary { 'BINARY VARYING' }
+		.is_blob { 'BINARY LARGE OBJECT' }
+		.is_decfloat { 'DECFLOAT' }
+		.is_interval_year_month, .is_interval_day_time { 'INTERVAL' }
 	}
 }
 
@@ -80,9 +93,19 @@ fn (t SQLType) is_number() bool {
 
 fn (t SQLType) is_string() bool {
 	return match t {
-		.is_character, .is_varchar { true }
+		.is_character, .is_varchar, .is_clob { true }
 		else { false }
 	}
+}
+
+// is_binary_string is true for BINARY, BINARY VARYING and BINARY LARGE OBJECT.
+fn (t SQLType) is_binary_string() bool {
+	return t in [.is_binary, .is_varbinary, .is_blob]
+}
+
+// is_interval is true for a year-month or day-time interval.
+fn (t SQLType) is_interval() bool {
+	return t in [.is_interval_year_month, .is_interval_day_time]
 }
 
 fn (t SQLType) is_datetime() bool {
@@ -109,7 +132,7 @@ fn (t SQLType) supertype() (i16, i16) {
 		}
 		// Character types are all equal but would be subject to limitations of the
 		// allowed size.
-		.is_character, .is_varchar {
+		.is_character, .is_varchar, .is_clob {
 			1, 0
 		}
 		// Exact numeric types.
@@ -139,6 +162,21 @@ fn (t SQLType) supertype() (i16, i16) {
 		.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
 		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone {
 			4, 0
+		}
+		// Binary strings, decimal floating-point numbers and the two classes of
+		// intervals are each on their own, until the operators that combine them
+		// with other types are supported.
+		.is_binary, .is_varbinary, .is_blob {
+			5, 0
+		}
+		.is_decfloat {
+			6, 0
+		}
+		.is_interval_year_month {
+			7, 0
+		}
+		.is_interval_day_time {
+			8, 0
 		}
 	}
 }
@@ -309,6 +347,21 @@ fn type_from_name(name string, size int, scale i16) !Type {
 		'NUMERIC' {
 			Type{.is_numeric, size, scale, false, false}
 		}
+		'CHARACTER LARGE OBJECT', 'CHAR LARGE OBJECT', 'CLOB' {
+			Type{.is_clob, size, scale, false, false}
+		}
+		'BINARY' {
+			Type{.is_binary, size, scale, false, false}
+		}
+		'BINARY VARYING', 'VARBINARY' {
+			Type{.is_varbinary, size, scale, false, false}
+		}
+		'BINARY LARGE OBJECT', 'BLOB' {
+			Type{.is_blob, size, scale, false, false}
+		}
+		'DECFLOAT' {
+			Type{.is_decfloat, size, scale, false, false}
+		}
 		else {
 			return sqlstate_42601('unknown type: ${name_without_size}')
 		}
@@ -377,6 +430,24 @@ pub fn (t Type) str() string {
 		.is_numeric {
 			numeric_type_str('NUMERIC', t.size, t.scale)
 		}
+		.is_clob {
+			large_object_type_str('CHARACTER LARGE OBJECT', t.size)
+		}
+		.is_binary {
+			'BINARY(${t.size})'
+		}
+		.is_varbinary {
+			'BINARY VARYING(${t.size})'
+		}
+		.is_blob {
+			large_object_type_str('BINARY LARGE OBJECT', t.size)
+		}
+		.is_decfloat {
+			'DECFLOAT(${t.size})'
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			'INTERVAL ${t.interval_qualifier()}'
+		}
 	}
 
 	if t.not_null {
@@ -384,6 +455,13 @@ pub fn (t Type) str() string {
 	}
 
 	return s
+}
+
+// uses_new_encoding is true for a type that's written in a row in a way that
+// file format versions before data_types_file_format_version can't read.
+fn (t Type) uses_new_encoding() bool {
+	return t.typ in [.is_clob, .is_binary, .is_varbinary, .is_blob, .is_decfloat,
+		.is_interval_year_month, .is_interval_day_time]
 }
 
 // has_time_zone is true for TIME WITH TIME ZONE and TIMESTAMP WITH TIME ZONE.
@@ -397,9 +475,7 @@ pub fn (t Type) uses_int() bool {
 		.is_boolean, .is_bigint, .is_smallint, .is_integer {
 			true
 		}
-		.is_varchar, .is_character, .is_double_precision, .is_real, .is_date,
-		.is_time_with_time_zone, .is_time_without_time_zone, .is_timestamp_with_time_zone,
-		.is_timestamp_without_time_zone, .is_numeric, .is_decimal {
+		else {
 			false
 		}
 	}
@@ -412,8 +488,7 @@ pub fn (t Type) uses_f64() bool {
 		.is_time_without_time_zone, .is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			true
 		}
-		.is_boolean, .is_varchar, .is_character, .is_bigint, .is_smallint, .is_integer,
-		.is_numeric, .is_decimal {
+		else {
 			false
 		}
 	}
@@ -422,26 +497,23 @@ pub fn (t Type) uses_f64() bool {
 // uses_string is true if the value is stored as a string, see Value.string_value().
 pub fn (t Type) uses_string() bool {
 	return match t.typ {
-		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
-		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
-		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_numeric, .is_decimal {
-			false
-		}
-		.is_varchar, .is_character {
+		.is_varchar, .is_character, .is_clob, .is_binary, .is_varbinary, .is_blob {
 			true
+		}
+		else {
+			false
 		}
 	}
 }
 
 fn (t Type) uses_time() bool {
 	return match t.typ {
-		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
-		.is_varchar, .is_character, .is_numeric, .is_decimal {
-			false
-		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			true
+		}
+		else {
+			false
 		}
 	}
 }
@@ -456,4 +528,14 @@ fn numeric_type_str(typ string, size int, scale i16) string {
 	}
 
 	return '${typ}(${size}, ${scale})'
+}
+
+// large_object_type_str is a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT,
+// with its length unless it has the maximum length (a size of 0).
+fn large_object_type_str(typ string, size int) string {
+	if size == 0 {
+		return typ
+	}
+
+	return '${typ}(${size})'
 }

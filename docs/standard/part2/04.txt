@@ -85,7 +85,7 @@
 # 4.7.2, Datetimes
 4.7.2                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_time.sql
 # 4.7.3, Intervals
-4.7.3                    n/a          - - intervals (F052)
+4.7.3                    partial      vsql/interval.v tests/std_2_6_1_interval.sql intervals (F052) can only be stored and cast, they have no operations yet
 # 4.7.4, Operations involving datetimes and intervals
 4.7.4                    implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql no datetime arithmetic, which needs intervals (F052)
 # 4.8, JSON types

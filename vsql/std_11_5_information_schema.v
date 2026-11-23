@@ -820,10 +820,9 @@ fn column_default(column Column) Value {
 // DATA_TYPE_DESCRIPTOR base table). Character strings are UTF-8, which can use
 // up to 4 bytes for each character, and have no collation (Description, 4.a and
 // 5). The precision of a numeric type and the fractional seconds precision of
-// a datetime type are described by Description, 6. There are no binary
-// strings, intervals, arrays, row types, reference types or user-defined
-// types, so the other values are NULL (Description, 4.d, 8, 9, 10.c, 11 and
-// 13).
+// a datetime type are described by Description, 6. There are no arrays, row
+// types, reference types or user-defined types, so the other values are NULL
+// (Description, 4.d, 8, 9, 11 and 13).
 fn data_type_descriptor(catalog_name string, t Type) []Value {
 	mut data_type := t.typ.str()
 	mut character_maximum_length := ?int(none)
@@ -832,6 +831,8 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 	mut numeric_precision_radix := ?int(none)
 	mut numeric_scale := ?int(none)
 	mut datetime_precision := ?int(none)
+	mut interval_type := ''
+	mut interval_precision := ?int(none)
 	mut character_set := false
 
 	match t.typ {
@@ -879,6 +880,35 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 			datetime_precision = t.size
 		}
 		.is_boolean {}
+		.is_clob {
+			// A CHARACTER LARGE OBJECT without a length has the maximum length.
+			length := if t.size == 0 { max_large_object_length } else { t.size }
+			character_maximum_length = length
+			character_octet_length = if length > max_large_object_length / 4 {
+				max_large_object_length
+			} else {
+				length * 4
+			}
+			character_set = true
+		}
+		.is_binary, .is_varbinary, .is_blob {
+			// The length of a binary string is in octets (Description, 4.b).
+			length := if t.size == 0 { max_large_object_length } else { t.size }
+			character_maximum_length = length
+			character_octet_length = length
+		}
+		.is_decfloat {
+			numeric_precision = t.size
+			numeric_precision_radix = 10
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			// The fields of the interval, without their precisions, and the
+			// leading field precision (Description, 10).
+			q := t.interval_qualifier()
+			interval_type = if q.start == q.end { q.start.str() } else { '${q.start} TO ${q.end}' }
+			interval_precision = q.leading_precision
+			datetime_precision = q.fractional_precision
+		}
 	}
 
 	return [
@@ -889,8 +919,8 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 		optional_integer_value(numeric_precision_radix), // NUMERIC_PRECISION_RADIX
 		optional_integer_value(numeric_scale), // NUMERIC_SCALE
 		optional_integer_value(datetime_precision), // DATETIME_PRECISION
-		new_null_value(.is_varchar), // INTERVAL_TYPE
-		new_null_value(.is_integer), // INTERVAL_PRECISION
+		optional_varchar_value(interval_type != '', interval_type), // INTERVAL_TYPE
+		optional_integer_value(interval_precision), // INTERVAL_PRECISION
 		optional_varchar_value(character_set, catalog_name), // CHARACTER_SET_CATALOG
 		optional_varchar_value(character_set, information_schema_name), // CHARACTER_SET_SCHEMA
 		optional_varchar_value(character_set, 'UTF8'), // CHARACTER_SET_NAME

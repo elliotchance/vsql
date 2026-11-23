@@ -179,6 +179,16 @@ fn new_bigint_value
 
 new_bigint_value creates a ``BIGINT`` value.
 
+fn new_binary_value
+-------------------
+
+
+.. code-block:: v
+
+   pub fn new_binary_value(x []u8) Value
+
+new_binary_value creates a ``BINARY`` value of the octets of x. The size is the number of octets.
+
 fn new_boolean_value
 --------------------
 
@@ -187,7 +197,9 @@ fn new_boolean_value
 
    pub fn new_boolean_value(b bool) Value
 
-new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.
+new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``. It's also the value of a <boolean literal>, which is a BOOLEAN.
+
+ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 47
 
 fn new_character_value
 ----------------------
@@ -198,6 +210,16 @@ fn new_character_value
    pub fn new_character_value(x string) Value
 
 new_character_value creates a ``CHARACTER`` value. The size is determined from the length of the string itself, in characters (not bytes).
+
+fn new_clob_value
+-----------------
+
+
+.. code-block:: v
+
+   pub fn new_clob_value(x string) Value
+
+new_clob_value creates a ``CHARACTER LARGE OBJECT`` value.
 
 fn new_date_value
 -----------------
@@ -595,6 +617,13 @@ enum SQLType
    	is_timestamp_with_time_zone    // TIMESTAMP WITH TIME ZONE
    	is_decimal                     // DECIMAL
    	is_numeric                     // NUMERIC
+   	is_clob                        // CHARACTER LARGE OBJECT, CHAR LARGE OBJECT and CLOB
+   	is_binary                      // BINARY(n) and BINARY
+   	is_varbinary                   // BINARY VARYING(n) and VARBINARY(n)
+   	is_blob                        // BINARY LARGE OBJECT and BLOB
+   	is_decfloat                    // DECFLOAT(p) and DECFLOAT
+   	is_interval_year_month         // INTERVAL YEAR, MONTH or YEAR TO MONTH
+   	is_interval_day_time           // INTERVAL DAY, HOUR, MINUTE, SECOND or a range of them
    }
 
 SQLType is the fundamental SQL type, without its size or precision.
@@ -1106,6 +1135,18 @@ struct IndexColumn
 
 An IndexColumn is a column of an Index.
 
+struct Lob
+----------
+
+
+.. code-block:: v
+
+   pub struct Lob {
+   	value Value
+   }
+
+Lob reads a value of a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT (or any other string) without reading all of it, see Row.get_lob. A value that's stored outside of its row is read until the row is changed by another transaction that commits, or the connection is closed.
+
 struct PrecompiledProgram
 -------------------------
 
@@ -1489,6 +1530,9 @@ struct Value
 .. code-block:: v
 
    pub struct Value {
+   	// is_large is true for a string that's stored outside of its row, see
+   	// LargeValue.
+   	is_large bool
    pub:
    	// The type of this Value.
    	typ Type

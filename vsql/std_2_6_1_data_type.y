@@ -5,9 +5,12 @@ data_type:
 
 predefined_type:
   character_string_type { $$.v = $1.v }
+| national_character_string_type { $$.v = $1.v }
+| binary_string_type { $$.v = $1.v }
 | numeric_type { $$.v = $1.v }
 | boolean_type { $$.v = $1.v }
 | datetime_type { $$.v = $1.v }
+| interval_type { $$.v = $1.v }
 
 character_string_type:
   CHARACTER { $$.v = yy_box(new_type('CHARACTER', 1, 0)) }
@@ -43,10 +46,141 @@ character_string_type:
     flag(mut yylex, 'T081')
     $$.v = yy_box(new_type('CHARACTER VARYING', max_character_length, 0))
   }
+| CHARACTER LARGE OBJECT {
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(new_type('CHARACTER LARGE OBJECT', 0, 0))
+  }
+| CHARACTER LARGE OBJECT left_paren character_large_object_length right_paren {
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $5.v as string)!)
+  }
+| CHAR LARGE OBJECT {
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(new_type('CHARACTER LARGE OBJECT', 0, 0))
+  }
+| CHAR LARGE OBJECT left_paren character_large_object_length right_paren {
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $5.v as string)!)
+  }
+| CLOB {
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(new_type('CHARACTER LARGE OBJECT', 0, 0))
+  }
+| CLOB left_paren character_large_object_length right_paren {
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $3.v as string)!)
+  }
+
+// The only character set is UTF8 (see check_noncharacters), so the national
+// character set is UTF8 too, and each national character string type is the
+// same as the character string type.
+national_character_string_type:
+  NATIONAL CHARACTER {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(new_type('CHARACTER', 1, 0))
+  }
+| NATIONAL CHARACTER left_paren character_length right_paren {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(parse_type_with_length('CHARACTER', $4.v as string)!)
+  }
+| NATIONAL CHAR {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(new_type('CHARACTER', 1, 0))
+  }
+| NATIONAL CHAR left_paren character_length right_paren {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(parse_type_with_length('CHARACTER', $4.v as string)!)
+  }
+| NCHAR {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(new_type('CHARACTER', 1, 0))
+  }
+| NCHAR left_paren character_length right_paren {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(parse_type_with_length('CHARACTER', $3.v as string)!)
+  }
+| NATIONAL CHARACTER VARYING left_paren character_length right_paren {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(parse_type_with_length('CHARACTER VARYING', $5.v as string)!)
+  }
+| NATIONAL CHAR VARYING left_paren character_length right_paren {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(parse_type_with_length('CHARACTER VARYING', $5.v as string)!)
+  }
+| NCHAR VARYING left_paren character_length right_paren {
+    flag(mut yylex, 'F421')
+    $$.v = yy_box(parse_type_with_length('CHARACTER VARYING', $4.v as string)!)
+  }
+| NATIONAL CHARACTER LARGE OBJECT {
+    flag(mut yylex, 'F421')
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(new_type('CHARACTER LARGE OBJECT', 0, 0))
+  }
+| NATIONAL CHARACTER LARGE OBJECT left_paren character_large_object_length
+  right_paren {
+    flag(mut yylex, 'F421')
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $6.v as string)!)
+  }
+| NCHAR LARGE OBJECT {
+    flag(mut yylex, 'F421')
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(new_type('CHARACTER LARGE OBJECT', 0, 0))
+  }
+| NCHAR LARGE OBJECT left_paren character_large_object_length right_paren {
+    flag(mut yylex, 'F421')
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $5.v as string)!)
+  }
+| NCLOB {
+    flag(mut yylex, 'F421')
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(new_type('CHARACTER LARGE OBJECT', 0, 0))
+  }
+| NCLOB left_paren character_large_object_length right_paren {
+    flag(mut yylex, 'F421')
+    flag(mut yylex, 'T046')
+    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $3.v as string)!)
+  }
+
+binary_string_type:
+  BINARY {
+    flag(mut yylex, 'T021')
+    $$.v = yy_box(new_type('BINARY', 1, 0))
+  }
+| BINARY left_paren length right_paren {
+    flag(mut yylex, 'T021')
+    $$.v = yy_box(parse_type_with_length('BINARY', $3.v as string)!)
+  }
+| BINARY VARYING left_paren length right_paren {
+    flag(mut yylex, 'T021')
+    $$.v = yy_box(parse_type_with_length('BINARY VARYING', $4.v as string)!)
+  }
+| VARBINARY left_paren length right_paren {
+    flag(mut yylex, 'T021')
+    $$.v = yy_box(parse_type_with_length('BINARY VARYING', $3.v as string)!)
+  }
+| BINARY LARGE OBJECT {
+    flag(mut yylex, 'T045')
+    $$.v = yy_box(new_type('BINARY LARGE OBJECT', 0, 0))
+  }
+| BINARY LARGE OBJECT left_paren large_object_length right_paren {
+    flag(mut yylex, 'T045')
+    $$.v = yy_box(parse_type_with_length('BINARY LARGE OBJECT', $5.v as string)!)
+  }
+| BLOB {
+    flag(mut yylex, 'T045')
+    $$.v = yy_box(new_type('BINARY LARGE OBJECT', 0, 0))
+  }
+| BLOB left_paren large_object_length right_paren {
+    flag(mut yylex, 'T045')
+    $$.v = yy_box(parse_type_with_length('BINARY LARGE OBJECT', $3.v as string)!)
+  }
 
 numeric_type:
   exact_numeric_type { $$.v = $1.v }
 | approximate_numeric_type { $$.v = $1.v }
+| decimal_floating_point_type { $$.v = $1.v }
 
 exact_numeric_type:
   NUMERIC { $$.v = yy_box(new_type('NUMERIC', 0, 0)) }
@@ -86,8 +220,24 @@ approximate_numeric_type:
 | REAL { $$.v = yy_box(new_type('REAL', 0, 0)) }
 | DOUBLE PRECISION { $$.v = yy_box(new_type('DOUBLE PRECISION', 0, 0)) }
 
+decimal_floating_point_type:
+  DECFLOAT {
+    flag(mut yylex, 'T076')
+    $$.v = yy_box(new_decfloat_type(max_decfloat_precision)!)
+  }
+| DECFLOAT left_paren precision right_paren {
+    flag(mut yylex, 'T076')
+    $$.v = yy_box(new_decfloat_type(($3.v as string).int())!)
+  }
+
 length:
   unsigned_integer { $$.v = $1.v as string }
+
+large_object_length:
+  unsigned_integer { $$.v = $1.v as string }
+
+character_large_object_length:
+  large_object_length { $$.v = $1.v as string }
 
 // The length of a character string type is in characters, unless it's OCTETS
 // (T062).
@@ -178,5 +328,11 @@ timestamp_precision:
 
 time_fractional_seconds_precision:
   unsigned_integer { $$.v = $1.v as string }
+
+interval_type:
+  INTERVAL interval_qualifier {
+    flag(mut yylex, 'F052')
+    $$.v = yy_box(new_interval_type($2.v as IntervalQualifier))
+  }
 
 %%

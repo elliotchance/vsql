@@ -32,6 +32,11 @@ enum TransactionState {
 struct Storage {
 mut:
 	header Header
+	// catalog is the connection that the storage belongs to, so that a large
+	// value can lock the file to be read after its statement (see
+	// read_large_value). file_locks is how many times the file is locked now.
+	catalog    &CatalogConnection = unsafe { nil }
+	file_locks int
 	// cache_size is the number of pages the pager of each operation keeps in
 	// memory, see ConnectionOptions.cache_size.
 	cache_size int
@@ -763,6 +768,28 @@ fn (f &Storage) references(storage_id string, referenced_id string) bool {
 	return false
 }
 
+// data_types_file_format_version is the version of the file format that the
+// first table with a column of a type that's written in a new way (see
+// uses_new_encoding) raises the Read Version and the Write Version to. Every
+// type that's added in the same release shares this version.
+const data_types_file_format_version = u16(4)
+
+// use_data_types raises the Read Version and the Write Version when the table
+// has a column with a type that an older version can't read. They are never
+// lowered, even when the table is dropped.
+fn (mut f Storage) use_data_types(t Table) {
+	if !t.columns.any(it.typ.uses_new_encoding()) {
+		return
+	}
+
+	if f.header.read_version < data_types_file_format_version {
+		f.header.read_version = data_types_file_format_version
+	}
+	if f.header.write_version < data_types_file_format_version {
+		f.header.write_version = data_types_file_format_version
+	}
+}
+
 fn (mut f Storage) create_table(definition Table) ! {
 	f.isolation_start()!
 	defer {
@@ -779,6 +806,7 @@ fn (mut f Storage) create_table(definition Table) ! {
 		id:  f.header.table_id
 	}
 
+	f.use_data_types(table)
 	obj := new_page_object(table_object_key(table.id), f.transaction_id, 0, table.bytes())
 	f.btree.add(obj)!
 
@@ -839,6 +867,7 @@ fn (mut f Storage) update_table(definition Table) ! {
 		...definition
 		tid: f.transaction_id
 	}
+	f.use_data_types(table)
 	f.btree.update(new_page_object(table_object_key(table.id), f.transaction_id, 0,
 		table.bytes()))!
 
@@ -1114,6 +1143,10 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	for object in f.read_objects(row_key_prefix(table_id), row_key_prefix(table_id + 1))! {
 		f.btree.expire(object.key, object.tid, f.transaction_id)!
 	}
+	for object in f.read_objects(large_value_key(table_id, 0, 0), large_value_key(table_id + 1,
+		0, 0))! {
+		f.btree.expire(object.key, object.tid, f.transaction_id)!
+	}
 
 	f.save_schema()
 	f.tables.delete(table_name)
@@ -1154,6 +1187,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	f.check_concurrent_references(f.table(table_name))!
 	page_number := f.btree.expire(row.object_key(f.table(table_name))!, row.tid, f.transaction_id)!
 	f.delete_index_entries(f.table(table_name), row)!
+	f.expire_large_values(row, map[u64]bool{})!
 
 	// A negative page_number means the object didn't exist so there's nothing to
 	// save. This should not be possible because the delete_row will only be
@@ -1173,7 +1207,8 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 	f.check_concurrent_definition(t)!
 	f.assign_row_id(mut r, t)
 	f.check_primary_key(mut r, t)!
-	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t)!)
+	stored := f.store_large_values(r, t, none)!
+	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, stored.bytes(t)!)
 	f.btree.add(obj)!
 	f.add_index_entries(t, r)!
 }
@@ -1206,7 +1241,8 @@ fn (mut f Storage) update_row(old Row, mut new Row, t Table) ! {
 	f.check_concurrent_definition(t)!
 	f.check_concurrent_references(t)!
 	f.assign_row_id(mut new, t)
-	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)!))!
+	stored := f.store_large_values(new, t, old)!
+	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, stored.bytes(t)!))!
 	f.update_index_entries(t, old, new)!
 }
 
@@ -1389,7 +1425,9 @@ fn (mut s RowScanner) next_rows(limit int) ![]Row {
 	for rows.len < limit {
 		object := s.iter.next() or { break }
 		if s.storage.is_visible(object.tid, object.xid) {
-			rows << new_row_from_bytes_needed(s.table, s.ids, s.needed, object.value, object.tid)
+			mut row := new_row_from_bytes_needed(s.table, s.ids, s.needed, object.value,
+				object.tid)
+			rows << s.storage.resolve_row(mut row)!
 		}
 	}
 	if err := s.iter.err {

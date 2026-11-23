@@ -162,6 +162,7 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace('LITERAL_IDENTIFIER', 'identifier')
 	msg = msg.replace('LITERAL_STRING', 'string')
 	msg = msg.replace('LITERAL_NUMBER', 'number')
+	msg = msg.replace('LITERAL_BINARY', 'binary string')
 
 	return msg['syntax error: '.len..]
 }
@@ -294,6 +295,36 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				i++
 			}
 
+			unsafe {
+				goto next
+			}
+		}
+
+		// A binary string literal, like X'0A1B' (5.3). The X may be lower case,
+		// but there must not be a space before the quote. Each octet is two
+		// hexadecimal digits.
+		if i + 1 < cs.len && (cs[i] == `X` || cs[i] == `x`) && cs[i + 1] == `'` {
+			word, end, literal_features := read_string_literal(cs, i + 1)!
+			i = end
+			// A compound binary literal is T023, rather than F271 like a
+			// compound character literal (5.3 Syntax Rule 5).
+			features << literal_features.map(if it == 'F271' { 'T023' } else { it })
+			tokens << Token{token_literal_binary, binary_string_literal_value(word)!, 0, 0}
+			unsafe {
+				goto next
+			}
+		}
+
+		// A national character string literal, like N'abc' (5.3). The national
+		// character set is the same as the character set (UTF8), so it's the same
+		// as a character string literal.
+		if i + 1 < cs.len && (cs[i] == `N` || cs[i] == `n`) && cs[i + 1] == `'` {
+			word, end, literal_features := read_string_literal(cs, i + 1)!
+			i = end
+			features << literal_features
+			features << 'F421'
+			check_noncharacters(word)!
+			tokens << Token{token_literal_string, new_character_value(normalize_nfc(word)), 0, 0}
 			unsafe {
 				goto next
 			}
@@ -612,6 +643,28 @@ fn is_limit_clause(tokens []Token, i int) bool {
 // the separators between the parts. See tokenize_with_features.
 //
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 1, 2 and 7
+// binary_string_literal_value is the BINARY value of the <hexit>s of a <binary
+// string literal>, two for each octet. The declared type is
+// implementation-defined.
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 20
+//
+// It's flagged with T021 (see binary_string_literal in the grammar).
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 8
+fn binary_string_literal_value(hexits string) !Value {
+	if hexits.len % 2 != 0 || !hexits.bytes().all(it.is_hex_digit()) {
+		return sqlstate_42601("X'${hexits}' is not a valid binary string literal")
+	}
+
+	mut octets := []u8{len: hexits.len / 2}
+	for i in 0 .. octets.len {
+		octets[i] = u8(hexits[i * 2..i * 2 + 2].parse_uint(16, 8) or { 0 })
+	}
+
+	return new_binary_value(octets)
+}
+
 fn read_string_literal(cs []rune, start int) !(string, int, []string) {
 	mut word := ''
 	mut i := start + 1

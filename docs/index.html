@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vsql - A real SQL database in one file</title>
+<meta name="description" content="vsql is an embedded SQL database that follows the SQL standard. One file or in memory, real transactions, strict types, and libraries for seven languages.">
+<meta name="color-scheme" content="light dark">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #faf9f6;
+  --header-bg: rgba(250, 249, 246, 0.92);
+  --surface: #ffffff;
+  --surface-2: #f3f2ee;
+  --fg: #1a1f24;
+  --muted: #545e67;
+  --border: #dfe3e6;
+  --accent: #0d6d5c;
+  --accent-hover: #095747;
+  --accent-soft: #e6f2ee;
+  --accent-fg: #ffffff;
+  --code-bg: #12181d;
+  --code-fg: #dce7ea;
+  --code-dim: #96a9af;
+  --shadow: 0 16px 38px rgba(20, 30, 35, 0.10);
+  --shadow-sm: 0 4px 12px rgba(20, 30, 35, 0.08);
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: clamp(1.75rem, 3.5vw, 2.25rem);
+  --display: clamp(2.75rem, 8vw, 4.75rem);
+  --max: 1160px;
+  --dur: 150ms;
+  --ease: ease-out;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #111518;
+    --header-bg: rgba(17, 21, 24, 0.92);
+    --surface: #171d21;
+    --surface-2: #1d2429;
+    --fg: #e9eef0;
+    --muted: #a6b2b8;
+    --border: #2c353b;
+    --accent: #4fd1ad;
+    --accent-hover: #77e0c2;
+    --accent-soft: #17352e;
+    --accent-fg: #08110e;
+    --code-bg: #0c1013;
+    --shadow: none;
+    --shadow-sm: none;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--text-base)/1.65 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+button { font: inherit; }
+h1, h2, h3, p { margin-top: 0; }
+p { max-width: 68ch; }
+h1 { font-size: var(--display); line-height: 1.04; letter-spacing: -0.04em; font-weight: 680; }
+h2 { font-size: var(--text-2xl); line-height: 1.18; letter-spacing: -0.025em; font-weight: 660; }
+h3 { font-size: var(--text-lg); line-height: 1.3; letter-spacing: -0.01em; font-weight: 640; }
+.skip {
+  position: absolute; left: -9999px; top: var(--s2); z-index: 100;
+  background: var(--surface); color: var(--fg); padding: var(--s2) var(--s4);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+}
+.skip:focus { left: var(--s2); }
+.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--s5); }
+.section { padding-block: var(--s8); border-top: 1px solid var(--border); }
+.section-head { max-width: 62ch; margin-bottom: var(--s6); }
+.section-head p { color: var(--muted); margin-bottom: 0; }
+.kicker {
+  color: var(--accent); font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: var(--s3);
+}
+.eyebrow { display: inline-flex; align-items: center; gap: var(--s2); color: var(--muted); font-size: var(--text-sm); }
+.pill {
+  display: inline-flex; align-items: center; gap: var(--s2);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: var(--s1) var(--s3); font-size: var(--text-xs); color: var(--muted);
+  background: var(--surface);
+}
+.pill svg { color: var(--accent); }
+
+/* header */
+.site-header {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s4); min-height: 62px;
+}
+.brand { display: inline-flex; align-items: center; gap: var(--s2); color: var(--fg); font-weight: 700; letter-spacing: -0.02em; }
+.brand:hover { text-decoration: none; }
+.brand-mark {
+  width: 28px; height: 28px; border-radius: var(--r-sm);
+  background: var(--accent); color: var(--accent-fg);
+  display: grid; place-items: center; font: 700 15px var(--mono);
+}
+.site-nav { display: none; align-items: center; gap: var(--s5); font-size: var(--text-sm); }
+.site-nav a { color: var(--muted); }
+.site-nav a:hover { color: var(--fg); text-decoration: none; }
+.header-actions { display: flex; align-items: center; gap: var(--s2); }
+.header-actions .btn-quiet span { display: none; }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  min-height: 40px; padding: var(--s2) var(--s4);
+  border-radius: var(--r-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--fg);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.btn:active { transform: translateY(1px); }
+.btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-fg); }
+.btn-quiet { background: transparent; border-color: transparent; color: var(--muted); }
+.btn-quiet:hover { background: var(--surface-2); }
+.btn-sm { min-height: 32px; padding: var(--s1) var(--s3); }
+.btn svg { flex: none; }
+
+/* hero */
+.hero { padding-block: var(--s7) var(--s8); }
+.hero-grid { display: grid; gap: var(--s7); align-items: center; }
+.hero-copy { max-width: 40ch; }
+.hero-copy h1 { margin-bottom: var(--s5); }
+.hero-copy .lead { font-size: var(--text-lg); color: var(--muted); max-width: 46ch; margin-bottom: var(--s5); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: var(--s3); margin-bottom: var(--s5); }
+.hero-note { font-size: var(--text-sm); color: var(--muted); display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); }
+.hero-note a { font-weight: 600; }
+
+/* terminal */
+.terminal {
+  min-width: 0; border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--code-bg); color: var(--code-fg);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.terminal-bar {
+  display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s3) var(--s4); border-bottom: 1px solid rgba(255,255,255,0.09);
+  font-size: var(--text-xs); color: var(--code-dim);
+}
+.dots { display: flex; gap: 5px; margin-right: var(--s2); }
+.dots i { width: 9px; height: 9px; border-radius: 50%; background: #4b5860; display: block; }
+.terminal pre {
+  margin: 0; padding: var(--s4); overflow-x: auto;
+  font: var(--text-sm)/1.7 var(--mono); white-space: pre; tab-size: 2;
+}
+.tok-key { color: #7fd1c3; }
+.tok-str { color: #e6bd7a; }
+.tok-num { color: #a8c9e8; }
+.tok-out { color: #96a9af; }
+
+/* fact strip */
+.facts { display: flex; flex-wrap: wrap; gap: var(--s4) var(--s7); padding-block: var(--s5); }
+.fact { display: flex; flex-direction: column; gap: 2px; }
+.fact strong { font: 700 var(--text-xl)/1.2 var(--mono); letter-spacing: -0.03em; }
+.fact span { color: var(--muted); font-size: var(--text-sm); }
+
+/* tabs */
+.tabs { display: flex; flex-wrap: nowrap; gap: var(--s2); overflow-x: auto; padding-bottom: var(--s3); margin-bottom: var(--s5); scrollbar-width: thin; }
+.tab {
+  flex: none; min-height: 38px; padding: var(--s2) var(--s4);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--muted);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.tab:hover { color: var(--fg); border-color: var(--accent); }
+.tab:active { background: var(--surface-2); }
+.tab[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.panel { display: grid; gap: var(--s5); align-items: start; }
+.panel[hidden] { display: none; }
+.panel-body h3 { margin-bottom: var(--s3); }
+.panel-body p { color: var(--muted); margin-bottom: var(--s4); max-width: 56ch; }
+.checks { list-style: none; margin: 0 0 var(--s5); padding: 0; display: grid; gap: var(--s2); }
+.checks li { display: flex; align-items: flex-start; gap: var(--s2); font-size: var(--text-sm); }
+.checks svg { color: var(--accent); flex: none; margin-top: 4px; }
+.doc-link { display: inline-flex; align-items: center; gap: var(--s2); font-size: var(--text-sm); font-weight: 600; }
+.codebox { min-width: 0; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--code-bg); }
+.codebox-head { display: flex; justify-content: space-between; gap: var(--s3); padding: var(--s2) var(--s4); border-bottom: 1px solid rgba(255,255,255,0.09); color: var(--code-dim); font: var(--text-xs) var(--mono); }
+.codebox pre { margin: 0; padding: var(--s4); overflow-x: auto; color: var(--code-fg); font: var(--text-sm)/1.75 var(--mono); white-space: pre; }
+
+/* feature grid */
+.grid { display: grid; gap: var(--s4); }
+.card {
+  min-width: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--s5);
+}
+.card h3 { margin-bottom: var(--s2); }
+.card p { color: var(--muted); font-size: var(--text-sm); margin-bottom: 0; }
+.card .doc-link { margin-top: var(--s4); }
+.card-icon { color: var(--accent); margin-bottom: var(--s4); display: block; }
+.lead-card { background: var(--accent-soft); border-color: var(--accent); }
+.lead-card p { color: var(--fg); }
+
+/* comparison table */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: var(--text-sm); }
+caption { text-align: left; padding: var(--s4); color: var(--muted); font-size: var(--text-sm); border-bottom: 1px solid var(--border); }
+th, td { text-align: left; padding: var(--s3) var(--s4); border-bottom: 1px solid var(--border); vertical-align: top; }
+thead th { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--surface-2); }
+tbody th { width: 22%; font-weight: 620; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+td a { font-weight: 600; }
+
+/* languages */
+.lang-list { border-top: 1px solid var(--border); }
+.lang {
+  display: grid; gap: var(--s1) var(--s4); padding-block: var(--s4);
+  border-bottom: 1px solid var(--border);
+}
+.lang-name { font-weight: 650; }
+.lang-note { color: var(--muted); font-size: var(--text-sm); }
+.lang-link { font-size: var(--text-sm); justify-self: start; }
+
+/* gallery */
+.gallery { display: grid; gap: var(--s5); }
+.shot { margin: 0; min-width: 0; }
+.shot a { display: block; border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+.shot a:hover { border-color: var(--accent); }
+.shot img { width: 100%; }
+.shot figcaption { color: var(--muted); font-size: var(--text-sm); margin-top: var(--s2); }
+
+/* docs band */
+.docs-band { border-top: 1px solid var(--border); background: var(--surface-2); padding-block: var(--s8); }
+.docs-band h2 { max-width: 24ch; }
+.docs-band p { color: var(--muted); max-width: 56ch; }
+.doc-grid { display: grid; gap: var(--s3); margin-top: var(--s5); }
+.doc-item {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  padding: var(--s4); border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--surface); color: var(--fg); font-size: var(--text-sm); font-weight: 600;
+}
+.doc-item:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; box-shadow: var(--shadow-sm); }
+.doc-item svg { flex: none; color: var(--accent); }
+
+/* footer */
+.site-footer { border-top: 1px solid var(--border); padding-block: var(--s6); }
+.footer-inner { display: flex; flex-wrap: wrap; gap: var(--s4) var(--s6); align-items: center; justify-content: space-between; }
+.footer-links { display: flex; flex-wrap: wrap; gap: var(--s4); font-size: var(--text-sm); }
+.footer-links a { color: var(--muted); }
+.footer-links a:hover { color: var(--fg); }
+.footer-note { color: var(--muted); font-size: var(--text-sm); margin: 0; }
+
+@media (min-width: 420px) {
+  .header-actions .btn-quiet span { display: inline; }
+}
+@media (min-width: 640px) {
+  .wrap { padding-inline: var(--s6); }
+  .panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: var(--s6); }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .doc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lang { grid-template-columns: 1fr 1.4fr auto; align-items: center; }
+}
+@media (min-width: 900px) {
+  .site-nav { display: flex; }
+  .hero { padding-block: var(--s9) var(--s8); }
+  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--s8); }
+  .hero-copy { max-width: 34ch; }
+  .section { padding-block: var(--s9); }
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lead-card { grid-column: span 2; }
+  .gallery { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .shot { grid-column: span 2; }
+  .shot:nth-child(1), .shot:nth-child(4) { grid-column: span 4; }
+  .doc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .section.split .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: end; max-width: none; }
+  .section.split .section-head p { margin-bottom: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="vsql home">
+      <span class="brand-mark" aria-hidden="true">v</span>
+      <span>vsql</span>
+    </a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#compare">Why vsql</a>
+      <a href="#languages">Languages</a>
+      <a href="https://vsql.readthedocs.io/">Docs</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-quiet btn-sm" href="https://github.com/elliotchance/vsql" aria-label="vsql on GitHub">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        <span>GitHub</span>
+      </a>
+      <a class="btn btn-primary btn-sm" href="https://vsql.readthedocs.io/en/latest/install.html">Install</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="kicker">Embedded SQL database</p>
+        <h1>A real SQL database. One file.</h1>
+        <p class="lead">vsql follows the SQL standard, keeps everything in a single file or in memory, and runs as one binary written in pure V. No server, no setup, no surprises in production.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="https://vsql.readthedocs.io/">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Read the docs
+          </a>
+          <a class="btn" href="https://vsql.readthedocs.io/en/latest/quick-start.html">Quick start</a>
+        </div>
+        <div class="hero-note">
+          <span><a href="https://github.com/elliotchance/vsql/releases/latest">Download the binary</a></span>
+          <span>MIT licensed</span>
+        </div>
+      </div>
+      <div class="terminal" aria-label="Example vsql CLI session">
+        <div class="terminal-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>shop.vsql - vsql cli</span>
+        </div>
+        <pre><span class="tok-out">$ </span>vsql cli shop.vsql
+<span class="tok-out">vsql&gt; </span><span class="tok-key">CREATE TABLE</span> products (name <span class="tok-key">VARCHAR</span>(50), price <span class="tok-key">NUMERIC</span>(<span class="tok-num">10</span>, <span class="tok-num">2</span>));
+<span class="tok-out">CREATE TABLE 1 (0 ms)
+vsql&gt; </span><span class="tok-key">INSERT INTO</span> products (name, price) <span class="tok-key">VALUES</span> (<span class="tok-str">'Coffee'</span>, <span class="tok-num">4.50</span>), (<span class="tok-str">'Bagel'</span>, <span class="tok-num">2.25</span>);
+<span class="tok-out">INSERT 2 (1 ms)
+vsql&gt; </span><span class="tok-key">SELECT</span> * <span class="tok-key">FROM</span> products <span class="tok-key">ORDER BY</span> name;
+NAME   | PRICE
+-------+------
+Bagel  |  2.25
+Coffee |  4.50
+<span class="tok-num">2 rows (1 ms)</span></pre>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="facts" aria-label="vsql at a glance">
+        <div class="fact"><strong>SQL:2023</strong><span>One standard dialect</span></div>
+        <div class="fact"><strong>4</strong><span>Transaction isolation levels</span></div>
+        <div class="fact"><strong>7</strong><span>Language libraries</span></div>
+        <div class="fact"><strong>1 file</strong><span>Or in memory</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section split" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="kicker">Features</p>
+          <h2 id="features-title">Built like a database. Ships like a file.</h2>
+        </div>
+        <p>Everything you expect from a server database, embedded in your program. Pick a capability below to see the SQL and the documentation behind it.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Explore vsql features">
+        <button class="tab" role="tab" id="tab-sql" aria-controls="panel-sql" aria-selected="true" tabindex="0">Standard SQL</button>
+        <button class="tab" role="tab" id="tab-tx" aria-controls="panel-tx" aria-selected="false" tabindex="-1">Transactions</button>
+        <button class="tab" role="tab" id="tab-types" aria-controls="panel-types" aria-selected="false" tabindex="-1">Exact types</button>
+        <button class="tab" role="tab" id="tab-constraints" aria-controls="panel-constraints" aria-selected="false" tabindex="-1">Constraints and indexes</button>
+        <button class="tab" role="tab" id="tab-info" aria-controls="panel-info" aria-selected="false" tabindex="-1">Information schema</button>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-sql" aria-labelledby="tab-sql" tabindex="0">
+        <div class="panel-body">
+          <h3>One dialect, wherever you run it</h3>
+          <p>vsql targets the SQL:2023 standard instead of its own dialect. Queries, schema and skills carry over to PostgreSQL and other standard databases. Errors use standard SQLSTATE codes such as 23505 for a duplicate key.</p>
+          <ul class="checks">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Joins, subqueries and aggregates</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Cursors, custom functions and prepared statements</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Published compliance tables for every feature</span></li>
+          </ul>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/sql-compliance.html">SQL compliance tables <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="codebox">
+          <div class="codebox-head"><span>reports.sql</span><span>SQL</span></div>
+          <pre><span class="tok-key">SELECT</span> p.name, <span class="tok-key">SUM</span>(o.quantity) <span class="tok-key">AS</span> units
+<span class="tok-key">FROM</span> orders o
+<span class="tok-key">JOIN</span> products p <span class="tok-key">ON</span> p.name = o.product
+<span class="tok-key">GROUP BY</span> p.name
+<span class="tok-key">HAVING</span> <span class="tok-key">SUM</span>(o.quantity) &gt; <span class="tok-num">10</span>
+<span class="tok-key">ORDER BY</span> units <span class="tok-key">DESC</span>;</pre>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-tx" aria-labelledby="tab-tx" tabindex="0" hidden>
+        <div class="panel-body">
+          <h3>Transactions you can rely on</h3>
+          <p>SERIALIZABLE is the default, and all four standard isolation levels are available. MVCC lets readers and writers work at the same time, while a write-ahead log keeps the file safe after a crash or power failure.</p>
+          <ul class="checks">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Multiple connections in one process or across processes</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Savepoints, rollback and crash recovery</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Locks held per statement, not for the whole transaction</span></li>
+          </ul>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/transactions.html">Transactions and isolation levels <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="codebox">
+          <div class="codebox-head"><span>transfer.sql</span><span>SQL</span></div>
+          <pre><span class="tok-key">BEGIN TRANSACTION</span> <span class="tok-key">ISOLATION LEVEL</span> SERIALIZABLE;
+<span class="tok-key">UPDATE</span> accounts <span class="tok-key">SET</span> balance = balance - <span class="tok-num">100</span>
+  <span class="tok-key">WHERE</span> id = <span class="tok-num">1</span>;
+<span class="tok-key">UPDATE</span> accounts <span class="tok-key">SET</span> balance = balance + <span class="tok-num">100</span>
+  <span class="tok-key">WHERE</span> id = <span class="tok-num">2</span>;
+<span class="tok-key">COMMIT</span>;</pre>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-types" aria-labelledby="tab-types" tabindex="0" hidden>
+        <div class="panel-body">
+          <h3>Strict types, exact numbers</h3>
+          <p>Putting text in an INTEGER column is an error instead of silent data loss. NUMERIC and DECIMAL stay exact, so money adds up to the cent, and DATE, TIME and TIMESTAMP support time zones.</p>
+          <ul class="checks">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Exact decimal arithmetic with controlled scale</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Temporal types, with or without time zone</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Standard SQLSTATE errors when a value does not fit</span></li>
+          </ul>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/numbers.html">Numbers and exact types <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="codebox">
+          <div class="codebox-head"><span>invoices.sql</span><span>SQL</span></div>
+          <pre><span class="tok-key">CREATE TABLE</span> invoices (
+  id <span class="tok-key">INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY</span>,
+  total <span class="tok-key">NUMERIC</span>(<span class="tok-num">12</span>, <span class="tok-num">2</span>) <span class="tok-key">NOT NULL</span>,
+  issued_on <span class="tok-key">DATE NOT NULL</span>,
+  paid_at <span class="tok-key">TIMESTAMP WITH TIME ZONE</span>
+);
+<span class="tok-key">SELECT SUM</span>(total) <span class="tok-key">FROM</span> invoices;</pre>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-constraints" aria-labelledby="tab-constraints" tabindex="0" hidden>
+        <div class="panel-body">
+          <h3>Constraints and indexes</h3>
+          <p>Enforce your rules in the database: primary keys, UNIQUE, FOREIGN KEY and CHECK constraints, plus sequences, identity columns and ALTER TABLE when the schema changes.</p>
+          <ul class="checks">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Deferrable constraints and referential integrity</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Indexes, including multi-column indexes</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>ALTER TABLE adds and drops columns and constraints</span></li>
+          </ul>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/create-index.html">Indexes and constraints <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="codebox">
+          <div class="codebox-head"><span>bookings.sql</span><span>SQL</span></div>
+          <pre><span class="tok-key">CREATE TABLE</span> bookings (
+  id <span class="tok-key">INTEGER PRIMARY KEY</span>,
+  room <span class="tok-key">INTEGER NOT NULL REFERENCES</span> rooms(id),
+  seats <span class="tok-key">INTEGER CHECK</span> (seats &gt; <span class="tok-num">0</span>),
+  <span class="tok-key">UNIQUE</span> (room, seats)
+);
+<span class="tok-key">CREATE INDEX</span> bookings_room <span class="tok-key">ON</span> bookings (room);</pre>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="panel-info" aria-labelledby="tab-info" tabindex="0" hidden>
+        <div class="panel-body">
+          <h3>Inspect the database the standard way</h3>
+          <p>The standard INFORMATION_SCHEMA views describe tables, columns, constraints and routines, so tools and migration code can discover your schema without database-specific pragmas.</p>
+          <ul class="checks">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>Works with ordinary SELECT queries</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>No PRAGMA or vendor-specific system tables</span></li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg><span>EXPLAIN for query plans</span></li>
+          </ul>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/information-schema.html">INFORMATION_SCHEMA reference <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <div class="codebox">
+          <div class="codebox-head"><span>columns.sql</span><span>SQL</span></div>
+          <pre><span class="tok-key">SELECT</span> table_name, column_name, data_type
+<span class="tok-key">FROM</span> INFORMATION_SCHEMA.COLUMNS
+<span class="tok-key">WHERE</span> table_name = <span class="tok-str">'PRODUCTS'</span>
+<span class="tok-key">ORDER BY</span> ordinal_position;</pre>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: var(--s7)">
+        <article class="card">
+          <svg class="card-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+          <h3>One file, or none at all</h3>
+          <p>Copy, back up or email a database like any other file. Use <code>:memory:</code> when you need a database that only lives for the process.</p>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/in-memory-database.html">In-memory databases <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </article>
+        <article class="card">
+          <svg class="card-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 17-5-5 5-5M16 7l5 5-5 5M14 4l-4 16"/></svg>
+          <h3>Seven language libraries</h3>
+          <p>Embed the whole database in V, C, Go, Python, Java, Rust or Node.js. Each library includes everything needed, with no external dependencies.</p>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/client-interfaces.html">Client interfaces <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </article>
+        <article class="card">
+          <svg class="card-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <h3>A server and a browser app</h3>
+          <p>Connect with any PostgreSQL client through <code>vsql server</code>, or browse and edit data in your browser with <code>vsql app</code>. Both ship in the same binary.</p>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/server.html">PostgreSQL server <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </article>
+        <article class="card lead-card">
+          <p class="kicker">Performance and confidence</p>
+          <h3>Fast enough to test with. Safe enough to ship with.</h3>
+          <p>On a 100,000-account database on an Apple M-series Mac, vsql runs about 1,350 TPC-B transactions per second and inserts about 9,000 rows per second while setting up the file. Run <code>vsql bench</code> to measure your own machine. Every line of the database must be covered by a test before a change is merged, on Linux, macOS and Windows across x86-64 and ARM64.</p>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/benchmark.html">Benchmark results <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </article>
+        <article class="card">
+          <svg class="card-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <h3>Standard errors</h3>
+          <p>SQLSTATE codes such as 23505 make it easy to handle failures the same way you already do with PostgreSQL.</p>
+          <a class="doc-link" href="https://vsql.readthedocs.io/en/latest/sqlstate.html">SQLSTATE reference <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="compare" aria-labelledby="compare-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Why vsql</p>
+        <h2 id="compare-title">SQLite is easy. vsql behaves like a real SQL database.</h2>
+        <p>Both are one file with no server. The difference shows up when your application relies on types, transactions or standard SQL.</p>
+      </div>
+      <div class="table-wrap" role="region" aria-label="vsql compared with SQLite" tabindex="0">
+        <table>
+          <caption>A feature comparison based on the project README.</caption>
+          <thead>
+            <tr><th scope="col">Area</th><th scope="col">vsql</th><th scope="col">SQLite</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Types</th><td>Strict. Text in an INTEGER column is an error.</td><td>Any column can hold any value unless STRICT is used.</td></tr>
+            <tr><th scope="row">Exact numbers</th><td><a href="https://vsql.readthedocs.io/en/latest/numbers.html">NUMERIC and DECIMAL</a> are exact, so money adds up.</td><td>Fractions are stored as floating point.</td></tr>
+            <tr><th scope="row">Dates and times</th><td><a href="https://vsql.readthedocs.io/en/latest/dates-times.html">DATE, TIME and TIMESTAMP</a>, with or without a time zone.</td><td>Stored as text or numbers.</td></tr>
+            <tr><th scope="row">SQL dialect</th><td><a href="https://vsql.readthedocs.io/en/latest/sql-compliance.html">SQL:2023</a>, as followed by PostgreSQL and most databases.</td><td>SQLite's own dialect.</td></tr>
+            <tr><th scope="row">Connections</th><td>Many connections, in one process or across processes. <a href="https://vsql.readthedocs.io/en/latest/mvcc.html">MVCC</a> locks per statement.</td><td>A write transaction locks the whole file until it ends.</td></tr>
+            <tr><th scope="row">Transactions</th><td>All four <a href="https://vsql.readthedocs.io/en/latest/transactions.html">isolation levels</a>, SERIALIZABLE by default.</td><td>Only serializable.</td></tr>
+            <tr><th scope="row">Changing tables</th><td><a href="https://vsql.readthedocs.io/en/latest/alter-table.html">ALTER TABLE</a> adds and drops columns and constraints.</td><td>Many changes require rebuilding the table.</td></tr>
+            <tr><th scope="row">Errors</th><td>Standard <a href="https://vsql.readthedocs.io/en/latest/sqlstate.html">SQLSTATE</a> codes such as 23505.</td><td>SQLite's own result codes.</td></tr>
+            <tr><th scope="row">Schema discovery</th><td>Standard <a href="https://vsql.readthedocs.io/en/latest/information-schema.html">INFORMATION_SCHEMA</a> views.</td><td>sqlite_schema and PRAGMAs.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="languages" aria-labelledby="languages-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Client interfaces</p>
+        <h2 id="languages-title">Use it from the language you already use.</h2>
+        <p>The library is the whole database, so there is nothing else to install. Or connect over PostgreSQL from anything else.</p>
+      </div>
+      <div class="lang-list">
+        <div class="lang"><span class="lang-name">V</span><span class="lang-note">Native API, plus a driver for V's ORM</span><a class="lang-link" href="https://vsql.readthedocs.io/en/latest/language-v.html">V documentation <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">C and C++</span><span class="lang-note">SQL/CLI, the API that ODBC is based on</span><a class="lang-link" href="https://vsql.readthedocs.io/en/latest/language-c.html">C documentation <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">Go</span><span class="lang-note">database/sql driver</span><a class="lang-link" href="https://github.com/elliotchance/vsql-go">vsql-go <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">Python</span><span class="lang-note">DB-API 2.0 (PEP 249)</span><a class="lang-link" href="https://github.com/elliotchance/vsql-python">vsql-python <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">Java</span><span class="lang-note">JDBC driver</span><a class="lang-link" href="https://github.com/elliotchance/vsql-java">vsql-java <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">Rust</span><span class="lang-note">An API like rusqlite</span><a class="lang-link" href="https://github.com/elliotchance/vsql-rust">vsql-rust <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">Node.js</span><span class="lang-note">An API like better-sqlite3</span><a class="lang-link" href="https://github.com/elliotchance/vsql-node">vsql-node <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+        <div class="lang"><span class="lang-name">Anything else</span><span class="lang-note">Any PostgreSQL client, through vsql server</span><a class="lang-link" href="https://vsql.readthedocs.io/en/latest/postgresql-clients.html">Tested clients <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="app" aria-labelledby="app-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">vsql app</p>
+        <h2 id="app-title">Browse and edit a database in your browser.</h2>
+        <p>Run <code>vsql app shop.vsql</code> and open 127.0.0.1:3211. Open several files at once, keep a history of every query and follow your system's light or dark setting.</p>
+      </div>
+      <div class="gallery">
+        <figure class="shot"><a href="img/screenshot-query-results.png"><img src="img/screenshot-query-results.png" alt="Query results shown with their column types in the vsql browser app"></a><figcaption>Query results with their types.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-edit-rows.png"><img src="img/screenshot-edit-rows.png" alt="Adding, changing and deleting rows in the vsql browser app"></a><figcaption>Change, add and delete rows, then save together.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-create-table.png"><img src="img/screenshot-create-table.png" alt="Creating and altering a table in the vsql browser app"></a><figcaption>Create and alter tables, and see the SQL as you go.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-tab-history.png"><img src="img/screenshot-tab-history.png" alt="Searching the history of queries in the vsql browser app"></a><figcaption>Search the history of every query that was run.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-export-table.png"><img src="img/screenshot-export-table.png" alt="Exporting a table as SQL, CSV, TSV or JSON"></a><figcaption>Export as SQL, CSV, TSV or JSON.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-import-csv.png"><img src="img/screenshot-import-csv.png" alt="Importing SQL, CSV, TSV or JSON files in the vsql browser app"></a><figcaption>Import SQL, CSV, TSV or JSON files.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="docs-band" aria-labelledby="docs-title">
+    <div class="wrap">
+      <p class="kicker">Documentation</p>
+      <h2 id="docs-title">Every feature, documented.</h2>
+      <p>The full reference lives at <a href="https://vsql.readthedocs.io/">vsql.readthedocs.io</a>, including the SQL reference, function index, file format and contributing guide.</p>
+      <div class="doc-grid">
+        <a class="doc-item" href="https://vsql.readthedocs.io/en/latest/install.html">Installing and updating <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a class="doc-item" href="https://vsql.readthedocs.io/en/latest/quick-start.html">Quick start <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a class="doc-item" href="https://vsql.readthedocs.io/en/latest/sql-reference.html">SQL reference <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a class="doc-item" href="https://vsql.readthedocs.io/en/latest/functions.html">Function index <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a class="doc-item" href="https://vsql.readthedocs.io/en/latest/cli.html">CLI <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a class="doc-item" href="https://vsql.readthedocs.io/en/latest/faq.html">FAQ <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p class="footer-note">vsql is MIT licensed and written in pure V.</p>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="https://vsql.readthedocs.io/">Docs</a>
+      <a href="https://github.com/elliotchance/vsql">Source</a>
+      <a href="https://github.com/elliotchance/vsql/releases/latest">Releases</a>
+      <a href="https://discord.com/channels/592103645835821068/1168743197619531856">Discord</a>
+      <a href="https://vsql.readthedocs.io/en/latest/contributing.html">Contributing</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+  function activate(tab, moveFocus) {
+    tabs.forEach(function (item) {
+      var selected = item === tab;
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+      item.tabIndex = selected ? 0 : -1;
+      document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
+    });
+    if (moveFocus) tab.focus();
+  }
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function () { activate(tab, false); });
+    tab.addEventListener('keydown', function (event) {
+      var next = null;
+      if (event.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+      if (event.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+      if (event.key === 'Home') next = tabs[0];
+      if (event.key === 'End') next = tabs[tabs.length - 1];
+      if (next) { event.preventDefault(); activate(next, true); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

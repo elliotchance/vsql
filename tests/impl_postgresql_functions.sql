@@ -191,6 +191,11 @@ VALUES LOG(2e0, 64e0);
 VALUES LOG10(1000e0);
 -- COL1: 3e0
 
+-- # min_scale
+-- # min_scale(8.4100)
+VALUES MIN_SCALE(8.4100);
+-- COL1: 2
+
 -- # mod
 -- # mod(9, 4)
 VALUES MOD(9, 4);
@@ -270,6 +275,11 @@ VALUES TAN(RADIANS(45e0));
 -- # tanh(1)
 VALUES TANH(1e0);
 -- COL1: 0.761594155956e0
+
+-- # trim_scale
+-- # trim_scale(8.4100)
+VALUES TRIM_SCALE(8.4100);
+-- COL1: 8.41
 
 -- # trunc
 -- # trunc(42.8)

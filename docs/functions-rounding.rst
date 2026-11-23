@@ -7,7 +7,9 @@ Rounding Functions
 
 Rounding functions round a number to an integer, up (``CEIL``), down
 (``FLOOR``), to the nearest (``ROUND``) or towards zero (``TRUNC``). ``ROUND``
-and ``TRUNC`` can also round to a number of decimal places. They accept any
+and ``TRUNC`` can also round to a number of decimal places. ``TRIM_SCALE`` and
+``MIN_SCALE`` don't change the number, they remove or count the decimal places
+that it needs. They accept any
 number. An exact number (such as an ``INTEGER``
 or ``DECIMAL``) is converted to a ``NUMERIC``, and an approximate number (``REAL``
 or ``DOUBLE PRECISION``) to a ``DOUBLE PRECISION``.
@@ -240,3 +242,80 @@ of the result is the same as ``ROUND``, but without the extra digit.
   - MySQL: ``TRUNCATE(x, places)``.
   - SQLite: ``TRUNC(x)``, without decimal places.
   - SQL Server: ``ROUND(x, places, 1)``.
+
+MIN_SCALE
+^^^^^^^^^
+
+.. code-block:: sql
+
+   MIN_SCALE(x NUMERIC(p, s)) INTEGER
+   MIN_SCALE(x DECFLOAT(p)) INTEGER
+
+The fewest decimal places that ``X`` needs to be exactly the same number, which
+is the number of decimal places without the trailing zeros, so
+``MIN_SCALE(8.4100)`` is 2. A whole number is 0.
+
+``MIN_SCALE`` is a vsql extension flagged by ``V403-23`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MIN_SCALE(8.4100);
+  -- COL1: 2
+
+  VALUES MIN_SCALE(12.000);
+  -- COL1: 0
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:** PostgreSQL: ``min_scale``.
+
+TRIM_SCALE
+^^^^^^^^^^
+
+.. code-block:: sql
+
+   TRIM_SCALE(x NUMERIC(p, s)) DECFLOAT(34)
+   TRIM_SCALE(x DECFLOAT(p)) DECFLOAT(p)
+
+``X`` without the trailing zeros after the decimal point (see ``MIN_SCALE``),
+so ``TRIM_SCALE(8.4100)`` is 8.41. The zeros of a whole number are kept, so
+``TRIM_SCALE(100.0)`` is 100.
+
+Every value of a ``NUMERIC`` or ``DECIMAL`` has exactly the scale of its type,
+so ``AVG`` and division can show many zeros, such as ``2.1875000000000000``.
+The result of ``TRIM_SCALE`` is a ``DECFLOAT`` instead, which has only the
+decimal places of each value (see :doc:`numbers`). An exact number with more
+than 34 significant digits is rounded to 34, like a ``CAST`` to a
+``DECFLOAT``, and a ``DECFLOAT`` that's very small or large (such as
+``0.000000123``) is shown with an exponent (``1.23E-7``). Cast the result to a
+``NUMERIC`` to use its scale again.
+
+``TRIM_SCALE`` is a vsql extension flagged by ``V403-22`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES TRIM_SCALE(8.4100);
+  -- COL1: 8.41
+
+  VALUES TRIM_SCALE(-12.000);
+  -- COL1: -12
+
+  VALUES TRIM_SCALE(CAST(2.5 AS DECIMAL(10, 4)) / 4);
+  -- COL1: 0.625
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``trim_scale``, which returns a ``numeric``.
+  - Db2: ``NORMALIZE_DECFLOAT`` of a ``DECFLOAT``, which also removes the zeros
+    of a whole number, so 100 is ``1E+2``.
+  - Oracle: not needed, since a ``NUMBER`` has no trailing zeros.

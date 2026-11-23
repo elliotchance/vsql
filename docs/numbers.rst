@@ -364,8 +364,8 @@ in a ``CASE`` or a ``UNION``), the result is a ``DECFLOAT`` if any of them is.
 
 The numeric functions (see :doc:`functions`) of a ``DECFLOAT`` are a
 ``DECFLOAT``. ``ABS``, ``MOD``, ``FLOOR``, ``CEIL``, ``SQRT``, ``POWER`` with a
-whole number (or ``0.5``) exponent, ``ROUND``, ``TRUNC`` and ``SIGN`` are
-exact. The other functions (such as ``LN`` and ``SIN``) are calculated with a
+whole number (or ``0.5``) exponent, ``ROUND``, ``TRUNC``, ``SIGN`` and
+``TRIM_SCALE`` are exact. The other functions (such as ``LN`` and ``SIN``) are calculated with a
 ``DOUBLE PRECISION``, so the result only has about 16 significant digits, and
 an argument or result outside of the range of a ``DOUBLE PRECISION`` is a
 ``22003`` error. ``SUM``, ``AVG``, ``STDDEV_POP``, ``STDDEV_SAMP``, ``VAR_POP``

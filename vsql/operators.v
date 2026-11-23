@@ -36,6 +36,9 @@ fn register_unary_operators(mut conn Connection) {
 	conn.unary_operators['+ REAL'] = unary_passthru
 	conn.unary_operators['+ INTEGER'] = unary_passthru
 	conn.unary_operators['+ SMALLINT'] = unary_passthru
+
+	conn.unary_operators['- DECFLOAT'] = unary_negate_decfloat
+	conn.unary_operators['+ DECFLOAT'] = unary_passthru
 }
 
 fn register_binary_operators(mut conn Connection) {
@@ -73,6 +76,11 @@ fn register_binary_operators(mut conn Connection) {
 	conn.binary_operators['BIGINT - BIGINT'] = binary_bigint_minus_bigint
 	conn.binary_operators['BIGINT * BIGINT'] = binary_bigint_multiply_bigint
 	conn.binary_operators['BIGINT / BIGINT'] = binary_bigint_divide_bigint
+
+	conn.binary_operators['DECFLOAT + DECFLOAT'] = binary_decfloat_plus_decfloat
+	conn.binary_operators['DECFLOAT - DECFLOAT'] = binary_decfloat_minus_decfloat
+	conn.binary_operators['DECFLOAT * DECFLOAT'] = binary_decfloat_multiply_decfloat
+	conn.binary_operators['DECFLOAT / DECFLOAT'] = binary_decfloat_divide_decfloat
 }
 
 fn unary_passthru(_ &Connection, v Value) !Value {
@@ -307,4 +315,32 @@ fn binary_decimal_divide_decimal(_ &Connection, a Value, b Value) !Value {
 	}
 
 	return new_decimal_value_from_numeric(check_numeric_precision(a.numeric_value().divide(b.numeric_value())!)!)
+}
+
+// The operands of a DECFLOAT operator have already been cast to the same
+// DECFLOAT type (see arithmetic_supertype), and the result is rounded to its
+// precision.
+//
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, General Rules, 7
+
+fn unary_negate_decfloat(_ &Connection, v Value) !Value {
+	return new_decfloat_value(v.typ, v.decfloat_value().neg())
+}
+
+fn binary_decfloat_plus_decfloat(_ &Connection, a Value, b Value) !Value {
+	return new_decfloat_value(a.typ, a.decfloat_value().add(b.decfloat_value(), a.typ.size)!)
+}
+
+fn binary_decfloat_minus_decfloat(_ &Connection, a Value, b Value) !Value {
+	return new_decfloat_value(a.typ, a.decfloat_value().subtract(b.decfloat_value(),
+		a.typ.size)!)
+}
+
+fn binary_decfloat_multiply_decfloat(_ &Connection, a Value, b Value) !Value {
+	return new_decfloat_value(a.typ, a.decfloat_value().multiply(b.decfloat_value(),
+		a.typ.size)!)
+}
+
+fn binary_decfloat_divide_decfloat(_ &Connection, a Value, b Value) !Value {
+	return new_decfloat_value(a.typ, a.decfloat_value().divide(b.decfloat_value(), a.typ.size)!)
 }

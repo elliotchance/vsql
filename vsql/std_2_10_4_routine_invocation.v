@@ -150,7 +150,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 				arg := compiled_args[i].run(mut conn, data, params)!
 				mut target := typ
 				param_typ := found_func.arg_types[i]
-				if typ.typ != param_typ.typ && typ.typ.is_number() {
+				if param_typ.typ == .is_decfloat && return_type.typ == .is_decfloat {
+					// Every argument of a DECFLOAT function has the precision of the
+					// result (see register_decfloat_funcs).
+					target = return_type
+				} else if typ.typ != param_typ.typ && typ.typ.is_number() {
 					target = implicit_cast_type(arg, param_typ)
 				}
 

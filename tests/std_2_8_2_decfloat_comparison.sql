@@ -1,0 +1,58 @@
+-- # A DECFLOAT is compared by value with any number (General Rules, 2), so
+-- # trailing zeros don't matter, and no digits are lost.
+VALUES CAST(1.5 AS DECFLOAT) = 1.50;
+VALUES CAST(1.5 AS DECFLOAT) = CAST(1.50 AS DECFLOAT(16));
+VALUES CAST(1.5 AS DECFLOAT) < 2e0;
+VALUES CAST(1.5 AS DECFLOAT) > CAST(1.25 AS REAL);
+VALUES CAST(3 AS DECFLOAT) = 3;
+VALUES CAST(3 AS DECFLOAT) <> CAST(3 AS SMALLINT);
+VALUES CAST('9223372036854775808' AS DECFLOAT) > CAST(9223372036854775807 AS BIGINT);
+VALUES CAST('1.0000000000000000000000000000000001' AS DECFLOAT) > 1;
+VALUES CAST('1E+400' AS DECFLOAT) > 1.7e308;
+VALUES CAST('-1E+6144' AS DECFLOAT) < CAST('1E-6143' AS DECFLOAT);
+VALUES CAST(NULL AS DECFLOAT) = 1;
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: UNKNOWN
+
+-- # Predicates use the same comparison.
+VALUES CAST(2 AS DECFLOAT) BETWEEN 1.5 AND 2.5;
+VALUES CAST(2.0 AS DECFLOAT) IN (1, 2, 3);
+VALUES CAST(2.0 AS DECFLOAT) IS DISTINCT FROM 2;
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+
+-- # Equal values are the same in ORDER BY, DISTINCT and GROUP BY, even with
+-- # different trailing zeros.
+CREATE TABLE t (x DECFLOAT(16), y INTEGER);
+INSERT INTO t VALUES (2.50, 1), (-1, 2), (2.5, 3), (CAST('1E+3' AS DECFLOAT), 4), (0.001, 5), (NULL, 6);
+SELECT x FROM t ORDER BY x, y;
+SELECT COUNT(DISTINCT x) FROM t;
+SELECT x, SUM(y) FROM t GROUP BY x ORDER BY x;
+SELECT MIN(x), MAX(x) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 6
+-- X: NULL
+-- X: -1
+-- X: 0.001
+-- X: 2.50
+-- X: 2.5
+-- X: 1E+3
+-- warning 01003: null value eliminated in set function
+-- COL1: 4
+-- X: NULL COL2: 6
+-- X: -1 COL2: 2
+-- X: 0.001 COL2: 5
+-- X: 2.50 COL2: 4
+-- X: 1E+3 COL2: 4
+-- warning 01003: null value eliminated in set function
+-- COL1: -1 COL2: 1E+3

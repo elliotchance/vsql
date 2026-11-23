@@ -244,6 +244,10 @@ fn duplicate_key(values []Value) string {
 	for value in values {
 		if value.is_null {
 			key << 'N'
+		} else if value.typ.typ == .is_decfloat {
+			// Every digit of a DECFLOAT counts, but not its trailing zeros, so 1.5
+			// and 1.50 are the same.
+			key << value.decfloat_value().normalized_str()
 		} else if value.typ.typ.is_number() {
 			n := value.as_f64() or { 0 }
 			// 0 and -0 are equal, but aren't the same string.

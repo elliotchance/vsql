@@ -17,6 +17,7 @@ ACOS
 .. code-block:: sql
 
    ACOS(DOUBLE PRECISION) DOUBLE PRECISION
+   ACOS(DECFLOAT(p)) DECFLOAT(p)
 
 Inverse (arc) cosine. The result is between 0 and π. The argument must be
 between -1 and 1, otherwise it's a ``22003`` error.
@@ -46,6 +47,7 @@ ASIN
 .. code-block:: sql
 
    ASIN(DOUBLE PRECISION) DOUBLE PRECISION
+   ASIN(DECFLOAT(p)) DECFLOAT(p)
 
 Inverse (arc) sine. The result is between -π/2 and π/2. The argument must be
 between -1 and 1, otherwise it's a ``22003`` error.
@@ -72,6 +74,7 @@ ATAN
 .. code-block:: sql
 
    ATAN(DOUBLE PRECISION) DOUBLE PRECISION
+   ATAN(DECFLOAT(p)) DECFLOAT(p)
 
 Inverse (arc) tangent. The result is between -π/2 and π/2, for any argument.
 
@@ -125,6 +128,7 @@ COS
 .. code-block:: sql
 
    COS(DOUBLE PRECISION) DOUBLE PRECISION
+   COS(DECFLOAT(p)) DECFLOAT(p)
 
 Cosine of an angle in radians. The result is between -1 and 1.
 
@@ -149,6 +153,7 @@ COSH
 .. code-block:: sql
 
    COSH(DOUBLE PRECISION) DOUBLE PRECISION
+   COSH(DECFLOAT(p)) DECFLOAT(p)
 
 Hyperbolic cosine. The result is at least 1.
 
@@ -252,6 +257,7 @@ SIN
 .. code-block:: sql
 
    SIN(DOUBLE PRECISION) DOUBLE PRECISION
+   SIN(DECFLOAT(p)) DECFLOAT(p)
 
 Sine of an angle in radians. The result is between -1 and 1.
 
@@ -273,6 +279,7 @@ SINH
 .. code-block:: sql
 
    SINH(DOUBLE PRECISION) DOUBLE PRECISION
+   SINH(DECFLOAT(p)) DECFLOAT(p)
 
 Hyperbolic sine.
 
@@ -297,6 +304,7 @@ TAN
 .. code-block:: sql
 
    TAN(DOUBLE PRECISION) DOUBLE PRECISION
+   TAN(DECFLOAT(p)) DECFLOAT(p)
 
 Tangent of an angle in radians.
 
@@ -318,6 +326,7 @@ TANH
 .. code-block:: sql
 
    TANH(DOUBLE PRECISION) DOUBLE PRECISION
+   TANH(DECFLOAT(p)) DECFLOAT(p)
 
 Hyperbolic tangent. The result is between -1 and 1.
 

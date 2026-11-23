@@ -35,6 +35,13 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 
 			return Type{.is_varchar, size, 0, false, false}
 		}
+		// DECFLOAT if any of them are, with the largest precision.
+		//
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.c.ii.1
+		t1.typ.is_number() && t2.typ.is_number()
+			&& (t1.typ == .is_decfloat || t2.typ == .is_decfloat) {
+			return decfloat_supertype(t1, t2) or { return none }
+		}
 		// Approximate numeric if any of them are. It's REAL if they're all REAL,
 		// otherwise DOUBLE PRECISION.
 		//

@@ -1181,6 +1181,17 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 		return none
 	}
 
+	// Any other number can be a DECFLOAT, which costs the most, so that it's
+	// only used when an argument is a DECFLOAT (ISO/IEC 9075-2:2023, 9.7, Type
+	// precedence list determination). A DECFLOAT is only a DOUBLE PRECISION for
+	// a function that doesn't have a DECFLOAT version, such as DEGREES.
+	if to == .is_decfloat {
+		return 3
+	}
+	if from == .is_decfloat {
+		return if to == .is_double_precision { 4 } else { none }
+	}
+
 	from_category, from_supertype := from.supertype()
 	to_category, to_supertype := to.supertype()
 

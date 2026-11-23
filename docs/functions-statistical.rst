@@ -334,6 +334,7 @@ STDDEV_POP
 .. code-block:: sql
 
    STDDEV_POP(DOUBLE PRECISION) DOUBLE PRECISION
+   STDDEV_POP(DECFLOAT(p)) DECFLOAT(p)
 
 ``STDDEV_POP(X)`` is the population standard deviation, the square root of
 ``VAR_POP``.
@@ -361,6 +362,7 @@ STDDEV_SAMP
 .. code-block:: sql
 
    STDDEV_SAMP(DOUBLE PRECISION) DOUBLE PRECISION
+   STDDEV_SAMP(DECFLOAT(p)) DECFLOAT(p)
 
 ``STDDEV_SAMP(X)`` is the sample standard deviation, the square root of
 ``VAR_SAMP``. The result is ``NULL`` if there are less than two values.
@@ -388,6 +390,7 @@ VAR_POP
 .. code-block:: sql
 
    VAR_POP(DOUBLE PRECISION) DOUBLE PRECISION
+   VAR_POP(DECFLOAT(p)) DECFLOAT(p)
 
 ``VAR_POP(X)`` is the population variance, the average of the squares of
 the differences between each value and the average,
@@ -415,6 +418,7 @@ VAR_SAMP
 .. code-block:: sql
 
    VAR_SAMP(DOUBLE PRECISION) DOUBLE PRECISION
+   VAR_SAMP(DECFLOAT(p)) DECFLOAT(p)
 
 ``VAR_SAMP(X)`` is the sample variance, ``(SUM(X * X) - SUM(X) * SUM(X) /
 N) / (N - 1)`` where ``N`` is the number of values. The result is ``NULL`` if

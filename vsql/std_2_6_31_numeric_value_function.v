@@ -454,6 +454,12 @@ fn func_ceil_numeric(_ FunctionContext, args []Value) !Value {
 // they return an exact numeric (NUMERIC or DECIMAL), which depends on the
 // declared types of the arguments.
 fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
+	// A DECFLOAT has the largest precision of the DECFLOAT arguments (see
+	// register_decfloat_funcs).
+	if return_type.typ == .is_decfloat {
+		return Type{.is_decfloat, decfloat_precision(arg_types), 0, false, false}
+	}
+
 	if return_type.typ != .is_numeric && return_type.typ != .is_decimal {
 		return return_type
 	}

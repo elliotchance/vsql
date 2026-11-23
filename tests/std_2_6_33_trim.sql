@@ -1,25 +1,25 @@
--- # Without a trim specification TRIM is BOTH, and without a trim character
--- # it removes spaces (Syntax Rules, 13.a), as EXPLAIN shows. TRIM(FROM x) is a
+-- # Without a trim specification TRIM is BOTH, as EXPLAIN shows, and without
+-- # a trim character it removes spaces (Syntax Rules, 14.a). TRIM(FROM x) is a
 -- # vsql extension (V404-01).
 /* extensions V001-01 */
 EXPLAIN VALUES TRIM('aaababccaa');
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH FROM 'aaababccaa'))
 
 /* extensions V001-01 V404-01 */
 EXPLAIN VALUES TRIM(FROM 'aaababccaa');
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH FROM 'aaababccaa'))
 
 /* extensions V001-01 */
 EXPLAIN VALUES TRIM(LEADING FROM 'aaababccaa');
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(LEADING ' ' FROM 'aaababccaa'))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(LEADING FROM 'aaababccaa'))
 
 /* extensions V001-01 */
 EXPLAIN VALUES TRIM(TRAILING FROM 'aaababccaa');
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(TRAILING ' ' FROM 'aaababccaa'))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(TRAILING FROM 'aaababccaa'))
 
 /* extensions V001-01 */
 EXPLAIN VALUES TRIM(BOTH FROM 'aaababccaa');
--- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH FROM 'aaababccaa'))
 
 /* extensions V001-01 */
 EXPLAIN VALUES TRIM('a' FROM 'aaababccaa');

@@ -56,6 +56,10 @@ Binary Operations
      - 3
      - Concatenation
 
+   * - ``binary || binary``
+     - 3
+     - Concatenation (see :doc:`binary`)
+
    * - ``any = any``
      - 4
      - Equal

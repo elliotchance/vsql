@@ -66,8 +66,8 @@ Syntax
    underscore (``_``) or digit for a maximum length of 128 characters. A
    quoted name (such as ``"order"``) can contain any characters. See
    :doc:`keywords`.
-2. ``data_type`` is one of the types in :doc:`booleans`, :doc:`dates-times`,
-   :doc:`numbers` and :doc:`text`.
+2. ``data_type`` is one of the types in :doc:`binary`, :doc:`booleans`,
+   :doc:`dates-times`, :doc:`numbers` and :doc:`text`.
 3. A table can have up to 1600 columns.
 
 Columns allow ``NULL`` unless they are ``NOT NULL``.

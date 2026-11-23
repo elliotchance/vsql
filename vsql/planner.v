@@ -892,7 +892,9 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			// An aggregate function can only be calculated for the groups of its query.
 			//
 			// ISO/IEC 9075-2:2023, 6.9, <set function specification>, Syntax Rules, 7
-			if spec.expr.compile(mut c)!.contains_agg
+			compiled := spec.expr.compile(mut c)!
+			check_ordering_operand(compiled.typ, '${spec.expr.pstr(params)} in ORDER BY')!
+			if compiled.contains_agg
 				&& !(stmt.body is QuerySpecification && plan.operations.any(it is GroupOperation)) {
 				return sqlstate_42601('an aggregate function cannot be used in ORDER BY unless the query is grouped')
 			}

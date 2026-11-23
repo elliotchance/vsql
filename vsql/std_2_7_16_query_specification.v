@@ -153,8 +153,9 @@ fn new_distinct_operation(mut conn Connection, params map[string]Value, select_l
 		tables:   tables
 		distinct: true
 	}
-	for expr in expr_operation.exprs {
-		expr.expr.compile(mut c)!
+	for i, expr in expr_operation.exprs {
+		compiled := expr.expr.compile(mut c)!
+		check_grouping_operand(compiled.typ, 'column ${i + 1} of SELECT DISTINCT')!
 	}
 
 	return &DistinctOperation{params, columns, tables, conn, expr_operation.exprs}

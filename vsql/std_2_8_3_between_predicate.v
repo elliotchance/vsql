@@ -48,6 +48,13 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 	c.check_row_comparison(compiled_expr.map(it.typ), compiled_right.map(it.typ), null_parameters(compiled_expr,
 		compiled_right))!
 
+	// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 1.c
+	for field in [compiled_expr, compiled_left, compiled_right] {
+		for f in field {
+			check_ordering_operand(f.typ, 'operand of BETWEEN')!
+		}
+	}
+
 	return CompileResult{
 		run:          fn [e, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := run_fields(mut conn, compiled_expr, data, params)!

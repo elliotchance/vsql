@@ -252,6 +252,88 @@ If the string has a time zone and the target type does not, the time zone is
 dropped (keeping the local time). If the target type has a time zone and the
 string does not, the session time zone is used.
 
+Formatting and Parsing
+----------------------
+
+A ``CAST`` between a date or time and a character string can have a
+``FORMAT``, which is a template of fields and delimiters (SQL feature T839):
+
+.. code-block:: sql
+
+  VALUES CAST(TIMESTAMP '2024-03-05 14:07:09' AS VARCHAR(16) FORMAT 'YYYY-MM-DD HH24:MI');
+  -- COL1: 2024-03-05 14:07
+
+  VALUES CAST('05/03/2024 2:07 P.M.' AS TIMESTAMP(0) FORMAT 'DD/MM/YYYY HH12:MI A.M.');
+  -- COL1: 2024-03-05T14:07:00
+
+.. list-table::
+  :header-rows: 1
+
+  * - Field
+    - Meaning
+  * - ``YYYY``, ``YYY``, ``YY``, ``Y``
+    - The year, or its last 3, 2 or 1 digits.
+  * - ``RRRR``, ``RR``
+    - A rounded year. ``RR`` is read as the nearest year that ends with those
+      digits, from 50 years before the current year to 49 after it.
+  * - ``MM``
+    - The month (01 to 12).
+  * - ``DD``
+    - The day of the month (01 to 31).
+  * - ``DDD``
+    - The day of the year (001 to 366).
+  * - ``HH24``
+    - The hour (00 to 23).
+  * - ``HH``, ``HH12``
+    - The hour on a 12-hour clock (01 to 12), which must be used with
+      ``A.M.`` or ``P.M.``.
+  * - ``A.M.``, ``P.M.``
+    - ``A.M.`` before noon, or ``P.M.`` from noon (either can be used in the
+      template).
+  * - ``MI``
+    - The minute (00 to 59).
+  * - ``SS``
+    - The second (00 to 59).
+  * - ``SSSSS``
+    - The second of the day (00000 to 86399).
+  * - ``FF1`` to ``FF9``
+    - The fraction of a second, with 1 to 9 digits.
+  * - ``TZH``
+    - The hour of the time zone, with a sign (such as ``+05``).
+  * - ``TZM``
+    - The minute of the time zone (00 to 59).
+
+The delimiters are ``-``, ``.``, ``/``, ``,``, ``'``, ``;``, ``:`` and a
+space, and there can't be two of them next to each other. The fields are upper
+case, and each one can only be used once. There are no names of months or days.
+
+When a date or time is formatted, each field is its full length, with leading
+zeros. The seconds are truncated (not rounded) to the digits of ``FF1`` to
+``FF9``. A ``CHAR`` is padded with spaces, and a string that's too long for
+the type is a ``22001`` error.
+
+When a string is parsed, each delimiter must match exactly, and a field
+between delimiters (or at the start or end) can have fewer digits, such as
+``2024-3-5`` for ``YYYY-MM-DD``. A field next to another field must have all
+of its digits, such as ``20240305`` for ``YYYYMMDD``. A string that doesn't
+match is a ``22007`` invalid datetime format error, and spaces aren't ignored.
+The fields that are missing are from the current date: a year without all 4
+digits, or no year, takes the rest from the current year, no month is the
+current month, no day is the first, and a time is ``00:00:00``. A time zone
+that's missing is ``+00:00``.
+
+The fields that can be used depend on the type: a ``DATE`` can only have the
+date fields, a ``TIME`` only the time fields, and only a type with a time zone
+can have ``TZH`` and ``TZM``. The character string type must be at least as
+long as the shortest string that the template can match, otherwise it's a
+``42601`` error.
+
+A ``FORMAT`` that can use the current date can't be used in a ``CHECK``
+constraint. That's a ``DATE`` or ``TIMESTAMP`` whose template doesn't have a
+month and day (or ``DDD``), or whose year can have fewer than 4 digits. A
+``YYYY`` between delimiters can, since ``YYYY-MM-DD`` also reads
+``24-03-05``, but ``YYYYMMDD`` can't.
+
 Current Date and Time
 ---------------------
 

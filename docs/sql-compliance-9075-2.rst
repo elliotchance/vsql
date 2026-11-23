@@ -1664,7 +1664,7 @@ Optional Features
    * - ❌ **T838**
      - **JSON_TABLE: PLAN DEFAULT clause**
 
-   * - ❌ **T839**
+   * - ✅ **T839**
      - **Formatted cast of datetimes to/from character strings**
 
    * - ❌ **T840**

@@ -33,18 +33,32 @@ fn (e CastOperand) compile(mut c Compiler) !CompileResult {
 struct CastSpecification {
 	expr   &CastOperand
 	target Type
+	// template is the <cast template> (FORMAT) of a cast between a datetime and
+	// a character string (T839).
+	template ?DatetimeTemplate
 }
 
 fn new_cast_specification(expr CastOperand, target Type) CastSpecification {
-	return CastSpecification{&expr, target}
+	return CastSpecification{
+		expr:   &expr
+		target: target
+	}
 }
 
 fn (e CastSpecification) pstr(params map[string]Value) string {
+	if template := e.template {
+		return 'CAST(${e.expr.pstr(params)} AS ${e.target} FORMAT ${template})'
+	}
+
 	return 'CAST(${e.expr.pstr(params)} AS ${e.target})'
 }
 
 fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 	check_data_type(e.target)!
+
+	if template := e.template {
+		return e.compile_template(mut c, template)
+	}
 
 	// CAST(NULL AS T) is the null value of type T (General Rule 2). The NULL has
 	// no type of its own to cast from.
@@ -93,6 +107,82 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 		// A string target isn't constant, see fold.
 		constant:     compiled_expr.constant && !e.target.typ.is_string()
 	}.fold()
+}
+
+// compile_template compiles a CAST with a <cast template> (FORMAT), which can
+// only cast a datetime to a character string, or a character string to a
+// datetime. A dynamic parameter that's cast to a datetime is the longest
+// character string, so that a value that's too long doesn't match the template
+// (rather than being truncated to fit it).
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 4
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.e.i.1, 12.e.i.1, 14.a.i, 16.a.i, 17.a.i, 18.a.i and 19.a.i
+fn (e CastSpecification) compile_template(mut c Compiler, template DatetimeTemplate) !CompileResult {
+	if e.expr is NullSpecification {
+		return sqlstate_42601('NULL cannot be cast with a FORMAT')
+	}
+
+	mut compiled_expr := e.expr.compile(mut c)!
+	if e.target.uses_time() {
+		compiled_expr = c.with_type(compiled_expr, Type{
+			typ:  .is_varchar
+			size: max_character_length
+		})
+	}
+
+	from := compiled_expr.typ
+	to := e.target
+	if from.uses_time() && to.typ.is_string() {
+		template.check_format_target(from, to)!
+	} else if from.typ.is_string() && to.uses_time() {
+		template.check_parse_source(from, to)!
+		if !template.is_deterministic(to) {
+			c.check_deterministic('CAST with a FORMAT that uses the current date')!
+		}
+	} else {
+		return sqlstate_42601('CAST from ${from} to ${to} cannot have a FORMAT')
+	}
+
+	return CompileResult{
+		run:          fn [e, compiled_expr, template] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_expr.run(mut conn, data, params)!
+			if value.is_null {
+				return Value{
+					typ:     e.target
+					is_null: true
+				}
+			}
+
+			if e.target.uses_time() {
+				return template.parse_datetime(mut conn, value.string_value(), e.target)!
+			}
+
+			return formatted_character_value(template.format_datetime(value.time_value()),
+				e.target)!
+		}
+		typ:          e.target
+		contains_agg: compiled_expr.contains_agg
+	}
+}
+
+// formatted_character_value is the formatted string s as the character string
+// type to: a CHAR is padded with spaces, and a string that's too long is an
+// error (rather than being truncated with a warning).
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.e.ii and 12.e.ii
+fn formatted_character_value(s string, to Type) !Value {
+	if s.len > to.size {
+		return sqlstate_22001(to)
+	}
+
+	return Value{
+		...new_character_value(if to.typ == .is_character {
+			s + ' '.repeat(to.size - s.len)
+		} else {
+			s
+		})
+		typ: to
+	}
 }
 
 // cast is CAST ( v AS target ), see the General Rules of 6.13, <cast

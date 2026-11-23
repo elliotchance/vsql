@@ -551,13 +551,13 @@
 6.13/SR/1.b              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql there's no COLLATE (F690)
 6.13/SR/2                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/SR/3                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
-6.13/SR/4                n/a          - - cast templates (T839)
-6.13/SR/4.a              n/a          - - cast templates (T839)
-6.13/SR/4.a.i            n/a          - - cast templates (T839)
-6.13/SR/4.a.ii           n/a          - - cast templates (T839)
-6.13/SR/4.b              n/a          - - cast templates (T839)
-6.13/SR/4.b.i            n/a          - - cast templates (T839)
-6.13/SR/4.b.ii           n/a          - - cast templates (T839)
+6.13/SR/4                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_52_datetime_templates.sql
+6.13/SR/4.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_52_datetime_templates.sql
+6.13/SR/4.a.i            untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
+6.13/SR/4.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_52_datetime_templates.sql
+6.13/SR/4.b              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_52_datetime_templates.sql
+6.13/SR/4.b.i            untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
+6.13/SR/4.b.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_52_datetime_templates.sql
 6.13/SR/5                definition   - -
 6.13/SR/6                n/a          - - collection types (S091, S271)
 6.13/SR/7                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
@@ -685,7 +685,7 @@
 6.13/GR/11.d.iii         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/11.e.i           container    - -
-6.13/GR/11.e.i.1         n/a          - - cast templates (T839)
+6.13/GR/11.e.i.1         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_50_datetime_to_formatted_string.sql
 6.13/GR/11.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql there are no intervals (F052)
 6.13/GR/11.e.ii          container    - -
 6.13/GR/11.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
@@ -726,7 +726,7 @@
 6.13/GR/12.d.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/12.e.i           container    - -
-6.13/GR/12.e.i.1         n/a          - - cast templates (T839)
+6.13/GR/12.e.i.1         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_50_datetime_to_formatted_string.sql
 6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v,vsql/time.v tests/std_2_6_13_cast.sql,tests/std_2_6_1_datetime_precision.sql there are no intervals (F052)
 6.13/GR/12.e.ii          container    - -
 6.13/GR/12.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
@@ -746,7 +746,7 @@
 6.13/GR/13.b.ii          n/a          - - binary strings (T021)
 6.13/GR/14               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
 6.13/GR/14.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
-6.13/GR/14.a.i           n/a          - - cast templates (T839)
+6.13/GR/14.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_51_formatted_string_to_datetime.sql
 6.13/GR/14.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
 6.13/GR/14.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
 6.13/GR/14.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_date.sql
@@ -756,7 +756,7 @@
 6.13/GR/15               definition   - -
 6.13/GR/16               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/16.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
-6.13/GR/16.a.i           n/a          - - cast templates (T839)
+6.13/GR/16.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_51_formatted_string_to_datetime.sql
 6.13/GR/16.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/16.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/16.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
@@ -767,7 +767,7 @@
 6.13/GR/16.e             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/17               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/17.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
-6.13/GR/17.a.i           n/a          - - cast templates (T839)
+6.13/GR/17.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_51_formatted_string_to_datetime.sql
 6.13/GR/17.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/17.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
 6.13/GR/17.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_time.sql
@@ -778,7 +778,7 @@
 6.13/GR/17.e             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/18               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/18.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
-6.13/GR/18.a.i           n/a          - - cast templates (T839)
+6.13/GR/18.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_51_formatted_string_to_datetime.sql
 6.13/GR/18.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/18.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/18.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
@@ -790,7 +790,7 @@
 6.13/GR/18.f             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/19               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/19.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
-6.13/GR/19.a.i           n/a          - - cast templates (T839)
+6.13/GR/19.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_51_formatted_string_to_datetime.sql
 6.13/GR/19.a.ii          implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/19.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/19.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
@@ -825,7 +825,7 @@
 6.13/CR/2                n/a          - - national character (F421)
 6.13/CR/3                n/a          - - LOBs (T042)
 6.13/CR/4                n/a          - - reference types (S041, S043)
-6.13/CR/5                n/a          - - cast templates (T839)
+6.13/CR/5                implemented  vsql/std_2_6_13_cast_specification.y tests/std_2_9_52_datetime_templates.sql
 # 6.14, <next value expression>
 6.14                     implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/SR/1                implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql

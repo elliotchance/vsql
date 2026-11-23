@@ -1872,7 +1872,13 @@ Converts a number, date, time or interval to a string, using a format pattern.
   VALUES CAST(125.8 AS VARCHAR(10));
   -- COL1: 125.8
 
-A ``DATE`` or ``TIMESTAMP`` cast to a string includes its type, such as ``DATE '2024-03-15'``. Other formats have no equivalent.
+  -- to_char(timestamp, text) → text
+  VALUES CAST(/*timestamp*/ AS VARCHAR(/*length*/) FORMAT /*text*/);
+  -- to_char(TIMESTAMP '2024-03-15 10:30:00', 'YYYY-MM-DD HH24:MI')
+  VALUES CAST(TIMESTAMP '2024-03-15 10:30:00' AS VARCHAR(16) FORMAT 'YYYY-MM-DD HH24:MI');
+  -- COL1: 2024-03-15 10:30
+
+A number has no format patterns. A date or time uses the SQL standard's ``FORMAT``, which has PostgreSQL's ``YYYY``, ``MM``, ``DD``, ``DDD``, ``HH24``, ``HH12``, ``MI``, ``SS``, ``FF1`` to ``FF6``, ``TZH`` and ``TZM``, and ``A.M.`` and ``P.M.``, but no names of months or days, no ``FM`` and no other patterns (see :doc:`dates-times`).
 
 to_date
 ^^^^^^^
@@ -1882,12 +1888,12 @@ Converts a string to a date, using a format pattern.
 .. code-block:: sql
 
   -- to_date(text, text) → date
-  VALUES CAST(/*text*/ AS DATE);
-  -- to_date('2024-03-15', 'YYYY-MM-DD')
-  VALUES CAST('2024-03-15' AS DATE);
+  VALUES CAST(/*text*/ AS DATE FORMAT /*text*/);
+  -- to_date('15/03/2024', 'DD/MM/YYYY')
+  VALUES CAST('15/03/2024' AS DATE FORMAT 'DD/MM/YYYY');
   -- COL1: 2024-03-15
 
-Only strings in the ``YYYY-MM-DD`` form can be cast.
+The format is the SQL standard's ``FORMAT`` (see :ref:`to_char <compatibility-postgresql:to_char>`), and the string must match it exactly.
 
 to_number
 ^^^^^^^^^
@@ -1912,12 +1918,12 @@ Converts a string to a timestamp with time zone, using a format pattern, or conv
 .. code-block:: sql
 
   -- to_timestamp(text, text) → timestamp with time zone
-  VALUES CAST(/*text*/ AS TIMESTAMP(0));
-  -- to_timestamp('2024-03-15 10:30:00', 'YYYY-MM-DD HH24:MI:SS')
-  VALUES CAST('2024-03-15 10:30:00' AS TIMESTAMP(0));
+  VALUES CAST(/*text*/ AS TIMESTAMP(0) FORMAT /*text*/);
+  -- to_timestamp('15/03/2024 10:30', 'DD/MM/YYYY HH24:MI')
+  VALUES CAST('15/03/2024 10:30' AS TIMESTAMP(0) FORMAT 'DD/MM/YYYY HH24:MI');
   -- COL1: 2024-03-15T10:30:00
 
-The result is a ``TIMESTAMP`` without a time zone. Only strings in the ``YYYY-MM-DD HH:MM:SS`` form can be cast. ``to_timestamp(double precision)``, from the seconds since 1970, has no equivalent.
+The result is a ``TIMESTAMP`` without a time zone. The format is the SQL standard's ``FORMAT`` (see :ref:`to_char <compatibility-postgresql:to_char>`), and the string must match it exactly. ``to_timestamp(double precision)``, from the seconds since 1970, has no equivalent.
 
 Date/Time Functions
 -------------------

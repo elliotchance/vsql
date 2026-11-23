@@ -2628,227 +2628,227 @@
 9.49/GR/6.b              n/a          - - SQL/JSON query functions (T821)
 9.49/GR/7                n/a          - - SQL/JSON query functions (T821)
 # 9.50, Converting a datetime to a formatted character string
-9.50                     n/a          - - datetime templates (T839)
-9.50/SR/1                n/a          - - datetime templates (T839)
-9.50/SR/2                n/a          - - datetime templates (T839)
-9.50/SR/3                n/a          - - datetime templates (T839)
-9.50/GR/1                n/a          - - datetime templates (T839)
-9.50/GR/2                n/a          - - datetime templates (T839)
-9.50/GR/3                n/a          - - datetime templates (T839)
-9.50/GR/4                n/a          - - datetime templates (T839)
-9.50/GR/5                n/a          - - datetime templates (T839)
-9.50/GR/5.a              n/a          - - datetime templates (T839)
-9.50/GR/5.b              n/a          - - datetime templates (T839)
-9.50/GR/5.b.i            n/a          - - datetime templates (T839)
-9.50/GR/5.b.ii           n/a          - - datetime templates (T839)
-9.50/GR/5.b.iii          n/a          - - datetime templates (T839)
-9.50/GR/5.c              n/a          - - datetime templates (T839)
-9.50/GR/5.d              n/a          - - datetime templates (T839)
-9.50/GR/5.e              n/a          - - datetime templates (T839)
-9.50/GR/5.f              n/a          - - datetime templates (T839)
-9.50/GR/5.f.i            n/a          - - datetime templates (T839)
+9.50                     implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/SR/1                definition   - -
+9.50/SR/2                implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_52_datetime_templates.sql
+9.50/SR/3                implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_52_datetime_templates.sql
+9.50/GR/1                definition   - -
+9.50/GR/2                definition   - -
+9.50/GR/3                definition   - -
+9.50/GR/4                impl-defined vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql the seconds are truncated to the fractional precision of the template (IA074)
+9.50/GR/5                implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.a              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.b              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.b.i            implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.b.ii           implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.b.iii          implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.c              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.d              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.e              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.f              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.f.i            implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
 9.50/GR/5.f.ii           container    - -
-9.50/GR/5.f.ii.1         n/a          - - datetime templates (T839)
-9.50/GR/5.f.ii.2         n/a          - - datetime templates (T839)
-9.50/GR/5.f.ii.3         n/a          - - datetime templates (T839)
-9.50/GR/5.f.iii          n/a          - - datetime templates (T839)
-9.50/GR/5.g              n/a          - - datetime templates (T839)
-9.50/GR/5.h              n/a          - - datetime templates (T839)
-9.50/GR/5.i              n/a          - - datetime templates (T839)
-9.50/GR/5.j              n/a          - - datetime templates (T839)
-9.50/GR/5.j.i            n/a          - - datetime templates (T839)
-9.50/GR/5.j.ii           n/a          - - datetime templates (T839)
-9.50/GR/5.j.iii          n/a          - - datetime templates (T839)
-9.50/GR/5.k              n/a          - - datetime templates (T839)
-9.50/GR/5.k.i            n/a          - - datetime templates (T839)
-9.50/GR/5.k.ii           n/a          - - datetime templates (T839)
-9.50/GR/5.l              n/a          - - datetime templates (T839)
-9.50/GR/5.l.i            n/a          - - datetime templates (T839)
-9.50/GR/5.l.ii           n/a          - - datetime templates (T839)
-9.50/GR/5.m              n/a          - - datetime templates (T839)
-9.50/GR/5.n              n/a          - - datetime templates (T839)
-9.50/GR/6                n/a          - - datetime templates (T839)
-9.50/GR/7                n/a          - - datetime templates (T839)
+9.50/GR/5.f.ii.1         implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.f.ii.2         implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.f.ii.3         implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.f.iii          implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.g              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.h              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.i              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.j              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.j.i            implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.j.ii           implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.j.iii          implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.k              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.k.i            implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.k.ii           implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.l              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.l.i            implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.l.ii           implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.m              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/5.n              implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/6                implemented  vsql/std_2_9_50_converting_a_datetime_to_a_formatted_character_string.v tests/std_2_9_50_datetime_to_formatted_string.sql
+9.50/GR/7                definition   - -
 # 9.51, Converting a formatted character string to a datetime
-9.51                     n/a          - - datetime templates (T839)
-9.51/SR/1                n/a          - - datetime templates (T839)
-9.51/SR/2                n/a          - - datetime templates (T839)
-9.51/SR/3                n/a          - - datetime templates (T839)
-9.51/SR/4                n/a          - - datetime templates (T839)
-9.51/SR/4.a              n/a          - - datetime templates (T839)
+9.51                     implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/1                definition   - -
+9.51/SR/2                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_52_datetime_templates.sql
+9.51/SR/3                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.a              definition   - -
 9.51/SR/4.b              container    - -
-9.51/SR/4.b.i            n/a          - - datetime templates (T839)
-9.51/SR/4.b.ii           n/a          - - datetime templates (T839)
+9.51/SR/4.b.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.b.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/SR/4.c              container    - -
-9.51/SR/4.c.i            n/a          - - datetime templates (T839)
-9.51/SR/4.c.ii           n/a          - - datetime templates (T839)
+9.51/SR/4.c.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.c.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/SR/4.d              container    - -
-9.51/SR/4.d.i            n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.1          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.2          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.3          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.4          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.5          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.6          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.7          n/a          - - datetime templates (T839)
-9.51/SR/4.d.i.8          n/a          - - datetime templates (T839)
-9.51/SR/4.d.ii           n/a          - - datetime templates (T839)
-9.51/SR/4.d.iii          n/a          - - datetime templates (T839)
-9.51/SR/4.d.iv           n/a          - - datetime templates (T839)
-9.51/SR/5                n/a          - - datetime templates (T839)
-9.51/SR/6                n/a          - - datetime templates (T839)
-9.51/SR/6.a              n/a          - - datetime templates (T839)
-9.51/SR/6.b              n/a          - - datetime templates (T839)
-9.51/SR/6.c              n/a          - - datetime templates (T839)
-9.51/SR/7                n/a          - - datetime templates (T839)
-9.51/GR/1                n/a          - - datetime templates (T839)
-9.51/GR/2                n/a          - - datetime templates (T839)
-9.51/GR/3                n/a          - - datetime templates (T839)
-9.51/GR/4                n/a          - - datetime templates (T839)
-9.51/GR/5                n/a          - - datetime templates (T839)
-9.51/GR/6                n/a          - - datetime templates (T839)
-9.51/GR/6.a              n/a          - - datetime templates (T839)
-9.51/GR/6.a.i            n/a          - - datetime templates (T839)
-9.51/GR/6.a.ii           n/a          - - datetime templates (T839)
-9.51/GR/6.a.iii          n/a          - - datetime templates (T839)
-9.51/GR/6.a.iv           n/a          - - datetime templates (T839)
-9.51/GR/6.a.v            n/a          - - datetime templates (T839)
-9.51/GR/6.a.vi           n/a          - - datetime templates (T839)
-9.51/GR/6.b              n/a          - - datetime templates (T839)
-9.51/GR/6.b.i            n/a          - - datetime templates (T839)
-9.51/GR/6.b.ii           n/a          - - datetime templates (T839)
-9.51/GR/6.b.iii          n/a          - - datetime templates (T839)
-9.51/GR/6.b.iv           n/a          - - datetime templates (T839)
-9.51/GR/6.b.v            n/a          - - datetime templates (T839)
-9.51/GR/6.b.vi           n/a          - - datetime templates (T839)
-9.51/GR/6.b.vii          n/a          - - datetime templates (T839)
-9.51/GR/6.c              n/a          - - datetime templates (T839)
+9.51/SR/4.d.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.1          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.2          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.3          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.4          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.5          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.6          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.7          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.i.8          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.iii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/4.d.iv           partial      vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql only the digits 0 to 9, not every Unicode decimal digit (\p{Nd})
+9.51/SR/5                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/6                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/6.a              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/6.b              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/6.c              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/SR/7                definition   - -
+9.51/GR/1                definition   - -
+9.51/GR/2                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/3                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/4                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/5                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6                implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a.iii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a.iv           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a.v            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.a.vi           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b.iii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b.iv           impl-defined vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql the nearest year that ends with the digits, from 50 years before the current year to 49 after it (5 before to 4 after for 1 digit), or the first digit of the current year for 3 digits (IV096)
+9.51/GR/6.b.v            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b.vi           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.b.vii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/6.c              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/7                container    - -
-9.51/GR/7.a              n/a          - - datetime templates (T839)
-9.51/GR/7.a.i            n/a          - - datetime templates (T839)
-9.51/GR/7.a.ii           n/a          - - datetime templates (T839)
-9.51/GR/7.a.iii          n/a          - - datetime templates (T839)
-9.51/GR/7.a.iv           n/a          - - datetime templates (T839)
+9.51/GR/7.a              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.a.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.a.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.a.iii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.a.iv           deviates     vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql the day of year is in YEAR rather than the current year, so that a leap day can be cast in any year (#1700)
 9.51/GR/7.b              container    - -
 9.51/GR/7.b.i            container    - -
-9.51/GR/7.b.i.1          n/a          - - datetime templates (T839)
-9.51/GR/7.b.i.1.A        n/a          - - datetime templates (T839)
-9.51/GR/7.b.i.1.B        n/a          - - datetime templates (T839)
-9.51/GR/7.b.i.1.C        n/a          - - datetime templates (T839)
-9.51/GR/7.b.i.2          n/a          - - datetime templates (T839)
+9.51/GR/7.b.i.1          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.i.1.A        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.i.1.B        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.i.1.C        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.i.2          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/7.b.ii           container    - -
-9.51/GR/7.b.ii.1         n/a          - - datetime templates (T839)
-9.51/GR/7.b.ii.1.A       n/a          - - datetime templates (T839)
-9.51/GR/7.b.ii.1.B       n/a          - - datetime templates (T839)
-9.51/GR/7.b.ii.1.C       n/a          - - datetime templates (T839)
-9.51/GR/7.b.ii.2         n/a          - - datetime templates (T839)
+9.51/GR/7.b.ii.1         implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.ii.1.A       implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.ii.1.B       implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.ii.1.C       implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/7.b.ii.2         implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/8                container    - -
-9.51/GR/8.a              n/a          - - datetime templates (T839)
-9.51/GR/8.a.i            n/a          - - datetime templates (T839)
-9.51/GR/8.a.ii           n/a          - - datetime templates (T839)
-9.51/GR/8.a.iii          n/a          - - datetime templates (T839)
-9.51/GR/8.a.iv           n/a          - - datetime templates (T839)
-9.51/GR/8.b              n/a          - - datetime templates (T839)
+9.51/GR/8.a              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.a.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.a.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.a.iii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.a.iv           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/8.b.i            container    - -
-9.51/GR/8.b.i.1          n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.1.A        n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.1.B        n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.1.C        n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2          n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.A        n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.B        n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.C        n/a          - - datetime templates (T839)
+9.51/GR/8.b.i.1          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.1.A        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.1.B        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.1.C        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.A        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.B        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.C        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/8.b.i.2.D        container    - -
-9.51/GR/8.b.i.2.D.I      n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.D.II     n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.E        n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.F        n/a          - - datetime templates (T839)
+9.51/GR/8.b.i.2.D.I      implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.D.II     implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.E        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.F        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/8.b.i.2.G        container    - -
-9.51/GR/8.b.i.2.G.I      n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.2.G.II     n/a          - - datetime templates (T839)
-9.51/GR/8.b.i.3          n/a          - - datetime templates (T839)
+9.51/GR/8.b.i.2.G.I      implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.2.G.II     implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.i.3          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/8.b.ii           container    - -
-9.51/GR/8.b.ii.1         n/a          - - datetime templates (T839)
-9.51/GR/8.b.ii.1.A       n/a          - - datetime templates (T839)
-9.51/GR/8.b.ii.1.B       n/a          - - datetime templates (T839)
-9.51/GR/8.b.ii.1.C       n/a          - - datetime templates (T839)
-9.51/GR/8.b.ii.2         n/a          - - datetime templates (T839)
+9.51/GR/8.b.ii.1         implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.ii.1.A       implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.ii.1.B       implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.ii.1.C       implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.ii.2         implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/8.b.iii          container    - -
-9.51/GR/8.b.iii.1        n/a          - - datetime templates (T839)
-9.51/GR/8.b.iii.1.A      n/a          - - datetime templates (T839)
-9.51/GR/8.b.iii.1.B      n/a          - - datetime templates (T839)
-9.51/GR/8.b.iii.1.C      n/a          - - datetime templates (T839)
-9.51/GR/8.b.iii.2        n/a          - - datetime templates (T839)
+9.51/GR/8.b.iii.1        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.iii.1.A      implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.iii.1.B      implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.iii.1.C      implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/8.b.iii.2        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/9                container    - -
-9.51/GR/9.a              n/a          - - datetime templates (T839)
-9.51/GR/9.a.i            n/a          - - datetime templates (T839)
-9.51/GR/9.a.ii           n/a          - - datetime templates (T839)
-9.51/GR/9.a.iii          n/a          - - datetime templates (T839)
-9.51/GR/9.b              n/a          - - datetime templates (T839)
+9.51/GR/9.a              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/9.a.i            implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/9.a.ii           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/9.a.iii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/9.b              implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/10               container    - -
-9.51/GR/10.a             n/a          - - datetime templates (T839)
-9.51/GR/10.a.i           n/a          - - datetime templates (T839)
-9.51/GR/10.a.ii          n/a          - - datetime templates (T839)
-9.51/GR/10.a.iii         n/a          - - datetime templates (T839)
-9.51/GR/10.a.iv          n/a          - - datetime templates (T839)
-9.51/GR/10.a.v           n/a          - - datetime templates (T839)
-9.51/GR/10.b             n/a          - - datetime templates (T839)
+9.51/GR/10.a             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/10.a.i           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/10.a.ii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/10.a.iii         implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/10.a.iv          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/10.a.v           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/10.b             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/11               container    - -
-9.51/GR/11.a             n/a          - - datetime templates (T839)
-9.51/GR/11.a.i           n/a          - - datetime templates (T839)
-9.51/GR/11.a.ii          n/a          - - datetime templates (T839)
-9.51/GR/11.a.iii         n/a          - - datetime templates (T839)
+9.51/GR/11.a             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/11.a.i           implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/11.a.ii          implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/11.a.iii         implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/11.a.iv          container    - -
-9.51/GR/11.a.iv.1        n/a          - - datetime templates (T839)
-9.51/GR/11.a.iv.2        n/a          - - datetime templates (T839)
-9.51/GR/11.b             n/a          - - datetime templates (T839)
+9.51/GR/11.a.iv.1        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/11.a.iv.2        implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/11.b             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
 9.51/GR/12               container    - -
-9.51/GR/12.a             n/a          - - datetime templates (T839)
-9.51/GR/12.b             n/a          - - datetime templates (T839)
-9.51/GR/12.c             n/a          - - datetime templates (T839)
-9.51/GR/12.d             n/a          - - datetime templates (T839)
-9.51/GR/12.e             n/a          - - datetime templates (T839)
-9.51/GR/13               n/a          - - datetime templates (T839)
+9.51/GR/12.a             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/12.b             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/12.c             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/12.d             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/12.e             implemented  vsql/std_2_9_51_converting_a_formatted_character_string_to_a_datetime.v tests/std_2_9_51_formatted_string_to_datetime.sql
+9.51/GR/13               definition   - -
 # 9.52, Datetime templates
-9.52                     n/a          - - datetime templates (T839)
-9.52/SR/1                n/a          - - datetime templates (T839)
-9.52/SR/2                n/a          - - datetime templates (T839)
-9.52/SR/3                n/a          - - datetime templates (T839)
-9.52/SR/4                n/a          - - datetime templates (T839)
-9.52/SR/5                n/a          - - datetime templates (T839)
-9.52/SR/6                n/a          - - datetime templates (T839)
-9.52/SR/7                n/a          - - datetime templates (T839)
-9.52/SR/8                n/a          - - datetime templates (T839)
-9.52/SR/9                n/a          - - datetime templates (T839)
-9.52/SR/10               n/a          - - datetime templates (T839)
-9.52/SR/11               n/a          - - datetime templates (T839)
+9.52                     implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/1                definition   - -
+9.52/SR/2                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/3                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/4                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/5                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/6                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/7                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/8                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/9                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/10               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/11               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
 9.52/SR/12               container    - -
-9.52/SR/12.a             n/a          - - datetime templates (T839)
-9.52/SR/12.b             n/a          - - datetime templates (T839)
-9.52/SR/12.c             n/a          - - datetime templates (T839)
-9.52/SR/12.d             n/a          - - datetime templates (T839)
-9.52/SR/13               n/a          - - datetime templates (T839)
-9.52/SR/13.a             n/a          - - datetime templates (T839)
-9.52/SR/13.b             n/a          - - datetime templates (T839)
-9.52/SR/13.c             n/a          - - datetime templates (T839)
-9.52/SR/14               n/a          - - datetime templates (T839)
-9.52/SR/14.a             n/a          - - datetime templates (T839)
-9.52/SR/14.b             n/a          - - datetime templates (T839)
-9.52/SR/14.c             n/a          - - datetime templates (T839)
-9.52/SR/15               n/a          - - datetime templates (T839)
-9.52/SR/16               n/a          - - datetime templates (T839)
-9.52/SR/16.a             n/a          - - datetime templates (T839)
-9.52/SR/16.b             n/a          - - datetime templates (T839)
-9.52/SR/16.c             n/a          - - datetime templates (T839)
-9.52/SR/17               n/a          - - datetime templates (T839)
-9.52/SR/18               n/a          - - datetime templates (T839)
-9.52/SR/18.a             n/a          - - datetime templates (T839)
-9.52/SR/18.b             n/a          - - datetime templates (T839)
-9.52/SR/18.c             n/a          - - datetime templates (T839)
-9.52/SR/19               n/a          - - datetime templates (T839)
-9.52/SR/20               n/a          - - datetime templates (T839)
-9.52/SR/20.a             n/a          - - datetime templates (T839)
-9.52/SR/20.b             n/a          - - datetime templates (T839)
-9.52/SR/21               n/a          - - datetime templates (T839)
-9.52/CR/1                n/a          - - datetime templates (T839)
-9.52/CR/2                n/a          - - datetime templates (T839)
+9.52/SR/12.a             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/12.b             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/12.c             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/12.d             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/13               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/13.a             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/13.b             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/13.c             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/14               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/14.a             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/14.b             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/14.c             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/15               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/16               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/16.a             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/16.b             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/16.c             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/17               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/18               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/18.a             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/18.b             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/18.c             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/19               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/20               implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/20.a             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/20.b             implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/SR/21               definition   - -
+9.52/CR/1                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql
+9.52/CR/2                implemented  vsql/std_2_9_52_datetime_templates.v tests/std_2_9_52_datetime_templates.sql

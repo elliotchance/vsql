@@ -283,26 +283,40 @@ fn next_param_word(s string, i int) (string, int) {
 	return s[start..end], end
 }
 
-// substitute_params returns the statement on one line, with each "?" replaced
-// by the literal of its value, or none if no "?" has a value. A "?" that doesn't
-// have a value isn't replaced.
+// substitute_params returns the statement on one line, with each "?" or "$n"
+// replaced by the literal of its value, or none if no parameter has a value. A
+// parameter that doesn't have a value isn't replaced.
 fn substitute_params(stmt string, params map[string]Value) ?string {
 	mut sb := strings.new_builder(stmt.len)
 	mut n := 0
 	mut replaced := 0
 	mut quote := u8(0)
-	for c in stmt {
+	mut i := 0
+	for i < stmt.len {
+		c := stmt[i]
+		i++
 		if quote != 0 {
 			if c == quote {
 				quote = 0
 			}
 		} else if c == `'` || c == `"` {
 			quote = c
-		} else if c == `?` {
-			n++
-			if v := params['?${n}'] {
+		} else if c == `?` || (c == `$` && i < stmt.len && stmt[i].is_digit()) {
+			mut name := ''
+			mut end := i
+			if c == `?` {
+				n++
+				name = '?${n}'
+			} else {
+				for end < stmt.len && stmt[end].is_digit() {
+					end++
+				}
+				name = '?${stmt[i..end].int()}'
+			}
+			if v := params[name] {
 				sb.write_string(if v.is_null { 'CAST(NULL AS ${v.typ})' } else { v.literal() })
 				replaced++
+				i = end
 				continue
 			}
 		}

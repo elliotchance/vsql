@@ -309,6 +309,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V303-01``
      - ``x::type`` instead of ``CAST(x AS type)``.
 
+   * - ``V304``
+     - Dynamic parameters (see :doc:`prepared-statements`).
+
+   * - ``V304-01``
+     - ``$1``, ``$2``, etc. (numbered parameters) instead of ``?``.
+
    * - ``V402``
      - Date and time functions (see :doc:`dates-times`).
 

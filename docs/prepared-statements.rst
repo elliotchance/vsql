@@ -66,6 +66,29 @@ A statement can have many dynamic parameters. This is also what
 
 A missing value is an error ``42P02``.
 
+Numbered Parameters
+-------------------
+
+A dynamic parameter can also be written as ``$n``, as in PostgreSQL, where
+``$1`` is ``?1``, ``$2`` is ``?2``, etc. Unlike ``?``, the same ``$n`` can be
+used more than once, and each one is the same value:
+
+.. code-block:: v
+   :force:
+
+   mut stmt := db.prepare('UPDATE settings SET enabled = $2 WHERE shop = $1 OR parent = $1')!
+
+   stmt.query({
+   	'?1': vsql.new_varchar_value('herb')
+   	'?2': vsql.new_boolean_value(true)
+   })!
+
+Its data type is determined the same way as a ``?`` (see `Data Types`_), from
+where it's first used. ``$n`` isn't standard SQL, so it's flagged as ``V304-01``
+(see :doc:`sql-flagging`). A statement can't use both ``?`` and ``$n`` (a
+``42601`` error), and ``n`` must be from 1 to 65535. There can be gaps, such as
+a statement with only ``$2``, but it still needs a value for ``?1``.
+
 A dynamic parameter can't be used where SQL only allows a literal, such as the
 row count of ``OFFSET`` and ``FETCH FIRST``.
 

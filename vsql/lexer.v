@@ -203,11 +203,35 @@ fn tokenize(sql_stmt string) ![]Token {
 // tokenize_with_features also returns the features outside of Core SQL that
 // the tokens use (see flag), which the parser can't see: F271 for a compound
 // character literal, F393 for a Unicode character string literal, T351 for a
-// bracketed comment, T661 for a hexadecimal, octal or binary integer and T662
-// for an underscore in a number.
+// bracketed comment, T661 for a hexadecimal, octal or binary integer, T662 for
+// an underscore in a number and V304-01 for a numbered parameter ("$1").
 //
 // ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Conformance Rules, 3
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 6, 11, 12 and 13
+// The same statement can't use both "?" and "$n", since a "?" is numbered by its
+// position.
+const mixed_parameters_error = 'cannot use both ? and \$n parameters in a statement'
+
+// max_numbered_parameter is the largest n of a "$n" (the same as PostgreSQL).
+const max_numbered_parameter = 65535
+
+// count_dynamic_parameters is the number of parameter values that a statement
+// needs: the number of "?", or the largest n of a "$n", which can be used more
+// than once or not at all.
+fn count_dynamic_parameters(tokens []Token) int {
+	mut count := 0
+	for token in tokens {
+		if token.token == token_operator_question_mark {
+			name := token.value as string
+			if name[1..].int() > count {
+				count = name[1..].int()
+			}
+		}
+	}
+
+	return count
+}
+
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
@@ -222,6 +246,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	offset := sql_stmt.len - sql_stmt.trim_left(';').len
 	mut i := 0
 	mut dynamic_parameters := 0
+	mut numbered_parameters := false
 
 	for i < cs.len {
 		// A comment is a separator, the same as a space.
@@ -244,9 +269,36 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		// Each <dynamic parameter specification> ("?") is named by its
 		// position: "?1", "?2", etc.
 		if cs[i] == `?` {
+			if numbered_parameters {
+				return sqlstate_42601(mixed_parameters_error)
+			}
 			dynamic_parameters++
 			tokens << Token{token_operator_question_mark, '?${dynamic_parameters}', offset + i, offset + i + 1}
 			i++
+			continue
+		}
+
+		// A numbered parameter ("$1", "$2", etc.) is the PostgreSQL form of a
+		// dynamic parameter, and isn't standard SQL (V304-01). "$n" is the n-th
+		// parameter value ("?n"), so the same "$n" can be used more than once for
+		// the same value.
+		if cs[i] == `$` && i + 1 < cs.len && cs[i + 1] >= `0` && cs[i + 1] <= `9` {
+			if dynamic_parameters > 0 {
+				return sqlstate_42601(mixed_parameters_error)
+			}
+			mut end := i + 1
+			for end < cs.len && cs[end] >= `0` && cs[end] <= `9` {
+				end++
+			}
+			digits := substring(text, cs, ascii, i + 1, end)
+			n := digits.trim_left('0')
+			if n == '' || n.len > 5 || n.int() > max_numbered_parameter {
+				return sqlstate_42601('invalid parameter: \$${digits}')
+			}
+			numbered_parameters = true
+			features << vsql_numbered_parameter
+			tokens << Token{token_operator_question_mark, '?${n}', offset + i, offset + end}
+			i = end
 			continue
 		}
 

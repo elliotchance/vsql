@@ -134,6 +134,89 @@ noncharacter (such as ``0xFFFF``) is a ``22029`` error, the same as in a
   - SQLite: ``CHAR``.
   - SQL Server: ``NCHAR``.
 
+CONCAT
+^^^^^^
+
+.. code-block:: sql
+
+   CONCAT(value, ...) CHARACTER VARYING
+
+Joins one or more character strings, in order, leaving out any that are
+``NULL``. Unlike ``||``, a ``NULL`` doesn't make the result ``NULL``. If every
+argument is ``NULL`` the result is an empty string.
+
+The result is a ``CHARACTER VARYING`` as long as all of the arguments together,
+or a ``CHARACTER LARGE OBJECT`` if any argument is one. A ``CHARACTER``
+argument keeps its padding, like it does with ``||``. Every argument must be a
+character string, so a number has to be ``CAST`` first, and a ``NULL`` has to
+be ``CAST`` (such as ``CAST(NULL AS VARCHAR(10))``) as with any function. A
+result that's longer than the maximum length of a ``CHARACTER VARYING`` is a
+``22001`` error, unless only spaces would be cut from the end.
+
+``CONCAT`` is a vsql extension flagged by ``V404-08`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CONCAT('My', 'S', 'QL');
+  -- COL1: MySQL
+
+  VALUES CONCAT('abc', CAST(NULL AS VARCHAR(10)), 'xy');
+  -- COL1: abcxy
+
+  VALUES CONCAT('Total: ', CAST(42 AS VARCHAR(10)));
+  -- COL1: Total: 42
+
+**Compatibility**
+
+- **SQL standard:** not standard. The standard ``||`` is ``NULL`` when either
+  side is ``NULL``.
+- **Other databases:** most have a ``CONCAT``, but they treat ``NULL``
+  differently, and some convert other types to text:
+
+  - PostgreSQL, SQL Server and SQLite: the same, a ``NULL`` is left out.
+  - MySQL and MariaDB: the result is ``NULL`` if any argument is.
+  - Oracle and Db2: only two arguments.
+
+CONCAT_WS
+^^^^^^^^^
+
+.. code-block:: sql
+
+   CONCAT_WS(separator, value, ...) CHARACTER VARYING
+
+Joins one or more character strings with the separator between them, leaving
+out any that are ``NULL`` (and their separator), so there are never two
+separators next to each other. If every value is ``NULL`` the result is an
+empty string. If the separator is ``NULL``, the result is ``NULL``.
+
+The type of the result, and the arguments it accepts, are the same as
+``CONCAT``.
+
+``CONCAT_WS`` is a vsql extension flagged by ``V404-09`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CONCAT_WS(', ', 'a', 'b', 'c');
+  -- COL1: a, b, c
+
+  VALUES CONCAT_WS('-', 'a', CAST(NULL AS VARCHAR(10)), 'c');
+  -- COL1: a-c
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - MySQL, MariaDB, PostgreSQL, SQL Server and SQLite: the same.
+  - Snowflake: the result is ``NULL`` if any argument is.
+  - Oracle, Db2 and BigQuery: no ``CONCAT_WS``.
+
 INITCAP
 ^^^^^^^
 

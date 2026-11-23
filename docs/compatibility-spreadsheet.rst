@@ -7760,38 +7760,37 @@ of empty text is 0 rather than ``#VALUE!``.
 CONCAT
 ^^^^^^
 
-🔧 vsql has no ``CONCAT`` function, but an expression does the same thing.
+✅ vsql has the same function: ``CONCAT``.
 
 Joins pieces of text together.
 
 .. code-block:: sql
 
   -- =CONCAT(text1, text2, ...)
-  VALUES /*text1*/ || /*text2*/ || ...;
+  VALUES CONCAT(/*text1*/, /*text2*/, ...);
   -- =CONCAT("Apple", "pie")
-  VALUES 'Apple' || 'pie';
+  VALUES CONCAT('Apple', 'pie');
   -- COL1: Applepie
 
-Joining ``NULL`` gives ``NULL``, where an empty cell adds nothing, so use
-``COALESCE(x, '')``. For a range, use ``LISTAGG(name, '')``.
+A ``NULL`` adds nothing, like an empty cell. For a range, use
+``LISTAGG(name, '')``.
 
 CONCATENATE
 ^^^^^^^^^^^
 
-🔧 vsql has no ``CONCATENATE`` function, but an expression does the same thing.
+✅ vsql has the same function: ``CONCAT``.
 
 Joins pieces of text together.
 
 .. code-block:: sql
 
   -- =CONCATENATE(text1, text2, ...)
-  VALUES /*text1*/ || /*text2*/ || ...;
+  VALUES CONCAT(/*text1*/, /*text2*/, ...);
   -- =CONCATENATE("Apple", "pie")
-  VALUES 'Apple' || 'pie';
+  VALUES CONCAT('Apple', 'pie');
   -- COL1: Applepie
 
-Joining ``NULL`` gives ``NULL``, where an empty cell adds nothing, so use
-``COALESCE(x, '')``.
+A ``NULL`` adds nothing, like an empty cell.
 
 DBCS
 ^^^^

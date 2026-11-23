@@ -1557,13 +1557,15 @@ Joins strings together.
 .. code-block:: sql
 
   -- CONCAT(str1, str2, ...)
-  VALUES /*str1*/ || /*str2*/ || ...;
+  VALUES CONCAT(/*str1*/, /*str2*/, ...);
   -- CONCAT('My', 'S', 'QL')
-  VALUES 'My' || 'S' || 'QL';
+  VALUES CONCAT('My', 'S', 'QL');
   -- COL1: MySQL
 
-As in MySQL, the result is ``NULL`` if any of them is ``NULL``. A number must be
-cast to text first, such as ``CAST(14.3 AS VARCHAR(10))``.
+Unlike MySQL, a ``NULL`` is left out rather than making the result ``NULL``.
+Use ``||`` (``'My' || 'S' || 'QL'``) for a result that's ``NULL`` if any of
+them is. A number must be cast to text first, such as
+``CAST(14.3 AS VARCHAR(10))``.
 
 CONCAT_WS
 ^^^^^^^^^
@@ -1573,14 +1575,11 @@ are ``NULL``.
 
 .. code-block:: sql
 
-  -- CONCAT_WS(separator, str1, str2)
-  VALUES /*str1*/ || /*separator*/ || /*str2*/;
+  -- CONCAT_WS(separator, str1, str2, ...)
+  VALUES CONCAT_WS(/*separator*/, /*str1*/, /*str2*/, ...);
   -- CONCAT_WS(',', 'First name', 'Last Name')
-  VALUES 'First name' || ',' || 'Last Name';
+  VALUES CONCAT_WS(',', 'First name', 'Last Name');
   -- COL1: First name,Last Name
-
-``||`` doesn't skip a ``NULL``: wrap each string that can be ``NULL`` in
-``COALESCE(str || separator, '')``.
 
 ELT
 ^^^

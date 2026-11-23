@@ -982,12 +982,12 @@ Joins the text of its arguments, skipping any that are null.
 .. code-block:: sql
 
   -- concat(val1 "any" [, val2 "any" [, ...]]) → text
-  VALUES COALESCE(/*val1*/, '') || COALESCE(/*val2*/, '');
+  VALUES CONCAT(/*val1*/, /*val2*/, ...);
   -- concat('abcde', NULL, 'xy')
-  VALUES 'abcde' || COALESCE(CAST(NULL AS VARCHAR(10)), '') || 'xy';
+  VALUES CONCAT('abcde', CAST(NULL AS VARCHAR(10)), 'xy');
   -- COL1: abcdexy
 
-``||`` returns ``NULL`` when either side is ``NULL``, so each argument that may be ``NULL`` needs a ``COALESCE``. A number has to be cast to a string first.
+A number has to be cast to a string first, and so does a ``NULL``.
 
 concat_ws
 ^^^^^^^^^
@@ -997,12 +997,10 @@ Joins the text of its arguments with a separator between them, skipping any that
 .. code-block:: sql
 
   -- concat_ws(sep text, val1 "any" [, val2 "any" [, ...]]) → text
-  VALUES /*val1*/ || /*sep*/ || /*val2*/;
+  VALUES CONCAT_WS(/*sep*/, /*val1*/, /*val2*/, ...);
   -- concat_ws(',', 'abcde', 'xy')
-  VALUES 'abcde' || ',' || 'xy';
+  VALUES CONCAT_WS(',', 'abcde', 'xy');
   -- COL1: abcde,xy
-
-This only works when no argument is ``NULL``. Otherwise each separator has to be in a ``CASE`` with the argument after it.
 
 format
 ^^^^^^

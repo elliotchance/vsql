@@ -69,6 +69,11 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			if !comparable_types(compiled_a.typ.typ, compiled_b.typ.typ) {
 				return sqlstate_42804('in NULLIF', compiled_a.typ.str(), compiled_b.typ.str())
 			}
+
+			// ISO/IEC 9075-2:2023, 9.11, Equality operations, Conformance Rules, 2
+			if c.conn.flagging && (compiled_a.typ.typ.is_lob() || compiled_b.typ.typ.is_lob()) {
+				c.conn.flagged_features << 'T042'
+			}
 			c.check_time_zone_comparison(compiled_a.typ, compiled_b.typ)!
 
 			return CompileResult{
@@ -506,5 +511,5 @@ fn comparable_types(t1 SQLType, t2 SQLType) bool {
 	return (t1.is_number() && t2.is_number()) || (t1.is_string() && t2.is_string())
 		|| (t1 == .is_boolean && t2 == .is_boolean) || (t1.is_datetime() && t2.is_datetime())
 		|| (t1.is_interval() && t1 == t2)
-		|| (t1.is_binary_string() && t2.is_binary_string() && t1 != .is_blob && t2 != .is_blob)
+		|| (t1.is_binary_string() && t2.is_binary_string())
 }

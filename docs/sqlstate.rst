@@ -399,6 +399,18 @@ escape character followed by a double quote.
   VALUES SUBSTRING('abc' SIMILAR '%b%' ESCAPE '#');
   -- error 2200C: invalid use of escape character
 
+``2200D`` invalid escape octet
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``ESCAPE`` of a ``LIKE`` of binary strings must be exactly one octet.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES X'0102' LIKE X'0125' ESCAPE X'0102';
+  -- error 2200D: invalid escape octet
+
 ``2200H`` sequence generator limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

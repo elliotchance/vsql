@@ -45,6 +45,7 @@ SELECT CASE a WHEN X'02' THEN 2 ELSE 0 END, NULLIF(a, b), GREATEST(a, X'0101'), 
 -- COL1: 0 COL2: 0100 COL3: 0101 COL4: 0100 COL5: TRUE
 -- COL1: 2 COL2: 02 COL3: 02 COL4: 0101 COL5: TRUE
 
--- # A BINARY LARGE OBJECT can't be compared yet.
+-- # A BINARY LARGE OBJECT can only be compared for equality (see
+-- # std_2_8_2_lob_comparison.sql).
 VALUES CAST(X'01' AS BLOB) = X'01';
--- error 42883: cannot compare BINARY LARGE OBJECT and BINARY(1)
+-- COL1: TRUE

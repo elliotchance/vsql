@@ -106,6 +106,14 @@ fn (t SQLType) is_binary_string() bool {
 	return t in [.is_binary, .is_varbinary, .is_blob]
 }
 
+// is_lob is true for a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT, which
+// are LOB-ordered.
+//
+// ISO/IEC 9075-2:2023, 9.11, Equality operations, Conformance Rules, 2
+fn (t SQLType) is_lob() bool {
+	return t in [.is_clob, .is_blob]
+}
+
 // is_interval is true for a year-month or day-time interval.
 fn (t SQLType) is_interval() bool {
 	return t in [.is_interval_year_month, .is_interval_day_time]

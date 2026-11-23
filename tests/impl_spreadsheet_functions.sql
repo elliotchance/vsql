@@ -1956,12 +1956,12 @@ VALUES UNICODE('Apple');
 
 -- # CONCAT
 -- # =CONCAT("Apple", "pie")
-VALUES 'Apple' || 'pie';
+VALUES CONCAT('Apple', 'pie');
 -- COL1: Applepie
 
 -- # CONCATENATE
 -- # =CONCATENATE("Apple", "pie")
-VALUES 'Apple' || 'pie';
+VALUES CONCAT('Apple', 'pie');
 -- COL1: Applepie
 
 -- # DOLLAR

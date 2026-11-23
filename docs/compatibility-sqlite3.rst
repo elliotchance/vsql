@@ -138,13 +138,12 @@ Joins its arguments into one text, where a NULL counts as an empty text.
 .. code-block:: sql
 
   -- concat(X, ...)
-  VALUES COALESCE(/*X1*/, '') || COALESCE(/*X2*/, '');
+  VALUES CONCAT(/*X1*/, /*X2*/, ...);
   -- SELECT concat(sku, ':', name) FROM products WHERE sku = 'A1';
-  SELECT COALESCE(sku, '') || ':' || COALESCE(name, '') FROM products WHERE sku = 'A1';
+  SELECT CONCAT(sku, ':', name) FROM products WHERE sku = 'A1';
   -- COL1: A1:Apple
 
 A number has to be cast to text first, such as ``CAST(qty AS VARCHAR(11))``.
-Leave out the ``COALESCE`` for an argument that can't be ``NULL``.
 
 concat_ws
 ^^^^^^^^^
@@ -154,13 +153,10 @@ Joins its arguments into one text with a separator between them, leaving out the
 .. code-block:: sql
 
   -- concat_ws(SEP, X, ...)
-  VALUES /*X1*/ || /*SEP*/ || /*X2*/;
+  VALUES CONCAT_WS(/*SEP*/, /*X1*/, /*X2*/, ...);
   -- SELECT concat_ws('-', 'A1', 'Apple');
-  VALUES 'A1' || '-' || 'Apple';
+  VALUES CONCAT_WS('-', 'A1', 'Apple');
   -- COL1: A1-Apple
-
-In vsql a ``NULL`` makes the whole result ``NULL``, so an argument that can be
-``NULL`` needs a ``CASE`` to leave it (and its separator) out.
 
 format
 ^^^^^^

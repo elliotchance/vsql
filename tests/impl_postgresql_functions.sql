@@ -323,12 +323,12 @@ VALUES CHR(65);
 
 -- # concat
 -- # concat('abcde', NULL, 'xy')
-VALUES 'abcde' || COALESCE(CAST(NULL AS VARCHAR(10)), '') || 'xy';
+VALUES CONCAT('abcde', CAST(NULL AS VARCHAR(10)), 'xy');
 -- COL1: abcdexy
 
 -- # concat_ws
 -- # concat_ws(',', 'abcde', 'xy')
-VALUES 'abcde' || ',' || 'xy';
+VALUES CONCAT_WS(',', 'abcde', 'xy');
 -- COL1: abcde,xy
 
 -- # format

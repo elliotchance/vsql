@@ -454,12 +454,12 @@ VALUES CHAR_LENGTH('héllo');
 
 -- # CONCAT
 -- # CONCAT('My', 'S', 'QL')
-VALUES 'My' || 'S' || 'QL';
+VALUES CONCAT('My', 'S', 'QL');
 -- COL1: MySQL
 
 -- # CONCAT_WS
 -- # CONCAT_WS(',', 'First name', 'Last Name')
-VALUES 'First name' || ',' || 'Last Name';
+VALUES CONCAT_WS(',', 'First name', 'Last Name');
 -- COL1: First name,Last Name
 
 -- # ELT

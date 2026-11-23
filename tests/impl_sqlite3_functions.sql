@@ -22,12 +22,12 @@ SELECT COALESCE(qty, 0) FROM products WHERE sku = 'D4';
 
 -- # concat
 -- # SELECT concat(sku, ':', name) FROM products WHERE sku = 'A1';
-SELECT COALESCE(sku, '') || ':' || COALESCE(name, '') FROM products WHERE sku = 'A1';
+SELECT CONCAT(sku, ':', name) FROM products WHERE sku = 'A1';
 -- COL1: A1:Apple
 
 -- # concat_ws
 -- # SELECT concat_ws('-', 'A1', 'Apple');
-VALUES 'A1' || '-' || 'Apple';
+VALUES CONCAT_WS('-', 'A1', 'Apple');
 -- COL1: A1-Apple
 
 -- # format

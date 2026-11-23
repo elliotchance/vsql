@@ -37,6 +37,11 @@ fn (e RoutineInvocation) pstr(params map[string]Value) string {
 }
 
 fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
+	// CONCAT and CONCAT_WS take any number of arguments (V404-08 and V404-09).
+	if is_concat_function(e.function_name) {
+		return compile_concat(mut c, e)
+	}
+
 	// The arguments of an aggregate function may use any column of a grouped
 	// query.
 	in_aggregate := c.in_aggregate

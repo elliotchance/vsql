@@ -433,6 +433,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-07``
      - ``SPLIT_PART``.
+
+   * - ``V404-08``
+     - ``CONCAT``.
+
+   * - ``V404-09``
+     - ``CONCAT_WS``.
    * - ``V405``
      - Aggregate functions (see :doc:`functions-aggregate`).
 

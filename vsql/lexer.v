@@ -304,12 +304,20 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		// but there must not be a space before the quote. Each octet is two
 		// hexadecimal digits.
 		if i + 1 < cs.len && (cs[i] == `X` || cs[i] == `x`) && cs[i + 1] == `'` {
-			word, end, literal_features := read_string_literal(cs, i + 1)!
+			parts, end, literal_features := read_string_literal_parts(cs, i + 1)!
 			i = end
 			// A compound binary literal is T023, rather than F271 like a
 			// compound character literal (5.3 Syntax Rule 5).
 			features << literal_features.map(if it == 'F271' { 'T023' } else { it })
-			tokens << Token{token_literal_binary, binary_string_literal_value(word)!, 0, 0}
+			// Spaces between the hexits are ignored, even between the two hexits
+			// of an octet, such as X'0A 1B' or X'0 A1B'.
+			//
+			// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 4
+			// ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 10
+			if parts.any(it.contains(' ')) {
+				features << 'T024'
+			}
+			tokens << Token{token_literal_binary, binary_string_literal_value(parts)!, 0, 0}
 			unsafe {
 				goto next
 			}
@@ -652,11 +660,18 @@ fn is_limit_clause(tokens []Token, i int) bool {
 // It's flagged with T021 (see binary_string_literal in the grammar).
 //
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Conformance Rules, 8
-fn binary_string_literal_value(hexits string) !Value {
-	if hexits.len % 2 != 0 || !hexits.bytes().all(it.is_hex_digit()) {
-		return sqlstate_42601("X'${hexits}' is not a valid binary string literal")
+//
+// Each part of a compound literal is whole octets (Syntax Rules, 5), so an
+// octet can't be split between two parts.
+fn binary_string_literal_value(parts []string) !Value {
+	for part in parts {
+		hexits := part.replace(' ', '')
+		if hexits.len % 2 != 0 || !hexits.bytes().all(it.is_hex_digit()) {
+			return sqlstate_42601("X'${part}' is not a valid binary string literal")
+		}
 	}
 
+	hexits := parts.join('').replace(' ', '')
 	mut octets := []u8{len: hexits.len / 2}
 	for i in 0 .. octets.len {
 		octets[i] = u8(hexits[i * 2..i * 2 + 2].parse_uint(16, 8) or { 0 })
@@ -666,6 +681,14 @@ fn binary_string_literal_value(hexits string) !Value {
 }
 
 fn read_string_literal(cs []rune, start int) !(string, int, []string) {
+	parts, end, features := read_string_literal_parts(cs, start)!
+
+	return parts.join(''), end, features
+}
+
+// read_string_literal_parts is like read_string_literal, but each part of a
+// compound literal is separate.
+fn read_string_literal_parts(cs []rune, start int) !([]string, int, []string) {
 	mut word := ''
 	mut i := start + 1
 	for {
@@ -705,13 +728,15 @@ fn read_string_literal(cs []rune, start int) !(string, int, []string) {
 		}
 	}
 	if has_newline && j < cs.len && cs[j] == `'` {
-		next_word, end, next_features := read_string_literal(cs, j)!
+		next_parts, end, next_features := read_string_literal_parts(cs, j)!
 		separator_features << 'F271'
 		separator_features << next_features
-		return word + next_word, end, separator_features
+		mut parts := [word]
+		parts << next_parts
+		return parts, end, separator_features
 	}
 
-	return word, i, []string{}
+	return [word], i, []string{}
 }
 
 // is_comment returns true if a comment starts at cs[i]. A simple comment

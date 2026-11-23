@@ -46,6 +46,11 @@ contextually_typed_row_value_constructor:
 | boolean_value_expression {
     expr := $1.v as BooleanValueExpression
     flag_if(mut yylex, !is_parenthesized_boolean(expr), 'F641')
+    // It's equivalent to ROW ( X ) (7.1, Syntax Rules, 5.a), so X is a <value
+    // expression> that's a <boolean value expression>.
+    //
+    // ISO/IEC 9075-2:2023, 6.29, <value expression>, Conformance Rules, 1
+    flag_if(mut yylex, is_boolean_operation(expr), 'T031')
     $$.v = yy_box(ContextuallyTypedRowValueConstructor($1.v as BooleanValueExpression))
   }
 | contextually_typed_value_specification {

@@ -318,7 +318,8 @@ td a { font-weight: 600; }
 .facts { display: grid; gap: var(--s5); padding-block: 0; }
 .fact strong { font-size: var(--text-2xl); }
 .app-grid { display: grid; gap: var(--s6); align-items: start; }
-.app-info { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s5); }
+.app-info { max-width: 760px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s5); }
+.kicker-tag { margin-left: var(--s3); padding: 2px var(--s3); border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: var(--text-xs); font-weight: 600; letter-spacing: normal; text-transform: none; }
 .app-info h3 { margin-bottom: var(--s4); }
 .steps { list-style: none; margin: 0 0 var(--s5); padding: 0; display: grid; gap: var(--s4); }
 .steps li { display: flex; gap: var(--s3); align-items: flex-start; }
@@ -332,12 +333,12 @@ td a { font-weight: 600; }
 @media (min-width: 900px) {
   .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .app-grid { grid-template-columns: minmax(250px, 0.8fr) minmax(0, 2fr); gap: var(--s7); }
-  .app-section .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .app-section .gallery .shot:nth-child(n) { grid-column: auto; }
+  .gallery-section .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .gallery-section .gallery .shot:nth-child(n) { grid-column: auto; }
 }
 
 /* gallery rail */
-.app-section .gallery {
+.gallery-section .gallery {
   display: flex;
   gap: var(--s4);
   overflow-x: auto;
@@ -346,13 +347,13 @@ td a { font-weight: 600; }
   padding-bottom: var(--s3);
   scrollbar-width: thin;
 }
-.app-section .gallery .shot {
+.gallery-section .gallery .shot {
   flex: 0 0 min(280px, 76vw);
   width: min(280px, 76vw);
   scroll-snap-align: start;
 }
-.app-section .gallery .shot img { width: 100%; height: 165px; object-fit: cover; object-position: top; }
-.app-section .gallery .shot figcaption { min-height: 3.2em; }
+.gallery-section .gallery .shot img { width: 100%; height: 165px; object-fit: cover; object-position: top; }
+.gallery-section .gallery .shot figcaption { min-height: 3.2em; }
 
 /* lightbox */
 .lightbox { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: var(--s5); background: rgba(8, 12, 14, 0.88); backdrop-filter: blur(8px); }
@@ -467,7 +468,7 @@ td a { font-weight: 600; }
   <section class="hero" id="top">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <p class="kicker">Embedded SQL database</p>
+        <p class="kicker">Embedded SQL database <span class="kicker-tag">MIT licensed</span></p>
         <h1>A one-file SQL database with full SQL:2023 support.</h1>
         <p class="lead">vsql follows the SQL standard, keeps everything in a single file or in memory, and runs as one binary written in pure V. No server, no setup, no surprises in production.</p>
         <div class="hero-actions">
@@ -475,14 +476,11 @@ td a { font-weight: 600; }
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             Read the docs
           </a>
-          <a class="btn" href="https://vsql.readthedocs.io/en/latest/quick-start.html">Quick start</a>
-        </div>
-        <div class="hero-note">
-          <a class="doc-link" href="https://github.com/elliotchance/vsql/releases/latest">
+          <a class="btn" href="https://github.com/elliotchance/vsql/releases/latest">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>
             Download the binary
           </a>
-          <span>MIT licensed</span>
+          <a class="btn" href="https://vsql.readthedocs.io/en/latest/quick-start.html">Quick start</a>
         </div>
       </div>
       <div class="terminal" aria-label="Example vsql CLI session">
@@ -735,28 +733,37 @@ Coffee |  4.50
       <div class="section-head">
         <p class="kicker">vsql app</p>
         <h2 id="app-title">Browse and edit a database in your browser.</h2>
+        <p>Run <code>vsql app shop.vsql</code> and open <code>127.0.0.1:3211</code>. Several files can be open at once, and every query tab remembers its own file and schema.</p>
       </div>
-      <div class="app-grid">
-        <aside class="app-info" aria-label="How to use the vsql app">
-          <h3>Get started in three steps</h3>
-          <ol class="steps">
-            <li><span class="step-num" aria-hidden="true">1</span><div><strong>Start the app</strong><p>Run <code>vsql app shop.vsql</code> in a terminal.</p></div></li>
-            <li><span class="step-num" aria-hidden="true">2</span><div><strong>Open your browser</strong><p>Go to <code>127.0.0.1:3211</code>. Several files can be open at once.</p></div></li>
-            <li><span class="step-num" aria-hidden="true">3</span><div><strong>Work with your data</strong><p>Query, edit rows, change tables and move data in or out.</p></div></li>
-          </ol>
-          <a class="btn" href="https://vsql.readthedocs.io/en/latest/cli.html#app">
-            App options
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
-          </a>
-        </aside>
-        <div class="gallery">
-          <figure class="shot"><a href="img/screenshot-query-results.png"><img src="img/screenshot-query-results.png" alt="Query results shown with their column types in the vsql browser app"></a><figcaption><span class="shot-label">Queries</span>Results with their types.</figcaption></figure>
-          <figure class="shot"><a href="img/screenshot-edit-rows.png"><img src="img/screenshot-edit-rows.png" alt="Adding, changing and deleting rows in the vsql browser app"></a><figcaption><span class="shot-label">Editing</span>Change, add and delete rows, then save together.</figcaption></figure>
-          <figure class="shot"><a href="img/screenshot-create-table.png"><img src="img/screenshot-create-table.png" alt="Creating and altering a table in the vsql browser app"></a><figcaption><span class="shot-label">Schema</span>Create and alter tables, and see the SQL as you go.</figcaption></figure>
-          <figure class="shot"><a href="img/screenshot-tab-history.png"><img src="img/screenshot-tab-history.png" alt="Searching the history of queries in the vsql browser app"></a><figcaption><span class="shot-label">History</span>Search the history of every query that was run.</figcaption></figure>
-          <figure class="shot"><a href="img/screenshot-export-table.png"><img src="img/screenshot-export-table.png" alt="Exporting a table as SQL, CSV, TSV or JSON"></a><figcaption><span class="shot-label">Export</span>Export as SQL, CSV, TSV or JSON.</figcaption></figure>
-          <figure class="shot"><a href="img/screenshot-import-csv.png"><img src="img/screenshot-import-csv.png" alt="Importing SQL, CSV, TSV or JSON files in the vsql browser app"></a><figcaption><span class="shot-label">Import</span>Import SQL, CSV, TSV or JSON files.</figcaption></figure>
-        </div>
+      <aside class="app-info" aria-label="How to use the vsql app">
+        <h3>Get started in three steps</h3>
+        <ol class="steps">
+          <li><span class="step-num" aria-hidden="true">1</span><div><strong>Start the app</strong><p>Run <code>vsql app shop.vsql</code> in a terminal.</p></div></li>
+          <li><span class="step-num" aria-hidden="true">2</span><div><strong>Open your browser</strong><p>Go to <code>127.0.0.1:3211</code>. Several files can be open at once.</p></div></li>
+          <li><span class="step-num" aria-hidden="true">3</span><div><strong>Work with your data</strong><p>Query, edit rows, change tables and move data in or out.</p></div></li>
+        </ol>
+        <a class="btn" href="https://vsql.readthedocs.io/en/latest/cli.html#app">
+          App options
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+        </a>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Screenshots</p>
+        <h2 id="gallery-title">A look inside the browser app.</h2>
+        <p>Scroll through the gallery, then open any image to see it full size.</p>
+      </div>
+      <div class="gallery">
+        <figure class="shot"><a href="img/screenshot-query-results.png"><img src="img/screenshot-query-results.png" alt="Query results shown with their column types in the vsql browser app"></a><figcaption><span class="shot-label">Queries</span>Results with their types.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-edit-rows.png"><img src="img/screenshot-edit-rows.png" alt="Adding, changing and deleting rows in the vsql browser app"></a><figcaption><span class="shot-label">Editing</span>Change, add and delete rows, then save together.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-create-table.png"><img src="img/screenshot-create-table.png" alt="Creating and altering a table in the vsql browser app"></a><figcaption><span class="shot-label">Schema</span>Create and alter tables, and see the SQL as you go.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-tab-history.png"><img src="img/screenshot-tab-history.png" alt="Searching the history of queries in the vsql browser app"></a><figcaption><span class="shot-label">History</span>Search the history of every query that was run.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-export-table.png"><img src="img/screenshot-export-table.png" alt="Exporting a table as SQL, CSV, TSV or JSON"></a><figcaption><span class="shot-label">Export</span>Export as SQL, CSV, TSV or JSON.</figcaption></figure>
+        <figure class="shot"><a href="img/screenshot-import-csv.png"><img src="img/screenshot-import-csv.png" alt="Importing SQL, CSV, TSV or JSON files in the vsql browser app"></a><figcaption><span class="shot-label">Import</span>Import SQL, CSV, TSV or JSON files.</figcaption></figure>
       </div>
     </div>
   </section>

@@ -52,7 +52,7 @@ character_string_type:
   }
 | CHARACTER LARGE OBJECT left_paren character_large_object_length right_paren {
     flag(mut yylex, 'T046')
-    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $5.v as string)!)
+    $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $5.v as string)!)
   }
 | CHAR LARGE OBJECT {
     flag(mut yylex, 'T046')
@@ -60,7 +60,7 @@ character_string_type:
   }
 | CHAR LARGE OBJECT left_paren character_large_object_length right_paren {
     flag(mut yylex, 'T046')
-    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $5.v as string)!)
+    $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $5.v as string)!)
   }
 | CLOB {
     flag(mut yylex, 'T046')
@@ -68,7 +68,7 @@ character_string_type:
   }
 | CLOB left_paren character_large_object_length right_paren {
     flag(mut yylex, 'T046')
-    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $3.v as string)!)
+    $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $3.v as string)!)
   }
 
 // The only character set is UTF8 (see check_noncharacters), so the national
@@ -120,7 +120,7 @@ national_character_string_type:
   right_paren {
     flag(mut yylex, 'F421')
     flag(mut yylex, 'T046')
-    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $6.v as string)!)
+    $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $6.v as string)!)
   }
 | NCHAR LARGE OBJECT {
     flag(mut yylex, 'F421')
@@ -130,7 +130,7 @@ national_character_string_type:
 | NCHAR LARGE OBJECT left_paren character_large_object_length right_paren {
     flag(mut yylex, 'F421')
     flag(mut yylex, 'T046')
-    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $5.v as string)!)
+    $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $5.v as string)!)
   }
 | NCLOB {
     flag(mut yylex, 'F421')
@@ -140,7 +140,7 @@ national_character_string_type:
 | NCLOB left_paren character_large_object_length right_paren {
     flag(mut yylex, 'F421')
     flag(mut yylex, 'T046')
-    $$.v = yy_box(parse_type_with_length('CHARACTER LARGE OBJECT', $3.v as string)!)
+    $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $3.v as string)!)
   }
 
 binary_string_type:
@@ -166,7 +166,7 @@ binary_string_type:
   }
 | BINARY LARGE OBJECT left_paren large_object_length right_paren {
     flag(mut yylex, 'T045')
-    $$.v = yy_box(parse_type_with_length('BINARY LARGE OBJECT', $5.v as string)!)
+    $$.v = yy_box(parse_large_object_type('BINARY LARGE OBJECT', $5.v as string)!)
   }
 | BLOB {
     flag(mut yylex, 'T045')
@@ -174,7 +174,7 @@ binary_string_type:
   }
 | BLOB left_paren large_object_length right_paren {
     flag(mut yylex, 'T045')
-    $$.v = yy_box(parse_type_with_length('BINARY LARGE OBJECT', $3.v as string)!)
+    $$.v = yy_box(parse_large_object_type('BINARY LARGE OBJECT', $3.v as string)!)
   }
 
 numeric_type:
@@ -233,8 +233,26 @@ decimal_floating_point_type:
 length:
   unsigned_integer { $$.v = $1.v as string }
 
+// A <large object length token> (such as 2G) is lexed as an <unsigned integer>
+// followed by the <multiplier>, the same as with a <separator> between them.
+//
+// ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Syntax Rules, 10
 large_object_length:
   unsigned_integer { $$.v = $1.v as string }
+| unsigned_integer multiplier {
+    $$.v = large_object_length($1.v as string, $2.v as u64)
+  }
+
+// T and P (Features T043 and T044) are always longer than the maximum length,
+// so they're never flagged.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 11.b.i-11.b.v
+multiplier:
+  K { $$.v = yy_box(u64(1024)) }
+| M { $$.v = yy_box(u64(1048576)) }
+| G { $$.v = yy_box(u64(1073741824)) }
+| T { $$.v = yy_box(u64(1099511627776)) }
+| P { $$.v = yy_box(u64(1125899906842624)) }
 
 character_large_object_length:
   large_object_length { $$.v = $1.v as string }

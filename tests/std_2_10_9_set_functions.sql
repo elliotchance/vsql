@@ -22,12 +22,12 @@ SELECT SUM(s), SUM(i), SUM(b), SUM(n), SUM(d), SUM(r), SUM(f) FROM nums;
 /* extensions V001-01 */
 EXPLAIN SELECT AVG(s), AVG(i), AVG(b), AVG(n), AVG(d), AVG(r), AVG(f) FROM nums;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.NUMS (S SMALLINT, I INTEGER, B BIGINT, N NUMERIC(5, 2), D DECIMAL(5, 2), R REAL, F DOUBLE PRECISION)
--- EXPLAIN: GROUP BY (AVG(S) SMALLINT, AVG(I) INTEGER, AVG(B) BIGINT, AVG(N) NUMERIC(5, 2), AVG(D) DECIMAL(5, 2), AVG(R) REAL, AVG(F) DOUBLE PRECISION)
--- EXPLAIN: EXPR (COL1 SMALLINT, COL2 INTEGER, COL3 BIGINT, COL4 NUMERIC(5, 2), COL5 DECIMAL(5, 2), COL6 REAL, COL7 DOUBLE PRECISION)
+-- EXPLAIN: GROUP BY (AVG(S) NUMERIC(21, 16), AVG(I) NUMERIC(26, 16), AVG(B) NUMERIC(35, 16), AVG(N) NUMERIC(19, 16), AVG(D) DECIMAL(19, 16), AVG(R) REAL, AVG(F) DOUBLE PRECISION)
+-- EXPLAIN: EXPR (COL1 NUMERIC(21, 16), COL2 NUMERIC(26, 16), COL3 NUMERIC(35, 16), COL4 NUMERIC(19, 16), COL5 DECIMAL(19, 16), COL6 REAL, COL7 DOUBLE PRECISION)
 
 SELECT AVG(s), AVG(i), AVG(b), AVG(n), AVG(d), AVG(r), AVG(f) FROM nums;
 -- warning 01003: null value eliminated in set function
--- COL1: 2 COL2: 10 COL3: 233 COL4: 0.21 COL5: 0.21 COL6: 0.166667e0 COL7: 0.166666666667e0
+-- COL1: 2.3333333333333333 COL2: 10.0000000000000000 COL3: 233.3333333333333333 COL4: 0.2100000000000000 COL5: 0.2100000000000000 COL6: 0.166667e0 COL7: 0.166666666667e0
 
 /* extensions V001-01 */
 EXPLAIN SELECT MIN(s), MIN(i), MIN(b), MIN(n), MIN(d), MIN(r), MIN(f) FROM nums;
@@ -53,11 +53,12 @@ SELECT MAX(s), MAX(i), MAX(b), MAX(n), MAX(d), MAX(r), MAX(f) FROM nums;
 SELECT SUM(i), AVG(n), MIN(s), MAX(d), COUNT(f) FROM nums WHERE i > 1000;
 -- COL1: NULL COL2: NULL COL3: NULL COL4: NULL COL5: 0
 
--- # The average of an exact number is truncated to the scale of the argument.
+-- # The average of an exact number has a scale of at least 16 (Syntax Rules,
+-- # 7.g.iii, the scale is implementation-defined), and is truncated.
 SELECT AVG(i), AVG(n) FROM nums WHERE i > 0;
 SELECT AVG(n) FROM nums WHERE n > 0;
--- COL1: 25 COL2: -0.93
--- COL1: 1.87
+-- COL1: 25.0000000000000000 COL2: -0.9350000000000000
+-- COL1: 1.8750000000000000
 
 -- # The sum of integers is a BIGINT, so it can be larger than the values.
 CREATE TABLE big (i INTEGER);
@@ -67,7 +68,7 @@ SELECT SUM(i), AVG(i) FROM big;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- COL1: 4294967294 COL2: 2147483647
+-- COL1: 4294967294 COL2: 2147483647.0000000000000000
 
 -- # A SUM out of the range of a BIGINT is an exception (General Rules, 7.d.v).
 -- # An AVG isn't, and nor is a SUM that only goes out of range part way.
@@ -87,7 +88,7 @@ SELECT AVG(b) FROM big;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- COL1: 9223372036854775807
+-- COL1: 9223372036854775807.0000000000000000
 
 CREATE TABLE big (b BIGINT);
 INSERT INTO big (b) VALUES (9223372036854775807);
@@ -174,8 +175,8 @@ SELECT x, MIN(v), MAX(v), SUM(x), AVG(x) FROM t GROUP BY x;
 -- msg: INSERT 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- X: 1 COL2: a COL3: b COL4: 2 COL5: 1
--- X: 2 COL2: c COL3: c COL4: 2 COL5: 2
+-- X: 1 COL2: a COL3: b COL4: 2 COL5: 1.0000000000000000
+-- X: 2 COL2: c COL3: c COL4: 2 COL5: 2.0000000000000000
 
 -- # SUM and AVG need a number.
 CREATE TABLE t (d DATE);
@@ -191,4 +192,24 @@ SELECT SUM(b) FROM t;
 -- # Set functions can be used in expressions.
 SELECT SUM(i) * 2, AVG(n) + 1, MAX(s) - MIN(s) FROM nums;
 -- warning 01003: null value eliminated in set function
--- COL1: 60 COL2: 1.21 COL3: 3
+-- COL1: 60 COL2: 1.2100000000000000 COL3: 3
+
+-- # The example from #1579: the averages aren't truncated to the scale of the
+-- # values.
+/* types */
+CREATE TABLE t (price DECIMAL(10, 2), qty INTEGER);
+INSERT INTO t VALUES (1.50, 10), (0.25, 40), (4.00, 5), (3.00, 2);
+SELECT AVG(price), AVG(qty) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 4
+-- COL1: 2.1875000000000000 (DECIMAL(24, 16)) COL2: 14.2500000000000000 (NUMERIC(26, 16))
+
+-- # A scale of more than 16 is kept, and an average without a precision has
+-- # none.
+/* types */
+CREATE TABLE t (x NUMERIC(30, 20), y NUMERIC);
+INSERT INTO t VALUES (1, 1), (0, 0), (0, 0);
+SELECT AVG(x), AVG(y) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- COL1: 0.33333333333333333333 (NUMERIC(30, 20)) COL2: 0.3333333333333333 (NUMERIC)

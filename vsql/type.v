@@ -184,8 +184,9 @@ fn (t SQLType) supertype() (i16, i16) {
 	}
 }
 
-// exact_arithmetic_type is the type of the result of +, - or * with two exact
-// numeric operands. The scale is max(S1, S2) for + and -, and S1 + S2 for *.
+// exact_arithmetic_type is the type of the result of +, -, * or / with two
+// exact numeric operands. The scale is max(S1, S2) for + and -, and S1 + S2 for
+// *. The scale of / is implementation-defined, see min_division_scale.
 // The precision is implementation-defined, so it's large enough to hold any
 // result, up to the maximum precision. It's 0 (the maximum) if either precision
 // is unknown. The scale isn't limited, check_derived_scale rejects a scale that
@@ -206,11 +207,33 @@ fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 		return Type{typ, math.min(size, max_numeric_precision), s1 + s2, false, false}
 	}
 
+	if op == '/' {
+		// The integer part of the quotient has at most P1 - S1 + S2 digits, when
+		// the divisor is the smallest it can be (10^-S2).
+		scale := division_scale(s1, s2)
+		size := if p1 == 0 || p2 == 0 { 0 } else { p1 - s1 + s2 + scale }
+		return Type{typ, math.min(size, max_numeric_precision), scale, false, false}
+	}
+
 	scale := if s1 > s2 { s1 } else { s2 }
 	integer_digits := if p1 - s1 > p2 - s2 { p1 - s1 } else { p2 - s2 }
 	size := if p1 == 0 || p2 == 0 { 0 } else { integer_digits + scale + 1 }
 
 	return Type{typ, math.min(size, max_numeric_precision), scale, false, false}
+}
+
+// min_division_scale is the fewest digits that the result of an exact division
+// or AVG keeps after the decimal point. PostgreSQL keeps at least 16
+// significant digits, and this is the same for a result less than 10.
+const min_division_scale = 16
+
+// division_scale is the scale of the quotient of two exact numbers with the
+// scales s1 and s2: the larger of the two, but at least min_division_scale.
+// It's implementation-defined.
+//
+// ISO/IEC 9075-2:2023, 6.30, <numeric value expression>, Syntax Rules, 1.c.iv
+fn division_scale(s1 int, s2 int) int {
+	return math.max(min_division_scale, math.max(s1, s2))
 }
 
 // check_derived_scale returns t, or an error if it's a NUMERIC or DECIMAL that

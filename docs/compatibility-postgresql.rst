@@ -4643,7 +4643,7 @@ Returns the average of the values that aren't null.
   SELECT AVG(/*numeric_type*/) FROM /*table*/;
   -- SELECT avg(price) FROM products
   SELECT AVG(price) FROM products;
-  -- COL1: 2.18
+  -- COL1: 2.1875000000000000
 
 The average has the type of the column, so ``AVG`` of a ``DECIMAL(10, 2)`` is rounded to 2 decimal places (2.1875 is 2.18), and of an integer column it's an integer. Use ``AVG(CAST(price AS DOUBLE PRECISION))`` for more digits.
 

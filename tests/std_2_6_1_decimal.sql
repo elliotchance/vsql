@@ -51,11 +51,12 @@ VALUES CAST(-12.34 AS DECIMAL(3, 2));
 -- COL1: -12
 -- error 22003: numeric value out of range
 
--- # Adding or subtracting gives the larger scale (6.29, Syntax Rules, 1.c.ii)
--- # and multiplying adds the scales (6.29, Syntax Rules, 1.c.iii). vsql also
--- # adds the scales for division (6.29, Syntax Rules, 1.c.iv) and truncates the
--- # rest (6.29, General Rules, 5.b), so 1.24 / 1.5 is 0.82666 and a SMALLINT
--- # divisor counts as a scale of 0.
+-- # Adding or subtracting gives the larger scale (6.30, Syntax Rules, 1.c.ii)
+-- # and multiplying adds the scales (6.30, Syntax Rules, 1.c.iii). The scale
+-- # of a division is implementation-defined (6.30, Syntax Rules, 1.c.iv): vsql
+-- # keeps the larger scale, but at least 16 digits, and truncates the rest
+-- # (6.30, General Rules, 5.b), so 1.24 / 1.5 is 0.8266666666666666, and an
+-- # INTEGER divisor counts as a scale of 0.
 VALUES CAST(1.23 AS DECIMAL(6, 2)) + CAST(1.5 AS DECIMAL(6, 3));
 VALUES CAST(1.23 AS DECIMAL(6, 2)) - CAST(1.5 AS DECIMAL(6, 3));
 VALUES CAST(1.23 AS DECIMAL(6, 2)) - CAST(-1.5 AS DECIMAL(6, 3));
@@ -69,36 +70,36 @@ VALUES CAST(CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(
 -- COL1: 2.730
 -- COL1: 1.84500
 -- COL1: 1.8450
--- COL1: 0.82666
--- COL1: 0.82666
+-- COL1: 0.8266666666666666
+-- COL1: 0.8266666666666666
 -- COL1: 0.8266
 
 /* types */
 VALUES CAST(1.23 AS DECIMAL(3,2)) / 5;
--- COL1: 0.24 (DECIMAL(13, 2))
+-- COL1: 0.2460000000000000 (DECIMAL(17, 16))
 
--- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is 0.24,
--- # not 0.246, before it's cast.
+-- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is
+-- # 0.2460000000000000 before it's cast.
 /* types */
 VALUES CAST(CAST(1.23 AS DECIMAL(3,2)) / 5 AS DECIMAL(4, 3));
--- COL1: 0.240 (DECIMAL(4, 3))
+-- COL1: 0.246 (DECIMAL(4, 3))
 
--- # 1.23 / 5 is truncated to 0.24 before it's multiplied, so the result is
--- # 1.20, not 1.23 (explained in docs/numbers.rst).
-VALUES CAST(1.23 AS DECIMAL(3,2)) / 5 * 5;
--- COL1: 1.20
+-- # 2.00 / 3 is truncated before it's multiplied, so the result is
+-- # 1.9999999999999998, not 2 (the example in docs/numbers.rst).
+/* types */
+VALUES CAST(2.00 AS DECIMAL(3,2)) / 3 * 3;
+-- COL1: 1.9999999999999998 (DECIMAL(27, 16))
 
--- # 1.23 / 11 keeps a scale of 2, so it's 0.11 (docs/numbers.rst).
+-- # 1.23 / 11 keeps a scale of 16.
 VALUES CAST(1.23 AS DECIMAL(3,2)) / 11;
--- COL1: 0.11
+-- COL1: 0.1118181818181818
 
--- # The division is a DECIMAL(8, 6), so it's 0.714285 before the cast, which
--- # truncates it to 0.7142 rather than rounding (docs/numbers.rst).
+-- # The cast truncates the division to 0.7142 rather than rounding.
 VALUES CAST(CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL(5,4)) AS DECIMAL(5,4));
 -- COL1: 0.7142
 
--- # The result types from docs/numbers.rst: the sum is a DECIMAL(9, 3) and the
--- # product a DECIMAL(12, 5).
+-- # The result types from docs/numbers.rst: the sum is a DECIMAL(9, 3), the
+-- # product a DECIMAL(12, 5) and the quotient a DECIMAL(21, 16).
 /* types */
 VALUES CAST(10.24 AS DECIMAL(4,2)) + CAST(12.123 AS DECIMAL(8,3));
 -- COL1: 22.363 (DECIMAL(9, 3))
@@ -107,16 +108,20 @@ VALUES CAST(10.24 AS DECIMAL(4,2)) + CAST(12.123 AS DECIMAL(8,3));
 VALUES CAST(10.24 AS DECIMAL(4,2)) * CAST(12.123 AS DECIMAL(8,3));
 -- COL1: 124.13952 (DECIMAL(12, 5))
 
--- # 1 / 3 with two scale-1 operands keeps two places, and casting to a larger
--- # scale doesn't bring the dropped digits back.
+/* types */
+VALUES CAST(1 AS DECIMAL(4,2)) / CAST(3 AS DECIMAL(8,3));
+-- COL1: 0.3333333333333333 (DECIMAL(21, 16))
+
+-- # 1 / 3 with two scale-1 operands keeps 16 places, and casting to a smaller
+-- # scale truncates them.
 VALUES CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1));
 VALUES CAST(CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1)) AS DECIMAL(10, 8));
--- COL1: 0.33
--- COL1: 0.33000000
+-- COL1: 0.3333333333333333
+-- COL1: 0.33333333
 
 -- # DECIMAL and NUMERIC give the same values.
 VALUES CAST(CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1)) AS NUMERIC(10, 8));
--- COL1: 0.33000000
+-- COL1: 0.33333333
 
 -- # A DECIMAL compares by value with integers, a large DECIMAL with a BIGINT,
 -- # and with approximate numbers (8.2, General Rules, 2). It can also be cast

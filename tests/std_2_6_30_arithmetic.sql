@@ -18,9 +18,10 @@ VALUES 6 / 2;
 -- COL1: 3 (INTEGER)
 
 -- # Adding or subtracting exact numbers keeps the larger scale, and multiplying
--- # adds the scales (Syntax Rules, 1.c.ii and 1.c.iii). vsql gives a division
--- # the type of a multiplication (Syntax Rules, 1.c.iv). Dividing by zero is an
--- # error (General Rules, 4).
+-- # adds the scales (Syntax Rules, 1.c.ii and 1.c.iii). The scale of a
+-- # division is implementation-defined (Syntax Rules, 1.c.iv): it's the larger
+-- # scale, but at least 16, and the rest is truncated (General Rules, 5.b).
+-- # Dividing by zero is an error (General Rules, 4).
 /* types */
 VALUES 1.2 + 2.4;
 -- COL1: 3.6 (NUMERIC(3, 1))
@@ -35,11 +36,24 @@ VALUES 2.2 * 3.3;
 
 /* types */
 VALUES 6.0 / 2.5;
--- COL1: 2.40 (NUMERIC(4, 2))
+-- COL1: 2.4000000000000000 (NUMERIC(18, 16))
 
 /* types */
 VALUES 0.0 / 2.5;
--- COL1: 0.00 (NUMERIC(4, 2))
+-- COL1: 0.0000000000000000 (NUMERIC(18, 16))
+
+-- # The examples from #1578. Two integers are still divided as integers.
+/* types */
+VALUES 1 / 3.0;
+VALUES 1 / 12.0;
+VALUES 2.00 / 3;
+VALUES 7 / 2;
+VALUES -7 / 2.0;
+-- COL1: 0.3333333333333333 (NUMERIC(27, 16))
+-- COL1: 0.0833333333333333 (NUMERIC(27, 16))
+-- COL1: 0.6666666666666666 (NUMERIC(17, 16))
+-- COL1: 3 (INTEGER)
+-- COL1: -3.5000000000000000 (NUMERIC(27, 16))
 
 /* types */
 VALUES 2.5 / 0.0;

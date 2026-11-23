@@ -227,8 +227,8 @@ arithmetic operation also can't have more than 1000 digits, otherwise it's a
 ``22003`` (numeric value out of range) error.
 
 The scale can also be up to 1000. The scale of a result is worked out from the
-scales of the operands (for example, a multiplication or division adds them
-together), and if that's more than 1000 the statement is a ``42601`` (syntax
+scales of the operands (for example, a multiplication adds them together), and
+if that's more than 1000 the statement is a ``42601`` (syntax
 error) when it's prepared. Unlike the precision, the scale is never reduced to
 fit, because that would change the result:
 
@@ -245,30 +245,22 @@ that's declared. vsql uses the declared precision for both, so ``DECIMAL`` and
 
 .. code-block:: sql
 
-   VALUES CAST(1.23 AS DECIMAL(3,2)) / 5 * 5;
-   -- COL1: 1.20
+   VALUES CAST(2.00 AS DECIMAL(3,2)) / 3 * 3;
+   -- COL1: 1.9999999999999998
 
 Because:
 
-1. ``CAST(1.23 AS DECIMAL(3,2))`` is ``1.23``.
-2. Dividing by ``5`` (a ``SMALLINT``) gives a ``DECIMAL(8, 2)`` (see below), so
-   ``0.246`` becomes ``0.24``.
-3. Multiplying by ``5`` gives ``1.20``.
+1. ``CAST(2.00 AS DECIMAL(3,2))`` is ``2.00``.
+2. Dividing by ``3`` (an ``INTEGER``) gives a ``DECIMAL(17, 16)`` (see below),
+   so ``0.666...`` becomes ``0.6666666666666666``.
+3. Multiplying by ``3`` gives ``1.9999999999999998``.
 
 Casting to a larger scale doesn't bring back the digits that were dropped:
 
 .. code-block:: sql
 
-   VALUES CAST(CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL(5,4)) AS DECIMAL(5,4));
-   -- COL1: 0.7142
-
-   VALUES CAST(CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC) AS NUMERIC(5,4));
-   -- COL1: 0.7100
-
-The first division is a ``DECIMAL(8, 6)``, which is ``0.714285`` before it's
-cast to ``DECIMAL(5, 4)``. The second divides by a ``NUMERIC`` without a
-precision or scale, so the result has no limit on its precision and a scale of
-2 (2 + 0), which is ``0.71`` before the cast.
+   VALUES CAST(CAST(2 AS NUMERIC(3,2)) / 3 AS NUMERIC(20,18));
+   -- COL1: 0.666666666666666600
 
 Operations Between Exact Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -295,7 +287,7 @@ is a ``DECIMAL``, otherwise it's a ``NUMERIC``. An integer is treated as a
     - ``T(p1 + p2, s1 + s2)``
 
   * - ``T(p1, s1) / T(p2, s2)``
-    - ``T(p1 + p2, s1 + s2)``
+    - ``T(p1 - s1 + s2 + s, s)``, where ``s`` is ``MAX(s1, s2, 16)``
 
 Examples:
 
@@ -307,7 +299,18 @@ Examples:
    VALUES CAST(10.24 AS DECIMAL(4,2)) * CAST(12.123 AS DECIMAL(8,3));
    -- COL1: 124.13952
 
-These are a ``DECIMAL(9, 3)`` and a ``DECIMAL(12, 5)``.
+   VALUES CAST(1 AS DECIMAL(4,2)) / CAST(3 AS DECIMAL(8,3));
+   -- COL1: 0.3333333333333333
+
+These are a ``DECIMAL(9, 3)``, a ``DECIMAL(12, 5)`` and a ``DECIMAL(21, 16)``.
+
+The precision and scale of a division are implementation-defined in the SQL
+standard. vsql keeps at least 16 digits after the decimal point (or the larger
+scale of the two operands, if that's more), so that dividing small numbers
+doesn't lose most of the result, like PostgreSQL, which keeps at least 16
+significant digits. The result is truncated, not rounded. The integer part has
+room for the largest possible quotient, which is when the divisor is
+``10^-s2``. Two integers are divided as integers, so ``7 / 2`` is ``3``.
 
 Decimal Floating-Point Numbers
 ------------------------------

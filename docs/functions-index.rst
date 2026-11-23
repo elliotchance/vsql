@@ -51,6 +51,12 @@ Every function, in alphabetical order:
    * - :ref:`AVG <functions-aggregate:AVG>`
      - Average value
      - Aggregate
+   * - :ref:`BASE64_TO_BINARY <functions-string:BASE64_TO_BINARY>`
+     - Convert base64 text to a binary string
+     - String
+   * - :ref:`BINARY_TO_BASE64 <functions-string:BINARY_TO_BASE64>`
+     - Convert a binary string to base64 text
+     - String
    * - :ref:`BINARY_TO_HEX <functions-string:BINARY_TO_HEX>`
      - Convert a binary string to hexadecimal digits
      - String

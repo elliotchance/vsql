@@ -14,6 +14,86 @@ Lengths and positions are counted in characters, where a multibyte character
 (such as ``😊``) counts as one, unless the function says otherwise. The first
 character is at position 1.
 
+BASE64_TO_BINARY
+^^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   BASE64_TO_BINARY(string CHARACTER VARYING) BINARY VARYING
+   BASE64_TO_BINARY(string CHARACTER LARGE OBJECT) BINARY LARGE OBJECT
+
+Converts base64 (RFC 4648, with ``+`` and ``/``) to a binary string (see
+:doc:`binary`). The ``=`` padding at the end is optional, and whitespace (such
+as the line breaks that some other databases add) is ignored. Anything else,
+including the URL-safe ``-`` and ``_``, is a ``22018`` error. It's the opposite
+of ``BINARY_TO_BASE64``.
+
+``BASE64_TO_BINARY`` is a vsql extension flagged by ``V406-04`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES BASE64_TO_BINARY('TWFu');
+  -- COL1: 4D616E
+
+  VALUES BASE64_TO_BINARY('TQ');
+  -- COL1: 4D
+
+  VALUES BASE64_TO_BINARY('TW-u');
+  -- error 22018: invalid character value for cast
+
+**Compatibility**
+
+- **SQL standard:** not standard. There's no ``CAST`` between a binary string
+  and a character string.
+- **Other databases:**
+
+  - MySQL: ``FROM_BASE64``, invalid base64 is ``NULL``.
+  - PostgreSQL: ``DECODE(value, 'base64')``.
+  - SQLite and SQL Server: none built in.
+  - Oracle: ``UTL_ENCODE.BASE64_DECODE``, of a ``RAW``.
+
+BINARY_TO_BASE64
+^^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   BINARY_TO_BASE64(octets BINARY VARYING) CHARACTER VARYING
+   BINARY_TO_BASE64(octets BINARY LARGE OBJECT) CHARACTER LARGE OBJECT
+
+Converts a binary string (see :doc:`binary`) to base64 (RFC 4648, with ``+``
+and ``/``), 4 characters for every 3 octets, with ``=`` padding at the end and
+no line breaks. A ``BINARY(n)`` includes its padding ``X'00'`` octets. A result
+that's longer than 10485760 characters (the longest ``CHARACTER VARYING``) is a
+``22001`` error. ``BASE64_TO_BINARY`` converts it back.
+
+``BINARY_TO_BASE64`` is a vsql extension flagged by ``V406-03`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES BINARY_TO_BASE64(X'4D616E');
+  -- COL1: TWFu
+
+  VALUES BINARY_TO_BASE64(X'4D');
+  -- COL1: TQ==
+
+**Compatibility**
+
+- **SQL standard:** not standard. There's no ``CAST`` between a binary string
+  and a character string.
+- **Other databases:**
+
+  - MySQL: ``TO_BASE64``, with a line break after every 76 characters.
+  - PostgreSQL: ``ENCODE(value, 'base64')``, with a line break after every 76
+    characters.
+  - SQLite and SQL Server: none built in.
+  - Oracle: ``UTL_ENCODE.BASE64_ENCODE``, which returns a ``RAW``.
+
 BINARY_TO_HEX
 ^^^^^^^^^^^^^
 

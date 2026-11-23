@@ -53,6 +53,8 @@ const variadic_parameter_name = 'VARIADIC'
 // the documentation of each function.
 const builtin_arg_names = {
 	'ATAN2':            ['Y', 'X']
+	'BASE64_TO_BINARY': ['STRING']
+	'BINARY_TO_BASE64': ['OCTETS']
 	'BINARY_TO_HEX':    ['OCTETS']
 	'CBRT':             ['X']
 	'CHR':              ['CODE_POINT']

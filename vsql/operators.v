@@ -28,6 +28,7 @@ fn register_unary_operators(mut conn Connection) {
 	conn.unary_operators['- REAL'] = unary_negate_real
 	conn.unary_operators['- SMALLINT'] = unary_negate_smallint
 	conn.unary_operators['- INTEGER'] = unary_negate_integer
+	conn.unary_operators['- INTERVAL'] = unary_negate_interval
 
 	conn.unary_operators['+ NUMERIC'] = unary_passthru
 	conn.unary_operators['+ DECIMAL'] = unary_passthru
@@ -39,6 +40,7 @@ fn register_unary_operators(mut conn Connection) {
 
 	conn.unary_operators['- DECFLOAT'] = unary_negate_decfloat
 	conn.unary_operators['+ DECFLOAT'] = unary_passthru
+	conn.unary_operators['+ INTERVAL'] = unary_passthru
 }
 
 fn register_binary_operators(mut conn Connection) {
@@ -116,6 +118,14 @@ fn unary_negate_integer(_ &Connection, v Value) !Value {
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
+}
+
+// unary_negate_interval is the negative of an interval, which has the same
+// type.
+//
+// ISO/IEC 9075-2:2023, 6.44, <interval value expression>, General Rules, 4
+fn unary_negate_interval(_ &Connection, v Value) !Value {
+	return new_interval_value(v.typ, -v.int_value())
 }
 
 fn unary_negate_double_precision(_ &Connection, v Value) !Value {

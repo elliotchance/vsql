@@ -167,13 +167,15 @@ is compiled.
   VALUES EXTRACT(WEEK FROM DATE '2027-01-01');
   -- COL1: 53
 
-There are no intervals, so the source can't be an ``INTERVAL``.
+The source can also be an ``INTERVAL`` with that field (only ``YEAR``,
+``MONTH``, ``DAY``, ``HOUR``, ``MINUTE`` and ``SECOND``). The first field of the
+interval is its whole number (``EXTRACT(HOUR FROM INTERVAL '25' HOUR)`` is 25),
+and the result has the sign of the interval.
 
 **Compatibility**
 
 - **SQL standard:** F052 (intervals and datetime arithmetic), and F411 (time
-  zone specification) for ``TIMEZONE_HOUR`` and ``TIMEZONE_MINUTE``. vsql
-  doesn't support all of F052, which is mostly intervals.
+  zone specification) for ``TIMEZONE_HOUR`` and ``TIMEZONE_MINUTE``.
 - **vsql:** ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``, ``QUARTER``
   and ``EPOCH`` are ``V402-02`` to ``V402-08`` (see :doc:`sql-flagging`).
 - **Other databases:**

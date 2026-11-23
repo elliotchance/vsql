@@ -303,7 +303,7 @@
 9.5/SR/3.c.ii.2          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql REAL if they are all REAL, otherwise DOUBLE PRECISION
 9.5/SR/3.c.ii.3          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql enough for the largest integer part and scale, up to the maximum precision; integers are the largest integer type
 9.5/SR/3.d               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_9_5_values_combined_type.sql,tests/std_2_6_12_coalesce.sql
-9.5/SR/3.e               n/a          - - intervals (F052)
+9.5/SR/3.e               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_8_2_interval_comparison.sql
 9.5/SR/3.f               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/std_2_6_12_case_expression.sql
 9.5/SR/3.g               n/a          - - row types (T051)
 9.5/SR/3.g.i             n/a          - - row types (T051)
@@ -596,7 +596,7 @@
 9.16/SR/1.h              n/a          - - JSON data type (T801)
 9.16/SR/1.i              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 9.16/SR/1.j              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
-9.16/SR/1.k              n/a          - - intervals (F052)
+9.16/SR/1.k              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 9.16/SR/1.l              n/a          - - arrays (S091)
 9.16/SR/1.m              n/a          - - multisets (S271)
 9.16/SR/1.n              n/a          - - multisets (S271)

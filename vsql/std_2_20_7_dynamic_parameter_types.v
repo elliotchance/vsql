@@ -16,11 +16,10 @@ module vsql
 // ?".
 //
 // Only queries (including a DECLARE CURSOR), INSERT, UPDATE, DELETE, SET
-// CATALOG, SET SCHEMA and SET NAMES are compiled, which are the statements that
-// a dynamic parameter is useful in. A
-// dynamic parameter of any other statement (or of one that couldn't be
-// compiled, such as because the table doesn't exist yet) has the type of its
-// value.
+// CATALOG, SET SCHEMA, SET NAMES and SET TIME ZONE are compiled, which are the
+// statements that a dynamic parameter is useful in. A dynamic parameter of any
+// other statement (or of one that couldn't be compiled, such as because the
+// table doesn't exist yet) has the type of its value.
 
 // untyped_parameter_type is the type of a dynamic parameter until its type is
 // known. Any expression that can't give it a type leaves it untyped, so this
@@ -121,6 +120,15 @@ fn (mut conn Connection) describe_statement(stmt Stmt, params map[string]Value) 
 		}
 		SetNamesStatement {
 			describe_session_name(mut conn, params, stmt.value)!
+		}
+		SetLocalTimeZoneStatement {
+			if value := stmt.value {
+				mut c := Compiler{
+					conn:   conn
+					params: params
+				}
+				c.with_type(value.compile(mut c)!, hour_to_minute_type)
+			}
 		}
 		else {}
 	}

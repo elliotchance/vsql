@@ -4,8 +4,8 @@
 //
 // Specify a datetime value.
 //
-// There's no datetime arithmetic (F052), and AT TIME ZONE needs an interval
-// (F052) too, so only AT LOCAL is a <time zone>.
+// The <plus sign> and <minus sign> of datetime arithmetic are parsed as a
+// numeric_value_expression (see compile_datetime_arithmetic).
 
 datetime_value_expression:
   datetime_term { $$.v = $1.v }
@@ -18,10 +18,10 @@ datetime_term:
 datetime_factor:
   datetime_primary { $$.v = $1.v }
 | datetime_primary time_zone {
-    $$.v = yy_box(DatetimePrimary(new_ref(TimeZoneExpression{$1.v as DatetimePrimary})))
+    $$.v = yy_box(DatetimePrimary(new_ref(TimeZoneExpression{$1.v as DatetimePrimary, $2.v as TimeZoneSpecifier})))
   }
 | value_expression_primary time_zone {
-    $$.v = yy_box(DatetimePrimary(new_ref(TimeZoneExpression{DatetimePrimary($1.v as ValueExpressionPrimary)})))
+    $$.v = yy_box(DatetimePrimary(new_ref(TimeZoneExpression{DatetimePrimary($1.v as ValueExpressionPrimary), $2.v as TimeZoneSpecifier})))
   }
 
 // A value_expression_primary is not a datetime_primary here because there are
@@ -34,9 +34,20 @@ datetime_primary:
 
 // ISO/IEC 9075-2:2023, 6.42, <datetime value expression>, Conformance Rules, 2
 time_zone:
-  AT time_zone_specifier { flag(mut yylex, 'F411') }
+  AT time_zone_specifier {
+    flag(mut yylex, 'F411')
+    $$.v = $2.v
+  }
 
+// The interval_primary of TIME ZONE is a value_expression_primary, or an
+// interval_qualified_primary (a dynamic parameter with an interval_qualifier).
 time_zone_specifier:
-  LOCAL
+  LOCAL { $$.v = yy_box(TimeZoneSpecifier{}) }
+| TIME ZONE value_expression_primary {
+    $$.v = yy_box(TimeZoneSpecifier{zone: new_ref(NumericPrimary($3.v as ValueExpressionPrimary))})
+  }
+| TIME ZONE interval_qualified_primary {
+    $$.v = yy_box(TimeZoneSpecifier{zone: new_ref($3.v as NumericPrimary)})
+  }
 
 %%

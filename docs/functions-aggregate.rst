@@ -134,13 +134,16 @@ AVG
    AVG(REAL) REAL
    AVG(DOUBLE PRECISION) DOUBLE PRECISION
    AVG(DECFLOAT(p)) DECFLOAT(p)
+   AVG(INTERVAL) INTERVAL
 
 Returns the average value. The result has the same type as the values, so the
 average of exact numbers is truncated to their scale. For example, the average
 of the ``INTEGER`` values 1, 2 and 4 is 2. Use a ``CAST`` to get more digits,
-such as ``AVG(CAST(x AS NUMERIC(10, 2)))`` which is 2.33.
+such as ``AVG(CAST(x AS NUMERIC(10, 2)))`` which is 2.33. The average of
+intervals is truncated to the last field of their type.
 
-A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
+A value that isn't a number or an interval (such as a ``VARCHAR``) is a
+``42883`` error.
 
 **Examples**
 
@@ -691,17 +694,21 @@ SUM
    SUM(REAL) REAL
    SUM(DOUBLE PRECISION) DOUBLE PRECISION
    SUM(DECFLOAT(p)) DECFLOAT(p)
+   SUM(INTERVAL) INTERVAL
 
 Returns the sum (total) of all values. The sum of integers is a ``BIGINT``, so
 it can be larger than any one value. The sum of exact numbers keeps their scale
 but has no limit on the precision. A ``22003`` error is returned if the sum is
 out of range for the result type (such as a sum of ``BIGINT`` values that is
-larger than 9223372036854775807).
+larger than 9223372036854775807). The sum of intervals has the same fields,
+with a leading field precision of 8, and it's a ``2200P`` error if it doesn't
+fit.
 
 The sum of no rows (or only ``NULL`` values) is ``NULL``, not 0. Use
 ``COALESCE(SUM(x), 0)`` to get 0.
 
-A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
+A value that isn't a number or an interval (such as a ``VARCHAR``) is a
+``42883`` error.
 
 **Examples**
 

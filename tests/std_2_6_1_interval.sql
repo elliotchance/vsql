@@ -182,7 +182,8 @@ INSERT INTO t (a) VALUES (INTERVAL '24' HOUR);
 CREATE TABLE t (a INTERVAL YEAR DEFAULT INTERVAL '1' DAY);
 -- error 42601: syntax error: DEFAULT INTERVAL '1' DAY(2) is not valid for column A INTERVAL YEAR(2)
 
--- # A CAST can be to another interval with the same kind of fields.
+-- # A CAST can be to another interval with the same kind of fields (see
+-- # std_2_6_13_cast_interval.sql for the other types).
 /* types */
 VALUES CAST(INTERVAL '25' HOUR AS INTERVAL DAY TO HOUR);
 -- COL1: 1 01 (INTERVAL DAY(2) TO HOUR)
@@ -190,5 +191,5 @@ VALUES CAST(INTERVAL '25' HOUR AS INTERVAL DAY TO HOUR);
 VALUES CAST(INTERVAL '25' HOUR AS INTERVAL YEAR);
 -- error 42846: cannot coerce INTERVAL HOUR(2) to INTERVAL YEAR(2)
 
-VALUES CAST(INTERVAL '25' HOUR AS VARCHAR(10));
--- error 42846: cannot coerce INTERVAL HOUR(2) to CHARACTER VARYING(10)
+VALUES CAST(INTERVAL '25' HOUR AS BOOLEAN);
+-- error 42846: cannot coerce INTERVAL HOUR(2) to BOOLEAN

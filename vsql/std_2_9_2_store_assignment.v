@@ -287,6 +287,12 @@ fn cast_character_source(v Value, l int) string {
 		.is_numeric, .is_decimal {
 			exact_character_string(v.str(), l)
 		}
+		// An interval is its literal, with the sign inside the string.
+		//
+		// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.e.i.2 and 12.e.i.2
+		.is_interval_year_month, .is_interval_day_time {
+			v.literal()
+		}
 		else {
 			v.str()
 		}

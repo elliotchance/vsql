@@ -10,6 +10,7 @@ import math
 
 const approximate_types = [SQLType.is_real, .is_double_precision]
 const fractional_types = [SQLType.is_numeric, .is_decimal]
+const exact_numeric_types = [SQLType.is_smallint, .is_integer, .is_bigint, .is_numeric, .is_decimal]
 const time_types = [SQLType.is_time_without_time_zone, .is_time_with_time_zone]
 const timestamp_types = [SQLType.is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
 
@@ -112,6 +113,14 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 			}
 
 			return Type{typ, math.max(t1.size, t2.size), 0, false, false}
+		}
+		// Intervals of the same class, with every field of any of them.
+		//
+		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.e
+		t1.typ.is_interval() && t1.typ == t2.typ {
+			q1 := t1.interval_qualifier()
+			q2 := t2.interval_qualifier()
+			return combine_interval_types(t1, t2, math.max(q1.leading_precision, q2.leading_precision))
 		}
 		else {
 			return none

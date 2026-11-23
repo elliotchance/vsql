@@ -231,7 +231,7 @@
 20.7/GR/4                implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5                implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql ML is 10485760 and MP is 1000
 20.7/GR/5.a              container    - -
-20.7/GR/5.a.i            n/a          - - intervals (F052)
+20.7/GR/5.a.i            implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 20.7/GR/5.a.ii           n/a          - - arrays (S091)
 20.7/GR/5.a.iii          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.iv           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
@@ -259,13 +259,13 @@
 20.7/GR/5.a.x            implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.x.1          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.x.2          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.x.2.A        n/a          - - intervals (F052)
+20.7/GR/5.a.x.2.A        implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 20.7/GR/5.a.x.2.B        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xi           implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xi.1         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xi.2         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.xi.2.A       n/a          - - intervals (F052)
-20.7/GR/5.a.xi.2.B       n/a          - - intervals (F052)
+20.7/GR/5.a.xi.2.A       implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+20.7/GR/5.a.xi.2.B       deviates     vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql a TIME is INTERVAL HOUR TO SECOND, since an INTERVAL DAY TO SECOND can't be added to a TIME (6.42, Syntax Rules, 5.a), see #1703
 20.7/GR/5.a.xi.2.C       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
 20.7/GR/5.a.xii          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql only an operand of AND, OR, NOT or IS, or a search condition, since a value on its own is also parsed as a <boolean primary>
 20.7/GR/5.a.xiii         n/a          - - arrays (S091)
@@ -333,7 +333,7 @@
 20.7/GR/5.a.xxvii.1      n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxvii.2      n/a          - - multiple column assignment (T641)
 20.7/GR/5.a.xxviii       implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql
-20.7/GR/5.a.xxix         n/a          - - intervals (F052)
+20.7/GR/5.a.xxix         implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_19_4_set_time_zone.sql
 20.7/GR/5.a.xxx          implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
 20.7/GR/5.a.xxx.1        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments
 20.7/GR/5.a.xxx.2        implemented  vsql/std_2_20_7_dynamic_parameter_types.v tests/std_2_20_7_dynamic_parameter_types.sql a function is treated as an SQL-invoked routine if it's the only one with that name and number of arguments

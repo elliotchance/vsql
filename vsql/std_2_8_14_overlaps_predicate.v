@@ -5,8 +5,8 @@ module vsql
 // Specify a test for an overlap between two datetime periods.
 
 // OverlapsPredicate is "(D1, E1) OVERLAPS (D2, E2)". Each period is a start and
-// an end, in either order. The end can't be an INTERVAL, since intervals aren't
-// supported (F052).
+// an end, in either order, or a start and an interval, which ends at the start
+// plus the interval.
 struct OverlapsPredicate {
 	left  RowValueConstructorPredicand
 	right RowValueConstructorPredicand
@@ -33,24 +33,42 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, Syntax Rules, 2 and
-	// 3: every field is a datetime, and they must all be comparable. A dynamic
-	// parameter whose value is NULL is allowed, as it is for a comparison (see
-	// check_comparison).
-	for field in [compiled_left[0], compiled_left[1], compiled_right[0], compiled_right[1]] {
+	// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, Syntax Rules, 2, 3
+	// and 3.a: every field is a datetime, except that the second field can be
+	// an interval that can be added to the first field, and they must all be
+	// comparable. A dynamic parameter whose value is NULL is allowed, as it is
+	// for a comparison (see check_comparison).
+	for field in [compiled_left[0], compiled_right[0]] {
 		if !field.null_parameter && !field.typ.typ.is_datetime() {
 			return sqlstate_42804('in OVERLAPS', 'DATE, TIME or TIMESTAMP', field.typ.str())
 		}
 	}
-	for pair in [[compiled_left[0], compiled_right[0]], compiled_left, compiled_right] {
+	for row in [compiled_left, compiled_right] {
+		if row[1].typ.typ.is_interval() {
+			datetime_plus_interval_type(row[0].typ, row[1].typ) or {
+				return sqlstate_42804('in OVERLAPS', 'an interval that can be added to ${row[0].typ}',
+					row[1].typ.str())
+			}
+		} else if !row[1].null_parameter && !row[1].typ.typ.is_datetime() {
+			return sqlstate_42804('in OVERLAPS', 'DATE, TIME, TIMESTAMP or INTERVAL',
+				row[1].typ.str())
+		}
+	}
+	mut pairs := [[compiled_left[0], compiled_right[0]]]
+	for row in [compiled_left, compiled_right] {
+		if !row[1].typ.typ.is_interval() {
+			pairs << row
+		}
+	}
+	for pair in pairs {
 		c.check_comparison(pair[0].typ, pair[1].typ, pair[0].null_parameter
 			|| pair[1].null_parameter)!
 	}
 
 	return CompileResult{
 		run:          fn [compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
-			left := run_fields(mut conn, compiled_left, data, params)!
-			right := run_fields(mut conn, compiled_right, data, params)!
+			left := overlaps_end(run_fields(mut conn, compiled_left, data, params)!)!
+			right := overlaps_end(run_fields(mut conn, compiled_right, data, params)!)!
 
 			// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, General
 			// Rules, 1: a row that's the null value (every field is NULL) makes
@@ -88,6 +106,26 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_left.any(it.contains_agg) || compiled_right.any(it.contains_agg)
 	}
+}
+
+// overlaps_end is the row (D, E) of a period, where E is D + I when the second
+// field is an interval I (and NULL if either is NULL).
+//
+// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, General Rules, 3.b and 5.b
+fn overlaps_end(row []Value) ![]Value {
+	if !row[1].typ.typ.is_interval() {
+		return row
+	}
+
+	typ := datetime_plus_interval_type(row[0].typ, row[1].typ) or { row[0].typ }
+	if row[0].is_null || row[1].is_null {
+		return [row[0], Value{
+			typ:     typ
+			is_null: true
+		}]
+	}
+
+	return [row[0], datetime_plus_interval(row[0], row[1], false, typ)!]
 }
 
 // overlaps_period returns the start and end of a period given as (D, E). If D

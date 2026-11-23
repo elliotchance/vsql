@@ -286,9 +286,21 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 		return compare_datetimes(conn, xv, yv)
 	}
 
-	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 7
-	// compares intervals by converting both to integers of their least
-	// significant field. Intervals are not supported.
+	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 7,
+	// 7.a and 7.b: intervals of the same class are compared by converting both
+	// to integers of their least significant field, which is the number of
+	// months or microseconds that each value already is.
+	if xv.typ.typ.is_interval() && xv.typ.typ == yv.typ.typ {
+		x := xv.int_value()
+		y := yv.int_value()
+		return if x < y {
+			CompareResult.is_less
+		} else if x > y {
+			CompareResult.is_greater
+		} else {
+			CompareResult.is_equal
+		}
+	}
 
 	// ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 8
 	if xv.typ.typ == .is_boolean && yv.typ.typ == .is_boolean {

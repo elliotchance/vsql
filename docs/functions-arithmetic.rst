@@ -35,9 +35,11 @@ ABS
    ABS(DECIMAL(p, s)) DECIMAL(p, s)
    ABS(NUMERIC(p, s)) NUMERIC(p, s)
    ABS(DECFLOAT(p)) DECFLOAT(p)
+   ABS(INTERVAL) INTERVAL
 
 Absolute value. The result is the same type as the argument, including the
-precision and scale of a ``DECIMAL`` or ``NUMERIC``.
+precision and scale of a ``DECIMAL`` or ``NUMERIC``, and the fields of an
+``INTERVAL`` (see :doc:`dates-times`).
 
 The smallest value of each integer type has no positive value in the same type,
 so it's a ``22003`` error, such as ``ABS(CAST(-32768 AS SMALLINT))``. The
@@ -53,6 +55,9 @@ literal ``-32768`` is a ``SMALLINT``, so ``ABS(-32768)`` is also an error, use
 
   VALUES ABS(-1.23e0);
   -- COL1: 1.23e0
+
+  VALUES ABS(INTERVAL '-1-02' YEAR TO MONTH);
+  -- COL1: 1-02
 
   VALUES ABS(-1.230);
   -- COL1: 1.230

@@ -1,7 +1,6 @@
 -- # SET TIME ZONE LOCAL sets the time zone of the session back to the one it
 -- # started with (19.4, General Rules, 1.a), which is the time zone of the
--- # clock (+05:00 in the tests). It's the only one there is for now, since a
--- # time zone displacement is an interval.
+-- # clock (+05:00 in the tests).
 SET TIME ZONE LOCAL;
 VALUES CURRENT_TIME;
 VALUES TIMESTAMP '2022-07-04 12:00:00+00:00' AT LOCAL;
@@ -15,14 +14,50 @@ VALUES CURRENT_TIME;
 -- msg: SET TIME ZONE
 -- COL1: 04:05:03-0500
 
-SET TIME ZONE INTERVAL '+01:00' HOUR TO MINUTE;
+-- # SET TIME ZONE with an INTERVAL HOUR TO MINUTE sets the time zone of the
+-- # session (19.4, Syntax Rules, 1, and General Rules, 1.b.i). LOCAL sets it
+-- # back.
+SET TIME ZONE INTERVAL '-03:30' HOUR TO MINUTE;
+VALUES CURRENT_TIME;
+VALUES TIMESTAMP '2022-07-04 12:00:00+00:00' AT LOCAL;
+SET TIME ZONE INTERVAL '1:00' HOUR TO MINUTE + INTERVAL '30' MINUTE;
+VALUES CURRENT_TIME;
+SET TIME ZONE LOCAL;
+VALUES CURRENT_TIME;
+-- msg: SET TIME ZONE
+-- COL1: 05:35:03-0330
+-- COL1: 2022-07-04T08:30:00-0330
+-- msg: SET TIME ZONE
+-- COL1: 10:35:03+0130
+-- msg: SET TIME ZONE
+-- COL1: 14:05:03+0500
+
+-- # It's 22009 (invalid time zone displacement value) if it's NULL or out of
+-- # range (19.4, General Rules, 1.b.ii), and it must be an INTERVAL HOUR TO
+-- # MINUTE.
+SET TIME ZONE INTERVAL '15:00' HOUR TO MINUTE;
+SET TIME ZONE INTERVAL '-14:01' HOUR TO MINUTE;
+SET TIME ZONE CAST(NULL AS INTERVAL HOUR TO MINUTE);
+SET TIME ZONE INTERVAL '1' HOUR;
 SET TIME ZONE '+01:00';
 SET TIME ZONE;
 EXPLAIN SET TIME ZONE LOCAL;
--- error 42601: syntax error: unexpected INTERVAL at line 1, column 15 near "SET TIME ZONE INTERVAL '+01:00'", expecting LOCAL
--- error 42601: syntax error: unexpected string at line 1, column 15 near "SET TIME ZONE '+01:00'", expecting LOCAL
--- error 42601: syntax error: unexpected $end at line 1, column 14 near "SET TIME ZONE", expecting LOCAL
+-- error 22009: invalid time zone displacement value
+-- error 22009: invalid time zone displacement value
+-- error 22009: invalid time zone displacement value
+-- error 42804: data type mismatch in SET TIME ZONE: expected INTERVAL HOUR TO MINUTE but got INTERVAL HOUR(2)
+-- error 42804: data type mismatch in SET TIME ZONE: expected INTERVAL HOUR TO MINUTE but got CHARACTER(6)
+-- error 42601: syntax error: unexpected $end at line 1, column 14 near "SET TIME ZONE"
 -- error 42601: syntax error: Cannot EXPLAIN SET TIME ZONE
+
+-- # A dynamic parameter is an INTERVAL HOUR TO MINUTE.
+/* types */
+/* params '2:00' */
+SET TIME ZONE ?;
+VALUES CURRENT_TIME;
+-- sql: SET TIME ZONE '2:00'
+-- msg: SET TIME ZONE
+-- COL1: 11:05:03+0200 (TIME(0) WITH TIME ZONE)
 
 -- # It doesn't start a transaction or use up a SET TRANSACTION, and it can be used
 -- # in one.

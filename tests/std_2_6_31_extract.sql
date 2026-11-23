@@ -43,17 +43,18 @@ VALUES ROW(EXTRACT(TIMEZONE_HOUR FROM TIMESTAMP '2026-01-02 03:04:05-00:30'), EX
 -- # The field must be one of the source (Syntax Rules, 6.a), and only a TIME or
 -- # TIMESTAMP WITH TIME ZONE has a time zone (Syntax Rules, 6.b).
 VALUES EXTRACT(HOUR FROM DATE '2026-11-14');
--- error 42804: data type mismatch in EXTRACT(HOUR FROM ...): expected TIME or TIMESTAMP but got DATE
+-- error 42804: data type mismatch in EXTRACT(HOUR FROM ...): expected TIME, TIMESTAMP or INTERVAL but got DATE
 
 VALUES EXTRACT(DAY FROM TIME '12:00:00');
--- error 42804: data type mismatch in EXTRACT(DAY FROM ...): expected DATE or TIMESTAMP but got TIME(0) WITHOUT TIME ZONE
+-- error 42804: data type mismatch in EXTRACT(DAY FROM ...): expected DATE, TIMESTAMP or INTERVAL but got TIME(0) WITHOUT TIME ZONE
 
 VALUES EXTRACT(TIMEZONE_HOUR FROM TIMESTAMP '2026-01-02 03:04:05');
 -- error 42804: data type mismatch in EXTRACT(TIMEZONE_HOUR FROM ...): expected TIME WITH TIME ZONE or TIMESTAMP WITH TIME ZONE but got TIMESTAMP(0) WITHOUT TIME ZONE
 
--- # There are no intervals (F052), so the source must be a datetime.
+-- # The source must be a datetime or an interval (see
+-- # std_2_6_31_extract_interval.sql).
 VALUES EXTRACT(YEAR FROM 2026);
--- error 42804: data type mismatch in EXTRACT(YEAR FROM ...): expected DATE or TIMESTAMP but got SMALLINT
+-- error 42804: data type mismatch in EXTRACT(YEAR FROM ...): expected DATE, TIMESTAMP or INTERVAL but got SMALLINT
 
 VALUES EXTRACT(FORTNIGHT FROM DATE '2026-11-14');
 -- error 42601: syntax error: EXTRACT has no field FORTNIGHT

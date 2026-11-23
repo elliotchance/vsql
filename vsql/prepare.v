@@ -328,8 +328,13 @@ fn is_name_resolution_error(err IError) bool {
 pub fn (mut p PreparedStmt) resolve_names() ! {
 	mut params := map[string]Value{}
 	for i in 1 .. p.dynamic_parameters + 1 {
+		// The whole type is kept, since the type of an interval (its fields)
+		// is in its size.
 		typ := p.dynamic_parameter_type(i) or { untyped_parameter_type }
-		params['?${i}'] = new_null_value(typ.typ)
+		params['?${i}'] = Value{
+			typ:     Type{typ.typ, typ.size, typ.scale, false, false}
+			is_null: true
+		}
 	}
 
 	mut c := p.c

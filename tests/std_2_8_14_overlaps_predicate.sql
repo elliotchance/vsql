@@ -121,12 +121,35 @@ VALUES (DATE '2020-01-01', DATE '2020-01-10') OVERLAPS (DATE '2020-01-01', DATE 
 -- error 42601: syntax error: OVERLAPS needs a row of degree 2, not 1
 -- error 42601: syntax error: OVERLAPS needs a row of degree 2, not 3
 
--- # Every value must be a datetime (Syntax Rules, 2 and 3). An INTERVAL isn't
--- # supported (Feature F052).
+-- # Every value must be a datetime (Syntax Rules, 2 and 3), except that the
+-- # second field can be an INTERVAL.
 VALUES (1, 2) OVERLAPS (3, 4);
 VALUES (DATE '2020-01-01', 'a') OVERLAPS (DATE '2020-01-01', DATE '2020-01-10');
+VALUES (INTERVAL '1' DAY, DATE '2020-01-01') OVERLAPS (DATE '2020-01-01', DATE '2020-01-10');
 -- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME or TIMESTAMP but got SMALLINT
--- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME or TIMESTAMP but got CHARACTER(1)
+-- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME, TIMESTAMP or INTERVAL but got CHARACTER(1)
+-- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME or TIMESTAMP but got INTERVAL DAY(2)
+
+-- # A period can be a start and an interval, which ends at the start plus the
+-- # interval (Syntax Rules, 3.a, and General Rules, 3.b and 5.b). It's NULL if
+-- # the start or the interval is NULL, so the result is unknown if the other
+-- # period starts at the same time.
+VALUES (DATE '2020-01-01', INTERVAL '10' DAY) OVERLAPS (DATE '2020-01-05', DATE '2020-02-01');
+VALUES (DATE '2020-01-01', INTERVAL '4' DAY) OVERLAPS (DATE '2020-01-05', DATE '2020-02-01');
+VALUES (DATE '2020-01-10', INTERVAL '-9' DAY) OVERLAPS (DATE '2020-01-05', INTERVAL '1' MONTH);
+VALUES (TIME '10:00:00', INTERVAL '30' MINUTE) OVERLAPS (TIME '10:15:00', TIME '11:00:00');
+VALUES (DATE '2020-01-01', CAST(NULL AS INTERVAL DAY)) OVERLAPS (DATE '2020-01-01', DATE '2020-01-10');
+VALUES (CAST(NULL AS DATE), INTERVAL '1' DAY) OVERLAPS (DATE '2020-01-01', DATE '2020-01-10');
+-- COL1: TRUE
+-- COL1: FALSE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: UNKNOWN
+-- COL1: UNKNOWN
+
+-- # The interval must be one that can be added to the start.
+VALUES (DATE '2020-01-01', INTERVAL '1' HOUR) OVERLAPS (DATE '2020-01-05', DATE '2020-02-01');
+-- error 42804: data type mismatch in OVERLAPS: expected an interval that can be added to DATE but got INTERVAL HOUR(2)
 
 -- # And they must be comparable.
 VALUES (DATE '2020-01-01', DATE '2020-01-10') OVERLAPS (TIMESTAMP '2020-01-01 00:00:00', TIMESTAMP '2020-01-10 00:00:00');

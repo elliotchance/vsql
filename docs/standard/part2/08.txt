@@ -79,9 +79,9 @@
 8.2/GR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql
-8.2/GR/7                 n/a          - - intervals (F052)
-8.2/GR/7.a               n/a          - - intervals (F052)
-8.2/GR/7.b               n/a          - - intervals (F052)
+8.2/GR/7                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_interval_comparison.sql
+8.2/GR/7.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_interval_comparison.sql
+8.2/GR/7.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_interval_comparison.sql
 8.2/GR/8                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_6_1_boolean.sql,tests/std_2_8_2_comparison_predicate.sql
 8.2/GR/9                 n/a          - - reference types (S041)
 8.2/GR/10                n/a          - - JSON data type (T801)
@@ -337,17 +337,17 @@
 8.14/SR/1                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/SR/2                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/SR/3                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql the second field can only be a datetime
-8.14/SR/3.a              n/a          - - intervals (F052)
+8.14/SR/3.a              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/SR/3.b              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/1                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/2                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/3                container    - -
 8.14/GR/3.a              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
-8.14/GR/3.b              n/a          - - intervals (F052)
+8.14/GR/3.b              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/4                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/5                container    - -
 8.14/GR/5.a              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
-8.14/GR/5.b              n/a          - - intervals (F052)
+8.14/GR/5.b              implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/6                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/GR/7                implemented  vsql/std_2_8_14_overlaps_predicate.v tests/std_2_8_14_overlaps_predicate.sql
 8.14/CR/1                implemented  vsql/std_2_8_14_overlaps_predicate.y tests/std_2_8_14_overlaps_predicate.sql

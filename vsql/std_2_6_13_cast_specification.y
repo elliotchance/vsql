@@ -4,6 +4,20 @@ cast_specification:
   CAST left_paren cast_operand AS cast_target right_paren {
 	  $$.v = yy_box(new_cast_specification($3.v as CastOperand, $5.v as Type))
   }
+// A <cast template> (FORMAT) is T839.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, Conformance Rules, 5
+| CAST left_paren cast_operand AS cast_target FORMAT cast_template right_paren {
+    flag(mut yylex, 'T839')
+    template := parse_datetime_template(($7.v as Value).string_value())!
+    for feature in template.features() {
+      flag(mut yylex, feature)
+    }
+    $$.v = yy_box(CastSpecification{
+      ...new_cast_specification($3.v as CastOperand, $5.v as Type)
+      template: template
+    })
+  }
 
 cast_operand:
   value_expression { $$.v = yy_box(CastOperand($1.v as ValueExpression)) }
@@ -13,6 +27,9 @@ cast_operand:
 
 cast_target:
   data_type { $$.v = $1.v }
+
+cast_template:
+  character_string_literal { $$.v = $1.v }
 
 // pg_cast is the PostgreSQL shorthand for a CAST (V303-01): "x::type" is
 // "CAST(x AS type)". Like PostgreSQL, it applies to the value expression

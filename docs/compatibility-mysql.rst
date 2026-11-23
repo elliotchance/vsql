@@ -784,13 +784,17 @@ No equivalent.
 DATE_FORMAT
 ^^^^^^^^^^^
 
-.. code-block:: text
-
-  DATE_FORMAT(date, format)
-
 Formats a date as text, following a pattern of format specifiers.
 
-No equivalent.
+.. code-block:: sql
+
+  -- DATE_FORMAT(date, format)
+  VALUES CAST(/*date*/ AS VARCHAR(/*length*/) FORMAT /*format*/);
+  -- DATE_FORMAT('2024-03-15 10:30:00', '%Y-%m-%d %H:%i')
+  VALUES CAST(TIMESTAMP '2024-03-15 10:30:00' AS VARCHAR(16) FORMAT 'YYYY-MM-DD HH24:MI');
+  -- COL1: 2024-03-15 10:30
+
+The format is the SQL standard's ``FORMAT`` (see :doc:`dates-times`), where ``%Y`` is ``YYYY``, ``%y`` is ``YY``, ``%m`` is ``MM``, ``%d`` is ``DD``, ``%j`` is ``DDD``, ``%H`` is ``HH24``, ``%h`` is ``HH12``, ``%i`` is ``MI``, ``%s`` is ``SS``, ``%f`` is ``FF6`` and ``%p`` is ``A.M.``. There are no names of months or days.
 
 DATE_SUB
 ^^^^^^^^
@@ -1152,13 +1156,17 @@ This only works for less than 24 hours (86400 seconds), and for whole seconds.
 STR_TO_DATE
 ^^^^^^^^^^^
 
-.. code-block:: text
-
-  STR_TO_DATE(str, format)
-
 Reads a date, a time or both from text, following a pattern of format specifiers.
 
-No equivalent.
+.. code-block:: sql
+
+  -- STR_TO_DATE(str, format)
+  VALUES CAST(/*str*/ AS TIMESTAMP(0) FORMAT /*format*/);
+  -- STR_TO_DATE('15/03/2024 10:30', '%d/%m/%Y %H:%i')
+  VALUES CAST('15/03/2024 10:30' AS TIMESTAMP(0) FORMAT 'DD/MM/YYYY HH24:MI');
+  -- COL1: 2024-03-15T10:30:00
+
+The type (``DATE``, ``TIME`` or ``TIMESTAMP``) is part of the cast, rather than depending on the format. The format is the SQL standard's ``FORMAT`` (see :doc:`dates-times`), where ``%Y`` is ``YYYY``, ``%y`` is ``YY``, ``%m`` is ``MM``, ``%d`` is ``DD``, ``%j`` is ``DDD``, ``%H`` is ``HH24``, ``%h`` is ``HH12``, ``%i`` is ``MI``, ``%s`` is ``SS``, ``%f`` is ``FF6`` and ``%p`` is ``A.M.``. There are no names of months or days.
 
 SUBDATE
 ^^^^^^^
@@ -1263,13 +1271,17 @@ No equivalent.
 TIME_FORMAT
 ^^^^^^^^^^^
 
-.. code-block:: text
-
-  TIME_FORMAT(time, format)
-
 Formats a time as text, following a pattern of format specifiers.
 
-No equivalent.
+.. code-block:: sql
+
+  -- TIME_FORMAT(time, format)
+  VALUES CAST(/*time*/ AS VARCHAR(/*length*/) FORMAT /*format*/);
+  -- TIME_FORMAT('22:23:00', '%h:%i %p')
+  VALUES CAST(TIME '22:23:00' AS VARCHAR(10) FORMAT 'HH12:MI A.M.');
+  -- COL1: 10:23 P.M.
+
+The format is the SQL standard's ``FORMAT`` (see :doc:`dates-times`), where ``%Y`` is ``YYYY``, ``%y`` is ``YY``, ``%m`` is ``MM``, ``%d`` is ``DD``, ``%j`` is ``DDD``, ``%H`` is ``HH24``, ``%h`` is ``HH12``, ``%i`` is ``MI``, ``%s`` is ``SS``, ``%f`` is ``FF6`` and ``%p`` is ``A.M.``. There are no names of months or days. An hour over 23 can't be formatted, since a ``TIME`` is a time of day.
 
 TIME_TO_SEC
 ^^^^^^^^^^^

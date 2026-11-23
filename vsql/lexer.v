@@ -159,6 +159,9 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace('OPERATOR_PERIOD_ASTERISK', '"." "*"')
 	msg = msg.replace('OPERATOR_LEFT_PAREN_ASTERISK', '"(" "*"')
 	msg = msg.replace('OPERATOR_RETURNING', 'RETURNING')
+	msg = msg.replace('OPERATOR_ON_CONFLICT', 'ON CONFLICT')
+	msg = msg.replace('OPERATOR_DO', 'DO')
+	msg = msg.replace('OPERATOR_NOTHING', 'NOTHING')
 
 	msg = msg.replace('LITERAL_IDENTIFIER', 'identifier')
 	msg = msg.replace('LITERAL_STRING', 'string')
@@ -446,8 +449,78 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			tokens[pos] = Token{token_operator_returning, tokens[pos].value, tokens[pos].start, tokens[pos].end}
 		}
 	}
+	tokens = on_conflict_tokens(tokens)
 
 	return tokens, features
+}
+
+// on_conflict_tokens replaces the words of the ON CONFLICT of an INSERT (a
+// vsql extension, like PostgreSQL) with their own tokens, because CONFLICT, DO
+// and NOTHING aren't key words, so they can be names. "ON CONFLICT" becomes one
+// OPERATOR_ON_CONFLICT, and the DO after its conflict target (if any) is
+// OPERATOR_DO, followed by OPERATOR_NOTHING for DO NOTHING. A join condition
+// can't be a name followed by DO, "(" or ON, so "ON conflict" is the ON of a
+// join otherwise.
+fn on_conflict_tokens(tokens []Token) []Token {
+	if !tokens.any(it.token == token_insert) {
+		return tokens
+	}
+
+	for i := 0; i + 2 < tokens.len; i++ {
+		if tokens[i].token != token_on || !is_word(tokens[i + 1], 'CONFLICT')
+			|| !(is_word(tokens[i + 2], 'DO') || tokens[i + 2].token in [
+				token_operator_left_paren,
+				token_on,
+			]) {
+			continue
+		}
+
+		mut result := tokens[..i].clone()
+		result << Token{token_operator_on_conflict, 'ON CONFLICT', tokens[i].start, tokens[i + 1].end}
+
+		// The DO is after the "(" column list ")" or ON CONSTRAINT name, if there
+		// is one. The constraint can be named DO.
+		mut do_at := i + 2
+		if tokens[do_at].token == token_operator_left_paren {
+			mut depth := 0
+			for do_at < tokens.len {
+				if tokens[do_at].token == token_operator_left_paren {
+					depth++
+				} else if tokens[do_at].token == token_operator_right_paren {
+					depth--
+					if depth == 0 {
+						break
+					}
+				}
+				do_at++
+			}
+			do_at++
+		} else if tokens[do_at].token == token_on {
+			do_at += 3
+		}
+		for j in i + 2 .. tokens.len {
+			if j == do_at && is_word(tokens[j], 'DO') {
+				result << Token{token_operator_do, 'DO', tokens[j].start, tokens[j].end}
+			} else if j == do_at + 1 && is_word(tokens[j], 'NOTHING')
+				&& result.last().token == token_operator_do {
+				result << Token{token_operator_nothing, 'NOTHING', tokens[j].start, tokens[j].end}
+			} else {
+				result << tokens[j]
+			}
+		}
+
+		return result
+	}
+
+	return tokens
+}
+
+// is_word is true when the token is a name that's word (in upper case), which
+// isn't a delimited identifier.
+fn is_word(token Token, word string) bool {
+	sym := token.value
+	return token.token == token_literal_identifier && sym is IdentifierChain
+		&& (sym as IdentifierChain).identifier.to_upper() == word
 }
 
 // is_returning_clause reports whether the word RETURNING at tokens[i] starts the

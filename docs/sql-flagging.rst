@@ -271,6 +271,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V119-01``
      - ``INSERT`` with ``RETURNING``.
 
+   * - ``V119-02``
+     - ``INSERT`` with ``ON CONFLICT``.
+
    * - ``V120``
      - ``DROP VIEW``.
 

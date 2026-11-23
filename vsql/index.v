@@ -417,14 +417,26 @@ fn (mut f Storage) check_unique_indexes(t Table, rows []Row) ! {
 
 // has_duplicate_entry is true when another row of t (including another new
 // row) has an entry in the index with the same values as row, which has already
-// been written. It's an error if another transaction is creating or deleting
-// one, since it might or might not exist once that transaction finishes. When
-// nulls_distinct, a row with a NULL in any of the columns never has a duplicate,
-// otherwise a NULL is the same as another NULL. Only the entries with the same
-// values are read.
+// been written (see find_entry).
 fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row, nulls_distinct bool) !bool {
+	mut r := row
+	if !nulls_distinct || !index.has_null(r) {
+		r.object_key(t)!
+	}
+	_, found := f.find_entry(index, t, r, nulls_distinct, r.id)!
+
+	return found
+}
+
+// find_entry is the key of an entry in the index with the same values as row,
+// other than the entry of the row whose id is except, if there is one. It's an
+// error if another transaction is creating or deleting one, since it might or
+// might not exist once that transaction finishes. When nulls_distinct, a row
+// with a NULL in any of the columns never has a duplicate, otherwise a NULL is
+// the same as another NULL. Only the entries with the same values are read.
+fn (mut f Storage) find_entry(index Index, t Table, row Row, nulls_distinct bool, except []u8) !([]u8, bool) {
 	if nulls_distinct && index.has_null(row) {
-		return false
+		return []u8{}, false
 	}
 
 	f.isolation_start()!
@@ -432,15 +444,13 @@ fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row, nulls_dist
 		f.end_isolation()
 	}
 
-	mut r := row
-	r.object_key(t)!
-	values := index.entry_values(t, r)!
+	values := index.entry_values(t, row)!
 	mut iter := f.btree.new_range_iterator(values, next_key(values))
 	for {
 		object := iter.next() or { break }
 
 		// The entry of the row itself isn't a duplicate.
-		if object.key[values.len..] == r.id {
+		if object.key[values.len..] == except {
 			continue
 		}
 
@@ -449,14 +459,14 @@ fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row, nulls_dist
 		}
 
 		if object.xid == 0 {
-			return true
+			return object.key, true
 		}
 	}
 	if err := iter.err {
 		return err
 	}
 
-	return false
+	return []u8{}, false
 }
 
 // is_constraint_index is true when the index belongs to a UNIQUE constraint of

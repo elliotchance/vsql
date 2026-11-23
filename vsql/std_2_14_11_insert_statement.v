@@ -25,6 +25,8 @@ struct InsertStatement {
 	from_default bool
 	// returning is the select list of a RETURNING, see returning_query.
 	returning ?SelectList
+	// on_conflict is the ON CONFLICT (a vsql extension), if there is one.
+	on_conflict ?OnConflict
 }
 
 fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
@@ -100,6 +102,10 @@ fn (stmt InsertStatement) change(mut conn Connection, params map[string]Value) !
 		generated_columns.apply(mut conn, mut row)!
 		check_constraints.verify(mut conn, row)!
 		rows << row
+	}
+
+	if on_conflict := stmt.on_conflict {
+		return on_conflict.change(mut conn, params, table_name, table, rows)
 	}
 
 	for mut row in rows {

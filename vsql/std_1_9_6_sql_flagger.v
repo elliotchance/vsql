@@ -107,6 +107,7 @@ import arrays
 //
 // V119: INSERT.
 // V119-01: INSERT with RETURNING.
+// V119-02: INSERT with ON CONFLICT.
 //
 // V120: DROP VIEW.
 // V120-01: DROP VIEW without a <drop behavior> (it's RESTRICT).
@@ -229,6 +230,7 @@ const vsql_abort = 'V116-02'
 const vsql_prepare_literal = 'V117-01'
 const vsql_execute_immediate_literal = 'V118-01'
 const vsql_insert_returning = 'V119-01'
+const vsql_insert_on_conflict = 'V119-02'
 const vsql_drop_view_behavior = 'V120-01'
 const vsql_select_without_from = 'V201-01'
 const vsql_derived_table_without_name = 'V201-02'

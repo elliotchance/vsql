@@ -125,6 +125,9 @@ import arrays
 // V303: CAST.
 // V303-01: x::type instead of CAST(x AS type).
 //
+// V304: Dynamic parameters.
+// V304-01: $1, $2, etc. (numbered parameters) instead of ?.
+//
 // V402: Date and time functions.
 // V402-01: NOW() instead of CURRENT_TIMESTAMP.
 // V402-02 to V402-08: EXTRACT fields (see vsql_extract_fields).
@@ -227,6 +230,7 @@ const vsql_limit_offset_count = 'V203-03'
 const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
 const vsql_double_colon_cast = 'V303-01'
+const vsql_numbered_parameter = 'V304-01'
 const vsql_now = 'V402-01'
 
 // vsql_extract_fields are the fields of EXTRACT that aren't in the standard.

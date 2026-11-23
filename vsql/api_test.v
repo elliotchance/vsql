@@ -414,6 +414,29 @@ fn test_set_session_names_null() ! {
 	}
 }
 
+// A $n is the parameter ?n, so the count is the largest n, and a $n that isn't
+// used has no type.
+fn test_prepared_stmt_numbered_parameters() {
+	mut db := open(':memory:')!
+	mut stmt := db.prepare('VALUES ROW(CAST($3 AS INTEGER), $3 + 1, CAST($1 AS VARCHAR(1)))')!
+	assert stmt.dynamic_parameter_count() == 3
+	assert stmt.dynamic_parameter_type(1)?.str() == 'CHARACTER VARYING(1)'
+	assert stmt.dynamic_parameter_type(2) == none
+	assert stmt.dynamic_parameter_type(3)?.str() == 'INTEGER'
+	assert stmt.features() == ['B031', 'F641', 'F661', 'T051', 'V304-01']
+
+	result := stmt.query({
+		'?1': new_varchar_value('a')
+		'?2': new_varchar_value('unused')
+		'?3': new_integer_value(7)
+	})!
+	for row in result {
+		assert row.get_string('COL1')! == '7'
+		assert row.get_string('COL2')! == '8'
+		assert row.get_string('COL3')! == 'a'
+	}
+}
+
 fn test_prepared_stmt_dynamic_parameters() {
 	mut db := open(':memory:')!
 	mut stmt := db.prepare("VALUES ROW(CAST(? AS INTEGER), '?', CAST(? AS VARCHAR(1)))")!

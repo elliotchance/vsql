@@ -936,7 +936,7 @@ fn (mut conn Connection) parse_cached(sql_stmt string) !ParsedStmt {
 		stmt:               stmt
 		explain:            explain
 		writes:             has_next_value(tokens)
-		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
+		dynamic_parameters: count_dynamic_parameters(tokens)
 		features:           features
 	}
 	conn.statement_cache.add(sql_stmt, parsed)

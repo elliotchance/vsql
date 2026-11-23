@@ -45,6 +45,9 @@ statement and example. These are the other differences to watch for:
   operand needs a ``CAST`` too, such as ``CAST(NULL AS INTEGER)``.
 - ``::`` works for a cast to an SQL type (``'1'::INTEGER``), but not for
   PostgreSQL's own type names such as ``int4`` or ``text``.
+- Parameters can be numbered (``$1``, ``$2``, ...) as in PostgreSQL, or be the
+  standard ``?``, but a statement can't use both (see
+  :doc:`prepared-statements`).
 - Dividing two integers gives an integer, as in PostgreSQL, but a decimal
   keeps the decimal places of its operands, so ``1 / 3.0`` is 0.3, where
   PostgreSQL gives 0.33333333333333333333. ``AVG`` of an integer column is

@@ -532,6 +532,21 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V406-04``
      - ``BASE64_TO_BINARY``.
 
+   * - ``V407``
+     - UUID functions (see :doc:`functions`).
+
+   * - ``V407-01``
+     - ``GENERATE_UUID_V4``.
+
+   * - ``V407-02``
+     - ``GENERATE_UUID_V7``.
+
+   * - ``V407-03``
+     - ``UUID_TO_BINARY``.
+
+   * - ``V407-04``
+     - ``BINARY_TO_UUID``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

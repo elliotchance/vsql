@@ -56,6 +56,7 @@ const builtin_arg_names = {
 	'BASE64_TO_BINARY': ['STRING']
 	'BINARY_TO_BASE64': ['OCTETS']
 	'BINARY_TO_HEX':    ['OCTETS']
+	'BINARY_TO_UUID':   ['OCTETS']
 	'CBRT':             ['X']
 	'CHR':              ['CODE_POINT']
 	'DATE_TRUNC':       ['FIELD', 'SOURCE']
@@ -85,6 +86,7 @@ const builtin_arg_names = {
 	'TRIM_SCALE':       ['X']
 	'TRUNC':            ['X', 'PLACES']
 	'UNICODE':          ['STRING']
+	'UUID_TO_BINARY':   ['STRING']
 }
 
 // A FunctionContext is passed to every function (including one registered
@@ -267,6 +269,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	register_string_funcs(mut conn)!
 	register_decfloat_funcs(mut conn)!
 	register_binary_funcs(mut conn)!
+	register_uuid_funcs(mut conn)!
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can

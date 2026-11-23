@@ -163,7 +163,7 @@ h3 { font-size: var(--text-lg); line-height: 1.3; letter-spacing: -0.01em; font-
 /* hero */
 .hero { padding-block: var(--s7) var(--s8); }
 .hero-grid { display: grid; gap: var(--s7); align-items: center; }
-.hero-copy { max-width: 40ch; }
+.hero-copy { max-width: 52ch; }
 .hero-copy h1 { margin-bottom: var(--s5); }
 .hero-copy .lead { font-size: var(--text-lg); color: var(--muted); max-width: 46ch; margin-bottom: var(--s5); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: var(--s3); margin-bottom: var(--s5); }
@@ -298,8 +298,8 @@ td a { font-weight: 600; }
 @media (min-width: 900px) {
   .site-nav { display: flex; }
   .hero { padding-block: var(--s9) var(--s8); }
-  .hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--s8); }
-  .hero-copy { max-width: 34ch; }
+  .hero-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--s7); }
+  .hero-copy { max-width: 50ch; }
   .section { padding-block: var(--s9); }
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .lead-card { grid-column: span 2; }
@@ -307,8 +307,8 @@ td a { font-weight: 600; }
   .shot { grid-column: span 2; }
   .shot:nth-child(1), .shot:nth-child(4) { grid-column: span 4; }
   .doc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .section.split .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: end; max-width: none; }
-  .section.split .section-head p { margin-bottom: 0; }
+  .section.split .section-head { display: block; max-width: 68ch; }
+  .section.split .section-head p { margin-bottom: 0; max-width: 68ch; }
 }
 /* section refinements */
 .hero-copy h1 { font-size: clamp(2.5rem, 5.5vw, 3.5rem); }
@@ -335,6 +335,24 @@ td a { font-weight: 600; }
   .app-section .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .app-section .gallery .shot:nth-child(n) { grid-column: auto; }
 }
+
+/* gallery rail */
+.app-section .gallery {
+  display: flex;
+  gap: var(--s4);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--s3);
+  scrollbar-width: thin;
+}
+.app-section .gallery .shot {
+  flex: 0 0 min(280px, 76vw);
+  width: min(280px, 76vw);
+  scroll-snap-align: start;
+}
+.app-section .gallery .shot img { width: 100%; height: 165px; object-fit: cover; object-position: top; }
+.app-section .gallery .shot figcaption { min-height: 3.2em; }
 
 /* lightbox */
 .lightbox { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: var(--s5); background: rgba(8, 12, 14, 0.88); backdrop-filter: blur(8px); }

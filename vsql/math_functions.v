@@ -27,38 +27,38 @@ fn register_math_funcs(mut conn Connection) ! {
 		truncate := name == 'TRUNC'
 		conn.register_func(Func{name, [double_precision], false, fn [truncate] (_ FunctionContext, args []Value) !Value {
 			return round_double(args[0].f64_value(), 0, truncate)
-		}, double_precision, false, true, [feature]})!
+		}, double_precision, false, true, [feature], [], false})!
 		conn.register_func(Func{name, [double_precision, bigint], false, fn [truncate] (_ FunctionContext, args []Value) !Value {
 			return round_double(args[0].f64_value(), args[1].int_value(), truncate)
-		}, double_precision, false, true, [feature]})!
+		}, double_precision, false, true, [feature], [], false})!
 		conn.register_func(Func{name, [numeric], false, fn [truncate] (_ FunctionContext, args []Value) !Value {
 			return new_numeric_value_from_numeric(round_numeric(args[0].numeric_value(),
 				0, truncate))
-		}, numeric, false, true, [feature]})!
+		}, numeric, false, true, [feature], [], false})!
 		conn.register_func(Func{name, [numeric, bigint], false, fn [truncate] (_ FunctionContext, args []Value) !Value {
 			return new_numeric_value_from_numeric(round_numeric(args[0].numeric_value(),
 				args[1].int_value(), truncate))
-		}, numeric, false, true, [feature]})!
+		}, numeric, false, true, [feature], [], false})!
 	}
 
 	// SIGN of an integer has the same type, so it doesn't need a cast.
 	conn.register_func(Func{'SIGN', [double_precision], false, func_sign, double_precision, false, true, [
 		vsql_sign,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'SIGN', [numeric], false, func_sign_numeric, numeric, false, true, [
 		vsql_sign,
-	]})!
+	], [], false})!
 	for typ in [smallint, integer, bigint] {
 		conn.register_func(Func{'SIGN', [typ], false, func_sign_integer, typ, false, true, [
 			vsql_sign,
-		]})!
+		], [], false})!
 	}
 
 	// FACTORIAL is exact, so the result is a NUMERIC that can hold all of its
 	// digits. Any integer is implicitly cast to a BIGINT.
 	conn.register_func(Func{'FACTORIAL', [bigint], false, func_factorial, numeric, false, true, [
 		vsql_factorial,
-	]})!
+	], [], false})!
 
 	// Like MOD, GCD and LCM have a version for each combination of integer
 	// types. The result has the larger of the two types.
@@ -69,48 +69,48 @@ fn register_math_funcs(mut conn Connection) ! {
 			conn.register_func(Func{'GCD', [a, b], false, fn [result_type] (_ FunctionContext, args []Value) !Value {
 				return integer_function_result(gcd_u64(abs_u64(args[0].int_value()), abs_u64(args[1].int_value())),
 					result_type)
-			}, result_type, false, true, [vsql_gcd]})!
+			}, result_type, false, true, [vsql_gcd], [], false})!
 			conn.register_func(Func{'LCM', [a, b], false, fn [result_type] (_ FunctionContext, args []Value) !Value {
 				return integer_function_result(lcm_u64(abs_u64(args[0].int_value()), abs_u64(args[1].int_value()))!,
 					result_type)
-			}, result_type, false, true, [vsql_lcm]})!
+			}, result_type, false, true, [vsql_lcm], [], false})!
 		}
 	}
 
 	conn.register_func(Func{'PI', [], false, func_pi, double_precision, false, true, [
 		vsql_pi,
-	]})!
+	], [], false})!
 
 	// RANDOM() is a different value each time it's called, so it's NOT
 	// DETERMINISTIC, like NOW().
 	conn.register_func(Func{'RANDOM', [], false, func_random, double_precision, false, false, [
 		vsql_random,
-	]})!
+	], [], false})!
 
 	conn.register_func(Func{'ATAN2', [double_precision, double_precision], false, func_atan2, double_precision, false, true, [
 		vsql_atan2,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'DEGREES', [double_precision], false, func_degrees, double_precision, false, true, [
 		vsql_degrees,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'RADIANS', [double_precision], false, func_radians, double_precision, false, true, [
 		vsql_radians,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'CBRT', [double_precision], false, func_cbrt, double_precision, false, true, [
 		vsql_cbrt,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'ERF', [double_precision], false, func_erf, double_precision, false, true, [
 		vsql_erf,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'ERFC', [double_precision], false, func_erfc, double_precision, false, true, [
 		vsql_erfc,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'GAMMA', [double_precision], false, func_gamma, double_precision, false, true, [
 		vsql_gamma,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'LGAMMA', [double_precision], false, func_lgamma, double_precision, false, true, [
 		vsql_lgamma,
-	]})!
+	], [], false})!
 }
 
 // round_double rounds x to places decimal places, half away from zero, or

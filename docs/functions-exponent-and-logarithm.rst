@@ -15,7 +15,7 @@ CBRT
 
 .. code-block:: sql
 
-   CBRT(DOUBLE PRECISION) DOUBLE PRECISION
+   CBRT(x DOUBLE PRECISION) DOUBLE PRECISION
 
 Cube root. Unlike ``SQRT``, the argument can be negative, so ``CBRT(-8)`` is -2.
 The result is approximate, even for a perfect cube.

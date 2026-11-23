@@ -149,12 +149,12 @@ ROUND
 
 .. code-block:: sql
 
-   ROUND(DOUBLE PRECISION) DOUBLE PRECISION
-   ROUND(DOUBLE PRECISION, BIGINT) DOUBLE PRECISION
-   ROUND(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
-   ROUND(NUMERIC(p, s), PLACES) NUMERIC(p - s + PLACES + 1, PLACES)
-   ROUND(DECFLOAT(p)) DECFLOAT(p)
-   ROUND(DECFLOAT(p), BIGINT) DECFLOAT(p)
+   ROUND(x DOUBLE PRECISION) DOUBLE PRECISION
+   ROUND(x DOUBLE PRECISION, places BIGINT) DOUBLE PRECISION
+   ROUND(x NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
+   ROUND(x NUMERIC(p, s), places BIGINT) NUMERIC(p - s + PLACES + 1, PLACES)
+   ROUND(x DECFLOAT(p)) DECFLOAT(p)
+   ROUND(x DECFLOAT(p), places BIGINT) DECFLOAT(p)
 
 Round to the nearest integer, or to ``PLACES`` decimal places. Half is rounded
 away from zero, so ``ROUND(2.5)`` is 3 and ``ROUND(-2.5)`` is -3, for exact and
@@ -202,12 +202,12 @@ TRUNC
 
 .. code-block:: sql
 
-   TRUNC(DOUBLE PRECISION) DOUBLE PRECISION
-   TRUNC(DOUBLE PRECISION, BIGINT) DOUBLE PRECISION
-   TRUNC(NUMERIC(p, s)) NUMERIC(p - s, 0)
-   TRUNC(NUMERIC(p, s), PLACES) NUMERIC(p - s + PLACES, PLACES)
-   TRUNC(DECFLOAT(p)) DECFLOAT(p)
-   TRUNC(DECFLOAT(p), BIGINT) DECFLOAT(p)
+   TRUNC(x DOUBLE PRECISION) DOUBLE PRECISION
+   TRUNC(x DOUBLE PRECISION, places BIGINT) DOUBLE PRECISION
+   TRUNC(x NUMERIC(p, s)) NUMERIC(p - s, 0)
+   TRUNC(x NUMERIC(p, s), places BIGINT) NUMERIC(p - s + PLACES, PLACES)
+   TRUNC(x DECFLOAT(p)) DECFLOAT(p)
+   TRUNC(x DECFLOAT(p), places BIGINT) DECFLOAT(p)
 
 Truncate towards zero to an integer, or to ``PLACES`` decimal places, so
 ``TRUNC(-9.99)`` is -9. ``PLACES`` can be negative, like ``ROUND``, and the type

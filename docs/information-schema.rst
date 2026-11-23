@@ -4,7 +4,7 @@ Information Schema
 .. contents::
 
 Every catalog has an ``INFORMATION_SCHEMA`` schema with tables that describe the
-schemas, tables, columns, constraints and sequences in the catalog. They can be queried like any other table:
+schemas, tables, columns, constraints, sequences and routines in the catalog. They can be queried like any other table:
 
 .. code-block:: sql
 
@@ -34,7 +34,8 @@ not the catalog.
 ``SCHEMATA``
 ------------
 
-One row for each schema, including the ``INFORMATION_SCHEMA``, ordered by name.
+One row for each schema, including the ``INFORMATION_SCHEMA`` and ``VSQL``
+(see :doc:`vsql-schema`) schemas, ordered by name.
 
 .. code-block:: sql
 
@@ -44,6 +45,7 @@ One row for each schema, including the ``INFORMATION_SCHEMA``, ordered by name.
   -- SCHEMA_NAME: INFORMATION_SCHEMA SCHEMA_OWNER: _SYSTEM
   -- SCHEMA_NAME: PUBLIC SCHEMA_OWNER: _SYSTEM
   -- SCHEMA_NAME: SALES SCHEMA_OWNER: _SYSTEM
+  -- SCHEMA_NAME: VSQL SCHEMA_OWNER: _SYSTEM
 
 .. list-table::
   :header-rows: 1
@@ -527,6 +529,151 @@ The sequence of an identity column is in ``COLUMNS`` instead.
   * - ``CYCLE_OPTION``
     - ``YES`` for a ``CYCLE``, otherwise ``NO``.
 
+``ROUTINES``
+------------
+
+One row for each routine, ordered by name. The routines are the functions of
+the ``VSQL`` schema (see :doc:`vsql-schema`), which are the functions that
+vsql has beyond the SQL standard. A function of the SQL standard (such as
+``ABS``) isn't a routine, and neither is an aggregate function.
+
+.. code-block:: sql
+
+  SELECT specific_name, data_type, is_deterministic
+  FROM information_schema.routines
+  WHERE routine_name IN ('NOW', 'SIGN');
+  -- SPECIFIC_NAME: NOW_1 DATA_TYPE: TIMESTAMP WITH TIME ZONE IS_DETERMINISTIC: NO
+  -- SPECIFIC_NAME: SIGN_1 DATA_TYPE: DOUBLE PRECISION IS_DETERMINISTIC: YES
+  -- SPECIFIC_NAME: SIGN_2 DATA_TYPE: NUMERIC IS_DETERMINISTIC: YES
+  -- SPECIFIC_NAME: SIGN_3 DATA_TYPE: SMALLINT IS_DETERMINISTIC: YES
+  -- SPECIFIC_NAME: SIGN_4 DATA_TYPE: INTEGER IS_DETERMINISTIC: YES
+  -- SPECIFIC_NAME: SIGN_5 DATA_TYPE: BIGINT IS_DETERMINISTIC: YES
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``SPECIFIC_CATALOG``, ``SPECIFIC_SCHEMA``, ``SPECIFIC_NAME``
+    - The specific name of the routine, which is different for each overload
+      of a function. It's the name of the function and the number of the
+      overload, such as ``SIGN_2``.
+
+  * - ``ROUTINE_CATALOG``, ``ROUTINE_SCHEMA``, ``ROUTINE_NAME``
+    - The name of the function, in the ``VSQL`` schema.
+
+  * - ``ROUTINE_TYPE``
+    - Always ``FUNCTION``.
+
+  * - ``DATA_TYPE`` to ``INTERVAL_PRECISION``
+    - The data type of the result, the same as in ``COLUMNS``. A character
+      string result can have any length, so its maximum length is the longest
+      character string.
+
+  * - ``DTD_IDENTIFIER``
+    - Always ``0``, which identifies the result (a parameter is identified by
+      its position, see ``PARAMETERS``).
+
+  * - ``ROUTINE_BODY``, ``EXTERNAL_NAME``, ``EXTERNAL_LANGUAGE``,
+      ``PARAMETER_STYLE``
+    - ``EXTERNAL``, the name of the function, ``C`` and ``GENERAL``. Each
+      function is an external routine that's built into vsql (which is
+      compiled to C), and its arguments are only the values.
+
+  * - ``IS_DETERMINISTIC``
+    - ``NO`` for a function that can return a different result for the same
+      arguments, such as ``NOW`` or ``RANDOM``, otherwise ``YES``. A function
+      that's registered with ``register_function`` is always ``NO``.
+
+  * - ``SQL_DATA_ACCESS``
+    - ``NO SQL``, except for a function that's registered with
+      ``register_function``, which is ``MODIFIES SQL DATA`` because it can use
+      its connection for anything.
+
+  * - ``IS_NULL_CALL``
+    - ``YES`` for a function that returns ``NULL`` when any argument is
+      ``NULL`` (every built-in function except ``CONCAT`` and ``CONCAT_WS``),
+      ``NO`` for a function that's always called (``CONCAT``, ``CONCAT_WS``, a
+      function that's registered with ``register_function``, or a PostgreSQL
+      function).
+
+  * - ``SCHEMA_LEVEL_ROUTINE``, ``MAX_DYNAMIC_RESULT_SETS``,
+      ``IS_USER_DEFINED_CAST``, ``AS_LOCATOR``, ``IS_UDT_DEPENDENT``
+    - ``YES``, ``0``, ``NO``, ``NO`` and ``NO``.
+
+  * - ``SECURITY_TYPE``
+    - Always ``IMPLEMENTATION DEFINED``. vsql doesn't have users yet, so a
+      routine runs the same way for everyone.
+
+  * - ``CREATED``, ``LAST_ALTERED``
+    - Always ``NULL``, since the routines are built into vsql.
+
+  * - The other columns
+    - Always ``NULL``. There are no modules, user-defined types, routine
+      definitions, SQL paths, transforms, savepoint levels or result casts.
+
+``PARAMETERS``
+--------------
+
+One row for each parameter of each routine in ``ROUTINES``, in the same order,
+then by position.
+
+.. code-block:: sql
+
+  SELECT specific_name, ordinal_position, parameter_name, data_type
+  FROM information_schema.parameters
+  WHERE specific_name = 'SPLIT_PART_1';
+  -- SPECIFIC_NAME: SPLIT_PART_1 ORDINAL_POSITION: 1 PARAMETER_NAME: STRING DATA_TYPE: CHARACTER VARYING
+  -- SPECIFIC_NAME: SPLIT_PART_1 ORDINAL_POSITION: 2 PARAMETER_NAME: DELIMITER DATA_TYPE: CHARACTER VARYING
+  -- SPECIFIC_NAME: SPLIT_PART_1 ORDINAL_POSITION: 3 PARAMETER_NAME: N DATA_TYPE: BIGINT
+
+A variadic function, which takes any number of arguments, has a last parameter
+named ``VARIADIC`` for the rest of them. The SQL standard doesn't have variadic
+functions, so it's an ``ARRAY`` without any other type information:
+
+.. code-block:: sql
+
+  SELECT ordinal_position, parameter_name, data_type
+  FROM information_schema.parameters
+  WHERE specific_name = 'CONCAT_WS_1';
+  -- ORDINAL_POSITION: 1 PARAMETER_NAME: SEPARATOR DATA_TYPE: CHARACTER VARYING
+  -- ORDINAL_POSITION: 2 PARAMETER_NAME: VARIADIC DATA_TYPE: ARRAY
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``SPECIFIC_CATALOG``, ``SPECIFIC_SCHEMA``, ``SPECIFIC_NAME``
+    - The specific name of the routine (see ``ROUTINES``).
+
+  * - ``ORDINAL_POSITION``
+    - The position of the parameter, from 1.
+
+  * - ``PARAMETER_MODE``, ``IS_RESULT``, ``AS_LOCATOR``
+    - Always ``IN``, ``NO`` and ``NO``.
+
+  * - ``PARAMETER_NAME``
+    - The name of the parameter, which is the same as in the documentation of
+      the function. It's ``VARIADIC`` for the rest of the arguments of a
+      variadic function. A function that's registered with
+      ``register_function`` only has names if its prototype has them (see
+      :doc:`custom-functions`), otherwise it's ``NULL``.
+
+  * - ``DATA_TYPE`` to ``INTERVAL_PRECISION``
+    - The data type of the parameter, the same as in ``ROUTINES``. It's
+      ``ARRAY`` for the ``VARIADIC`` parameter, and the other columns are
+      ``NULL``.
+
+  * - ``DTD_IDENTIFIER``
+    - The position of the parameter, as text.
+
+  * - The other columns
+    - Always ``NULL``. There are no transforms or user-defined types, and the
+      ``VARIADIC`` parameter has no maximum cardinality.
+
 ``CHARACTER_SETS``
 ------------------
 
@@ -873,9 +1020,26 @@ used without Feature F391, "Long identifiers"):
     - ``KEY_COLUMN_USAGE_S``
     - ``POSITION_IN_UC``.
 
+  * - ``PARAMETERS``
+    - ``PARAMETERS_S``
+    - ``FROM_SQL_SPEC_CAT``, ``FROM_SQL_SPEC_SCH``, ``FROM_SQL_SPEC_NAME``,
+      ``TO_SQL_SPEC_CAT``, ``TO_SQL_SPEC_SCHEMA``, ``TO_SQL_SPEC_NAME``,
+      ``CHAR_MAX_LENGTH``, ``CHAR_OCTET_LENGTH``, ``CHAR_SET_CATALOG``,
+      ``CHAR_SET_SCHEMA``, ``NUMERIC_PREC_RADIX`` and ``MAX_CARDINALITY``.
+
   * - ``REFERENTIAL_CONSTRAINTS``
     - ``REF_CONSTRAINTS``
     - ``UNIQUE_CONSTR_CAT``, ``UNIQUE_CONSTR_SCH`` and ``UNIQUE_CONSTR_NAME``.
+
+  * - ``ROUTINES``
+    - ``ROUTINES_S``
+    - ``CHAR_MAX_LENGTH``, ``CHAR_OCTET_LENGTH``, ``CHAR_SET_CATALOG``,
+      ``CHAR_SET_SCHEMA``, ``NUMERIC_PREC_RADIX``, ``MAX_CARDINALITY``,
+      ``SCH_LEVEL_ROUTINE``, ``MAX_DYN_RESLT_SETS``, ``IS_USER_DEFND_CAST``,
+      ``IS_IMP_INVOCABLE``, ``TO_SQL_SPEC_CAT``, ``TO_SQL_SPEC_SCHEMA``,
+      ``TO_SQL_SPEC_NAME``, ``NEW_SAVEPOINT_LVL`` and each column that starts
+      with ``RESULT_CAST_``, which starts with ``RC_`` instead (such as
+      ``RC_FROM_DATA_TYPE``).
 
   * - ``SCHEMATA``
     - ``SCHEMATA_S``
@@ -911,5 +1075,6 @@ the column with the longer name. Like the other tables of the
 
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,
-other text is a ``CHARACTER VARYING(10485760)``, a number is an ``INTEGER`` and
-``YES`` or ``NO`` is a ``CHARACTER VARYING(3)``.
+other text is a ``CHARACTER VARYING(10485760)``, a number is an ``INTEGER``,
+``YES`` or ``NO`` is a ``CHARACTER VARYING(3)`` and a time is a
+``TIMESTAMP(2) WITH TIME ZONE``.

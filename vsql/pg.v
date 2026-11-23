@@ -342,14 +342,14 @@ struct PGFunction {
 // sizes aren't known, and pg_proc is empty, so there are no arguments to
 // describe.
 const pg_functions = {
-	'version() varchar':                                   PGFunction{pg_version, vsql_pg_version}
-	'current_setting(varchar) varchar':                    PGFunction{pg_current_setting, vsql_pg_current_setting}
-	'pg_get_userbyid(integer) varchar':                    PGFunction{pg_get_userbyid, vsql_pg_get_userbyid}
-	'obj_description(integer, varchar) varchar':           PGFunction{pg_obj_description, vsql_pg_obj_description}
-	'pg_total_relation_size(integer) bigint':              PGFunction{pg_size, vsql_pg_total_relation_size}
-	'pg_table_size(integer) bigint':                       PGFunction{pg_size, vsql_pg_table_size}
-	'pg_indexes_size(integer) bigint':                     PGFunction{pg_size, vsql_pg_indexes_size}
-	'pg_get_function_identity_arguments(integer) varchar': PGFunction{pg_get_function_identity_arguments, vsql_pg_get_function_identity_arguments}
+	'version() varchar':                                             PGFunction{pg_version, vsql_pg_version}
+	'current_setting(setting_name varchar) varchar':                 PGFunction{pg_current_setting, vsql_pg_current_setting}
+	'pg_get_userbyid(role_oid integer) varchar':                     PGFunction{pg_get_userbyid, vsql_pg_get_userbyid}
+	'obj_description(object integer, catalog_name varchar) varchar': PGFunction{pg_obj_description, vsql_pg_obj_description}
+	'pg_total_relation_size(relation integer) bigint':               PGFunction{pg_size, vsql_pg_total_relation_size}
+	'pg_table_size(relation integer) bigint':                        PGFunction{pg_size, vsql_pg_table_size}
+	'pg_indexes_size(relation integer) bigint':                      PGFunction{pg_size, vsql_pg_indexes_size}
+	'pg_get_function_identity_arguments(func_oid integer) varchar':  PGFunction{pg_get_function_identity_arguments, vsql_pg_get_function_identity_arguments}
 }
 
 fn pg_obj_description(_ FunctionContext, _ []Value) !Value {
@@ -469,7 +469,13 @@ const pg_user_oid = 10
 // the objects that a PostgreSQL user creates.
 fn pg_oids(c &CatalogConnection) (map[string]int, map[string]int) {
 	mut names := c.storage.schemas.keys()
-	names << information_schema_name
+	// A file from before the VSQL schema could already have a schema with
+	// that name.
+	for name in system_schema_names {
+		if name !in names {
+			names << name
+		}
+	}
 	names.sort()
 
 	mut oid := 16384

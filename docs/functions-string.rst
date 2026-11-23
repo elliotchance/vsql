@@ -99,7 +99,7 @@ CHR
 
 .. code-block:: sql
 
-   CHR(BIGINT) CHARACTER VARYING(1)
+   CHR(code_point BIGINT) CHARACTER VARYING(1)
 
 The character with a Unicode code point, the opposite of ``UNICODE``. 0, a
 negative number, a surrogate (``0xD800`` to ``0xDFFF``) or a number above
@@ -139,7 +139,7 @@ CONCAT
 
 .. code-block:: sql
 
-   CONCAT(value, ...) CHARACTER VARYING
+   CONCAT(variadic ...) CHARACTER VARYING
 
 Joins one or more character strings, in order, leaving out any that are
 ``NULL``. Unlike ``||``, a ``NULL`` doesn't make the result ``NULL``. If every
@@ -185,7 +185,7 @@ CONCAT_WS
 
 .. code-block:: sql
 
-   CONCAT_WS(separator, value, ...) CHARACTER VARYING
+   CONCAT_WS(separator CHARACTER VARYING, variadic ...) CHARACTER VARYING
 
 Joins one or more character strings with the separator between them, leaving
 out any that are ``NULL`` (and their separator), so there are never two
@@ -222,7 +222,7 @@ INITCAP
 
 .. code-block:: sql
 
-   INITCAP(CHARACTER VARYING) CHARACTER VARYING
+   INITCAP(string CHARACTER VARYING) CHARACTER VARYING
 
 Returns the string with the first letter of each word in upper case and the
 rest in lower case. A word is a run of letters and digits, any other character
@@ -513,7 +513,7 @@ REPEAT
 
 .. code-block:: sql
 
-   REPEAT(CHARACTER VARYING, BIGINT) CHARACTER VARYING
+   REPEAT(string CHARACTER VARYING, n BIGINT) CHARACTER VARYING
 
 Returns the string repeated ``n`` times, or an empty string if ``n`` is 0 or
 less. The padding of a ``CHARACTER(n)`` is repeated too. The result is a
@@ -548,7 +548,7 @@ REPLACE
 
 .. code-block:: sql
 
-   REPLACE(CHARACTER VARYING, CHARACTER VARYING, CHARACTER VARYING) CHARACTER VARYING
+   REPLACE(string CHARACTER VARYING, target CHARACTER VARYING, replacement CHARACTER VARYING) CHARACTER VARYING
 
 ``REPLACE(STRING, FROM, TO)`` replaces every occurrence of ``FROM`` in
 ``STRING`` with ``TO``. The occurrences are found from left to right and don't
@@ -657,7 +657,7 @@ SPLIT_PART
 
 .. code-block:: sql
 
-   SPLIT_PART(CHARACTER VARYING, CHARACTER VARYING, BIGINT) CHARACTER VARYING
+   SPLIT_PART(string CHARACTER VARYING, delimiter CHARACTER VARYING, n BIGINT) CHARACTER VARYING
 
 ``SPLIT_PART(STRING, DELIMITER, N)`` splits ``STRING`` on every ``DELIMITER``
 and returns field ``N``, where the first field is 1. A negative ``N`` counts
@@ -876,7 +876,7 @@ UNICODE
 
 .. code-block:: sql
 
-   UNICODE(CHARACTER VARYING) INTEGER
+   UNICODE(string CHARACTER VARYING) INTEGER
 
 The Unicode code point of the first character of the string. An empty string is
 0, and the padding of a ``CHARACTER(n)`` counts, so

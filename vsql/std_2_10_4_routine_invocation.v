@@ -6,7 +6,9 @@ module vsql
 //
 // There are no SQL-invoked routines (T321), so a RoutineInvocation is always a
 // built-in function (such as ABS or SUM) that's parsed with the same syntax,
-// and none of the rules of 10.4 apply.
+// and most of the rules of 10.4 don't apply. The functions that aren't
+// standard are the routines of the VSQL schema, so they can also be qualified
+// by its name, such as VSQL.GCD (see find_function_in).
 //
 // The concepts are described by:
 //
@@ -14,6 +16,10 @@ module vsql
 // ISO/IEC 9075-1:2023, 4.12.1, General routine information
 
 struct RoutineInvocation {
+	// catalog_name and schema_name are only set when the name of the function is
+	// qualified, such as VSQL.GCD.
+	catalog_name  string
+	schema_name   string
 	function_name string
 	args          []ValueExpression
 	// distinct is only for an aggregate function, such as COUNT(DISTINCT x),
@@ -33,12 +39,40 @@ fn (e RoutineInvocation) pstr(params map[string]Value) string {
 
 	args := e.args.map(it.pstr(params)).join(', ')
 	quantifier := if e.distinct { 'DISTINCT ' } else { '' }
-	return '${e.function_name}(${quantifier}${args})${filter_pstr(e.filter, params)}'
+	return '${e.qualified_name()}(${quantifier}${args})${filter_pstr(e.filter, params)}'
+}
+
+// qualified_name is the name of the function, with the schema and catalog
+// that it was qualified by, if any.
+fn (e RoutineInvocation) qualified_name() string {
+	mut name := e.function_name
+	if e.schema_name != '' {
+		name = '${requote_identifier(e.schema_name)}.${name}'
+	}
+	if e.catalog_name != '' {
+		name = '${requote_identifier(e.catalog_name)}.${name}'
+	}
+
+	return name
 }
 
 fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
-	// CONCAT and CONCAT_WS take any number of arguments (V404-08 and V404-09).
-	if is_concat_function(e.function_name) {
+	// A qualified name must be of a schema that exists, and only finds the
+	// routines of that schema.
+	//
+	// ISO/IEC 9075-2:2023, 9.18, Invoking an SQL-invoked routine, Syntax Rules, 9.c.ii
+	mut schema_name := ''
+	if e.schema_name != '' {
+		schema_name = c.conn.resolve_schema_identifier(Identifier{
+			catalog_name: e.catalog_name
+			schema_name:  e.schema_name
+		})!.schema_name
+	}
+
+	// CONCAT and CONCAT_WS take any number of arguments (V404-08 and V404-09),
+	// so they have their own compile. They're routines of the VSQL schema, so
+	// they're only found in it.
+	if is_concat_function(e.function_name) && schema_name in ['', vsql_schema_name] {
 		return compile_concat(mut c, e)
 	}
 
@@ -91,7 +125,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		return c.compile_interval_abs(args[0])
 	}
 
-	found_func := c.conn.find_function(func_name, arg_types)!
+	found_func := c.conn.find_function_in(schema_name, func_name, arg_types)!
 	if c.conn.flagging {
 		c.conn.flagged_features << found_func.features
 	}

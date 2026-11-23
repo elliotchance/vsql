@@ -3,8 +3,8 @@ module vsql
 // ISO/IEC 9075-11:2006, 5.50, SCHEMATA view
 //
 // The SCHEMATA view has a row for each schema of the catalog, including the
-// INFORMATION_SCHEMA, ordered by name (Description, 1 and 2 of ISO/IEC
-// 9075-11:2006, 6.41, SCHEMATA base table).
+// INFORMATION_SCHEMA and VSQL schemas, ordered by name (Description, 1 and 2
+// of ISO/IEC 9075-11:2006, 6.41, SCHEMATA base table).
 //
 // There are no authorization identifiers yet (#732), so the owner of every
 // schema is _SYSTEM, which is the default (and only) user (Description, 3).
@@ -34,7 +34,13 @@ fn (mut catalog CatalogConnection) register_schemata_view() ! {
 	)',
 		fn [c] (mut t VirtualTable) ! {
 			mut names := c.storage.schemas.keys()
-			names << information_schema_name
+			// A file from before the VSQL schema could already have a schema with
+			// that name.
+			for name in system_schema_names {
+				if name !in names {
+					names << name
+				}
+			}
 			names.sort()
 			for name in names {
 				t.next_values([

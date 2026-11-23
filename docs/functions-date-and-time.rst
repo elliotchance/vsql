@@ -247,7 +247,7 @@ MAKE_DATE
 
 .. code-block:: sql
 
-   MAKE_DATE(year BIGINT, month BIGINT, day BIGINT) DATE
+   MAKE_DATE(years BIGINT, months BIGINT, days BIGINT) DATE
 
 Builds a ``DATE`` from its year, month and day. Each one is any integer
 (``SMALLINT``, ``INTEGER`` or ``BIGINT``), another number is a ``42883`` error.
@@ -290,8 +290,8 @@ MAKE_TIME
 
 .. code-block:: sql
 
-   MAKE_TIME(hour BIGINT, minute BIGINT, second NUMERIC) TIME(6) WITHOUT TIME ZONE
-   MAKE_TIME(hour BIGINT, minute BIGINT, second DOUBLE PRECISION) TIME(6) WITHOUT TIME ZONE
+   MAKE_TIME(hours BIGINT, minutes BIGINT, seconds NUMERIC) TIME(6) WITHOUT TIME ZONE
+   MAKE_TIME(hours BIGINT, minutes BIGINT, seconds DOUBLE PRECISION) TIME(6) WITHOUT TIME ZONE
 
 Builds a ``TIME(6) WITHOUT TIME ZONE`` from its hour, minute and second. The
 hour and minute are any integer, the second is any number and can have a
@@ -335,8 +335,8 @@ MAKE_TIMESTAMP
 
 .. code-block:: sql
 
-   MAKE_TIMESTAMP(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second NUMERIC) TIMESTAMP(6) WITHOUT TIME ZONE
-   MAKE_TIMESTAMP(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second DOUBLE PRECISION) TIMESTAMP(6) WITHOUT TIME ZONE
+   MAKE_TIMESTAMP(years BIGINT, months BIGINT, days BIGINT, hours BIGINT, minutes BIGINT, seconds NUMERIC) TIMESTAMP(6) WITHOUT TIME ZONE
+   MAKE_TIMESTAMP(years BIGINT, months BIGINT, days BIGINT, hours BIGINT, minutes BIGINT, seconds DOUBLE PRECISION) TIMESTAMP(6) WITHOUT TIME ZONE
 
 Builds a ``TIMESTAMP(6) WITHOUT TIME ZONE`` from its fields. The date fields
 are the same as ``MAKE_DATE`` and the time fields are the same as
@@ -374,8 +374,8 @@ MAKE_TIMESTAMPTZ
 
 .. code-block:: sql
 
-   MAKE_TIMESTAMPTZ(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second NUMERIC) TIMESTAMP(6) WITH TIME ZONE
-   MAKE_TIMESTAMPTZ(year BIGINT, month BIGINT, day BIGINT, hour BIGINT, minute BIGINT, second NUMERIC, time_zone VARCHAR) TIMESTAMP(6) WITH TIME ZONE
+   MAKE_TIMESTAMPTZ(years BIGINT, months BIGINT, days BIGINT, hours BIGINT, minutes BIGINT, seconds NUMERIC) TIMESTAMP(6) WITH TIME ZONE
+   MAKE_TIMESTAMPTZ(years BIGINT, months BIGINT, days BIGINT, hours BIGINT, minutes BIGINT, seconds NUMERIC, time_zone VARCHAR) TIMESTAMP(6) WITH TIME ZONE
 
 (and the same with a ``DOUBLE PRECISION`` second).
 

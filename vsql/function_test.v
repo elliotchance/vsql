@@ -101,6 +101,31 @@ fn test_custom_function_in_subquery() ! {
 	assert results == [4, 5, 6]
 }
 
+// A parameter can have a name before its type, which is shown by the PARAMETERS
+// view. It's upper case unless it's quoted, and a parameter without a name is
+// NULL.
+//
+// ISO/IEC 9075-11:2006, 6.31, PARAMETERS base table, Description, 7
+fn test_custom_function_parameter_names() ! {
+	mut db := open(':memory:')!
+	db.register_function('named(amount double precision, "Places" integer, varchar) varchar', fn (_ FunctionContext, a []Value) !Value {
+		return new_varchar_value('')
+	})!
+	db.register_function('unnamed(integer) integer', fn (_ FunctionContext, a []Value) !Value {
+		return new_integer_value(0)
+	})!
+
+	mut names := []string{}
+	for row in db.query("SELECT specific_name, parameter_name, data_type FROM information_schema.parameters WHERE specific_name IN ('NAMED_1', 'UNNAMED_1')")! {
+		names << '${row.get_string('SPECIFIC_NAME')!} ${row.get_string('PARAMETER_NAME')!} ${row.get_string('DATA_TYPE')!}'
+	}
+	assert names == ['NAMED_1 AMOUNT DOUBLE PRECISION', 'NAMED_1 Places INTEGER',
+		'NAMED_1 NULL CHARACTER VARYING', 'UNNAMED_1 NULL INTEGER']
+
+	assert register_function_error(mut db, 'foo(n nosuchtype) integer') == '42601 syntax error: unknown type: NOSUCHTYPE'
+	assert register_function_error(mut db, 'foo("n integer) integer') == '42601 syntax error: invalid function parameter: "n integer'
+}
+
 // A function is identified by its name and argument types, so another function
 // with the same ones can't be registered, even if it returns a different type.
 fn test_custom_function_already_exists() ! {

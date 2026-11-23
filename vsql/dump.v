@@ -268,8 +268,9 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 	mut schemas := catalog.schemas()!.filter(!it.is_virtual)
 
 	for pattern in options.include {
-		if pattern.to_upper().all_before('.') == 'INFORMATION_SCHEMA' {
-			return error('${pattern}: INFORMATION_SCHEMA cannot be included')
+		schema_name := pattern.to_upper().all_before('.')
+		if schema_name in system_schema_names {
+			return error('${pattern}: ${schema_name} cannot be included')
 		}
 	}
 	selection := DumpFilter{

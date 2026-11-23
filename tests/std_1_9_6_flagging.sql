@@ -110,7 +110,7 @@ ROLLBACK WORK;
 /* flags */
 EXPLAIN VALUES 1;
 -- flags: F641, F661, V001-01
--- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(1)
+-- EXPLAIN: VALUES (COL1 INTEGER) = ROW(1)
 
 /* extensions V001-02 */
 /* flags */

@@ -29,10 +29,10 @@ VALUES LPAD('a', 2.5);
 -- error 42883: function does not exist: LPAD(CHARACTER(1), NUMERIC(2, 1))
 
 VALUES RPAD('a', 2, 3);
--- error 42883: function does not exist: RPAD(CHARACTER(1), SMALLINT, SMALLINT)
+-- error 42883: function does not exist: RPAD(CHARACTER(1), INTEGER, INTEGER)
 
 VALUES LPAD(1, 2);
--- error 42883: function does not exist: LPAD(SMALLINT, SMALLINT)
+-- error 42883: function does not exist: LPAD(INTEGER, INTEGER)
 
 -- # LTRIM, RTRIM and BTRIM remove the leading, trailing, or both, characters
 -- # that are any of the characters of the trim string, or spaces without one
@@ -56,10 +56,10 @@ VALUES ROW(LTRIM(CAST(NULL AS VARCHAR(1))), BTRIM('a', CAST(NULL AS VARCHAR(1)))
 
 -- # Both must be strings (Syntax Rules, 15.b.i.1).
 VALUES BTRIM('a', 1);
--- error 42883: function does not exist: BTRIM(CHARACTER(1), SMALLINT)
+-- error 42883: function does not exist: BTRIM(CHARACTER(1), INTEGER)
 
 VALUES LTRIM(1);
--- error 42883: function does not exist: LTRIM(SMALLINT)
+-- error 42883: function does not exist: LTRIM(INTEGER)
 
 -- # EXPLAIN shows each function as it was written.
 /* extensions V001-01 */

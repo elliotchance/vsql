@@ -20,13 +20,13 @@ VALUES ROW(ROUND(1.255, 2), ROUND(-1.255, 2), ROUND(1.254, 2));
 -- # Negative decimal places round to the left of the decimal point.
 /* types */
 VALUES ROW(ROUND(1250, -2), ROUND(-1249, -2), ROUND(999, -3), ROUND(5, -4));
--- COL1: 1300 (NUMERIC(5)) COL2: -1200 (NUMERIC(5)) COL3: 1000 (NUMERIC(5)) COL4: 0 (NUMERIC(5))
+-- COL1: 1300 (NUMERIC(10)) COL2: -1200 (NUMERIC(10)) COL3: 1000 (NUMERIC(10)) COL4: 0 (NUMERIC(10))
 
 -- # More decimal places than the scale doesn't change the number, even a huge
 -- # number of them.
 /* types */
 VALUES ROW(ROUND(1.256, 10), ROUND(5, 9223372036854775807), ROUND(5, -9223372036854775807));
--- COL1: 1.256 (NUMERIC(4, 3)) COL2: 5 (NUMERIC(5)) COL3: 0 (NUMERIC(5))
+-- COL1: 1.256 (NUMERIC(4, 3)) COL2: 5 (NUMERIC(10)) COL3: 0 (NUMERIC(10))
 
 -- # Decimal places that aren't a constant can't be the scale, so the scale of
 -- # the number is kept.
@@ -65,7 +65,7 @@ SELECT ROUND(1.7e308, -308) FROM t;
 -- # TRUNC truncates towards zero.
 /* types */
 VALUES ROW(TRUNC(9.99), TRUNC(-9.99), TRUNC(-1.259, 2), TRUNC(CAST(NULL AS NUMERIC(1, 1))), TRUNC(1999, -3));
--- COL1: 9 (NUMERIC(1)) COL2: -9 (NUMERIC(1)) COL3: -1.25 (NUMERIC(3, 2)) COL4: NULL (NUMERIC(1)) COL5: 1000 (NUMERIC(5))
+-- COL1: 9 (NUMERIC(1)) COL2: -9 (NUMERIC(1)) COL3: -1.25 (NUMERIC(3, 2)) COL4: NULL (NUMERIC(1)) COL5: 1000 (NUMERIC(10))
 
 /* types */
 VALUES ROW(TRUNC(-1.99e0), TRUNC(1.99e0, 1), TRUNC(1999e0, -3));
@@ -84,13 +84,13 @@ SELECT ROUND(1.5, CAST(NULL AS INT)), ROUND(CAST(NULL AS INT)) FROM t;
 /* include t */
 SELECT ROUND(1, 2, 3) FROM t;
 SELECT TRUNC('a') FROM t;
--- error 42883: function does not exist: ROUND(SMALLINT, SMALLINT, SMALLINT)
+-- error 42883: function does not exist: ROUND(INTEGER, INTEGER, INTEGER)
 -- error 42883: function does not exist: TRUNC(CHARACTER(1))
 
 -- # SIGN is -1, 0 or 1. An integer keeps its type.
 /* types */
 VALUES ROW(SIGN(-5), SIGN(0), SIGN(CAST(7 AS INTEGER)), SIGN(CAST(-7 AS BIGINT)));
--- COL1: -1 (SMALLINT) COL2: 0 (SMALLINT) COL3: 1 (INTEGER) COL4: -1 (BIGINT)
+-- COL1: -1 (INTEGER) COL2: 0 (INTEGER) COL3: 1 (INTEGER) COL4: -1 (BIGINT)
 
 /* types */
 VALUES ROW(SIGN(-2.5), SIGN(0.0), SIGN(2.5));
@@ -107,7 +107,7 @@ VALUES PI();
 
 /* include t */
 SELECT PI(1) FROM t;
--- error 42883: function does not exist: PI(SMALLINT)
+-- error 42883: function does not exist: PI(INTEGER)
 
 -- # RANDOM is at least 0 and less than 1. It's a different value each time, so
 -- # it can't be in a CHECK.

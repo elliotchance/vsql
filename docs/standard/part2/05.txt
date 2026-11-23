@@ -87,7 +87,7 @@
 5.3/SR/26                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/SR/27                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql
 5.3/SR/28                implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
-5.3/SR/29                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql the smallest of SMALLINT, INTEGER and BIGINT that holds an integer, otherwise NUMERIC (with at most 1000 digits)
+5.3/SR/29                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql INTEGER for an integer, or BIGINT if it does not fit (never SMALLINT), otherwise NUMERIC (with at most 1000 digits)
 5.3/SR/30                impl-defined vsql/std_2_5_3_literal.v tests/std_2_5_3_approximate_literal_exact.sql DOUBLE PRECISION
 5.3/SR/31                implemented  vsql/lexer.v tests/std_2_5_3_approximate_literal_exact.sql
 5.3/SR/32                implemented  vsql/lexer.v tests/std_2_5_3_non_decimal_integers.sql

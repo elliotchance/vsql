@@ -191,8 +191,8 @@ VALUES '1' SIMILAR TO 1;
 VALUES TRUE SIMILAR TO 'T%';
 VALUES '1' SIMILAR TO '1' ESCAPE 1;
 VALUES CAST(NULL AS INT) SIMILAR TO '1';
--- error 42883: operator does not exist: SMALLINT SIMILAR TO CHARACTER
--- error 42883: operator does not exist: CHARACTER SIMILAR TO SMALLINT
+-- error 42883: operator does not exist: INTEGER SIMILAR TO CHARACTER
+-- error 42883: operator does not exist: CHARACTER SIMILAR TO INTEGER
 -- error 42883: operator does not exist: BOOLEAN SIMILAR TO CHARACTER
--- error 42883: operator does not exist: CHARACTER SIMILAR TO SMALLINT
+-- error 42883: operator does not exist: CHARACTER SIMILAR TO INTEGER
 -- error 42883: operator does not exist: INTEGER SIMILAR TO CHARACTER

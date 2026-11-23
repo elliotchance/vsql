@@ -88,7 +88,7 @@ VALUES CAST(100 AS INTERVAL DAY);
 VALUES CAST(1 AS INTERVAL DAY TO HOUR);
 VALUES CAST(1.5e0 AS INTERVAL DAY);
 -- error 22015: interval field overflow
--- error 42846: cannot coerce SMALLINT to INTERVAL DAY(2) TO HOUR
+-- error 42846: cannot coerce INTEGER to INTERVAL DAY(2) TO HOUR
 -- error 42846: cannot coerce DOUBLE PRECISION to INTERVAL DAY(2)
 
 -- # An interval with one field cast to an exact numeric is a number of that

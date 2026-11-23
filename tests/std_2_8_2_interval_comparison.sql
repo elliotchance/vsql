@@ -25,7 +25,7 @@ SELECT x = y, x < y FROM t;
 VALUES INTERVAL '1' YEAR = INTERVAL '365' DAY(3);
 VALUES INTERVAL '1' DAY = 1;
 -- error 42883: cannot compare INTERVAL YEAR(2) and INTERVAL DAY(3)
--- error 42883: cannot compare INTERVAL DAY(2) and SMALLINT
+-- error 42883: cannot compare INTERVAL DAY(2) and INTEGER
 
 -- # They're ordered and grouped in the same way, and an index on an interval
 -- # can be used to find a value.

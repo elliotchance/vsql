@@ -30,13 +30,13 @@ VALUES FALSE OR 'a';
 VALUES 1 IS TRUE;
 VALUES 1 IS NOT UNKNOWN;
 -- error 42804: data type mismatch in NOT: expected BOOLEAN but got CHARACTER(1)
--- error 42804: data type mismatch in NOT: expected BOOLEAN but got SMALLINT
--- error 42804: data type mismatch in AND: expected BOOLEAN but got SMALLINT
--- error 42804: data type mismatch in AND: expected BOOLEAN but got SMALLINT
+-- error 42804: data type mismatch in NOT: expected BOOLEAN but got INTEGER
+-- error 42804: data type mismatch in AND: expected BOOLEAN but got INTEGER
+-- error 42804: data type mismatch in AND: expected BOOLEAN but got INTEGER
 -- error 42804: data type mismatch in OR: expected BOOLEAN but got CHARACTER(1)
 -- error 42804: data type mismatch in OR: expected BOOLEAN but got CHARACTER(1)
--- error 42804: data type mismatch in IS: expected BOOLEAN but got SMALLINT
--- error 42804: data type mismatch in IS: expected BOOLEAN but got SMALLINT
+-- error 42804: data type mismatch in IS: expected BOOLEAN but got INTEGER
+-- error 42804: data type mismatch in IS: expected BOOLEAN but got INTEGER
 
 -- # A column has to be a BOOLEAN too, so an INTEGER column is an error, but
 -- # a comparison of it is fine.

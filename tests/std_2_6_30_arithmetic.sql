@@ -1,20 +1,21 @@
--- # An integer literal is the smallest integer type that holds it (5.3, Syntax
--- # Rules, 22), and arithmetic on two of the same type keeps that type.
+-- # An integer literal is an INTEGER unless it needs to be wider (5.3, Syntax
+-- # Rules, 29, the precision is implementation-defined), and arithmetic on two
+-- # of the same type keeps that type.
 /* types */
 VALUES 1 + 2;
--- COL1: 3 (SMALLINT)
+-- COL1: 3 (INTEGER)
 
 /* types */
 VALUES 1 - 2;
--- COL1: -1 (SMALLINT)
+-- COL1: -1 (INTEGER)
 
 /* types */
 VALUES 2 * 3;
--- COL1: 6 (SMALLINT)
+-- COL1: 6 (INTEGER)
 
 /* types */
 VALUES 6 / 2;
--- COL1: 3 (SMALLINT)
+-- COL1: 3 (INTEGER)
 
 -- # Adding or subtracting exact numbers keeps the larger scale, and multiplying
 -- # adds the scales (Syntax Rules, 1.c.ii and 1.c.iii). vsql gives a division
@@ -46,7 +47,7 @@ VALUES 2.5 / 0.0;
 
 /* types */
 VALUES -123;
--- COL1: -123 (SMALLINT)
+-- COL1: -123 (INTEGER)
 
 /* types */
 VALUES +1.23;
@@ -56,12 +57,19 @@ VALUES +1.23;
 VALUES 1.5 + 2.4 * 7.0;
 -- COL1: 18.30 (NUMERIC(5, 2))
 
--- # 30000 is a SMALLINT, so 30000 + 30000 is out of range for the SMALLINT
--- # result (General Rules, 5.a). A wider operand makes a wider result.
-VALUES 30000 + 30000;
-VALUES CAST(30000 AS INTEGER) + 30000;
+-- # A result that doesn't fit in the type is out of range (General Rules,
+-- # 5.a). Small literals are INTEGER, so 9000 * 8 fits, but two SMALLINTs
+-- # don't. A wider operand makes a wider result.
+VALUES 9000 * 8;
+VALUES CAST(30000 AS SMALLINT) + CAST(30000 AS SMALLINT);
+VALUES CAST(30000 AS SMALLINT) + 30000;
+VALUES 2000000000 + 2000000000;
+VALUES CAST(2000000000 AS BIGINT) + 2000000000;
+-- COL1: 72000
 -- error 22003: numeric value out of range
 -- COL1: 60000
+-- error 22003: numeric value out of range
+-- COL1: 4000000000
 
 -- # If either operand is approximate, the result is approximate (Syntax
 -- # Rules, 1.b). It's DOUBLE PRECISION, like the rows of a VALUES, unless both
@@ -96,11 +104,11 @@ VALUES 12 * CAST(10.5e0 AS INTEGER);
 -- # (Syntax Rules, 1.c.ii) and room for every digit of the integer type.
 /* types */
 VALUES 1 + 2.5;
--- COL1: 3.5 (NUMERIC(7, 1))
+-- COL1: 3.5 (NUMERIC(12, 1))
 
 /* types */
 VALUES 2.5 + 1;
--- COL1: 3.5 (NUMERIC(7, 1))
+-- COL1: 3.5 (NUMERIC(12, 1))
 
 VALUES 1 - 0.5;
 VALUES CAST(1 AS INTEGER) + 0.5;

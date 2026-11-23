@@ -98,7 +98,7 @@ SELECT id FROM t WHERE REPLACE(c, ' ', '') = 'xy';
 
 -- # The arguments must be strings.
 VALUES REPLACE(123, '2', 'x');
--- error 42883: function does not exist: REPLACE(SMALLINT, CHARACTER(1), CHARACTER(1))
+-- error 42883: function does not exist: REPLACE(INTEGER, CHARACTER(1), CHARACTER(1))
 
 VALUES REPLACE('abc', 'b');
 -- error 42883: function does not exist: REPLACE(CHARACTER(3), CHARACTER(1))

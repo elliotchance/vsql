@@ -3,7 +3,7 @@
 
 /* types */
 VALUES WIDTH_BUCKET(5, 0, 10, 5);
--- COL1: 3 (SMALLINT)
+-- COL1: 3 (INTEGER)
 
 VALUES WIDTH_BUCKET(0, 0, 10, 5), WIDTH_BUCKET(1.99, 0, 10, 5), WIDTH_BUCKET(2, 0, 10, 5), WIDTH_BUCKET(9.99, 0, 10, 5);
 -- COL1: 1
@@ -34,7 +34,7 @@ VALUES WIDTH_BUCKET(-5, -10, -1, 3), WIDTH_BUCKET(1, 0, 3, 3), WIDTH_BUCKET(2, 0
 
 /* types */
 VALUES WIDTH_BUCKET(3.3e0, 0e0, 10e0, 3);
--- COL1: 1 (SMALLINT)
+-- COL1: 1 (INTEGER)
 
 VALUES WIDTH_BUCKET(0.3e0, 0, 0.9e0, 3), WIDTH_BUCKET(5, 0e0, 10, 4), WIDTH_BUCKET(CAST(2.5 AS REAL), 0, 10, 4);
 -- COL1: 2
@@ -82,6 +82,6 @@ VALUES WIDTH_BUCKET('a', 0, 10, 4);
 -- error 2201G: invalid argument for width bucket function
 -- error 22003: numeric value out of range
 -- error 22003: numeric value out of range
--- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, NUMERIC(2, 1))
--- error 42883: function does not exist: WIDTH_BUCKET(SMALLINT, SMALLINT, SMALLINT, DOUBLE PRECISION)
--- error 42883: function does not exist: WIDTH_BUCKET(CHARACTER(1), SMALLINT, SMALLINT, SMALLINT)
+-- error 42883: function does not exist: WIDTH_BUCKET(INTEGER, INTEGER, INTEGER, NUMERIC(2, 1))
+-- error 42883: function does not exist: WIDTH_BUCKET(INTEGER, INTEGER, INTEGER, DOUBLE PRECISION)
+-- error 42883: function does not exist: WIDTH_BUCKET(CHARACTER(1), INTEGER, INTEGER, INTEGER)

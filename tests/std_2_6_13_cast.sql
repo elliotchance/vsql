@@ -76,7 +76,7 @@ VALUES CAST(123 AS SMALLINT);
 -- COL1: 123 (SMALLINT)
 
 VALUES CAST(123 AS BOOLEAN);
--- error 42846: cannot coerce SMALLINT to BOOLEAN
+-- error 42846: cannot coerce INTEGER to BOOLEAN
 
 -- # A string cast to a BOOLEAN is trimmed and read as a boolean literal in any
 -- # case, so 'unknown' is UNKNOWN (the null value). Anything else, such as 't'

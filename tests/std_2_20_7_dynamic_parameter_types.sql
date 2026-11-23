@@ -224,8 +224,8 @@ SELECT x FROM t WHERE CASE WHEN ? THEN b END;
 /* params 2.5 */
 VALUES 1, ?;
 -- sql: VALUES 1, 2.5e0
--- COL1: 1 (SMALLINT)
--- COL1: 2 (SMALLINT)
+-- COL1: 1 (INTEGER)
+-- COL1: 2 (INTEGER)
 
 -- # The functions with their own rules, the start position and length of a
 -- # SUBSTRING, and the arguments of OVERLAY.
@@ -233,7 +233,7 @@ VALUES 1, ?;
 /* params 'abcde' 'ab' 'abcd' 7 3 */
 VALUES ROW(CHAR_LENGTH(?), OCTET_LENGTH(?), POSITION(? IN 'xabcd'), MOD(?, 4), MOD(10, ?));
 -- sql: VALUES ROW(CHAR_LENGTH('abcde'), OCTET_LENGTH('ab'), POSITION('abcd' IN 'xabcd'), MOD(7.0e0, 4), MOD(10, 3.0e0))
--- COL1: 5 (INTEGER) COL2: 2 (INTEGER) COL3: 2 (INTEGER) COL4: 3 (SMALLINT) COL5: 1 (SMALLINT)
+-- COL1: 5 (INTEGER) COL2: 2 (INTEGER) COL3: 2 (INTEGER) COL4: 3 (INTEGER) COL5: 1 (INTEGER)
 
 /* params 'xy' 2 1 */
 VALUES OVERLAY('abc' PLACING ? FROM ? FOR ?);

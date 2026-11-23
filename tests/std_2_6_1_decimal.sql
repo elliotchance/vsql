@@ -75,7 +75,7 @@ VALUES CAST(CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(
 
 /* types */
 VALUES CAST(1.23 AS DECIMAL(3,2)) / 5;
--- COL1: 0.24 (DECIMAL(8, 2))
+-- COL1: 0.24 (DECIMAL(13, 2))
 
 -- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is 0.24,
 -- # not 0.246, before it's cast.

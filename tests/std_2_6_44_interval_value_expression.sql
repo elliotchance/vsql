@@ -53,7 +53,7 @@ VALUES INTERVAL '1' DAY * INTERVAL '1' DAY;
 -- error 22012: division by zero
 -- error 22015: interval field overflow
 -- error 22015: interval field overflow
--- error 42883: operator does not exist: SMALLINT / INTERVAL DAY(2)
+-- error 42883: operator does not exist: INTEGER / INTERVAL DAY(2)
 -- error 42883: operator does not exist: INTERVAL DAY(2) * INTERVAL DAY(2)
 
 -- # A sign makes the interval negative, or doesn't change it (6.44, General
@@ -114,7 +114,7 @@ VALUES (INTERVAL '1' DAY - INTERVAL '1' DAY) DAY;
 VALUES (1 - 2) DAY;
 -- error 42883: operator does not exist: (DATE - TIMESTAMP(0) WITHOUT TIME ZONE) DAY(2)
 -- error 42883: operator does not exist: (INTERVAL DAY(2) - INTERVAL DAY(2)) DAY(2)
--- error 42883: operator does not exist: (SMALLINT - SMALLINT) DAY(2)
+-- error 42883: operator does not exist: (INTEGER - INTEGER) DAY(2)
 
 -- # Only a dynamic parameter or the difference of two datetimes in parentheses
 -- # can have an interval qualifier (6.44, Syntax Rules, 5).

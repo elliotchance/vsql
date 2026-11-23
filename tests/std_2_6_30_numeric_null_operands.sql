@@ -24,8 +24,8 @@ VALUES ROW(FLOOR(CAST(NULL AS DOUBLE PRECISION)), FLOOR(CAST(NULL AS NUMERIC(5, 
 -- # A <numeric primary> must be numeric (Syntax Rules, 3).
 VALUES 'a' + 1;
 VALUES 1 * TRUE;
--- error 42883: operator does not exist: CHARACTER + SMALLINT
--- error 42883: operator does not exist: SMALLINT * BOOLEAN
+-- error 42883: operator does not exist: CHARACTER + INTEGER
+-- error 42883: operator does not exist: INTEGER * BOOLEAN
 
 -- # "--" always starts a comment, so "3 --1" is 3. That's why two minus
 -- # signs need a separator between them (Syntax Rules, 4).

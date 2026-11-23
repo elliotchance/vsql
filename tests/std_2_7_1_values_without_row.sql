@@ -10,7 +10,7 @@ VALUES (1, 'a', TRUE, 1.5);
 
 /* extensions V001-01 */
 EXPLAIN VALUES (1, 'a');
--- EXPLAIN: VALUES (COL1 SMALLINT, COL2 CHARACTER(1)) = ROW(1, 'a')
+-- EXPLAIN: VALUES (COL1 INTEGER, COL2 CHARACTER(1)) = ROW(1, 'a')
 
 -- # One value in parentheses is an expression, so it's one column.
 VALUES (1);
@@ -74,7 +74,7 @@ VALUES (1, 'a'), (200000, 'bcd');
 -- COL1: 200000 COL2: bcd
 
 VALUES (1, 'a'), ('b', 2);
--- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(1)
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected INTEGER but got CHARACTER(1)
 
 -- # NULL and DEFAULT get their type from a column, so they can't be in a query.
 VALUES (1, NULL);
@@ -146,9 +146,9 @@ SELECT * FROM ((VALUES (1, 2)));
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM (VALUES (123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
 -- EXPLAIN: FOO:
--- EXPLAIN:   VALUES (BAR SMALLINT, BAZ CHARACTER(5)) = ROW(123, 'hi'), ROW(456, 'there')
--- EXPLAIN: TABLE FOO (BAR SMALLINT, BAZ CHARACTER(5))
--- EXPLAIN: EXPR (FOO.BAR SMALLINT, FOO.BAZ CHARACTER(5))
+-- EXPLAIN:   VALUES (BAR INTEGER, BAZ CHARACTER(5)) = ROW(123, 'hi'), ROW(456, 'there')
+-- EXPLAIN: TABLE FOO (BAR INTEGER, BAZ CHARACTER(5))
+-- EXPLAIN: EXPR (FOO.BAR INTEGER, FOO.BAZ CHARACTER(5))
 
 /* include t */
 SELECT t.x, v.b FROM t INNER JOIN (VALUES (1, 'one'), (2, 'two')) AS v (a, b) ON t.x = v.a;

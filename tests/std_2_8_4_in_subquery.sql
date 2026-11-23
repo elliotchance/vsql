@@ -104,7 +104,7 @@ VALUES 1 IN (SELECT x, y FROM t1);
 VALUES 1 IN (SELECT y FROM t1);
 -- error 42601: syntax error: subquery must return only one column
 -- error 42601: syntax error: subquery must return only one column
--- error 42883: cannot compare SMALLINT and CHARACTER VARYING(10)
+-- error 42883: cannot compare INTEGER and CHARACTER VARYING(10)
 
 -- # The column of a UNION ALL has a type that fits both queries, so character
 -- # strings from either one are found.

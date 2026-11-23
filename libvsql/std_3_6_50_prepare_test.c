@@ -71,7 +71,7 @@ UTEST_F(db, 6_50_prepare_describe_parameter_count) {
                        SQL_NTS),
             SQL_SUCCESS);
   EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 3);
-  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_SMALLINT);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_INTEGER);
   EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_TYPE), SQL_CHAR);
   EXPECT_EQ(desc_int(ipd, 2, SQL_DESC_LENGTH), 1);
   EXPECT_EQ(desc_short(ipd, 3, SQL_DESC_TYPE), SQL_BOOLEAN);

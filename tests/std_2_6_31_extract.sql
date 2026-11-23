@@ -54,7 +54,7 @@ VALUES EXTRACT(TIMEZONE_HOUR FROM TIMESTAMP '2026-01-02 03:04:05');
 -- # The source must be a datetime or an interval (see
 -- # std_2_6_31_extract_interval.sql).
 VALUES EXTRACT(YEAR FROM 2026);
--- error 42804: data type mismatch in EXTRACT(YEAR FROM ...): expected DATE, TIMESTAMP or INTERVAL but got SMALLINT
+-- error 42804: data type mismatch in EXTRACT(YEAR FROM ...): expected DATE, TIMESTAMP or INTERVAL but got INTEGER
 
 VALUES EXTRACT(FORTNIGHT FROM DATE '2026-11-14');
 -- error 42601: syntax error: EXTRACT has no field FORTNIGHT

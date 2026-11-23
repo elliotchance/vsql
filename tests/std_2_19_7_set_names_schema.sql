@@ -20,7 +20,7 @@ SET NAMES '';
 SET NAMES 1;
 EXPLAIN SET NAMES 'UTF8';
 SET NAMES;
--- error 42804: data type mismatch for SET NAMES: expected character string but got SMALLINT
+-- error 42804: data type mismatch for SET NAMES: expected character string but got INTEGER
 -- error 42601: syntax error: Cannot EXPLAIN SET NAMES
 -- error 42601: syntax error: unexpected $end at line 1, column 10 near "SET NAMES"
 
@@ -64,8 +64,8 @@ VALUES CURRENT_SCHEMA;
 SET CATALOG ' :memory: ';
 VALUES CURRENT_CATALOG;
 SET SCHEMA '"PUBLIC"';
--- error 42804: data type mismatch for SET SCHEMA: expected character string but got SMALLINT
--- error 42804: data type mismatch for SET CATALOG: expected character string but got SMALLINT
+-- error 42804: data type mismatch for SET SCHEMA: expected character string but got INTEGER
+-- error 42804: data type mismatch for SET CATALOG: expected character string but got INTEGER
 -- msg: SET SCHEMA 1
 -- COL1: PUBLIC
 -- msg: SET CATALOG 1

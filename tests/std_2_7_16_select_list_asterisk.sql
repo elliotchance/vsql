@@ -43,7 +43,7 @@ SELECT bar.*, foo.*, x FROM foo JOIN bar ON TRUE;
 /* extensions V001-01 */
 EXPLAIN SELECT foo.*, 1 FROM foo;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X INTEGER, Y INTEGER)
--- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X INTEGER, ":memory:".PUBLIC.FOO.Y INTEGER, COL3 SMALLINT)
+-- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X INTEGER, ":memory:".PUBLIC.FOO.Y INTEGER, COL3 INTEGER)
 
 -- # The table of a qualified asterisk must be in the FROM clause (Syntax Rules,
 -- # 8.f.vii).

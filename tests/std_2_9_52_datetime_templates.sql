@@ -149,7 +149,7 @@ VALUES CAST('2024' AS INT FORMAT 'YYYY');
 VALUES CAST(DATE '2024-03-05' AS TIMESTAMP FORMAT 'YYYY');
 VALUES CAST('2024' AS VARCHAR(10) FORMAT 'YYYY');
 VALUES CAST(NULL AS DATE FORMAT 'YYYY');
--- error 42601: syntax error: CAST from SMALLINT to CHARACTER VARYING(10) cannot have a FORMAT
+-- error 42601: syntax error: CAST from INTEGER to CHARACTER VARYING(10) cannot have a FORMAT
 -- error 42601: syntax error: CAST from CHARACTER(4) to INTEGER cannot have a FORMAT
 -- error 42601: syntax error: CAST from DATE to TIMESTAMP(6) WITHOUT TIME ZONE cannot have a FORMAT
 -- error 42601: syntax error: CAST from CHARACTER(4) to CHARACTER VARYING(10) cannot have a FORMAT

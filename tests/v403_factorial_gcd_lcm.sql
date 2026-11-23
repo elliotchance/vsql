@@ -93,10 +93,10 @@ VALUES LCM(CAST(-9223372036854775808 AS BIGINT), 1);
 
 -- # The arguments must be integers.
 VALUES GCD(1.5, 2);
--- error 42883: function does not exist: GCD(NUMERIC(2, 1), SMALLINT)
+-- error 42883: function does not exist: GCD(NUMERIC(2, 1), INTEGER)
 
 VALUES LCM(4, 6e0);
--- error 42883: function does not exist: LCM(SMALLINT, DOUBLE PRECISION)
+-- error 42883: function does not exist: LCM(INTEGER, DOUBLE PRECISION)
 
 -- # NULL in, NULL out.
 /* types */
@@ -135,7 +135,7 @@ SELECT GCD(?, b), LCM(c, ?) FROM t WHERE a = 12;
 /* params 4 */
 VALUES LCM(?, 10);
 -- sql: VALUES LCM(4.0e0, 10)
--- COL1: 20 (SMALLINT)
+-- COL1: 20 (INTEGER)
 
 -- # With no other argument, the type can't be determined, like MOD(?, ?).
 /* params 12 18 */

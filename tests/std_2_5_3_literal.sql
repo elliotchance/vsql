@@ -1,9 +1,10 @@
 -- # An exact literal's scale is the number of digits after the period (Syntax
--- # Rules, 22). A whole number gets the smallest integer type that holds it,
+-- # Rules, 29). A whole number is an INTEGER, or a BIGINT or NUMERIC if it doesn't
+-- # fit (the precision is implementation-defined),
 -- # but any period makes it NUMERIC, even with no digits after it.
 /* types */
 VALUES 1;
--- COL1: 1 (SMALLINT)
+-- COL1: 1 (INTEGER)
 
 /* types */
 VALUES 1.23;
@@ -19,7 +20,7 @@ VALUES .23;
 
 /* types */
 VALUES 789;
--- COL1: 789 (SMALLINT)
+-- COL1: 789 (INTEGER)
 
 -- # An exponent makes it an approximate literal, which is DOUBLE PRECISION
 -- # (Syntax Rules, 23). There can't be spaces around the E, because a token
@@ -106,14 +107,14 @@ VALUES 'a'
 -- # arithmetic on them.
 /* types */
 VALUES ROW(123, 456);
--- COL1: 123 (SMALLINT) COL2: 456 (SMALLINT)
+-- COL1: 123 (INTEGER) COL2: 456 (INTEGER)
 
 /* types */
 VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
--- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
+-- COL1: 17 (INTEGER) COL2: 25 (INTEGER)
 
 -- # These are range tests to make sure that literals are given the correct
--- # smallest exact types.
+-- # exact types. A literal is never a SMALLINT.
 
 /* types */
 VALUES -9223372036854775809;
@@ -137,11 +138,11 @@ VALUES -32769;
 
 /* types */
 VALUES -32768;
--- COL1: -32768 (SMALLINT)
+-- COL1: -32768 (INTEGER)
 
 /* types */
 VALUES 32767;
--- COL1: 32767 (SMALLINT)
+-- COL1: 32767 (INTEGER)
 
 /* types */
 VALUES 32768;
@@ -178,7 +179,7 @@ VALUES -999999999999999999;
 -- # Leading zeros don't count, only the value decides the type.
 /* types */
 VALUES 0000000000000000000032767;
--- COL1: 32767 (SMALLINT)
+-- COL1: 32767 (INTEGER)
 
 /* types */
 VALUES 0000000000000000000032768;

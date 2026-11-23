@@ -115,6 +115,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 4
 	typ := varying_string_type('SUBSTRING', compiled_value.typ)!
+	c.flag_clob_function(typ)
 
 	return CompileResult{
 		run:          fn [e, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -135,21 +136,22 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
 
-			if e.using != 'OCTETS' {
-				characters := value.string_value().runes()
-				start, end := substring_range(characters.len, substring_position('SUBSTRING',
+			// A large value where each character is one octet is counted in
+			// octets, so that only the part that's in the result is read.
+			if e.using == 'OCTETS' || value.is_large_single_octet() {
+				start, end := substring_range(value.octet_length(), substring_position('SUBSTRING',
 					'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
 					'string length', for_value)!)!
 
-				return new_varchar_value(characters[start..end].string()).with_type(typ)
+				return new_varchar_value(value.octets(start, end)!).with_type(typ)
 			}
 
-			str := value.string_value()
-			start, end := substring_range(str.len, substring_position('SUBSTRING',
+			characters := value.string_value().runes()
+			start, end := substring_range(characters.len, substring_position('SUBSTRING',
 				'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
 				'string length', for_value)!)!
 
-			return new_varchar_value(str.substr(start, end)).with_type(typ)
+			return new_varchar_value(characters[start..end].string()).with_type(typ)
 		}
 		typ:          typ
 		contains_agg: compiled_value.contains_agg || compiled_from.contains_agg
@@ -419,7 +421,7 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 					length), false, 0)!
 
 				return new_varchar_value(limit_concatenation(characters[before_start..before_end].string() +
-					placing.string_value() + characters[after_start..after_end].string())!).with_type(typ)
+					placing.string_value() + characters[after_start..after_end].string(), typ)!).with_type(typ)
 			}
 
 			str := value.string_value()
@@ -433,7 +435,7 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 				false, 0)!
 
 			return new_varchar_value(limit_concatenation(str.substr(before_start, before_end) +
-				placing.string_value() + str.substr(after_start, after_end))!).with_type(typ)
+				placing.string_value() + str.substr(after_start, after_end), typ)!).with_type(typ)
 		}
 		typ:          typ
 		contains_agg: compiled_value.contains_agg || compiled_placing.contains_agg
@@ -637,6 +639,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14
 	typ := varying_string_type('TRIM', compiled_source.typ)!
+	c.flag_clob_function(typ)
 
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14.c
 	if !compiled_character.typ.typ.is_string() {
@@ -738,10 +741,18 @@ fn (e TrimFunction) compile_binary(mut c Compiler, compiled_source CompileResult
 }
 
 // varying_string_type is the declared type of SUBSTRING and TRIM, which is a
-// CHARACTER VARYING with the (maximum) length of the source string.
+// CHARACTER VARYING with the (maximum) length of the source string, or a
+// CHARACTER LARGE OBJECT of the same maximum length if the source is one.
+//
+// ISO/IEC 9075-2:2023, 4.3.3.4, Operations involving large object character strings
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 4.a, 7.b and 14.b
 fn varying_string_type(function_name string, source Type) !Type {
 	if !source.typ.is_string() {
 		return sqlstate_42883('function does not exist: ${function_name}(${source})')
+	}
+
+	if source.typ == .is_clob {
+		return Type{.is_clob, source.size, 0, false, false}
 	}
 
 	return new_type('CHARACTER VARYING', source.size, 0)
@@ -961,5 +972,15 @@ fn (e PadFunction) compile(mut c Compiler) !CompileResult {
 		}
 		typ:          typ
 		contains_agg: contains_agg
+	}
+}
+
+// flag_clob_function flags a <character substring function> or <trim source>
+// of a CHARACTER LARGE OBJECT (T050).
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 17
+fn (mut c Compiler) flag_clob_function(typ Type) {
+	if c.conn.flagging && typ.typ == .is_clob {
+		c.conn.flagged_features << 'T050'
 	}
 }

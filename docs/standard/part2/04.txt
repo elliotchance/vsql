@@ -21,9 +21,9 @@
 # 4.2.5, Properties of distinct
 4.2.5                    implemented  vsql/std_2_7_16_query_specification.v tests/std_2_7_16_select_distinct.sql
 # 4.3, Character strings
-4.3                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql no CHARACTER LARGE OBJECT (T041)
+4.3                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 # 4.3.1, Introduction to character strings
-4.3.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql no CHARACTER LARGE OBJECT (T041)
+4.3.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_varying.sql
 # 4.3.2, Comparison of character strings
 4.3.2                    implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql
 # 4.3.3, Operations involving character strings
@@ -35,7 +35,7 @@
 # 4.3.3.3, Other operators involving character strings
 4.3.3.3                  implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_31_length.sql
 # 4.3.3.4, Operations involving large object character strings
-4.3.3.4                  n/a          - - large objects (T041)
+4.3.3.4                  implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_clob_functions.sql,tests/impl_large_values.sql
 # 4.3.4, Character repertoires
 4.3.4                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
 # 4.3.5, Character encoding forms

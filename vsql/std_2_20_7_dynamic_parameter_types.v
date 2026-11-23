@@ -437,7 +437,9 @@ fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern Co
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxx.1 and 5.a.xxx
 fn (mut c Compiler) with_argument_types(function_name string, args []CompileResult) []CompileResult {
 	return match function_name {
-		'CHAR_LENGTH', 'OCTET_LENGTH' {
+		// UPPER and LOWER also have a CHARACTER LARGE OBJECT form, but a dynamic
+		// parameter is a CHARACTER VARYING, like any other character string.
+		'CHAR_LENGTH', 'OCTET_LENGTH', 'UPPER', 'LOWER' {
 			args.map(c.with_type(it, character_type(untyped_parameter_type)))
 		}
 		'POSITION' {

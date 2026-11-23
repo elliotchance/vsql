@@ -135,3 +135,16 @@ SELECT * FROM t;
 -- 1: ID: 1 C: abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij
 -- 1: msg: COMMIT
 -- 1: ID: 1 C: ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJ
+
+-- # SUBSTRING (counting octets, or characters when each one is an octet),
+-- # CHAR_LENGTH and OCTET_LENGTH of a large CHARACTER LARGE OBJECT only read
+-- # the part that's needed. Other characters are counted after it's read.
+CREATE TABLE t (id INT, c CLOB);
+INSERT INTO t VALUES (1, 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijXYZ');
+INSERT INTO t VALUES (2, 'é😊cdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijXYZ');
+SELECT id, SUBSTRING(c FROM 101), SUBSTRING(c FROM 2 FOR 2), SUBSTRING(c FROM 102 USING OCTETS), CHAR_LENGTH(c), OCTET_LENGTH(c) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- ID: 1 COL2: XYZ COL3: bc COL4: YZ COL5: 103 COL6: 103
+-- ID: 2 COL2: XYZ COL3: 😊c COL4: hijXYZ COL5: 103 COL6: 107

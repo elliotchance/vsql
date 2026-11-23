@@ -310,6 +310,22 @@ td a { font-weight: 600; }
   .section.split .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s7); align-items: end; max-width: none; }
   .section.split .section-head p { margin-bottom: 0; }
 }
+/* lightbox */
+.lightbox { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: var(--s5); background: rgba(8, 12, 14, 0.88); backdrop-filter: blur(8px); }
+.lightbox[hidden] { display: none; }
+.lightbox-panel { width: 100%; max-width: 1100px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--s4); box-shadow: var(--shadow); animation: lightbox-in 200ms var(--ease) both; }
+.lightbox-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s4); }
+.lightbox-title { font-size: var(--text-sm); color: var(--muted); margin: 0; }
+.lightbox-count { font: var(--text-xs) var(--mono); color: var(--muted); }
+.lightbox-controls { display: flex; align-items: center; gap: var(--s2); }
+.lightbox-stage { display: grid; place-items: center; gap: var(--s3); }
+.lightbox-stage img { max-width: 100%; max-height: min(68vh, 760px); width: auto; object-fit: contain; border-radius: var(--r-sm); }
+.lightbox-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.icon-btn { width: 40px; height: 40px; padding: 0; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--surface); color: var(--fg); display: inline-grid; place-items: center; cursor: pointer; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.icon-btn:hover { color: var(--accent); border-color: var(--accent); }
+.icon-btn:active { transform: translateY(1px); }
+@keyframes lightbox-in { from { opacity: 0; transform: scale(0.98) translateY(8px); } to { opacity: 1; transform: none; } }
+
 /* motion */
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(14px); }
@@ -710,6 +726,31 @@ Coffee |  4.50
   </div>
 </footer>
 
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" hidden>
+  <div class="lightbox-panel">
+    <div class="lightbox-bar">
+      <p class="lightbox-title" id="lightbox-title"></p>
+      <div class="lightbox-controls">
+        <span class="lightbox-count" id="lightbox-count" aria-live="polite"></span>
+        <button class="icon-btn" type="button" id="lightbox-close" aria-label="Close image viewer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="lightbox-stage">
+      <img id="lightbox-image" alt="">
+      <div class="lightbox-nav">
+        <button class="icon-btn" type="button" id="lightbox-prev" aria-label="Previous image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button class="icon-btn" type="button" id="lightbox-next" aria-label="Next image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
@@ -759,6 +800,69 @@ Coffee |  4.50
       if (event.key === 'End') next = tabs[tabs.length - 1];
       if (next) { event.preventDefault(); activate(next, true); }
     });
+  });
+
+  var shots = Array.prototype.slice.call(document.querySelectorAll('.gallery .shot'));
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImage = document.getElementById('lightbox-image');
+  var lightboxTitle = document.getElementById('lightbox-title');
+  var lightboxCount = document.getElementById('lightbox-count');
+  var closeButton = document.getElementById('lightbox-close');
+  var prevButton = document.getElementById('lightbox-prev');
+  var nextButton = document.getElementById('lightbox-next');
+  var current = 0;
+  var opener = null;
+
+  function show(index) {
+    current = (index + shots.length) % shots.length;
+    var shot = shots[current];
+    var image = shot.querySelector('img');
+    var caption = shot.querySelector('figcaption');
+    lightboxImage.src = image.src;
+    lightboxImage.alt = image.alt;
+    lightboxTitle.textContent = caption ? caption.textContent : image.alt;
+    lightboxCount.textContent = (current + 1) + ' / ' + shots.length;
+  }
+  function openLightbox(index, trigger) {
+    opener = trigger;
+    show(index);
+    lightbox.hidden = false;
+    document.body.style.overflow = 'hidden';
+    closeButton.focus();
+  }
+  function closeLightbox() {
+    lightbox.hidden = true;
+    document.body.style.overflow = '';
+    if (opener) opener.focus();
+  }
+
+  shots.forEach(function (shot, index) {
+    var link = shot.querySelector('a');
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      openLightbox(index, link);
+    });
+  });
+  closeButton.addEventListener('click', closeLightbox);
+  prevButton.addEventListener('click', function () { show(current - 1); });
+  nextButton.addEventListener('click', function () { show(current + 1); });
+  lightbox.addEventListener('click', function (event) {
+    if (event.target === lightbox) closeLightbox();
+  });
+  lightbox.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') { closeLightbox(); return; }
+    if (event.key === 'ArrowLeft') { show(current - 1); return; }
+    if (event.key === 'ArrowRight') { show(current + 1); return; }
+    if (event.key === 'Tab') {
+      var focusable = [closeButton, prevButton, nextButton];
+      var at = focusable.indexOf(document.activeElement);
+      if (at === -1) return;
+      var nextAt = event.shiftKey
+        ? (at - 1 + focusable.length) % focusable.length
+        : (at + 1) % focusable.length;
+      event.preventDefault();
+      focusable[nextAt].focus();
+    }
   });
 })();
 </script>

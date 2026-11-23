@@ -371,6 +371,22 @@ fn func_floor_numeric(_ FunctionContext, args []Value) !Value {
 	return new_numeric_value_from_numeric(t)
 }
 
+// FLOOR(SMALLINT) SMALLINT
+// FLOOR(INTEGER) INTEGER
+// FLOOR(BIGINT) BIGINT
+// CEIL(SMALLINT) SMALLINT
+// CEIL(INTEGER) INTEGER
+// CEIL(BIGINT) BIGINT
+//
+// An integer is already rounded. The result must have the radix of the
+// argument, which is binary for SMALLINT, INTEGER and BIGINT (6.1, Syntax
+// Rules, 30), so it keeps the argument's type rather than being a NUMERIC.
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 20.a
+fn func_floor_integer(_ FunctionContext, args []Value) !Value {
+	return args[0]
+}
+
 // WIDTH_BUCKET(NUMERIC, NUMERIC, NUMERIC, COUNT) COUNT
 // WIDTH_BUCKET(DOUBLE PRECISION, DOUBLE PRECISION, DOUBLE PRECISION, COUNT) COUNT
 //

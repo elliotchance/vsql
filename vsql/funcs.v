@@ -114,8 +114,14 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'ATAN', [double_precision], false, func_atan, double_precision, false, true, []})!
 	conn.register_func(Func{'CEIL', [double_precision], false, func_ceil, double_precision, false, true, []})!
 	conn.register_func(Func{'CEIL', [numeric], false, func_ceil_numeric, numeric, false, true, []})!
+	conn.register_func(Func{'CEIL', [smallint], false, func_floor_integer, smallint, false, true, []})!
+	conn.register_func(Func{'CEIL', [integer], false, func_floor_integer, integer, false, true, []})!
+	conn.register_func(Func{'CEIL', [bigint], false, func_floor_integer, bigint, false, true, []})!
 	conn.register_func(Func{'CEILING', [double_precision], false, func_ceil, double_precision, false, true, []})!
 	conn.register_func(Func{'CEILING', [numeric], false, func_ceil_numeric, numeric, false, true, []})!
+	conn.register_func(Func{'CEILING', [smallint], false, func_floor_integer, smallint, false, true, []})!
+	conn.register_func(Func{'CEILING', [integer], false, func_floor_integer, integer, false, true, []})!
+	conn.register_func(Func{'CEILING', [bigint], false, func_floor_integer, bigint, false, true, []})!
 	conn.register_func(Func{'CHARACTER_LENGTH', [varchar], false, func_char_length, integer, false, true, []})!
 	conn.register_func(Func{'CHAR_LENGTH', [varchar], false, func_char_length, integer, false, true, []})!
 	conn.register_func(Func{'COS', [double_precision], false, func_cos, double_precision, false, true, []})!
@@ -123,6 +129,9 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'EXP', [double_precision], false, func_exp, double_precision, false, true, []})!
 	conn.register_func(Func{'FLOOR', [double_precision], false, func_floor, double_precision, false, true, []})!
 	conn.register_func(Func{'FLOOR', [numeric], false, func_floor_numeric, numeric, false, true, []})!
+	conn.register_func(Func{'FLOOR', [smallint], false, func_floor_integer, smallint, false, true, []})!
+	conn.register_func(Func{'FLOOR', [integer], false, func_floor_integer, integer, false, true, []})!
+	conn.register_func(Func{'FLOOR', [bigint], false, func_floor_integer, bigint, false, true, []})!
 	conn.register_func(Func{'LN', [double_precision], false, func_ln, double_precision, false, true, []})!
 	conn.register_func(Func{'LOG', [double_precision, double_precision], false, func_log, double_precision, false, true, []})!
 	conn.register_func(Func{'LOG10', [double_precision], false, func_log10, double_precision, false, true, []})!

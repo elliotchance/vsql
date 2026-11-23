@@ -635,12 +635,12 @@ INSERT INTO t (b) VALUES NOT TRUE;
 
 /* flags */
 INSERT INTO t (b) VALUES 1 = 1;
--- flags: F641
+-- flags: F641, T031
 -- error 23502: violates non-null constraint: column X
 
 /* flags */
 INSERT INTO t (b) VALUES (1 = 1);
--- flags:
+-- flags: T031
 -- error 23502: violates non-null constraint: column X
 
 -- # A column used as a boolean (NOT b, b AND b) needs T031 (Part 2, 6.39,

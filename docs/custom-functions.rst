@@ -42,6 +42,12 @@ different, because only the arguments choose which function is called.
 A prototype that isn't ``name(type, ...) type``, or has a type that doesn't
 exist, is an error ``42601``.
 
+A parameter can have a name before its type, such as
+``'no_pennies(amount float) float'``. The name is only shown by the
+``PARAMETERS`` view (see :doc:`information-schema`), where it's in upper case
+unless it's quoted (``"amount" float``). A parameter without a name is ``NULL``
+there.
+
 A function is called with a ``FunctionContext`` before its arguments. It has
 the values that a function can know besides its arguments:
 

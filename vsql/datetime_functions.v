@@ -25,24 +25,24 @@ fn register_datetime_funcs(mut conn Connection) ! {
 	// fraction, so they're a NUMERIC (an exact number) or a DOUBLE PRECISION.
 	conn.register_func(Func{'MAKE_DATE', [bigint, bigint, bigint], false, func_make_date, date, false, true, [
 		vsql_make_date,
-	]})!
+	], [], false})!
 	for second in [numeric, double_precision] {
 		conn.register_func(Func{'MAKE_TIME', [bigint, bigint, second], false, func_make_time, time6, false, true, [
 			vsql_make_time,
-		]})!
+		], [], false})!
 		conn.register_func(Func{'MAKE_TIMESTAMP', [bigint, bigint, bigint, bigint, bigint, second], false, func_make_timestamp, timestamp6, false, true, [
 			vsql_make_timestamp,
-		]})!
+		], [], false})!
 
 		// Without a time zone it's in the session's time zone, which can change,
 		// so it's not deterministic and can't be in a CHECK.
 		conn.register_func(Func{'MAKE_TIMESTAMPTZ', [bigint, bigint, bigint, bigint, bigint, second], false, func_make_timestamptz, timestamptz6, false, false, [
 			vsql_make_timestamptz,
-		]})!
+		], [], false})!
 		conn.register_func(Func{'MAKE_TIMESTAMPTZ', [bigint, bigint, bigint, bigint, bigint, second,
 			varchar], false, func_make_timestamptz, timestamptz6, false, true, [
 			vsql_make_timestamptz,
-		]})!
+		], [], false})!
 	}
 }
 

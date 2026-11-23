@@ -30,6 +30,52 @@ struct Func {
 	// features are flagged when the function is called (see
 	// register_flagged_function). It's only used by the SQL Flagger.
 	features []string
+	// arg_names are the names of the parameters, in the same order as
+	// arg_types, which are shown by the PARAMETERS view. They're empty when the
+	// parameters don't have names, and the name of a built-in function's
+	// parameter is in builtin_arg_names.
+	arg_names []string
+	// is_variadic means the function takes any number of arguments after the
+	// arg_types, such as CONCAT. They're a parameter named VARIADIC that's an
+	// ARRAY (see PARAMETERS). Only a built-in function can be variadic, and it
+	// has its own compile (see RoutineInvocation.compile).
+	is_variadic bool
+}
+
+// variadic_parameter_name is the name of the parameter that has the arguments
+// of a variadic function (see Func.is_variadic).
+const variadic_parameter_name = 'VARIADIC'
+
+// builtin_arg_names are the names of the parameters of the built-in functions
+// that are routines of the VSQL schema, by function name. An overload with
+// fewer parameters has the first names, such as ROUND(X) and ROUND(X, PLACES).
+// They aren't reserved words, so they never need to be quoted, and they match
+// the documentation of each function.
+const builtin_arg_names = {
+	'ATAN2':            ['Y', 'X']
+	'CBRT':             ['X']
+	'CHR':              ['CODE_POINT']
+	'DEGREES':          ['X']
+	'ERF':              ['X']
+	'ERFC':             ['X']
+	'FACTORIAL':        ['N']
+	'GAMMA':            ['X']
+	'GCD':              ['A', 'B']
+	'INITCAP':          ['STRING']
+	'LCM':              ['A', 'B']
+	'LGAMMA':           ['X']
+	'MAKE_DATE':        ['YEARS', 'MONTHS', 'DAYS']
+	'MAKE_TIME':        ['HOURS', 'MINUTES', 'SECONDS']
+	'MAKE_TIMESTAMP':   ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS']
+	'MAKE_TIMESTAMPTZ': ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS', 'TIME_ZONE']
+	'RADIANS':          ['X']
+	'REPEAT':           ['STRING', 'N']
+	'REPLACE':          ['STRING', 'TARGET', 'REPLACEMENT']
+	'ROUND':            ['X', 'PLACES']
+	'SIGN':             ['X']
+	'SPLIT_PART':       ['STRING', 'DELIMITER', 'N']
+	'TRUNC':            ['X', 'PLACES']
+	'UNICODE':          ['STRING']
 }
 
 // A FunctionContext is passed to every function (including one registered
@@ -102,60 +148,60 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 13.b, 14.b and 16-18
 	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 20.b
 	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 1.b
-	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false, true, []})!
-	conn.register_func(Func{'ABS', [numeric], false, func_abs_numeric, numeric, false, true, []})!
-	conn.register_func(Func{'ABS', [decimal], false, func_abs_decimal, decimal, false, true, []})!
-	conn.register_func(Func{'ABS', [smallint], false, func_abs_integer, smallint, false, true, []})!
-	conn.register_func(Func{'ABS', [integer], false, func_abs_integer, integer, false, true, []})!
-	conn.register_func(Func{'ABS', [bigint], false, func_abs_integer, bigint, false, true, []})!
-	conn.register_func(Func{'ABS', [real], false, func_abs_real, real, false, true, []})!
-	conn.register_func(Func{'ACOS', [double_precision], false, func_acos, double_precision, false, true, []})!
-	conn.register_func(Func{'ASIN', [double_precision], false, func_asin, double_precision, false, true, []})!
-	conn.register_func(Func{'ATAN', [double_precision], false, func_atan, double_precision, false, true, []})!
-	conn.register_func(Func{'CEIL', [double_precision], false, func_ceil, double_precision, false, true, []})!
-	conn.register_func(Func{'CEIL', [numeric], false, func_ceil_numeric, numeric, false, true, []})!
-	conn.register_func(Func{'CEIL', [smallint], false, func_floor_integer, smallint, false, true, []})!
-	conn.register_func(Func{'CEIL', [integer], false, func_floor_integer, integer, false, true, []})!
-	conn.register_func(Func{'CEIL', [bigint], false, func_floor_integer, bigint, false, true, []})!
-	conn.register_func(Func{'CEILING', [double_precision], false, func_ceil, double_precision, false, true, []})!
-	conn.register_func(Func{'CEILING', [numeric], false, func_ceil_numeric, numeric, false, true, []})!
-	conn.register_func(Func{'CEILING', [smallint], false, func_floor_integer, smallint, false, true, []})!
-	conn.register_func(Func{'CEILING', [integer], false, func_floor_integer, integer, false, true, []})!
-	conn.register_func(Func{'CEILING', [bigint], false, func_floor_integer, bigint, false, true, []})!
-	conn.register_func(Func{'CHARACTER_LENGTH', [varchar], false, func_char_length, integer, false, true, []})!
-	conn.register_func(Func{'CHAR_LENGTH', [varchar], false, func_char_length, integer, false, true, []})!
-	conn.register_func(Func{'COS', [double_precision], false, func_cos, double_precision, false, true, []})!
-	conn.register_func(Func{'COSH', [double_precision], false, func_cosh, double_precision, false, true, []})!
-	conn.register_func(Func{'EXP', [double_precision], false, func_exp, double_precision, false, true, []})!
-	conn.register_func(Func{'FLOOR', [double_precision], false, func_floor, double_precision, false, true, []})!
-	conn.register_func(Func{'FLOOR', [numeric], false, func_floor_numeric, numeric, false, true, []})!
-	conn.register_func(Func{'FLOOR', [smallint], false, func_floor_integer, smallint, false, true, []})!
-	conn.register_func(Func{'FLOOR', [integer], false, func_floor_integer, integer, false, true, []})!
-	conn.register_func(Func{'FLOOR', [bigint], false, func_floor_integer, bigint, false, true, []})!
-	conn.register_func(Func{'LN', [double_precision], false, func_ln, double_precision, false, true, []})!
-	conn.register_func(Func{'LOG', [double_precision, double_precision], false, func_log, double_precision, false, true, []})!
-	conn.register_func(Func{'LOG10', [double_precision], false, func_log10, double_precision, false, true, []})!
-	conn.register_func(Func{'LOWER', [varchar], false, func_lower, varchar, false, true, []})!
-	conn.register_func(Func{'MOD', [double_precision, double_precision], false, func_mod, double_precision, false, true, []})!
-	conn.register_func(Func{'MOD', [numeric, numeric], false, func_mod_numeric, numeric, false, true, []})!
+	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [numeric], false, func_abs_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [decimal], false, func_abs_decimal, decimal, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [smallint], false, func_abs_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [integer], false, func_abs_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [bigint], false, func_abs_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [real], false, func_abs_real, real, false, true, [], [], false})!
+	conn.register_func(Func{'ACOS', [double_precision], false, func_acos, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'ASIN', [double_precision], false, func_asin, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'ATAN', [double_precision], false, func_atan, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [double_precision], false, func_ceil, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [numeric], false, func_ceil_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [smallint], false, func_floor_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [integer], false, func_floor_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [bigint], false, func_floor_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [double_precision], false, func_ceil, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [numeric], false, func_ceil_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [smallint], false, func_floor_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [integer], false, func_floor_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [bigint], false, func_floor_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'CHARACTER_LENGTH', [varchar], false, func_char_length, integer, false, true, [], [], false})!
+	conn.register_func(Func{'CHAR_LENGTH', [varchar], false, func_char_length, integer, false, true, [], [], false})!
+	conn.register_func(Func{'COS', [double_precision], false, func_cos, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'COSH', [double_precision], false, func_cosh, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'EXP', [double_precision], false, func_exp, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [double_precision], false, func_floor, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [numeric], false, func_floor_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [smallint], false, func_floor_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [integer], false, func_floor_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [bigint], false, func_floor_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'LN', [double_precision], false, func_ln, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'LOG', [double_precision, double_precision], false, func_log, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'LOG10', [double_precision], false, func_log10, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'LOWER', [varchar], false, func_lower, varchar, false, true, [], [], false})!
+	conn.register_func(Func{'MOD', [double_precision, double_precision], false, func_mod, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'MOD', [numeric, numeric], false, func_mod_numeric, numeric, false, true, [], [], false})!
 	// The result of MOD has the type of the divisor, so there is one for each
 	// combination of integer types.
 	//
 	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 12.b
 	for dividend in [smallint, integer, bigint] {
 		for divisor in [smallint, integer, bigint] {
-			conn.register_func(Func{'MOD', [dividend, divisor], false, func_mod_integer, divisor, false, true, []})!
+			conn.register_func(Func{'MOD', [dividend, divisor], false, func_mod_integer, divisor, false, true, [], [], false})!
 		}
 	}
-	conn.register_func(Func{'OCTET_LENGTH', [varchar], false, func_octet_length, integer, false, true, []})!
-	conn.register_func(Func{'POSITION', [varchar, varchar], false, func_position, integer, false, true, []})!
-	conn.register_func(Func{'POWER', [double_precision, double_precision], false, func_power, double_precision, false, true, []})!
-	conn.register_func(Func{'SIN', [double_precision], false, func_sin, double_precision, false, true, []})!
-	conn.register_func(Func{'SINH', [double_precision], false, func_sinh, double_precision, false, true, []})!
-	conn.register_func(Func{'SQRT', [double_precision], false, func_sqrt, double_precision, false, true, []})!
-	conn.register_func(Func{'TAN', [double_precision], false, func_tan, double_precision, false, true, []})!
-	conn.register_func(Func{'TANH', [double_precision], false, func_tanh, double_precision, false, true, []})!
-	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false, true, []})!
+	conn.register_func(Func{'OCTET_LENGTH', [varchar], false, func_octet_length, integer, false, true, [], [], false})!
+	conn.register_func(Func{'POSITION', [varchar, varchar], false, func_position, integer, false, true, [], [], false})!
+	conn.register_func(Func{'POWER', [double_precision, double_precision], false, func_power, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'SIN', [double_precision], false, func_sin, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'SINH', [double_precision], false, func_sinh, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'SQRT', [double_precision], false, func_sqrt, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'TAN', [double_precision], false, func_tan, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'TANH', [double_precision], false, func_tanh, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false, true, [], [], false})!
 	// The operand and bounds of WIDTH_BUCKET are exact (NUMERIC) or approximate
 	// (DOUBLE PRECISION). The result has the type of the count, which must be an
 	// exact numeric (see numeric_function_type), so there's one for each.
@@ -163,7 +209,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 21
 	for operand in [numeric, double_precision] {
 		for count in [smallint, integer, bigint, numeric] {
-			conn.register_func(Func{'WIDTH_BUCKET', [operand, operand, operand, count], false, func_width_bucket, count, false, true, []})!
+			conn.register_func(Func{'WIDTH_BUCKET', [operand, operand, operand, count], false, func_width_bucket, count, false, true, [], [], false})!
 		}
 	}
 
@@ -173,7 +219,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// a function it can't be where only a datetime value function can, such as a
 	// DEFAULT.
 	conn.register_func(Func{'NOW', [], false, func_now, new_type('TIMESTAMP WITH TIME ZONE',
-		6, 0), false, false, []})!
+		6, 0), false, false, [vsql_now], [], false})!
 
 	register_datetime_funcs(mut conn)!
 	register_math_funcs(mut conn)!

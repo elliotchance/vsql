@@ -49,17 +49,20 @@ const information_schema_name = 'INFORMATION_SCHEMA'
 //   ISO/IEC 9075-11:2006, 5.3, CARDINAL_NUMBER domain, Description, 1
 //   ISO/IEC 9075-11:2006, 5.7, YES_OR_NO domain, Description, 1
 //
-// No view uses TIME_STAMP (5.6) yet.
+// A TIME_STAMP (5.6) is a TIMESTAMP(2) WITH TIME ZONE, which only ROUTINES
+// uses, and is always NULL there.
 const information_schema_sql_identifier = 'CHARACTER VARYING(128)'
 const information_schema_character_data = 'CHARACTER VARYING(10485760)'
 const information_schema_cardinal_number = 'INTEGER'
 const information_schema_yes_or_no = 'CHARACTER VARYING(3)'
+const information_schema_time_stamp = 'TIMESTAMP(2) WITH TIME ZONE'
 
 // check_writable_schema returns an error if the schema of a fully qualified
-// identifier is the INFORMATION_SCHEMA, which only allows SELECT (4.2).
+// identifier is the INFORMATION_SCHEMA, which only allows SELECT (4.2), or the
+// VSQL schema, which can't be changed either.
 fn check_writable_schema(ident Identifier) ! {
-	if ident.schema_name == information_schema_name {
-		return sqlstate_42501('${information_schema_name} is read-only')
+	if ident.schema_name in system_schema_names {
+		return sqlstate_42501('${ident.schema_name} is read-only')
 	}
 }
 
@@ -335,6 +338,8 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 	catalog.register_column_column_usage_view()!
 	catalog.register_constraint_column_usage_view()!
 	catalog.register_constraint_table_usage_view()!
+	catalog.register_parameters_view()!
+	catalog.register_routines_view()!
 	catalog.register_schemata_view()!
 	catalog.register_sequences_view()!
 	catalog.register_views_view()!
@@ -377,6 +382,60 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		'IMPLEMENTATION_INFO_NAME': 'IMPL_INFO_NAME'
 	})!
 	catalog.add_short_name_view('SQL_SIZING_PROFS', 'SQL_SIZING_PROFILES', map[string]string{})!
+	catalog.add_short_name_view('PARAMETERS_S', 'PARAMETERS', {
+		'FROM_SQL_SPECIFIC_CATALOG': 'FROM_SQL_SPEC_CAT'
+		'FROM_SQL_SPECIFIC_SCHEMA':  'FROM_SQL_SPEC_SCH'
+		'FROM_SQL_SPECIFIC_NAME':    'FROM_SQL_SPEC_NAME'
+		'TO_SQL_SPECIFIC_CATALOG':   'TO_SQL_SPEC_CAT'
+		'TO_SQL_SPECIFIC_SCHEMA':    'TO_SQL_SPEC_SCHEMA'
+		'TO_SQL_SPECIFIC_NAME':      'TO_SQL_SPEC_NAME'
+		'CHARACTER_MAXIMUM_LENGTH':  'CHAR_MAX_LENGTH'
+		'CHARACTER_OCTET_LENGTH':    'CHAR_OCTET_LENGTH'
+		'CHARACTER_SET_CATALOG':     'CHAR_SET_CATALOG'
+		'CHARACTER_SET_SCHEMA':      'CHAR_SET_SCHEMA'
+		'NUMERIC_PRECISION_RADIX':   'NUMERIC_PREC_RADIX'
+		'MAXIMUM_CARDINALITY':       'MAX_CARDINALITY'
+	})!
+	catalog.add_short_name_view('ROUTINES_S', 'ROUTINES', {
+		'CHARACTER_MAXIMUM_LENGTH':       'CHAR_MAX_LENGTH'
+		'CHARACTER_OCTET_LENGTH':         'CHAR_OCTET_LENGTH'
+		'CHARACTER_SET_CATALOG':          'CHAR_SET_CATALOG'
+		'CHARACTER_SET_SCHEMA':           'CHAR_SET_SCHEMA'
+		'NUMERIC_PRECISION_RADIX':        'NUMERIC_PREC_RADIX'
+		'MAXIMUM_CARDINALITY':            'MAX_CARDINALITY'
+		'SCHEMA_LEVEL_ROUTINE':           'SCH_LEVEL_ROUTINE'
+		'MAX_DYNAMIC_RESULT_SETS':        'MAX_DYN_RESLT_SETS'
+		'IS_USER_DEFINED_CAST':           'IS_USER_DEFND_CAST'
+		'IS_IMPLICITLY_INVOCABLE':        'IS_IMP_INVOCABLE'
+		'TO_SQL_SPECIFIC_CATALOG':        'TO_SQL_SPEC_CAT'
+		'TO_SQL_SPECIFIC_SCHEMA':         'TO_SQL_SPEC_SCHEMA'
+		'TO_SQL_SPECIFIC_NAME':           'TO_SQL_SPEC_NAME'
+		'NEW_SAVEPOINT_LEVEL':            'NEW_SAVEPOINT_LVL'
+		'RESULT_CAST_FROM_DATA_TYPE':     'RC_FROM_DATA_TYPE'
+		'RESULT_CAST_AS_LOCATOR':         'RC_AS_LOCATOR'
+		'RESULT_CAST_CHAR_MAX_LENGTH':    'RC_CHAR_MAX_LENGTH'
+		'RESULT_CAST_CHAR_OCTET_LENGTH':  'RC_CHAR_OCT_LENGTH'
+		'RESULT_CAST_CHAR_SET_CATALOG':   'RC_CHAR_SET_CAT'
+		'RESULT_CAST_CHAR_SET_SCHEMA':    'RC_CHAR_SET_SCHEMA'
+		'RESULT_CAST_CHARACTER_SET_NAME': 'RC_CHAR_SET_NAME'
+		'RESULT_CAST_COLLATION_CATALOG':  'RC_COLLATION_CAT'
+		'RESULT_CAST_COLLATION_SCHEMA':   'RC_COLLATION_SCH'
+		'RESULT_CAST_COLLATION_NAME':     'RC_COLLATION_NAME'
+		'RESULT_CAST_NUMERIC_PRECISION':  'RC_NUM_PREC'
+		'RESULT_CAST_NUMERIC_RADIX':      'RC_NUMERIC_RADIX'
+		'RESULT_CAST_NUMERIC_SCALE':      'RC_NUMERIC_SCALE'
+		'RESULT_CAST_DATETIME_PRECISION': 'RC_DATETIME_PREC'
+		'RESULT_CAST_INTERVAL_TYPE':      'RC_INTERVAL_TYPE'
+		'RESULT_CAST_INTERVAL_PRECISION': 'RC_INTERVAL_PREC'
+		'RESULT_CAST_TYPE_UDT_CATALOG':   'RC_TYPE_UDT_CAT'
+		'RESULT_CAST_TYPE_UDT_SCHEMA':    'RC_TYPE_UDT_SCHEMA'
+		'RESULT_CAST_TYPE_UDT_NAME':      'RC_TYPE_UDT_NAME'
+		'RESULT_CAST_SCOPE_CATALOG':      'RC_SCOPE_CATALOG'
+		'RESULT_CAST_SCOPE_SCHEMA':       'RC_SCOPE_SCHEMA'
+		'RESULT_CAST_SCOPE_NAME':         'RC_SCOPE_NAME'
+		'RESULT_CAST_MAX_CARDINALITY':    'RC_MAX_CARDINALITY'
+		'RESULT_CAST_DTD_IDENTIFIER':     'RC_DTD_IDENTIFIER'
+	})!
 	catalog.add_short_name_view('REF_CONSTRAINTS', 'REFERENTIAL_CONSTRAINTS', {
 		'UNIQUE_CONSTRAINT_CATALOG': 'UNIQUE_CONSTR_CAT'
 		'UNIQUE_CONSTRAINT_SCHEMA':  'UNIQUE_CONSTR_SCH'

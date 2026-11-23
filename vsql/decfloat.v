@@ -400,13 +400,13 @@ fn register_decfloat_funcs(mut conn Connection) ! {
 	decfloat := Type{.is_decfloat, max_decfloat_precision, 0, false, false}
 	bigint := Type{.is_bigint, 0, 0, false, false}
 
-	conn.register_func(Func{'ABS', [decfloat], false, func_abs_decfloat, decfloat, false, true, []})!
-	conn.register_func(Func{'MOD', [decfloat, decfloat], false, func_mod_decfloat, decfloat, false, true, []})!
+	conn.register_func(Func{'ABS', [decfloat], false, func_abs_decfloat, decfloat, false, true, [], [], false})!
+	conn.register_func(Func{'MOD', [decfloat, decfloat], false, func_mod_decfloat, decfloat, false, true, [], [], false})!
 	for name in ['FLOOR', 'CEIL', 'CEILING'] {
-		conn.register_func(Func{name, [decfloat], false, func_floor_ceil_decfloat(name == 'FLOOR'), decfloat, false, true, []})!
+		conn.register_func(Func{name, [decfloat], false, func_floor_ceil_decfloat(name == 'FLOOR'), decfloat, false, true, [], [], false})!
 	}
-	conn.register_func(Func{'SQRT', [decfloat], false, func_sqrt_decfloat, decfloat, false, true, []})!
-	conn.register_func(Func{'POWER', [decfloat, decfloat], false, func_power_decfloat, decfloat, false, true, []})!
+	conn.register_func(Func{'SQRT', [decfloat], false, func_sqrt_decfloat, decfloat, false, true, [], [], false})!
+	conn.register_func(Func{'POWER', [decfloat, decfloat], false, func_power_decfloat, decfloat, false, true, [], [], false})!
 
 	approximate := {
 		'ACOS':  func_acos
@@ -423,23 +423,23 @@ fn register_decfloat_funcs(mut conn Connection) ! {
 		'TANH':  func_tanh
 	}
 	for name, f in approximate {
-		conn.register_func(Func{name, [decfloat], false, with_double_precision(f), decfloat, false, true, []})!
+		conn.register_func(Func{name, [decfloat], false, with_double_precision(f), decfloat, false, true, [], [], false})!
 	}
-	conn.register_func(Func{'LOG', [decfloat, decfloat], false, with_double_precision(func_log), decfloat, false, true, []})!
+	conn.register_func(Func{'LOG', [decfloat, decfloat], false, with_double_precision(func_log), decfloat, false, true, [], [], false})!
 
 	for name in ['ROUND', 'TRUNC'] {
 		feature := if name == 'ROUND' { vsql_round } else { vsql_trunc }
 		truncate := name == 'TRUNC'
 		conn.register_func(Func{name, [decfloat], false, fn [truncate] (_ FunctionContext, args []Value) !Value {
 			return round_decfloat_value(args[0], 0, truncate)
-		}, decfloat, false, true, [feature]})!
+		}, decfloat, false, true, [feature], [], false})!
 		conn.register_func(Func{name, [decfloat, bigint], false, fn [truncate] (_ FunctionContext, args []Value) !Value {
 			return round_decfloat_value(args[0], args[1].int_value(), truncate)
-		}, decfloat, false, true, [feature]})!
+		}, decfloat, false, true, [feature], [], false})!
 	}
 	conn.register_func(Func{'SIGN', [decfloat], false, func_sign_decfloat, decfloat, false, true, [
 		vsql_sign,
-	]})!
+	], [], false})!
 }
 
 // with_double_precision is f (a function of DOUBLE PRECISION arguments) for

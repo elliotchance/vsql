@@ -27,10 +27,10 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 	schema_name := stmt.schema_name.schema_name
 
 	// The name can't be the same as another schema, including the
-	// INFORMATION_SCHEMA, which isn't stored.
+	// INFORMATION_SCHEMA and VSQL schemas, which aren't stored.
 	//
 	// ISO/IEC 9075-2:2023, 11.1, <schema definition>, Syntax Rules, 3
-	if schema_name in catalog.storage.schemas || schema_name == information_schema_name {
+	if schema_name in catalog.storage.schemas || schema_name in system_schema_names {
 		if stmt.if_not_exists {
 			return new_result_msg('CREATE SCHEMA 0', elapsed_parse, t.elapsed())
 		}

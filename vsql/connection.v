@@ -1090,7 +1090,17 @@ fn (mut conn Connection) register_func(func Func) ! {
 		}
 	}
 
-	conn.funcs << func
+	mut f := func
+	if f.arg_names.len == 0 && !f.called_on_null_input {
+		if names := builtin_arg_names[f.name] {
+			f = Func{
+				...f
+				arg_names: names[..f.arg_types.len].clone()
+			}
+		}
+	}
+
+	conn.funcs << f
 }
 
 fn function_arg_type(t Type) SQLType {
@@ -1112,6 +1122,37 @@ fn (mut conn Connection) catalog_for(ident Identifier) &CatalogConnection {
 }
 
 fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
+	return conn.find_function_in('', func_name, arg_types)
+}
+
+// find_function_in finds the function that's called by a name and arguments.
+// A name that isn't qualified by a schema (schema_name is empty) finds a
+// standard function first, and only then a routine of the VSQL schema, which is
+// always the last schema of the SQL-path. That's because only the first schema
+// of the path that has a function with that name and arguments is used. A name
+// that's qualified by VSQL only finds its routines, and no other schema has
+// any.
+//
+// ISO/IEC 9075-2:2023, 9.18, Invoking an SQL-invoked routine, Syntax Rules, 9.c and 9.e
+fn (conn Connection) find_function_in(schema_name string, func_name string, arg_types []Type) !Func {
+	if schema_name == '' {
+		if f := conn.best_function(func_name, arg_types, false) {
+			return f
+		}
+	}
+	if schema_name in ['', vsql_schema_name] {
+		if f := conn.best_function(func_name, arg_types, true) {
+			return f
+		}
+	}
+
+	name := if schema_name == '' { func_name } else { '${schema_name}.${func_name}' }
+	return sqlstate_42883('function does not exist: ${name}(${arg_types.map(it.str()).join(', ')})')
+}
+
+// best_function is the function (that is or isn't a routine of the VSQL
+// schema) that's the best match for the arguments, if any.
+fn (conn Connection) best_function(func_name string, arg_types []Type, vsql_routine bool) ?Func {
 	// An exact match on the argument types always wins. Otherwise, numeric
 	// arguments may be implicitly cast to a wider numeric parameter type. The
 	// standard defines the numeric functions for any <numeric value expression>
@@ -1121,7 +1162,8 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 	mut best := ?Func(none)
 	mut best_cost := -1
 	for f in conn.funcs {
-		if func_name != f.name || arg_types.len != f.arg_types.len {
+		if func_name != f.name || arg_types.len != f.arg_types.len
+			|| f.is_vsql_routine() != vsql_routine {
 			continue
 		}
 
@@ -1161,11 +1203,7 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 		}
 	}
 
-	if f := best {
-		return f
-	}
-
-	return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
+	return best
 }
 
 // implicit_numeric_cast_cost returns 0 if the types are the same, or a
@@ -1212,7 +1250,8 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 }
 
 // register_function will register a function that can be used in SQL
-// expressions.
+// expressions. The prototype is "name(type, ...) type", and each parameter can
+// have a name before its type, such as "no_pennies(amount float) float".
 pub fn (mut conn Connection) register_function(prototype string, func fn (FunctionContext, []Value) !Value) ! {
 	conn.register_flagged_function(prototype, func, [])!
 }
@@ -1229,9 +1268,12 @@ fn (mut conn Connection) register_flagged_function(prototype string, func fn (Fu
 
 	function_name := new_function_identifier(prototype[..open_paren].trim_space())!.entity_name
 	mut arg_types := []Type{}
+	mut arg_names := []string{}
 	for arg in prototype[open_paren + 1..close_paren].split(',') {
 		if arg.trim_space() != '' {
-			arg_types << type_from_name(arg.trim_space().to_upper(), 0, 0)!
+			name, typ := prototype_parameter(arg.trim_space())!
+			arg_names << name
+			arg_types << typ
 		}
 	}
 
@@ -1243,7 +1285,40 @@ fn (mut conn Connection) register_flagged_function(prototype string, func fn (Fu
 		return_type:          return_type
 		called_on_null_input: true
 		features:             features
+		arg_names:            if arg_names.any(it != '') { arg_names } else { []string{} }
 	})!
+}
+
+// prototype_parameter is the name and type of a parameter of a function
+// prototype, which is a type (such as "INTEGER"), or a name then a type (such
+// as "n INTEGER"). The name is an identifier, so it's upper case unless it's
+// quoted. The name is empty when there isn't one.
+fn prototype_parameter(param string) !(string, Type) {
+	// A parameter without a name is only a type, and an unknown type is an
+	// error.
+	if !param.starts_with('"') && !param.contains(' ') {
+		return '', type_from_name(param.to_upper(), 0, 0)!
+	}
+	if typ := type_from_name(param.to_upper(), 0, 0) {
+		return '', typ
+	}
+
+	mut name := ''
+	mut rest := ''
+	if param.starts_with('"') {
+		end := param.index_after('"', 1) or { -1 }
+		if end < 0 {
+			return sqlstate_42601('invalid function parameter: ${param}')
+		}
+		name = param[1..end]
+		rest = param[end + 1..]
+	} else {
+		space := param.index(' ') or { 0 }
+		name = param[..space].to_upper()
+		rest = param[space..]
+	}
+
+	return name, type_from_name(rest.trim_space().to_upper(), 0, 0)!
 }
 
 // register_virtual_table will register a function that can provide data at
@@ -1307,8 +1382,8 @@ fn (mut conn Connection) register_flagged_virtual_table(create_table string, dat
 }
 
 // schemas returns the schemas in this catalog (database). This includes the
-// INFORMATION_SCHEMA (and the schema of any other virtual table), which has
-// is_virtual set.
+// INFORMATION_SCHEMA and VSQL schemas (and the schema of any other virtual
+// table), which have is_virtual set.
 pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	conn.open_read_connection()!
 	defer {
@@ -1319,8 +1394,11 @@ pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	for _, schema in conn.storage.schemas {
 		schemas << schema
 	}
+	mut names := system_schema_names.clone()
 	for _, virtual_table in conn.virtual_tables {
-		name := virtual_table.create_table_stmt.table_name.schema_name
+		names << virtual_table.create_table_stmt.table_name.schema_name
+	}
+	for name in names {
 		if !schemas.any(it.name == name) {
 			schemas << Schema{
 				name:       name
@@ -1455,7 +1533,7 @@ fn (mut conn Connection) resolve_schema_identifier(identifier Identifier) !Ident
 	ident := conn.resolve_catalog_identifier(identifier)!
 
 	if ident.schema_name !in conn.catalog_for(ident).storage.schemas
-		&& ident.schema_name != information_schema_name {
+		&& ident.schema_name !in system_schema_names {
 		return sqlstate_3f000(ident.schema_name) // schema does not exist
 	}
 

@@ -15,7 +15,7 @@ ERF
 
 .. code-block:: sql
 
-   ERF(DOUBLE PRECISION) DOUBLE PRECISION
+   ERF(x DOUBLE PRECISION) DOUBLE PRECISION
 
 The error function, which is between -1 and 1. The probability that a normally
 distributed value is less than ``x`` is ``0.5 * ERFC(-(x - mean) / (sd *
@@ -49,7 +49,7 @@ ERFC
 
 .. code-block:: sql
 
-   ERFC(DOUBLE PRECISION) DOUBLE PRECISION
+   ERFC(x DOUBLE PRECISION) DOUBLE PRECISION
 
 The complementary error function, ``1 - ERF(x)``, which is between 0 and 2.
 It's more accurate than ``1 - ERF(x)`` for a large ``x``, where the result is
@@ -83,7 +83,7 @@ GAMMA
 
 .. code-block:: sql
 
-   GAMMA(DOUBLE PRECISION) DOUBLE PRECISION
+   GAMMA(x DOUBLE PRECISION) DOUBLE PRECISION
 
 The gamma function, which extends the factorial to all numbers:
 ``GAMMA(n)`` is the factorial of ``n - 1`` for a positive integer ``n``.
@@ -123,7 +123,7 @@ LGAMMA
 
 .. code-block:: sql
 
-   LGAMMA(DOUBLE PRECISION) DOUBLE PRECISION
+   LGAMMA(x DOUBLE PRECISION) DOUBLE PRECISION
 
 The natural logarithm of the absolute value of the gamma function, so
 ``LGAMMA(x)`` is ``LN(ABS(GAMMA(x)))``, but without the error when

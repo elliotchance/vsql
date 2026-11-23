@@ -11,6 +11,8 @@ import strings
 // characters, not bytes.
 
 fn register_string_funcs(mut conn Connection) ! {
+	register_concat_funcs(mut conn)!
+
 	varchar := Type{SQLType.is_varchar, 0, 0, false, false}
 	integer := Type{SQLType.is_integer, 0, 0, false, false}
 	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
@@ -20,26 +22,26 @@ fn register_string_funcs(mut conn Connection) ! {
 	// first argument (like UPPER and LOWER).
 	conn.register_func(Func{'REPLACE', [varchar, varchar, varchar], false, func_replace, varchar, false, true, [
 		vsql_replace,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'REPEAT', [varchar, bigint], false, func_repeat, varchar, false, true, [
 		vsql_repeat,
-	]})!
+	], [], false})!
 	// INITCAP has the declared type of its operand, like UPPER and LOWER (see
 	// fold_result).
 	conn.register_func(Func{'INITCAP', [varchar], false, func_initcap, varchar, false, true, [
 		vsql_initcap,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'CHR', [bigint], false, func_chr, Type{SQLType.is_varchar, 1, 0, false, false}, false, true, [
 		vsql_chr,
-	]})!
+	], [], false})!
 	conn.register_func(Func{'UNICODE', [varchar], false, func_unicode, integer, false, true, [
 		vsql_unicode,
-	]})!
+	], [], false})!
 	// SPLIT_PART is a CHARACTER VARYING with the length of the string, like
 	// SUBSTRING (see RoutineInvocation.compile).
 	conn.register_func(Func{'SPLIT_PART', [varchar, varchar, bigint], false, func_split_part, varchar, false, true, [
 		vsql_split_part,
-	]})!
+	], [], false})!
 }
 
 // REPLACE(CHARACTER VARYING, CHARACTER VARYING, CHARACTER VARYING) CHARACTER VARYING

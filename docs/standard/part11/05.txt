@@ -24,8 +24,8 @@
 5.5/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql max_identifier_length (128)
 5.5/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.6, TIME_STAMP domain
-5.6                      n/a          - - no view that vsql has uses it (T011)
-5.6/DE/1                 n/a          - - no view that vsql has uses it (T011)
+5.6                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_49_routines.sql as its data type, only ROUTINES uses it, where it is always NULL
+5.6/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/std_11_5_49_routines.sql TIMESTAMP(2) WITH TIME ZONE
 5.6/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
 # 5.7, YES_OR_NO domain
 5.7                      implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql as its data type, there are no domains (F251)
@@ -134,8 +134,8 @@
 5.34/CR/3                n/a          - - user-defined types (S023)
 5.34/CR/4                n/a          - - user-defined types (S023)
 # 5.35, PARAMETERS view
-5.35                     missing      - - SQL-invoked routines (#733)
-5.35/CR/1                missing      - - SQL-invoked routines (#733)
+5.35                     implemented  vsql/std_11_5_49_routines.v tests/std_11_5_35_parameters.sql the parameters of the routines of the VSQL schema, since there are no privileges (#732)
+5.35/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.36, REFERENCED_TYPES view
 5.36                     n/a          - - reference types (S041)
 5.36/CR/1                n/a          - - reference types (S041)
@@ -189,11 +189,11 @@
 5.48/CR/1                missing      - - SQL-invoked routines (#733)
 5.48/CR/2                missing      - - SQL-invoked routines (#733)
 # 5.49, ROUTINES view
-5.49                     missing      - - SQL-invoked routines (#733)
-5.49/CR/1                missing      - - SQL-invoked routines (#733)
-5.49/CR/2                missing      - - SQL-invoked routines (#733)
-5.49/CR/3                missing      - - SQL-invoked routines (#733)
-5.49/CR/4                missing      - - SQL-invoked routines (#733)
+5.49                     implemented  vsql/std_11_5_49_routines.v tests/std_11_5_49_routines.sql the routines of the VSQL schema, since there are no privileges (#732)
+5.49/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.49/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.49/CR/3                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.49/CR/4                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 # 5.50, SCHEMATA view
 5.50                     implemented  vsql/std_11_5_50_schemata.v tests/std_11_5_50_schemata.sql every schema, since every schema is owned by _SYSTEM
 5.50/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
@@ -323,8 +323,8 @@
 5.77/CR/30               n/a          - - ELEMENT_TYPES_S: arrays and multisets (S091, S271)
 5.77/CR/31               n/a          - - METHOD_SPECS (METHOD_SPEC in the rule): user-defined types (S023)
 5.77/CR/32               n/a          - - METHOD_SPECS (METHOD_SPEC in the rule): user-defined types (S023)
-5.77/CR/33               missing      - - ROUTINES_S: after ROUTINES (#733)
-5.77/CR/34               missing      - - ROUTINES_S: after ROUTINES (#733)
+5.77/CR/33               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
+5.77/CR/34               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/35               n/a          - - TRIGGERS_S: triggers (T211)
 5.77/CR/36               n/a          - - FIELDS_S: row types (T051)
 5.77/CR/37               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
@@ -340,7 +340,7 @@
 5.77/CR/47               n/a          - - TRIG_SEQ_USAGE_S: triggers (T211)
 5.77/CR/48               n/a          - - TRIGGERS_S: triggers (T211)
 5.77/CR/49               n/a          - - TRIG_COLUMN_USAGE: triggers (T211)
-5.77/CR/50               missing      - - ROUTINES_S: after ROUTINES (#733)
+5.77/CR/50               implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_information_schema_flagging.sql
 5.77/CR/51               n/a          - - ADMIN_ROLE_AUTHS: roles (T331)
 5.77/CR/52               n/a          - - ROLE_ROUT_GRANTS: roles (T331)
 5.77/CR/53               n/a          - - ROL_TAB_METH_GRNTS (ROLE_TAB_METH_GRNTS in the rule): type hierarchies (S024)

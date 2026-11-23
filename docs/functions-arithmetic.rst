@@ -75,7 +75,7 @@ FACTORIAL
 
 .. code-block:: sql
 
-   FACTORIAL(BIGINT) NUMERIC
+   FACTORIAL(n BIGINT) NUMERIC
 
 The factorial of an integer: the product of every integer from 1 to the
 argument, and ``FACTORIAL(0)`` is 1. A ``SMALLINT`` or ``INTEGER`` is converted
@@ -115,9 +115,9 @@ GCD
 
 .. code-block:: sql
 
-   GCD(SMALLINT, SMALLINT) SMALLINT
-   GCD(INTEGER, INTEGER) INTEGER
-   GCD(BIGINT, BIGINT) BIGINT
+   GCD(a SMALLINT, b SMALLINT) SMALLINT
+   GCD(a INTEGER, b INTEGER) INTEGER
+   GCD(a BIGINT, b BIGINT) BIGINT
 
 The greatest common divisor of two integers, the largest integer that divides
 both of them. It's never negative, ``GCD(x, 0)`` is the absolute value of
@@ -153,9 +153,9 @@ LCM
 
 .. code-block:: sql
 
-   LCM(SMALLINT, SMALLINT) SMALLINT
-   LCM(INTEGER, INTEGER) INTEGER
-   LCM(BIGINT, BIGINT) BIGINT
+   LCM(a SMALLINT, b SMALLINT) SMALLINT
+   LCM(a INTEGER, b INTEGER) INTEGER
+   LCM(a BIGINT, b BIGINT) BIGINT
 
 The least common multiple of two integers, the smallest integer that both of
 them divide. It's never negative, and it's 0 if either argument is 0.
@@ -249,12 +249,12 @@ SIGN
 
 .. code-block:: sql
 
-   SIGN(SMALLINT) SMALLINT
-   SIGN(INTEGER) INTEGER
-   SIGN(BIGINT) BIGINT
-   SIGN(DOUBLE PRECISION) DOUBLE PRECISION
-   SIGN(NUMERIC(p, s)) NUMERIC(1)
-   SIGN(DECFLOAT(p)) DECFLOAT(p)
+   SIGN(x SMALLINT) SMALLINT
+   SIGN(x INTEGER) INTEGER
+   SIGN(x BIGINT) BIGINT
+   SIGN(x DOUBLE PRECISION) DOUBLE PRECISION
+   SIGN(x NUMERIC(p, s)) NUMERIC(1)
+   SIGN(x DECFLOAT(p)) DECFLOAT(p)
 
 The sign of a number: -1 if it's negative, 0 if it's zero and 1 if it's
 positive. An integer returns the same type, a ``NUMERIC`` or ``DECIMAL`` returns

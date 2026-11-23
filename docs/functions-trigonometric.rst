@@ -98,7 +98,7 @@ ATAN2
 
 .. code-block:: sql
 
-   ATAN2(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   ATAN2(y DOUBLE PRECISION, x DOUBLE PRECISION) DOUBLE PRECISION
 
 ``ATAN2(Y, X)`` is the angle of the point (``X``, ``Y``) from the positive x
 axis. It's the inverse tangent of ``Y / X``, but the result is between -π and
@@ -177,7 +177,7 @@ DEGREES
 
 .. code-block:: sql
 
-   DEGREES(DOUBLE PRECISION) DOUBLE PRECISION
+   DEGREES(x DOUBLE PRECISION) DOUBLE PRECISION
 
 Converts an angle in radians to degrees. A result that is too large to be a
 ``DOUBLE PRECISION`` is a ``22003`` error (numeric value out of range).
@@ -229,7 +229,7 @@ RADIANS
 
 .. code-block:: sql
 
-   RADIANS(DOUBLE PRECISION) DOUBLE PRECISION
+   RADIANS(x DOUBLE PRECISION) DOUBLE PRECISION
 
 Converts an angle in degrees to radians.
 

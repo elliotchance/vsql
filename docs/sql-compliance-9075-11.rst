@@ -22,7 +22,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 10 of the 15 mandatory features** of ISO/IEC 9075-11:2006.
+**vsql supports 13 of the 15 mandatory features** of ISO/IEC 9075-11:2006.
 
 .. list-table:: Table 2 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -66,13 +66,13 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ S011-01
      - ``USER_DEFINED_TYPES`` view
 
-   * - ❌ **T321**
+   * - ✅ **T321**
      - **Basic SQL-invoked routines**
 
-   * - ❌ T321-06
+   * - ✅ T321-06
      - ``ROUTINES`` view
 
-   * - ❌ T321-07
+   * - ✅ T321-07
      - ``PARAMETERS`` view
 
 Optional Features

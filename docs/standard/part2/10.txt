@@ -20,16 +20,16 @@
 10.1/GR/2.a              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 10.1/GR/2.b              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 10.1/GR/3                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
-10.1/GR/4                n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.a              n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.a.i            n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.a.ii           n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.b              n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.b.i            n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.b.ii           n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.b.iii          n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.b.iii.1        n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
-10.1/GR/4.b.iii.2        n/a          - - the length of an interval is only needed to cast it to a character string, which is not supported yet (F052)
+10.1/GR/4                n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.a              n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.a.i            n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.a.ii           n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.b              n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.b.i            n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.b.ii           n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.b.iii          n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.b.iii.1        n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4.b.iii.2        n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
 10.1/CR/1                implemented  vsql/interval.v tests/std_2_6_1_data_types.sql
 # 10.2, <languageclause>
 10.2                     partial      vsql/std_2_13_1_sql_client_module_definition.v libvsql/module/test.mod only LANGUAGE C (B112)
@@ -152,7 +152,7 @@
 10.9/SR/7.g.iii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
 10.9/SR/7.g.iv           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
 10.9/SR/7.g.v            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_decfloat_set_functions.sql the precision of DT
-10.9/SR/7.g.vi           n/a          - - intervals (F052)
+10.9/SR/7.g.vi           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_interval_aggregates.sql the leading field precision of the SUM of intervals is 8
 10.9/SR/7.h              implemented  vsql/funcs.v tests/std_2_10_9_statistical_set_functions.sql
 10.9/SR/7.h.i            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_decfloat_set_functions.sql the precision of DT
 10.9/SR/7.h.ii           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql DOUBLE PRECISION
@@ -196,7 +196,7 @@
 10.9/SR/12.e             container    - -
 10.9/SR/12.e.i           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql DOUBLE PRECISION
 10.9/SR/12.e.ii          n/a          - - decimal floating-point isn't supported
-10.9/SR/12.e.iii         n/a          - - intervals (F052)
+10.9/SR/12.e.iii         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_interval_aggregates.sql
 10.9/SR/13               n/a          - - ARRAY_AGG (S098)
 10.9/SR/13.a             n/a          - - ARRAY_AGG (S098)
 10.9/SR/13.b             n/a          - - ARRAY_AGG (S098)
@@ -216,7 +216,7 @@
 10.9/GR/1.e              n/a          - - window functions (T611)
 10.9/GR/2                definition   - -
 10.9/GR/3                container    - -
-10.9/GR/3.a              n/a          - - intervals (F052)
+10.9/GR/3.a              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_interval_aggregates.sql
 10.9/GR/3.b              n/a          - - multisets (S271)
 10.9/GR/3.c              n/a          - - ARRAY_AGG (S098)
 10.9/GR/3.d              implemented  vsql/std_2_10_9_aggregate_function.v vsql/api_test.v

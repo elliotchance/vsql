@@ -68,6 +68,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 
 	func_name := e.function_name
 
+	// ABS of an interval is an <interval absolute value function>.
+	if func_name == 'ABS' && arg_types.len == 1 && arg_types[0].typ.is_interval() {
+		return c.compile_interval_abs(args[0])
+	}
+
 	found_func := c.conn.find_function(func_name, arg_types)!
 	if c.conn.flagging {
 		c.conn.flagged_features << found_func.features

@@ -183,7 +183,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can
 	// be ordered, which is every type (SR 7.d), SUM and AVG accept any number
-	// (SR 7.g.i), STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP also accept any
+	// or interval (SR 7.g.i), STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP also accept any
 	// number (SR 7.h), and EVERY, ANY and SOME accept a BOOLEAN (SR 7.e). Every
 	// SQLType is registered, so a new type is supported automatically. CHARACTER
 	// uses the CHARACTER VARYING one, see find_function. The result type depends
@@ -202,6 +202,9 @@ fn register_builtin_funcs(mut conn Connection) ! {
 			}
 			if typ.value == SQLType.is_boolean {
 				names << ['EVERY', 'ANY', 'SOME']
+			}
+			if typ.value.is_interval() {
+				names << ['AVG', 'SUM']
 			}
 			for name in names {
 				conn.register_func(Func{

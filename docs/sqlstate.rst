@@ -313,6 +313,19 @@ A ``CAST`` to a shorter type is a ``01004`` warning instead.
   -- msg: CREATE TABLE 1
   -- error 22003: numeric value out of range
 
+``22006`` invalid interval format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A character string cast to an interval must be an interval literal, or the part
+of one in quotes, for that type.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CAST('1' AS INTERVAL YEAR TO MONTH);
+  -- error 22006: invalid interval format
+
 ``22007`` invalid datetime format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -326,11 +339,25 @@ type.
   VALUES CAST('2022-02-30' AS DATE);
   -- error 22007: invalid datetime format
 
+``22008`` datetime field overflow
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Datetime arithmetic gives a date that doesn't exist, or a year that isn't
+between 1 and 9999.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES DATE '2021-01-31' + INTERVAL '1' MONTH;
+  -- error 22008: datetime field overflow
+
 ``22009`` invalid time zone displacement value
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A character string cast to a time or timestamp has a time zone that's outside
-of ``-14:00`` to ``+14:00``, or that has more than 59 minutes. In a literal, it's
+of ``-14:00`` to ``+14:00``, or that has more than 59 minutes. So does a time
+zone of ``AT TIME ZONE`` or ``SET TIME ZONE`` that's outside of that range. In a literal, it's
 a syntax error (``42601``) instead.
 
 **Examples**
@@ -390,6 +417,22 @@ escape character followed by a double quote.
   -- COL1: 20
   -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+``2200P`` interval value out of range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``SUM`` or ``AVG`` of intervals doesn't fit in an interval.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x INTERVAL DAY(8));
+  INSERT INTO foo (x) VALUES (INTERVAL '99999999' DAY(8)), (INTERVAL '1' DAY);
+  SELECT SUM(x) FROM foo;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 2
+  -- error 2200P: interval value out of range
+
 ``22011`` substring error
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -416,7 +459,7 @@ The length of a ``SUBSTRING`` must not be negative.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An interval has more digits in its start field than the type it's stored in
-allows.
+allows, or the result of interval arithmetic doesn't fit in an interval.
 
 **Examples**
 

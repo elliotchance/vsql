@@ -560,9 +560,9 @@
 6.13/SR/4.b.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_52_datetime_templates.sql
 6.13/SR/5                definition   - -
 6.13/SR/6                n/a          - - collection types (S091, S271)
-6.13/SR/7                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql intervals (F052), user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
-6.13/SR/8                n/a          - - intervals (F052)
-6.13/SR/9                n/a          - - intervals (F052)
+6.13/SR/7                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql,tests/std_2_6_13_cast_interval.sql user-defined types (S023), binary strings (T021), reference types (S041), collection types (S091, S271) and row types (T051) aren't supported
+6.13/SR/8                implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/SR/9                implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
 6.13/SR/10               impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql there are no character sets other than UTF8
 6.13/SR/11               impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql the only collation is the character set collation of UTF8 (no F690)
 6.13/SR/12               n/a          - - user-defined types (S023)
@@ -634,9 +634,9 @@
 6.13/GR/8.b              implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/8.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/8.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql,tests/std_2_6_13_numeric_decimal_cast.sql
-6.13/GR/8.c              n/a          - - intervals (F052)
-6.13/GR/8.c.i            n/a          - - intervals (F052)
-6.13/GR/8.c.ii           n/a          - - intervals (F052)
+6.13/GR/8.c              implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/8.c.i            implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/8.c.ii           implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
 6.13/GR/9                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql
 6.13/GR/9.a              implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql
 6.13/GR/9.a.i            impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_double_precision.sql the value is rounded to the nearest IEEE 754 value
@@ -686,7 +686,7 @@
 6.13/GR/11.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/11.e.i           container    - -
 6.13/GR/11.e.i.1         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_50_datetime_to_formatted_string.sql
-6.13/GR/11.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql there are no intervals (F052)
+6.13/GR/11.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql,tests/std_2_6_13_cast_interval.sql
 6.13/GR/11.e.ii          container    - -
 6.13/GR/11.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
 6.13/GR/11.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
@@ -727,7 +727,7 @@
 6.13/GR/12.e             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_13_cast.sql
 6.13/GR/12.e.i           container    - -
 6.13/GR/12.e.i.1         implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_9_50_datetime_to_formatted_string.sql
-6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v,vsql/time.v tests/std_2_6_13_cast.sql,tests/std_2_6_1_datetime_precision.sql there are no intervals (F052)
+6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v,vsql/time.v tests/std_2_6_13_cast.sql,tests/std_2_6_1_datetime_precision.sql,tests/std_2_6_13_cast_interval.sql
 6.13/GR/12.e.ii          container    - -
 6.13/GR/12.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
 6.13/GR/12.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
@@ -800,19 +800,19 @@
 6.13/GR/19.d             implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_time.sql
 6.13/GR/19.e             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql
 6.13/GR/19.f             impl-defined vsql/std_2_6_13_cast_specification.v tests/std_2_6_1_timestamp.sql the fractional seconds are truncated
-6.13/GR/20               n/a          - - intervals (F052)
-6.13/GR/20.a             n/a          - - intervals (F052)
-6.13/GR/20.a.i           n/a          - - intervals (F052)
-6.13/GR/20.a.ii          n/a          - - intervals (F052)
-6.13/GR/20.a.iii         n/a          - - intervals (F052)
-6.13/GR/20.b             n/a          - - intervals (F052)
-6.13/GR/20.b.i           n/a          - - intervals (F052)
-6.13/GR/20.b.ii          n/a          - - intervals (F052)
-6.13/GR/20.c             n/a          - - intervals (F052)
-6.13/GR/20.d             n/a          - - intervals (F052)
-6.13/GR/20.d.i           n/a          - - intervals (F052)
-6.13/GR/20.d.ii          n/a          - - intervals (F052)
-6.13/GR/20.d.iii         n/a          - - intervals (F052)
+6.13/GR/20               implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.a             implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.a.i           implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.a.ii          impl-defined vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql the digits after the fractional seconds precision are truncated
+6.13/GR/20.a.iii         implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.b             implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.b.i           implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.b.ii          implemented  vsql/interval.v,vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_interval.sql
+6.13/GR/20.c             implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+6.13/GR/20.d             implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+6.13/GR/20.d.i           implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+6.13/GR/20.d.ii          impl-defined vsql/interval.v tests/std_2_6_1_interval.sql the least significant field is truncated
+6.13/GR/20.d.iii         implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 6.13/GR/21               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/21.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/21.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
@@ -1118,7 +1118,7 @@
 6.31/SR/5.a              untestable   - - a character string is always UTF8
 6.31/SR/5.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_length.sql USING isn't supported (T061), it's always CHARACTERS
 6.31/SR/6                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
-6.31/SR/6.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql there are no intervals (F052)
+6.31/SR/6.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql,tests/std_2_6_31_extract_interval.sql
 6.31/SR/6.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/SR/7                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/SR/7.a              impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql INTEGER
@@ -1167,7 +1167,7 @@
 6.31/GR/3.b              n/a          - - binary strings (T021)
 6.31/GR/3.c              n/a          - - binary strings (T021)
 6.31/GR/4                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
-6.31/GR/4.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql there are no intervals (F052)
+6.31/GR/4.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql,tests/std_2_6_31_extract_interval.sql
 6.31/GR/4.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/GR/4.b.i            implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/GR/4.b.ii           implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
@@ -1922,20 +1922,20 @@
 6.41/CR/1                n/a          - - JSON data type (T801)
 # 6.42, <datetime value expression>
 6.42                     implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
-6.42/SR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql only AT LOCAL, there's no datetime arithmetic (F052)
+6.42/SR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_at_local.sql,tests/std_2_6_42_datetime_arithmetic.sql
 6.42/SR/2                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/SR/3                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/SR/4                container    - -
 6.42/SR/4.a              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/SR/4.b              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
-6.42/SR/5                n/a          - - datetime arithmetic (F052)
-6.42/SR/5.a              n/a          - - datetime arithmetic (F052)
-6.42/SR/5.b              n/a          - - datetime arithmetic (F052)
-6.42/SR/6                missing      - - AT TIME ZONE needs intervals (#1176)
-6.42/GR/1                n/a          - - datetime arithmetic (F052)
-6.42/GR/2                missing      - - AT TIME ZONE needs intervals (#1176)
+6.42/SR/5                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/SR/5.a              implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/SR/5.b              implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/SR/6                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_time_zone.sql
+6.42/GR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/GR/2                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_time_zone.sql
 6.42/GR/3                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
-6.42/GR/4                n/a          - - datetime arithmetic (F052)
+6.42/GR/4                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
 6.42/GR/5                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/GR/5.a              implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/GR/5.b              container    - -
@@ -1944,16 +1944,16 @@
 6.42/GR/5.b.i.2          implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/GR/5.b.ii           container    - -
 6.42/GR/5.b.ii.1         implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
-6.42/GR/5.b.ii.2         missing      - - AT TIME ZONE needs intervals (#1176)
-6.42/GR/5.b.ii.2.A       missing      - - AT TIME ZONE needs intervals (#1176)
-6.42/GR/5.b.ii.2.B       missing      - - AT TIME ZONE needs intervals (#1176)
+6.42/GR/5.b.ii.2         implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_time_zone.sql
+6.42/GR/5.b.ii.2.A       implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_time_zone.sql
+6.42/GR/5.b.ii.2.B       implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_time_zone.sql
 6.42/GR/5.b.iii          implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
-6.42/GR/6                n/a          - - datetime arithmetic (F052)
+6.42/GR/6                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
 6.42/GR/6.a              container    - -
-6.42/GR/6.a.i            n/a          - - datetime arithmetic (F052)
-6.42/GR/6.a.ii           n/a          - - datetime arithmetic (F052)
-6.42/GR/6.b              n/a          - - datetime arithmetic (F052)
-6.42/CR/1                n/a          - - datetime arithmetic (F052)
+6.42/GR/6.a.i            implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/GR/6.a.ii           implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/GR/6.b              implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
+6.42/CR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql
 6.42/CR/2                implemented  vsql/std_2_6_42_datetime_value_expression.y tests/std_2_6_42_at_local.sql
 # 6.43, <datetime value function>
 6.43                     implemented  vsql/std_2_6_43_datetime_value_function.v tests/std_2_6_43_date_time_value_function.sql
@@ -1972,57 +1972,57 @@
 6.43/CR/3                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_9_6_flagging.sql
 6.43/CR/4                implemented  vsql/std_2_6_43_datetime_value_function.y tests/std_1_9_6_flagging.sql
 # 6.44, <interval value expression>
-6.44                     n/a          - - intervals (F052)
-6.44/SR/1                n/a          - - intervals (F052)
+6.44                     implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/SR/1                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 6.44/SR/2                container    - -
-6.44/SR/2.a              n/a          - - intervals (F052)
-6.44/SR/2.b              n/a          - - intervals (F052)
-6.44/SR/2.c              n/a          - - intervals (F052)
+6.44/SR/2.a              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/SR/2.b              impl-defined vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql the leading field precision is 8
+6.44/SR/2.c              impl-defined vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql the leading field precision is 8
 6.44/SR/3                container    - -
-6.44/SR/3.a              n/a          - - intervals (F052)
-6.44/SR/3.b              n/a          - - intervals (F052)
-6.44/SR/4                n/a          - - intervals (F052)
-6.44/SR/5                n/a          - - intervals (F052)
-6.44/GR/1                n/a          - - intervals (F052)
-6.44/GR/2                n/a          - - intervals (F052)
-6.44/GR/3                n/a          - - intervals (F052)
-6.44/GR/3.a              n/a          - - intervals (F052)
-6.44/GR/3.b              n/a          - - intervals (F052)
-6.44/GR/3.c              n/a          - - intervals (F052)
-6.44/GR/4                n/a          - - intervals (F052)
-6.44/GR/5                n/a          - - intervals (F052)
-6.44/GR/5.a              n/a          - - intervals (F052)
-6.44/GR/5.b              n/a          - - intervals (F052)
-6.44/GR/5.c              n/a          - - intervals (F052)
-6.44/GR/5.d              n/a          - - intervals (F052)
-6.44/GR/5.e              n/a          - - intervals (F052)
-6.44/GR/5.f              n/a          - - intervals (F052)
-6.44/GR/6                n/a          - - intervals (F052)
-6.44/GR/6.a              n/a          - - intervals (F052)
-6.44/GR/6.b              n/a          - - intervals (F052)
-6.44/GR/6.c              n/a          - - intervals (F052)
-6.44/GR/6.d              n/a          - - intervals (F052)
-6.44/GR/6.e              n/a          - - intervals (F052)
-6.44/GR/7                n/a          - - intervals (F052)
+6.44/SR/3.a              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/SR/3.b              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/SR/4                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/SR/5                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/1                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/2                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/3                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/3.a              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/3.b              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/3.c              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/4                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5.a              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5.b              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5.c              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5.d              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5.e              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/5.f              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/6                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/6.a              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/6.b              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/6.c              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/6.d              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/6.e              implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7                implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 6.44/GR/7.a              container    - -
-6.44/GR/7.a.i            n/a          - - intervals (F052)
-6.44/GR/7.a.ii           n/a          - - intervals (F052)
-6.44/GR/7.a.iii          n/a          - - intervals (F052)
+6.44/GR/7.a.i            implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7.a.ii           implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7.a.iii          implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 6.44/GR/7.b              container    - -
-6.44/GR/7.b.i            n/a          - - intervals (F052)
-6.44/GR/7.b.ii           n/a          - - intervals (F052)
-6.44/GR/7.b.iii          n/a          - - intervals (F052)
-6.44/GR/7.c              n/a          - - intervals (F052)
-6.44/GR/7.d              n/a          - - intervals (F052)
-6.44/CR/1                n/a          - - intervals (F052)
+6.44/GR/7.b.i            implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7.b.ii           implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7.b.iii          implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7.c              implemented  vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql
+6.44/GR/7.d              impl-defined vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_44_interval_value_expression.sql the difference of two TIMEs is between -24 and 24 hours, and the result is truncated
+6.44/CR/1                implemented  vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_44_interval_value_expression.sql
 # 6.45, <interval value function>
-6.45                     n/a          - - intervals (F052)
-6.45/SR/1                n/a          - - intervals (F052)
-6.45/GR/1                n/a          - - intervals (F052)
-6.45/GR/1.a              n/a          - - intervals (F052)
-6.45/GR/1.b              n/a          - - intervals (F052)
-6.45/GR/1.c              n/a          - - intervals (F052)
-6.45/CR/1                n/a          - - intervals (F052)
+6.45                     implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
+6.45/SR/1                implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
+6.45/GR/1                implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
+6.45/GR/1.a              implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
+6.45/GR/1.b              implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
+6.45/GR/1.c              implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
+6.45/CR/1                implemented  vsql/std_2_6_45_interval_value_function.v tests/std_2_6_45_interval_value_function.sql
 # 6.46, <boolean value expression>
 6.46                     implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_46_logical.sql
 6.46/SR/1                implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_46_logical.sql

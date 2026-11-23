@@ -293,6 +293,45 @@ fn sqlstate_22007() IError {
 	}
 }
 
+// Invalid interval format: a character string that's cast to an interval
+// isn't an interval literal or an <unquoted interval string> of its type.
+struct SQLState22006 {
+	SQLState
+}
+
+fn sqlstate_22006() IError {
+	return SQLState22006{
+		code: sqlstate_to_int('22006')
+		msg:  'invalid interval format'
+	}
+}
+
+// Datetime field overflow: datetime arithmetic gives a date that doesn't exist
+// (such as 2021-02-31), or a year that isn't between 1 and 9999.
+struct SQLState22008 {
+	SQLState
+}
+
+fn sqlstate_22008() IError {
+	return SQLState22008{
+		code: sqlstate_to_int('22008')
+		msg:  'datetime field overflow'
+	}
+}
+
+// Interval value out of range: the SUM or AVG of intervals doesn't fit in an
+// interval.
+struct SQLState2200P {
+	SQLState
+}
+
+fn sqlstate_2200p() IError {
+	return SQLState2200P{
+		code: sqlstate_to_int('2200P')
+		msg:  'interval value out of range'
+	}
+}
+
 // Interval field overflow: an interval has more digits in its leading field
 // than the leading field precision of its type.
 struct SQLState22015 {

@@ -227,6 +227,18 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 		return cast_boolean_to_character(mut conn, value, target)!
 	}
 
+	if value.typ.typ.is_string() && target.typ.is_interval() {
+		return cast_character_to_interval(value, target)!
+	}
+
+	if value.typ.typ in exact_numeric_types && target.typ.is_interval() {
+		return cast_exact_numeric_to_interval(value, target)!
+	}
+
+	if value.typ.typ.is_interval() && target.typ in exact_numeric_types {
+		return cast(mut conn, 'for CAST', cast_interval_to_exact_numeric(value), target)!
+	}
+
 	result := cast(mut conn, 'for CAST', value, target)!
 
 	// The declared type of a CAST is the target type (Syntax Rule 2), even if
@@ -278,6 +290,18 @@ fn cast_kind(t SQLType) CastKind {
 fn check_cast(from Type, to Type) ! {
 	from_kind := cast_kind(from.typ)
 	to_kind := cast_kind(to.typ)
+
+	// An interval can be cast to and from a character string, and to and from an
+	// exact numeric when it has only one field (Syntax Rules 8 and 9).
+	intervals := [CastKind.interval_year_month, .interval_day_time]
+	if (from_kind in intervals && to.typ in exact_numeric_types
+		&& from.interval_qualifier().start == from.interval_qualifier().end)
+		|| (to_kind in intervals && from.typ in exact_numeric_types
+			&& to.interval_qualifier().start == to.interval_qualifier().end)
+		|| (from_kind in intervals && to_kind == .character)
+		|| (to_kind in intervals && from_kind == .character) {
+		return
+	}
 
 	// A binary string or an interval can only be cast to its own kind of type,
 	// and a DECFLOAT can only be cast to or from a number or a character string,

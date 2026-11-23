@@ -1,8 +1,8 @@
 module vsql
 
 import math
-import math.bits
 import math.big
+import math.bits
 
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>
 //
@@ -300,6 +300,16 @@ fn set_function_type(name string, t Type) Type {
 		return match t.typ {
 			.is_smallint, .is_integer, .is_bigint { new_type('BIGINT', 0, 0) }
 			.is_numeric, .is_decimal { Type{t.typ, 0, t.scale, false, false} }
+			// The sum of intervals has the same fields, and the leading field
+			// precision is the maximum (SR 7.g.vi). An interval type with a size of
+			// 0 is only used to register the function.
+			.is_interval_year_month, .is_interval_day_time {
+				if t.size == 0 {
+					t
+				} else {
+					with_leading_precision(t, max_interval_leading_precision)
+				}
+			}
 			else { Type{t.typ, 0, 0, false, false} }
 		}
 	}
@@ -378,6 +388,26 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 
 	if name == 'PRODUCT' {
 		return eval_product(values, typ)!
+	}
+
+	// SUM or AVG of intervals. It's 2200P (interval value out of range) if the
+	// sum doesn't fit in the result type. The average is truncated to the least
+	// significant field.
+	//
+	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 3.a
+	if typ.typ.is_interval() {
+		mut sum := big.zero_int
+		for value in values {
+			sum += big.integer_from_i64(value.int_value())
+		}
+		if name == 'AVG' {
+			sum /= big.integer_from_int(values.len)
+		}
+		q := typ.interval_qualifier()
+		x := interval_from_big(sum, q) or { return sqlstate_2200p() }
+		q.check_leading(x) or { return sqlstate_2200p() }
+
+		return new_interval_value(typ, x)
 	}
 
 	// SUM or AVG. An approximate numeric is added as a DOUBLE PRECISION, and an

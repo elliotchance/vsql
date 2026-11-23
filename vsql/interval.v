@@ -2,6 +2,7 @@
 
 module vsql
 
+import math.big
 import strconv
 
 // The concepts are described by:
@@ -64,6 +65,10 @@ const max_interval_leading_precision = 8
 //
 // ISO/IEC 9075-2:2023, 10.1, <interval qualifier>, Syntax Rules, 6
 const default_interval_fractional_precision = 6
+
+// hour_to_minute_type is INTERVAL HOUR TO MINUTE, which is the type of a time
+// zone displacement.
+const hour_to_minute_type = new_interval_type(IntervalQualifier{.hour, .minute, default_interval_leading_precision, 0})
 
 // IntervalQualifier is the fields and precisions of an interval type.
 struct IntervalQualifier {
@@ -361,33 +366,55 @@ fn cast_interval(v Value, t Type) !Value {
 	}
 
 	q := t.interval_qualifier()
-	mut x := v.int_value()
-	if t.typ == .is_interval_year_month {
-		if q.end == .year {
-			x = x / 12 * 12
+	x := q.truncate(v.int_value())
+	q.check_leading(x)!
+
+	return new_interval_value(t, x)
+}
+
+// unit is the value of 1 in the least significant field of the qualifier: a
+// number of months for a year-month interval, otherwise a number of
+// microseconds. The unit of SECOND is the last digit of its fractional seconds
+// precision.
+fn (q IntervalQualifier) unit() i64 {
+	return match q.end {
+		.year {
+			12
 		}
-		leading := if q.start == .year { x / 12 } else { x }
-		if '${if leading < 0 { -leading } else { leading }}'.len > q.leading_precision {
-			return sqlstate_22015()
+		.month {
+			1
 		}
-	} else {
-		unit := if q.end == .second {
+		.second {
 			mut u := i64(1)
 			for _ in q.fractional_precision .. 6 {
 				u *= 10
 			}
 			u
-		} else {
+		}
+		else {
 			q.end.micros()
 		}
-		x = x / unit * unit
-		leading := x / q.start.micros()
-		if '${if leading < 0 { -leading } else { leading }}'.len > q.leading_precision {
-			return sqlstate_22015()
-		}
 	}
+}
 
-	return new_interval_value(t, x)
+// truncate removes the fields of x after the end field (and the fractional
+// seconds after the fractional seconds precision), towards zero.
+fn (q IntervalQualifier) truncate(x i64) i64 {
+	unit := q.unit()
+	return x / unit * unit
+}
+
+// check_leading returns 22015 (interval field overflow) if the start field of x
+// has more digits than the leading precision.
+fn (q IntervalQualifier) check_leading(x i64) ! {
+	leading := match q.start {
+		.year { x / 12 }
+		.month { x }
+		else { x / q.start.micros() }
+	}
+	if '${if leading < 0 { -leading } else { leading }}'.len > q.leading_precision {
+		return sqlstate_22015()
+	}
 }
 
 // IntervalFieldPrecision is a field of an <interval qualifier> and its
@@ -395,4 +422,138 @@ fn cast_interval(v Value, t Type) !Value {
 struct IntervalFieldPrecision {
 	field     IntervalField
 	precision int
+}
+
+// cast_character_to_interval is CAST(v AS t) for a character string v. Leading
+// and trailing spaces are removed, and the rest must be an <unquoted interval
+// string> for the qualifier of t, or an <interval literal> whose value can be
+// cast to t (see cast_interval). Otherwise, it's 22006 (invalid interval
+// format).
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 20.b, 20.b.i and 20.b.ii
+fn cast_character_to_interval(v Value, t Type) !Value {
+	s := v.string_value().trim(' ')
+	if s.to_upper().starts_with('INTERVAL') {
+		mut rest := s[8..].trim_left(' ')
+		mut sign := ''
+		if rest.starts_with('-') || rest.starts_with('+') {
+			sign = rest[..1]
+			rest = rest[1..].trim_left(' ')
+		}
+		end := rest.index_after("'", 1) or { -1 }
+		if !rest.starts_with("'") || end < 0 {
+			return sqlstate_22006()
+		}
+		q := parse_interval_qualifier_string(rest[end + 1..]) or { return sqlstate_22006() }
+		literal := new_interval_value_from_string(sign, rest[1..end], q) or {
+			return sqlstate_22006()
+		}
+		if literal.typ.typ != t.typ {
+			return sqlstate_22006()
+		}
+
+		return cast_interval(literal, t)!
+	}
+
+	return new_interval_value_from_string('', s, t.interval_qualifier()) or {
+		return sqlstate_22006()
+	}
+}
+
+// parse_interval_qualifier_string is the <interval qualifier> s, such as
+// "YEAR(3) TO MONTH" or "SECOND(2, 3)", in any case and with any spaces.
+fn parse_interval_qualifier_string(s string) ?IntervalQualifier {
+	parts := s.to_upper().replace(' ', '').split('TO')
+	if parts.len > 2 {
+		return none
+	}
+
+	start := parse_interval_field_precisions(parts[0])?
+	if parts.len == 1 {
+		if start.len == 2 && start[0].field != .second {
+			return none
+		}
+
+		return parse_interval_qualifier(start[0].field, start[0].field, start[0].precision,
+			if start.len == 2 { start[1].precision } else { -1 }) or { return none }
+	}
+
+	end := parse_interval_field_precisions(parts[1])?
+	if start.len != 1 || end.len != 1 || (end[0].precision >= 0 && end[0].field != .second) {
+		return none
+	}
+
+	return parse_interval_range(start[0], end[0]) or { return none }
+}
+
+// parse_interval_field_precisions is a field and its precisions, such as
+// "SECOND(2,3)", which is SECOND with each precision (only the first one has the
+// field).
+fn parse_interval_field_precisions(s string) ?[]IntervalFieldPrecision {
+	name := s.all_before('(')
+	if name !in ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND'] {
+		return none
+	}
+	field := interval_field_from_string(name)
+	if !s.contains('(') {
+		return [IntervalFieldPrecision{field, -1}]
+	}
+	if !s.ends_with(')') {
+		return none
+	}
+
+	precisions := s.all_after('(').trim_right(')').split(',')
+	if precisions.len > 2 || precisions.any(it == '' || !it.bytes().all(it.is_digit())) {
+		return none
+	}
+
+	return precisions.map(IntervalFieldPrecision{field, it.int()})
+}
+
+// cast_exact_numeric_to_interval is CAST(v AS t) for an exact numeric v and an
+// interval t with one field, which v is a number of. The digits after the
+// fractional seconds precision (or any fraction of another field) are
+// truncated, and it's 22015 (interval field overflow) if it has more digits
+// than the leading field precision.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 20.a, 20.a.i, 20.a.ii and 20.a.iii
+fn cast_exact_numeric_to_interval(v Value, t Type) !Value {
+	q := t.interval_qualifier()
+	n := v.as_numeric()!
+	base := match q.start {
+		.year { i64(12) }
+		.month { i64(1) }
+		else { q.start.micros() }
+	}
+	x := interval_from_big(n.numerator * big.integer_from_i64(base) / n.denominator, q)!
+	q.check_leading(x)!
+
+	return new_interval_value(t, x)
+}
+
+// cast_interval_to_exact_numeric is the interval v, which has one field, as a
+// number of that field. A number of seconds has the fractional seconds
+// precision as its scale. It's then cast to the exact numeric type (which
+// raises 22003 if it doesn't fit).
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 8.c, 8.c.i and 8.c.ii
+fn cast_interval_to_exact_numeric(v Value) Value {
+	q := v.typ.interval_qualifier()
+	x := v.int_value()
+	if q.start == .second {
+		sign := if x < 0 { '-' } else { '' }
+		abs := if x < 0 { -x } else { x }
+		mut s := '${sign}${abs / 1_000_000}'
+		if q.fractional_precision > 0 {
+			s += '.' + '${abs % 1_000_000:06}'[..q.fractional_precision]
+		}
+
+		return new_numeric_value(s)
+	}
+
+	return new_bigint_value(match q.start {
+		.year { x / 12 }
+		.month { x }
+		else { x / q.start.micros() }
+	})
 }

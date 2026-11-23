@@ -95,10 +95,6 @@ CREATE TABLE c3 (x TIMESTAMP WITH TIME ZONE CHECK (x AT LOCAL > TIMESTAMP '2000-
 -- error 42601: syntax error: X AT LOCAL cannot be used in a generation expression
 -- msg: CREATE TABLE 1
 
--- # AT TIME ZONE needs an interval, which isn't supported yet.
-VALUES TIMESTAMP '2022-07-04 12:00:00' AT TIME ZONE '+01:00';
--- error 42601: syntax error: unexpected TIME at line 1, column 43 near "'2022-07-04 12:00:00' AT TIME ZONE", expecting LOCAL
-
 -- # A <time zone> needs F411 (6.42, Conformance Rules, 2).
 /* flags */
 CREATE TABLE t (x INT);

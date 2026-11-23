@@ -178,9 +178,95 @@ are removed, and it's an error (``22015``) if the start field has more digits
 than the column allows. An interval can only be stored in a column of the same
 kind (year-month or day-time) of interval.
 
-Intervals can only be stored, compared as a ``PRIMARY KEY`` and cast to other
-intervals for now. Datetime arithmetic and the other operators that use
-intervals are not supported yet.
+Intervals of the same kind can be compared, and ``SUM``, ``AVG``, ``MIN``,
+``MAX`` and ``ABS`` accept an interval. ``EXTRACT`` returns one field of an
+interval, such as ``EXTRACT(HOUR FROM INTERVAL '25' HOUR)`` (25).
+
+An interval can be cast to another interval of the same kind, to and from a
+character string (the string is the interval literal, or just the part in
+quotes), and to and from an exact number when it has one field, which is the
+number of that field:
+
+.. code-block:: sql
+
+  VALUES CAST(INTERVAL '-1-02' YEAR TO MONTH AS VARCHAR(50));
+  -- COL1: INTERVAL '-1-02' YEAR(2) TO MONTH
+
+  VALUES CAST('3 04' AS INTERVAL DAY TO HOUR);
+  -- COL1: 3 04
+
+  VALUES CAST(90 AS INTERVAL MINUTE);
+  -- COL1: 90
+
+A string that isn't a valid interval is a ``22006`` error.
+
+Datetime Arithmetic
+-------------------
+
+An interval can be added to or subtracted from a datetime, which keeps the type
+of the datetime. The interval can only have the fields of the datetime, so a
+``DATE`` can't have an ``INTERVAL HOUR`` added to it (cast it to a ``TIMESTAMP``
+first). A year-month interval keeps the day of the month, and it's a ``22008``
+error if that day doesn't exist (such as ``DATE '2021-01-31' + INTERVAL '1'
+MONTH``), or if the year isn't between 1 and 9999. The hours of a ``TIME`` wrap
+around midnight. A datetime with a time zone keeps its time zone, and the
+interval is added to its UTC time.
+
+.. code-block:: sql
+
+  VALUES DATE '2020-01-31' + INTERVAL '1' DAY;
+  -- COL1: 2020-02-01
+
+  VALUES TIMESTAMP '2020-01-31 10:00:00' - INTERVAL '1 02:30' DAY TO MINUTE;
+  -- COL1: 2020-01-30T07:30:00
+
+  VALUES TIME '23:00:00' + INTERVAL '2' HOUR;
+  -- COL1: 01:00:00
+
+Intervals of the same kind can be added and subtracted, and an interval can be
+multiplied or divided by a number, or negated. The result is truncated to the
+last field of the interval, and it has a leading field precision of 8:
+
+.. code-block:: sql
+
+  VALUES INTERVAL '1' DAY + INTERVAL '2' HOUR;
+  -- COL1: 1 02
+
+  VALUES INTERVAL '1-06' YEAR TO MONTH * 3;
+  -- COL1: 4-06
+
+  VALUES INTERVAL '1' DAY / 3;
+  -- COL1: 0
+
+  VALUES -INTERVAL '1' DAY;
+  -- COL1: -1
+
+The difference of two datetimes is an interval with the fields that follow it,
+and the subtraction must be in parentheses. Each datetime is converted to a
+number of the last field first, so the difference in days between
+``2020-01-01 23:00`` and ``2020-01-02 01:00`` is 1 day. A datetime with a time
+zone is in the time zone of the connection first. The difference of two
+``TIME`` values is less than 24 hours.
+
+.. code-block:: sql
+
+  VALUES (DATE '2020-03-01' - DATE '2020-02-01') DAY;
+  -- COL1: 29
+
+  VALUES (TIMESTAMP '2020-03-01 10:30:00' - TIMESTAMP '2020-02-01 00:00:00') DAY TO MINUTE;
+  -- COL1: 29 10:30
+
+  VALUES (DATE '2020-03-01' - DATE '2019-02-15') YEAR TO MONTH;
+  -- COL1: 1-01
+
+A difference without the interval fields (such as ``DATE '2020-03-01' - DATE
+'2020-02-01'``) is a ``42601`` error. Any of the results is a ``22015`` error if
+it doesn't fit in the interval type.
+
+A dynamic parameter added to a ``DATE`` is an ``INTERVAL YEAR TO MONTH``, one
+added to a ``TIME`` is an ``INTERVAL HOUR TO SECOND`` and one added to a
+``TIMESTAMP`` is an ``INTERVAL DAY TO SECOND``. A dynamic parameter followed by
+interval fields (such as ``? DAY``) is an interval of that type.
 
 Comparisons
 -----------
@@ -220,8 +306,18 @@ time zone. The result is always ``WITH TIME ZONE``, with the same precision:
   VALUES TIMESTAMP '2022-07-04 12:00:00' AT LOCAL;
   -- COL1: 2022-07-04T12:00:00+0500
 
-``AT LOCAL`` on a ``DATE`` (or any other type) is a ``42804`` error.
-``AT TIME ZONE`` isn't supported yet, because it needs an ``INTERVAL``.
+``<expr> AT TIME ZONE <interval>`` puts a ``TIME`` or ``TIMESTAMP`` into the
+time zone of an ``INTERVAL HOUR TO MINUTE`` in the same way, which must be
+between ``-14:00`` and ``+14:00`` (otherwise it's a ``22009`` error). A value
+without a time zone is taken to be in the time zone of the connection first:
+
+.. code-block:: sql
+
+  VALUES TIMESTAMP '2022-07-04 12:00:00+00:00' AT TIME ZONE INTERVAL '05:30' HOUR TO MINUTE;
+  -- COL1: 2022-07-04T17:30:00+0530
+
+``AT LOCAL`` or ``AT TIME ZONE`` on a ``DATE`` (or any other type) is a
+``42804`` error.
 
 Casting From Strings
 --------------------

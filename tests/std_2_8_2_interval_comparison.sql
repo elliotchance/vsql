@@ -1,0 +1,64 @@
+/* setup */
+CREATE TABLE t (x INTERVAL DAY TO SECOND, y INTERVAL HOUR);
+INSERT INTO t (x, y) VALUES (INTERVAL '1 02:00:00' DAY TO SECOND, INTERVAL '26' HOUR), (INTERVAL '-1' DAY, INTERVAL '3' HOUR), (NULL, INTERVAL '1' HOUR);
+
+-- # Intervals of the same class are compared as integers of their least
+-- # significant field (8.2, General Rules, 7, 7.a and 7.b), so the fields they
+-- # have don't matter.
+VALUES INTERVAL '1' DAY = INTERVAL '24' HOUR;
+VALUES INTERVAL '1' DAY < INTERVAL '25' HOUR;
+VALUES INTERVAL '1-02' YEAR TO MONTH > INTERVAL '13' MONTH;
+VALUES INTERVAL '-1' SECOND < INTERVAL '0' DAY;
+VALUES INTERVAL '1' YEAR <> INTERVAL '12' MONTH;
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: TRUE
+-- COL1: FALSE
+
+SELECT x = y, x < y FROM t;
+-- COL1: TRUE COL2: FALSE
+-- COL1: FALSE COL2: TRUE
+-- COL1: UNKNOWN COL2: UNKNOWN
+
+-- # A year-month interval can't be compared with a day-time interval.
+VALUES INTERVAL '1' YEAR = INTERVAL '365' DAY(3);
+VALUES INTERVAL '1' DAY = 1;
+-- error 42883: cannot compare INTERVAL YEAR(2) and INTERVAL DAY(3)
+-- error 42883: cannot compare INTERVAL DAY(2) and SMALLINT
+
+-- # They're ordered and grouped in the same way, and an index on an interval
+-- # can be used to find a value.
+SELECT y FROM t ORDER BY y DESC;
+SELECT y FROM t WHERE y BETWEEN INTERVAL '2' HOUR AND INTERVAL '1 00' DAY TO HOUR;
+-- Y: 26
+-- Y: 3
+-- Y: 1
+-- Y: 3
+
+/* extensions V001-01 V002-01 */
+CREATE INDEX ty ON t (y);
+EXPLAIN SELECT y FROM t WHERE y = INTERVAL '3' HOUR;
+SELECT y FROM t WHERE y = INTERVAL '180' MINUTE(3);
+SELECT y FROM t WHERE y = INTERVAL '181' MINUTE(3);
+-- msg: CREATE INDEX 1
+-- EXPLAIN: INDEX ":memory:".PUBLIC.TY ON ":memory:".PUBLIC.T (X INTERVAL DAY(2) TO SECOND(6), Y INTERVAL HOUR(2)) RANGE Y = INTERVAL '3' HOUR(2)
+-- EXPLAIN: WHERE Y = INTERVAL '3' HOUR(2)
+-- EXPLAIN: EXPR (Y INTERVAL HOUR(2))
+-- Y: 3
+
+-- # The result of a CASE (or another combination of intervals) has every field
+-- # of each interval (9.5, Syntax Rules, 3.e).
+/* types */
+VALUES CASE WHEN TRUE THEN INTERVAL '1' DAY ELSE INTERVAL '3' HOUR(3) END;
+VALUES COALESCE(CAST(NULL AS INTERVAL MINUTE TO SECOND(2)), INTERVAL '1' HOUR);
+SELECT x FROM t WHERE x IS NOT NULL UNION SELECT y FROM t ORDER BY x;
+-- COL1: 1 00 (INTERVAL DAY(3) TO HOUR)
+-- COL1: 1:00:00.00 (INTERVAL HOUR(2) TO SECOND(2))
+-- X: -1 00:00:00.000000 (INTERVAL DAY(2) TO SECOND(6))
+-- X: 0 01:00:00.000000 (INTERVAL DAY(2) TO SECOND(6))
+-- X: 0 03:00:00.000000 (INTERVAL DAY(2) TO SECOND(6))
+-- X: 1 02:00:00.000000 (INTERVAL DAY(2) TO SECOND(6))
+
+VALUES CASE WHEN TRUE THEN INTERVAL '1' DAY ELSE INTERVAL '3' YEAR END;
+-- error 42804: data type mismatch in CASE: expected INTERVAL DAY(2) but got INTERVAL YEAR(2)

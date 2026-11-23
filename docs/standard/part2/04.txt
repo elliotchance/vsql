@@ -79,15 +79,15 @@
 # 4.6.3.2, Other operators involving Booleans
 4.6.3.2                  implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_1_boolean.sql
 # 4.7, Datetimes and intervals
-4.7                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql no intervals (F052)
+4.7                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_timestamp.sql,tests/std_2_6_1_interval.sql
 # 4.7.1, Introduction to datetimes and intervals
-4.7.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_date.sql no intervals (F052)
+4.7.1                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_date.sql
 # 4.7.2, Datetimes
 4.7.2                    implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_time.sql
 # 4.7.3, Intervals
-4.7.3                    partial      vsql/interval.v tests/std_2_6_1_interval.sql intervals (F052) can only be stored and cast, they have no operations yet
+4.7.3                    implemented  vsql/interval.v tests/std_2_6_1_interval.sql,tests/std_2_6_44_interval_value_expression.sql
 # 4.7.4, Operations involving datetimes and intervals
-4.7.4                    implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql no datetime arithmetic, which needs intervals (F052)
+4.7.4                    implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_datetime_arithmetic.sql,tests/std_2_6_44_interval_value_expression.sql
 # 4.8, JSON types
 4.8                      n/a          - - JSON data type (T801)
 # 4.8.1, IntroductiontoJSONtypes
@@ -461,7 +461,7 @@
 # 4.45.2, SQL-session identification
 4.45.2                   implemented  vsql/std_2_18_1_connect_statement.v tests/std_2_18_1_connections.sql
 # 4.45.3, SQL-session properties
-4.45.3                   partial      vsql/std_2_18_1_connect_statement.v,vsql/time.v tests/std_2_19_6_set_schema.sql,tests/std_2_19_4_set_time_zone.sql no SET TIME ZONE to a time zone displacement (#1176), SQL-session user (E081), roles (T331) or SQL-path (S071)
+4.45.3                   partial      vsql/std_2_18_1_connect_statement.v,vsql/time.v tests/std_2_19_6_set_schema.sql,tests/std_2_19_4_set_time_zone.sql no SQL-session user (E081), roles (T331) or SQL-path (S071)
 # 4.45.4, SQL-session context management
 4.45.4                   n/a          - - SQL-invoked routines (T321)
 # 4.45.5, Execution contexts

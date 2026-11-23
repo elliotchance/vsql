@@ -27,6 +27,11 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 
 	if n := e.n {
 		mut compiled_n := n.compile(mut c)!
+		datetime_result, is_datetime := c.compile_datetime_arithmetic(compiled_n, e.op,
+			compiled_term)!
+		if is_datetime {
+			return datetime_result
+		}
 
 		// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xi
 		compiled_n, compiled_term = c.with_pair_types(compiled_n, compiled_term, same_type)
@@ -66,6 +71,11 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 
 	if term := e.term {
 		mut compiled_term := term.compile(mut c)!
+		datetime_result, is_datetime := c.compile_datetime_arithmetic(compiled_term, e.op,
+			compiled_factor)!
+		if is_datetime {
+			return datetime_result
+		}
 
 		// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.x
 		compiled_term, compiled_factor = c.with_pair_types(compiled_term, compiled_factor,
@@ -124,13 +134,15 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 }
 
 type NumericPrimary = ExtractExpression
+	| IntervalQualifiedPrimary
 	| RoutineInvocation
 	| SignedValueExpressionPrimary
 	| ValueExpressionPrimary
 
 fn (e NumericPrimary) pstr(params map[string]Value) string {
 	return match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression {
+		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression,
+		IntervalQualifiedPrimary {
 			e.pstr(params)
 		}
 	}
@@ -138,7 +150,8 @@ fn (e NumericPrimary) pstr(params map[string]Value) string {
 
 fn (e NumericPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression {
+		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression,
+		IntervalQualifiedPrimary {
 			return e.compile(mut c)!
 		}
 	}

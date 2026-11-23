@@ -631,6 +631,13 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 		allowed = [.is_time_without_time_zone, .is_time_with_time_zone,
 			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
 	}
+	// A primary datetime field of an interval (see extract_interval).
+	if typ.typ.is_interval() && e.field in ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND'] {
+		return e.compile_interval(compiled)!
+	}
+	if e.field in ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND'] {
+		expected = expected.replace(' or ', ', ') + ' or INTERVAL'
+	}
 	if typ.typ !in allowed {
 		return sqlstate_42804('in EXTRACT(${e.field} FROM ...)', expected, typ.str())
 	}
@@ -715,4 +722,80 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 		contains_agg: compiled.contains_agg
 		constant:     compiled.constant
 	}.fold()
+}
+
+// compile_interval is EXTRACT of a primary datetime field from an interval,
+// which must be one of its fields. The start field is the whole number of that
+// field (such as 25 for HOUR of INTERVAL '25' HOUR), and every other field is
+// less than the field before it. The result has the sign of the interval. It's
+// an INTEGER, except for SECOND, which is a NUMERIC with the fractional seconds
+// precision of the interval as its scale.
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 6.a, 7.a and 7.b
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 4.a
+fn (e ExtractExpression) compile_interval(compiled CompileResult) !CompileResult {
+	q := compiled.typ.interval_qualifier()
+	field := interval_field_from_string(e.field)
+	if int(field) < int(q.start) || int(field) > int(q.end) {
+		return sqlstate_42804('in EXTRACT(${e.field} FROM ...)', 'an interval with ${e.field}',
+			compiled.typ.str())
+	}
+
+	return_type := if field == .second {
+		digits := if q.start == .second { q.leading_precision } else { 2 }
+		new_type('NUMERIC', digits + q.fractional_precision, i16(q.fractional_precision))
+	} else {
+		new_type('INTEGER', 0, 0)
+	}
+
+	return CompileResult{
+		run:          fn [compiled, q, field, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled.run(mut conn, data, params)!
+			if value.is_null {
+				return Value{
+					typ:     return_type
+					is_null: true
+				}
+			}
+
+			return extract_interval(value.int_value(), q, field, return_type)
+		}
+		typ:          return_type
+		contains_agg: compiled.contains_agg
+		constant:     compiled.constant
+	}.fold()
+}
+
+// extract_interval is the field of the interval x (a number of months or
+// microseconds), see ExtractExpression.compile_interval.
+fn extract_interval(x i64, q IntervalQualifier, field IntervalField, return_type Type) Value {
+	if field == .year {
+		return new_integer_value(int(x / 12))
+	}
+	if field == .month {
+		return new_integer_value(int(if q.start == .month { x } else { x % 12 }))
+	}
+
+	// The microseconds of the field and every field after it.
+	rest := if field == q.start {
+		x
+	} else {
+		x % (match field {
+			.hour { day_period }
+			.minute { hour_period }
+			else { minute_period }
+		})
+	}
+	if field != .second {
+		return new_integer_value(int(rest / field.micros()))
+	}
+
+	sign := if rest < 0 { '-' } else { '' }
+	abs := if rest < 0 { -rest } else { rest }
+	mut seconds := '${sign}${abs / second_period}'
+	if return_type.scale > 0 {
+		seconds += '.' + '${abs % second_period:06}'[..return_type.scale]
+	}
+
+	return with_numeric_type(new_numeric_value(seconds), return_type)
 }

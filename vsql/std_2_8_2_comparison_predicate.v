@@ -358,6 +358,14 @@ fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 // ISO/IEC 9075-2:2023, 8.2, <comparison predicate>, General Rules, 2:
 // numbers are compared by their algebraic value.
 fn compare_numbers(xv Value, yv Value) !CompareResult {
+	// A DECFLOAT is compared exactly, with any other number.
+	if xv.typ.typ == .is_decfloat && yv.typ.typ == .is_decfloat {
+		return compare_decfloat(xv.decfloat_value(), yv.decfloat_value())
+	}
+	if xv.typ.typ == .is_decfloat || yv.typ.typ == .is_decfloat {
+		return xv.as_numeric()!.compare(yv.as_numeric()!)
+	}
+
 	if (xv.typ.typ == .is_decimal || xv.typ.typ == .is_numeric)
 		&& (yv.typ.typ == .is_decimal || yv.typ.typ == .is_numeric) {
 		return xv.numeric_value().compare(yv.numeric_value())

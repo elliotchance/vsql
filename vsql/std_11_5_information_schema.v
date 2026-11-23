@@ -897,6 +897,9 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 			character_maximum_length = length
 			character_octet_length = length
 		}
+		// The precision of a DECFLOAT is in decimal digits.
+		//
+		// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 18, 18.a, 18.b and 18.c
 		.is_decfloat {
 			numeric_precision = t.size
 			numeric_precision_radix = 10

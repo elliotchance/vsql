@@ -207,7 +207,7 @@
 5.5/GR/8.d.v             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
 5.5/GR/8.d.vi            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
 5.5/GR/8.d.vi.1          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
-5.5/GR/8.d.vi.2          n/a          - - there are no binary strings (T021)
+5.5/GR/8.d.vi.2          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/binary_test.c
 5.5/GR/8.d.vi.3          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
 5.5/GR/8.d.vi.4          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
 5.5/GR/8.d.vi.5          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
@@ -426,9 +426,9 @@
 5.8/GR/3.h.viii.2.B.II.2 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
 5.8/GR/3.h.viii.2.B.II.2.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
 5.8/GR/3.h.viii.2.B.II.2.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
-5.8/GR/3.h.viii.2.B.II.3 n/a          - - there are no binary large objects (T041)
-5.8/GR/3.h.viii.2.B.II.3.a n/a          - - there are no binary large objects (T041)
-5.8/GR/3.h.viii.2.B.II.3.b n/a          - - there are no binary large objects (T041)
+5.8/GR/3.h.viii.2.B.II.3 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.8/GR/3.h.viii.2.B.II.3.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.8/GR/3.h.viii.2.B.II.3.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
 5.8/GR/3.h.viii.2.B.II.4 n/a          - - there are no arrays or multisets (S091, S271)
 5.8/GR/3.h.viii.2.B.II.5 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
 5.8/GR/3.h.viii.3        implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
@@ -448,14 +448,14 @@
 5.9/GR/5.b.i             implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 5.9/GR/5.b.ii            implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 # 5.10, Binary large object string retrieval
-5.10                     n/a          - - there are no binary large objects (T041)
-5.10/GR/1                n/a          - - there are no binary large objects (T041)
-5.10/GR/2                n/a          - - there are no binary large objects (T041)
-5.10/GR/3                n/a          - - there are no binary large objects (T041)
-5.10/GR/4                n/a          - - there are no binary large objects (T041)
+5.10                     implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10/GR/1                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10/GR/2                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10/GR/3                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10/GR/4                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
 5.10/GR/5                container    - -
-5.10/GR/5.a              n/a          - - there are no binary large objects (T041)
-5.10/GR/5.b              n/a          - - there are no binary large objects (T041)
+5.10/GR/5.a              implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10/GR/5.b              implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
 # 5.11, Deferred parameter check
 5.11                     implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c
 5.11/GR/1                definition   - -

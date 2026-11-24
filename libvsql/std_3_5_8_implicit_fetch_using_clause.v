@@ -155,7 +155,7 @@ fn fetch_using(mut stmt Stmt, targets []BoundTarget) !i16 {
 // target (see 5.8, General Rule 3.h).
 fn assign_target(mut diag Diagnostics, stmt &Stmt, nts bool, target BoundTarget, row vsql.Row, i int) ! {
 	value := row.get_column(target.column)!
-	element_size := if target.typ == .is_varchar {
+	element_size := if target.typ in [.is_varchar, .is_varbinary] {
 		target.octet_length
 	} else {
 		c_type_size(target.typ)
@@ -179,11 +179,18 @@ fn assign_target(mut diag Diagnostics, stmt &Stmt, nts bool, target BoundTarget,
 	// - 3.h.viii.2.B. Otherwise, the indicator is set to 0 (zero) and the value
 	// is assigned.
 	set_integer(target.indicator, i, 0)
-	if target.typ == .is_varchar {
+	if target.typ in [.is_varchar, .is_varbinary] {
 		length := if target.length_indicator == unsafe { nil } {
 			unsafe { nil }
 		} else {
 			unsafe { voidptr(&u8(target.length_indicator) + i * int(sizeof(SQLInteger))) }
+		}
+
+		// - 3.h.viii.2.B.II.3. A binary string is retrieved by the General Rules
+		// of 5.10, "Binary large object string retrieval".
+		if target.typ == .is_varbinary {
+			retrieve_octets(mut diag, data, tv.string_value(), target.octet_length, length)!
+			return
 		}
 		retrieve_string(mut diag, nts, data, tv.string_value(), target.octet_length, length,
 			4)!

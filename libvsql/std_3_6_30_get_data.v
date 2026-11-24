@@ -4,8 +4,8 @@ module main
 //
 // Retrieve a column value.
 //
-// A character value can be retrieved in pieces by calling GetData again for the
-// same column. Columns can be retrieved in any order, and once a value has been
+// A character or binary string value can be retrieved in pieces by calling
+// GetData again for the same column. Columns can be retrieved in any order, and once a value has been
 // retrieved completely, retrieving it again starts from the beginning (General
 // Rules 13.b, 15.a and 15.b.ii.1, which are implementation-defined).
 //
@@ -121,12 +121,13 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 		return cli_error('07002', 'using clause does not match target specifications')
 	}
 
-	// - 15.b, 25.a. Continue retrieving a character value in pieces.
+	// - 15.b, 25.a. Continue retrieving a character (or binary string) value in
+	// pieces, as the same type.
 	if stmt.fetched_column < 0 {
 		afcn := -stmt.fetched_column
 		stmt.fetched_column = afcn
 		if cn == afcn {
-			if typ != .is_varchar {
+			if typ != stmt.fetched_type {
 				return cli_error('07009', 'invalid descriptor index')
 			}
 
@@ -154,10 +155,12 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 	tv := cast_value(stmt, value, column, typ)!
 
 	// - 30.b.ii. A character value is retrieved by the General Rules of 5.9,
-	// "Character string retrieval".
-	if typ == .is_varchar {
+	// "Character string retrieval", and a binary string by the General Rules of
+	// 5.10, "Binary large object string retrieval".
+	if typ in [.is_varchar, .is_varbinary] {
 		stmt.fetched_value = tv.string_value()
 		stmt.fetched_length = 0
+		stmt.fetched_type = typ
 		return retrieve_piece(mut stmt, cn, target_value, buffer_length, str_len_or_ind)
 	}
 
@@ -176,12 +179,18 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 // retrieve_piece retrieves the rest of the fetched value from the fetched
 // length.
 fn retrieve_piece(mut stmt Stmt, cn int, target_value voidptr, buffer_length i64, str_len_or_ind &SQLInteger) !i16 {
-	retrieve_string(mut stmt.diag, stmt.null_termination(), target_value, stmt.fetched_value[stmt.fetched_length..],
-		buffer_length, str_len_or_ind, 4)!
+	nts := stmt.fetched_type == .is_varchar && stmt.null_termination()
+	if stmt.fetched_type == .is_varbinary {
+		retrieve_octets(mut stmt.diag, target_value, stmt.fetched_value[stmt.fetched_length..],
+			buffer_length, str_len_or_ind)!
+	} else {
+		retrieve_string(mut stmt.diag, nts, target_value, stmt.fetched_value[stmt.fetched_length..],
+			buffer_length, str_len_or_ind, 4)!
+	}
 
 	// - 30.b.ii.4, 5. If FL is less than DL, then –CN becomes the fetched column
 	// number.
-	stmt.fetched_length += int(if stmt.null_termination() {
+	stmt.fetched_length += int(if nts {
 		buffer_length - 1
 	} else {
 		buffer_length

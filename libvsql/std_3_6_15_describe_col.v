@@ -82,11 +82,13 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 }
 
 // - 9.b. describe_column_size is the maximum length in octets of a character
-// string, the maximum length in decimal digits of a number, or the length in
+// string or binary string, the maximum length in decimal digits of a number, or the length in
 // positions of a datetime. For a BOOLEAN, it's the length of FALSE.
 fn describe_column_size(ird &Desc, cn int) i64 {
 	return match ird.record_int(cn, sql_desc_type) {
-		sql_char, sql_varchar { ird.record_int(cn, sql_desc_octet_length) }
+		sql_char, sql_varchar, sql_binary, sql_varbinary {
+			ird.record_int(cn, sql_desc_octet_length)
+		}
 		sql_smallint { 5 }
 		sql_integer { 10 }
 		sql_bigint { 19 }

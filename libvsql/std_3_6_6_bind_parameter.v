@@ -76,10 +76,10 @@ fn bind_parameter(mut stmt Stmt, parameter_number i16, iom i16, value_type i16, 
 	} else {
 		check_concise_type(parameter_type)!
 
-		// - 18.c. The length of a string is CS, and the precision and scale of a
-		// number are CS and DD.
+		// - 18.c. The length of a string (or a binary string) is CS, and the
+		// precision and scale of a number are CS and DD.
 		ipd_record[sql_desc_type] = i64(parameter_type)
-		if parameter_type in [sql_char, sql_varchar] {
+		if parameter_type in [sql_char, sql_varchar, sql_binary, sql_varbinary] {
 			ipd_record[sql_desc_length] = column_size
 		} else if parameter_type != sql_boolean {
 			ipd_record[sql_desc_precision] = column_size
@@ -129,7 +129,7 @@ fn check_concise_type(code i16) ! {
 		return cli_error('HYC00', 'optional feature not implemented')
 	}
 	if code !in [sql_char, sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
-		sql_double, sql_varchar, sql_boolean, sql_bigint, sql_decfloat] {
+		sql_double, sql_varchar, sql_boolean, sql_bigint, sql_decfloat, sql_binary, sql_varbinary] {
 		return cli_error('HY004', 'invalid data type')
 	}
 }

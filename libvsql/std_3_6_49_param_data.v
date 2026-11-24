@@ -68,7 +68,8 @@ fn param_data(mut stmt Stmt, value &voidptr) !i16 {
 
 	// - 11.a.i.1.A. A character string is the characters wholly contained in
 	// its octets, so it doesn't end with part of a character (PutData checked
-	// that the rest is valid UTF-8).
+	// that the rest is valid UTF-8). A binary string is all of its octets
+	// (11.a.i.3.A).
 	v := if sv.typ.typ == .is_varchar && !sv.is_null {
 		vsql.new_varchar_value(whole_characters(sv.string_value()))
 	} else {

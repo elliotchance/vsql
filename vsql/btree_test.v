@@ -356,6 +356,44 @@ fn test_btree_variable_length_keys() ! {
 	}
 }
 
+// The pages of keys added in a random order (such as an index on a column that
+// isn't sequential) must not be left mostly empty. Keys added in order fill the
+// pages, even when they're followed by the keys of another table.
+fn test_btree_page_usage() ! {
+	page_size := 1024
+	n := 5000
+	mut ids := []int{len: n, init: index}
+	rand.seed([u32(1), 1712])
+	rand.shuffle(mut ids)!
+
+	for is_random in [false, true] {
+		mut pager := new_memory_pager()
+		mut btree := new_btree(pager, page_size)
+		btree.add(new_page_object('T'.bytes(), 1, 0, []u8{}))!
+		mut size := 0
+		for i in 0 .. n {
+			id := if is_random { ids[i] } else { i }
+			mut key := new_empty_bytes()
+			key.write_u8(`R`)
+			key.write_u64(1)
+			key.write_i64(id)
+			object := new_page_object(key.bytes(), 1, 0, []u8{len: 20})
+			size += object.length()
+			btree.add(object)!
+		}
+
+		// The pages that are needed if every page was full.
+		full := size / (page_size - page_header_size)
+		if is_random {
+			// Half full is the least after a split in half.
+			assert pager.total_pages() < full * 2
+		} else {
+			// Non-leaf pages are also counted.
+			assert pager.total_pages() < full * 12 / 10
+		}
+	}
+}
+
 fn (p Page) is_empty() bool {
 	return p.used == page_header_size
 }

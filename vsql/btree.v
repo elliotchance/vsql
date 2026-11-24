@@ -468,7 +468,8 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		objects << obj
 	}
 
-	groups := p.split_objects(objects)
+	groups := p.split_objects(objects, inserted_at == -1
+		|| !is_same_key_space(obj.key, objects[inserted_at + 1].key))
 
 	// The first group stays in the page being split, and the others go into
 	// new pages.
@@ -563,18 +564,90 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	}
 }
 
-// split_objects divides the objects (which are in order) into as few pages as
-// possible, with a heavy bias towards filling the earlier pages.
+// split_objects divides the objects (which are in order) into the pages of a
+// split. is_append is true when the new object is after all of the others of
+// the same table or index (see is_same_key_space).
 //
-// We prefer the left page to be a full as possible because the keys are
-// sequential, so in the case of lots of sequential inserts it can pack the
-// data more tightly. However, if the inserts are not sequential we will get a
-// lot of semi-full pages that hopefully become full over time.
+// When it is, the earlier pages are filled as much as possible, because the
+// keys are probably sequential (such as a row ID), so the next object is
+// added after it again, and the left page wouldn't get any more objects.
+//
+// Otherwise, they're divided in half (by size), so that both pages have room
+// for more objects. Filling the left page here would leave the right page with
+// only the objects that didn't fit (often only one), and the next object added
+// to the left page splits it again. With keys in a random order (such as an
+// index on a column that isn't sequential) the pages end up mostly empty, and
+// the file many times larger than it needs to be.
+fn (p Btree) split_objects(objects []PageObject, is_append bool) [][]PageObject {
+	if !is_append {
+		if groups := p.split_objects_in_half(objects) {
+			return groups
+		}
+	}
+
+	return p.fill_objects(objects)
+}
+
+// is_same_key_space is true when both keys are of the same kind of object for
+// the same table or index (or other object), such as the rows of a table, or
+// the entries of an index. Every key starts with its kind (one byte) and the
+// ID it belongs to (eight bytes), see row_key_prefix and index_entry_prefix.
+// All of the B-tree is in one tree, so the rows of a table are usually followed
+// by the objects of another table, even when they're added in order.
+fn is_same_key_space(a []u8, b []u8) bool {
+	n := 9
+	if a.len < n || b.len < n {
+		return false
+	}
+
+	return a[..n] == b[..n]
+}
+
+// split_objects_in_half divides the objects into two pages that are as close
+// to the same size as possible. It's none when they can't be divided into two
+// pages (such as when some objects are large), so fill_objects is used
+// instead.
+fn (p Btree) split_objects_in_half(objects []PageObject) ?[][]PageObject {
+	max_allowed_in_page := p.max_allowed_in_page()
+	mut total := 0
+	for object in objects {
+		total += object.length()
+	}
+
+	mut best := -1
+	mut best_difference := total
+	mut left := 0
+	for i in 1 .. objects.len {
+		left += objects[i - 1].length()
+		right := total - left
+		// Two versions of the same key must stay on the same page (see
+		// fill_objects).
+		if left > max_allowed_in_page || right > max_allowed_in_page
+			|| compare_bytes(objects[i - 1].key, objects[i].key) == 0 {
+			continue
+		}
+
+		difference := if left > right { left - right } else { right - left }
+		if difference < best_difference {
+			best = i
+			best_difference = difference
+		}
+	}
+
+	if best == -1 {
+		return none
+	}
+
+	return [objects[..best], objects[best..]]
+}
+
+// fill_objects divides the objects (which are in order) into as few pages as
+// possible, filling each page before starting the next.
 //
 // Usually this is two pages, but it can be three. Two versions of the same key
 // must be on the same page, so when they don't fit with the objects before
 // them they start a new page, and the objects after them may need another.
-fn (p Btree) split_objects(objects []PageObject) [][]PageObject {
+fn (p Btree) fill_objects(objects []PageObject) [][]PageObject {
 	max_allowed_in_page := p.max_allowed_in_page()
 	mut groups := [][]PageObject{}
 	mut group := []PageObject{}

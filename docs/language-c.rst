@@ -251,6 +251,8 @@ SQL data type                C data type
 ============================ =============================
 ``CHARACTER(L)``             ``char name[(L + 1) * 4]``
 ``CHARACTER VARYING(L)``     ``char name[(L + 1) * 4]``
+``BINARY(L)``                ``char name[L]``
+``BINARY VARYING(L)``        ``void *name`` (see below)
 ``SMALLINT``                 ``short *name``
 ``INTEGER``                  ``long *name``
 ``BIGINT``                   ``long long *name``
@@ -268,6 +270,23 @@ UTF-8), so a ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` can hold any value of
 L characters, followed by the null character. A value of more than L characters
 is cut to its first L characters. A string must end with a null character within its length, otherwise the
 ``SQLSTATE`` is ``22024`` (unterminated C string).
+
+A binary string is a number of octets, without a null character. A
+``BINARY(L)`` is all of its L octets (a value of fewer octets is padded with
+``X'00'``). A ``BINARY VARYING(L)`` is a pointer to a struct that has its
+length in octets and its octets (``name`` is the name of the parameter):
+
+.. code-block:: c
+
+   struct {
+     long name_reserved;
+     unsigned long name_length;
+     char name_data[L];
+   } name;
+
+A value of more than L octets is cut to its first L octets (with the warning
+``01004``, and the indicator parameter is set to its length in octets). A
+binary string can't be assigned to, or from, any other data type.
 
 A parameter can be NULL with an indicator parameter (a ``SMALLINT``,
 ``INTEGER`` or ``BIGINT``), which is written after it as ``:name INDICATOR
@@ -695,7 +714,14 @@ C data type                  SQL data type
 ``long long name``           ``BIGINT``
 ``float name``               ``REAL``
 ``double name``              ``DOUBLE PRECISION``
+``SQL TYPE IS BINARY(L)``    ``BINARY(L)``
+``SQL TYPE IS VARBINARY(L)`` ``BINARY VARYING(L)``
 ============================ =============================
+
+``SQL TYPE IS BINARY(L) name`` is replaced with ``unsigned char name[L]``, and
+``SQL TYPE IS VARBINARY(L) name`` is replaced with the struct of a ``BINARY
+VARYING(L)`` (see `Modules`_), so its length is ``name.name_length`` and its
+octets are ``name.name_data``.
 
 ``VARCHAR`` is replaced with ``char``, and the length of each array is
 multiplied by 4 (so that it can hold L characters of up to 4 bytes each, see

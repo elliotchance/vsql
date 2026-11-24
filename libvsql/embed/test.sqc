@@ -22,6 +22,11 @@ int main(void) {
   long x;
   long x_indicator;
   long long b;
+  /* A BINARY is an unsigned char array, and a VARBINARY is a struct with a
+   * length (each name has its own struct). */
+  SQL TYPE IS BINARY(3) bin3;
+  SQL TYPE IS VARBINARY(4) vb, vb2 = {0, 2, {1, 2}};
+  long vb_indicator;
   EXEC SQL END DECLARE SECTION;
 
   EXEC SQL CONNECT TO ':memory:' AS 'test';
@@ -89,6 +94,22 @@ int main(void) {
     EXEC SQL INSERT INTO widths (x, b) VALUES (:x, :b);
     CHECK(strcmp(SQLSTATE, "22003") == 0);
   }
+
+  /* Binary strings. */
+  EXEC SQL CREATE TABLE binaries (x INTEGER, bin3 BINARY(3), vb VARBINARY(4));
+  memcpy(bin3, "\x00\xab\x00", 3);
+  x = 1;
+  EXEC SQL INSERT INTO binaries (x, bin3, vb) VALUES (:x, :bin3, :vb2);
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  memset(bin3, 9, sizeof(bin3));
+  vb.vb_length = 9;
+  EXEC SQL SELECT bin3, vb INTO :bin3, :vb :vb_indicator FROM binaries
+    WHERE x = 1;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(memcmp(bin3, "\x00\xab\x00", 3) == 0);
+  CHECK(vb.vb_length == 2);
+  CHECK(memcmp(vb.vb_data, "\x01\x02", 2) == 0);
+  CHECK(vb_indicator == 0);
 
   EXEC SQL ROLLBACK;
   EXEC SQL DISCONNECT ALL;

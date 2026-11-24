@@ -390,6 +390,7 @@ module-test: $(LIBVSQL) $(VSQL_BIN)
 	$(call module_program,test,libvsql/module/test_other.c)
 	$(call module_program,test_returned_length)
 	$(call module_program,test_decfloat)
+	$(call module_program,test_binary)
 	$(call module_program,test_more)
 	$(call module_program,test_updatability)
 

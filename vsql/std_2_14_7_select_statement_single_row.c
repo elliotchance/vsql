@@ -66,6 +66,53 @@ static SQLINTEGER vsql_m_characters(const char *s) {
 }
 
 /*
+ * vsql_m_assign_binary assigns a binary string to a BINARY(L) target (which is
+ * padded with X'00' octets to L octets) or a BINARY VARYING(L) target (which
+ * gets its length portion set). A value of more than L octets is cut to its
+ * first L octets (warning: string data, right truncation), and the indicator
+ * is its length in octets. A null value without an indicator parameter is
+ * retrieved again without a length, which raises data exception — null value,
+ * no indicator parameter.
+ *
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.h to 7.l
+ * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.i and 5.j
+ */
+static SQLRETURN vsql_m_assign_binary(SQLHSTMT stmt, SQLSMALLINT i,
+                                      struct vsql_m_target *t) {
+  struct vsql_m_varbinary *v = (struct vsql_m_varbinary *)t->value;
+  char *data = t->type == SQL_VARBINARY ? v->data : (char *)t->value;
+  SQLINTEGER length = 0;
+  SQLRETURN rc;
+
+  memset(data, 0, (size_t)t->length);
+  rc = SQLGetData(stmt, i, t->type, data, t->length, &length);
+  if (vsql_m_failed(rc)) {
+    return rc;
+  }
+  if (length == SQL_NULL_DATA) {
+    if (t->max_indicator == 0) {
+      return SQLGetData(stmt, i, t->type, data, t->length, NULL);
+    }
+    t->indicator = SQL_NULL_DATA;
+    return rc;
+  }
+
+  if (t->type == SQL_VARBINARY) {
+    v->length = (unsigned long)(length < t->length ? length : t->length);
+  }
+  if (length <= t->length) {
+    t->indicator = 0;
+    return rc;
+  }
+  if (t->max_indicator > 0 && length > t->max_indicator) {
+    return VSQL_M_INDICATOR_OVERFLOW;
+  }
+  t->indicator = length;
+
+  return SQL_SUCCESS_WITH_INFO;
+}
+
+/*
  * vsql_m_assign assigns the value of column i to the target. The indicator is
  * SQL_NULL_DATA for a null value, the length in characters of a string that was
  * truncated (warning: string data, right truncation), and otherwise 0 (zero). A
@@ -76,7 +123,7 @@ static SQLINTEGER vsql_m_characters(const char *s) {
  * The value is converted by SQLGetData, so one that isn't assignable is cast
  * when it's retrieved, rather than being a syntax error.
  *
- * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, Syntax Rules, 3, 4.b and 5.b
  * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 3 to 6
  * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7
  * ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 13.b
@@ -117,6 +164,10 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
       t->indicator = 0;
     }
     return rc;
+  }
+
+  if (t->type == SQL_BINARY || t->type == SQL_VARBINARY) {
+    return vsql_m_assign_binary(stmt, i, t);
   }
 
   if (t->type != SQL_CHAR && t->type != SQL_VARCHAR) {

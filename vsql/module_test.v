@@ -205,7 +205,7 @@ fn test_module_errors() ! {
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a VARCHAR); COMMIT;') == 'syntax error: host parameter :a: CHARACTER VARYING must have a length'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a CHAR(0)); COMMIT;') == 'syntax error: expected a length near 0'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DOUBLE); COMMIT;') == 'syntax error: expected PRECISION near )'
-	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DATE); COMMIT;') == 'syntax error: host parameter :a: the data type must be CHARACTER, CHARACTER VARYING, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DATE); COMMIT;') == 'syntax error: host parameter :a: the data type must be CHARACTER, CHARACTER VARYING, BINARY, BINARY VARYING, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN'
 
 	// 13.4 <SQL procedure statement>
 	assert module_error(module_header + "PROCEDURE p (SQLSTATE); VALUES 'a;") == "syntax error: unterminated string: 'a;"
@@ -748,4 +748,58 @@ fn test_embed_errors() ! {
 	}
 	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[5]; EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: SQLSTATE must be char SQLSTATE[6]'
 	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; long SQLSTATE; EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: SQLSTATE must be char SQLSTATE[6]'
+}
+
+// BINARY(L) and BINARY VARYING(L) host parameters (13.5, Table 22) and host
+// variables (21.4, Syntax Rules 4.c.i, 4.c.ii, 5.h and 5.i).
+fn test_module_binary() ! {
+	m := compile_module(module_header + 'PROCEDURE p (SQLSTATE, :b BINARY, :b4 BINARY(4), :v VARBINARY(5),
+    :v2 BINARY VARYING(2));
+  SELECT b, v INTO :b, :v FROM t WHERE b = :b4 AND v = :v2;', 'm')!
+	assert m.header.contains('void p(char SQLSTATE[6], char b[1], char b4[4], void *v, void *v2);')
+	assert m.source.contains('{SQL_BINARY, SQL_BINARY, 4, b4, 4},')
+	assert m.source.contains('{SQL_VARBINARY, SQL_VARBINARY, 2, ((struct vsql_m_varbinary *)v2)->data, (SQLINTEGER)((struct vsql_m_varbinary *)v2)->length}};')
+	assert m.source.contains('WHERE b = CAST(? AS BINARY(4)) AND v = CAST(? AS BINARY VARYING(2))')
+	assert m.source.contains('    {SQL_BINARY, 1, b, 0, 0},\n    {SQL_VARBINARY, 5, v, 0, 0}};')
+
+	// 13.5, Table 22: a binary string host parameter needs T021.
+	assert m.features == ['B112', 'T021']
+
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :v VARBINARY); COMMIT;') == 'syntax error: host parameter :v: BINARY VARYING must have a length'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :v BINARY VARYING); COMMIT;') == 'syntax error: host parameter :v: BINARY VARYING must have a length'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :v BINARY(0)); COMMIT;') == 'syntax error: expected a length near 0'
+}
+
+fn test_embed_binary() ! {
+	p := precompile_c('EXEC SQL BEGIN DECLARE SECTION;
+char SQLSTATE[6];
+static SQL TYPE IS BINARY(3) b, b2 = {1};
+SQL TYPE IS VARBINARY ( 4 ) v, /* comment */
+  w = {0, 1, {2}};
+sql type is binary(1) c;
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INSERT INTO t VALUES (:b, :b2, :v, :w, :c);
+', 'x.sqc')!
+	assert p.implied_module.contains('PROCEDURE vsql_e1 (SQLSTATE, :b BINARY(3), :b2 BINARY(3), :v BINARY VARYING(4), :w BINARY VARYING(4), :c BINARY(1));')
+	assert p.source.contains('static unsigned char b[3], b2[3] = {1};\nstruct { long v_reserved; unsigned long v_length; char v_data[4]; } v; struct { long w_reserved; unsigned long w_length; char w_data[4]; } w = {0, 1, {2}}\n;\nunsigned char c[1];\n')
+	assert p.source.contains('vsql_e1(SQLSTATE, (char *)b, (char *)b2, &v, &w, (char *)c);')
+
+	// 21.4, Conformance Rules 12 and 13: a <C BINARY variable> or <C VARBINARY
+	// variable> needs T021.
+	assert p.features == ['B012', 'T021']
+
+	h := 'EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[6]; '
+	for definition, expected in {
+		'SQL TYPE IS BINARY(3);':          'unsupported host variable definition: SQL TYPE IS BINARY(3)'
+		'SQL TYPE IS BLOB(3) b;':          'unsupported host variable definition: SQL TYPE IS BLOB(3) b'
+		'SQL TYPE IS BINARY(0) b;':        'unsupported host variable definition: SQL TYPE IS BINARY(0) b'
+		'SQL TYPE IS BINARY(x) b;':        'unsupported host variable definition: SQL TYPE IS BINARY(x) b'
+		'SQL TYPE BINARY(3) b;':           'unsupported host variable definition: SQL TYPE BINARY(3) b'
+		'SQL TYPE IS BINARY 3 b;':         'unsupported host variable definition: SQL TYPE IS BINARY 3 b'
+		'SQL TYPE IS VARBINARY(3) 1b;':    'unsupported host variable definition: SQL TYPE IS VARBINARY(3) 1b'
+		'SQL TYPE IS VARBINARY(3) b[2];':  'unsupported host variable definition: SQL TYPE IS VARBINARY(3) b[2]'
+		'SQL TYPE IS BINARY(3) SQLSTATE;': 'host variable SQLSTATE is defined more than once'
+	} {
+		assert embed_error(h + definition + ' EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: ${expected}', definition
+	}
 }

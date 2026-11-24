@@ -11,7 +11,7 @@ EXPLAIN VALUES CASE 1 WHEN 1 THEN 'a' END;
 
 /* extensions V001-01 */
 EXPLAIN VALUES CASE WHEN 1 = 2 THEN 1.5 WHEN TRUE THEN 3 ELSE NULL END;
--- EXPLAIN: VALUES (COL1 NUMERIC(6, 1)) = ROW(CASE WHEN 1 = 2 THEN 1.5 WHEN TRUE THEN 3 ELSE NULL END)
+-- EXPLAIN: VALUES (COL1 NUMERIC(11, 1)) = ROW(CASE WHEN 1 = 2 THEN 1.5 WHEN TRUE THEN 3 ELSE NULL END)
 
 /* extensions V001-01 */
 EXPLAIN VALUES CASE WHEN TRUE THEN 'a' END;
@@ -34,7 +34,7 @@ VALUES CASE 3 WHEN 1 THEN 'one' END;
 
 /* types */
 VALUES CASE 1 WHEN 1 THEN NULL ELSE 2 END;
--- COL1: NULL (SMALLINT)
+-- COL1: NULL (INTEGER)
 
 /* types */
 VALUES CASE 1 WHEN 1 THEN 2 ELSE 2.5e0 END;
@@ -93,10 +93,10 @@ VALUES CASE 1 WHEN 'a' THEN 1 END;
 VALUES CASE WHEN 1 THEN 1 END;
 VALUES CASE 1 WHEN 1 THEN 1 ELSE 'a' END;
 VALUES CASE WHEN TRUE THEN 'a' WHEN FALSE THEN 1 END;
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
--- error 42804: data type mismatch in CASE WHEN: expected BOOLEAN but got SMALLINT
--- error 42804: data type mismatch in CASE: expected SMALLINT but got CHARACTER(1)
--- error 42804: data type mismatch in CASE: expected CHARACTER(1) but got SMALLINT
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
+-- error 42804: data type mismatch in CASE WHEN: expected BOOLEAN but got INTEGER
+-- error 42804: data type mismatch in CASE: expected INTEGER but got CHARACTER(1)
+-- error 42804: data type mismatch in CASE: expected CHARACTER(1) but got INTEGER
 
 -- # Syntax errors: an extra END, a CASE without a WHEN and an ELSE without a
 -- # WHEN.

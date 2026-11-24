@@ -67,7 +67,7 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- error 42846: cannot coerce CHARACTER(3) to INTEGER
--- error 42846: cannot coerce SMALLINT to CHARACTER VARYING(5)
+-- error 42846: cannot coerce INTEGER to CHARACTER VARYING(5)
 -- A: 1 C: ok
 
 CREATE TABLE foo (baz FLOAT);

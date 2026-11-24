@@ -126,7 +126,7 @@ VALUES (DATE '2020-01-01', DATE '2020-01-10') OVERLAPS (DATE '2020-01-01', DATE 
 VALUES (1, 2) OVERLAPS (3, 4);
 VALUES (DATE '2020-01-01', 'a') OVERLAPS (DATE '2020-01-01', DATE '2020-01-10');
 VALUES (INTERVAL '1' DAY, DATE '2020-01-01') OVERLAPS (DATE '2020-01-01', DATE '2020-01-10');
--- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME or TIMESTAMP but got SMALLINT
+-- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME or TIMESTAMP but got INTEGER
 -- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME, TIMESTAMP or INTERVAL but got CHARACTER(1)
 -- error 42804: data type mismatch in OVERLAPS: expected DATE, TIME or TIMESTAMP but got INTERVAL DAY(2)
 

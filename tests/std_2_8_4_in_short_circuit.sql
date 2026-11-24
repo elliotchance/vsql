@@ -6,8 +6,8 @@ INSERT INTO t (x, d) VALUES (1, DATE '2020-01-01'), (2, DATE '2020-01-02'), (NUL
 -- # the order of the list, the values or whether there are any rows.
 VALUES 1 IN (1, 'a');
 VALUES 1 IN ('a', 1);
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
--- error 42883: cannot compare SMALLINT and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
 
 CREATE TABLE t0 (x INT);
 SELECT * FROM t0 WHERE x IN (1, 'a');

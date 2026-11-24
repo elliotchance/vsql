@@ -59,10 +59,10 @@ SELECT VSQL.PRODUCT(x) FROM t;
 -- # A qualified name only finds the routines of that schema, and the schema must
 -- # exist.
 VALUES information_schema.gcd(12, 18);
--- error 42883: function does not exist: INFORMATION_SCHEMA.GCD(SMALLINT, SMALLINT)
+-- error 42883: function does not exist: INFORMATION_SCHEMA.GCD(INTEGER, INTEGER)
 
 VALUES public.gcd(12, 18);
--- error 42883: function does not exist: PUBLIC.GCD(SMALLINT, SMALLINT)
+-- error 42883: function does not exist: PUBLIC.GCD(INTEGER, INTEGER)
 
 VALUES nosuch.gcd(12, 18);
 -- error 3F000: invalid schema name: NOSUCH

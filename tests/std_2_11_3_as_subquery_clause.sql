@@ -59,7 +59,7 @@ CREATE TABLE u (a, b) AS (VALUES ROW(1 + 2, CAST('x' AS VARCHAR(5)))) WITH DATA;
 /* types */
 SELECT * FROM u;
 -- msg: CREATE TABLE 1
--- A: 3 (SMALLINT) B: x (CHARACTER VARYING(5))
+-- A: 3 (INTEGER) B: x (CHARACTER VARYING(5))
 
 -- # The <column name list> names the columns (Syntax Rules, 10.f.i).
 CREATE TABLE u (p, q) AS (VALUES (1, 'a')) WITH DATA;

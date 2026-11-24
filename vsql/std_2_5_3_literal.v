@@ -56,7 +56,11 @@ fn numeric_literal(x string) !Value {
 		return new_numeric_value(x.trim_right('.'))
 	}
 
-	// Otherwise, we know this is an int but we have to choose the smallest type.
+	// Otherwise, it's an integer. Its precision is implementation-defined
+	// (Syntax Rule 29 only says it must hold the value), so it's an INTEGER, or
+	// a BIGINT or NUMERIC if it doesn't fit. It's never a SMALLINT, because
+	// arithmetic keeps the type of its operands, so 9000 * 8 would be out of
+	// range.
 	//
 	// Note: There is an edge case where the negative sign may be consumed as part
 	// of <factor> rather than <signed numeric literal>. See parse_factor_2() for
@@ -66,10 +70,6 @@ fn numeric_literal(x string) !Value {
 	// needs a big.Integer to find out if it's a BIGINT.
 	if digits <= 18 {
 		v := x.i64()
-		if v >= min_i16 && v <= max_i16 {
-			return new_smallint_value(i16(v))
-		}
-
 		if v >= min_i32 && v <= max_i32 {
 			return new_integer_value(int(v))
 		}

@@ -81,7 +81,7 @@ VALUES DATE '2020-01-02' - DATE '2020-01-01';
 -- error 42883: operator does not exist: INTERVAL DAY(2) - DATE
 -- error 42883: operator does not exist: DATE + DATE
 -- error 42883: operator does not exist: DATE * INTERVAL DAY(2)
--- error 42883: operator does not exist: DATE + SMALLINT
+-- error 42883: operator does not exist: DATE + INTEGER
 -- error 42601: syntax error: DATE - DATE needs an interval qualifier, such as (A - B) DAY TO SECOND
 
 -- # The result is NULL if either operand is NULL (6.42, General Rules, 1).

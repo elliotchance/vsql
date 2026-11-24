@@ -51,7 +51,7 @@ def test_run(ui, db_file):
     ui.run('INSERT INTO foo.bar (y) VALUES (TRUE); SELECT y, 1 + 2 AS z FROM foo.bar')
     expect(ui.active_tab).to_have_text(re.compile(r'^INSERT INTO foo\.bar \(y\) VALUES\.\.\.'))
     expect(ui.status).to_have_text(re.compile(r'^1 row \('))
-    expect(ui.headers).to_have_text(['🟪YBOOLEAN', '🟦ZSMALLINT'])
+    expect(ui.headers).to_have_text(['🟪YBOOLEAN', '🟦ZINTEGER'])
     expect(ui.cells).to_have_text(['TRUE', '3'])
 
     # The title is the SQL on one line, before it's cut short.

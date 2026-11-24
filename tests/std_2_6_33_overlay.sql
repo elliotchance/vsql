@@ -62,8 +62,8 @@ VALUES OVERLAY('abc' PLACING 1 FROM 2);
 -- COL1: NULL COL2: NULL
 -- error 42601: syntax error: OVERLAY start position must be an exact numeric with scale 0, got NUMERIC(2, 1)
 -- error 42601: syntax error: OVERLAY string length must be an exact numeric with scale 0, got NUMERIC(2, 1)
--- error 42883: function does not exist: OVERLAY(SMALLINT PLACING CHARACTER(1))
--- error 42883: function does not exist: OVERLAY(CHARACTER(3) PLACING SMALLINT)
+-- error 42883: function does not exist: OVERLAY(INTEGER PLACING CHARACTER(1))
+-- error 42883: function does not exist: OVERLAY(CHARACTER(3) PLACING INTEGER)
 
 /* flags */
 VALUES OVERLAY('abc' PLACING 'X' FROM 2);

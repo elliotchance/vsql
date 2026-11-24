@@ -6,11 +6,11 @@ VALUES COALESCE(1);
 -- # but EXPLAIN shows it as it was written.
 /* extensions V001-01 */
 EXPLAIN VALUES COALESCE(1, 2);
--- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(COALESCE(1, 2))
+-- EXPLAIN: VALUES (COL1 INTEGER) = ROW(COALESCE(1, 2))
 
 /* extensions V001-01 */
 EXPLAIN VALUES COALESCE(1, 2, 3);
--- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(COALESCE(1, 2, 3))
+-- EXPLAIN: VALUES (COL1 INTEGER) = ROW(COALESCE(1, 2, 3))
 
 VALUES COALESCE(1);
 -- error 42601: syntax error: unexpected ")" at line 1, column 18 near "COALESCE(1)", expecting ","
@@ -19,7 +19,7 @@ VALUES COALESCE(1);
 -- # first value that isn't NULL is cast to it, so 1 becomes INTEGER or 1e0.
 /* types */
 VALUES COALESCE(1, 2);
--- COL1: 1 (SMALLINT)
+-- COL1: 1 (INTEGER)
 
 /* types */
 VALUES COALESCE(1, 200000000);
@@ -71,4 +71,4 @@ SELECT COALESCE(f1, f1) FROM foo;
 
 -- # A number and a string can't be combined (9.5, Syntax Rules, 3.c.i).
 VALUES COALESCE(1, 'hello');
--- error 42804: data type mismatch in argument 2 of COALESCE: expected SMALLINT but got CHARACTER(5)
+-- error 42804: data type mismatch in argument 2 of COALESCE: expected INTEGER but got CHARACTER(5)

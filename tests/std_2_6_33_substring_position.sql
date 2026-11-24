@@ -10,7 +10,7 @@ VALUES SUBSTRING('hello' FROM 1 + 1);
 -- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got NUMERIC(2, 1)
 -- error 42601: syntax error: SUBSTRING string length must be an exact numeric with scale 0, got NUMERIC(2, 1)
 -- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got DOUBLE PRECISION
--- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got NUMERIC(7, 1)
+-- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got NUMERIC(12, 1)
 -- COL1: el
 -- COL1: ello
 

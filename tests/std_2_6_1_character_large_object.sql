@@ -22,7 +22,7 @@ INSERT INTO t VALUES (123);
 -- msg: INSERT 1
 -- A: abc
 -- error 22001: string data right truncation for CHARACTER LARGE OBJECT(3)
--- error 42846: cannot coerce SMALLINT to CHARACTER LARGE OBJECT(3)
+-- error 42846: cannot coerce INTEGER to CHARACTER LARGE OBJECT(3)
 
 CREATE TABLE t (a CLOB(0));
 -- error 42601: syntax error: CHARACTER LARGE OBJECT length must be greater than 0

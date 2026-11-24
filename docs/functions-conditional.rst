@@ -47,7 +47,7 @@ The values are checked in order, and the values after the first one that is not
   -- COL1: 1.0
 
   VALUES COALESCE(1, 'a');
-  -- error 42804: data type mismatch in argument 2 of COALESCE: expected SMALLINT but got CHARACTER(1)
+  -- error 42804: data type mismatch in argument 2 of COALESCE: expected INTEGER but got CHARACTER(1)
 
 **Compatibility**
 

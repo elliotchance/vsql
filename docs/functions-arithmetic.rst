@@ -19,8 +19,8 @@ argument is converted to a ``DECFLOAT`` with the largest precision of the
 functions are exact). A function without a ``DECFLOAT`` version converts it to
 a ``DOUBLE PRECISION``.
 
-A number literal has the smallest type that holds it, so ``-5`` is a
-``SMALLINT`` and ``1.50`` is a ``NUMERIC(3, 2)``.
+An integer literal is an ``INTEGER``, or a ``BIGINT`` or ``NUMERIC`` if it's too
+large, so ``-5`` is an ``INTEGER``, and ``1.50`` is a ``NUMERIC(3, 2)``.
 
 ABS
 ^^^
@@ -43,8 +43,8 @@ precision and scale of a ``DECIMAL`` or ``NUMERIC``, and the fields of an
 
 The smallest value of each integer type has no positive value in the same type,
 so it's a ``22003`` error, such as ``ABS(CAST(-32768 AS SMALLINT))``. The
-literal ``-32768`` is a ``SMALLINT``, so ``ABS(-32768)`` is also an error, use
-``ABS(CAST(-32768 AS INTEGER))``.
+literal ``-2147483648`` is an ``INTEGER``, so ``ABS(-2147483648)`` is also an
+error, use ``ABS(CAST(-2147483648 AS BIGINT))``.
 
 **Examples**
 

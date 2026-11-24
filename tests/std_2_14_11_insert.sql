@@ -55,7 +55,7 @@ INSERT INTO foo (x) VALUES (true);
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (b) VALUES (123);
 -- msg: CREATE TABLE 1
--- error 42846: cannot coerce SMALLINT to BOOLEAN
+-- error 42846: cannot coerce INTEGER to BOOLEAN
 
 CREATE TABLE foo (a INT, c VARCHAR(5));
 INSERT INTO foo (a) VALUES ('x');
@@ -65,7 +65,7 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- error 42846: cannot coerce CHARACTER(1) to INTEGER
 -- error 42846: cannot coerce CHARACTER(1) to INTEGER
--- error 42846: cannot coerce SMALLINT to CHARACTER VARYING(5)
+-- error 42846: cannot coerce INTEGER to CHARACTER VARYING(5)
 
 -- # A NOT NULL column rejects the null value, whether it's given or the column
 -- # isn't listed and gets its default, which is NULL (General Rules, 7.a). A

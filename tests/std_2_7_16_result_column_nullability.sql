@@ -42,7 +42,7 @@ EXPLAIN SELECT d.i FROM a AS d (i, j);
 /* extensions V001-01 */
 EXPLAIN SELECT id + 1, (id), 1, COALESCE(id, 1) FROM a;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
--- EXPLAIN: EXPR (COL1 INTEGER, COL2 INTEGER, COL3 SMALLINT, COL4 INTEGER)
+-- EXPLAIN: EXPR (COL1 INTEGER, COL2 INTEGER, COL3 INTEGER, COL4 INTEGER)
 
 -- # A grouping column and a column of a derived table stay NOT NULL, but
 -- # COUNT(*) is another expression.

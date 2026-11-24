@@ -217,6 +217,7 @@ Returns the value that goes with the first condition that's true, or the last va
 
 ``if`` is another name for ``iif``. Without the last value, both return
 ``NULL`` when no condition is true, the same as a ``CASE`` without ``ELSE``.
+With one condition and the last value, it's vsql's ``IF(B1, V1, E)``.
 
 ifnull
 ^^^^^^

@@ -336,6 +336,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``TIMESTAMP - TIMESTAMP`` without an interval qualifier, such as
        ``TIMESTAMP '2026-11-17 14:30:00' - TIMESTAMP '2026-11-16 12:00:00'``.
 
+   * - ``V401``
+     - Conditional functions (see :doc:`functions-conditional`).
+
+   * - ``V401-01``
+     - ``IF``.
+
    * - ``V402``
      - Date and time functions (see :doc:`dates-times`).
 

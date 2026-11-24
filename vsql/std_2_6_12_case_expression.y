@@ -20,7 +20,8 @@ case_abbreviation:
   }
 
 case_specification:
-  simple_case { $$.v = yy_box(CaseExpression($1.v as CaseExpressionSimple)) }
+  if_function { $$.v = yy_box(CaseExpression($1.v as CaseExpressionSearched)) }
+| simple_case { $$.v = yy_box(CaseExpression($1.v as CaseExpressionSimple)) }
 | searched_case { $$.v = yy_box(CaseExpression($1.v as CaseExpressionSearched)) }
 
 // Without an ELSE, the ELSE is NULL.
@@ -49,6 +50,18 @@ searched_case:
 | CASE searched_when_clause_list else_clause END {
     $$.v = yy_box(new_case_expression_searched($2.v as []CaseExpressionSearchedWhen,
       $3.v as CaseResult))
+  }
+
+// IF(condition, then_value, else_value) isn't part of the standard (V401-01).
+// It's exactly CASE WHEN condition THEN then_value ELSE else_value END, so only
+// the chosen value is evaluated. IF is a <non-reserved word>, but "IF (" is
+// always this function, rather than a routine named IF.
+if_function:
+  IF left_paren search_condition comma result comma result right_paren {
+    flag(mut yylex, vsql_if)
+    $$.v = yy_box(new_case_expression_searched([
+      CaseExpressionSearchedWhen{$3.v as BooleanValueExpression, $5.v as CaseResult},
+    ], $7.v as CaseResult))
   }
 
 simple_when_clause:

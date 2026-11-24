@@ -94,6 +94,52 @@ See also `LEAST`_.
   PostgreSQL ignores ``NULL`` values instead. SQLite uses ``MAX`` with more
   than one argument.
 
+IF
+^^
+
+.. code-block:: sql
+
+   IF(BOOLEAN, ANY, ANY) ANY
+
+``IF(condition, then_value, else_value)`` returns ``then_value`` if the
+condition is ``TRUE``, otherwise ``else_value``. A condition that is ``FALSE``
+or ``UNKNOWN`` (``NULL``) returns ``else_value``.
+
+The condition must be a ``BOOLEAN`` (any search condition, such as
+``x > 0 AND y IS NOT NULL``), otherwise it's a ``42804`` error. The two values
+must have compatible types, and the result has a type that can hold either of
+them, like ``COALESCE``. It needs exactly three arguments.
+
+Only the value that's chosen is evaluated, so ``IF(x = 0, 0, 1 / x)`` doesn't
+divide by zero.
+
+``IF(c, x, y)`` is the same as:
+
+.. code-block:: sql
+
+  CASE WHEN c THEN x ELSE y END
+
+``IF`` is a vsql extension flagged by ``V401-01`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES IF(1 < 2, 'yes', 'no');
+  -- COL1: yes
+
+  VALUES IF(CAST(NULL AS BOOLEAN), 1, 0);
+  -- COL1: 0
+
+  VALUES IF(TRUE, 1, 2.5);
+  -- COL1: 1.0
+
+**Compatibility**
+
+- **SQL standard:** not standard, use ``CASE``.
+- **Other databases:** ``IF`` in MySQL, ``IIF`` in SQL Server and SQLite (where
+  ``IF`` is another name for it). PostgreSQL and Oracle use ``CASE``.
+
 LEAST
 ^^^^^
 

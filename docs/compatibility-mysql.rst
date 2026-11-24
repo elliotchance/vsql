@@ -171,9 +171,9 @@ Returns one of two values, depending on whether a condition is true.
 .. code-block:: sql
 
   -- IF(expr1, expr2, expr3)
-  VALUES CASE WHEN /*expr1*/ THEN /*expr2*/ ELSE /*expr3*/ END;
+  VALUES IF(/*expr1*/, /*expr2*/, /*expr3*/);
   -- IF(1 < 2, 'yes', 'no')
-  VALUES CASE WHEN 1 < 2 THEN 'yes' ELSE 'no' END;
+  VALUES IF(1 < 2, 'yes', 'no');
   -- COL1: yes
 
 The condition must be a ``BOOLEAN``. For a number, write ``x <> 0``.

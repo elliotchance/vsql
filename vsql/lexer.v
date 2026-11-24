@@ -1105,10 +1105,22 @@ fn tail_substitution(tokens []Token) (int, int) {
 pub fn reserved_words() []string {
 	// The non-reserved words come from the grammar so that they are always the
 	// same as the parser.
+	// A word can have a precedence, such as "IF %prec IF_WORD".
 	grammar := $embed_file('std_2_5_2_token_and_separator.y').to_string()
 	mut non_reserved := map[string]bool{}
 	for line in grammar.all_after('\nnon_reserved_word:\n').all_before('\n\n').split_into_lines() {
-		non_reserved[line.trim_left('| ').trim_space()] = true
+		non_reserved[line.trim_left('| ').all_before('%prec').trim_space()] = true
+	}
+
+	// A name that's only used for a precedence, such as SUBQUERY, isn't
+	// declared with %token, so it's never a word.
+	mut tokens := map[string]bool{}
+	for line in $embed_file('grammar.y').to_string().split_into_lines() {
+		if line.starts_with('%token ') {
+			for name in line.fields()[1..] {
+				tokens[name.trim_right(';')] = true
+			}
+		}
 	}
 
 	mut words := []string{}
@@ -1118,7 +1130,7 @@ pub fn reserved_words() []string {
 		// LIMIT unless it's directly before a row count.
 		if name.len > 0 && name[0].is_letter() && name == name.to_upper()
 			&& !name.starts_with('OPERATOR_') && !name.starts_with('LITERAL_') && name != 'E'
-			&& name != 'LIMIT' && name !in non_reserved {
+			&& name != 'LIMIT' && name !in non_reserved && name in tokens {
 			words << name
 		}
 	}

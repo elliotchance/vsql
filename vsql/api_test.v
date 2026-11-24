@@ -290,7 +290,8 @@ fn test_agent() {
 }
 
 // The reserved words are sorted and leave out the non-reserved words (which
-// can be identifiers), operators, literals and E.
+// can be identifiers, even with a precedence, such as IF), operators,
+// literals, E and the names that are only a precedence (such as SUBQUERY).
 fn test_reserved_words() {
 	words := reserved_words()
 	assert 'SELECT' in words
@@ -299,6 +300,9 @@ fn test_reserved_words() {
 	assert 'E' !in words
 	assert 'ABORT' !in words
 	assert 'LIMIT' !in words
+	assert 'IF' !in words
+	assert 'SUBQUERY' !in words
+	assert 'IF_WORD' !in words
 	assert !words.any(it.starts_with('OPERATOR_') || it.starts_with('LITERAL_'))
 	mut sorted := words.clone()
 	sorted.sort()

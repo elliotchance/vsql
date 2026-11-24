@@ -561,6 +561,10 @@ fn describe_type(typ vsql.Type, catalog string) map[int]DescValue {
 			record[sql_desc_datetime_interval_code] = i64(datetime_interval_code(typ))
 			record[sql_desc_precision] = i64(typ.size)
 		}
+		.is_decfloat {
+			// The precision is in decimal digits (16 or 34).
+			record[sql_desc_precision] = i64(typ.size)
+		}
 		.is_boolean {}
 	}
 

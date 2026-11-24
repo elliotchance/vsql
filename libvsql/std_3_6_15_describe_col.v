@@ -92,7 +92,7 @@ fn describe_column_size(ird &Desc, cn int) i64 {
 		sql_bigint { 19 }
 		sql_real { 7 }
 		sql_double { 15 }
-		sql_numeric, sql_decimal { ird.record_int(cn, sql_desc_precision) }
+		sql_numeric, sql_decimal, sql_decfloat { ird.record_int(cn, sql_desc_precision) }
 		sql_datetime { ird.record_int(cn, sql_desc_length) }
 		else { 5 }
 	}

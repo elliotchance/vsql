@@ -187,6 +187,12 @@ fn ipd_type(ipd &Desc, i int) vsql.Type {
 				typ: .is_boolean
 			}
 		}
+		sql_decfloat {
+			vsql.Type{
+				typ:  .is_decfloat
+				size: precision
+			}
+		}
 		sql_datetime {
 			vsql.Type{
 				typ:  match ipd.record_int(i, sql_desc_datetime_interval_code) {

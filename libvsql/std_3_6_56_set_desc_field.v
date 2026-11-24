@@ -229,7 +229,7 @@ fn check_desc_type(desc &Desc, code i64) ! {
 			sql_real, sql_double, sql_bigint]
 	} else {
 		[i64(sql_char), sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
-			sql_double, sql_datetime, sql_varchar, sql_boolean, sql_bigint]
+			sql_double, sql_datetime, sql_varchar, sql_boolean, sql_bigint, sql_decfloat]
 	}
 	if code in supported {
 		return
@@ -293,6 +293,10 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 		sql_real {
 			record[sql_desc_precision] = i64(24)
 		}
+		sql_decfloat {
+			// The default precision of a DECFLOAT.
+			record[sql_desc_precision] = i64(34)
+		}
 		else {}
 	}
 }
@@ -331,6 +335,9 @@ fn (desc &Desc) is_consistent(record map[int]DescValue) bool {
 		sql_float {
 			p := int_field(sql_desc_precision)
 			p >= 1 && p <= 53
+		}
+		sql_decfloat {
+			int_field(sql_desc_precision) in [i64(16), 34]
 		}
 		sql_datetime {
 			p := int_field(sql_desc_precision)

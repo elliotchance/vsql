@@ -81,6 +81,7 @@
  *   DOUBLE PRECISION, FLOAT  SQL_DOUBLE                       numbers, SQL_CHAR
  *   DECIMAL                  SQL_DECIMAL                      numbers, SQL_CHAR
  *   NUMERIC                  SQL_NUMERIC                      numbers, SQL_CHAR
+ *   DECFLOAT                 SQL_DECFLOAT                     numbers, SQL_CHAR
  *   CHARACTER                SQL_CHAR                         SQL_CHAR
  *   CHARACTER VARYING        SQL_VARCHAR                      SQL_CHAR
  *   BOOLEAN                  SQL_BOOLEAN                      SQL_CHAR
@@ -161,6 +162,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_VARCHAR  12 /* CHARACTER VARYING */
 #define SQL_BOOLEAN  16 /* BOOLEAN */
 #define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
+#define SQL_DECFLOAT 26 /* DECFLOAT (not in SQL/CLI 2003, see Part 2, Table 30) */
 
 /* Large object locator types, for the LocatorType of SQLGetLength,
  * SQLGetPosition and SQLGetSubString. */

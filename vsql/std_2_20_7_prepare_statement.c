@@ -179,9 +179,11 @@ static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
  * vsql_m_describe_column sets the item descriptor area to the description of
  * a column, from the IRD of the prepared statement. A datetime is the concise
  * data type (such as SQL_TYPE_DATE) in the IRD. LEVEL is 0 (zero), and a
- * collation that isn't set is the zero-length string.
+ * collation that isn't set is the zero-length string. The PRECISION of a
+ * DECFLOAT is its precision in decimal digits.
  *
  * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7
+ * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.d.v
  */
 static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
                                    struct vsql_m_item *item) {

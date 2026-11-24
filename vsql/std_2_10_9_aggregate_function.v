@@ -407,6 +407,10 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 		return eval_product(values, typ)!
 	}
 
+	if name in ['BIT_AND', 'BIT_OR', 'BIT_XOR'] {
+		return eval_bitwise(name, values, typ)
+	}
+
 	// SUM or AVG of intervals. It's 2200P (interval value out of range) if the
 	// sum doesn't fit in the result type. The average is truncated to the least
 	// significant field.
@@ -455,13 +459,39 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 
 // named_aggregate_functions are the general set functions that are named by an
 // identifier rather than a reserved word, so they're a routine_invocation.
-const named_aggregate_functions = ['PRODUCT', 'MEDIAN']
+const named_aggregate_functions = ['PRODUCT', 'MEDIAN', 'BIT_AND', 'BIT_OR', 'BIT_XOR']
 
 // named_aggregate_features are the vsql extensions that flag each of the
 // named_aggregate_functions.
 const named_aggregate_features = {
 	'PRODUCT': [vsql_product]
 	'MEDIAN':  [vsql_median]
+	'BIT_AND': [vsql_bit_and]
+	'BIT_OR':  [vsql_bit_or]
+	'BIT_XOR': [vsql_bit_xor]
+}
+
+// eval_bitwise is BIT_AND, BIT_OR or BIT_XOR of the (non-null) integer values,
+// where typ is the type of the argument, which is also the type of the result.
+// A negative value is in two's complement, and the bits of a value of a
+// smaller type are the same when it's widened to an i64 (the sign is
+// extended), so the result of the i64s is always in the range of typ.
+fn eval_bitwise(name string, values []Value, typ Type) Value {
+	mut result := values[0].int_value()
+	for value in values[1..] {
+		x := value.int_value()
+		result = match name {
+			'BIT_AND' { result & x }
+			'BIT_OR' { result | x }
+			else { result ^ x }
+		}
+	}
+
+	return match typ.typ {
+		.is_smallint { new_smallint_value(i16(result)) }
+		.is_integer { new_integer_value(int(result)) }
+		else { new_bigint_value(result) }
+	}
 }
 
 // eval_median is the median of the (non-null) values of MEDIAN, which is the

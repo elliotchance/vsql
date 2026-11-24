@@ -684,6 +684,24 @@ VALUES CURRENT_SCHEMA;
 SELECT AVG(price) FROM products;
 -- COL1: 2.1875000000000000
 
+-- # BIT_AND
+-- # SELECT BIT_AND(qty) FROM products
+SELECT BIT_AND(qty) FROM products;
+-- warning 01003: null value eliminated in set function
+-- COL1: 0
+
+-- # BIT_OR
+-- # SELECT BIT_OR(qty) FROM products
+SELECT BIT_OR(qty) FROM products;
+-- warning 01003: null value eliminated in set function
+-- COL1: 47
+
+-- # BIT_XOR
+-- # SELECT BIT_XOR(qty) FROM products
+SELECT BIT_XOR(qty) FROM products;
+-- warning 01003: null value eliminated in set function
+-- COL1: 39
+
 -- # COUNT
 -- # SELECT COUNT(*) FROM products
 SELECT COUNT(*) FROM products;

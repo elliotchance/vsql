@@ -180,6 +180,9 @@ import arrays
 // V405-01: MODE() WITHIN GROUP.
 // V405-02: PRODUCT.
 // V405-03: MEDIAN.
+// V405-04: BIT_AND.
+// V405-05: BIT_OR.
+// V405-06: BIT_XOR.
 //
 // V406: Binary string functions.
 // V406-01: BINARY_TO_HEX.
@@ -309,6 +312,9 @@ const vsql_length = 'V404-10'
 const vsql_mode = 'V405-01'
 const vsql_product = 'V405-02'
 const vsql_median = 'V405-03'
+const vsql_bit_and = 'V405-04'
+const vsql_bit_or = 'V405-05'
+const vsql_bit_xor = 'V405-06'
 const vsql_binary_to_hex = 'V406-01'
 const vsql_hex_to_binary = 'V406-02'
 const vsql_pg_version = 'V501-01'

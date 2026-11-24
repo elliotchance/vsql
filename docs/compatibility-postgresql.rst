@@ -4650,38 +4650,50 @@ The average has the type of the column, so ``AVG`` of a ``DECIMAL(10, 2)`` is ro
 bit_and
 ^^^^^^^
 
-.. code-block:: text
-
-  bit_and(integral_type) → integral_type
-  bit_and(bit) → bit
-
 Returns the bitwise AND of the values that aren't null.
 
-No equivalent.
+.. code-block:: sql
+
+  -- bit_and(integral_type) → integral_type
+  SELECT BIT_AND(/*integral_type*/) FROM /*table*/;
+  -- SELECT bit_and(qty) FROM products
+  SELECT BIT_AND(qty) FROM products;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 0
+
+``BIT_AND`` is a vsql extension. The ``bit`` form has no equivalent.
 
 bit_or
 ^^^^^^
 
-.. code-block:: text
-
-  bit_or(integral_type) → integral_type
-  bit_or(bit) → bit
-
 Returns the bitwise OR of the values that aren't null.
 
-No equivalent.
+.. code-block:: sql
+
+  -- bit_or(integral_type) → integral_type
+  SELECT BIT_OR(/*integral_type*/) FROM /*table*/;
+  -- SELECT bit_or(qty) FROM products
+  SELECT BIT_OR(qty) FROM products;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 47
+
+``BIT_OR`` is a vsql extension. The ``bit`` form has no equivalent.
 
 bit_xor
 ^^^^^^^
 
-.. code-block:: text
-
-  bit_xor(integral_type) → integral_type
-  bit_xor(bit) → bit
-
 Returns the bitwise exclusive OR of the values that aren't null.
 
-No equivalent.
+.. code-block:: sql
+
+  -- bit_xor(integral_type) → integral_type
+  SELECT BIT_XOR(/*integral_type*/) FROM /*table*/;
+  -- SELECT bit_xor(qty) FROM products
+  SELECT BIT_XOR(qty) FROM products;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 39
+
+``BIT_XOR`` is a vsql extension. The ``bit`` form has no equivalent.
 
 bool_and
 ^^^^^^^^

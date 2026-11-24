@@ -2183,13 +2183,17 @@ The year must be from 1 to 9999. A negative year (BC in PostgreSQL) is a ``22007
 make_interval
 ^^^^^^^^^^^^^
 
-.. code-block:: text
-
-  make_interval([years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision]]]]]]]) → interval
-
 Builds an interval from years, months, weeks, days, hours, minutes and seconds.
 
-No equivalent.
+.. code-block:: sql
+
+  -- make_interval([years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision]]]]]]]) → interval
+  VALUES MAKE_INTERVAL(/*years*/, /*months*/, /*weeks*/, /*days*/, /*hours*/, /*mins*/, /*secs*/);
+  -- make_interval(0, 0, 0, 3, 4, 5, 6.5)
+  VALUES MAKE_INTERVAL(0, 0, 0, 3, 4, 5, 6.5);
+  -- COL1: 3 04:05:06.500000
+
+The arguments are positional, since vsql has no named arguments (``make_interval(days => 3)`` is ``MAKE_INTERVAL(0, 0, 0, 3)``). vsql has a year-month and a day-time interval (as in the SQL standard), rather than one ``interval`` type, so years or months can't be in the same call as weeks, days, hours, minutes or seconds (add two intervals instead), and 25 hours is the same as 1 day 1 hour. The result is an ``INTERVAL YEAR(8) TO MONTH``, or an ``INTERVAL DAY(8)`` to the smallest unit that's given (an ``INTERVAL DAY(8)`` for days, so it can be added to a ``DATE``).
 
 make_time
 ^^^^^^^^^

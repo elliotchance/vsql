@@ -316,6 +316,10 @@ fn (mut f Storage) remove_expired(page_numbers []int, check_schema bool) !bool {
 	mut blob_refs := []PageObject{}
 	mut retained := []PageObject{}
 	mut schema_changed := false
+	// shrunk has a key that was in each page that's left empty, or less than a
+	// quarter full, so that it can be found to be removed from the B-tree, or
+	// merged with another page (see store_leaf).
+	mut shrunk := map[int][]u8{}
 	for page_number in page_numbers {
 		// A page is only copied and stored again when it has an object to
 		// remove, see Pager.read_page.
@@ -348,6 +352,18 @@ fn (mut f Storage) remove_expired(page_numbers []int, check_schema bool) !bool {
 		}
 
 		f.btree.pager.store_page(page_number, page)!
+		if page.used < f.btree.page_size / 4 {
+			shrunk[page_number] = expired[0].key.clone()
+		}
+	}
+
+	// The pages are only removed or merged once they've all been visited,
+	// because that changes their parents, and other pages.
+	for page_number, key in shrunk {
+		path, _ := f.btree.search_page(key)!
+		if path.last() == page_number {
+			f.btree.store_leaf(path, f.btree.pager.read_page(page_number)!)!
+		}
 	}
 
 	for obj in blob_refs {
@@ -397,7 +413,7 @@ fn (mut f Storage) delete_object(key []u8, tid u64) ! {
 	}
 
 	page.delete(key, tid)
-	f.btree.pager.store_page(page_number, page)!
+	f.btree.store_leaf(path, page)!
 	if obj.is_blob_ref {
 		f.btree.remove_blob(obj)!
 	}

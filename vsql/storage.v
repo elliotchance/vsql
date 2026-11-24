@@ -328,6 +328,7 @@ fn (mut f Storage) prepare_commit(path string) ! {
 	}
 
 	f.header.root_page = f.btree.pager.root_page()
+	f.header.free_page = f.btree.pager.first_free_page()
 
 	// A SERIALIZABLE transaction that changes the database holds the isolation
 	// lock exclusively until it ends, and no other connection can change the
@@ -391,7 +392,7 @@ fn (mut f Storage) lock_deferral() bool {
 // never used again (like a ROLLBACK that undoes its changes).
 fn (mut f Storage) drop_kept_pages() ! {
 	mut header := read_header(mut f.file)!
-	f.file_pager.drop_dirty(header.root_page)
+	f.file_pager.drop_dirty(header.root_page, header.free_page)
 	header.row_id = f.header.row_id
 	header.table_id = f.header.table_id
 	header.index_id = f.header.index_id
@@ -564,6 +565,7 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 		f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page,
 			f.cache_size)!
 	}
+	f.file_pager.free = header.free_page
 	f.pager_wal = wal
 	f.btree = new_btree(f.file_pager, header.page_size)
 	f.btree.undo = f.undo

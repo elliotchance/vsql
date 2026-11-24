@@ -149,8 +149,14 @@ remaining space is reserved (see `Compatibility`_).
       version 2 (it was reserved, so it's zero in an older file).
 
   * - 2104
+    - *First Free Page*
+    - i32 (4 bytes)
+    - The page number of the first `Free Page`_, plus one. It's 0 when there
+      are no free pages (so a file from before free pages has none).
+
+  * - 2108
     - *Reserved*
-    - 1992 bytes
+    - 1988 bytes
     - Zero in this version of the file format. See `Compatibility`_.
 
 Compatibility
@@ -205,6 +211,12 @@ the feature is no longer used.
       that's stored as a large value, raises the *Read Version* and the
       *Write Version* to 4, because an older version can't read their values
       in a row. Everything added in the same release shares this version.
+
+`Free Page`_\ s don't need a newer version. An older version of vsql never
+reaches them from the B-tree, and it writes the *First Free Page* back as it
+was (it's in what was the *Reserved* space), so the list is still right when a
+newer version uses it again. An older version only adds pages to the end of the
+file.
 
 These rules keep changes compatible:
 
@@ -290,6 +302,9 @@ the *Kind*.
 
   * - 1
     - `Non-leaf Page`_
+
+  * - 2
+    - `Free Page`_
 
 Since *Used* has a max value of 65535 this is also the maximum possible size
 for a page. Although, the default page size for new files is 4096 bytes. [1]_
@@ -423,6 +438,26 @@ It's also important to note that as the B-tree gets larger, there may be
 multiple non-leaf pages that need to be traversed this way. The process will
 always end with a leaf page. A parent of a non-leaf (which must also be a
 non-leaf) uses the *Key* that points to the first *Key* in the child page.
+
+Free Page
+---------
+
+A page that's no longer in the B-tree is a free page, which is used again for
+the next page that's needed, before the file is made longer. The free pages are
+a list that starts at the *First Free Page* in the `Header`_. A free page has a
+*Used* of 16 (it has no objects), and its *Data* starts with the page number of
+the next free page (i32), or -1 for the last one.
+
+A leaf page is removed from the B-tree when the last object in it is removed (by
+a ``COMMIT`` or ``ROLLBACK``, or when a large value is removed), so that the file
+doesn't keep growing as rows are deleted and others are added. A leaf page that
+is left less than a quarter full is merged with the page before it (or after it,
+when it's the first page of its parent) if they fit in one page, and the page
+that's left empty is removed. A non-leaf page is removed when it has no pointers
+left, except for the root page.
+
+A file is never made shorter, the free pages stay in the file until they're
+used again.
 
 Object
 ------

@@ -14,6 +14,11 @@ const kind_leaf = 0 // page contains only objects.
 
 const kind_not_leaf = 1 // page contains only links to other pages.
 
+// kind_free is a page that isn't in the B-tree, on the free list (see
+// Pager.free_page). It has no objects, so it's never mistaken for an empty
+// leaf page. Its data starts with the next free page (i32), or -1 for none.
+const kind_free = 2
+
 // page_object_prefix_length is the precalculated length that will be the
 // combination of all fixed width meta for the page object.
 const page_object_prefix_length = 23

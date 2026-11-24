@@ -117,6 +117,9 @@ Every function, in alphabetical order:
    * - :ref:`CURRENT_TIMESTAMP <functions-date-and-time:CURRENT_TIMESTAMP>`
      - Current date and time with the time zone
      - Date and Time
+   * - :ref:`DATE_TRUNC <functions-date-and-time:DATE_TRUNC>`
+     - Round a datetime down to the start of a unit
+     - Date and Time
    * - :ref:`DEGREES <functions-trigonometric:DEGREES>`
      - Radians to degrees
      - Trigonometric

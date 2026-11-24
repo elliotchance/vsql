@@ -794,6 +794,8 @@ Formats a date as text, following a pattern of format specifiers.
   VALUES CAST(TIMESTAMP '2024-03-15 10:30:00' AS VARCHAR(16) FORMAT 'YYYY-MM-DD HH24:MI');
   -- COL1: 2024-03-15 10:30
 
+To round a date down to the start of a month (``DATE_FORMAT(d, '%Y-%m-01')``) or another unit, use ``DATE_TRUNC('month', d)``, which keeps the type of the value.
+
 The format is the SQL standard's ``FORMAT`` (see :doc:`dates-times`), where ``%Y`` is ``YYYY``, ``%y`` is ``YY``, ``%m`` is ``MM``, ``%d`` is ``DD``, ``%j`` is ``DDD``, ``%H`` is ``HH24``, ``%h`` is ``HH12``, ``%i`` is ``MI``, ``%s`` is ``SS``, ``%f`` is ``FF6`` and ``%p`` is ``A.M.``. There are no names of months or days.
 
 DATE_SUB

@@ -2064,12 +2064,12 @@ Truncates a timestamp to the start of a unit, such as the day or the month.
 .. code-block:: sql
 
   -- date_trunc(text, timestamp) → timestamp
-  VALUES CAST(CAST(/*timestamp*/ AS DATE) AS TIMESTAMP(0));
-  -- date_trunc('day', timestamp '2024-03-15 10:30:00')
-  VALUES CAST(CAST(TIMESTAMP '2024-03-15 10:30:00' AS DATE) AS TIMESTAMP(0));
-  -- COL1: 2024-03-15T00:00:00
+  VALUES DATE_TRUNC(/*text*/, /*timestamp*/);
+  -- date_trunc('month', timestamp '2024-03-15 10:30:00')
+  VALUES DATE_TRUNC('month', TIMESTAMP '2024-03-15 10:30:00');
+  -- COL1: 2024-03-01T00:00:00
 
-This is for ``'day'``. The larger units can be built from the fields that are kept, such as ``MAKE_TIMESTAMP(EXTRACT(YEAR FROM ts), EXTRACT(MONTH FROM ts), 1, 0, 0, 0)`` for ``'month'``. The other units, and ``date_trunc`` of an interval, have no equivalent.
+The units are ``microseconds``, ``milliseconds``, ``second``, ``minute``, ``hour``, ``day``, ``week``, ``month``, ``quarter``, ``year``, ``decade``, ``century`` and ``millennium`` (not their plurals or abbreviations), and the unit must be a constant. The result has the type of the value, so a ``date`` stays a ``DATE`` (PostgreSQL returns a timestamp), and a ``TIME`` can be truncated to ``hour`` and smaller. A timestamp with time zone is truncated in its own time zone, where PostgreSQL uses the time zone of the session. The third argument (a time zone) and ``date_trunc`` of an interval have no equivalent.
 
 extract
 ^^^^^^^

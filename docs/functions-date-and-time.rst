@@ -7,8 +7,8 @@ Date and Time Functions
 
 These functions return the current date and time (see :doc:`dates-times` for
 the types), build one from its fields (``MAKE_DATE``, ``MAKE_TIME``,
-``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``), or return a part of one
-(``EXTRACT``). The current time is taken once for each statement, so every use
+``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``), return a part of one
+(``EXTRACT``), or round one down to the start of a unit (``DATE_TRUNC``). The current time is taken once for each statement, so every use
 in the same statement has the same value, even if the statement takes a while
 (except ``NOW()``). Each execution of a prepared statement has a new time.
 
@@ -96,6 +96,119 @@ date and time, but without the time zone.
   - MySQL, SQL Server and SQLite: ``CURRENT_TIMESTAMP``, but without a time
     zone. The SQLite timestamp is a string in UTC. SQL Server has
     ``SYSDATETIMEOFFSET()`` for the time zone.
+
+DATE_TRUNC
+^^^^^^^^^^
+
+.. code-block:: sql
+
+   DATE_TRUNC(field CHARACTER VARYING, source DATE) DATE
+   DATE_TRUNC(field CHARACTER VARYING, source TIME(p)) TIME(p)
+   DATE_TRUNC(field CHARACTER VARYING, source TIMESTAMP(p)) TIMESTAMP(p)
+
+Rounds a date, time or timestamp (with or without a time zone) down to the
+start of a unit, and resets every smaller field to its lowest value. The result
+has the same type as the source, including its precision and time zone.
+
+The field is a character string, in any case, that must be a constant (usually
+a literal), so that it's checked when the statement is compiled. It's one of:
+
+- ``'microseconds'``, ``'milliseconds'``, ``'second'``, ``'minute'`` and
+  ``'hour'``: for a ``TIME`` or ``TIMESTAMP``.
+- ``'day'``: for a ``DATE`` or ``TIMESTAMP``.
+- ``'week'``: the Monday of the ISO 8601 week (the same as
+  ``EXTRACT(WEEK ...)``), which can be in the month or year before.
+- ``'month'``, ``'quarter'`` (January 1, April 1, July 1 or October 1) and
+  ``'year'``.
+- ``'decade'``: the start of the year divisible by 10 (``2020-01-01`` for
+  2026). There's no year 0, so the years 1 to 9 have no decade, which is a
+  ``22008`` error (datetime field overflow).
+- ``'century'`` and ``'millennium'``: they start in a year ending in 1, the same
+  as ``EXTRACT(CENTURY ...)``, so ``2000`` is in the century that starts in
+  ``1901``.
+
+``'week'`` and larger are for a ``DATE`` or ``TIMESTAMP``. A field that the
+source doesn't have (such as ``'hour'`` of a ``DATE``) is a ``42804`` error, and
+a field that isn't one of these is a ``42601`` error. A field smaller than the
+precision of the source returns it unchanged. A NULL source is NULL, and a NULL
+field is an error.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES DATE_TRUNC('month', TIMESTAMP '2026-11-17 14:35:21.5');
+  -- COL1: 2026-11-01T00:00:00.0
+
+  VALUES DATE_TRUNC('hour', TIMESTAMP '2026-11-17 14:35:21.5');
+  -- COL1: 2026-11-17T14:00:00.0
+
+  VALUES DATE_TRUNC('week', DATE '2026-11-17');
+  -- COL1: 2026-11-16
+
+  VALUES DATE_TRUNC('quarter', DATE '2026-11-17');
+  -- COL1: 2026-10-01
+
+It's the usual way to group rows by a period, or to filter a range:
+
+.. code-block:: sql
+
+  SELECT first_day, COUNT(*)
+  FROM (SELECT DATE_TRUNC('month', created_at) AS first_day FROM orders) AS t
+  GROUP BY first_day
+  ORDER BY first_day;
+
+  SELECT * FROM orders
+  WHERE created_at >= DATE_TRUNC('month', CURRENT_TIMESTAMP);
+
+**Pitfalls**
+
+``DATE_TRUNC`` is in many databases, but the details differ:
+
+- **The first day of the week** is always a Monday (ISO 8601), like in
+  PostgreSQL. Snowflake (``WEEK_START``), BigQuery (``WEEK(SUNDAY)``) and SQL
+  Server (``DATEFIRST``) can start a week on another day, so ``'week'`` can be a
+  different date there. A week that starts on a Sunday is:
+
+  .. code-block:: sql
+
+    VALUES DATE_TRUNC('week', DATE '2026-11-17' + INTERVAL '1' DAY) - INTERVAL '1' DAY;
+    -- COL1: 2026-11-15
+
+- **Time zones.** A value ``WITH TIME ZONE`` is truncated in its own time zone,
+  which it keeps, so ``DATE_TRUNC('day', TIMESTAMP '2026-11-17 01:30:00+11:00')``
+  is ``2026-11-17T00:00:00+1100``. PostgreSQL truncates in the time zone of the
+  session, so the same query can group rows differently in different sessions.
+  Two values for the same instant with different time zones can truncate to
+  different days in vsql, so convert them to one time zone first (with
+  ``AT TIME ZONE``) when grouping.
+- **Daylight saving time.** vsql time zones are fixed offsets, so a truncated
+  value always exists and is never ambiguous. With named time zones, local
+  midnight can be in an hour that's skipped or repeated.
+- **The result type.** PostgreSQL's ``date_trunc('month', d)`` of a ``date`` is
+  a timestamp, so code ported from PostgreSQL that relies on that might need a
+  ``CAST``. In vsql it stays a ``DATE``.
+- **Century and millennium boundaries** are in a year ending in 1, so
+  ``DATE_TRUNC('century', DATE '2000-06-01')`` is ``1901-01-01``, not
+  ``2000-01-01``.
+- **It rounds down,** never to the nearest, so ``14:59`` truncated to the hour
+  is ``14:00``.
+
+**Compatibility**
+
+- **SQL standard:** not standard. It can be built from the fields, such as
+  ``MAKE_DATE(EXTRACT(YEAR FROM d), EXTRACT(MONTH FROM d), 1)``.
+- **vsql:** ``DATE_TRUNC`` is ``V402-20`` (see :doc:`sql-flagging`).
+- **Other databases:**
+
+  - PostgreSQL, Snowflake, DuckDB and Redshift: ``date_trunc``, which turns a
+    ``date`` into a timestamp. PostgreSQL has no ``time`` version.
+  - SQL Server 2022: ``DATETRUNC(month, d)``.
+  - BigQuery: ``DATE_TRUNC`` and ``TIMESTAMP_TRUNC``.
+  - Oracle: ``TRUNC(d, 'MM')``.
+  - MySQL: ``DATE_FORMAT(d, '%Y-%m-01')``, as a string.
+  - SQLite: ``date(d, 'start of month')``, as a string.
+  - ClickHouse: ``toStartOfMonth`` and the others.
 
 EXTRACT
 ^^^^^^^

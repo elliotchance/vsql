@@ -390,6 +390,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V402-19``
      - ``EXTRACT(TIMEZONE FROM ...)``.
 
+   * - ``V402-20``
+     - ``DATE_TRUNC``.
+
    * - ``V403``
      - Mathematical functions: the arithmetic, exponent and logarithm, rounding
        and trigonometric functions (see :doc:`functions`).

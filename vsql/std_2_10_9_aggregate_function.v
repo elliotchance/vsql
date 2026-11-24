@@ -277,7 +277,8 @@ fn set_function_type(name string, t Type) Type {
 		return Type{.is_decfloat, decfloat_precision([t]), 0, false, false}
 	}
 
-	if name in ['STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP']
+	// MEDIAN is a DOUBLE PRECISION, like PERCENTILE_CONT (V405-03).
+	if name in ['STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP', 'MEDIAN']
 		|| name in binary_set_functions {
 		return new_type('DOUBLE PRECISION', 0, 0)
 	}
@@ -352,6 +353,10 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	}
 	if name in ['ANY', 'SOME'] {
 		return new_boolean_value(values.any(it.bool_value() == .is_true))
+	}
+
+	if name == 'MEDIAN' {
+		return eval_median(mut conn, values)!
 	}
 
 	if typ.typ == .is_decfloat && name != 'MAX' && name != 'MIN' {
@@ -438,7 +443,32 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 
 // named_aggregate_functions are the general set functions that are named by an
 // identifier rather than a reserved word, so they're a routine_invocation.
-const named_aggregate_functions = ['PRODUCT']
+const named_aggregate_functions = ['PRODUCT', 'MEDIAN']
+
+// named_aggregate_features are the vsql extensions that flag each of the
+// named_aggregate_functions.
+const named_aggregate_features = {
+	'PRODUCT': [vsql_product]
+	'MEDIAN':  [vsql_median]
+}
+
+// eval_median is the median of the (non-null) values of MEDIAN, which is the
+// same as PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY CAST(x AS DOUBLE
+// PRECISION)). The values are cast to DOUBLE PRECISION before they're sorted,
+// so that the median of an even number of integers isn't truncated, the median
+// of 1 and 2 is 1.5.
+fn eval_median(mut conn Connection, values []Value) !Value {
+	mut xs := []f64{}
+	for value in values {
+		xs << value.as_f64()!
+	}
+	xs.sort()
+
+	result, _ := inverse_distribution_function(mut conn, 'MEDIAN', new_numeric_value('0.5'),
+		xs.map(new_double_precision_value(it)), new_type('DOUBLE PRECISION', 0, 0))!
+
+	return result
+}
 
 // eval_product is the product of the (non-null) values of PRODUCT, where typ
 // is the result type (see set_function_type). A product of integers is exact,

@@ -171,6 +171,7 @@ import arrays
 // V405: Aggregate functions.
 // V405-01: MODE() WITHIN GROUP.
 // V405-02: PRODUCT.
+// V405-03: MEDIAN.
 //
 // V501: PostgreSQL functions.
 // V501-01: version().
@@ -282,6 +283,7 @@ const vsql_concat = 'V404-08'
 const vsql_concat_ws = 'V404-09'
 const vsql_mode = 'V405-01'
 const vsql_product = 'V405-02'
+const vsql_median = 'V405-03'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

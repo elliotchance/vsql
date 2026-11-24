@@ -396,6 +396,64 @@ time, or a string. The result has the same type as the values.
 - **Other databases:** ``MAX`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_OR`` instead.
 
+MEDIAN
+^^^^^^
+
+.. code-block:: sql
+
+   MEDIAN(SMALLINT) DOUBLE PRECISION
+   MEDIAN(INTEGER) DOUBLE PRECISION
+   MEDIAN(BIGINT) DOUBLE PRECISION
+   MEDIAN(NUMERIC(p, s)) DOUBLE PRECISION
+   MEDIAN(DECIMAL(p, s)) DOUBLE PRECISION
+   MEDIAN(REAL) DOUBLE PRECISION
+   MEDIAN(DOUBLE PRECISION) DOUBLE PRECISION
+   MEDIAN(DECFLOAT) DOUBLE PRECISION
+
+Returns the middle value. When there's an even number of values it's the
+average of the middle two, so the median of 1 and 2 is 1.5.
+
+``MEDIAN(x)`` is the same as ``PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY
+CAST(x AS DOUBLE PRECISION))``. The values are cast to ``DOUBLE PRECISION``
+first because ``PERCENTILE_CONT`` casts the value between the middle two to the
+type of the sort key, so ``PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY x)`` of
+the integers 1 and 2 is 1. The result is always a ``DOUBLE PRECISION``, so a
+very large ``BIGINT`` or ``DECIMAL`` can lose precision.
+
+The value must be a number, otherwise it's a ``42883`` error. ``NULL`` values
+are ignored, with a ``01003`` warning, and if there are no values the result is
+``NULL``. ``MEDIAN(DISTINCT x)`` is a ``42601`` error.
+
+``MEDIAN`` is a vsql extension flagged by ``V405-03`` (see
+:doc:`sql-flagging`). Use ``PERCENTILE_CONT`` for standard SQL. It isn't a
+reserved word, so a column or a table can still be called ``median``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT MEDIAN(price) FROM products;
+  -- COL1: 12.775e0
+
+  SELECT city, MEDIAN(price) FROM products GROUP BY city;
+  -- CITY: New York COL2: 13.05e0
+  -- CITY: San Francisco COL2: 12.5e0
+
+  SELECT MEDIAN(x) FROM (VALUES (1), (2)) AS t (x);
+  -- COL1: 1.5e0
+
+**Compatibility**
+
+- **SQL standard:** not standard. Use ``PERCENTILE_CONT(0.5) WITHIN GROUP
+  (ORDER BY CAST(x AS DOUBLE PRECISION))``.
+- **Other databases:**
+
+  - Oracle, Snowflake, DuckDB and Redshift: ``MEDIAN(x)``. Oracle and Snowflake
+    return the type of the value, rather than a ``DOUBLE PRECISION``.
+  - SQLite: ``median(x)``, when it's built with ``SQLITE_ENABLE_PERCENTILE``.
+  - PostgreSQL and SQL Server: ``PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY
+    x)``. MySQL doesn't have it.
+
 MIN
 ^^^
 

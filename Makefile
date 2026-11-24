@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -169,6 +169,11 @@ fmt-verify:
 # standard in the code (see docs/standard-index.rst).
 check-standard-index:
 	v run scripts/check-standard-index.vsh
+
+# check-function-index checks that the table of every function in
+# docs/functions-index.rst matches the functions of docs/functions-*.rst.
+check-function-index:
+	v run scripts/check-function-index.vsh
 
 # Tests
 

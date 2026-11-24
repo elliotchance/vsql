@@ -163,6 +163,10 @@ jobs:
           set -o pipefail
           make check-standard-index 2>&1 | tee "$RUNNER_TEMP/standard-index.log"
 
+      - name: Verify function index
+        if: matrix.arch == 'x86-64'
+        run: make check-function-index
+
       # vsql/y.v is generated, but committed so that "v install" works.
       - name: Verify grammar
         if: matrix.arch == 'x86-64'

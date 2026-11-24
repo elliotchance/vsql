@@ -78,7 +78,9 @@ mut middle := ''
 mut bottom := ''
 
 for file_path in files {
-	if is_dir(file_path) {
+	// y.y is the output, it's left over from the last time the grammar was
+	// generated. Reading it again would put every rule in twice (#1710).
+	if is_dir(file_path) || file_path == output_filename {
 		continue
 	}
 	content := read_file(file_path) or {

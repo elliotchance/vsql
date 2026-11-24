@@ -111,6 +111,45 @@ fn register_math_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'LGAMMA', [double_precision], false, func_lgamma, double_precision, false, true, [
 		vsql_lgamma,
 	], [], false})!
+
+	// TRIM_SCALE and MIN_SCALE come from PostgreSQL. Any exact number is
+	// implicitly cast to a NUMERIC with the same precision and scale. The
+	// result of TRIM_SCALE is a DECFLOAT(34), see func_trim_scale.
+	conn.register_func(Func{'TRIM_SCALE', [numeric], false, func_trim_scale, Type{.is_decfloat, max_decfloat_precision, 0, false, false}, false, true, [
+		vsql_trim_scale,
+	], [], false})!
+	conn.register_func(Func{'MIN_SCALE', [numeric], false, func_min_scale, integer, false, true, [
+		vsql_min_scale,
+	], [], false})!
+}
+
+// min_scale is the fewest decimal places that n can have without changing its
+// value, which is its scale without the trailing zeros.
+fn min_scale(n Numeric) int {
+	s := n.str()
+	if !s.contains('.') {
+		return 0
+	}
+
+	return s.all_after('.').trim_right('0').len
+}
+
+// TRIM_SCALE(NUMERIC) DECFLOAT(34)
+//
+// The result is the same number with only the decimal places that it needs
+// (see min_scale). Every value of a NUMERIC has exactly the scale of its type,
+// so the result can't be a NUMERIC. A DECFLOAT has the decimal places of each
+// value instead, so it's a DECFLOAT(34), and a number with more than 34
+// significant digits is rounded, like a CAST (see cast_to_decfloat).
+fn func_trim_scale(_ FunctionContext, args []Value) !Value {
+	d := cast_to_decfloat(args[0], Type{.is_decfloat, max_decfloat_precision, 0, false, false})!
+
+	return new_decfloat_value(d.typ, trim_scale_decfloat(d.decfloat_value()))
+}
+
+// MIN_SCALE(NUMERIC) INTEGER
+fn func_min_scale(_ FunctionContext, args []Value) !Value {
+	return new_integer_value(min_scale(args[0].numeric_value()))
 }
 
 // round_double rounds x to places decimal places, half away from zero, or

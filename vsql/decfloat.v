@@ -440,6 +440,12 @@ fn register_decfloat_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'SIGN', [decfloat], false, func_sign_decfloat, decfloat, false, true, [
 		vsql_sign,
 	], [], false})!
+	conn.register_func(Func{'TRIM_SCALE', [decfloat], false, func_trim_scale_decfloat, decfloat, false, true, [
+		vsql_trim_scale,
+	], [], false})!
+	conn.register_func(Func{'MIN_SCALE', [decfloat], false, func_min_scale_decfloat, Type{.is_integer, 0, 0, false, false}, false, true, [
+		vsql_min_scale,
+	], [], false})!
 }
 
 // with_double_precision is f (a function of DOUBLE PRECISION arguments) for
@@ -605,4 +611,40 @@ fn round_decfloat_value(v Value, places i64, truncate bool) !Value {
 // SIGN(DECFLOAT) DECFLOAT is -1, 0 or 1.
 fn func_sign_decfloat(_ FunctionContext, args []Value) !Value {
 	return new_decfloat_value(args[0].typ, DecFloat{big.integer_from_int(args[0].decfloat_value().coefficient.signum), 0})
+}
+
+// trim_scale_decfloat is d without the trailing zeros after the decimal point,
+// so 1.500 (1500 * 10^-3) is 1.5 (15 * 10^-1). The zeros of a whole number are
+// kept, so 100 is still 100. 0.00 is 0.
+fn trim_scale_decfloat(d DecFloat) DecFloat {
+	if d.exponent >= 0 {
+		return d
+	}
+	if d.is_zero() {
+		return DecFloat{big.zero_int, 0}
+	}
+
+	mut coefficient := d.coefficient.abs()
+	mut exponent := d.exponent
+	ten := big.integer_from_int(10)
+	for exponent < 0 {
+		q, r := coefficient.div_mod(ten)
+		if r.signum != 0 {
+			break
+		}
+		coefficient = q
+		exponent++
+	}
+
+	return DecFloat{if d.coefficient.signum < 0 { coefficient.neg() } else { coefficient }, exponent}
+}
+
+// TRIM_SCALE(DECFLOAT(p)) DECFLOAT(p)
+fn func_trim_scale_decfloat(_ FunctionContext, args []Value) !Value {
+	return new_decfloat_value(args[0].typ, trim_scale_decfloat(args[0].decfloat_value()))
+}
+
+// MIN_SCALE(DECFLOAT) INTEGER
+fn func_min_scale_decfloat(_ FunctionContext, args []Value) !Value {
+	return new_integer_value(int_max(0, -trim_scale_decfloat(args[0].decfloat_value()).exponent))
 }

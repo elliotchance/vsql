@@ -410,6 +410,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V403-17``
      - ``LGAMMA``.
 
+   * - ``V403-22``
+     - ``TRIM_SCALE``.
+
+   * - ``V403-23``
+     - ``MIN_SCALE``.
+
    * - ``V404``
      - String functions (see :doc:`functions-string`).
 

@@ -590,13 +590,15 @@ Returns the base 10 logarithm of a number.
 min_scale
 ^^^^^^^^^
 
-.. code-block:: text
-
-  min_scale(numeric) → integer
-
 Returns the fewest decimal places that are needed to represent a number exactly.
 
-No equivalent.
+.. code-block:: sql
+
+  -- min_scale(numeric) → integer
+  VALUES MIN_SCALE(/*x*/);
+  -- min_scale(8.4100)
+  VALUES MIN_SCALE(8.4100);
+  -- COL1: 2
 
 mod
 ^^^
@@ -830,13 +832,18 @@ Returns the hyperbolic tangent of a number.
 trim_scale
 ^^^^^^^^^^
 
-.. code-block:: text
-
-  trim_scale(numeric) → numeric
-
 Removes the trailing zeros after the decimal point of a numeric value.
 
-No equivalent.
+.. code-block:: sql
+
+  -- trim_scale(numeric) → numeric
+  VALUES TRIM_SCALE(/*x*/);
+  -- trim_scale(8.4100)
+  VALUES TRIM_SCALE(8.4100);
+  -- COL1: 8.41
+
+vsql's ``TRIM_SCALE`` returns a ``DECFLOAT``, since every value of a
+``NUMERIC`` has the scale of its type.
 
 trunc
 ^^^^^

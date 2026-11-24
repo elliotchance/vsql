@@ -154,6 +154,8 @@ import arrays
 // V403-15: ERFC.
 // V403-16: GAMMA.
 // V403-17: LGAMMA.
+// V403-22: TRIM_SCALE.
+// V403-23: MIN_SCALE.
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
@@ -267,6 +269,8 @@ const vsql_erf = 'V403-14'
 const vsql_erfc = 'V403-15'
 const vsql_gamma = 'V403-16'
 const vsql_lgamma = 'V403-17'
+const vsql_trim_scale = 'V403-22'
+const vsql_min_scale = 'V403-23'
 const vsql_trim_only_from = 'V404-01'
 const vsql_replace = 'V404-02'
 const vsql_repeat = 'V404-03'

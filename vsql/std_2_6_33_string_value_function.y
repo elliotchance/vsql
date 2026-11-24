@@ -27,7 +27,8 @@ character_value_function:
   }
 | pad_function { $$.v = yy_box(CharacterValueFunction($1.v as PadFunction)) }
 
-// Without USING, it's USING CHARACTERS.
+// Without USING, it's USING CHARACTERS for a character string (see
+// CharacterSubstringFunction). A binary string can't have USING.
 //
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 6
 
@@ -35,13 +36,12 @@ character_substring_function:
   SUBSTRING left_paren character_value_expression FROM start_position
   right_paren {
     $$.v = yy_box(new_character_substring_function($3.v as CharacterValueExpression,
-      $5.v as NumericValueExpression, none, 'CHARACTERS'))
+      $5.v as NumericValueExpression, none, ''))
   }
 | SUBSTRING left_paren character_value_expression FROM start_position FOR
   string_length right_paren {
     $$.v = yy_box(new_character_substring_function($3.v as CharacterValueExpression,
-      $5.v as NumericValueExpression, $7.v as NumericValueExpression,
-      'CHARACTERS'))
+      $5.v as NumericValueExpression, $7.v as NumericValueExpression, ''))
   }
 | SUBSTRING left_paren character_value_expression FROM start_position USING
   char_length_units right_paren {
@@ -112,23 +112,21 @@ trim_function:
   TRIM left_paren trim_operands right_paren { $$.v = $3.v }
 
 // Without a trim specification it's BOTH, and without a trim character it's a
-// space. vsql also allows FROM without either (V404-01).
+// space, or X'00' for a binary string (see TrimFunction). vsql also allows FROM
+// without either (V404-01).
 //
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 14.a
 
 trim_operands:
   trim_source {
-    space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
-    $$.v = yy_box(new_trim_function('BOTH', space, $1.v as CharacterValueExpression))
+    $$.v = yy_box(new_trim_function('BOTH', none, $1.v as CharacterValueExpression))
   }
 | FROM trim_source {
     flag(mut yylex, vsql_trim_only_from)
-    space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
-    $$.v = yy_box(new_trim_function('BOTH', space, $2.v as CharacterValueExpression))
+    $$.v = yy_box(new_trim_function('BOTH', none, $2.v as CharacterValueExpression))
   }
 | trim_specification FROM trim_source {
-    space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
-    $$.v = yy_box(new_trim_function($1.v as string, space, $3.v as CharacterValueExpression))
+    $$.v = yy_box(new_trim_function($1.v as string, none, $3.v as CharacterValueExpression))
   }
 | trim_character FROM trim_source {
     $$.v = yy_box(new_trim_function('BOTH', $1.v as CharacterValueExpression, $3.v as CharacterValueExpression))

@@ -32,12 +32,14 @@ struct VsqlRoutine {
 }
 
 // is_vsql_routine is true for a function that's a routine of the VSQL schema.
-// A built-in function is a vsql extension when it's flagged (see Func.features),
-// since a standard function is flagged by the grammar instead. A function
-// that's registered with register_function is always called on a NULL
-// argument, unlike a built-in function. Aggregate functions aren't routines.
+// A built-in function is a vsql extension when it's flagged with a vsql feature
+// (see Func.features), which always starts with V. A standard function can
+// also be flagged with a standard feature, such as POSITION of a BINARY LARGE
+// OBJECT (T047), but it isn't a routine. A function that's registered with
+// register_function is always called on a NULL argument, unlike a built-in
+// function. Aggregate functions aren't routines.
 fn (f Func) is_vsql_routine() bool {
-	return !f.is_agg && (f.features.len > 0 || f.called_on_null_input)
+	return !f.is_agg && (f.features.any(it.starts_with('V')) || f.called_on_null_input)
 }
 
 // vsql_routines returns the routines of the VSQL schema, ordered by name, then

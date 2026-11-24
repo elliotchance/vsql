@@ -141,6 +141,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
 	real := Type{SQLType.is_real, 0, 0, false, false}
 	decimal := Type{SQLType.is_decimal, 0, 0, false, false}
+	varbinary := Type{SQLType.is_varbinary, 0, 0, false, false}
+	blob := Type{SQLType.is_blob, 0, 0, false, false}
 
 	// Scalar functions. The trigonometric functions, LOG, LN, EXP, POWER and SQRT
 	// return a DOUBLE PRECISION (the approximate numeric type is
@@ -196,7 +198,20 @@ fn register_builtin_funcs(mut conn Connection) ! {
 		}
 	}
 	conn.register_func(Func{'OCTET_LENGTH', [varchar], false, func_octet_length, integer, false, true, [], [], false})!
+	// A binary string (and a BINARY is a BINARY VARYING, see find_function) has
+	// a length in octets, and a <binary position expression> finds one binary
+	// string in another. A BINARY LARGE OBJECT needs Feature T047 for both, and
+	// otherwise the <binary position expression> is T021 (either one is
+	// enough).
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 6 and 8
+	conn.register_func(Func{'OCTET_LENGTH', [varbinary], false, func_octet_length, integer, false, true, [], [], false})!
+	conn.register_func(Func{'OCTET_LENGTH', [blob], false, func_octet_length, integer, false, true, ['T047'], [], false})!
 	conn.register_func(Func{'POSITION', [varchar, varchar], false, func_position, integer, false, true, [], [], false})!
+	conn.register_func(Func{'POSITION', [varbinary, varbinary], false, func_binary_position, integer, false, true, ['T021'], [], false})!
+	conn.register_func(Func{'POSITION', [varbinary, blob], false, func_binary_position, integer, false, true, ['T047'], [], false})!
+	conn.register_func(Func{'POSITION', [blob, varbinary], false, func_binary_position, integer, false, true, ['T047'], [], false})!
+	conn.register_func(Func{'POSITION', [blob, blob], false, func_binary_position, integer, false, true, ['T047'], [], false})!
 	conn.register_func(Func{'POWER', [double_precision, double_precision], false, func_power, double_precision, false, true, [], [], false})!
 	conn.register_func(Func{'SIN', [double_precision], false, func_sin, double_precision, false, true, [], [], false})!
 	conn.register_func(Func{'SINH', [double_precision], false, func_sinh, double_precision, false, true, [], [], false})!
@@ -234,7 +249,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// or interval (SR 7.g.i), STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP also accept any
 	// number (SR 7.h), and EVERY, ANY and SOME accept a BOOLEAN (SR 7.e). Every
 	// SQLType is registered, so a new type is supported automatically. CHARACTER
-	// uses the CHARACTER VARYING one, see find_function. The result type depends
+	// uses the CHARACTER VARYING one, and BINARY uses the BINARY VARYING one, see
+	// find_function. The result type depends
 	// on the argument (see set_function_type) and the result is calculated by
 	// eval_set_function. PRODUCT is a vsql extension (V405-02) that accepts any
 	// number, like SUM.
@@ -242,7 +258,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e, 7.g.i and 7.h
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
-		if typ.value != SQLType.is_character {
+		if typ.value !in [SQLType.is_character, .is_binary] {
 			arg := Type{typ.value, 0, 0, false, false}
 			mut names := ['ANY_VALUE', 'COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {

@@ -22,6 +22,24 @@ fn func_position(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(s[..index].len_utf8() + 1)
 }
 
+// POSITION(BINARY VARYING IN BINARY VARYING) INTEGER, and with a BINARY LARGE
+// OBJECT for either one. The position is counted in octets.
+//
+// ISO/IEC 9075-2:2023, 4.4.3.2, Other operators involving binary strings
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 3
+fn func_binary_position(_ FunctionContext, args []Value) !Value {
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 3.a
+	needle := args[0].string_value()
+	if needle == '' {
+		return new_integer_value(1)
+	}
+
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 3.b and 3.c
+	index := args[1].string_value().index(needle) or { return new_integer_value(0) }
+
+	return new_integer_value(index + 1)
+}
+
 // CHAR_LENGTH(CHARACTER VARYING) INTEGER
 //
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 5.b
@@ -29,11 +47,12 @@ fn func_char_length(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(args[0].string_value().runes().len)
 }
 
-// OCTET_LENGTH(CHARACTER VARYING) INTEGER
+// OCTET_LENGTH(CHARACTER VARYING) INTEGER, and for a binary string. The length
+// of a large value is known without reading it.
 //
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 6
 fn func_octet_length(_ FunctionContext, args []Value) !Value {
-	return new_integer_value(args[0].string_value().len)
+	return new_integer_value(args[0].octet_length())
 }
 
 // UPPER(CHARACTER VARYING) CHARACTER VARYING

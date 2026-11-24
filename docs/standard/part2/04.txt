@@ -47,17 +47,17 @@
 # 4.3.8, Universal character sets
 4.3.8                    partial      vsql/std_2_6_1_data_type.v tests/std_2_5_3_unicode.sql only UTF8
 # 4.4, Binary strings
-4.4                      n/a          - - binary strings (T021)
+4.4                      implemented  vsql/type.v tests/std_2_6_1_binary.sql
 # 4.4.1, Introduction to binary strings
-4.4.1                    n/a          - - binary strings (T021)
+4.4.1                    implemented  vsql/type.v tests/std_2_6_1_binary.sql
 # 4.4.2, Binary string comparison
-4.4.2                    n/a          - - binary strings (T021)
+4.4.2                    implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_binary_comparison.sql a BINARY LARGE OBJECT can't be compared yet (T042)
 # 4.4.3, Operations involving binary strings
-4.4.3                    n/a          - - binary strings (T021)
+4.4.3                    implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql
 # 4.4.3.1, Operators that operate on binary strings and return binary strings
-4.4.3.1                  n/a          - - binary strings (T021)
+4.4.3.1                  partial      vsql/std_2_6_32_string_value_expression.v,vsql/std_2_6_33_string_value_function.v tests/std_2_6_32_binary_concatenation.sql,tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql there's no OVERLAY of binary strings yet (T022)
 # 4.4.3.2, Other operators involving binary strings
-4.4.3.2                  n/a          - - binary strings (T021)
+4.4.3.2                  partial      vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql,tests/std_2_6_31_binary_octet_length.sql there's no <octet like predicate> yet (T022)
 # 4.5, Numbers
 4.5                      implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_numeric.sql
 # 4.5.1, Introduction to numbers

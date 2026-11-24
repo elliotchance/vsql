@@ -282,6 +282,30 @@ fn (mut f Storage) resolve_row(mut r Row) !Row {
 	return r
 }
 
+// octet_length is the length in octets of a character string or binary string,
+// which doesn't read a large value.
+fn (v Value) octet_length() int {
+	if v.is_large {
+		return v.large_value().octets
+	}
+
+	return v.string_value().len
+}
+
+// octets is part of a character string or binary string, from the octet start
+// to end (exclusive). Only the chunks of a large value that have them are read.
+fn (v Value) octets(start int, end int) !string {
+	if v.is_large {
+		mut lv := v.large_value()
+		mut buf := []u8{len: end - start}
+		n := lv.read_at(start, mut buf)!
+
+		return buf[..n].bytestr()
+	}
+
+	return v.string_value().substr(start, end)
+}
+
 // Lob reads a value of a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT (or any
 // other string) without reading all of it, see Row.get_lob. A value that's
 // stored outside of its row is read until the row is changed by another

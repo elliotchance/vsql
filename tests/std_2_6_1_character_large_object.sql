@@ -79,3 +79,13 @@ SELECT * FROM t;
 /* types */
 VALUES N'it''s';
 -- COL1: it's (CHARACTER(4))
+
+-- # Every spelling of the large object and national character types, with and
+-- # without a length.
+/* types */
+CREATE TABLE t (a CHAR LARGE OBJECT, b NATIONAL CHAR, c NATIONAL CHARACTER LARGE OBJECT(4), d NCHAR LARGE OBJECT);
+INSERT INTO t VALUES ('a', 'b', 'c', 'd');
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: a (CHARACTER LARGE OBJECT) B: b (CHARACTER(1)) C: c (CHARACTER LARGE OBJECT(4)) D: d (CHARACTER LARGE OBJECT)

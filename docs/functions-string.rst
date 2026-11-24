@@ -354,9 +354,13 @@ OCTET_LENGTH
 .. code-block:: sql
 
    OCTET_LENGTH(CHARACTER VARYING) INTEGER
+   OCTET_LENGTH(BINARY VARYING) INTEGER
+   OCTET_LENGTH(BINARY LARGE OBJECT) INTEGER
 
 Returns the length in bytes, which is the length of the string encoded as
-UTF-8. A character can be 1 to 4 bytes.
+UTF-8. A character can be 1 to 4 bytes. For a binary string (see
+:doc:`binary`), it's the number of octets. The length of a large value is known
+without reading it.
 
 **Examples**
 
@@ -475,6 +479,7 @@ POSITION
 .. code-block:: sql
 
    POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
+   POSITION(BINARY VARYING IN BINARY VARYING) INTEGER
 
 ``POSITION(SEARCH IN STRING)`` returns the start of the left most (first)
 match of ``SEARCH`` within ``STRING``. 1 will be the smallest index on a match and 0 is returned if
@@ -483,6 +488,10 @@ match of ``SEARCH`` within ``STRING``. 1 will be the smallest index on a match a
 
 Matching is case-sensitive. An empty ``SEARCH`` is found at the start of any
 ``STRING`` (even an empty one), so the result is 1.
+
+``SEARCH`` and ``STRING`` can also both be binary strings (see :doc:`binary`),
+including a ``BINARY LARGE OBJECT``, and then the position is counted in
+octets.
 
 **Examples**
 
@@ -716,6 +725,8 @@ SUBSTRING
    SUBSTRING(CHARACTER VARYING(n) FROM INTEGER) CHARACTER VARYING(n)
    SUBSTRING(CHARACTER VARYING(n) FROM INTEGER FOR INTEGER) CHARACTER VARYING(n)
    SUBSTRING(CHARACTER VARYING(n) SIMILAR CHARACTER VARYING ESCAPE CHARACTER) CHARACTER VARYING(n)
+   SUBSTRING(BINARY VARYING(n) FROM INTEGER [ FOR INTEGER ]) BINARY VARYING(n)
+   SUBSTRING(BINARY LARGE OBJECT(n) FROM INTEGER [ FOR INTEGER ]) BINARY LARGE OBJECT(n)
 
 Returns part of ``STRING``. The result is a ``CHARACTER VARYING`` with the
 maximum length of ``STRING``.
@@ -739,6 +750,11 @@ still count towards ``LENGTH``. So ``SUBSTRING('hello' FROM 0 FOR 3)`` is
 If ``CHARACTERS`` is specified ``START`` and ``LENGTH`` will count in characters
 (this works with multibyte characters) whereas ``OCTETS`` will strictly count
 in bytes. If ``USING`` is not provided, ``CHARACTERS`` will be used.
+
+``STRING`` can also be a binary string (see :doc:`binary`), which is counted in
+octets and can't have ``USING``. The result is a ``BINARY VARYING`` with the
+maximum length of ``STRING``, or a ``BINARY LARGE OBJECT`` for one, which only
+reads the octets of a large value that are in the result.
 
 With ``SIMILAR``, the part of ``STRING`` that is returned is found with a
 pattern instead. ``PATTERN`` must have exactly two of ``ESCAPE_CHARACTER``
@@ -821,6 +837,8 @@ TRIM
 .. code-block:: sql
 
    TRIM(CHARACTER VARYING(n)) CHARACTER VARYING(n)
+   TRIM(BINARY VARYING(n)) BINARY VARYING(n)
+   TRIM(BINARY LARGE OBJECT(n)) BINARY LARGE OBJECT(n)
 
 Removes ``CHARACTER`` from the start (``LEADING``), the end (``TRAILING``) or
 both ends (``BOTH``) of ``STRING``, as many times as it's repeated. The result
@@ -832,6 +850,11 @@ If ``CHARACTER`` is not provided, a space (``' '``) is used. Only that
 character is removed, not other white space such as tabs or new lines.
 ``CHARACTER`` must be exactly one character, otherwise it's a ``22027`` error
 (trim error).
+
+``STRING`` can also be a binary string (see :doc:`binary`), and then
+``CHARACTER`` is a binary string of one octet, which is ``X'00'`` if it's not
+provided. The result is a ``BINARY VARYING`` with the maximum length of
+``STRING``, or a ``BINARY LARGE OBJECT`` for one.
 
 ``TRIM(FROM STRING)``, without ``LEADING``, ``TRAILING``, ``BOTH`` or
 ``CHARACTER``, is a vsql extension flagged by ``V404-01`` (see

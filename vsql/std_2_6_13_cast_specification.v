@@ -215,6 +215,10 @@ fn cast_specification(mut conn Connection, value Value, target Type) !Value {
 		return cast_character_to_character(mut conn, value, target)
 	}
 
+	if value.typ.typ.is_binary_string() && target.typ.is_binary_string() {
+		return cast_binary_to_binary(mut conn, value, target)!
+	}
+
 	if value.typ.typ.is_string() && target.typ == .is_decfloat {
 		return cast_character_to_decfloat(value, target)!
 	}
@@ -385,6 +389,36 @@ fn cast_character_to_octets(mut conn Connection, s string, to Type) Value {
 			string_value: result
 		}
 	}
+}
+
+// cast_binary_to_binary casts a binary string to BINARY(n), BINARY VARYING(n)
+// or BINARY LARGE OBJECT(n). Unlike a store assignment, a value that's too long
+// is truncated with a warning (01004), even if the octets removed are X'00'. A
+// BINARY is padded with X'00'. A large value that fits is kept as it is, so it
+// isn't read.
+//
+// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 13
+fn cast_binary_to_binary(mut conn Connection, v Value, to Type) !Value {
+	length := binary_length(to)
+	octets := v.octet_length()
+	if v.is_large && to.typ == .is_blob && octets <= length {
+		return v.with_type(to)
+	}
+
+	mut s := v.string_value()
+
+	// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 13.a.ii and 13.b.ii
+	if octets > length {
+		conn.add_warning(sqlstate_01004())
+		s = s[..length]
+	}
+
+	// ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 13.a.iii
+	if to.typ == .is_binary && s.len < length {
+		s += strings.repeat(0, length - s.len)
+	}
+
+	return new_binary_string_value(to.typ, s).with_type(to)
 }
 
 // cast_character_to_decfloat casts a character string to a DECFLOAT. Leading

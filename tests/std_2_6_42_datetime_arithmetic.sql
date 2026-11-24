@@ -71,18 +71,17 @@ VALUES INTERVAL '1' MONTH + TIME '10:00:00';
 -- error 42883: operator does not exist: INTERVAL MONTH(2) + TIME(0) WITHOUT TIME ZONE
 
 -- # A datetime can't be subtracted from an interval, and two datetimes can't be
--- # added. The difference of two datetimes needs an interval qualifier (see
--- # std_2_6_44_interval_value_expression.sql).
+-- # added. The difference of two datetimes has an interval qualifier (see
+-- # std_2_6_44_interval_value_expression.sql), which vsql implies without one
+-- # (see v305_datetime_subtraction.sql).
 VALUES INTERVAL '1' DAY - DATE '2020-01-01';
 VALUES DATE '2020-01-01' + DATE '2020-01-01';
 VALUES DATE '2020-01-01' * INTERVAL '1' DAY;
 VALUES DATE '2020-01-01' + 1;
-VALUES DATE '2020-01-02' - DATE '2020-01-01';
 -- error 42883: operator does not exist: INTERVAL DAY(2) - DATE
 -- error 42883: operator does not exist: DATE + DATE
 -- error 42883: operator does not exist: DATE * INTERVAL DAY(2)
 -- error 42883: operator does not exist: DATE + INTEGER
--- error 42601: syntax error: DATE - DATE needs an interval qualifier, such as (A - B) DAY TO SECOND
 
 -- # The result is NULL if either operand is NULL (6.42, General Rules, 1).
 SELECT d + i, i + d, d - i FROM t;

@@ -259,9 +259,124 @@ zone is in the time zone of the connection first. The difference of two
   VALUES (DATE '2020-03-01' - DATE '2019-02-15') YEAR TO MONTH;
   -- COL1: 1-01
 
-A difference without the interval fields (such as ``DATE '2020-03-01' - DATE
-'2020-02-01'``) is a ``42601`` error. Any of the results is a ``22015`` error if
-it doesn't fit in the interval type.
+Any of the results is a ``22015`` error if it doesn't fit in the interval
+type.
+
+Subtracting Without Interval Fields
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The difference of two datetimes can also be written without the interval
+fields (and without the parentheses), like PostgreSQL, Oracle and DuckDB. The
+fields are chosen from the types of the datetimes:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Operands
+    - Result type
+
+  * - ``DATE - DATE``
+    - ``INTERVAL DAY(8)``
+
+  * - ``TIME - TIME`` (with or without a time zone)
+    - ``INTERVAL HOUR(2) TO SECOND(f)``
+
+  * - ``TIMESTAMP - TIMESTAMP`` (with or without a time zone)
+    - ``INTERVAL DAY(8) TO SECOND(f)``
+
+*f* is the larger fractional seconds precision of the two datetimes. ``DAY(8)``
+is enough for any two dates, and ``HOUR(2)`` for any two times. Apart from the
+type, it's the same as writing the fields, so the result is an ordinary
+interval that can be cast, compared, extracted from and used in interval
+arithmetic:
+
+.. code-block:: sql
+
+  VALUES DATE '2026-11-17' - DATE '2026-01-01';
+  -- COL1: 320
+
+  VALUES TIME '08:00:00' - TIME '09:15:30';
+  -- COL1: -1:15:30
+
+  VALUES TIMESTAMP '2026-11-17 14:30:00' - TIMESTAMP '2026-11-16 12:00:00';
+  -- COL1: 1 02:30:00
+
+  VALUES CAST(DATE '2026-11-17' - DATE '2026-01-01' AS INTEGER);
+  -- COL1: 320
+
+A year-month interval is never chosen, since it counts calendar months, which
+is a different calculation. ``(a - b) YEAR TO MONTH`` still needs its fields.
+
+Subtracting without the interval fields isn't in the SQL standard, so it's
+flagged by ``V305-01`` (``DATE``), ``V305-02`` (``TIME``) or ``V305-03``
+(``TIMESTAMP``) (see :doc:`sql-flagging`). PostgreSQL returns an
+``INTEGER`` number of days for ``DATE - DATE``, and vsql returns an
+``INTERVAL DAY`` (cast it to an ``INTEGER`` for the number of days).
+
+Days, Leap Days and Time Zones
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A day-time interval doesn't have a calendar, so these behave differently to
+what you might expect:
+
+- **A day is always exactly 24 hours.** ``INTERVAL '1' DAY`` is 86400 seconds,
+  not "one calendar day". Leap seconds aren't supported, so a minute is always
+  60 seconds.
+
+- **Leap days are counted by subtraction**, since it uses the real dates:
+
+  .. code-block:: sql
+
+    VALUES DATE '2028-03-01' - DATE '2028-02-28';
+    -- COL1: 2
+
+    VALUES DATE '2027-03-01' - DATE '2027-02-28';
+    -- COL1: 1
+
+- **Leap days and the ends of months are a problem for year-month arithmetic,
+  not subtraction.** ``DATE '2028-02-29' + INTERVAL '1' YEAR`` and ``DATE
+  '2026-01-31' + INTERVAL '1' MONTH`` are a ``22008`` error (datetime field
+  overflow), as in the SQL standard. PostgreSQL and MySQL use the last day of
+  the month instead. To do that, add the months to the first of the month, and
+  then the days, up to the last day of the month:
+
+  .. code-block:: sql
+
+    VALUES CASE
+      WHEN EXTRACT(DAY FROM DATE '2026-01-31') > EXTRACT(DAY FROM DATE '2026-01-01' + INTERVAL '2' MONTH - INTERVAL '1' DAY)
+      THEN DATE '2026-01-01' + INTERVAL '2' MONTH - INTERVAL '1' DAY
+      ELSE DATE '2026-01-01' + INTERVAL '1' MONTH + INTERVAL '1' DAY * (EXTRACT(DAY FROM DATE '2026-01-31') - 1)
+    END;
+    -- COL1: 2026-02-28
+
+- **A TIMESTAMP WITHOUT TIME ZONE is a wall clock time.** It has no time zone,
+  so the difference is the difference of the wall clock times, as if every day
+  were 24 hours. Across a daylight saving change, ``02:00`` to ``02:00`` the
+  next day is ``1 00:00:00``, even though 23 or 25 hours really passed. Use
+  values ``WITH TIME ZONE`` for the time that really passed.
+
+- **A TIMESTAMP WITH TIME ZONE is subtracted in UTC**, so the difference is the
+  exact time that passed, and the same instant with different time zones is a
+  difference of zero:
+
+  .. code-block:: sql
+
+    VALUES TIMESTAMP '2026-11-17 14:30:00+05:00' - TIMESTAMP '2026-11-17 09:30:00+00:00';
+    -- COL1: 0 00:00:00
+
+- **Adding a day to a value WITH TIME ZONE adds exactly 24 hours and keeps its
+  time zone.** A vsql time zone is a fixed offset from UTC (like the SQL
+  standard), with no daylight saving rules, so across a daylight saving change
+  the result still has the old offset, and its local time can be an hour
+  different to "the same time tomorrow". PostgreSQL, which has named time
+  zones, keeps the wall clock time for ``+ INTERVAL '1 day'``, but not for ``+
+  INTERVAL '24 hours'``.
+
+Other databases count the difference in other ways: MySQL's ``TIMEDIFF``
+returns a ``TIME`` (up to ``838:59:59``), MySQL's ``TIMESTAMPDIFF`` and SQL
+Server's ``DATEDIFF`` count a number of units (or unit boundaries) with the
+arguments in the order ``b, a``, and PostgreSQL's ``age()`` returns years,
+months and days.
 
 A dynamic parameter added to a ``DATE`` is an ``INTERVAL YEAR TO MONTH``, one
 added to a ``TIME`` is an ``INTERVAL HOUR TO SECOND`` and one added to a

@@ -173,6 +173,7 @@ import arrays
 // V404-07: SPLIT_PART.
 // V404-08: CONCAT.
 // V404-09: CONCAT_WS.
+// V404-10: LENGTH.
 //
 // V405: Aggregate functions.
 // V405-01: MODE() WITHIN GROUP.
@@ -298,6 +299,7 @@ const vsql_unicode = 'V404-06'
 const vsql_split_part = 'V404-07'
 const vsql_concat = 'V404-08'
 const vsql_concat_ws = 'V404-09'
+const vsql_length = 'V404-10'
 const vsql_mode = 'V405-01'
 const vsql_product = 'V405-02'
 const vsql_median = 'V405-03'

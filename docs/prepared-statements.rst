@@ -104,9 +104,9 @@ when the statement is prepared, and the value it's given is cast to that type
   the column ``x``.
 - ``CAST(? AS INTEGER)`` is an ``INTEGER``.
 - ``x + ?`` (or ``-``, ``*``, ``/``) has the type of ``x``.
-- ``x || ?``, ``x LIKE ?``, the argument of ``CHAR_LENGTH`` and the value of
-  ``SET SCHEMA ?``, ``SET CATALOG ?`` and ``SET NAMES ?`` are a
-  ``CHARACTER VARYING``.
+- ``x || ?``, ``x LIKE ?``, the argument of ``CHAR_LENGTH`` (or ``LENGTH``)
+  and the value of ``SET SCHEMA ?``, ``SET CATALOG ?`` and ``SET NAMES ?`` are
+  a ``CHARACTER VARYING``.
 - An operand of ``AND``, ``OR`` and ``NOT``, and a ``WHERE`` or ``HAVING``, is
   a ``BOOLEAN``.
 - A value in a ``VALUES``, ``CASE``, ``COALESCE`` or ``NULLIF`` has the type of

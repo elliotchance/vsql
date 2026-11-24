@@ -427,11 +427,11 @@ fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern Co
 }
 
 // with_argument_types gives the dynamic parameters that are arguments of a
-// function their types. CHAR_LENGTH, OCTET_LENGTH, POSITION and MOD have their
-// own rules. Any other function is treated as an SQL-invoked routine, where an
-// argument has the type of its parameter, as long as there's only one function
-// with that name and number of arguments (otherwise it's ambiguous, such as for
-// ABS). An aggregate function's argument can't be a dynamic parameter.
+// function their types. CHAR_LENGTH, LENGTH, OCTET_LENGTH, POSITION and MOD
+// have their own rules. Any other function is treated as an SQL-invoked
+// routine, where an argument has the type of its parameter, as long as there's
+// only one function with that name and number of arguments (otherwise it's
+// ambiguous, such as for ABS). An aggregate function's argument can't be a dynamic parameter.
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.iii, 5.a.iv and 5.a.v
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxx.1 and 5.a.xxx
@@ -439,7 +439,7 @@ fn (mut c Compiler) with_argument_types(function_name string, args []CompileResu
 	return match function_name {
 		// UPPER and LOWER also have a CHARACTER LARGE OBJECT form, but a dynamic
 		// parameter is a CHARACTER VARYING, like any other character string.
-		'CHAR_LENGTH', 'OCTET_LENGTH', 'UPPER', 'LOWER' {
+		'CHAR_LENGTH', 'LENGTH', 'OCTET_LENGTH', 'UPPER', 'LOWER' {
 			args.map(c.with_type(it, character_type(untyped_parameter_type)))
 		}
 		'POSITION' {

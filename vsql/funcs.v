@@ -63,6 +63,7 @@ const builtin_arg_names = {
 	'GCD':              ['A', 'B']
 	'INITCAP':          ['STRING']
 	'LCM':              ['A', 'B']
+	'LENGTH':           ['STRING']
 	'LGAMMA':           ['X']
 	'MAKE_DATE':        ['YEARS', 'MONTHS', 'DAYS']
 	'MAKE_TIME':        ['HOURS', 'MINUTES', 'SECONDS']

@@ -1060,12 +1060,12 @@ Returns the number of characters in a string.
 .. code-block:: sql
 
   -- length(text) → integer
-  VALUES CHAR_LENGTH(/*text*/);
+  VALUES LENGTH(/*text*/);
   -- length('jose')
-  VALUES CHAR_LENGTH('jose');
+  VALUES LENGTH('jose');
   -- COL1: 4
 
-The forms of ``length`` for ``bytea``, ``bit``, geometric paths and ``tsvector`` have no equivalent.
+``LENGTH`` of a binary string is its number of bytes, like ``length(bytea)``. The forms of ``length`` for ``bit``, geometric paths and ``tsvector`` have no equivalent.
 
 lower
 ^^^^^

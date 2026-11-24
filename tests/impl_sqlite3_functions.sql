@@ -62,7 +62,7 @@ VALUES POSITION('na' IN 'Banana');
 
 -- # length
 -- # SELECT length('Cherry');
-VALUES CHAR_LENGTH('Cherry');
+VALUES LENGTH('Cherry');
 -- COL1: 6
 
 -- # like

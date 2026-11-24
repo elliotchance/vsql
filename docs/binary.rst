@@ -85,8 +85,8 @@ with the combined length. A ``BINARY VARYING`` result that's longer than
 ``X'00'``.
 
 ``SUBSTRING``, ``TRIM``, ``OVERLAY``, ``POSITION`` and ``OCTET_LENGTH`` work
-on binary strings, and count octets (see :doc:`functions`). Without a trim
-octet, ``TRIM`` removes ``X'00'``.
+on binary strings, and count octets (see :doc:`functions`), and so does the vsql
+extension ``LENGTH``. Without a trim octet, ``TRIM`` removes ``X'00'``.
 
 ``LIKE`` matches binary strings octet by octet, where ``X'25'`` (``%``) is any
 number of octets and ``X'5F'`` (``_``) is any one octet. The ``ESCAPE`` must be

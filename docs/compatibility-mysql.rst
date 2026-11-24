@@ -1752,7 +1752,9 @@ Returns the length of a string in bytes.
   VALUES OCTET_LENGTH('héllo');
   -- COL1: 6
 
-Use ``CHAR_LENGTH`` for the number of characters.
+Use ``CHAR_LENGTH`` (or ``LENGTH``) for the number of characters. vsql's
+``LENGTH`` counts characters, not bytes, like ``CHAR_LENGTH``, so it can't be
+used for MySQL's ``LENGTH``.
 
 LOAD_FILE
 ^^^^^^^^^

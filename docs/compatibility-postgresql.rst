@@ -1274,14 +1274,17 @@ Replaces every occurrence of a substring with another string.
 reverse
 ^^^^^^^
 
-.. code-block:: text
-
-  reverse(text) → text
-  reverse(bytea) → bytea
-
 Reverses the order of the characters (or bytes) of a string.
 
-No equivalent.
+.. code-block:: sql
+
+  -- reverse(text) → text
+  VALUES REVERSE(/*text*/);
+  -- reverse('abcde')
+  VALUES REVERSE('abcde');
+  -- COL1: edcba
+
+``REVERSE`` of a binary string reverses its bytes, like ``reverse(bytea)``.
 
 right
 ^^^^^

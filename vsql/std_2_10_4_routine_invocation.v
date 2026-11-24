@@ -179,9 +179,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 9
 	is_fold := func_name in ['UPPER', 'LOWER', 'INITCAP'] && arg_types[0].typ.is_string()
 	// SPLIT_PART (V404-07) is a CHARACTER VARYING with the length of the string,
-	// like SUBSTRING, and CHR (V404-05) is a CHARACTER VARYING(1).
-	is_text := func_name in ['SPLIT_PART', 'CHR']
-	mut return_type := if is_fold {
+	// like SUBSTRING, and CHR (V404-05) is a CHARACTER VARYING(1). REVERSE
+	// (V404-11) has the same type as its argument, which is always the same
+	// length.
+	is_text := func_name in ['SPLIT_PART', 'CHR', 'REVERSE']
+	mut return_type := if is_fold || func_name == 'REVERSE' {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false, false}
 	} else if func_name == 'SPLIT_PART' {
 		Type{.is_varchar, arg_types[0].size, 0, false, false}

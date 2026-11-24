@@ -2013,13 +2013,15 @@ Replaces every time a substring appears in a string with another string.
 REVERSE
 ^^^^^^^
 
-.. code-block:: text
-
-  REVERSE(str)
-
 Returns the characters of a string in reverse order.
 
-No equivalent.
+.. code-block:: sql
+
+  -- REVERSE(str)
+  VALUES REVERSE(/*str*/);
+  -- REVERSE('abc')
+  VALUES REVERSE('abc');
+  -- COL1: cba
 
 RIGHT
 ^^^^^

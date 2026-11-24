@@ -574,6 +574,11 @@ VALUES REPEAT('MySQL', 3);
 VALUES REPLACE('www.mysql.com', 'w', 'Ww');
 -- COL1: WwWwWw.mysql.com
 
+-- # REVERSE
+-- # REVERSE('abc')
+VALUES REVERSE('abc');
+-- COL1: cba
+
 -- # RIGHT
 -- # RIGHT('foobarbar', 4)
 VALUES SUBSTRING('foobarbar' FROM CHAR_LENGTH('foobarbar') - 4 + 1);

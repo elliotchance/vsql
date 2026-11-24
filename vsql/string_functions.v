@@ -56,6 +56,33 @@ fn register_string_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'LENGTH', [blob], false, func_octet_length, integer, false, true, [
 		vsql_length,
 	], [], false})!
+	// REVERSE (V404-11) has the type of its argument (see
+	// RoutineInvocation.compile).
+	conn.register_func(Func{'REVERSE', [varchar], false, func_reverse, varchar, false, true, [
+		vsql_reverse,
+	], [], false})!
+	conn.register_func(Func{'REVERSE', [varbinary], false, func_reverse_binary, varbinary, false, true, [
+		vsql_reverse,
+	], [], false})!
+	conn.register_func(Func{'REVERSE', [blob], false, func_reverse_binary, blob, false, true, [
+		vsql_reverse,
+	], [], false})!
+}
+
+// REVERSE(CHARACTER VARYING) CHARACTER VARYING
+//
+// The characters in the opposite order, by code point. A character that's made
+// of several code points (such as a letter followed by a combining accent)
+// isn't kept together.
+fn func_reverse(_ FunctionContext, args []Value) !Value {
+	return new_varchar_value(args[0].string_value().runes().reverse().string())
+}
+
+// REVERSE(BINARY VARYING) BINARY VARYING, and for a BINARY LARGE OBJECT
+//
+// The octets in the opposite order.
+fn func_reverse_binary(_ FunctionContext, args []Value) !Value {
+	return new_binary_string_value(args[0].typ.typ, args[0].string_value().bytes().reverse().bytestr())
 }
 
 // REPLACE(CHARACTER VARYING, CHARACTER VARYING, CHARACTER VARYING) CHARACTER VARYING

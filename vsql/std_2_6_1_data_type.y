@@ -143,6 +143,10 @@ national_character_string_type:
     $$.v = yy_box(parse_large_object_type('CHARACTER LARGE OBJECT', $3.v as string)!)
   }
 
+// BINARY and BINARY VARYING need Feature T021, and a BINARY VARYING must have
+// a <maximum length>.
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Conformance Rules, 25
 binary_string_type:
   BINARY {
     flag(mut yylex, 'T021')

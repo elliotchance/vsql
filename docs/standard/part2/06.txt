@@ -115,9 +115,9 @@
 6.1/GR/12.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/12.c              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/12.d              n/a          - - collations (F690)
-6.1/GR/13                n/a          - - binary strings (T021, T041)
-6.1/GR/13.a              n/a          - - binary strings (T021, T041)
-6.1/GR/13.b              n/a          - - binary strings (T021, T041)
+6.1/GR/13                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_data_types.sql
+6.1/GR/13.a              implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_data_types.sql
+6.1/GR/13.b              implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_data_types.sql
 6.1/GR/14                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/14.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/14.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
@@ -175,8 +175,8 @@
 6.1/CR/22                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql
 6.1/CR/23                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql
 6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
-6.1/CR/25                n/a          - - binary strings (T021)
-6.1/CR/26                n/a          - - binary strings (T021)
+6.1/CR/25                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
+6.1/CR/26                n/a          - - a BINARY VARYING must have a length (6.1/SR/6)
 6.1/CR/27                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
 6.1/CR/28                n/a          - - JSON data type (T801)
 # 6.2, <field definition>

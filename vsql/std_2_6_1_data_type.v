@@ -75,7 +75,10 @@ fn check_data_type(t Type) ! {
 // which must be greater than 0 (6.1 Syntax Rule 4).
 //
 // A length that ends with " OCTETS" is in octets (T062), otherwise it's in
-// characters.
+// characters. The length of a BINARY or BINARY VARYING is in octets, and is
+// part of its data type descriptor (with its name).
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, General Rules, 13
 fn parse_type_with_length(name string, length string) !Type {
 	if length.int() < 1 {
 		return sqlstate_42601('${name} length must be greater than 0')

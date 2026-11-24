@@ -126,7 +126,7 @@
 6.21/DE/3                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql FLOAT(p) is DOUBLE PRECISION
 6.21/DE/4                container    - -
 6.21/DE/4.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql octets are 4 for each character (UTF-8)
-6.21/DE/4.b              n/a          - - binary strings (T021)
+6.21/DE/4.b              implemented  vsql/std_11_5_information_schema.v tests/std_2_6_1_data_types.sql
 6.21/DE/4.c              n/a          - - reference types (S041)
 6.21/DE/4.d              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.21/DE/5                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql UTF8 in the INFORMATION_SCHEMA, with no collation (F690)

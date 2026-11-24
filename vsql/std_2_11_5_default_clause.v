@@ -98,9 +98,11 @@ fn check_default_clause(mut conn Connection, column Column) ! {
 // default of a character string, an exact numeric can't have an approximate
 // default or lose any significant digits, and a datetime must have the same
 // fields and time zone fields, and can't have more fractional seconds than the
-// column.
+// column. A binary string column must have a binary string literal that isn't
+// longer than its length.
 //
 // ISO/IEC 9075-2:2023, 11.5, <default clause>, Syntax Rules, 4.a
+// ISO/IEC 9075-2:2023, 11.5, <default clause>, Syntax Rules, 4.a.ii
 fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
 	return match t.typ {
 		.is_boolean {

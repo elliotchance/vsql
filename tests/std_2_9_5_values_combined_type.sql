@@ -98,3 +98,37 @@ VALUES COALESCE('a', 'abc');
 /* types */
 VALUES COALESCE(TIME '12:00:00', TIME '13:00:00.123');
 -- COL1: 12:00:00.000 (TIME(3) WITHOUT TIME ZONE)
+
+-- # A zero-length literal ('' or X'') is a fixed-length string with a length
+-- # of 0, not one with no maximum length, so the longest length is used.
+/* types */
+VALUES COALESCE('abcde', '');
+-- COL1: abcde (CHARACTER(5))
+
+/* types */
+VALUES COALESCE('', 'abcde');
+-- COL1:       (CHARACTER(5))
+
+/* types */
+VALUES CASE WHEN TRUE THEN 'abc' ELSE '' END;
+-- COL1: abc (CHARACTER(3))
+
+/* types */
+VALUES 'abc' UNION VALUES '';
+-- COL1: abc (CHARACTER(3))
+-- COL1:     (CHARACTER(3))
+
+/* types */
+VALUES '', '';
+-- COL1:  (CHARACTER)
+-- COL1:  (CHARACTER)
+
+/* types */
+VALUES '', CAST('abc' AS VARCHAR(5));
+-- COL1:  (CHARACTER VARYING(5))
+-- COL1: abc (CHARACTER VARYING(5))
+
+/* types */
+VALUES X'0102', X'';
+-- COL1: 0102 (BINARY(2))
+-- COL1: 0000 (BINARY(2))

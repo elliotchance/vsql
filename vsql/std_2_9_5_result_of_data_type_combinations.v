@@ -14,6 +14,19 @@ const exact_numeric_types = [SQLType.is_smallint, .is_integer, .is_bigint, .is_n
 const time_types = [SQLType.is_time_without_time_zone, .is_time_with_time_zone]
 const timestamp_types = [SQLType.is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
 
+// combined_string_length is the longest length of two character or binary
+// strings, or 0 if either has no maximum length. A fixed-length string can only
+// have a length of 0 if it's a zero-length literal ('' or X''), so it's a real
+// length.
+fn combined_string_length(t1 Type, t2 Type) int {
+	if (t1.size == 0 && t1.typ !in [.is_character, .is_binary])
+		|| (t2.size == 0 && t2.typ !in [.is_character, .is_binary]) {
+		return 0
+	}
+
+	return math.max(t1.size, t2.size)
+}
+
 // combine_types returns the type that two types can both be converted to, or
 // none if they aren't compatible. Combining more types is done one at a time,
 // since the result is the same in any order.
@@ -24,14 +37,15 @@ const timestamp_types = [SQLType.is_timestamp_without_time_zone, .is_timestamp_w
 fn combine_types(t1 Type, t2 Type) ?Type {
 	match true {
 		// The longest character string, which is only fixed-length if all of
-		// them are. A size of 0 means there is no maximum length. There's only
-		// one character set (UTF8) and collation.
+		// them are. A size of 0 means there is no maximum length, except for a
+		// fixed-length string, where it's the zero-length literal ''. There's
+		// only one character set (UTF8) and collation.
 		//
 		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.a
 		//
 		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.a.iii
 		t1.typ.is_string() && t2.typ.is_string() {
-			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
+			size := combined_string_length(t1, t2)
 			if t1.typ == .is_clob || t2.typ == .is_clob {
 				return Type{.is_clob, size, 0, false, false}
 			}
@@ -46,7 +60,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		//
 		// ISO/IEC 9075-2:2023, 9.5, Result of data type combinations, Syntax Rules, 3.b
 		t1.typ.is_binary_string() && t2.typ.is_binary_string() {
-			size := if t1.size == 0 || t2.size == 0 { 0 } else { math.max(t1.size, t2.size) }
+			size := combined_string_length(t1, t2)
 			if t1.typ == .is_blob || t2.typ == .is_blob {
 				return Type{.is_blob, size, 0, false, false}
 			}

@@ -248,8 +248,12 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 							xs << x
 						}
 
-						final_rows[i].data.set(key, eval_binary_set_function(aggregate.function_name,
-							ys, xs)!)
+						typ := binary_set_function_type(aggregate.function_name, [
+							arg.typ,
+							arg2.typ,
+						])
+						final_rows[i].data.set(key, eval_binary_set_function(mut o.conn, aggregate.function_name,
+							ys, xs, typ)!)
 						continue
 					}
 

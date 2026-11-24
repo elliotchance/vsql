@@ -165,8 +165,12 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		// the query that it's an aggregate of.
 		compile_filter(mut c, e.filter, e.pstr(c.params))!
 
-		return aggregate_result(mut c, AggregateFunction(e), set_function_type(func_name,
-			arg_types[0]), in_aggregate)!
+		typ := if func_name in binary_set_functions {
+			binary_set_function_type(func_name, arg_types)
+		} else {
+			set_function_type(func_name, arg_types[0])
+		}
+		return aggregate_result(mut c, AggregateFunction(e), typ, in_aggregate)!
 	}
 
 	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 21

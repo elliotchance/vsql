@@ -705,10 +705,25 @@ fn eval_variance(name string, values []Value) !Value {
 	return scaled_value(variance, [m.sx, m.sx], false)!
 }
 
+// binary_set_function_type is the declared type of the result of a binary set
+// function with arguments of the types. It's a DECFLOAT with the larger
+// precision of the arguments if either is a DECFLOAT (SR 9.c.ii.1), except for
+// REGR_COUNT, which counts rows (SR 9.c.i).
+//
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 9.c
+fn binary_set_function_type(name string, types []Type) Type {
+	if name != 'REGR_COUNT' && types.any(it.typ == .is_decfloat) {
+		return Type{.is_decfloat, decfloat_precision(types), 0, false, false}
+	}
+
+	return set_function_type(name, types[0])
+}
+
 // eval_binary_set_function is the result of a binary set function, such as
 // REGR_SLOPE(Y, X), for the pairs of (non-null) values of one group, where ys
 // are the values of the <dependent variable expression> and xs are the values
-// of the <independent variable expression>.
+// of the <independent variable expression>. typ is the type of the result
+// (see binary_set_function_type).
 //
 // CORR is the correlation coefficient, which has the same sign as the
 // covariance. The standard defines it as the square root of REGR_R2, which
@@ -716,7 +731,11 @@ fn eval_variance(name string, values []Value) !Value {
 // any other database returns.
 //
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 8.b and 8.c
-fn eval_binary_set_function(name string, ys []Value, xs []Value) !Value {
+fn eval_binary_set_function(mut conn Connection, name string, ys []Value, xs []Value, typ Type) !Value {
+	if typ.typ == .is_decfloat {
+		return eval_decfloat_binary_set_function(mut conn, name, ys, xs, typ)!
+	}
+
 	mut fxs := []f64{}
 	mut fys := []f64{}
 	for i, y in ys {
@@ -765,6 +784,127 @@ fn eval_binary_set_function(name string, ys []Value, xs []Value) !Value {
 		// REGR_INTERCEPT
 		else { scaled_value(m.mean_y - slope_x, [m.sy], true)! }
 	}
+}
+
+// eval_decfloat_binary_set_function is eval_binary_set_function when either
+// argument is a DECFLOAT, so the result is a DECFLOAT of the type typ (SR
+// 9.c.ii.1). The values are cast to DECFLOAT and the sums are exact, so only
+// the result is rounded, like eval_decfloat_set_function. That's why these are
+// the formulas of the standard, which lose precision in a DOUBLE PRECISION
+// (see Moments), but not when they're exact.
+//
+// CORR has the sign of the covariance (see eval_binary_set_function). A CORR,
+// REGR_R2, REGR_SLOPE or REGR_INTERCEPT that's out of the range of typ is the
+// null value, and any other is an exception.
+//
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 9.c.ii.1
+// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 8.c
+fn eval_decfloat_binary_set_function(mut conn Connection, name string, ys []Value, xs []Value, typ Type) !Value {
+	null := Value{
+		typ:     typ
+		is_null: true
+	}
+	if ys.len == 0 || (name == 'COVAR_SAMP' && ys.len == 1) {
+		return null
+	}
+
+	cy, ey := decfloat_coefficients(mut conn, name, ys)!
+	cx, ex := decfloat_coefficients(mut conn, name, xs)!
+	mut sx := big.zero_int
+	mut sy := big.zero_int
+	mut sxx := big.zero_int
+	mut syy := big.zero_int
+	mut sxy := big.zero_int
+	for i, x in cx {
+		y := cy[i]
+		sx += x
+		sy += y
+		sxx += x * x
+		syy += y * y
+		sxy += x * y
+	}
+
+	// N times REGR_SXX, REGR_SYY and REGR_SXY, which are exact integers.
+	n := big.integer_from_int(ys.len)
+	dxx := n * sxx - sx * sx
+	dyy := n * syy - sy * sy
+	dxy := n * sxy - sx * sy
+
+	// Every x (or every y) is the same, so there's no line that fits.
+	if dxx.signum == 0 && name in ['CORR', 'REGR_R2', 'REGR_SLOPE', 'REGR_INTERCEPT'] {
+		return null
+	}
+	if dyy.signum == 0 && name == 'CORR' {
+		return null
+	}
+
+	p := typ.size
+	result := match name {
+		'REGR_SXX' {
+			DecFloat{dxx, 2 * ex}.divide(DecFloat{n, 0}, p)!
+		}
+		'REGR_SYY' {
+			DecFloat{dyy, 2 * ey}.divide(DecFloat{n, 0}, p)!
+		}
+		'REGR_SXY' {
+			DecFloat{dxy, ex + ey}.divide(DecFloat{n, 0}, p)!
+		}
+		'REGR_AVGX' {
+			DecFloat{sx, ex}.divide(DecFloat{n, 0}, p)!
+		}
+		'REGR_AVGY' {
+			DecFloat{sy, ey}.divide(DecFloat{n, 0}, p)!
+		}
+		'COVAR_POP' {
+			DecFloat{dxy, ex + ey}.divide(DecFloat{n * n, 0}, p)!
+		}
+		'COVAR_SAMP' {
+			DecFloat{dxy, ex + ey}.divide(DecFloat{n * (n - big.one_int), 0}, p)!
+		}
+		// The square root of REGR_R2, with a few more digits, and the sign of
+		// the covariance.
+		'CORR' {
+			r := DecFloat{dxy * dxy, 0}.divide(DecFloat{dxx * dyy, 0}, p + 5)!.sqrt(p)!
+			if dxy.signum < 0 { r.neg() } else { r }
+		}
+		// REGR_R2 is 1 when every y is the same (GR 8.c.xi.2).
+		'REGR_R2' {
+			if dyy.signum == 0 {
+				DecFloat{big.one_int, 0}
+			} else {
+				DecFloat{dxy * dxy, 0}.divide(DecFloat{dxx * dyy, 0}, p)!
+			}
+		}
+		'REGR_SLOPE' {
+			DecFloat{dxy, ex + ey}.divide(DecFloat{dxx, 2 * ex}, p) or { return null }
+		}
+		// REGR_INTERCEPT is AVG(y) - REGR_SLOPE * AVG(x), which is
+		// (Sy * Sxx - Sx * Sxy) / (N * Sxx - Sx * Sx).
+		else {
+			DecFloat{sy * sxx - sx * sxy, ey + 2 * ex}.divide(DecFloat{dxx, 2 * ex}, p) or {
+				return null
+			}
+		}
+	}
+
+	return new_decfloat_value(typ, result)
+}
+
+// decfloat_coefficients is the values cast to DECFLOAT, as coefficients that
+// all have the same exponent (the smallest one), which is also returned.
+fn decfloat_coefficients(mut conn Connection, name string, values []Value) !([]big.Integer, int) {
+	decfloat := Type{.is_decfloat, max_decfloat_precision, 0, false, false}
+	mut ds := []DecFloat{}
+	for value in values {
+		ds << cast(mut conn, name, value, decfloat)!.decfloat_value()
+	}
+
+	mut e := ds[0].exponent
+	for d in ds {
+		e = int_min(e, d.exponent)
+	}
+
+	return ds.map(it.coefficient * pow10(it.exponent - e)), e
 }
 
 // ListaggSetFunction is a <listagg set function>, such as

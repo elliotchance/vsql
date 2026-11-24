@@ -9,7 +9,9 @@ Statistical functions are aggregate functions (see
 :doc:`functions-aggregate`) that describe
 the spread of a set of numbers, or the relationship between two sets of
 numbers. They accept any number, which is converted to a ``DOUBLE PRECISION``,
-and they return a ``DOUBLE PRECISION`` (except ``REGR_COUNT``). They can't be
+and they return a ``DOUBLE PRECISION`` (except ``REGR_COUNT``). If either
+argument is a ``DECFLOAT``, both are converted to a ``DECFLOAT`` instead, and
+the result is a ``DECFLOAT`` with the larger precision of the two. They can't be
 used with ``DISTINCT`` or ``ALL`` (a ``42601`` error).
 
 The functions with two arguments, ``FUNCTION(Y, X)``, treat each row as a
@@ -27,7 +29,8 @@ error, except for ``CORR``, ``REGR_R2``, ``REGR_SLOPE`` and
 
 The results are calculated so that they're still accurate when the values are
 very large or very close together, which can make them slightly different
-(in the last digits) from the formulas below.
+(in the last digits) from the formulas below. For a ``DECFLOAT``, the sums
+are exact, so only the result is rounded.
 
 The examples use this table:
 
@@ -43,6 +46,7 @@ CORR
 .. code-block:: sql
 
    CORR(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   CORR(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``CORR(Y, X)`` is the correlation coefficient (Pearson's), between -1 and 1. It
 is 1 when the points are on a line that goes up, -1 when they're on a line that
@@ -70,6 +74,7 @@ COVAR_POP
 .. code-block:: sql
 
    COVAR_POP(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   COVAR_POP(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``COVAR_POP(Y, X)`` is the population covariance, ``REGR_SXY / N`` where ``N``
 is the number of rows. It's positive when ``Y`` tends to be larger when ``X`` is
@@ -93,6 +98,7 @@ COVAR_SAMP
 .. code-block:: sql
 
    COVAR_SAMP(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   COVAR_SAMP(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``COVAR_SAMP(Y, X)`` is the sample covariance, ``REGR_SXY / (N - 1)`` where
 ``N`` is the number of rows. The result is ``NULL`` if there are less than two
@@ -116,6 +122,7 @@ REGR_AVGX
 .. code-block:: sql
 
    REGR_AVGX(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_AVGX(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_AVGX(Y, X)`` is the average of ``X``. Unlike ``AVG(X)``, it ignores the
 rows where ``Y`` is ``NULL``.
@@ -138,6 +145,7 @@ REGR_AVGY
 .. code-block:: sql
 
    REGR_AVGY(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_AVGY(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_AVGY(Y, X)`` is the average of ``Y``. Unlike ``AVG(Y)``, it ignores the
 rows where ``X`` is ``NULL``.
@@ -182,6 +190,7 @@ REGR_INTERCEPT
 .. code-block:: sql
 
    REGR_INTERCEPT(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_INTERCEPT(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_INTERCEPT(Y, X)`` is the value of ``Y`` where the line that fits the
 points crosses ``X = 0``, ``REGR_AVGY - REGR_SLOPE * REGR_AVGX``.
@@ -207,6 +216,7 @@ REGR_R2
 .. code-block:: sql
 
    REGR_R2(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_R2(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_R2(Y, X)`` is the coefficient of determination, between 0 and 1. It's
 how well the line fits the points, from 0 (not at all) to 1 (every point is on
@@ -236,6 +246,7 @@ REGR_SLOPE
 .. code-block:: sql
 
    REGR_SLOPE(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_SLOPE(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_SLOPE(Y, X)`` is the slope of the line that fits the points, which is
 how much ``Y`` increases for each 1 that ``X`` increases, ``REGR_SXY /
@@ -265,6 +276,7 @@ REGR_SXX
 .. code-block:: sql
 
    REGR_SXX(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_SXX(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_SXX(Y, X)`` is the sum of the squares of the differences between each
 ``X`` and the average of ``X``, ``SUM(X * X) - SUM(X) * SUM(X) / N`` where ``N``
@@ -288,6 +300,7 @@ REGR_SXY
 .. code-block:: sql
 
    REGR_SXY(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_SXY(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_SXY(Y, X)`` is the sum of the products of the differences between each
 ``X`` and the average of ``X``, and each ``Y`` and the average of ``Y``,
@@ -311,6 +324,7 @@ REGR_SYY
 .. code-block:: sql
 
    REGR_SYY(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   REGR_SYY(DECFLOAT(p), DECFLOAT(p)) DECFLOAT(p)
 
 ``REGR_SYY(Y, X)`` is the sum of the squares of the differences between each
 ``Y`` and the average of ``Y``, ``SUM(Y * Y) - SUM(Y) * SUM(Y) / N`` where ``N``

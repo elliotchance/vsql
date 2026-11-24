@@ -1681,8 +1681,7 @@ SELECT MAX(price) FILTER (WHERE qty >= 10) FROM products;
 
 -- # MEDIAN
 -- # =MEDIAN(C2:C5)
-SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price)
-FROM products;
+SELECT MEDIAN(price) FROM products;
 -- COL1: 2.25e0
 
 -- # MIN

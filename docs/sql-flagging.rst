@@ -454,6 +454,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V405-02``
      - ``PRODUCT``.
 
+   * - ``V405-03``
+     - ``MEDIAN``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

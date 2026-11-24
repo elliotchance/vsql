@@ -134,6 +134,10 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	if !found_func.is_agg && (e.distinct || e.filter != none) {
 		return sqlstate_42601('${func_name} is not an aggregate function')
 	}
+	// The median of the distinct values isn't allowed, like in Oracle (V405-03).
+	if found_func.name == 'MEDIAN' && e.distinct {
+		return sqlstate_42601('MEDIAN cannot be used with DISTINCT')
+	}
 	if !found_func.is_deterministic && !found_func.is_agg {
 		c.check_deterministic('non-deterministic function ${func_name}')!
 		c.conn.vary_subqueries(0)

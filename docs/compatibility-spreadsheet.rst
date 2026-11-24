@@ -6856,17 +6856,16 @@ Returns the largest value in the rows that meet conditions.
 MEDIAN
 ^^^^^^
 
-🔧 vsql has no ``MEDIAN`` function, but a query does the same thing.
+✅ vsql has the same function: ``MEDIAN``.
 
 Returns the middle value.
 
 .. code-block:: sql
 
   -- =MEDIAN(number1)
-  SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY /*number1*/) FROM /*table*/;
+  SELECT MEDIAN(/*number1*/) FROM /*table*/;
   -- =MEDIAN(C2:C5)
-  SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price)
-  FROM products;
+  SELECT MEDIAN(price) FROM products;
   -- COL1: 2.25e0
 
 MIN

@@ -1066,14 +1066,16 @@ Returns the middle value of a column, or the average of the two in the middle. O
 .. code-block:: sql
 
   -- median(X)
-  SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY CAST(/*X*/ AS DOUBLE PRECISION)) FROM /*table*/;
+  SELECT MEDIAN(/*X*/) FROM /*table*/;
   -- SELECT median(price) FROM products;
-  SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY CAST(price AS DOUBLE PRECISION)) FROM products;
+  SELECT MEDIAN(price) FROM products;
   -- COL1: 2.25e0
 
-vsql returns a value between two values with the type of the sort key, so
-without the cast the result would be cut to the 2 decimal places of
-``price``.
+``MEDIAN`` is a vsql extension. The standard equivalent is
+``PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY CAST(X AS DOUBLE PRECISION))``:
+vsql's ``PERCENTILE_CONT`` returns a value between two values with the type of
+the sort key, so without the cast the result would be cut to the 2 decimal
+places of ``price``.
 
 percentile
 ^^^^^^^^^^

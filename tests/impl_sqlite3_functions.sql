@@ -323,7 +323,7 @@ SELECT LISTAGG(sku, '; ') WITHIN GROUP (ORDER BY price DESC) FROM products;
 
 -- # median
 -- # SELECT median(price) FROM products;
-SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY CAST(price AS DOUBLE PRECISION)) FROM products;
+SELECT MEDIAN(price) FROM products;
 -- COL1: 2.25e0
 
 -- # percentile

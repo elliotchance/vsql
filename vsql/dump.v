@@ -138,9 +138,6 @@ struct DumpSchema {
 	// other than the index of a UNIQUE constraint (which is made by its CREATE
 	// TABLE). An index is in the output with its table.
 	indexes []Index
-	// all_indexes are all of the indexes of the schema, including the ones that
-	// aren't in indexes.
-	all_indexes []Index
 }
 
 // DumpTable is a table in the output, and the FOREIGN KEYs that are part of its
@@ -181,51 +178,13 @@ fn dump_order(tables []Table) []Table {
 // references itself can't be sure that the rows come out in an order where each
 // one references a row before it, so it can only be part of the CREATE TABLE
 // when there are no rows (schema_only).
-//
-// The CREATE TABLE also makes the index that the FOREIGN KEY uses (see
-// build_constraint_indexes): the index of a UNIQUE constraint on its columns,
-// otherwise its own index, which is left out of the CREATE INDEXes. So that the
-// indexes are the same, the FOREIGN KEY is added later, after the CREATE
-// INDEXes of the table, when it uses another index instead of its own, or when
-// it has its own index as well as the index of a UNIQUE constraint.
 fn (s DumpSchema) is_inline_foreign_key(table Table, key ForeignKey, written map[string]bool, schema_only bool) bool {
 	referenced := key.referenced_table.storage_id()
 	if referenced == table.name.storage_id() {
-		if !schema_only {
-			return false
-		}
-	} else if referenced !in written {
-		return false
+		return schema_only
 	}
 
-	mut columns := key.columns.clone()
-	columns.sort()
-	mut has_own_index := false
-	mut has_constraint_index := false
-	mut has_other_index := false
-	for index in s.all_indexes {
-		if index.table_name.entity_name != table.name.entity_name
-			|| index.columns.len < columns.len {
-			continue
-		}
-		mut leading := index.columns[..columns.len].map(it.name)
-		leading.sort()
-		if is_own_foreign_key_index(key, index) {
-			has_own_index = true
-		} else if leading == columns {
-			if table.is_constraint_index(index) {
-				has_constraint_index = true
-			} else {
-				has_other_index = true
-			}
-		}
-	}
-
-	return if has_own_index {
-		!has_constraint_index
-	} else {
-		has_constraint_index || !has_other_index
-	}
+	return referenced in written
 }
 
 // table_indexes are the indexes of a table, by name.
@@ -306,16 +265,13 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		mut indexes := []Index{}
 		for table in tables {
 			for index in schema_indexes {
-				// The index that a FOREIGN KEY made for itself also needs the
-				// FOREIGN KEY to be selected, otherwise nothing would use it.
 				if index.table_name.entity_name == table.name.entity_name
-					&& !table.is_constraint_index(index) && (!table.is_foreign_key_index(index)
-					|| selection.selected(schema.name, index.name.entity_name)) {
+					&& !table.is_constraint_index(index) {
 					indexes << index
 				}
 			}
 		}
-		objects << DumpSchema{schema, sequences, tables, indexes, schema_indexes}
+		objects << DumpSchema{schema, sequences, tables, indexes}
 	}
 
 	for pattern in options.include {
@@ -412,9 +368,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 
 		for dump_table in dump_tables[i] {
 			table := dump_table.table
-			indexes := object.table_indexes(table).filter(fn [dump_table] (index Index) bool {
-				return !dump_table.foreign_keys.any(is_own_foreign_key_index(it, index))
-			})
+			indexes := object.table_indexes(table)
 			if !options.data_only {
 				// A column in a CHECK or generation expression can be qualified with
 				// just the table name, which is only found in the table's schema if

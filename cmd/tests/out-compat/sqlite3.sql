@@ -16,7 +16,6 @@ INSERT INTO "foo_child" ("id", "pid", "Mixed Case", "order") VALUES (1, 1, 'x', 
 INSERT INTO "foo_child" ("id", "pid", "Mixed Case", "order") VALUES (2, NULL, NULL, 4);
 DELETE FROM sqlite_sequence WHERE name = 'foo_child';
 INSERT INTO sqlite_sequence (name, seq) VALUES ('foo_child', 2);
-CREATE INDEX "foo_fk1" ON "foo_child" ("pid");
 
 CREATE TABLE "foo_parent" (
   "id" INTEGER NOT NULL,

@@ -64,11 +64,10 @@ if grep 'CHILD\|SEQ1\|BAZ\|NOTHING' $DIR/out.sql; then exit 1; fi
 $VSQL out -include 'FOO.*' -exclude 'foo.fk1' -exclude '*.seq?' $VSQL_FILE > $DIR/out.sql
 grep 'CREATE TABLE "FOO"."CHILD"' $DIR/out.sql
 if grep 'FK1\|SEQ1\|BAZ' $DIR/out.sql; then exit 1; fi
-# An index is in the output with its table. The index that the FOREIGN KEY made
-# also needs the FOREIGN KEY, which is left out here.
+# An index is in the output with its table.
 grep -x 'CREATE INDEX "PARENT_NAME" ON "FOO"."PARENT" ("NAME");' $DIR/out.sql
 # The FOREIGN KEY is part of the CREATE TABLE of the child, which comes after
-# the parent and makes the index.
+# the parent. A FOREIGN KEY doesn't make an index.
 $VSQL out $VSQL_FILE > $DIR/out.sql
 grep -x '  CONSTRAINT "FK1" FOREIGN KEY ("PID") REFERENCES "FOO"."PARENT" ("ID")' $DIR/out.sql
 if grep 'CREATE INDEX "FK1"\|ADD CONSTRAINT' $DIR/out.sql; then exit 1; fi
@@ -80,7 +79,7 @@ $VSQL out -schema-only $VSQL_FILE | grep -x 'CREATE INDEX "PARENT_NAME" ON "FOO"
 # A foreign key isn't left out because its table is.
 $VSQL out -exclude 'foo.parent' $VSQL_FILE > $DIR/out.sql
 grep 'ADD CONSTRAINT "FK1"' $DIR/out.sql
-grep -x 'CREATE INDEX "FK1" ON "FOO"."CHILD" ("PID");' $DIR/out.sql
+if grep 'CREATE INDEX "FK1"' $DIR/out.sql; then exit 1; fi
 
 # The output of a whole file loads again.
 $VSQL out $VSQL_FILE > $DIR/out.sql

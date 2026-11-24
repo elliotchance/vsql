@@ -211,12 +211,9 @@ fn test_dump_options() {
 	parent := 'CREATE TABLE "FOO"."PARENT"'
 	baz := 'CREATE TABLE "PUBLIC"."BAZ"'
 	fk1 := 'ALTER TABLE "FOO"."CHILD" ADD CONSTRAINT "FK1" FOREIGN KEY'
-	// The FOREIGN KEY made an index, which is in the output with its table, when
-	// the FOREIGN KEY is too.
-	fk1_index := 'CREATE INDEX "FK1" ON "FOO"."CHILD"'
 
 	// The parent comes first, so the FOREIGN KEY is part of the CREATE TABLE of
-	// the child, which also makes its index.
+	// the child.
 	assert dump_with(mut db)! == [schema_foo, seq1, parent, child, schema_nothing, baz]
 	// "*.*" is the same as leaving it out.
 	assert dump_with(mut db, include: ['*.*'])! == [schema_foo, seq1, parent, child, schema_nothing,
@@ -228,8 +225,7 @@ fn test_dump_options() {
 	assert dump_with(mut db, include: ['public.*', 'foo.child'])! == [schema_foo, child, baz]
 	// The FOREIGN KEY is added at the end when the table that it references isn't
 	// in the output.
-	assert dump_with(mut db, include: ['foo.child', 'foo.fk1'])! == [schema_foo, child, fk1_index,
-		fk1]
+	assert dump_with(mut db, include: ['foo.child', 'foo.fk1'])! == [schema_foo, child, fk1]
 	// exclude is taken from what's included, and it doesn't have to match anything.
 	assert dump_with(mut db, include: ['foo.*'], exclude: ['foo.fk1', '*.seq1', 'x.y'])! == [
 		schema_foo,

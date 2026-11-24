@@ -528,8 +528,7 @@ The options are:
   ``-schema-only``.
 - ``-exclude``: Leave out the objects that match this pattern, even if they were
   included. It can be used more than once. An index is in the output with its
-  table, so it's matched by the name of the table. The index that a ``FOREIGN
-  KEY`` made for itself also needs the ``FOREIGN KEY`` to be in the output.
+  table, so it's matched by the name of the table.
 - ``-file``: Write to this file instead of stdout. If the export fails, the file
   isn't changed.
 - ``-format``: ``sql`` (the default), ``csv``, ``tsv`` or ``json``. All except

@@ -54,15 +54,23 @@ columns of the constraint. It's created and dropped with the constraint, and it
 can't be dropped with ``DROP INDEX``. The constraint is checked with the index,
 rather than by reading every row of the table.
 
-A ``FOREIGN KEY`` uses an index whose first columns are its columns (in any
-order) to find the rows that reference a row, such as when the row is deleted.
-If the table doesn't have one, it gets one with the same name as the
-``FOREIGN KEY``. That index can't be dropped while it's the only one that the
-``FOREIGN KEY`` can use, but it's kept as an ordinary index when the
-``FOREIGN KEY`` is dropped. The referenced row is found by its ``PRIMARY KEY``,
-or the index of its ``UNIQUE`` constraint.
+A ``FOREIGN KEY`` doesn't have its own index. To find the rows that reference a
+row (when the row is deleted, or its key is updated) it uses any index whose
+first columns are its columns, in any order. That can be an index with more
+columns, the index of a ``UNIQUE`` constraint, or an index created after the
+``FOREIGN KEY``, and it can be dropped like any other index. Without one, every
+row of the table is read instead. For example:
 
-So a new constraint can't have the same name as an index in the schema (that's
+.. code-block:: sql
+
+   CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT REFERENCES customers);
+   CREATE INDEX orders_customer ON orders (customer_id, id);
+
+An index isn't needed to insert or update a row with a ``FOREIGN KEY``, the
+referenced row is found by its ``PRIMARY KEY``, or the index of its ``UNIQUE``
+constraint.
+
+So a new ``UNIQUE`` constraint can't have the same name as an index in the schema (that's
 a ``42P07`` error), and a constraint without a name gets a name that isn't the
 name of an index. A table from an older version of vsql gets the indexes of its
 constraints the first time they're needed, which raises the *Write Version* of

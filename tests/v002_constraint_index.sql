@@ -90,55 +90,92 @@ DROP INDEX t_u;
 -- msg: ALTER TABLE 1
 -- error 42704: no such index: ":memory:".PUBLIC.T_U
 
--- # A FOREIGN KEY uses an index whose first columns are its columns, to find
--- # the rows that reference a row. It gets one with its name if there isn't
--- # one, which is kept when the FOREIGN KEY is dropped.
-/* extensions V001-01 V003-01 V105-02 */
+-- # A FOREIGN KEY doesn't need an index, and doesn't get one. Without one, the
+-- # rows that reference a row are found by reading every row of the table,
+-- # which is only needed when a referenced row is deleted, or its key is
+-- # updated.
+/* extensions V003-01 */
 CREATE TABLE parent (id INT PRIMARY KEY);
-CREATE TABLE child (id INT PRIMARY KEY, p INT CONSTRAINT child_p REFERENCES parent);
-INSERT INTO parent (id) VALUES (1), (2);
-INSERT INTO child (id, p) VALUES (1, 1), (2, 1);
-EXPLAIN SELECT * FROM child WHERE p = 1;
+CREATE TABLE child (id INT PRIMARY KEY, p INT CONSTRAINT child_p REFERENCES parent ON UPDATE CASCADE);
+INSERT INTO parent (id) VALUES (1), (2), (3);
+INSERT INTO child (id, p) VALUES (1, 1), (2, 1), (3, 2), (4, NULL);
 DROP INDEX child_p;
 DELETE FROM parent WHERE id = 1;
-DELETE FROM parent WHERE id = 2;
-ALTER TABLE child DROP CONSTRAINT child_p;
-DROP INDEX child_p;
+DELETE FROM parent WHERE id = 3;
+UPDATE parent SET id = 4 WHERE id = 2;
+START TRANSACTION;
+DELETE FROM child WHERE id = 3;
+DELETE FROM parent WHERE id = 4;
+COMMIT;
+SELECT * FROM child;
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
--- msg: INSERT 2
--- msg: INSERT 2
--- EXPLAIN: INDEX ":memory:".PUBLIC.CHILD_P ON ":memory:".PUBLIC.CHILD (ID INTEGER NOT NULL, P INTEGER) RANGE P = 1
--- EXPLAIN: EXPR (":memory:".PUBLIC.CHILD.ID INTEGER NOT NULL, ":memory:".PUBLIC.CHILD.P INTEGER)
--- error 2BP01: dependent objects still exist on constraint CHILD_P on ":memory:".PUBLIC.CHILD
+-- msg: INSERT 3
+-- msg: INSERT 4
+-- error 42704: no such index: ":memory:".PUBLIC.CHILD_P
 -- error 23503: violates foreign key constraint: FOREIGN KEY (P) REFERENCES ":memory:".PUBLIC.PARENT (ID) on ":memory:".PUBLIC.CHILD
 -- msg: DELETE 1
--- msg: ALTER TABLE 1
--- msg: DROP INDEX 1
+-- msg: UPDATE 1
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- msg: DELETE 1
+-- msg: COMMIT
+-- ID: 1 P: 1
+-- ID: 2 P: 1
+-- ID: 4 P: NULL
 
--- # An index that's already there is used, and it can be dropped when another
--- # index can be used instead.
+-- # A FOREIGN KEY uses any index whose first columns are its columns (in any
+-- # order), including one with more columns, whether it was created before or
+-- # after the FOREIGN KEY. The index can still be dropped.
 /* extensions V002-01 V003-01 */
 CREATE TABLE parent (a INT, b INT, PRIMARY KEY (a, b));
-CREATE TABLE child (x INT, a INT, b INT);
+CREATE TABLE child (id INT PRIMARY KEY, x INT, a INT, b INT);
 CREATE INDEX child_x ON child (x);
 CREATE INDEX child_ba ON child (b DESC, a, x);
 ALTER TABLE child ADD CONSTRAINT child_fk FOREIGN KEY (a, b) REFERENCES parent;
-DROP INDEX child_fk;
-CREATE INDEX child_ab ON child (a, b);
-DROP INDEX child_x;
-DROP INDEX child_ab;
+INSERT INTO parent (a, b) VALUES (1, 1), (1, 2), (2, 2);
+INSERT INTO child (id, x, a, b) VALUES (1, 1, 1, 1), (2, 2, 1, 2);
+DELETE FROM parent WHERE a = 1 AND b = 2;
 DROP INDEX child_ba;
+CREATE INDEX child_ab ON child (a, b, id);
+DELETE FROM parent WHERE a = 1 AND b = 1;
+DELETE FROM parent WHERE a = 2 AND b = 2;
+DROP INDEX child_ab;
+DELETE FROM parent WHERE a = 1 AND b = 2;
+DROP INDEX child_x;
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
 -- msg: CREATE INDEX 1
 -- msg: CREATE INDEX 1
 -- msg: ALTER TABLE 1
--- error 42704: no such index: ":memory:".PUBLIC.CHILD_FK
+-- msg: INSERT 3
+-- msg: INSERT 2
+-- error 23503: violates foreign key constraint: FOREIGN KEY (A, B) REFERENCES ":memory:".PUBLIC.PARENT (A, B) on ":memory:".PUBLIC.CHILD
+-- msg: DROP INDEX 1
 -- msg: CREATE INDEX 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (A, B) REFERENCES ":memory:".PUBLIC.PARENT (A, B) on ":memory:".PUBLIC.CHILD
+-- msg: DELETE 1
 -- msg: DROP INDEX 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (A, B) REFERENCES ":memory:".PUBLIC.PARENT (A, B) on ":memory:".PUBLIC.CHILD
 -- msg: DROP INDEX 1
--- error 2BP01: dependent objects still exist on constraint CHILD_FK on ":memory:".PUBLIC.CHILD
+
+-- # A key that the columns of the FOREIGN KEY can't hold can't be referenced,
+-- # so the index isn't read for it.
+/* extensions V002-01 */
+CREATE TABLE parent (id INT PRIMARY KEY);
+CREATE TABLE child (p SMALLINT REFERENCES parent ON DELETE CASCADE);
+CREATE INDEX child_p ON child (p);
+INSERT INTO parent (id) VALUES (1), (100000);
+INSERT INTO child (p) VALUES (1);
+DELETE FROM parent WHERE id = 100000;
+SELECT * FROM child;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE INDEX 1
+-- msg: INSERT 2
+-- msg: INSERT 1
+-- msg: DELETE 1
+-- P: 1
 
 -- # The rows that reference a row are found with the index, including with a
 -- # DESC column and the other columns of the key in another order.

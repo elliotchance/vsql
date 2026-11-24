@@ -19,7 +19,9 @@ the directory in ``VSQL_INSTALL_DIR``):
    curl -fsSL https://raw.githubusercontent.com/elliotchance/vsql/main/install.sh | sh
 
 It only needs ``curl`` and ``unzip``. It installs only the command, not the
-library (see :doc:`language-c`).
+library (see :doc:`language-c`). A release's zips are added a while after it's
+published (when they've been built), so it installs the newest release that has
+a zip for your OS and architecture.
 
 Otherwise, download the zip for your OS and architecture (such as
 ``vsql-<version>-macos-arm64.zip`` for Apple silicon, or

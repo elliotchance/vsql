@@ -729,7 +729,9 @@ same OS and architecture, so that it can be kept up to date:
    Downloading vsql-v1.6.78-macos-arm64.zip
    Replaced /Users/me/.local/bin/vsql with vsql v1.6.78
 
-It does nothing if it's already the latest release. It needs ``curl``, which
+The latest release is the newest one that has a zip for the OS and architecture
+(a release's zips are added a while after it's published). It does nothing if
+it's already the latest release. It needs ``curl``, which
 macOS, Windows 10 and most Linux distributions include, and it must be able to
 write to the directory of the binary (use ``sudo`` for one that's installed in
 ``/usr/local/bin``). Only the ``vsql`` binary is replaced, not the library in

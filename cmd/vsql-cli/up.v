@@ -2,6 +2,7 @@ module main
 
 import cli
 import compress.szip
+import json2
 import os
 import vsql
 
@@ -20,15 +21,52 @@ fn register_up_command(mut cmd cli.Command) {
 	cmd.add_command(up_cmd)
 }
 
-// releases_url is where the releases are downloaded from. VSQL_RELEASES_URL
-// replaces it for the tests (see cmd/tests/up.sh).
-fn releases_url() string {
-	return os.getenv_opt('VSQL_RELEASES_URL') or { 'https://github.com/elliotchance/vsql/releases' }
+// releases_api_url lists the releases, newest first, with the zips of each one.
+// VSQL_RELEASES_API_URL replaces it for the tests (see cmd/tests/up.sh).
+fn releases_api_url() string {
+	return os.getenv_opt('VSQL_RELEASES_API_URL') or {
+		'https://api.github.com/repos/elliotchance/vsql/releases?per_page=100'
+	}
+}
+
+// A Release is the part of a release in the GitHub API that's needed to find
+// its zip.
+struct Release {
+	tag_name string
+	assets   []ReleaseAsset
+}
+
+struct ReleaseAsset {
+	name                 string
+	browser_download_url string
+}
+
+// latest_release returns the version and the zip URL of the newest release
+// that has a zip for this OS and CPU. A release is published as soon as its tag
+// is pushed, and its zips are added when they're built (which can take a while,
+// or fail), so the latest release may not have one yet.
+fn latest_release(curl string, tmp string) !(string, string) {
+	path := os.join_path(tmp, 'releases.json')
+	run_curl(curl, ['-fsSL', '-o', path, releases_api_url()])!
+	text := os.read_file(path)!
+	releases := json2.decode[[]Release](text) or {
+		return error('cannot read the releases: ${err}')
+	}
+	for release in releases {
+		name := 'vsql-${release.tag_name}-${release_platform()}.zip'
+		for asset in release.assets {
+			if asset.name == name {
+				return release.tag_name, asset.browser_download_url
+			}
+		}
+	}
+
+	return error("there's no release with a zip for ${release_platform()} yet")
 }
 
 // up_command downloads the zip of the latest release for this OS and CPU (the
-// same one as install.sh) with curl, and replaces the running binary with the
-// one in it.
+// same one as install.sh, see latest_release) with curl, and replaces the
+// running binary with the one in it.
 fn up_command(cmd cli.Command) ! {
 	force := cmd.flags.get_bool('force') or { false }
 	current := vsql.build_version()
@@ -46,10 +84,7 @@ fn up_command(cmd cli.Command) ! {
 		os.rmdir_all(tmp) or {}
 	}
 
-	// The latest release redirects to its tag, such as .../releases/tag/v1.6.77.
-	url := run_curl(curl, ['-fsSL', '-o', os.join_path(tmp, 'latest'), '-w', '%{url_effective}',
-		'${releases_url()}/latest'])!
-	version := url.all_after_last('/')
+	version, url := latest_release(curl, tmp)!
 	if version == current && !force {
 		println('vsql ${current} is already the latest release')
 		return
@@ -58,7 +93,7 @@ fn up_command(cmd cli.Command) ! {
 	name := 'vsql-${version}-${release_platform()}'
 	zip := os.join_path(tmp, '${name}.zip')
 	println('Downloading ${name}.zip')
-	run_curl(curl, ['-fsSL', '-o', zip, '${releases_url()}/download/${version}/${name}.zip'])!
+	run_curl(curl, ['-fsSL', '-o', zip, url])!
 	szip.extract_zip_to_dir(zip, tmp) or { return error('cannot unzip ${name}.zip: ${err}') }
 
 	exe := os.executable()

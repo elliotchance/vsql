@@ -67,6 +67,42 @@ fn register_string_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'REVERSE', [blob], false, func_reverse_binary, blob, false, true, [
 		vsql_reverse,
 	], [], false})!
+	// STARTS_WITH and ENDS_WITH (V404-12 and V404-13) compare character strings
+	// or binary strings (see func_starts_with), like POSITION.
+	boolean := Type{SQLType.is_boolean, 0, 0, false, false}
+	for name, f in {
+		'STARTS_WITH': func_starts_with
+		'ENDS_WITH':   func_ends_with
+	} {
+		features := [if name == 'STARTS_WITH' { vsql_starts_with } else { vsql_ends_with }]
+		conn.register_func(Func{name, [varchar, varchar], false, f, boolean, false, true, features, [], false})!
+		for a in [varbinary, blob] {
+			for b in [varbinary, blob] {
+				conn.register_func(Func{name, [a, b], false, f, boolean, false, true, features, [], false})!
+			}
+		}
+	}
+}
+
+// STARTS_WITH(CHARACTER VARYING, CHARACTER VARYING) BOOLEAN, and for binary
+// strings
+//
+// TRUE if the string starts with the prefix. No character is special (unlike
+// LIKE), and nothing is padded (unlike =), so the padding of a CHARACTER is
+// compared like any other character. An empty prefix is always TRUE. Comparing
+// the UTF-8 bytes is the same as comparing the code points, because a
+// character can't start in the middle of another one. A binary string is
+// compared by octet.
+fn func_starts_with(_ FunctionContext, args []Value) !Value {
+	return new_boolean_value(args[0].string_value().starts_with(args[1].string_value()))
+}
+
+// ENDS_WITH(CHARACTER VARYING, CHARACTER VARYING) BOOLEAN, and for binary
+// strings
+//
+// TRUE if the string ends with the suffix, see func_starts_with.
+fn func_ends_with(_ FunctionContext, args []Value) !Value {
+	return new_boolean_value(args[0].string_value().ends_with(args[1].string_value()))
 }
 
 // REVERSE(CHARACTER VARYING) CHARACTER VARYING

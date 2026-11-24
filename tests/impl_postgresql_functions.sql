@@ -443,7 +443,7 @@ VALUES SPLIT_PART('abc~@~def~@~ghi', '~@~', 2);
 
 -- # starts_with
 -- # starts_with('alphabet', 'alph')
-VALUES SUBSTRING('alphabet' FROM 1 FOR CHAR_LENGTH('alph')) = 'alph';
+VALUES STARTS_WITH('alphabet', 'alph');
 -- COL1: TRUE
 
 -- # strpos

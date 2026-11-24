@@ -1350,12 +1350,12 @@ Tests if a string starts with a prefix.
 .. code-block:: sql
 
   -- starts_with(string text, prefix text) → boolean
-  VALUES SUBSTRING(/*string*/ FROM 1 FOR CHAR_LENGTH(/*prefix*/)) = /*prefix*/;
+  VALUES STARTS_WITH(/*string*/, /*prefix*/);
   -- starts_with('alphabet', 'alph')
-  VALUES SUBSTRING('alphabet' FROM 1 FOR CHAR_LENGTH('alph')) = 'alph';
+  VALUES STARTS_WITH('alphabet', 'alph');
   -- COL1: TRUE
 
-When the prefix is a literal without ``%`` or ``_``, ``'alphabet' LIKE 'alph%'`` is shorter.
+The ``^@`` operator (``string ^@ prefix``) is ``STARTS_WITH(string, prefix)`` too. vsql also has ``ENDS_WITH``.
 
 string_to_array
 ^^^^^^^^^^^^^^^

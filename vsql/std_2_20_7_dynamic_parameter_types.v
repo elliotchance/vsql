@@ -427,8 +427,8 @@ fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern Co
 }
 
 // with_argument_types gives the dynamic parameters that are arguments of a
-// function their types. CHAR_LENGTH, LENGTH, OCTET_LENGTH, REVERSE, POSITION
-// and MOD have their own rules. Any other function is treated as an SQL-invoked
+// function their types. CHAR_LENGTH, LENGTH, OCTET_LENGTH, REVERSE, POSITION,
+// STARTS_WITH, ENDS_WITH and MOD have their own rules. Any other function is treated as an SQL-invoked
 // routine, where an argument has the type of its parameter, as long as there's
 // only one function with that name and number of arguments (otherwise it's
 // ambiguous, such as for ABS). An aggregate function's argument can't be a dynamic parameter.
@@ -442,7 +442,7 @@ fn (mut c Compiler) with_argument_types(function_name string, args []CompileResu
 		'CHAR_LENGTH', 'LENGTH', 'OCTET_LENGTH', 'REVERSE', 'UPPER', 'LOWER' {
 			args.map(c.with_type(it, character_type(untyped_parameter_type)))
 		}
-		'POSITION' {
+		'POSITION', 'STARTS_WITH', 'ENDS_WITH' {
 			c.with_types(args, character_type)
 		}
 		'MOD', 'GCD', 'LCM' {

@@ -137,7 +137,11 @@ error ``22001``, but a ``CAST`` to a shorter type only truncates it (with a
 ``01004`` warning).
 
 Comparisons are case-sensitive and compare the Unicode code points of the
-characters.
+characters. When two strings are compared with ``=`` (or ``<``, and so on), the
+shorter one is padded with spaces, so ``'a' = 'a  '`` is ``TRUE``. ``LIKE``,
+``STARTS_WITH`` and ``ENDS_WITH`` don't pad, so the spaces at the end (and the
+padding of a ``CHARACTER(n)``) count: ``ENDS_WITH(CAST('ab' AS CHARACTER(5)),
+'b')`` is ``FALSE``.
 
 A string literal is normalized to Unicode Normalization Form C (NFC), so
 ``U&'\0065\0301'`` and ``U&'\00E9'`` are the same string with one character.

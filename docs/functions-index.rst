@@ -144,6 +144,9 @@ Every function, in alphabetical order:
    * - :ref:`DENSE_RANK <functions-aggregate:DENSE_RANK>`
      - Rank of a hypothetical row, without gaps
      - Aggregate
+   * - :ref:`ENDS_WITH <functions-string:ENDS_WITH>`
+     - Whether a string ends with a suffix
+     - String
    * - :ref:`ERF <functions-error-and-gamma:ERF>`
      - Error function
      - Error and Gamma
@@ -354,6 +357,9 @@ Every function, in alphabetical order:
    * - :ref:`SQRT <functions-exponent-and-logarithm:SQRT>`
      - Square root
      - Exponent and Logarithm
+   * - :ref:`STARTS_WITH <functions-string:STARTS_WITH>`
+     - Whether a string starts with a prefix
+     - String
    * - :ref:`STDDEV_POP <functions-statistical:STDDEV_POP>`
      - Population standard deviation
      - Statistical

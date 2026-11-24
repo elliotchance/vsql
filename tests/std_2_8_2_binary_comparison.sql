@@ -22,7 +22,7 @@ VALUES X'01' = '01';
 -- error 42883: cannot compare BINARY(1) and CHARACTER(2)
 
 VALUES X'01' = 1;
--- error 42883: cannot compare BINARY(1) and SMALLINT
+-- error 42883: cannot compare BINARY(1) and INTEGER
 
 -- # The result is NULL if either is NULL.
 /* types */

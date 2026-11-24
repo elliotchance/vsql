@@ -1178,7 +1178,7 @@ fn (conn Connection) best_function(func_name string, arg_types []Type, vsql_rout
 			// All CHARACTER types are considered to be CHARACTER VARYING, and
 			// BINARY types are BINARY VARYING. Only compare the SQLType so that
 			// the precision/scale/null isn't part of the comparison.
-			c := implicit_numeric_cast_cost(function_arg_type(t), f.arg_types[i].typ) or {
+			c := implicit_cast_cost(function_arg_type(t), f.arg_types[i].typ) or {
 				cost = -1
 				break
 			}
@@ -1204,6 +1204,20 @@ fn (conn Connection) best_function(func_name string, arg_types []Type, vsql_rout
 	}
 
 	return best
+}
+
+// implicit_cast_cost returns 0 if the types are the same, or a positive cost
+// if from can be implicitly cast to the type to when choosing a function. TIMESTAMP is
+// in the type precedence list of DATE (F054), so a DATE argument can be passed
+// to a TIMESTAMP parameter, which it's cast to (see RoutineInvocation).
+//
+// ISO/IEC 9075-2:2023, 9.7, Type precedence list determination, Syntax Rules, 12
+fn implicit_cast_cost(from SQLType, to SQLType) ?int {
+	if from == .is_date && to in [.is_timestamp_without_time_zone, .is_timestamp_with_time_zone] {
+		return 1
+	}
+
+	return implicit_numeric_cast_cost(from, to)
 }
 
 // implicit_numeric_cast_cost returns 0 if the types are the same, or a

@@ -42,6 +42,15 @@ different, because only the arguments choose which function is called.
 A prototype that isn't ``name(type, ...) type``, or has a type that doesn't
 exist, is an error ``42601``.
 
+An argument doesn't have to have exactly the type of the parameter. A number
+can be passed to a wider numeric parameter (such as an ``INTEGER`` to a
+``FLOAT``), and a ``DATE`` can be passed to a ``TIMESTAMP`` (or
+``TIMESTAMP WITH TIME ZONE``) parameter, where it's midnight at the start of
+that day (this is feature F054, "TIMESTAMP in DATE type precedence list"). If
+there's more than one function that the arguments can be passed to, the one
+with the closest parameter types is called, so a function with a ``DATE``
+parameter is chosen over one with a ``TIMESTAMP`` parameter for a ``DATE``.
+
 A parameter can have a name before its type, such as
 ``'no_pennies(amount float) float'``. The name is only shown by the
 ``PARAMETERS`` view (see :doc:`information-schema`), where it's in upper case

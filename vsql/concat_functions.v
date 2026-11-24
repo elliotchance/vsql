@@ -80,12 +80,12 @@ fn compile_concat(mut c Compiler, e RoutineInvocation) !CompileResult {
 				return new_null_value(typ.typ).with_type(typ)
 			}
 
-			s := joined.string_value()
+			s := limit_concatenation(joined.string_value(), typ)!
 			if typ.typ == .is_clob {
 				return new_clob_value(s).with_type(typ)
 			}
 
-			return new_varchar_value(limit_concatenation(s)!).with_type(typ)
+			return new_varchar_value(s).with_type(typ)
 		}
 		typ:          typ
 		contains_agg: args.any(it.contains_agg)

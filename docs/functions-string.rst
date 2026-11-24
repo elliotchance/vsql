@@ -53,6 +53,7 @@ CHAR_LENGTH
 .. code-block:: sql
 
    CHAR_LENGTH(CHARACTER VARYING) INTEGER
+   CHAR_LENGTH(CHARACTER LARGE OBJECT) INTEGER
 
 Returns the number of characters (a multibyte character is counted as a single
 character). The length of an empty string is 0, and the length of a
@@ -257,6 +258,7 @@ LOWER
 .. code-block:: sql
 
    LOWER(CHARACTER VARYING) CHARACTER VARYING
+   LOWER(CHARACTER LARGE OBJECT) CHARACTER LARGE OBJECT
 
 Returns the input string converted to lower-case. The result has the same type
 as the input, such as ``CHARACTER(5)`` for ``LOWER('Hello')``.
@@ -356,6 +358,7 @@ OCTET_LENGTH
    OCTET_LENGTH(CHARACTER VARYING) INTEGER
    OCTET_LENGTH(BINARY VARYING) INTEGER
    OCTET_LENGTH(BINARY LARGE OBJECT) INTEGER
+   OCTET_LENGTH(CHARACTER LARGE OBJECT) INTEGER
 
 Returns the length in bytes, which is the length of the string encoded as
 UTF-8. A character can be 1 to 4 bytes. For a binary string (see
@@ -938,6 +941,7 @@ UPPER
 .. code-block:: sql
 
    UPPER(CHARACTER VARYING) CHARACTER VARYING
+   UPPER(CHARACTER LARGE OBJECT) CHARACTER LARGE OBJECT
 
 Returns the input string converted to upper-case. The result has the same type
 as the input, such as ``CHARACTER(5)`` for ``UPPER('Hello')``.

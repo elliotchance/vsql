@@ -66,20 +66,24 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 	}
 	typ := concatenation_type(compiled_left.typ, compiled_right.typ)!
 
+	// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Conformance Rules, 4
+	if c.conn.flagging && typ.typ == .is_clob {
+		c.conn.flagged_features << 'T040'
+	}
+
 	return CompileResult{
 		run:          fn [compiled_left, compiled_right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
-			if (left.typ.typ == .is_character || left.typ.typ == .is_varchar)
-				&& (right.typ.typ == .is_character || right.typ.typ == .is_varchar) {
+			if left.typ.typ.is_string() && right.typ.typ.is_string() {
 				// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 1 and 2.b.i
 				if left.is_null || right.is_null {
 					return new_null_value(.is_varchar).with_type(typ)
 				}
 
 				return new_varchar_value(limit_concatenation(left.string_value() +
-					right.string_value())!).with_type(typ)
+					right.string_value(), typ)!).with_type(typ)
 			}
 
 			return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
@@ -90,8 +94,8 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 }
 
 // concatenation_type is the declared type of a concatenation, which has the
-// combined length of both operands. It's only fixed-length (CHARACTER) when
-// both operands are.
+// combined length of both operands. It's a CHARACTER LARGE OBJECT if either
+// operand is, and it's only fixed-length (CHARACTER) when both operands are.
 //
 // ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3
 fn concatenation_type(left Type, right Type) !Type {
@@ -99,47 +103,69 @@ fn concatenation_type(left Type, right Type) !Type {
 		return new_type('CHARACTER VARYING', 0, 0)
 	}
 
-	// A size of 0 means the length is unknown, so the result is too.
-	size := if left.size > 0 && right.size > 0 { left.size + right.size } else { 0 }
+	// A size of 0 means the length is unknown (or the maximum, for a CHARACTER
+	// LARGE OBJECT), so the result is too.
+	size := if left.size > 0 && right.size > 0 { i64(left.size) + right.size } else { 0 }
+
+	// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3.b.i
+	if left.typ == .is_clob || right.typ == .is_clob {
+		return Type{.is_clob, if size >= max_large_object_length { 0 } else { int(size) }, 0, false, false}
+	}
+
 	if left.typ == .is_character && right.typ == .is_character && size > 0 {
 		// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3.b.iii
 		if size > max_character_length {
 			return sqlstate_42601('CHARACTER(${size}) is longer than the maximum length of ${max_character_length}')
 		}
 
-		return new_type('CHARACTER', size, 0)
+		return new_type('CHARACTER', int(size), 0)
 	}
 
 	// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Syntax Rules, 3.b.ii
 	return new_type('CHARACTER VARYING', if size > max_character_length {
 		max_character_length
 	} else {
-		size
+		int(size)
 	}, 0)
 }
 
-// limit_concatenation returns the result of a concatenation that's no longer
-// than the maximum length. A CHARACTER result can't be longer, since its type
-// would've been rejected. Only <truncating whitespace> can be removed from the
-// end of the result, otherwise it's an error.
+// character_limit is the most characters that a concatenation of type typ can
+// have: the maximum length of a CHARACTER LARGE OBJECT, or otherwise of a
+// CHARACTER VARYING.
 //
-// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 2.b.ii.3.B
-fn limit_concatenation(s string) !string {
+// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 2.b.ii.3.A and 2.b.ii.3.B
+fn character_limit(typ Type) int {
+	if typ.typ == .is_clob {
+		return max_large_object_length
+	}
+
+	return max_character_length
+}
+
+// limit_concatenation returns the result of a concatenation of type typ that's
+// no longer than the maximum length (see character_limit). A CHARACTER result
+// can't be longer, since its type would've been rejected. Only <truncating
+// whitespace> can be removed from the end of the result, otherwise it's an
+// error.
+//
+// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 2.b.ii.3.A and 2.b.ii.3.B
+fn limit_concatenation(s string, typ Type) !string {
 	// The number of characters can't be more than the number of bytes.
-	if s.len <= max_character_length {
+	limit := character_limit(typ)
+	if s.len <= limit {
 		return s
 	}
 
 	runes := s.runes()
-	if runes.len <= max_character_length {
+	if runes.len <= limit {
 		return s
 	}
 
-	if !runes[max_character_length..].all(is_truncating_whitespace(it)) {
-		return sqlstate_22001(new_type('CHARACTER VARYING', max_character_length, 0))
+	if !runes[limit..].all(is_truncating_whitespace(it)) {
+		return sqlstate_22001(Type{typ.typ, limit, 0, false, false})
 	}
 
-	return runes[..max_character_length].string()
+	return runes[..limit].string()
 }
 
 // compile_binary_concatenation is a <binary concatenation>, which is any

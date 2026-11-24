@@ -1223,7 +1223,7 @@ Optional Features
    * - ❌ **T039**
      - **CLOB locator: non-holdable**
 
-   * - ❌ **T040**
+   * - ✅ **T040**
      - **Concatenation of CLOBs**
 
    * - ❌ **T041**
@@ -1244,7 +1244,7 @@ Optional Features
    * - ✅ **T046**
      - **CLOB data type**
 
-   * - ⭕ **T047**
+   * - ✅ **T047**
      - **POSITION, OCTET_LENGTH, TRIM, and SUBSTRING for BLOBs**
 
    * - ✅ **T048**
@@ -1253,7 +1253,7 @@ Optional Features
    * - ❌ **T049**
      - **BLOB locator: non-holdable**
 
-   * - ❌ **T050**
+   * - ✅ **T050**
      - **String functions for CLOBs**
 
    * - ❌ **T051**

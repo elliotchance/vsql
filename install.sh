@@ -37,8 +37,20 @@ for command in curl unzip; do
 	fi
 done
 
-# The latest release redirects to its tag, such as .../releases/tag/v1.6.77.
-version=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "$repo/releases/latest")
+# A release is published as soon as its tag is pushed, and its zips are added
+# when they're built (which can take a while, or fail), so the latest release
+# may not have one yet. The releases are newest first, so it's the first zip
+# for this OS and CPU, such as .../download/v1.6.77/vsql-v1.6.77-macos-arm64.zip.
+# VSQL_RELEASES_API_URL replaces the GitHub API for the tests (see
+# cmd/tests/up.sh).
+api=${VSQL_RELEASES_API_URL:-https://api.github.com/repos/elliotchance/vsql/releases?per_page=100}
+releases=$(curl -fsSL "$api")
+url=$(printf '%s\n' "$releases" | grep -o '"browser_download_url": *"[^"]*/vsql-[^"/]*-'"$os-$arch"'\.zip"' | head -n 1 | sed 's/.*"\([^"]*\)"$/\1/') || true
+if [ -z "$url" ]; then
+	echo "There's no release with a zip for $os-$arch yet, see $repo/releases" >&2
+	exit 1
+fi
+version=${url%/*}
 version=${version##*/}
 name=vsql-$version-$os-$arch
 
@@ -46,7 +58,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 echo "Downloading $name.zip"
-curl -fsSL -o "$tmp/$name.zip" "$repo/releases/download/$version/$name.zip"
+curl -fsSL -o "$tmp/$name.zip" "$url"
 unzip -q "$tmp/$name.zip" -d "$tmp"
 
 mkdir -p "$dir"

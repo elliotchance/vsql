@@ -354,6 +354,27 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V402-12``
      - ``MAKE_TIMESTAMPTZ``.
 
+   * - ``V402-13``
+     - ``EXTRACT(JULIAN FROM ...)``.
+
+   * - ``V402-14``
+     - ``EXTRACT(CENTURY FROM ...)``.
+
+   * - ``V402-15``
+     - ``EXTRACT(DECADE FROM ...)``.
+
+   * - ``V402-16``
+     - ``EXTRACT(MILLENNIUM FROM ...)``.
+
+   * - ``V402-17``
+     - ``EXTRACT(MILLISECONDS FROM ...)``.
+
+   * - ``V402-18``
+     - ``EXTRACT(MICROSECONDS FROM ...)``.
+
+   * - ``V402-19``
+     - ``EXTRACT(TIMEZONE FROM ...)``.
+
    * - ``V403``
      - Mathematical functions: the arithmetic, exponent and logarithm, rounding
        and trigonometric functions (see :doc:`functions`).

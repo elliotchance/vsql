@@ -563,8 +563,26 @@ fn with_numeric_type(v Value, typ Type) Value {
 //   QUARTER - the quarter of the year, from 1 to 4.
 //   EPOCH   - the seconds since 1970-01-01 00:00:00 UTC. A DATE or TIMESTAMP
 //             without a time zone is taken to be UTC.
+//   JULIAN  - the Julian Day Number, plus the fraction of the day since local
+//             midnight for a TIMESTAMP (like PostgreSQL, not the astronomical
+//             Julian date, which starts at noon).
+//   CENTURY, DECADE and MILLENNIUM - the year 1 is in the first century and
+//             millennium, so 2001 starts the 21st century and 3rd millennium.
+//             DECADE is the year divided by 10.
 const extract_date_fields = ['YEAR', 'MONTH', 'DAY', 'DOW', 'ISODOW', 'DOY', 'WEEK', 'ISOYEAR',
-	'QUARTER', 'EPOCH']
+	'QUARTER', 'EPOCH', 'JULIAN', 'CENTURY', 'DECADE', 'MILLENNIUM']
+
+// extract_time_fields are the fields of EXTRACT that a TIME or TIMESTAMP has.
+// MILLISECONDS and MICROSECONDS are vsql extensions, the whole SECOND field
+// (not only its fraction) times 1000 and 1000000.
+const extract_time_fields = ['HOUR', 'MINUTE', 'SECOND', 'MILLISECONDS', 'MICROSECONDS']
+
+// extract_time_zone_fields are the fields of EXTRACT that only a value WITH
+// TIME ZONE has. TIMEZONE is a vsql extension, the time zone in seconds.
+const extract_time_zone_fields = ['TIMEZONE_HOUR', 'TIMEZONE_MINUTE', 'TIMEZONE']
+
+// julian_day_1970 is the Julian Day Number of 1970-01-01.
+const julian_day_1970 = 2440588
 
 // days_from_civil is the number of days from 1970-01-01 to a date of the
 // proleptic Gregorian calendar, which is negative for an earlier date.
@@ -638,14 +656,14 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 	typ := compiled.typ
 	mut expected := 'TIME WITH TIME ZONE or TIMESTAMP WITH TIME ZONE'
 	mut allowed := [SQLType.is_time_with_time_zone, .is_timestamp_with_time_zone]
-	if e.field !in ['TIMEZONE_HOUR', 'TIMEZONE_MINUTE', 'HOUR', 'MINUTE', 'SECOND']
+	if e.field !in extract_time_zone_fields && e.field !in extract_time_fields
 		&& e.field !in extract_date_fields {
 		return sqlstate_42601('EXTRACT has no field ${e.field}')
 	}
 	if e.field in extract_date_fields {
 		expected = 'DATE or TIMESTAMP'
 		allowed = [.is_date, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
-	} else if e.field in ['HOUR', 'MINUTE', 'SECOND'] {
+	} else if e.field in extract_time_fields {
 		expected = 'TIME or TIMESTAMP'
 		allowed = [.is_time_without_time_zone, .is_time_with_time_zone,
 			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone]
@@ -665,6 +683,13 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 		new_type('NUMERIC', typ.size + 2, i16(typ.size))
 	} else if e.field == 'EPOCH' {
 		new_type('NUMERIC', typ.size + 12, i16(typ.size))
+	} else if e.field == 'JULIAN' {
+		// A DATE is a whole day. The fraction of a day of a TIMESTAMP is cut
+		// to 12 places, which is enough to tell microseconds apart.
+		if typ.typ == .is_date { new_type('NUMERIC', 7, 0) } else { new_type('NUMERIC', 19, 12) }
+	} else if e.field == 'MILLISECONDS' {
+		scale := if typ.size > 3 { typ.size - 3 } else { 0 }
+		new_type('NUMERIC', 5 + scale, i16(scale))
 	} else {
 		new_type('INTEGER', 0, 0)
 	}
@@ -728,6 +753,42 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 						t.t.hour * 3600 + t.t.minute * 60 + t.t.second - i64(t.time_zone) * 60
 					with_numeric_type(new_numeric_value(epoch_string(seconds, t.str_fractional_seconds(return_type.scale))),
 						return_type)
+				}
+				'JULIAN' {
+					day := i64(days_from_civil(t.t.year, t.t.month, t.t.day)) + julian_day_1970
+					if return_type.scale == 0 {
+						with_numeric_type(new_numeric_value(day.str()), return_type)
+					} else {
+						micros := (i64(t.t.hour) * 3600 + t.t.minute * 60 + t.t.second) * 1000000 +
+							t.t.nanosecond / 1000
+						// The fraction of the day to 12 places, which is
+						// micros * 10^12 / (86400 * 10^6).
+						fraction := micros * 1000000 / 86400
+						with_numeric_type(new_numeric_value('${day}.${fraction:012}'), return_type)
+					}
+				}
+				'CENTURY' {
+					new_integer_value((t.t.year + 99) / 100)
+				}
+				'DECADE' {
+					new_integer_value(t.t.year / 10)
+				}
+				'MILLENNIUM' {
+					new_integer_value((t.t.year + 999) / 1000)
+				}
+				'MILLISECONDS' {
+					micros := t.str_fractional_seconds(6)
+					mut ms := '${t.t.second * 1000 + micros[1..4].int()}'
+					if return_type.scale > 0 {
+						ms += '.' + micros[4..4 + return_type.scale]
+					}
+					with_numeric_type(new_numeric_value(ms), return_type)
+				}
+				'MICROSECONDS' {
+					new_integer_value(t.t.second * 1000000 + t.t.nanosecond / 1000)
+				}
+				'TIMEZONE' {
+					new_integer_value(int(t.time_zone) * 60)
 				}
 				'TIMEZONE_HOUR' {
 					new_integer_value(t.time_zone / 60)

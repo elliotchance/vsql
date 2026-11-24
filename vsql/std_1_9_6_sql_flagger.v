@@ -135,6 +135,7 @@ import arrays
 // V402-10: MAKE_TIME.
 // V402-11: MAKE_TIMESTAMP.
 // V402-12: MAKE_TIMESTAMPTZ.
+// V402-13 to V402-19: more EXTRACT fields (see vsql_extract_fields).
 //
 // V403: Mathematical functions.
 // V403-01: MOD with an argument that has a scale or is approximate.
@@ -240,13 +241,21 @@ const vsql_now = 'V402-01'
 
 // vsql_extract_fields are the fields of EXTRACT that aren't in the standard.
 const vsql_extract_fields = {
-	'DOW':     'V402-02'
-	'ISODOW':  'V402-03'
-	'DOY':     'V402-04'
-	'WEEK':    'V402-05'
-	'ISOYEAR': 'V402-06'
-	'QUARTER': 'V402-07'
-	'EPOCH':   'V402-08'
+	'DOW':          'V402-02'
+	'ISODOW':       'V402-03'
+	'DOY':          'V402-04'
+	'WEEK':         'V402-05'
+	'ISOYEAR':      'V402-06'
+	'QUARTER':      'V402-07'
+	'EPOCH':        'V402-08'
+	// V402-13 to V402-19 came after MAKE_DATE and the others.
+	'JULIAN':       'V402-13'
+	'CENTURY':      'V402-14'
+	'DECADE':       'V402-15'
+	'MILLENNIUM':   'V402-16'
+	'MILLISECONDS': 'V402-17'
+	'MICROSECONDS': 'V402-18'
+	'TIMEZONE':     'V402-19'
 }
 
 const vsql_make_date = 'V402-09'

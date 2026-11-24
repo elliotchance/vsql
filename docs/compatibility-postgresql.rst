@@ -2043,7 +2043,7 @@ Returns a field of a timestamp or interval, such as the year or the hour.
   VALUES EXTRACT(YEAR FROM TIMESTAMP '2024-03-15 10:30:00');
   -- COL1: 2024
 
-The field is a keyword, not a string, and the result is an ``INTEGER`` (a ``NUMERIC`` for ``SECOND`` and ``EPOCH``), not a ``double precision``. See extract_ for the fields vsql has. ``date_part`` of an interval has no equivalent.
+The field is a keyword, not a string, and the result is an ``INTEGER`` (a ``NUMERIC`` for ``SECOND``, ``EPOCH``, ``JULIAN`` and ``MILLISECONDS``), not a ``double precision``. See extract_ for the fields vsql has. ``date_part`` of an interval has no equivalent.
 
 date_subtract
 ^^^^^^^^^^^^^
@@ -2084,7 +2084,7 @@ Returns a field of a date, time, timestamp or interval, such as the year or the 
   VALUES EXTRACT(HOUR FROM TIMESTAMP '2024-03-15 10:30:00');
   -- COL1: 10
 
-The result is an ``INTEGER``, or a ``NUMERIC`` with the precision of the value for ``SECOND`` and ``EPOCH``, where PostgreSQL always returns a ``numeric``. The fields are ``YEAR``, ``MONTH``, ``DAY``, ``HOUR``, ``MINUTE``, ``SECOND``, ``TIMEZONE_HOUR``, ``TIMEZONE_MINUTE``, ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``, ``QUARTER`` and ``EPOCH``, with the same meaning as in PostgreSQL. ``CENTURY``, ``DECADE``, ``MILLENNIUM``, ``MILLISECONDS``, ``MICROSECONDS``, ``JULIAN`` and ``TIMEZONE`` have no equivalent. The fields of a timestamp with time zone are in its own time zone, where PostgreSQL first converts it to the time zone of the session, so ``extract(hour FROM timestamptz '2024-03-15 10:30:00-05')`` is ``15`` in a UTC session and ``10`` in vsql. ``extract`` of an interval has no equivalent.
+The result is an ``INTEGER``, or a ``NUMERIC`` for ``SECOND``, ``EPOCH``, ``JULIAN`` and ``MILLISECONDS``, where PostgreSQL always returns a ``numeric``. The fields are ``YEAR``, ``MONTH``, ``DAY``, ``HOUR``, ``MINUTE``, ``SECOND``, ``TIMEZONE_HOUR``, ``TIMEZONE_MINUTE``, ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``, ``QUARTER``, ``EPOCH``, ``JULIAN``, ``CENTURY``, ``DECADE``, ``MILLENNIUM``, ``MILLISECONDS``, ``MICROSECONDS`` and ``TIMEZONE``, with the same meaning as in PostgreSQL. ``JULIAN`` of a timestamp is cut to 12 decimal places, where PostgreSQL has 20. The fields of a timestamp with time zone are in its own time zone, where PostgreSQL first converts it to the time zone of the session, so ``extract(hour FROM timestamptz '2024-03-15 10:30:00-05')`` is ``15`` in a UTC session and ``10`` in vsql. ``extract`` of an interval has no equivalent.
 
 isfinite
 ^^^^^^^^

@@ -444,7 +444,8 @@ Fields
 ``MINUTE``, ``SECOND``, ``TIMEZONE_HOUR`` or ``TIMEZONE_MINUTE``) of a date,
 time or timestamp, such as ``EXTRACT(YEAR FROM d)``. It also has fields that
 aren't in the standard: ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``,
-``QUARTER`` and ``EPOCH``. See :ref:`EXTRACT <functions-date-and-time:EXTRACT>`.
+``QUARTER``, ``EPOCH``, ``JULIAN``, ``CENTURY``, ``DECADE``, ``MILLENNIUM``,
+``MILLISECONDS``, ``MICROSECONDS`` and ``TIMEZONE``. See :ref:`EXTRACT <functions-date-and-time:EXTRACT>`.
 
 Building a Date or Time
 -----------------------

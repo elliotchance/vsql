@@ -117,6 +117,14 @@ EXTRACT
    EXTRACT(ISOYEAR FROM DATE or TIMESTAMP) INTEGER
    EXTRACT(QUARTER FROM DATE or TIMESTAMP) INTEGER
    EXTRACT(EPOCH FROM DATE or TIMESTAMP(p)) NUMERIC(p + 12, p)
+   EXTRACT(JULIAN FROM DATE) NUMERIC(7)
+   EXTRACT(JULIAN FROM TIMESTAMP) NUMERIC(19, 12)
+   EXTRACT(CENTURY FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(DECADE FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(MILLENNIUM FROM DATE or TIMESTAMP) INTEGER
+   EXTRACT(MILLISECONDS FROM TIME(p) or TIMESTAMP(p)) NUMERIC(5 + s, s)
+   EXTRACT(MICROSECONDS FROM TIME or TIMESTAMP) INTEGER
+   EXTRACT(TIMEZONE FROM TIME or TIMESTAMP WITH TIME ZONE) INTEGER
 
 Returns one field of a date, time or timestamp, with or without a time zone.
 The field must be part of the type: a ``DATE`` has no ``HOUR``, and only a
@@ -155,6 +163,24 @@ PostgreSQL:
 - ``EPOCH``: the seconds since ``1970-01-01 00:00:00`` UTC, with the fraction
   of a second. A ``DATE`` or a ``TIMESTAMP`` without a time zone is taken to be
   UTC.
+- ``JULIAN``: the Julian Day Number, plus the fraction of the day since local
+  midnight for a ``TIMESTAMP`` (cut to 12 decimal places). So
+  ``2026-11-17 00:00:00`` is ``2461362`` and noon is ``2461362.5``. This isn't
+  the astronomical Julian date, which starts at noon UTC (and is 0.5 less, like
+  SQLite's ``julianday``).
+- ``CENTURY``: the century. The years 1 to 100 are the first century, so
+  ``2000`` is in the 20th century and ``2001`` starts the 21st.
+- ``DECADE``: the year divided by 10, so ``2026`` is ``202``.
+- ``MILLENNIUM``: the millennium. The years 1 to 1000 are the first, so
+  ``2001`` starts the 3rd.
+- ``MILLISECONDS``: the **whole** ``SECOND`` field (not only its fraction)
+  times 1000, so ``12:30:12.5`` is ``12500``. It's a ``NUMERIC`` that keeps the
+  places of the precision after the first 3 (the scale ``s`` is ``p - 3``, or
+  ``0``), so ``12:30:12.123456`` is ``12123.456``.
+- ``MICROSECONDS``: the whole ``SECOND`` field times 1000000, so
+  ``12:30:12.5`` is ``12500000``.
+- ``TIMEZONE``: the time zone in seconds, with its sign, so ``+10:30`` is
+  ``37800``. Like ``TIMEZONE_HOUR``, it's only for a value ``WITH TIME ZONE``.
 
 They aren't keywords, so any other name is a ``42601`` error when the statement
 is compiled.
@@ -167,6 +193,18 @@ is compiled.
   VALUES EXTRACT(WEEK FROM DATE '2027-01-01');
   -- COL1: 53
 
+  VALUES EXTRACT(JULIAN FROM TIMESTAMP '2026-11-17 12:00:00');
+  -- COL1: 2461362.500000000000
+
+  VALUES EXTRACT(CENTURY FROM DATE '2000-06-01');
+  -- COL1: 20
+
+  VALUES EXTRACT(MILLISECONDS FROM TIME '12:30:12.5');
+  -- COL1: 12500
+
+  VALUES EXTRACT(TIMEZONE FROM TIME '12:00:00+10:30');
+  -- COL1: 37800
+
 The source can also be an ``INTERVAL`` with that field (only ``YEAR``,
 ``MONTH``, ``DAY``, ``HOUR``, ``MINUTE`` and ``SECOND``). The first field of the
 interval is its whole number (``EXTRACT(HOUR FROM INTERVAL '25' HOUR)`` is 25),
@@ -175,13 +213,16 @@ and the result has the sign of the interval.
 **Compatibility**
 
 - **SQL standard:** F052 (intervals and datetime arithmetic), and F411 (time
-  zone specification) for ``TIMEZONE_HOUR`` and ``TIMEZONE_MINUTE``.
+  zone specification) for ``TIMEZONE_HOUR``, ``TIMEZONE_MINUTE`` and
+  ``TIMEZONE``.
 - **vsql:** ``DOW``, ``ISODOW``, ``DOY``, ``WEEK``, ``ISOYEAR``, ``QUARTER``
-  and ``EPOCH`` are ``V402-02`` to ``V402-08`` (see :doc:`sql-flagging`).
+  and ``EPOCH`` are ``V402-02`` to ``V402-08``, and ``JULIAN``, ``CENTURY``,
+  ``DECADE``, ``MILLENNIUM``, ``MILLISECONDS``, ``MICROSECONDS`` and
+  ``TIMEZONE`` are ``V402-13`` to ``V402-19`` (see :doc:`sql-flagging`).
 - **Other databases:**
 
   - PostgreSQL, MySQL and Oracle: ``EXTRACT``. PostgreSQL returns a
-    ``NUMERIC`` for every field, and has more fields. MySQL doesn't keep the
+    ``NUMERIC`` for every field. MySQL doesn't keep the
     fraction of ``SECOND``.
   - SQL Server: ``DATEPART(year, d)``.
   - SQLite: ``STRFTIME('%Y', d)``, as a string.

@@ -903,6 +903,15 @@ places of the result, which is cut rather than rounded, so SQLite has
 2460375.10434028. Dividing by ``86400e0`` gives a ``DOUBLE PRECISION``
 instead, which is shown with only 12 significant digits.
 
+``EXTRACT(JULIAN FROM ...)`` (as in PostgreSQL) is a Julian day that starts at
+local midnight, rather than at noon UTC, so it's 0.5 more than ``julianday``
+for a value without a time zone:
+
+.. code-block:: sql
+
+  VALUES EXTRACT(JULIAN FROM TIMESTAMP '2024-03-05 14:30:15') - 0.5;
+  -- COL1: 2460375.104340277777
+
 strftime
 ^^^^^^^^
 

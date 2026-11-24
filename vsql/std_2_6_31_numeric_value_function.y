@@ -65,7 +65,7 @@ numeric_value_function:
 | extract_expression {
     e := $1.v as ExtractExpression
     flag(mut yylex, 'F052')
-    flag_if(mut yylex, e.field in ['TIMEZONE_HOUR', 'TIMEZONE_MINUTE'], 'F411')
+    flag_if(mut yylex, e.field in ['TIMEZONE_HOUR', 'TIMEZONE_MINUTE', 'TIMEZONE'], 'F411')
     if feature := vsql_extract_fields[e.field] {
       flag(mut yylex, feature)
     }
@@ -85,8 +85,9 @@ extract_field:
   primary_datetime_field { $$.v = $1.v }
 | time_zone_field { $$.v = $1.v }
 // The fields that aren't in the standard, such as DOW, are a vsql extension
-// (V402-02 to V402-08). They aren't keywords, so a field is any identifier, and
-// one that isn't a field is an error when it's compiled.
+// (V402-02 to V402-08 and V402-13 to V402-19). They aren't keywords, so a
+// field is any identifier, and one that isn't a field is an error when it's
+// compiled.
 | LITERAL_IDENTIFIER {
     name := ($1.v as IdentifierChain).identifier
     $$.v = if name.starts_with('"') { name } else { name.to_upper() }

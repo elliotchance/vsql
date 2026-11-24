@@ -189,6 +189,8 @@ import arrays
 // V404-11: REVERSE.
 // V404-12: STARTS_WITH.
 // V404-13: ENDS_WITH.
+// V404-14: QUOTE.
+// V404-15: QUOTE_IDENT.
 //
 // V405: Aggregate functions.
 // V405-01: MODE() WITHIN GROUP.
@@ -345,6 +347,8 @@ const vsql_length = 'V404-10'
 const vsql_reverse = 'V404-11'
 const vsql_starts_with = 'V404-12'
 const vsql_ends_with = 'V404-13'
+const vsql_quote = 'V404-14'
+const vsql_quote_ident = 'V404-15'
 const vsql_mode = 'V405-01'
 const vsql_product = 'V405-02'
 const vsql_median = 'V405-03'

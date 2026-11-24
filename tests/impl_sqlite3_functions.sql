@@ -138,7 +138,7 @@ VALUES CAST(10 AS VARCHAR(11)) || ' left';
 
 -- # quote
 -- # SELECT quote('It''s');
-VALUES '''' || REPLACE('It''s', '''', '''''') || '''';
+VALUES QUOTE('It''s');
 -- COL1: 'It''s'
 
 -- # random

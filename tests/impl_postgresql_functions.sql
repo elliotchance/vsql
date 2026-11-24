@@ -398,7 +398,7 @@ VALUES POSITION('om' IN 'Thomas');
 
 -- # quote_ident
 -- # quote_ident('Foo bar')
-VALUES '"' || REPLACE('Foo bar', '"', '""') || '"';
+VALUES QUOTE_IDENT('Foo bar');
 -- COL1: "Foo bar"
 
 -- # quote_literal

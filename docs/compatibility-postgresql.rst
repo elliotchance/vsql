@@ -1212,12 +1212,12 @@ Quotes a string so that it can be used as a name in a statement.
 .. code-block:: sql
 
   -- quote_ident(text) → text
-  VALUES '"' || REPLACE(/*text*/, '"', '""') || '"';
+  VALUES QUOTE_IDENT(/*text*/);
   -- quote_ident('Foo bar')
-  VALUES '"' || REPLACE('Foo bar', '"', '""') || '"';
+  VALUES QUOTE_IDENT('Foo bar');
   -- COL1: "Foo bar"
 
-PostgreSQL only adds the quotes when the name needs them, so ``quote_ident('foo')`` is ``foo``. A name in quotes always works.
+PostgreSQL only adds the quotes when the name needs them, so ``quote_ident('foo')`` is ``foo``. vsql's ``QUOTE_IDENT`` always adds them, which always works.
 
 quote_literal
 ^^^^^^^^^^^^^
@@ -1232,7 +1232,7 @@ Quotes a string so that it can be used as a string literal in a statement.
   VALUES '''' || REPLACE('O''Reilly', '''', '''''') || '''';
   -- COL1: 'O''Reilly'
 
-PostgreSQL also accepts any type and returns ``NULL`` for ``NULL``. A string with a backslash becomes an ``E'...'`` string in PostgreSQL.
+PostgreSQL also accepts any type and returns ``NULL`` for ``NULL``. A string with a backslash becomes an ``E'...'`` string in PostgreSQL. vsql's ``QUOTE`` is a literal of any type that keeps its type, such as ``42`` rather than ``'42'``, and a ``NULL`` is ``NULL``, like ``quote_nullable``.
 
 quote_nullable
 ^^^^^^^^^^^^^^

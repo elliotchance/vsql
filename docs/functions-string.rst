@@ -927,6 +927,132 @@ octets.
   - SQLite and Oracle: ``INSTR(string, search)``.
   - SQL Server: ``CHARINDEX(search, string)``.
 
+QUOTE
+^^^^^
+
+.. code-block:: sql
+
+   QUOTE(value) CHARACTER VARYING
+
+Returns an SQL literal that results in the same value, and the same kind of
+type, when it's used in a statement. It's for building SQL, such as an
+``INSERT`` for each row of a table:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Value
+    - Result
+
+  * - Character string
+    - ``'O''Reilly'``: in single quotes, with each ``'`` doubled. The padding
+      of a ``CHARACTER(n)`` is kept, and other characters are kept as they are.
+
+  * - Exact number
+    - ``42``, ``-7`` or ``1.50``, with the scale of the value.
+
+  * - ``REAL`` or ``DOUBLE PRECISION``
+    - ``1.5e0``, the shortest form that results in the same number, with an
+      exponent so that it's approximate.
+
+  * - ``DECFLOAT``
+    - ``CAST('1.5' AS DECFLOAT(34))``, since there's no ``DECFLOAT`` literal.
+
+  * - ``BOOLEAN``
+    - ``TRUE`` or ``FALSE``.
+
+  * - Date, time or timestamp
+    - ``DATE '2026-11-17'``, ``TIME '12:30:00'`` or
+      ``TIMESTAMP '2026-11-17 12:30:00.123456+10:00'``.
+
+  * - Interval
+    - ``INTERVAL '1-02' YEAR(2) TO MONTH``.
+
+  * - Binary string
+    - ``X'DEADBEEF'``.
+
+  * - ``NULL`` of any type
+    - ``NULL``, the word, not a ``NULL`` value.
+
+The result is a ``CHARACTER VARYING``, or a ``CHARACTER LARGE OBJECT`` for a
+``CHARACTER LARGE OBJECT`` or ``BINARY LARGE OBJECT``.
+
+The value is the same, but the declared type might not be: ``QUOTE`` of a
+``SMALLINT`` is an ``INTEGER`` literal, and ``NULL`` has no type. That doesn't
+matter in an ``INSERT`` or ``UPDATE``, because the value is stored as the type
+of the column.
+
+``QUOTE`` is a vsql extension flagged by ``V404-14`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES QUOTE('O''Reilly');
+  -- COL1: 'O''Reilly'
+
+  VALUES QUOTE(42);
+  -- COL1: 42
+
+  VALUES QUOTE(DATE '2026-11-17');
+  -- COL1: DATE '2026-11-17'
+
+  VALUES QUOTE(CAST(NULL AS INTEGER));
+  -- COL1: NULL
+
+  VALUES 'INSERT INTO t VALUES (' || QUOTE(1) || ', ' || QUOTE('a''b') || ');';
+  -- COL1: INSERT INTO t VALUES (1, 'a''b');
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - SQLite: ``quote``, the same for the types that SQLite has.
+  - MySQL: ``QUOTE``, which escapes with a backslash, and only for strings.
+  - PostgreSQL: ``quote_nullable``, which is always a string literal (such as
+    ``'42'``), and ``quote_literal``, which is ``NULL`` for ``NULL``.
+
+QUOTE_IDENT
+^^^^^^^^^^^
+
+.. code-block:: sql
+
+   QUOTE_IDENT(name CHARACTER VARYING) CHARACTER VARYING
+
+Returns a delimited identifier: the name in double quotes, with each ``"``
+doubled. It always adds the quotes, so the name keeps its case (a name that
+isn't quoted is upper case) and can be a reserved word. A qualified name isn't
+split, so ``QUOTE_IDENT('s.t')`` is ``"s.t"``, which is one name. Use
+``QUOTE_IDENT(s) || '.' || QUOTE_IDENT(t)`` instead.
+
+If the name is ``NULL``, the result is ``NULL``. An empty name is a ``22023``
+error (invalid parameter value), because an identifier can't be empty.
+
+``QUOTE_IDENT`` is a vsql extension flagged by ``V404-15`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES QUOTE_IDENT('Order Details');
+  -- COL1: "Order Details"
+
+  VALUES QUOTE_IDENT('a"b');
+  -- COL1: "a""b"
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``quote_ident``, which only adds the quotes when they're
+    needed.
+  - SQL Server: ``QUOTENAME``, with ``[ ]``.
+  - MySQL: ``sys.quote_identifier``, with backticks.
+
 REPEAT
 ^^^^^^
 

@@ -1916,15 +1916,15 @@ can be used in a statement.
 .. code-block:: sql
 
   -- QUOTE(str)
-  VALUES '''' || REPLACE(/*str*/, '''', '\''') || '''';
+  VALUES QUOTE(/*str*/);
   -- QUOTE('Don''t!')
-  VALUES '''' || REPLACE('Don''t!', '''', '\''') || '''';
-  -- COL1: 'Don\'t!'
+  VALUES QUOTE('Don''t!');
+  -- COL1: 'Don''t!'
 
-This escapes the quotes with a backslash, as MySQL does. MySQL also escapes
-backslashes and a few control characters, and returns the word ``NULL``
-(without quotes) for a ``NULL``. A string for vsql would double the quote
-instead: ``REPLACE(str, '''', '''''')``.
+vsql's ``QUOTE`` makes a literal for vsql, so it doubles the quote rather than
+escaping it with a backslash, and doesn't escape backslashes or control
+characters. Like MySQL, a ``NULL`` is the word ``NULL`` (without quotes). It
+also works for numbers, dates and the other types.
 
 REGEXP_INSTR
 ^^^^^^^^^^^^

@@ -80,6 +80,7 @@ const builtin_arg_names = {
 	'MAKE_TIMESTAMPTZ': ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS', 'TIME_ZONE']
 	'MIN_SCALE':        ['X']
 	'PARSE_SIZE':       ['SIZE', 'BASE']
+	'QUOTE_IDENT':      ['NAME']
 	'RADIANS':          ['X']
 	'RANDOM':           ['MIN', 'MAX']
 	'RANDOM_BINARY':    ['N']

@@ -223,8 +223,13 @@ VALUES RANDOM() < 1;
 
 -- # random
 -- # random(1, 10) BETWEEN 1 AND 10
-VALUES 1 + FLOOR(RANDOM() * (10 - 1 + 1)) BETWEEN 1 AND 10;
+VALUES RANDOM(1, 10) BETWEEN 1 AND 10;
 -- COL1: TRUE
+
+-- # random_normal
+-- # random_normal(100, 0)
+VALUES RANDOM_NORMAL(100, 0);
+-- COL1: 100e0
 
 -- # round
 -- # round(42.4)

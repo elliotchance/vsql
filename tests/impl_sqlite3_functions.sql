@@ -146,6 +146,11 @@ VALUES '''' || REPLACE('It''s', '''', '''''') || '''';
 VALUES FLOOR(RANDOM() * 6) + 1 BETWEEN 1 AND 6;
 -- COL1: TRUE
 
+-- # randomblob
+-- # SELECT length(randomblob(16));
+VALUES OCTET_LENGTH(RANDOM_BINARY(16));
+-- COL1: 16
+
 -- # replace
 -- # SELECT replace('Banana', 'an', 'AN');
 VALUES REPLACE('Banana', 'an', 'AN');

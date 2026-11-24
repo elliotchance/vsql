@@ -5177,20 +5177,21 @@ Returns an array of random numbers.
 RANDBETWEEN
 ^^^^^^^^^^^
 
-🔧 vsql has no ``RANDBETWEEN`` function, but an expression does the same thing.
+✅ vsql has the same function: ``RANDOM``.
 
 Returns a random whole number between two numbers, inclusive.
 
 .. code-block:: sql
 
   -- =RANDBETWEEN(bottom, top)
-  VALUES FLOOR(RANDOM() * (/*top*/ - /*bottom*/ + 1)) + /*bottom*/;
+  VALUES RANDOM(/*bottom*/, /*top*/);
   -- =RANDBETWEEN(1, 6)
-  VALUES FLOOR(RANDOM() * (6 - 1 + 1)) + 1 BETWEEN 1 AND 6;
+  VALUES RANDOM(1, 6) BETWEEN 1 AND 6;
   -- COL1: TRUE
 
-The random number is ``FLOOR(RANDOM() * (6 - 1 + 1)) + 1``; this example only
-checks its range.
+``RANDOM(1, 6)`` gives a different number every time, so this example only
+checks its range. The bottom and top must be whole numbers, since
+``RANDOM(1.5, 6.5)`` has the decimal places of its arguments.
 
 ROMAN
 ^^^^^

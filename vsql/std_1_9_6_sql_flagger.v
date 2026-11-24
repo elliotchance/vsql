@@ -167,6 +167,9 @@ import arrays
 // V403-17: LGAMMA.
 // V403-22: TRIM_SCALE.
 // V403-23: MIN_SCALE.
+// V403-24: RANDOM with a minimum and maximum.
+// V403-25: RANDOM_NORMAL.
+// V403-26: RANDOM_BINARY.
 //
 // V404: String functions.
 // V404-01: TRIM with only FROM.
@@ -316,6 +319,9 @@ const vsql_gamma = 'V403-16'
 const vsql_lgamma = 'V403-17'
 const vsql_trim_scale = 'V403-22'
 const vsql_min_scale = 'V403-23'
+const vsql_random_range = 'V403-24'
+const vsql_random_normal = 'V403-25'
+const vsql_random_binary = 'V403-26'
 const vsql_trim_only_from = 'V404-01'
 const vsql_replace = 'V404-02'
 const vsql_repeat = 'V404-03'

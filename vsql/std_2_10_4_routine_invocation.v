@@ -197,6 +197,8 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false, false}
 	} else if func_name == 'SPLIT_PART' {
 		Type{.is_varchar, arg_types[0].size, 0, false, false}
+	} else if func_name == 'RANDOM' && arg_types.len == 2 {
+		random_range_type(arg_types[0], arg_types[1])
 	} else {
 		numeric_function_type(func_name, found_func.return_type, arg_types)
 	}
@@ -220,6 +222,13 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	if func_name == 'MAKE_INTERVAL' && found_func.features == [vsql_make_interval] {
 		return_type = make_interval_type(mut c, compiled_args)!
 	}
+	// RANDOM_BINARY(n) is a BINARY VARYING(n) when n is a constant (V403-26).
+	if func_name == 'RANDOM_BINARY' && compiled_args[0].constant {
+		n := compiled_args[0].run(mut c.conn, Row{}, c.params)!
+		if !n.is_null && n.int_value() >= 0 && n.int_value() <= max_binary_length {
+			return_type = Type{.is_varbinary, int(n.int_value()), 0, false, false}
+		}
+	}
 	is_exact := func_name in ['ABS', 'MOD', 'FLOOR', 'CEIL', 'CEILING', 'ROUND', 'TRUNC', 'SIGN']
 		&& return_type.typ in [.is_numeric, .is_decimal]
 
@@ -236,6 +245,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 				if param_typ.typ == .is_decfloat && return_type.typ == .is_decfloat {
 					// Every argument of a DECFLOAT function has the precision of the
 					// result (see register_decfloat_funcs).
+					target = return_type
+				} else if func_name == 'RANDOM' {
+					// Both arguments have the type of the result (V403-24).
 					target = return_type
 				} else if typ.typ != param_typ.typ && typ.typ.is_number() {
 					target = implicit_cast_type(arg, param_typ)

@@ -301,7 +301,13 @@ Every function, in alphabetical order:
      - Degrees to radians
      - Trigonometric
    * - :ref:`RANDOM <functions-random:RANDOM>`
-     - Random number from 0 to less than 1
+     - Random number from 0 to less than 1, or in a range
+     - Random
+   * - :ref:`RANDOM_BINARY <functions-random:RANDOM_BINARY>`
+     - Random bytes
+     - Random
+   * - :ref:`RANDOM_NORMAL <functions-random:RANDOM_NORMAL>`
+     - Normally distributed random number
      - Random
    * - :ref:`RANK <functions-aggregate:RANK>`
      - Rank of a hypothetical row

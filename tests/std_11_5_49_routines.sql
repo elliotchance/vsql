@@ -22,7 +22,7 @@ SELECT specific_name, data_type FROM information_schema.routines WHERE routine_n
 -- # A function that can return a different result for the same arguments isn't
 -- # deterministic (6.40, Description, 9). A character string result can have
 -- # any length.
-SELECT routine_name, is_deterministic FROM information_schema.routines WHERE routine_name IN ('NOW', 'RANDOM');
+SELECT routine_name, is_deterministic FROM information_schema.routines WHERE specific_name IN ('NOW_1', 'RANDOM_1');
 SELECT data_type, character_maximum_length, character_octet_length, character_set_name FROM information_schema.routines WHERE routine_name = 'SPLIT_PART';
 -- ROUTINE_NAME: NOW IS_DETERMINISTIC: NO
 -- ROUTINE_NAME: RANDOM IS_DETERMINISTIC: NO

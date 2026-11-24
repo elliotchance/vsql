@@ -86,6 +86,7 @@ fn register_math_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'RANDOM', [], false, func_random, double_precision, false, false, [
 		vsql_random,
 	], [], false})!
+	register_random_funcs(mut conn)!
 
 	conn.register_func(Func{'ATAN2', [double_precision, double_precision], false, func_atan2, double_precision, false, true, [
 		vsql_atan2,

@@ -2400,13 +2400,18 @@ No equivalent.
 RANDOM_BYTES
 ^^^^^^^^^^^^
 
-.. code-block:: text
-
-  RANDOM_BYTES(len)
-
 Returns a binary string of random bytes from a cryptographically secure generator.
 
-No equivalent.
+.. code-block:: sql
+
+  -- RANDOM_BYTES(len)
+  VALUES RANDOM_BINARY(/*len*/);
+  -- LENGTH(RANDOM_BYTES(16))
+  VALUES OCTET_LENGTH(RANDOM_BINARY(16));
+  -- COL1: 16
+
+MySQL's ``RANDOM_BYTES`` needs a length from 1 to 1024, and vsql's
+``RANDOM_BINARY`` allows 0 up to the maximum length of a ``BINARY VARYING``.
 
 SHA
 ^^^

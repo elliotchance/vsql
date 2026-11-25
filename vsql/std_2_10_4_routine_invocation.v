@@ -191,8 +191,8 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// SPLIT_PART (V404-07) is a CHARACTER VARYING with the length of the string,
 	// like SUBSTRING, and CHR (V404-05) is a CHARACTER VARYING(1). REVERSE
 	// (V404-11) has the same type as its argument, which is always the same
-	// length.
-	is_text := func_name in ['SPLIT_PART', 'CHR', 'REVERSE']
+	// length. MAKE_INTERVAL (V402-21) has the interval type of its arguments.
+	is_text := func_name in ['SPLIT_PART', 'CHR', 'REVERSE', 'MAKE_INTERVAL']
 	mut return_type := if is_fold || func_name == 'REVERSE' {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false, false}
 	} else if func_name == 'SPLIT_PART' {
@@ -214,6 +214,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// checked when it's compiled.
 	if func_name == 'DATE_TRUNC' && found_func.features == [vsql_date_trunc] {
 		return_type = date_trunc_type(mut c, compiled_args[0], arg_types[1])!
+	}
+	// MAKE_INTERVAL (V402-21) is a year-month or day-time interval, depending
+	// on which arguments are given.
+	if func_name == 'MAKE_INTERVAL' && found_func.features == [vsql_make_interval] {
+		return_type = make_interval_type(mut c, compiled_args)!
 	}
 	is_exact := func_name in ['ABS', 'MOD', 'FLOOR', 'CEIL', 'CEILING', 'ROUND', 'TRUNC', 'SIGN']
 		&& return_type.typ in [.is_numeric, .is_decimal]

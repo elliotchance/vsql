@@ -73,6 +73,7 @@ const builtin_arg_names = {
 	'LENGTH':           ['STRING']
 	'LGAMMA':           ['X']
 	'MAKE_DATE':        ['YEARS', 'MONTHS', 'DAYS']
+	'MAKE_INTERVAL':    make_interval_names
 	'MAKE_TIME':        ['HOURS', 'MINUTES', 'SECONDS']
 	'MAKE_TIMESTAMP':   ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS']
 	'MAKE_TIMESTAMPTZ': ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS', 'TIME_ZONE']
@@ -267,6 +268,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 
 	register_datetime_funcs(mut conn)!
 	register_date_trunc_funcs(mut conn)!
+	register_make_interval_funcs(mut conn)!
 	register_math_funcs(mut conn)!
 	register_string_funcs(mut conn)!
 	register_decfloat_funcs(mut conn)!

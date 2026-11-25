@@ -234,6 +234,9 @@ Every function, in alphabetical order:
    * - :ref:`MAKE_DATE <functions-date-and-time:MAKE_DATE>`
      - Date from its year, month and day
      - Date and Time
+   * - :ref:`MAKE_INTERVAL <functions-date-and-time:MAKE_INTERVAL>`
+     - Build an interval from numbers
+     - Date and Time
    * - :ref:`MAKE_TIME <functions-date-and-time:MAKE_TIME>`
      - Time from its hour, minute and second
      - Date and Time

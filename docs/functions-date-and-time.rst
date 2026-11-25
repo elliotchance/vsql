@@ -7,7 +7,8 @@ Date and Time Functions
 
 These functions return the current date and time (see :doc:`dates-times` for
 the types), build one from its fields (``MAKE_DATE``, ``MAKE_TIME``,
-``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``), return a part of one
+``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``, and ``MAKE_INTERVAL`` for an
+interval), return a part of one
 (``EXTRACT``), or round one down to the start of a unit (``DATE_TRUNC``). The current time is taken once for each statement, so every use
 in the same statement has the same value, even if the statement takes a while
 (except ``NOW()``). Each execution of a prepared statement has a new time.
@@ -438,6 +439,86 @@ a spreadsheet, a field out of range never rolls over into the next unit, so
   - SQL Server: ``DATEFROMPARTS``.
   - SQLite: ``DATE(PRINTF('%04d-%02d-%02d', y, m, d))``.
   - Oracle: ``TO_DATE``, which also has a time.
+
+MAKE_INTERVAL
+^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   MAKE_INTERVAL([years BIGINT [, months BIGINT [, weeks BIGINT [, days BIGINT
+                 [, hours BIGINT [, mins BIGINT [, secs NUMERIC]]]]]]]) INTERVAL
+
+Builds an interval from numbers (usually columns), without a string literal or
+a multiplication. Each argument is ``0`` when it's left out, so any number of
+trailing arguments can be. They're any integer (``SMALLINT``, ``INTEGER`` or
+``BIGINT``), except ``secs``, which may have a fraction (an exact number or a
+``DOUBLE PRECISION``, with any digits past microseconds truncated). ``weeks`` is
+7 days. Negative values are allowed and can be mixed, and the result is NULL if
+any argument is NULL.
+
+The SQL standard (and vsql) has two kinds of interval that can't be mixed: a
+year-month interval and a day-time interval (see :doc:`dates-times`). The type
+of the result depends on which arguments are given, where an argument that's a
+constant ``0`` isn't given:
+
+- Only ``years`` or ``months``: ``INTERVAL YEAR(8) TO MONTH``.
+- Otherwise, ``INTERVAL DAY(8)`` to the smallest unit that's given:
+  ``INTERVAL DAY(8)`` for ``weeks`` or ``days`` (so it can be added to a
+  ``DATE``), ``INTERVAL DAY(8) TO HOUR``, ``INTERVAL DAY(8) TO MINUTE`` or
+  ``INTERVAL DAY(8) TO SECOND(6)``. ``MAKE_INTERVAL()`` is a zero
+  ``INTERVAL DAY(8) TO SECOND(6)``.
+- Both (such as ``MAKE_INTERVAL(1, 0, 0, 3)``, or columns for ``months`` and
+  ``days``) is a ``42601`` error when the statement is compiled. Add two
+  intervals instead: ``MAKE_INTERVAL(1) + MAKE_INTERVAL(0, 0, 0, 3)`` (to a
+  date or timestamp).
+
+The leading field (years or days) can have up to 8 digits, otherwise it's a
+``22015`` error (interval field overflow). An interval is shown normalised, so
+``MAKE_INTERVAL(0, 0, 0, 0, 25)`` (25 hours) is shown as ``1 01`` (1 day 1
+hour), and ``MAKE_INTERVAL(0, 14)`` is ``1-02``. A day is always 24 hours in
+vsql (time zones are fixed offsets), so they're the same.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MAKE_INTERVAL(1, 6);
+  -- COL1: 1-06
+
+  VALUES MAKE_INTERVAL(0, 0, 2);
+  -- COL1: 14
+
+  VALUES MAKE_INTERVAL(0, 0, 0, 3, 4, 5, 6.5);
+  -- COL1: 3 04:05:06.500000
+
+  VALUES DATE '2026-11-17' + MAKE_INTERVAL(0, 0, 0, 3);
+  -- COL1: 2026-11-20
+
+  VALUES MAKE_INTERVAL(1, 0, 0, 3);
+  -- error 42601: syntax error: MAKE_INTERVAL can't have both years or months and a smaller unit, add two intervals instead
+
+It's the same as multiplying an interval, such as ``n * INTERVAL '1' DAY`` for
+``MAKE_INTERVAL(0, 0, 0, n)``, which is standard SQL. ``MAKE_INTERVAL`` is
+shorter when there are several units, such as
+``MAKE_INTERVAL(0, 0, 0, d, h, m)`` for
+``d * INTERVAL '1' DAY + h * INTERVAL '1' HOUR + m * INTERVAL '1' MINUTE``.
+
+**Compatibility**
+
+- **SQL standard:** not standard. Multiply an interval literal, such as
+  ``n * INTERVAL '1' DAY``, or ``CAST`` a number to a single-field interval,
+  such as ``CAST(n AS INTERVAL DAY)``.
+- **vsql:** ``MAKE_INTERVAL`` is ``V402-21`` (see :doc:`sql-flagging`).
+- **Other databases:**
+
+  - PostgreSQL: ``make_interval``, which returns its one ``interval`` type, so
+    it can have years and days together, and keeps the hours and days apart
+    (25 hours isn't a day there, because of daylight saving time). It's usually
+    called with named arguments (``make_interval(days => 3)``), which vsql
+    doesn't have.
+  - MySQL: ``INTERVAL n DAY``, only in date arithmetic.
+  - SQL Server: ``DATEADD(day, n, d)``.
+  - SQLite: ``date(d, '+' || n || ' days')``.
 
 MAKE_TIME
 ^^^^^^^^^

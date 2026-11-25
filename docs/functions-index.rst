@@ -171,6 +171,9 @@ Every function, in alphabetical order:
    * - :ref:`FLOOR <functions-rounding:FLOOR>`
      - Round down to an integer
      - Rounding
+   * - :ref:`FORMAT_SIZE <functions-string:FORMAT_SIZE>`
+     - Format a number of bytes as a size
+     - String
    * - :ref:`GAMMA <functions-error-and-gamma:GAMMA>`
      - Gamma function
      - Error and Gamma
@@ -275,6 +278,9 @@ Every function, in alphabetical order:
      - String
    * - :ref:`OVERLAY <functions-string:OVERLAY>`
      - Replace part of a string
+     - String
+   * - :ref:`PARSE_SIZE <functions-string:PARSE_SIZE>`
+     - Convert a size to a number of bytes
      - String
    * - :ref:`PERCENTILE_CONT <functions-aggregate:PERCENTILE_CONT>`
      - Interpolated value at a fraction of the sorted values

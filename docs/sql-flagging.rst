@@ -556,6 +556,15 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V407-04``
      - ``BINARY_TO_UUID``.
 
+   * - ``V410``
+     - Size functions (see :doc:`functions`).
+
+   * - ``V410-01``
+     - ``FORMAT_SIZE``.
+
+   * - ``V410-02``
+     - ``PARSE_SIZE``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

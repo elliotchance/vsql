@@ -60,6 +60,15 @@ Every function, in alphabetical order:
    * - :ref:`BINARY_TO_HEX <functions-string:BINARY_TO_HEX>`
      - Convert a binary string to hexadecimal digits
      - String
+   * - :ref:`BIT_AND <functions-aggregate:BIT_AND>`
+     - Bitwise AND of the values
+     - Aggregate
+   * - :ref:`BIT_OR <functions-aggregate:BIT_OR>`
+     - Bitwise OR of the values
+     - Aggregate
+   * - :ref:`BIT_XOR <functions-aggregate:BIT_XOR>`
+     - Bitwise exclusive OR of the values
+     - Aggregate
    * - :ref:`BTRIM <functions-string:BTRIM>`
      - Remove characters from both ends of a string
      - String

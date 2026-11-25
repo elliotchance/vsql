@@ -502,6 +502,15 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V405-03``
      - ``MEDIAN``.
 
+   * - ``V405-04``
+     - ``BIT_AND``.
+
+   * - ``V405-05``
+     - ``BIT_OR``.
+
+   * - ``V405-06``
+     - ``BIT_XOR``.
+
    * - ``V406``
      - Binary string functions (see :doc:`functions`).
 

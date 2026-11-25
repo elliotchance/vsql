@@ -652,6 +652,24 @@ SELECT ANY_VALUE(sku) FROM products WHERE qty = 40;
 SELECT AVG(price) FROM products;
 -- COL1: 2.1875000000000000
 
+-- # bit_and
+-- # SELECT bit_and(qty) FROM products
+SELECT BIT_AND(qty) FROM products;
+-- warning 01003: null value eliminated in set function
+-- COL1: 0
+
+-- # bit_or
+-- # SELECT bit_or(qty) FROM products
+SELECT BIT_OR(qty) FROM products;
+-- warning 01003: null value eliminated in set function
+-- COL1: 47
+
+-- # bit_xor
+-- # SELECT bit_xor(qty) FROM products
+SELECT BIT_XOR(qty) FROM products;
+-- warning 01003: null value eliminated in set function
+-- COL1: 39
+
 -- # bool_and
 -- # SELECT bool_and(qty > 4) FROM products
 SELECT EVERY(qty > 4) FROM products;

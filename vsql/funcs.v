@@ -278,7 +278,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// find_function. The result type depends
 	// on the argument (see set_function_type) and the result is calculated by
 	// eval_set_function. PRODUCT and MEDIAN are vsql extensions (V405-02 and
-	// V405-03) that accept any number, like SUM.
+	// V405-03) that accept any number, like SUM. BIT_AND, BIT_OR and BIT_XOR are
+	// vsql extensions (V405-04 to V405-06) that only accept an integer.
 	//
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e, 7.g.i and 7.h
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 7.d.i
@@ -289,6 +290,9 @@ fn register_builtin_funcs(mut conn Connection) ! {
 			if typ.value.is_number() {
 				names << ['AVG', 'SUM', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP', 'PRODUCT',
 					'MEDIAN']
+			}
+			if typ.value in [SQLType.is_smallint, .is_integer, .is_bigint] {
+				names << ['BIT_AND', 'BIT_OR', 'BIT_XOR']
 			}
 			if typ.value == SQLType.is_boolean {
 				names << ['EVERY', 'ANY', 'SOME']

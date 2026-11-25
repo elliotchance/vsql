@@ -165,6 +165,139 @@ A value that isn't a number or an interval (such as a ``VARCHAR``) is a
   average of integers. PostgreSQL, MySQL, SQLite and Oracle return the
   fractional part, such as 2.3333333333333333 for the example above.
 
+BIT_AND
+^^^^^^^
+
+.. code-block:: sql
+
+   BIT_AND(SMALLINT) SMALLINT
+   BIT_AND(INTEGER) INTEGER
+   BIT_AND(BIGINT) BIGINT
+
+Returns the bitwise AND of all values: the bits that are set in every value.
+
+The value must be a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` (otherwise it's a
+``42883`` error, so a ``DECIMAL`` or a ``DOUBLE PRECISION`` can't be used), and
+the result has the same type. A negative value is in two's complement, so -1
+has every bit set.
+
+``NULL`` values are ignored, with a ``01003`` warning, and if there are no
+values the result is ``NULL``, like ``SUM``. MySQL returns a value with every
+bit set instead, use ``COALESCE(BIT_AND(x), -1)`` to get the same.
+
+``DISTINCT`` doesn't change the result.
+
+``BIT_AND`` is a vsql extension flagged by ``V405-04`` (see
+:doc:`sql-flagging`). It isn't a reserved word.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT BIT_AND(x) FROM (VALUES (12), (10), (14)) AS t (x);
+  -- COL1: 8
+
+  SELECT BIT_AND(x) FROM (VALUES (-1), (6)) AS t (x);
+  -- COL1: 6
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL, MySQL, BigQuery and DuckDB: ``BIT_AND(x)``.
+  - Oracle 21c: ``BIT_AND_AGG(x)``. Snowflake: ``BITAND_AGG(x)``.
+  - SQLite and SQL Server don't have it.
+
+BIT_OR
+^^^^^^
+
+.. code-block:: sql
+
+   BIT_OR(SMALLINT) SMALLINT
+   BIT_OR(INTEGER) INTEGER
+   BIT_OR(BIGINT) BIGINT
+
+Returns the bitwise OR of all values: the bits that are set in any value.
+
+The value must be a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` (otherwise it's a
+``42883`` error, so a ``DECIMAL`` or a ``DOUBLE PRECISION`` can't be used), and
+the result has the same type. A negative value is in two's complement, so -1
+has every bit set.
+
+``NULL`` values are ignored, with a ``01003`` warning, and if there are no
+values the result is ``NULL``, like ``SUM``. MySQL returns 0 instead,
+use ``COALESCE(BIT_OR(x), 0)`` to get the same.
+
+``DISTINCT`` doesn't change the result.
+
+``BIT_OR`` is a vsql extension flagged by ``V405-05`` (see
+:doc:`sql-flagging`). It isn't a reserved word.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT BIT_OR(x) FROM (VALUES (1), (4), (8)) AS t (x);
+  -- COL1: 13
+
+  SELECT g, BIT_OR(x) FROM (VALUES (1, 1), (1, 2), (2, 4)) AS t (g, x) GROUP BY g ORDER BY g;
+  -- G: 1 COL2: 3
+  -- G: 2 COL2: 4
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL, MySQL, BigQuery and DuckDB: ``BIT_OR(x)``.
+  - Oracle 21c: ``BIT_OR_AGG(x)``. Snowflake: ``BITOR_AGG(x)``.
+  - SQLite and SQL Server don't have it.
+
+BIT_XOR
+^^^^^^^
+
+.. code-block:: sql
+
+   BIT_XOR(SMALLINT) SMALLINT
+   BIT_XOR(INTEGER) INTEGER
+   BIT_XOR(BIGINT) BIGINT
+
+Returns the bitwise exclusive OR of all values: the bits that are set in an
+odd number of values. The order of the values doesn't matter, so it can be
+used as a checksum.
+
+The value must be a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` (otherwise it's a
+``42883`` error, so a ``DECIMAL`` or a ``DOUBLE PRECISION`` can't be used), and
+the result has the same type. A negative value is in two's complement, so -1
+has every bit set.
+
+``NULL`` values are ignored, with a ``01003`` warning, and if there are no
+values the result is ``NULL``, like ``SUM``. MySQL returns 0 instead,
+use ``COALESCE(BIT_XOR(x), 0)`` to get the same.
+
+With ``DISTINCT`` each value is only used once, which changes the result when
+a value is repeated.
+
+``BIT_XOR`` is a vsql extension flagged by ``V405-06`` (see
+:doc:`sql-flagging`). It isn't a reserved word.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT BIT_XOR(x), BIT_XOR(DISTINCT x) FROM (VALUES (5), (5), (3)) AS t (x);
+  -- COL1: 3 COL2: 6
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL, MySQL, BigQuery and DuckDB: ``BIT_XOR(x)``.
+  - Oracle 21c: ``BIT_XOR_AGG(x)``. Snowflake: ``BITXOR_AGG(x)``.
+  - SQLite and SQL Server don't have it.
+
 COUNT
 ^^^^^
 

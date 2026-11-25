@@ -4579,35 +4579,62 @@ rounded down to 2.18, where MySQL adds 4 decimal places (2.187500). Use
 BIT_AND
 ^^^^^^^
 
-.. code-block:: text
-
-  BIT_AND(expr)
-
 Returns the bitwise AND of all the values.
 
-No equivalent.
+.. code-block:: sql
+
+  -- BIT_AND(expr)
+  SELECT BIT_AND(/*expr*/) FROM /*table*/;
+  -- SELECT BIT_AND(qty) FROM products
+  SELECT BIT_AND(qty) FROM products;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 0
+
+``BIT_AND`` is a vsql extension. The value must be a ``SMALLINT``,
+``INTEGER`` or ``BIGINT``, and the result has the same type. With no rows (or
+only ``NULL`` values) the result is ``NULL``, where MySQL returns a value with
+every bit set. Use ``COALESCE(BIT_AND(qty), -1)`` to get the same bits. MySQL's result is always
+an unsigned ``BIGINT``, so a negative result is a large positive number there.
 
 BIT_OR
 ^^^^^^
 
-.. code-block:: text
-
-  BIT_OR(expr)
-
 Returns the bitwise OR of all the values.
 
-No equivalent.
+.. code-block:: sql
+
+  -- BIT_OR(expr)
+  SELECT BIT_OR(/*expr*/) FROM /*table*/;
+  -- SELECT BIT_OR(qty) FROM products
+  SELECT BIT_OR(qty) FROM products;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 47
+
+``BIT_OR`` is a vsql extension. The value must be a ``SMALLINT``,
+``INTEGER`` or ``BIGINT``, and the result has the same type. With no rows (or
+only ``NULL`` values) the result is ``NULL``, where MySQL returns 0. Use
+``COALESCE(BIT_OR(qty), 0)`` to get the same result. MySQL's result is always
+an unsigned ``BIGINT``, so a negative result is a large positive number there.
 
 BIT_XOR
 ^^^^^^^
 
-.. code-block:: text
-
-  BIT_XOR(expr)
-
 Returns the bitwise XOR of all the values.
 
-No equivalent.
+.. code-block:: sql
+
+  -- BIT_XOR(expr)
+  SELECT BIT_XOR(/*expr*/) FROM /*table*/;
+  -- SELECT BIT_XOR(qty) FROM products
+  SELECT BIT_XOR(qty) FROM products;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 39
+
+``BIT_XOR`` is a vsql extension. The value must be a ``SMALLINT``,
+``INTEGER`` or ``BIGINT``, and the result has the same type. With no rows (or
+only ``NULL`` values) the result is ``NULL``, where MySQL returns 0. Use
+``COALESCE(BIT_XOR(qty), 0)`` to get the same result. MySQL's result is always
+an unsigned ``BIGINT``, so a negative result is a large positive number there.
 
 COUNT
 ^^^^^

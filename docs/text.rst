@@ -54,7 +54,10 @@ such as ``VARCHAR(10 OCTETS)``. ``VARCHAR(10 CHARACTERS)`` is the same as
 that's too long. A ``CHARACTER(n OCTETS)`` is padded with spaces to *n* octets,
 and a cast to it never cuts a character in half. A ``CHARACTER VARYING`` (or
 ``CHAR VARYING`` or ``VARCHAR``) without a length is a
-``CHARACTER VARYING(10485760)``, the maximum length.
+``CHARACTER VARYING(10485760)``, the maximum length. The length of a
+``CHARACTER LARGE OBJECT`` can have a multiplier: ``K`` (1024), ``M``
+(1048576) or ``G`` (1073741824), such as ``CLOB(2M)``. ``T`` and ``P`` are also
+multipliers, but they're always longer than the maximum.
 
 A string of any type that's longer than a quarter of a page (1024 bytes, with
 the default page size) is stored outside of its row, so that reading the row

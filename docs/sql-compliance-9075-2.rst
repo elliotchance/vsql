@@ -1232,10 +1232,10 @@ Optional Features
    * - ⭕ **T042**
      - **Extended LOB data type support**
 
-   * - ❌ **T043**
+   * - ⭕ **T043**
      - **Multiplier T**
 
-   * - ❌ **T044**
+   * - ⭕ **T044**
      - **Multiplier P**
 
    * - ✅ **T045**

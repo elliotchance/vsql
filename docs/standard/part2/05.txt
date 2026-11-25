@@ -17,7 +17,7 @@
 5.2/SR/7                 implemented  vsql/lexer.v tests/std_2_11_3_create_table.sql
 5.2/SR/8                 implemented  vsql/lexer.v tests/std_2_5_2_syntax_tokens.sql
 5.2/SR/9                 implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
-5.2/SR/10                n/a          - - large objects (T041)
+5.2/SR/10                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_large_object_length.sql a <separator> is also allowed, which is the same as <unsigned integer> <multiplier>
 5.2/SR/11                implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
 5.2/SR/12                implemented  vsql/lexer.v tests/std_2_5_2_comments.sql
 5.2/SR/13                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_5_2_long_identifiers.sql
@@ -49,8 +49,8 @@
 5.2/CR/2                 implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 5.2/CR/3                 implemented  vsql/lexer.v tests/std_2_5_2_bracketed_comments.sql
 5.2/CR/4                 n/a          - - Unicode delimited identifiers (F392)
-5.2/CR/5                 n/a          - - large objects (T041)
-5.2/CR/6                 n/a          - - large objects (T041)
+5.2/CR/5                 n/a          - - a length with T is always longer than the maximum (2147483647)
+5.2/CR/6                 n/a          - - a length with P is always longer than the maximum (2147483647)
 # 5.3, <literal>
 5.3                      implemented  vsql/std_2_5_3_literal.v tests/std_2_5_3_literal.sql
 5.3/SR/1                 implemented  vsql/lexer.v tests/std_2_5_3_literal.sql

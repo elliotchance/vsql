@@ -16,15 +16,15 @@
 6.1/SR/8                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql the character set is always UTF8, whose repertoire is UCS
 6.1/SR/9                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql
 6.1/SR/10                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_data_types.sql the maximum length, 2147483647
-6.1/SR/11                partial      vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql no K, M, G, T or P multipliers
+6.1/SR/11                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql,tests/std_2_6_1_large_object_length.sql
 6.1/SR/11.a              implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql
-6.1/SR/11.b              n/a          - - large object length multipliers
-6.1/SR/11.b.i            n/a          - - large object length multipliers
-6.1/SR/11.b.ii           n/a          - - large object length multipliers
-6.1/SR/11.b.iii          n/a          - - large object length multipliers
-6.1/SR/11.b.iv           n/a          - - large object length multipliers
-6.1/SR/11.b.v            n/a          - - large object length multipliers
-6.1/SR/12                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_large_object.sql
+6.1/SR/11.b              implemented  vsql/std_2_6_1_data_type.y,vsql/std_2_6_1_data_type.v tests/std_2_6_1_large_object_length.sql
+6.1/SR/11.b.i            implemented  vsql/std_2_6_1_data_type.y,vsql/std_2_6_1_data_type.v tests/std_2_6_1_large_object_length.sql
+6.1/SR/11.b.ii           implemented  vsql/std_2_6_1_data_type.y,vsql/std_2_6_1_data_type.v tests/std_2_6_1_large_object_length.sql
+6.1/SR/11.b.iii          implemented  vsql/std_2_6_1_data_type.y,vsql/std_2_6_1_data_type.v tests/std_2_6_1_large_object_length.sql
+6.1/SR/11.b.iv           implemented  vsql/std_2_6_1_data_type.y,vsql/std_2_6_1_data_type.v tests/std_2_6_1_large_object_length.sql
+6.1/SR/11.b.v            implemented  vsql/std_2_6_1_data_type.y,vsql/std_2_6_1_data_type.v tests/std_2_6_1_large_object_length.sql
+6.1/SR/12                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character_large_object.sql,tests/std_2_6_1_large_object_length.sql
 6.1/SR/13                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_large_object.sql
 6.1/SR/14                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 6.1/SR/15                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_33_substring.sql
@@ -37,7 +37,7 @@
 6.1/SR/16.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
 6.1/SR/16.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
 6.1/SR/16.b.iii          n/a          - - a large object length can't have char length units (T061)
-6.1/SR/17                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql the maximum length is 10485760, and the maximum large object length is 2147483647
+6.1/SR/17                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql,tests/std_2_6_1_large_object_length.sql the maximum length is 10485760, and the maximum large object length is 2147483647
 6.1/SR/18                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the character set is always UTF8
 6.1/SR/19                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_binary.sql
 6.1/SR/20                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_binary.sql

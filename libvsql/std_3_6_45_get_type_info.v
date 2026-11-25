@@ -18,8 +18,7 @@ const sql_all_types = i16(0)
 
 // The codes from Table 37, "Codes used for concise data types", that vsql
 // doesn't support.
-const unsupported_concise_types = [i16(17), 19, 20, 30, 40, 50, 55, 101, 102, 103, 104, 105, 106,
-	107, 108, 109, 110, 111, 112, 113]
+const unsupported_concise_types = [i16(17), 19, 20, 50, 55]
 
 // TypeInfo is a row of TYPE_INFO. A zero (or zero-length string) is the null
 // value, except for the codes.
@@ -38,6 +37,41 @@ struct TypeInfo {
 	sql_data_type    i16
 	datetime_sub     int
 	num_prec_radix   int
+	// interval_precision is the <interval leading field precision> of an
+	// interval, otherwise 0 (zero).
+	interval_precision int
+}
+
+// interval_type_info is a row of TYPE_INFO for each interval type, with the
+// maximum leading field precision (8) and fractional seconds precision (6).
+fn interval_type_info() []TypeInfo {
+	mut rows := []TypeInfo{}
+	for fields, code in interval_codes {
+		typ := new_interval_type(code, 8, 6)
+		start, end := interval_fields(typ)
+		names := ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND']
+		qualifier := if start == end {
+			names[start - 1]
+		} else {
+			'${names[start - 1]} TO ${names[end - 1]}'
+		}
+		rows << TypeInfo{
+			name:               'INTERVAL ${qualifier}'
+			code:               100 + code
+			column_size:        interval_length(typ)
+			literal_prefix:     "INTERVAL '"
+			literal_suffix:     "' ${qualifier}"
+			searchable:         2
+			unsigned:           0
+			minimum_scale:      if fields % 10 == 6 { 0 } else { -1 }
+			maximum_scale:      if fields % 10 == 6 { 6 } else { -1 }
+			sql_data_type:      sql_interval
+			datetime_sub:       code
+			interval_precision: 8
+		}
+	}
+
+	return rows
 }
 
 const type_info = [
@@ -147,6 +181,26 @@ const type_info = [
 		num_prec_radix:   2
 	},
 	TypeInfo{
+		name:           'CHARACTER LARGE OBJECT'
+		code:           sql_clob
+		column_size:    max_i32
+		literal_prefix: "'"
+		literal_suffix: "'"
+		create_params:  'LENGTH'
+		searchable:     3
+		sql_data_type:  sql_clob
+	},
+	TypeInfo{
+		name:           'BINARY LARGE OBJECT'
+		code:           sql_blob
+		column_size:    max_i32
+		literal_prefix: "X'"
+		literal_suffix: "'"
+		create_params:  'LENGTH'
+		searchable:     2
+		sql_data_type:  sql_blob
+	},
+	TypeInfo{
 		name:           'DATE'
 		code:           sql_type_date
 		column_size:    10
@@ -228,7 +282,7 @@ fn get_type_info(mut stmt Stmt, data_type i16) !i16 {
 	// - 4. D must be ALL TYPES or one of the codes in Table 37, "Codes used for
 	// concise data types", otherwise an exception condition is raised:
 	// CLI-specific condition — invalid data type.
-	if data_type != sql_all_types && data_type !in type_info.map(it.code)
+	if data_type != sql_all_types && data_type !in all_type_info().map(it.code)
 		&& data_type !in unsupported_concise_types {
 		return cli_error('HY004', 'invalid data type')
 	}
@@ -237,6 +291,14 @@ fn get_type_info(mut stmt Stmt, data_type i16) !i16 {
 	where := if data_type == sql_all_types { '' } else { 'WHERE DATA_TYPE = ${data_type}' }
 
 	return exec_direct_text(mut stmt, 'SELECT * FROM ${type_info_table()} ${where} ORDER BY DATA_TYPE')
+}
+
+// all_type_info is every row of TYPE_INFO.
+fn all_type_info() []TypeInfo {
+	mut rows := type_info.clone()
+	rows << interval_type_info()
+
+	return rows
 }
 
 // type_info_table is TYPE_INFO (General Rules 7 and 8).
@@ -256,7 +318,7 @@ fn type_info_table() string {
 	}
 
 	mut rows := []string{}
-	for t in type_info {
+	for t in all_type_info() {
 		rows << 'ROW(${str(t.name)}, ${smallint(t.code)}, ${integer(if t.column_size == 0 {
 			-1
 		} else {
@@ -273,7 +335,11 @@ fn type_info_table() string {
 			-1
 		} else {
 			t.num_prec_radix
-		})}, ${smallint(-1)})'
+		})}, ${smallint(if t.interval_precision == 0 {
+			-1
+		} else {
+			t.interval_precision
+		})})'
 	}
 
 	return '(VALUES ${rows.join(', ')}) AS TYPE_INFO (TYPE_NAME, DATA_TYPE, COLUMN_SIZE, LITERAL_PREFIX, LITERAL_SUFFIX, CREATE_PARAMS, NULLABLE, CASE_SENSITIVE, SEARCHABLE, UNSIGNED_ATTRIBUTE, FIXED_PREC_SCALE, AUTO_UNIQUE_VALUE, LOCAL_TYPE_NAME, MINIMUM_SCALE, MAXIMUM_SCALE, SQL_DATA_TYPE, SQL_DATETIME_SUB, NUM_PREC_RADIX, INTERVAL_PRECISION)'

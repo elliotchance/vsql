@@ -4,9 +4,8 @@ module main
 //
 // Specify the rules for retrieving BINARY LARGE OBJECT string values.
 //
-// There are no binary large objects in SQL/CLI (Feature T041), but the same
-// rules retrieve a BINARY or BINARY VARYING value (SQL_BINARY or SQL_VARBINARY),
-// which isn't in SQL/CLI 2003.
+// The same rules retrieve a BINARY or BINARY VARYING value (SQL_BINARY or
+// SQL_VARBINARY), which isn't in SQL/CLI 2003.
 
 // retrieve_octets copies value into target (which has room for target_length
 // octets), and sets returned_length to the length of value. It's never null

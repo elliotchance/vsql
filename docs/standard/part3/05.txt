@@ -179,11 +179,11 @@
 5.5/GR/5.c.iii.2.C       n/a          - - every descriptor is at LEVEL 0
 5.5/GR/5.c.iv            container    - -
 5.5/GR/5.c.iv.1          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c OCTET_LENGTH is 4 octets for each character (UTF-8)
-5.5/GR/5.c.iv.2          missing      - - #1746 large objects aren't supported by the SQL/CLI
+5.5/GR/5.c.iv.2          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/large_object_test.c
 5.5/GR/5.c.iv.3          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c SMALLINT, INTEGER and BIGINT have a binary precision (16, 32 and 64)
 5.5/GR/5.c.iv.4          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c binary precision (24 and 53)
 5.5/GR/5.c.iv.5          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
-5.5/GR/5.c.iv.6          missing      - - #1746 intervals aren't supported by the SQL/CLI
+5.5/GR/5.c.iv.6          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
 5.5/GR/5.c.iv.7          n/a          - - there are no reference types (S041)
 5.5/GR/5.c.iv.8          n/a          - - there are no user-defined types (S023)
 5.5/GR/5.c.iv.9          n/a          - - there are no row types (T051)
@@ -211,7 +211,7 @@
 5.5/GR/8.d.vi.3          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
 5.5/GR/8.d.vi.4          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
 5.5/GR/8.d.vi.5          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_50_prepare_test.c
-5.5/GR/8.d.vi.6          missing      - - #1746 intervals aren't supported by the SQL/CLI
+5.5/GR/8.d.vi.6          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
 5.5/GR/8.d.vi.7          n/a          - - there are no reference types (S041)
 5.5/GR/8.d.vi.8          n/a          - - there are no user-defined types (S023)
 5.5/GR/8.d.vi.9          n/a          - - there are no row types (T051)
@@ -426,9 +426,9 @@
 5.8/GR/3.h.viii.2.B.II.2 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
 5.8/GR/3.h.viii.2.B.II.2.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
 5.8/GR/3.h.viii.2.B.II.2.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
-5.8/GR/3.h.viii.2.B.II.3 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.8/GR/3.h.viii.2.B.II.3.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.8/GR/3.h.viii.2.B.II.3.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.8/GR/3.h.viii.2.B.II.3 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.8/GR/3.h.viii.2.B.II.3.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.8/GR/3.h.viii.2.B.II.3.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/binary_test.c,libvsql/large_object_test.c
 5.8/GR/3.h.viii.2.B.II.4 n/a          - - there are no arrays or multisets (S091, S271)
 5.8/GR/3.h.viii.2.B.II.5 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
 5.8/GR/3.h.viii.3        implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
@@ -448,14 +448,14 @@
 5.9/GR/5.b.i             implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 5.9/GR/5.b.ii            implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 # 5.10, Binary large object string retrieval
-5.10                     implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.10/GR/1                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.10/GR/2                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.10/GR/3                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.10/GR/4                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10                     implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.10/GR/1                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.10/GR/2                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.10/GR/3                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.10/GR/4                implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
 5.10/GR/5                container    - -
-5.10/GR/5.a              implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
-5.10/GR/5.b              implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+5.10/GR/5.a              implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
+5.10/GR/5.b              implemented  libvsql/std_3_5_10_binary_large_object_string_retrieval.v libvsql/binary_test.c,libvsql/large_object_test.c
 # 5.11, Deferred parameter check
 5.11                     implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c
 5.11/GR/1                definition   - -
@@ -480,19 +480,19 @@
 5.13/SR/5.a              implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.b              n/a          - - every LEVEL is 0 (zero), so TOP_LEVEL_COUNT is COUNT
 5.13/SR/5.c              container    - -
-5.13/SR/5.c.i            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c CHARACTER and CHARACTER VARYING need a LENGTH greater than 0 (zero); there are no CLOBs
-5.13/SR/5.c.ii           missing      - - #1746 large objects aren't supported by the SQL/CLI
+5.13/SR/5.c.i            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c,libvsql/large_object_test.c CHARACTER, CHARACTER VARYING and CHARACTER LARGE OBJECT need a LENGTH greater than 0 (zero)
+5.13/SR/5.c.ii           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/large_object_test.c a LENGTH greater than 0 (zero)
 5.13/SR/5.c.iii          implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.iv           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.v            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.vi           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.vii          implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.viii         implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c the PRECISION of a DATE is 0 (zero), otherwise it's 0 (zero) to 6
-5.13/SR/5.c.ix           missing      - - #1746 intervals aren't supported by the SQL/CLI
-5.13/SR/5.c.x            n/a          - - user-defined types (S023)
-5.13/SR/5.c.xi           n/a          - - reference types (S041)
-5.13/SR/5.c.xii          n/a          - - row types (T051)
-5.13/SR/5.c.xiii         n/a          - - arrays (S091)
+5.13/SR/5.c.ix           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/interval_test.c a leading field precision of 1 to 8, and a fractional seconds precision of 0 to 6
+5.13/SR/5.c.x            n/a          - - there are no user-defined, reference, row or array types
+5.13/SR/5.c.xi           n/a          - - there are no user-defined, reference, row or array types
+5.13/SR/5.c.xii          n/a          - - there are no user-defined, reference, row or array types
+5.13/SR/5.c.xiii         n/a          - - there are no user-defined, reference, row or array types
 5.13/SR/5.c.xiv          n/a          - - there are no implementation-defined data types
 5.13/SR/6                definition   - -
 5.13/SR/7                container    - -
@@ -566,7 +566,7 @@
 5.13/GR/1                definition   - -
 5.13/GR/2                definition   - -
 5.13/GR/3                definition   - -
-5.13/GR/4                missing      - - #1746 intervals aren't supported by the SQL/CLI
+5.13/GR/4                implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
 5.13/GR/5                definition   - -
 # 5.14, Other tables associated with CLI
 5.14                     implemented  libvsql/libvsql.h scripts/check-libvsql-constants.vsh each table is reviewed with the routines that use it

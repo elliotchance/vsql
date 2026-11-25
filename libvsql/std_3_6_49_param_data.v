@@ -13,9 +13,9 @@ import vsql
 //
 // The deferred parameters are found when the statement is executed (General
 // Rules 3 to 5, see 5.6, "Implicit EXECUTE USING and OPEN USING clauses",
-// General Rules 4.j). There's no maximum length for a character string, and
-// there are no large objects or locators (General Rules 11.a.i.1.B, 11.a.i.2,
-// 11.a.i.3 and 14.a). The second cast, to the type of the dynamic parameter
+// General Rules 4.j). There's no maximum length for a character string or
+// large object, and there are no locators (General Rules 11.a.i.1.B,
+// 11.a.i.2.B, 11.a.i.3.B and 14.a). The second cast, to the type of the dynamic parameter
 // (General Rules 14.b.ii and 14.b.iii), is done when the statement is executed,
 // like every other dynamic parameter (5.6, General Rules 4.p.ii).
 //
@@ -66,10 +66,10 @@ fn param_data(mut stmt Stmt, value &voidptr) !i16 {
 		return sql_need_data
 	}
 
-	// - 11.a.i.1.A. A character string is the characters wholly contained in
-	// its octets, so it doesn't end with part of a character (PutData checked
-	// that the rest is valid UTF-8). A binary string is all of its octets
-	// (11.a.i.3.A).
+	// - 11.a.i.1.A, 11.a.i.2.A. A character string (or CLOB) is the
+	// characters wholly contained in its octets, so it doesn't end with part
+	// of a character (PutData checked that the rest is valid UTF-8). A binary
+	// string is all of its octets (11.a.i.3.A).
 	v := if sv.typ.typ == .is_varchar && !sv.is_null {
 		vsql.new_varchar_value(whole_characters(sv.string_value()))
 	} else {

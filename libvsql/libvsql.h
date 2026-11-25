@@ -84,16 +84,23 @@
  *   DECFLOAT                 SQL_DECFLOAT                     numbers, SQL_CHAR
  *   BINARY                   SQL_BINARY                       binary strings
  *   BINARY VARYING           SQL_VARBINARY                    binary strings
+ *   BINARY LARGE OBJECT      SQL_BLOB                         binary strings
  *   CHARACTER                SQL_CHAR                         SQL_CHAR
  *   CHARACTER VARYING        SQL_VARCHAR                      SQL_CHAR
+ *   CHARACTER LARGE OBJECT   SQL_CLOB                         SQL_CHAR, SQL_CLOB
  *   BOOLEAN                  SQL_BOOLEAN                      SQL_CHAR
  *   DATE                     SQL_TYPE_DATE                    SQL_CHAR
  *   TIME                     SQL_TYPE_TIME                    SQL_CHAR
  *   TIME WITH TIME ZONE      SQL_TYPE_TIME_WITH_TIMEZONE      SQL_CHAR
  *   TIMESTAMP                SQL_TYPE_TIMESTAMP               SQL_CHAR
  *   TIMESTAMP WITH TIME ZONE SQL_TYPE_TIMESTAMP_WITH_TIMEZONE SQL_CHAR
+ *   INTERVAL ...             SQL_INTERVAL_YEAR, ...           SQL_CHAR
  *
- * "binary strings" is SQL_BINARY or SQL_VARBINARY, which are the octets of the
+ * An interval is retrieved as its literal, such as
+ * "INTERVAL '1-02' YEAR(2) TO MONTH", and bound from a literal or a string such
+ * as "1-2". SQL_CLOB is the same as SQL_CHAR.
+ *
+ * "binary strings" is SQL_BINARY, SQL_VARBINARY or SQL_BLOB, which are the octets of the
  * value in an array of unsigned char (without a null terminator), and its length
  * in octets (a value of BufferLength octets, or the StrLen_or_Ind of
  * SQLBindParameter). A binary string can't be retrieved as (or bound from) any
@@ -102,8 +109,8 @@
  * "numbers" is SQL_SMALLINT, SQL_INTEGER, SQL_BIGINT, SQL_REAL or SQL_DOUBLE
  * (a value out of range is 22003). SQL_DEFAULT retrieves a column as its own
  * type, so it only works for the types that have a C type (SMALLINT, INTEGER,
- * BIGINT, REAL, DOUBLE PRECISION, CHARACTER, BINARY and BINARY VARYING),
- * otherwise it's 07002.
+ * BIGINT, REAL, DOUBLE PRECISION, CHARACTER, CHARACTER LARGE OBJECT, BINARY,
+ * BINARY VARYING and BINARY LARGE OBJECT), otherwise it's 07002.
  */
 
 #ifndef LIBVSQL_H
@@ -168,10 +175,13 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_REAL     7  /* REAL, or SQLREAL */
 #define SQL_DOUBLE   8  /* DOUBLE PRECISION, SQLDOUBLE */
 #define SQL_DATETIME 9  /* any datetime type */
+#define SQL_INTERVAL 10 /* any interval type */
 #define SQL_VARCHAR  12 /* CHARACTER VARYING */
 #define SQL_BOOLEAN  16 /* BOOLEAN */
 #define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
 #define SQL_DECFLOAT 26 /* DECFLOAT (not in SQL/CLI 2003, see Part 2, Table 30) */
+#define SQL_BLOB     30 /* BINARY LARGE OBJECT, or an array of unsigned char */
+#define SQL_CLOB     40 /* CHARACTER LARGE OBJECT, or a C string */
 
 /* BINARY and BINARY VARYING aren't in SQL/CLI 2003, so these are their codes
  * in dynamic SQL (Part 2, Table 30). The C data type of each is an array of
@@ -197,6 +207,37 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TYPE_TIMESTAMP               93 /* TIMESTAMP */
 #define SQL_TYPE_TIME_WITH_TIMEZONE      94 /* TIME WITH TIME ZONE */
 #define SQL_TYPE_TIMESTAMP_WITH_TIMEZONE 95 /* TIMESTAMP WITH TIME ZONE */
+
+/* SQL_DESC_DATETIME_INTERVAL_CODEs of SQL_INTERVAL. */
+#define SQL_CODE_YEAR                 1  /* YEAR */
+#define SQL_CODE_MONTH                2  /* MONTH */
+#define SQL_CODE_DAY                  3  /* DAY */
+#define SQL_CODE_HOUR                 4  /* HOUR */
+#define SQL_CODE_MINUTE               5  /* MINUTE */
+#define SQL_CODE_SECOND               6  /* SECOND */
+#define SQL_CODE_YEAR_TO_MONTH        7  /* YEAR TO MONTH */
+#define SQL_CODE_DAY_TO_HOUR          8  /* DAY TO HOUR */
+#define SQL_CODE_DAY_TO_MINUTE        9  /* DAY TO MINUTE */
+#define SQL_CODE_DAY_TO_SECOND        10 /* DAY TO SECOND */
+#define SQL_CODE_HOUR_TO_MINUTE       11 /* HOUR TO MINUTE */
+#define SQL_CODE_HOUR_TO_SECOND       12 /* HOUR TO SECOND */
+#define SQL_CODE_MINUTE_TO_SECOND     13 /* MINUTE TO SECOND */
+
+/* Concise codes for interval data types, which are the DATA_TYPE of
+ * SQLDescribeCol (and the ParameterType of SQLBindParameter). */
+#define SQL_INTERVAL_YEAR             101 /* INTERVAL YEAR */
+#define SQL_INTERVAL_MONTH            102 /* INTERVAL MONTH */
+#define SQL_INTERVAL_DAY              103 /* INTERVAL DAY */
+#define SQL_INTERVAL_HOUR             104 /* INTERVAL HOUR */
+#define SQL_INTERVAL_MINUTE           105 /* INTERVAL MINUTE */
+#define SQL_INTERVAL_SECOND           106 /* INTERVAL SECOND */
+#define SQL_INTERVAL_YEAR_TO_MONTH    107 /* INTERVAL YEAR TO MONTH */
+#define SQL_INTERVAL_DAY_TO_HOUR      108 /* INTERVAL DAY TO HOUR */
+#define SQL_INTERVAL_DAY_TO_MINUTE    109 /* INTERVAL DAY TO MINUTE */
+#define SQL_INTERVAL_DAY_TO_SECOND    110 /* INTERVAL DAY TO SECOND */
+#define SQL_INTERVAL_HOUR_TO_MINUTE   111 /* INTERVAL HOUR TO MINUTE */
+#define SQL_INTERVAL_HOUR_TO_SECOND   112 /* INTERVAL HOUR TO SECOND */
+#define SQL_INTERVAL_MINUTE_TO_SECOND 113 /* INTERVAL MINUTE TO SECOND */
 
 /* Special TargetType values for SQLGetData. */
 #define SQL_ARD_TYPE (-99) /* the type in the ARD */
@@ -543,7 +584,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DESC_ALLOC_TYPE             1099 /* SQL_DESC_ALLOC_AUTO or USER */
 
 /* Descriptor record fields. */
-#define SQL_DESC_DATETIME_INTERVAL_PRECISION  26   /* not used */
+#define SQL_DESC_DATETIME_INTERVAL_PRECISION  26   /* leading field precision */
 #define SQL_DESC_TYPE                         1002 /* the data type */
 #define SQL_DESC_LENGTH                       1003 /* in characters */
 #define SQL_DESC_OCTET_LENGTH_POINTER         1004 /* SQLINTEGER *length */

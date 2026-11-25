@@ -21,8 +21,9 @@ import vsql
 // be greater than 0 (zero) or NULL TERMINATED (Syntax Rules, 12.c.i.3 and
 // 12.c.i.4), so an empty string has to be null terminated.
 //
-// A binary string (SQL_BINARY or SQL_VARBINARY, which aren't in SQL/CLI 2003)
-// is the octets at DATA_POINTER. Its length is the value at
+// A binary string (SQL_BLOB, or SQL_BINARY or SQL_VARBINARY, which aren't in
+// SQL/CLI 2003) is the octets at DATA_POINTER. A CHARACTER LARGE OBJECT
+// (SQL_CLOB) is a character string. Its length is the value at
 // OCTET_LENGTH_POINTER, or the OCTET_LENGTH (the BufferLength of
 // BindParameter) if that's a null pointer. The length can be 0 (zero), but it
 // can't be NULL TERMINATED or negative (dynamic SQL error — using clause does
@@ -160,11 +161,27 @@ fn ipd_type(ipd &Desc, i int) vsql.Type {
 				size: length
 			}
 		}
+		sql_clob {
+			vsql.Type{
+				typ:  .is_clob
+				size: length
+			}
+		}
 		sql_binary {
 			vsql.Type{
 				typ:  .is_binary
 				size: length
 			}
+		}
+		sql_blob {
+			vsql.Type{
+				typ:  .is_blob
+				size: length
+			}
+		}
+		sql_interval {
+			new_interval_type(ipd.record_int(i, sql_desc_datetime_interval_code), int(ipd.record_int(i,
+				sql_desc_datetime_interval_precision)), precision)
 		}
 		sql_varbinary {
 			vsql.Type{
@@ -313,14 +330,14 @@ fn parameter_value(stmt &Stmt, prepared vsql.PreparedStmt, i int, sv vsql.Value,
 	return tv
 }
 
-// cast_parameter is CAST ( SV AS TDT ). A number can't be cast to a datetime
-// or BOOLEAN, and only a binary string can be cast to a binary string (and the
-// other way around): dynamic SQL error — restricted data type attribute
-// violation.
+// cast_parameter is CAST ( SV AS TDT ). A number can't be cast to a datetime,
+// interval or BOOLEAN, and only a binary string can be cast to a binary string
+// (and the other way around): dynamic SQL error — restricted data type
+// attribute violation.
 fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 	if !sv.is_null && ((sv.typ.typ != .is_varchar && tdt.typ in [.is_date, .is_time_without_time_zone,
 		.is_time_with_time_zone, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone,
-		.is_boolean])
+		.is_boolean, .is_interval_year_month, .is_interval_day_time])
 		|| is_binary_string(sv.typ.typ) != is_binary_string(tdt.typ)) {
 		return cli_error('07006', 'restricted data type attribute violation')
 	}
@@ -333,15 +350,18 @@ fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 // other (ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 6):
 // a number, datetime or BOOLEAN can only be cast to the same kind of type (or
 // a character string), and a DATE and a TIME can't be cast to each other. A
-// binary string can only be cast to a binary string.
+// binary string can only be cast to a binary string. A year-month interval and
+// a day-time interval are different kinds of type.
 fn is_restricted_cast(from vsql.SQLType, to vsql.SQLType) bool {
 	if is_binary_string(from) != is_binary_string(to) {
 		return true
 	}
 	kind := fn (t vsql.SQLType) int {
 		return match t {
-			.is_character, .is_varchar { 0 }
+			.is_character, .is_varchar, .is_clob { 0 }
 			.is_boolean { 1 }
+			.is_interval_year_month { 6 }
+			.is_interval_day_time { 7 }
 			.is_date { 2 }
 			.is_time_without_time_zone, .is_time_with_time_zone { 3 }
 			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone { 4 }

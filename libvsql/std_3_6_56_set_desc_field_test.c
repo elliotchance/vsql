@@ -102,7 +102,7 @@ UTEST_F(db, 6_56_set_desc_field_type) {
   EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(999), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY004");
-  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(30), 0),
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(31), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HYC00");
 

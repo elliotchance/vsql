@@ -1208,7 +1208,7 @@ Optional Features
    * - ⭕ **T021**
      - **BINARY and VARBINARY data types**
 
-   * - ⭕ **T022**
+   * - ✅ **T022**
      - **Advanced support for BINARY and VARBINARY data types**
 
    * - ✅ **T023**

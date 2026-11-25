@@ -651,6 +651,11 @@ module vsql
 %token UPPER
 %token USER
 %token USING
+%token VACUUM
+%token COMPACT
+%token PAGES
+%token TIMEOUT
+%token VERBOSE
 %token VALUE
 %token VALUES
 %token VALUE_OF

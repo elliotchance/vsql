@@ -34,4 +34,5 @@ SQL Reference
    set-transaction.rst
    start-transaction.rst
    update.rst
+   vacuum.rst
    values.rst

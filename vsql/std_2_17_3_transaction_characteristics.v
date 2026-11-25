@@ -325,6 +325,7 @@ fn (p PreparedStmt) changes_database_name() string {
 		SequenceGeneratorDefinition { 'CREATE SEQUENCE' }
 		TableDefinition { 'CREATE TABLE' }
 		UpdateStatementPositioned, UpdateStatementSearched { 'UPDATE' }
+		VacuumStatement { 'VACUUM' }
 		else { '' }
 	}
 }

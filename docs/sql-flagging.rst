@@ -470,6 +470,15 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V403-23``
      - ``MIN_SCALE``.
 
+   * - ``V403-24``
+     - ``RANDOM`` with a minimum and maximum, such as ``RANDOM(1, 6)``.
+
+   * - ``V403-25``
+     - ``RANDOM_NORMAL``.
+
+   * - ``V403-26``
+     - ``RANDOM_BINARY``.
+
    * - ``V404``
      - String functions (see :doc:`functions-string`).
 

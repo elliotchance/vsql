@@ -668,21 +668,23 @@ Returns a random number from 0 up to (but not including) 1, or a random integer 
   -- COL1: TRUE
 
   -- random(min integer, max integer) → integer
-  VALUES /*min*/ + FLOOR(RANDOM() * (/*max*/ - /*min*/ + 1));
+  VALUES RANDOM(/*min*/, /*max*/);
   -- random(1, 10) BETWEEN 1 AND 10
-  VALUES 1 + FLOOR(RANDOM() * (10 - 1 + 1)) BETWEEN 1 AND 10;
+  VALUES RANDOM(1, 10) BETWEEN 1 AND 10;
   -- COL1: TRUE
 
 random_normal
 ^^^^^^^^^^^^^
 
-.. code-block:: text
-
-  random_normal([mean double precision [, stddev double precision]]) → double precision
-
 Returns a random number from a normal distribution with the given mean and standard deviation.
 
-No equivalent.
+.. code-block:: sql
+
+  -- random_normal([mean double precision [, stddev double precision]]) → double precision
+  VALUES RANDOM_NORMAL(/*mean*/, /*stddev*/);
+  -- random_normal(100, 0)
+  VALUES RANDOM_NORMAL(100, 0);
+  -- COL1: 100e0
 
 round
 ^^^^^

@@ -503,13 +503,18 @@ a range.
 randomblob
 ^^^^^^^^^^
 
-.. code-block:: text
-
-  randomblob(N)
-
 Returns a blob of N random bytes.
 
-No equivalent.
+.. code-block:: sql
+
+  -- randomblob(N)
+  VALUES RANDOM_BINARY(/*N*/);
+  -- SELECT length(randomblob(16));
+  VALUES OCTET_LENGTH(RANDOM_BINARY(16));
+  -- COL1: 16
+
+SQLite's ``randomblob`` gives 1 byte when N is less than 1, and vsql's
+``RANDOM_BINARY`` gives no bytes for 0 and an error for a negative N.
 
 replace
 ^^^^^^^

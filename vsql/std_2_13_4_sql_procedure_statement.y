@@ -31,6 +31,7 @@ sql_schema_manipulation_statement:
 | alter_sequence_generator_statement { $$.v = yy_box(Stmt($1.v as AlterSequenceGeneratorStatement)) }
 | drop_sequence_generator_statement { $$.v = $1.v }
 | drop_index_statement { $$.v = $1.v }
+| vacuum_statement { $$.v = $1.v }
 
 sql_transaction_statement:
   start_transaction_statement { $$.v = $1.v }

@@ -315,6 +315,9 @@ Every function, in alphabetical order:
    * - :ref:`REPLACE <functions-string:REPLACE>`
      - Replace every occurrence in a string
      - String
+   * - :ref:`REVERSE <functions-string:REVERSE>`
+     - Characters or octets in the opposite order
+     - String
    * - :ref:`ROUND <functions-rounding:ROUND>`
      - Round to the nearest integer or decimal place
      - Rounding

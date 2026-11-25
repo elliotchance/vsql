@@ -812,6 +812,51 @@ longer than ``STRING``.
   (or empty) ``FROM`` or ``TO`` isn't ``NULL``, it's treated like an empty
   string.
 
+REVERSE
+^^^^^^^
+
+.. code-block:: sql
+
+   REVERSE(string CHARACTER VARYING) CHARACTER VARYING
+   REVERSE(string BINARY VARYING) BINARY VARYING
+   REVERSE(string BINARY LARGE OBJECT) BINARY LARGE OBJECT
+
+Returns the characters of a string in the opposite order. A binary string (see
+:doc:`binary`) is reversed by octet. The result has the same type as the
+argument, so the padding of a ``CHARACTER(n)`` ends up at the start.
+
+A character string is reversed by Unicode code point, not by what's seen as a
+single character (a grapheme cluster). A character that's made of more than
+one code point doesn't survive the reversal: an ``e`` followed by a combining
+accent (U+0301) ends up with the accent on the wrong letter, and emoji that are
+joined (with U+200D) or flags (two regional indicators) are split up.
+
+``REVERSE`` is a vsql extension flagged by ``V404-11`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES REVERSE('hello');
+  -- COL1: olleh
+
+  VALUES REVERSE('😊£');
+  -- COL1: £😊
+
+  VALUES REVERSE(X'010203');
+  -- COL1: 030201
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL, MySQL, MariaDB, SQL Server, Snowflake and DuckDB: ``REVERSE``
+    of a character string, by code point.
+  - BigQuery and ClickHouse: also for a binary string, by byte.
+  - SQLite and Db2: no equivalent.
+
 RPAD
 ^^^^
 

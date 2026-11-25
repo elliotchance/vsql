@@ -416,6 +416,11 @@ VALUES REPEAT('Pg', 4);
 VALUES REPLACE('abcdefabcdef', 'cd', 'XX');
 -- COL1: abXXefabXXef
 
+-- # reverse
+-- # reverse('abcde')
+VALUES REVERSE('abcde');
+-- COL1: edcba
+
 -- # right
 -- # right('abcde', 2)
 VALUES SUBSTRING('abcde' FROM CHAR_LENGTH('abcde') - 2 + 1);

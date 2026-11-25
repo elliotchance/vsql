@@ -487,6 +487,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-10``
      - ``LENGTH``.
+
+   * - ``V404-11``
+     - ``REVERSE``.
    * - ``V405``
      - Aggregate functions (see :doc:`functions-aggregate`).
 

@@ -78,6 +78,7 @@ const builtin_arg_names = {
 	'RADIANS':          ['X']
 	'REPEAT':           ['STRING', 'N']
 	'REPLACE':          ['STRING', 'TARGET', 'REPLACEMENT']
+	'REVERSE':          ['STRING']
 	'ROUND':            ['X', 'PLACES']
 	'SIGN':             ['X']
 	'SPLIT_PART':       ['STRING', 'DELIMITER', 'N']

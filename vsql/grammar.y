@@ -713,6 +713,12 @@ module vsql
 %nonassoc TIME_TYPE;
 %nonassoc WITH;
 
+// "IF (" is always the start of the IF function (see if_function), rather than
+// a routine or column named IF, which is a <non-reserved word>. IF_WORD is only
+// used for this precedence, it's not a token.
+%nonassoc IF_WORD;
+%nonassoc OPERATOR_LEFT_PAREN;
+
 // The grammar must not have any conflicts. A conflict is when the parser could
 // do two different things at the same point, and yacc picks one of them, so a
 // new conflict fails the build. See "Grammar Conflicts" in

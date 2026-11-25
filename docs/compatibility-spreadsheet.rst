@@ -3410,17 +3410,19 @@ Returns the logical value FALSE.
 IF
 ^^
 
-🔧 vsql has no ``IF`` function, but an expression does the same thing.
+✅ vsql has the same function: ``IF``.
 
 Returns one value when a condition is true and another when it's false.
 
 .. code-block:: sql
 
   -- =IF(logical_test, value_if_true, value_if_false)
-  VALUES CASE WHEN /*logical_test*/ THEN /*value_if_true*/ ELSE /*value_if_false*/ END;
+  VALUES IF(/*logical_test*/, /*value_if_true*/, /*value_if_false*/);
   -- =IF(2 > 1, "yes", "no")
-  VALUES CASE WHEN 2 > 1 THEN 'yes' ELSE 'no' END;
+  VALUES IF(2 > 1, 'yes', 'no');
   -- COL1: yes
+
+The value if false can't be left out.
 
 IFERROR
 ^^^^^^^

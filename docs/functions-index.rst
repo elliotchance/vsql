@@ -189,6 +189,9 @@ Every function, in alphabetical order:
    * - :ref:`HEX_TO_BINARY <functions-string:HEX_TO_BINARY>`
      - Convert hexadecimal digits to a binary string
      - String
+   * - :ref:`IF <functions-conditional:IF>`
+     - One value if a condition is true, otherwise another
+     - Conditional
    * - :ref:`INITCAP <functions-string:INITCAP>`
      - Capitalize the first letter of each word
      - String

@@ -332,7 +332,7 @@ struct OverlayFunction {
 	placing &CharacterValueExpression
 	from    &NumericValueExpression
 	@for    ?&NumericValueExpression
-	using   string // CHARACTERS or OCTETS
+	using   string // CHARACTERS, OCTETS or '' (see CharacterSubstringFunction)
 }
 
 fn new_overlay_function(value CharacterValueExpression, placing CharacterValueExpression, from NumericValueExpression, @for ?NumericValueExpression, using string) OverlayFunction {
@@ -349,7 +349,11 @@ fn (e OverlayFunction) pstr(params map[string]Value) string {
 		s += ' FOR ${@for.pstr(params)}'
 	}
 
-	return s + ' USING ${e.using})'
+	if e.using != '' {
+		s += ' USING ${e.using}'
+	}
+
+	return s + ')'
 }
 
 fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
@@ -368,6 +372,10 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 			typ:          Type{}
 			contains_agg: false
 		}
+	}
+
+	if compiled_value.typ.typ.is_binary_string() && compiled_placing.typ.typ.is_binary_string() {
+		return e.compile_binary(mut c, compiled_value, compiled_placing, compiled_from, compiled_for)
 	}
 
 	if !compiled_value.typ.typ.is_string() || !compiled_placing.typ.typ.is_string() {
@@ -404,7 +412,7 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 			}
 
 			from := substring_position('OVERLAY', 'start position', from_value)!
-			if e.using == 'CHARACTERS' {
+			if e.using != 'OCTETS' {
 				characters := value.string_value().runes()
 				placing_characters := placing.string_value().runes()
 				// Without FOR, the string length is CHAR_LENGTH(RS).
@@ -436,6 +444,64 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 
 			return new_varchar_value(limit_concatenation(str.substr(before_start, before_end) +
 				placing.string_value() + str.substr(after_start, after_end), typ)!).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: compiled_value.contains_agg || compiled_placing.contains_agg
+			|| compiled_from.contains_agg || compiled_for.contains_agg
+	}
+}
+
+// compile_binary is a <binary overlay function>, which is a <binary value
+// function> (Feature T022). It's the same as the concatenation of SUBSTRINGs of
+// the value and the replacement, counted in octets, so its type is the
+// <binary concatenation> of their types.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 23
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5
+fn (e OverlayFunction) compile_binary(mut c Compiler, compiled_value CompileResult, compiled_placing CompileResult, compiled_from CompileResult, compiled_for CompileResult) !CompileResult {
+	if e.using != '' {
+		return sqlstate_42601('OVERLAY of ${compiled_value.typ} cannot have USING ${e.using}')
+	}
+
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 23.c
+	substring_type := binary_value_function_type(compiled_value.typ)
+	typ := binary_concatenation_type(binary_concatenation_type(substring_type, compiled_placing.typ)!,
+		substring_type)!
+	c.flag_binary_value_function(typ)
+
+	return CompileResult{
+		run:          fn [e, compiled_value, compiled_placing, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value.run(mut conn, data, params)!
+			placing := compiled_placing.run(mut conn, data, params)!
+			from_value := compiled_from.run(mut conn, data, params)!
+			for_value := if e.@for != none {
+				compiled_for.run(mut conn, data, params)!
+			} else {
+				new_integer_value(0)
+			}
+
+			// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 1
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 17.c
+			if value.is_null || placing.is_null || from_value.is_null || for_value.is_null {
+				return new_null_value(typ.typ).with_type(typ)
+			}
+
+			// Without FOR, the string length is OCTET_LENGTH(RS).
+			//
+			// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 23.b
+			from := substring_position('OVERLAY', 'start position', from_value)!
+			length := if e.@for != none {
+				substring_position('OVERLAY', 'string length', for_value)!
+			} else {
+				i64(placing.octet_length())
+			}
+			str := value.string_value()
+			before_start, before_end := substring_range(str.len, 1, true, overlay_before_length(from))!
+			after_start, after_end := substring_range(str.len, overlay_after(from, length),
+				false, 0)!
+
+			return new_binary_string_value(typ.typ, limit_binary_concatenation(str[before_start..before_end] +
+				placing.string_value() + str[after_start..after_end], typ)!).with_type(typ)
 		}
 		typ:          typ
 		contains_agg: compiled_value.contains_agg || compiled_placing.contains_agg

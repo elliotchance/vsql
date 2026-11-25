@@ -483,7 +483,7 @@
 9.11/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.11/SR/5                n/a          - - multisets (S271)
 9.11/CR/1                n/a          - - structured types (S024)
-9.11/CR/2                n/a          - - there are no LOBs (T042)
+9.11/CR/2                implemented  vsql/compiler.v tests/std_2_8_2_lob_comparison.sql
 9.11/CR/3                n/a          - - multisets (S275)
 9.11/CR/4                n/a          - - JSON data type (T801)
 # 9.12, Grouping operations

@@ -72,6 +72,10 @@ string functions (such as ``SUBSTRING``, ``TRIM``, ``UPPER``, ``LOWER``,
 ``SUBSTRING`` only reads the part that's in the result when every character
 is one byte (or with ``USING OCTETS``).
 
+A ``CHARACTER LARGE OBJECT`` can only be compared for equality (such as with
+``=``, ``<>``, ``IN`` or ``LIKE``), not with ``<``, ``BETWEEN``, ``GREATEST``
+or ``LEAST``.
+
 The only character set is UTF-8, which is also the national character set. So
 each national character string type is the same as the character string type:
 ``NATIONAL CHARACTER(n)``, ``NATIONAL CHAR(n)`` and ``NCHAR(n)`` are

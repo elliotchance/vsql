@@ -27,6 +27,10 @@ int main(void) {
   SQL TYPE IS BINARY(3) bin3;
   SQL TYPE IS VARBINARY(4) vb, vb2 = {0, 2, {1, 2}};
   long vb_indicator;
+  /* A CLOB and a BLOB are structs with a length (in characters for a CLOB,
+   * whose data has 4 octets for each character). */
+  SQL TYPE IS CLOB(3) clob3;
+  SQL TYPE IS BLOB(4) blob4, blob4b = {0, 2, {7, 0}};
   EXEC SQL END DECLARE SECTION;
 
   EXEC SQL CONNECT TO ':memory:' AS 'test';
@@ -110,6 +114,25 @@ int main(void) {
   CHECK(vb.vb_length == 2);
   CHECK(memcmp(vb.vb_data, "\x01\x02", 2) == 0);
   CHECK(vb_indicator == 0);
+
+  /* Large objects. */
+  EXEC SQL CREATE TABLE lobs (x INTEGER, c CLOB(10), b BLOB(10));
+  /* The octets after the 2 characters look like part of a character, which
+   * must not be sent. */
+  memset(clob3.clob3_data, 0xa9, sizeof(clob3.clob3_data));
+  memcpy(clob3.clob3_data, "a\xc3\xa9", 3);
+  clob3.clob3_length = 2;
+  EXEC SQL INSERT INTO lobs (x, c, b) VALUES (1, :clob3, :blob4b);
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  memset(&clob3, 9, sizeof(clob3));
+  memset(&blob4, 9, sizeof(blob4));
+  EXEC SQL SELECT c, b INTO :clob3, :blob4 FROM lobs WHERE x = 1;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(clob3.clob3_length == 2);
+  CHECK(memcmp(clob3.clob3_data, "a\xc3\xa9", 3) == 0);
+  CHECK(sizeof(clob3.clob3_data) == 12);
+  CHECK(blob4.blob4_length == 2);
+  CHECK(memcmp(blob4.blob4_data, "\x07\x00", 2) == 0);
 
   EXEC SQL ROLLBACK;
   EXEC SQL DISCONNECT ALL;

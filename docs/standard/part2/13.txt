@@ -180,4 +180,4 @@
 13.4/GR/1                definition   - -
 13.4/GR/2                n/a          - - triggers (T211)
 # 13.5, Data type correspondences
-13.5                     implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v only Table 20, for C
+13.5                     implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/module_test.v only Table 20 and Table 22 (C), and not the locator types

@@ -205,7 +205,7 @@ fn test_module_errors() ! {
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a VARCHAR); COMMIT;') == 'syntax error: host parameter :a: CHARACTER VARYING must have a length'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a CHAR(0)); COMMIT;') == 'syntax error: expected a length near 0'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DOUBLE); COMMIT;') == 'syntax error: expected PRECISION near )'
-	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DATE); COMMIT;') == 'syntax error: host parameter :a: the data type must be CHARACTER, CHARACTER VARYING, BINARY, BINARY VARYING, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DATE); COMMIT;') == 'syntax error: host parameter :a: the data type must be CHARACTER, CHARACTER VARYING, CHARACTER LARGE OBJECT, BINARY, BINARY VARYING, BINARY LARGE OBJECT, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN'
 
 	// 13.4 <SQL procedure statement>
 	assert module_error(module_header + "PROCEDURE p (SQLSTATE); VALUES 'a;") == "syntax error: unterminated string: 'a;"
@@ -791,7 +791,7 @@ EXEC SQL INSERT INTO t VALUES (:b, :b2, :v, :w, :c);
 	h := 'EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[6]; '
 	for definition, expected in {
 		'SQL TYPE IS BINARY(3);':          'unsupported host variable definition: SQL TYPE IS BINARY(3)'
-		'SQL TYPE IS BLOB(3) b;':          'unsupported host variable definition: SQL TYPE IS BLOB(3) b'
+		'SQL TYPE IS BLOB AS LOCATOR b;':  'unsupported host variable definition: SQL TYPE IS BLOB AS LOCATOR b'
 		'SQL TYPE IS BINARY(0) b;':        'unsupported host variable definition: SQL TYPE IS BINARY(0) b'
 		'SQL TYPE IS BINARY(x) b;':        'unsupported host variable definition: SQL TYPE IS BINARY(x) b'
 		'SQL TYPE BINARY(3) b;':           'unsupported host variable definition: SQL TYPE BINARY(3) b'
@@ -799,6 +799,59 @@ EXEC SQL INSERT INTO t VALUES (:b, :b2, :v, :w, :c);
 		'SQL TYPE IS VARBINARY(3) 1b;':    'unsupported host variable definition: SQL TYPE IS VARBINARY(3) 1b'
 		'SQL TYPE IS VARBINARY(3) b[2];':  'unsupported host variable definition: SQL TYPE IS VARBINARY(3) b[2]'
 		'SQL TYPE IS BINARY(3) SQLSTATE;': 'host variable SQLSTATE is defined more than once'
+	} {
+		assert embed_error(h + definition + ' EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: ${expected}', definition
+	}
+}
+
+// CHARACTER LARGE OBJECT(L) and BINARY LARGE OBJECT(L) host parameters (13.5,
+// Table 22) and host variables (21.4, Syntax Rules 4.b.v, 4.c.iii, 5.f and
+// 5.g).
+fn test_module_lob() ! {
+	m := compile_module(module_header + 'PROCEDURE p (SQLSTATE, :c CLOB(3), :c2 CHARACTER LARGE OBJECT(4),
+    :b BLOB(5), :b2 BINARY LARGE OBJECT(6));
+  SELECT c, b INTO :c, :b FROM t WHERE c = :c2 AND b = :b2;', 'm')!
+	assert m.header.contains('void p(char SQLSTATE[6], void *c, void *c2, void *b, void *b2);')
+	assert m.source.contains('{SQL_CLOB, SQL_CLOB, 4, vsql_m_clob_data(c2), vsql_m_clob_octets(c2, 16)},')
+	assert m.source.contains('{SQL_BLOB, SQL_BLOB, 6, ((struct vsql_m_varbinary *)b2)->data, (SQLINTEGER)((struct vsql_m_varbinary *)b2)->length}};')
+	assert m.source.contains('WHERE c = CAST(? AS CHARACTER LARGE OBJECT(4)) AND b = CAST(? AS BINARY LARGE OBJECT(6))')
+	assert m.source.contains('    {SQL_CLOB, 3, c, 0, 0},\n    {SQL_BLOB, 5, b, 0, 0}};')
+	assert m.source.contains('static SQLINTEGER vsql_m_clob_octets(')
+
+	// 13.5, Table 22: a CLOB host parameter needs T046, and a BLOB T045.
+	assert m.features == ['B112', 'T045', 'T046']
+
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :c CLOB); COMMIT;') == 'syntax error: host parameter :c: CHARACTER LARGE OBJECT must have a length'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :b BINARY LARGE OBJECT); COMMIT;') == 'syntax error: host parameter :b: BINARY LARGE OBJECT must have a length'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :b BLOB(0)); COMMIT;') == 'syntax error: expected a length near 0'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :c CHAR LARGE); COMMIT;') == 'syntax error: expected OBJECT near )'
+
+	// The C runtime for a CLOB is only included when it's used.
+	n := compile_module(module_header + 'PROCEDURE p (SQLSTATE, :b BLOB(5)); SELECT b INTO :b FROM t;', 'm')!
+	assert !n.source.contains('vsql_m_clob_octets')
+}
+
+fn test_embed_lob() ! {
+	p := precompile_c('EXEC SQL BEGIN DECLARE SECTION;
+char SQLSTATE[6];
+SQL TYPE IS CLOB(3) c, c2 = {0, 1, {97}};
+sql type is blob ( 4 ) b;
+EXEC SQL END DECLARE SECTION;
+EXEC SQL INSERT INTO t VALUES (:c, :c2, :b);
+', 'x.sqc')!
+	assert p.implied_module.contains('PROCEDURE vsql_e1 (SQLSTATE, :c CHARACTER LARGE OBJECT(3), :c2 CHARACTER LARGE OBJECT(3), :b BINARY LARGE OBJECT(4));')
+	assert p.source.contains('struct { long c_reserved; unsigned long c_length; char c_data[12]; } c; struct { long c2_reserved; unsigned long c2_length; char c2_data[12]; } c2 = {0, 1, {97}};\nstruct { long b_reserved; unsigned long b_length; char b_data[4]; } b;\n')
+	assert p.source.contains('vsql_e1(SQLSTATE, &c, &c2, &b);')
+
+	// 21.4, Conformance Rules 7 and 8: a <C BLOB variable> needs T045, and a
+	// <C CLOB variable> needs T046.
+	assert p.features == ['B012', 'T045', 'T046']
+
+	h := 'EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[6]; '
+	for definition, expected in {
+		'SQL TYPE IS CLOB(3K) c;':                   'unsupported host variable definition: SQL TYPE IS CLOB(3K) c'
+		'SQL TYPE IS CLOB(3) CHARACTER SET UTF8 c;': 'unsupported host variable definition: SQL TYPE IS CLOB(3) CHARACTER SET UTF8 c'
+		'SQL TYPE IS CLOB AS LOCATOR c;':            'unsupported host variable definition: SQL TYPE IS CLOB AS LOCATOR c'
 	} {
 		assert embed_error(h + definition + ' EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: ${expected}', definition
 	}

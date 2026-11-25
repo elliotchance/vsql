@@ -234,11 +234,11 @@
 21.4/SR/4.b.ii           missing      - - #1757 there are no NCHAR host variables
 21.4/SR/4.b.iii          implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/4.b.iv           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
-21.4/SR/4.b.v            missing      - - #1747 there are no CLOB or BLOB host variables
-21.4/SR/4.c              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the <C derived variable>s are <C VARCHAR variable>, <C BINARY variable> and <C VARBINARY variable>
+21.4/SR/4.b.v            implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v without a <character set specification>
+21.4/SR/4.c              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the <C derived variable>s are <C VARCHAR variable>, <C BINARY variable>, <C VARBINARY variable>, <C CLOB variable> and <C BLOB variable>
 21.4/SR/4.c.i            implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/4.c.ii           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
-21.4/SR/4.c.iii          missing      - - #1747 there are no CLOB or BLOB host variables
+21.4/SR/4.c.iii          implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/4.c.iv           n/a          - - transforms (S241)
 21.4/SR/4.c.v            n/a          - - there are no locators (T041)
 21.4/SR/4.c.vi           n/a          - - there are no locators (T041)
@@ -255,8 +255,8 @@
 21.4/SR/5.c              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/5.d              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v other than SQLSTATE, which is always char SQLSTATE[6]
 21.4/SR/5.e              missing      - - #1757 there are no NCHAR host variables
-21.4/SR/5.f              missing      - - #1747 there are no CLOB or BLOB host variables
-21.4/SR/5.g              missing      - - #1747 there are no CLOB or BLOB host variables
+21.4/SR/5.f              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v only CLOB, without a <character set specification>
+21.4/SR/5.g              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/5.h              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/5.i              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/5.j              n/a          - - transforms (S241)
@@ -275,10 +275,10 @@
 21.4/CR/4                n/a          - - array locators (S232)
 21.4/CR/5                n/a          - - multiset locators (S233)
 21.4/CR/6                n/a          - - structured type locators (S231)
-21.4/CR/7                missing      - - #1747 there are no CLOB or BLOB host variables
-21.4/CR/8                missing      - - #1747 there are no CLOB or BLOB host variables
-21.4/CR/9                n/a          - - LOB locators (T041)
-21.4/CR/10               n/a          - - LOB locators (T041)
+21.4/CR/7                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
+21.4/CR/8                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
+21.4/CR/9                n/a          - - there are no locators (T041)
+21.4/CR/10               n/a          - - there are no locators (T041)
 21.4/CR/11               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
 21.4/CR/12               implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/CR/13               implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v

@@ -22,7 +22,9 @@ struct vsql_m_connection {
  * A BINARY VARYING(L) host parameter is a struct with a length portion (the
  * length in octets) and a data portion (char hvn_data[L]), which the program
  * declares itself. This has the same layout, so it can read and write any of
- * them.
+ * them. A BINARY LARGE OBJECT(L) is the same, and so is a CHARACTER LARGE
+ * OBJECT(L), except that its length is in characters (and its data portion
+ * has L*k octets).
  *
  * ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 22
  */
@@ -924,6 +926,42 @@ static int vsql_m_string(char *sqlstate, const char *s, size_t length) {
   }
 
   return 1;
+}
+
+/* section clob */
+/*
+ * The length portion of a CHARACTER LARGE OBJECT(L) host parameter is its
+ * length in characters, and the data portion (of up to L*k octets) has no null
+ * character. vsql_m_clob_octets is the number of octets of that many
+ * characters, which is SQL_NTS for an empty string (the length of a character
+ * string in SQL/CLI can't be 0), and vsql_m_clob_data is its octets (an empty
+ * C string when it's empty).
+ *
+ * ISO/IEC 9075-2:2023, 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.f.i.1
+ */
+static SQLPOINTER vsql_m_clob_data(void *p) {
+  struct vsql_m_varbinary *v = (struct vsql_m_varbinary *)p;
+
+  return v->length == 0 ? (SQLPOINTER) "" : (SQLPOINTER)v->data;
+}
+
+static SQLINTEGER vsql_m_clob_octets(void *p, SQLINTEGER size) {
+  struct vsql_m_varbinary *v = (struct vsql_m_varbinary *)p;
+  unsigned long characters;
+  SQLINTEGER octets = 0;
+
+  if (v->length == 0) {
+    return SQL_NTS;
+  }
+  /* Each character is as many octets as its first octet says, so the octets
+   * after the last character are never counted, whatever they are. */
+  for (characters = 0; characters < v->length && octets < size; characters++) {
+    unsigned char c = (unsigned char)v->data[octets];
+
+    octets += c < 0xE0 ? (c < 0xC0 ? 1 : 2) : (c < 0xF0 ? 3 : 4);
+  }
+
+  return octets < size ? octets : size;
 }
 
 /* section name */

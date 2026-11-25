@@ -246,20 +246,22 @@ the parameters must be ``SQLSTATE``, which is set to the SQLSTATE of the
 statement. The other parameters are ``:name <data type>``, and the statement
 uses them as ``:name``. Each one has this C type:
 
-============================ =============================
-SQL data type                C data type
-============================ =============================
-``CHARACTER(L)``             ``char name[(L + 1) * 4]``
-``CHARACTER VARYING(L)``     ``char name[(L + 1) * 4]``
-``BINARY(L)``                ``char name[L]``
-``BINARY VARYING(L)``        ``void *name`` (see below)
-``SMALLINT``                 ``short *name``
-``INTEGER``                  ``long *name``
-``BIGINT``                   ``long long *name``
-``REAL``                     ``float *name``
-``DOUBLE PRECISION``         ``double *name``
-``BOOLEAN``                  ``long *name`` (0 is FALSE)
-============================ =============================
+=============================== =============================
+SQL data type                   C data type
+=============================== =============================
+``CHARACTER(L)``                ``char name[(L + 1) * 4]``
+``CHARACTER VARYING(L)``        ``char name[(L + 1) * 4]``
+``BINARY(L)``                   ``char name[L]``
+``BINARY VARYING(L)``           ``void *name`` (see below)
+``CHARACTER LARGE OBJECT(L)``   ``void *name`` (see below)
+``BINARY LARGE OBJECT(L)``      ``void *name`` (see below)
+``SMALLINT``                    ``short *name``
+``INTEGER``                     ``long *name``
+``BIGINT``                      ``long long *name``
+``REAL``                        ``float *name``
+``DOUBLE PRECISION``            ``double *name``
+``BOOLEAN``                     ``long *name`` (0 is FALSE)
+=============================== =============================
 
 A ``long`` can be wider than an ``INTEGER``, which is always 32 bits. A value
 that's out of range of ``INTEGER`` has the ``SQLSTATE`` ``22003``.
@@ -287,6 +289,15 @@ length in octets and its octets (``name`` is the name of the parameter):
 A value of more than L octets is cut to its first L octets (with the warning
 ``01004``, and the indicator parameter is set to its length in octets). A
 binary string can't be assigned to, or from, any other data type.
+
+A ``BINARY LARGE OBJECT(L)`` (or ``BLOB(L)``) is the same as a ``BINARY
+VARYING(L)``. A ``CHARACTER LARGE OBJECT(L)`` (or ``CLOB(L)``) is the same
+kind of struct, but its length is in characters and its data has ``L * 4``
+octets (so it can hold any value of L characters), without a null character.
+A value of more than L characters is cut to its first L characters (with the
+warning ``01004``, and the indicator parameter is set to its length in
+characters). The length of a large object must be a number, without ``K``,
+``M`` or ``G``, and there are no locators.
 
 A parameter can be NULL with an indicator parameter (a ``SMALLINT``,
 ``INTEGER`` or ``BIGINT``), which is written after it as ``:name INDICATOR
@@ -719,12 +730,17 @@ C data type                  SQL data type
 ``double name``              ``DOUBLE PRECISION``
 ``SQL TYPE IS BINARY(L)``    ``BINARY(L)``
 ``SQL TYPE IS VARBINARY(L)`` ``BINARY VARYING(L)``
+``SQL TYPE IS CLOB(L)``      ``CHARACTER LARGE OBJECT(L)``
+``SQL TYPE IS BLOB(L)``      ``BINARY LARGE OBJECT(L)``
 ============================ =============================
 
 ``SQL TYPE IS BINARY(L) name`` is replaced with ``unsigned char name[L]``, and
 ``SQL TYPE IS VARBINARY(L) name`` is replaced with the struct of a ``BINARY
 VARYING(L)`` (see `Modules`_), so its length is ``name.name_length`` and its
-octets are ``name.name_data``.
+octets are ``name.name_data``. ``SQL TYPE IS CLOB(L) name`` and ``SQL TYPE IS
+BLOB(L) name`` are replaced with the struct of a ``CHARACTER LARGE OBJECT(L)``
+and a ``BINARY LARGE OBJECT(L)`` in the same way (the data of a CLOB has ``L *
+4`` octets, and its length is in characters).
 
 ``VARCHAR`` is replaced with ``char``, and the length of each array is
 multiplied by 4 (so that it can hold L characters of up to 4 bytes each, see

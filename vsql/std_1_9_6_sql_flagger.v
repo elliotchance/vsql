@@ -184,6 +184,8 @@ import arrays
 // V406: Binary string functions.
 // V406-01: BINARY_TO_HEX.
 // V406-02: HEX_TO_BINARY.
+// V406-03: BINARY_TO_BASE64.
+// V406-04: BASE64_TO_BINARY.
 //
 // V501: PostgreSQL functions.
 // V501-01: version().
@@ -311,6 +313,8 @@ const vsql_product = 'V405-02'
 const vsql_median = 'V405-03'
 const vsql_binary_to_hex = 'V406-01'
 const vsql_hex_to_binary = 'V406-02'
+const vsql_binary_to_base64 = 'V406-03'
+const vsql_base64_to_binary = 'V406-04'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

@@ -102,14 +102,14 @@
 6.1/GR/6                 impl-defined vsql/time.v tests/std_2_6_1_timestamp.sql a time zone is -14:00 to +14:00
 6.1/GR/7                 unclear      vsql/time.v tests/std_2_6_1_timestamp.sql datetime fields out of range raise 22008
 6.1/GR/8                 implemented  vsql/time.v tests/std_2_6_1_time.sql,tests/std_2_6_1_timestamp.sql there's only one sign, so the hours and minutes can't have opposite signs
-6.1/GR/9                 n/a          - - intervals (F052)
-6.1/GR/10                n/a          - - intervals (F052)
-6.1/GR/10.a              n/a          - - intervals (F052)
-6.1/GR/10.b              n/a          - - intervals (F052)
-6.1/GR/10.c              n/a          - - intervals (F052)
-6.1/GR/10.d              n/a          - - intervals (F052)
-6.1/GR/10.e              n/a          - - intervals (F052)
-6.1/GR/11                n/a          - - intervals (F052)
+6.1/GR/9                 implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+6.1/GR/10                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
+6.1/GR/10.a              implemented  vsql/interval.v tests/std_2_6_1_interval.sql 42601 for a literal, 22015 when a value is stored (9.2)
+6.1/GR/10.b              implemented  vsql/interval.v tests/std_2_6_1_interval.sql an interval is a signed number of months or microseconds, so its fields all have the same sign and the fields after the first are always in range
+6.1/GR/10.c              implemented  vsql/interval.v tests/std_2_6_1_interval.sql an interval is a signed number of months or microseconds, so its fields all have the same sign and the fields after the first are always in range
+6.1/GR/10.d              implemented  vsql/interval.v tests/std_2_6_1_interval.sql an interval is a signed number of months or microseconds, so its fields all have the same sign and the fields after the first are always in range
+6.1/GR/10.e              implemented  vsql/interval.v tests/std_2_6_1_interval.sql an interval is a signed number of months or microseconds, so its fields all have the same sign and the fields after the first are always in range
+6.1/GR/11                implemented  vsql/interval.v tests/std_2_6_1_interval.sql the fields after the first are calculated from a number of months or microseconds, so they're always in range (only the first field can overflow, see 10.a)
 6.1/GR/12                implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/GR/12.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql there are no LOBs (T041)
 6.1/GR/12.b              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
@@ -140,10 +140,10 @@
 6.1/GR/18.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.1/GR/18.b              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.1/GR/18.c              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
-6.1/GR/19                n/a          - - intervals (F052)
-6.1/GR/19.a              n/a          - - intervals (F052)
-6.1/GR/19.b              n/a          - - intervals (F052)
-6.1/GR/19.c              n/a          - - intervals (F052)
+6.1/GR/19                implemented  vsql/interval.v,vsql/std_11_5_information_schema.v tests/std_2_6_1_data_types.sql,tests/std_2_6_1_interval.sql
+6.1/GR/19.a              implemented  vsql/interval.v,vsql/std_11_5_information_schema.v tests/std_2_6_1_data_types.sql,tests/std_2_6_1_interval.sql
+6.1/GR/19.b              implemented  vsql/interval.v,vsql/std_11_5_information_schema.v tests/std_2_6_1_data_types.sql,tests/std_2_6_1_interval.sql
+6.1/GR/19.c              implemented  vsql/interval.v,vsql/std_11_5_information_schema.v tests/std_2_6_1_data_types.sql,tests/std_2_6_1_interval.sql
 6.1/GR/20                n/a          - - collection types (S091, S271)
 6.1/GR/20.a              n/a          - - arrays (S091)
 6.1/GR/21                n/a          - - row types (T051)
@@ -155,8 +155,8 @@
 6.1/CR/2                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/3                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/4                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
-6.1/CR/5                 n/a          - - intervals (F052)
-6.1/CR/6                 n/a          - - national character (F421)
+6.1/CR/5                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
+6.1/CR/6                 implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
 6.1/CR/7                 implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
 6.1/CR/8                 n/a          - - reference types (S041)
 6.1/CR/9                 n/a          - - row types (T051)
@@ -170,8 +170,8 @@
 6.1/CR/17                n/a          - - arrays (S094)
 6.1/CR/18                n/a          - - multisets (S274)
 6.1/CR/19                n/a          - - arrays (S096)
-6.1/CR/20                n/a          - - LOBs (T041)
-6.1/CR/21                n/a          - - LOBs (T041)
+6.1/CR/20                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
+6.1/CR/21                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_data_types.sql
 6.1/CR/22                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_character_varying_no_length.sql
 6.1/CR/23                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_char_length_units.sql
 6.1/CR/24                implemented  vsql/std_2_6_1_data_type.v tests/std_1_9_6_flagging.sql
@@ -822,7 +822,7 @@
 6.13/GR/23               n/a          - - domains (F251)
 6.13/GR/24               implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/CR/1                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_lob.sql
-6.13/CR/2                n/a          - - national character (F421)
+6.13/CR/2                n/a          - - a national character string type is the same as a character string type (6.1), so no value has a national declared type; F421 is flagged on the type instead (6.1, Conformance Rules, 6)
 6.13/CR/3                implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_lob.sql the national character set is UTF8, so NCLOB is CLOB
 6.13/CR/4                n/a          - - reference types (S041, S043)
 6.13/CR/5                implemented  vsql/std_2_6_13_cast_specification.y tests/std_2_9_52_datetime_templates.sql
@@ -1274,7 +1274,7 @@
 6.31/CR/2                n/a          - - arrays (S091) and multisets (S271)
 6.31/CR/3                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/4                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
-6.31/CR/5                n/a          - - national character (F421)
+6.31/CR/5                n/a          - - a national character string type is the same as a character string type (6.1), so no value has a national declared type; F421 is flagged on the type instead (6.1, Conformance Rules, 6)
 6.31/CR/6                implemented  vsql/funcs.v tests/std_2_6_31_binary_position.sql T047 when either is a BINARY LARGE OBJECT, otherwise T021
 6.31/CR/7                implemented  vsql/funcs.v tests/std_2_6_31_clob_length_position.sql
 6.31/CR/8                implemented  vsql/funcs.v tests/std_2_6_31_binary_octet_length.sql,tests/std_2_6_31_clob_length_position.sql
@@ -1349,7 +1349,7 @@
 6.32/GR/3.b.ii.3         implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
 6.32/GR/3.b.iii          implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql
 6.32/GR/4                impl-defined vsql/std_2_6_32_string_value_expression.v tests/std_2_6_1_character.sql a zero-length string isn't an error
-6.32/CR/1                n/a          - - national character (F421)
+6.32/CR/1                n/a          - - a national character string type is the same as a character string type (6.1), so no value has a national declared type; F421 is flagged on the type instead (6.1, Conformance Rules, 6)
 6.32/CR/2                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql a binary string literal, type or concatenation is T021
 6.32/CR/3                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_binary_concatenation.sql T048 for a BINARY LARGE OBJECT, otherwise T021
 6.32/CR/4                implemented  vsql/std_2_6_32_string_value_expression.v tests/std_2_6_32_clob_concatenation.sql
@@ -1680,14 +1680,14 @@
 6.33/CR/1                n/a          - - row pattern recognition (R010)
 6.33/CR/2                implemented  vsql/std_2_6_33_string_value_function.y tests/std_1_9_6_flagging.sql
 6.33/CR/3                implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_overlay.sql
-6.33/CR/4                n/a          - - OVERLAY (T312)
+6.33/CR/4                implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_binary_overlay.sql
 6.33/CR/5                implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql,tests/std_2_6_33_binary_overlay.sql
 6.33/CR/6                n/a          - - transliteration (F695)
 6.33/CR/7                n/a          - - transcoding (F695)
 6.33/CR/8                n/a          - - NORMALIZE (T061)
 6.33/CR/9                n/a          - - specific type method (S261)
 6.33/CR/10               n/a          - - NORMALIZE (F394)
-6.33/CR/11               n/a          - - national character (F421)
+6.33/CR/11               n/a          - - a national character string type is the same as a character string type (6.1), so no value has a national declared type; F421 is flagged on the type instead (6.1, Conformance Rules, 6)
 6.33/CR/12               n/a          - - SUBSTRING_REGEX (F844)
 6.33/CR/13               n/a          - - regular expressions (F846)
 6.33/CR/14               n/a          - - TRANSLATE_REGEX (F845)

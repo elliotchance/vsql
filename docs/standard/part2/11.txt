@@ -365,7 +365,7 @@
 11.5/SR/4.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
-11.5/SR/4.a.vi           n/a          - - intervals (F052)
+11.5/SR/4.a.vi           partial      vsql/std_2_11_5_default_clause.v tests/std_2_6_1_interval.sql #1754 it only has to be the same kind of interval
 11.5/SR/4.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.b              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.c              n/a          - - SQL paths (S071)
@@ -670,11 +670,11 @@
 11.19/SR/12.a.ii.1       n/a          - - collations (F690)
 11.19/SR/12.a.ii.2       implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/12.a.iii        implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
-11.19/SR/12.b            n/a          - - national character (F421)
+11.19/SR/12.b            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql the same as a character string type (12.a)
 11.19/SR/12.b.i          container    - -
-11.19/SR/12.b.i.1        n/a          - - national character (F421)
-11.19/SR/12.b.i.2        n/a          - - national character (F421)
-11.19/SR/12.b.ii         n/a          - - national character (F421)
+11.19/SR/12.b.i.1        n/a          - - collations (F690)
+11.19/SR/12.b.i.2        implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
+11.19/SR/12.b.ii         implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/12.c            definition   - -
 11.19/SR/13              implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/14              implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
@@ -711,15 +711,15 @@
 11.19/SR/15.g.i          implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.g.ii         implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.g.iii        implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
-11.19/SR/15.h            n/a          - - intervals (F052)
-11.19/SR/15.h.i          n/a          - - intervals (F052)
-11.19/SR/15.h.ii         n/a          - - intervals (F052)
-11.19/SR/15.h.iii        n/a          - - intervals (F052)
-11.19/SR/15.i            n/a          - - intervals (F052)
-11.19/SR/15.i.i          n/a          - - intervals (F052)
-11.19/SR/15.i.ii         n/a          - - intervals (F052)
-11.19/SR/15.i.iii        n/a          - - intervals (F052)
-11.19/SR/15.i.iv         n/a          - - intervals (F052)
+11.19/SR/15.h            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
+11.19/SR/15.h.i          missing      - - #1753 any interval of the same kind is accepted
+11.19/SR/15.h.ii         missing      - - #1753 any interval of the same kind is accepted
+11.19/SR/15.h.iii        missing      - - #1753 any interval of the same kind is accepted
+11.19/SR/15.i            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
+11.19/SR/15.i.i          missing      - - #1753 any interval of the same kind is accepted
+11.19/SR/15.i.ii         missing      - - #1753 any interval of the same kind is accepted
+11.19/SR/15.i.iii        missing      - - #1753 any interval of the same kind is accepted
+11.19/SR/15.i.iv         missing      - - #1753 any interval of the same kind is accepted
 11.19/SR/15.j            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.k            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/GR/1               implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql

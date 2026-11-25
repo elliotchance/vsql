@@ -11,7 +11,7 @@
 9.1/SR/4.a               n/a          - - there are no locators (T041)
 9.1/SR/4.b               partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
 9.1/SR/5                 partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
-9.1/SR/5.a               n/a          - - there are no CLOBs or locators (T041)
+9.1/SR/5.a               n/a          - - there are no locators (T041)
 9.1/SR/5.b               partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
 9.1/SR/6                 n/a          - - reference types (S041)
 9.1/SR/7                 n/a          - - there are no row type host parameters (13.5)
@@ -43,15 +43,15 @@
 9.1/GR/7.c               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.d               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.e               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
-9.1/GR/7.f               n/a          - - there are no CLOBs (T041)
-9.1/GR/7.g               n/a          - - there are no CLOBs (T041)
+9.1/GR/7.f               missing      - - #1747 there are no CLOB or BLOB host parameters
+9.1/GR/7.g               missing      - - #1747 there are no CLOB or BLOB host parameters
 9.1/GR/7.h               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
 9.1/GR/7.i               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
 9.1/GR/7.j               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
 9.1/GR/7.k               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
 9.1/GR/7.l               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
-9.1/GR/7.m               n/a          - - there are no BLOBs (T041)
-9.1/GR/7.n               n/a          - - there are no BLOBs (T041)
+9.1/GR/7.m               missing      - - #1747 there are no CLOB or BLOB host parameters
+9.1/GR/7.n               missing      - - #1747 there are no CLOB or BLOB host parameters
 9.1/GR/7.o               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.o.i             implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.o.ii            impl-defined vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the value is cast by SQLGetData, which truncates an exact numeric (6.13)
@@ -63,10 +63,10 @@
 9.1/GR/7.q.ii.1          n/a          - - there are no datetime host parameters (13.5)
 9.1/GR/7.q.ii.2          n/a          - - there are no datetime host parameters (13.5)
 9.1/GR/7.q.ii.3          n/a          - - there are no datetime host parameters (13.5)
-9.1/GR/7.r               n/a          - - intervals (F052)
-9.1/GR/7.r.i             n/a          - - intervals (F052)
-9.1/GR/7.r.ii            n/a          - - intervals (F052)
-9.1/GR/7.r.iii           n/a          - - intervals (F052)
+9.1/GR/7.r               n/a          - - there are no interval host parameters (13.5)
+9.1/GR/7.r.i             n/a          - - there are no interval host parameters (13.5)
+9.1/GR/7.r.ii            n/a          - - there are no interval host parameters (13.5)
+9.1/GR/7.r.iii           n/a          - - there are no interval host parameters (13.5)
 9.1/GR/7.s               n/a          - - JSON data type (T801)
 9.1/GR/7.t               n/a          - - there are no row type host parameters (13.5)
 9.1/GR/7.t.i             n/a          - - there are no row type host parameters (13.5)
@@ -208,11 +208,11 @@
 9.3/GR/5.e.vi            n/a          - - PL/I (B117)
 9.3/GR/5.e.vi.1          n/a          - - PL/I (B117)
 9.3/GR/5.e.vi.2          n/a          - - PL/I (B117)
-9.3/GR/5.f               n/a          - - there are no LOBs (T041)
-9.3/GR/5.f.i             n/a          - - there are no LOBs (T041)
-9.3/GR/5.f.i.1           n/a          - - there are no LOBs (T041)
-9.3/GR/5.f.i.2           n/a          - - there are no LOBs (T041)
-9.3/GR/5.f.ii            n/a          - - there are no LOBs (T041)
+9.3/GR/5.f               missing      - - #1747 there are no CLOB or BLOB host parameters
+9.3/GR/5.f.i             missing      - - #1747 there are no CLOB or BLOB host parameters
+9.3/GR/5.f.i.1           missing      - - #1747 there are no CLOB or BLOB host parameters
+9.3/GR/5.f.i.2           missing      - - #1747 there are no CLOB or BLOB host parameters
+9.3/GR/5.f.ii            missing      - - #1747 there are no CLOB or BLOB host parameters
 9.3/GR/5.g               n/a          - - Ada (B111)
 9.3/GR/5.g.i             n/a          - - Ada (B111)
 9.3/GR/5.g.ii            n/a          - - Ada (B111)
@@ -265,11 +265,11 @@
 9.4/GR/5.g.vi            n/a          - - PL/I (B117)
 9.4/GR/5.g.vi.1          n/a          - - PL/I (B117)
 9.4/GR/5.g.vi.2          n/a          - - PL/I (B117)
-9.4/GR/5.h               n/a          - - there are no LOBs (T041)
-9.4/GR/5.h.i             n/a          - - there are no LOBs (T041)
-9.4/GR/5.h.i.1           n/a          - - there are no LOBs (T041)
-9.4/GR/5.h.i.2           n/a          - - there are no LOBs (T041)
-9.4/GR/5.h.ii            n/a          - - there are no LOBs (T041)
+9.4/GR/5.h               missing      - - #1747 there are no CLOB or BLOB host parameters
+9.4/GR/5.h.i             missing      - - #1747 there are no CLOB or BLOB host parameters
+9.4/GR/5.h.i.1           missing      - - #1747 there are no CLOB or BLOB host parameters
+9.4/GR/5.h.i.2           missing      - - #1747 there are no CLOB or BLOB host parameters
+9.4/GR/5.h.ii            missing      - - #1747 there are no CLOB or BLOB host parameters
 9.4/GR/5.i               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
 9.4/GR/5.j               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_binary_main.c
 9.4/GR/5.k               n/a          - - PL/I (B117)

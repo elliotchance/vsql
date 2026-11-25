@@ -582,7 +582,7 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
     }
     break;
   case VSQL_M_DATETIME_INTERVAL_CODE:
-    /* vsql doesn't have an INTERVAL.
+    /* INTERVAL isn't supported in a descriptor area yet (#1744).
      *
      * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.d.i and 4.d.iii */
     if (number[VSQL_M_TYPE] != SQL_DATETIME || value < SQL_CODE_DATE ||

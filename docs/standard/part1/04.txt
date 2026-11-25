@@ -69,7 +69,7 @@
 # 4.6.3.5, Datetime types
 4.6.3.5                  implemented  vsql/time.v tests/std_2_6_1_date.sql
 # 4.6.3.6, Interval types
-4.6.3.6                  partial      vsql/interval.v tests/std_2_6_1_interval.sql intervals (F052) can only be stored and cast, they have no operations yet
+4.6.3.6                  implemented  vsql/interval.v tests/std_2_6_1_interval.sql,tests/std_2_6_44_interval_value_expression.sql
 # 4.6.3.7, XML type
 4.6.3.7                  n/a          - - XML (Part 14)
 # 4.6.3.8, JSON type

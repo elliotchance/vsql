@@ -173,6 +173,27 @@ SELECT * FROM t;
 -- error 22003: numeric value out of range
 -- A: 1
 
+-- # A national character string type is a character string type, and an
+-- # interval can't become a different kind of interval.
+CREATE TABLE t (a NCHAR(3), b INTERVAL YEAR TO MONTH, c INTERVAL DAY TO SECOND);
+INSERT INTO t (a, b, c) VALUES ('ab', INTERVAL '1-2' YEAR TO MONTH, INTERVAL '3 04:05:06' DAY TO SECOND);
+ALTER TABLE t ALTER COLUMN a SET DATA TYPE NCHAR VARYING(5);
+ALTER TABLE t ALTER COLUMN a SET DATA TYPE NCHAR(2);
+ALTER TABLE t ALTER COLUMN b SET DATA TYPE INTERVAL DAY;
+ALTER TABLE t ALTER COLUMN c SET DATA TYPE INTERVAL YEAR TO MONTH;
+ALTER TABLE t ALTER COLUMN b SET DATA TYPE INTERVAL YEAR(3) TO MONTH;
+ALTER TABLE t ALTER COLUMN c SET DATA TYPE INTERVAL DAY(3) TO SECOND;
+SELECT '[' || a || ']' AS a, b, c FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: ALTER TABLE 1
+-- error 42601: syntax error: cannot change the data type of column A from CHARACTER VARYING(5) to CHARACTER(2)
+-- error 42601: syntax error: cannot change the data type of column B from INTERVAL YEAR(2) TO MONTH to INTERVAL DAY(2)
+-- error 42601: syntax error: cannot change the data type of column C from INTERVAL DAY(2) TO SECOND(6) to INTERVAL YEAR(2) TO MONTH
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- A: [ab ] B: 1-02 C: 3 04:05:06.000000
+
 -- # The flagger.
 /* flags */
 CREATE TABLE t (a SMALLINT);

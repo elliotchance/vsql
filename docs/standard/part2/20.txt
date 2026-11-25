@@ -15,9 +15,9 @@
 20.1/SR/5.b              n/a          - - row types (T051), arrays (S091) and multisets (S271)
 20.1/SR/6                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c the character set isn't checked, since it's always UTF8
-20.1/SR/6.b              n/a          - - LOBs (T041)
+20.1/SR/6.b              n/a          - - LOB locators (T041)
 20.1/SR/6.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
-20.1/SR/6.d              n/a          - - LOBs (T041)
+20.1/SR/6.d              n/a          - - LOB locators (T041)
 20.1/SR/6.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.f              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.g              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -25,7 +25,7 @@
 20.1/SR/6.i              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.j              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.k              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.1/SR/6.l              n/a          - - intervals (F052)
+20.1/SR/6.l              missing      - - #1744 there are no interval SQL descriptor areas
 20.1/SR/6.m              n/a          - - JSON data type (T801)
 20.1/SR/6.n              n/a          - - user-defined types (S023)
 20.1/SR/6.o              n/a          - - reference types (S041)
@@ -38,12 +38,12 @@
 20.1/SR/7.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.1/SR/7.c              n/a          - - LOBs (T041)
+20.1/SR/7.c              n/a          - - LOB locators (T041)
 20.1/SR/7.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
 20.1/SR/7.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
 20.1/SR/7.e.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
 20.1/SR/7.e.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
-20.1/SR/7.f              n/a          - - LOBs (T041)
+20.1/SR/7.f              n/a          - - LOB locators (T041)
 20.1/SR/7.g              n/a          - - a host parameter can't be NUMERIC or DECIMAL (Table 20)
 20.1/SR/7.h              n/a          - - a host parameter can't be NUMERIC or DECIMAL (Table 20)
 20.1/SR/7.i              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -71,7 +71,7 @@
 20.1/SR/8                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/GR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c the codes of the SQL/CLI
 20.1/GR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
-20.1/GR/3                n/a          - - intervals (F052)
+20.1/GR/3                missing      - - #1744 there are no interval SQL descriptor areas
 20.1/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
 20.1/GR/5                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
 20.1/GR/6                n/a          - - SQL-invoked routines (T321)
@@ -156,11 +156,11 @@
 20.5/GR/4.c.ii           impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c they are 0 (zero) or the zero-length string
 20.5/GR/4.c.iii          container    - -
 20.5/GR/4.c.iii.1        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c UTF8
-20.5/GR/4.c.iii.2        n/a          - - LOBs (T041)
+20.5/GR/4.c.iii.2        n/a          - - LOB locators (T041)
 20.5/GR/4.c.iii.3        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
-20.5/GR/4.c.iii.4        n/a          - - LOBs (T041)
+20.5/GR/4.c.iii.4        n/a          - - LOB locators (T041)
 20.5/GR/4.c.iii.5        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/4.c.iii.6        n/a          - - intervals (F052)
+20.5/GR/4.c.iii.6        missing      - - #1744 there are no interval SQL descriptor areas
 20.5/GR/4.c.iii.7        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 18
 20.5/GR/4.c.iii.8        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_decfloat_main.c 34
 20.5/GR/4.c.iii.9        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 53
@@ -169,10 +169,10 @@
 20.5/GR/4.d.i.1          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/4.d.i.2          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/4.d.i.3          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.5/GR/4.d.ii           n/a          - - intervals (F052)
-20.5/GR/4.d.ii.1         n/a          - - intervals (F052)
-20.5/GR/4.d.ii.2         n/a          - - intervals (F052)
-20.5/GR/4.d.ii.3         n/a          - - intervals (F052)
+20.5/GR/4.d.ii           missing      - - #1744 there are no interval SQL descriptor areas
+20.5/GR/4.d.ii.1         missing      - - #1744 there are no interval SQL descriptor areas
+20.5/GR/4.d.ii.2         missing      - - #1744 there are no interval SQL descriptor areas
+20.5/GR/4.d.ii.3         missing      - - #1744 there are no interval SQL descriptor areas
 20.5/GR/4.d.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/4.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/5                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -462,7 +462,7 @@
 20.10/GR/7.d.iv          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.v           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_decfloat_main.c
 20.10/GR/7.d.vi          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.10/GR/7.d.vii         n/a          - - intervals (F052)
+20.10/GR/7.d.vii         missing      - - #1744 there are no interval SQL descriptor areas
 20.10/GR/7.d.viii        n/a          - - user-defined types (S023)
 20.10/GR/7.d.ix          n/a          - - reference types (S041)
 20.10/GR/7.d.ix.1        n/a          - - reference types (S041)

@@ -17,7 +17,7 @@ character_value_function:
   }
 | fold { $$.v = yy_box(CharacterValueFunction($1.v as RoutineInvocation)) }
 | character_overlay_function {
-    // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 3
+    // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 3 and 4
     flag(mut yylex, 'T312')
     $$.v = yy_box(CharacterValueFunction($1.v as OverlayFunction))
   }

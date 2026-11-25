@@ -286,13 +286,35 @@ fn (mut f Storage) add_transaction_pages(keys bool) {
 // keeps the versions of a key together (see split_objects), so they're all on
 // the page that the key is found on.
 fn (mut f Storage) transaction_page_numbers() ![]int {
-	mut pages := f.transaction_pages.clone()
+	mut pages := map[int]bool{}
+	for page_number in f.transaction_leaf_pages()! {
+		pages[page_number] = true
+	}
 	for key, _ in f.transaction_keys {
 		path, _ := f.btree.search_page(key.bytes())!
 		pages[path.last()] = true
 	}
 
 	return pages.keys()
+}
+
+// transaction_leaf_pages returns the pages that the transaction changed, other
+// than the ones that are no longer leaf pages of the B-tree. Another connection
+// can VACUUM while the transaction is active, which replaces every page (see
+// Storage.vacuum), so a page that the transaction changed can be past the end
+// of the file, or a page that isn't a leaf. Any other page is only read for the
+// objects of this transaction, so a page that now has none of them is harmless,
+// and transaction_page_numbers finds the pages of its keys again.
+fn (mut f Storage) transaction_leaf_pages() ![]int {
+	mut pages := []int{}
+	total := f.btree.pager.total_pages()
+	for page_number, _ in f.transaction_pages {
+		if page_number < total && f.btree.pager.read_page(page_number)!.kind == kind_leaf {
+			pages << page_number
+		}
+	}
+
+	return pages
 }
 
 // keep_undo_log must be called before the current statement removes anything from
@@ -1582,7 +1604,7 @@ fn (mut f Storage) isolation_end() ! {
 
 	// Revist any remaining pages to clean out any expired rows. Only the
 	// objects expired in this transaction are removed.
-	f.remove_expired(f.transaction_pages.keys(), false)!
+	f.remove_expired(f.transaction_leaf_pages()!, false)!
 
 	f.save_transaction_pages()
 	f.transaction_pages = map[int]bool{}

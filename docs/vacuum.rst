@@ -32,10 +32,24 @@ Nothing that can be seen changes: the rows, tables, indexes and sequences are
 the same. Reading the database can be faster afterwards, because there are
 fewer pages to read.
 
-``VACUUM`` can't be in a transaction (that's a ``25001`` error), and it's a
-``40001`` error if another connection has a transaction. Like any other
-statement, it's written through the write-ahead log, so the file is either
-rebuilt or unchanged if the process stops.
+``VACUUM`` doesn't need the database to be taken offline. It can run while
+other connections (such as the clients of a :doc:`server <server>`) are still
+connected and have transactions. Every version of every row is copied, including
+the rows that a transaction has added, changed or deleted and hasn't committed
+yet, so the transaction can still ``COMMIT`` or ``ROLLBACK`` afterwards, and a
+``REPEATABLE READ`` transaction still sees the rows it saw before.
+
+Like any other statement that changes the database, it waits for a
+``SERIALIZABLE`` transaction that has changed the database to end, since that
+transaction has the file to itself until then (it's a ``40001`` error after
+the lock timeout, see :doc:`transactions`). It doesn't wait for a ``READ
+COMMITTED`` or ``REPEATABLE READ`` transaction, or a transaction that has only
+read. The other connections wait while it runs.
+
+``VACUUM`` itself can't be in a transaction (that's a ``25001`` error), because
+the rebuilt pages replace every page, rather than being part of the
+transaction. Like any other statement, it's written through the write-ahead
+log, so the file is either rebuilt or unchanged if the process stops.
 
 The new pages are kept in memory until they're written, so it needs about as
 much memory as the size of the rebuilt file, and as much disk space again for

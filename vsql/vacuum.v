@@ -11,6 +11,7 @@ struct VacuumStatement {}
 // execute rebuilds the B-tree of the current catalog (see Storage.vacuum). It
 // can't be in a transaction (it's a 25001 error), because the pages of the
 // rebuilt file replace every page, rather than being part of the transaction.
+// Another connection can have a transaction (see Storage.vacuum).
 // The result is "VACUUM scanned removed": the number of pages of the B-tree
 // that were read, and how many pages were removed from the file (including
 // free pages).
@@ -45,10 +46,15 @@ fn (stmt VacuumStatement) explain(mut _ Connection, _ map[string]Value, _ time.D
 // A large value is put back together by the iterator (see read_blob), and is
 // split again by Btree.add, so its blob and fragment objects aren't copied.
 //
-// It's an error if another connection has a transaction, because the
-// transaction may have objects that it hasn't committed or removed yet, and
-// they would be copied too. The new B-tree is kept in memory until it's
-// written, so it needs as much memory as the file (without its free space).
+// Another connection can have a transaction that's still active. Every version
+// of every object is copied, including the ones that a transaction created or
+// expired and hasn't committed yet, so its rows look the same to it afterwards.
+// The pages that it remembers changing are now other pages (or past the end of
+// the file), but it also remembers each key that it changed, and COMMIT and
+// ROLLBACK find the page that each key is on now (see
+// Storage.transaction_page_numbers). The new B-tree is kept in memory until
+// it's written, so it needs as much memory as the file (without its free
+// space).
 //
 // It returns the number of pages of the B-tree that were read (free pages
 // aren't read), and the number of pages that were removed from the file
@@ -56,10 +62,6 @@ fn (stmt VacuumStatement) explain(mut _ Connection, _ map[string]Value, _ time.D
 // can happen when there's nothing to remove, because a large value is split
 // into objects of half a page that can't be packed any closer.
 fn (mut f Storage) vacuum() !(int, int) {
-	if !f.is_only_transaction() {
-		return sqlstate_40001('cannot VACUUM while another connection has a transaction')
-	}
-
 	mut pager := new_memory_pager()
 	mut btree := new_btree(pager, f.btree.page_size)
 	mut iter := f.btree.new_range_iterator([u8(0)], [u8(255)])

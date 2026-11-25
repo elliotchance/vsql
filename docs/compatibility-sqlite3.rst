@@ -853,15 +853,16 @@ Returns the date of a time value as YYYY-MM-DD.
   -- COL1: TRUE
 
   -- date(time-value, 'start of month')
-  VALUES MAKE_DATE(EXTRACT(YEAR FROM /*time-value*/), EXTRACT(MONTH FROM /*time-value*/), 1);
+  VALUES CAST(DATE_TRUNC('month', /*time-value*/) AS DATE);
   -- SELECT date('2024-03-05 14:30:15', 'start of month');
-  VALUES MAKE_DATE(EXTRACT(YEAR FROM TIMESTAMP '2024-03-05 14:30:15'), EXTRACT(MONTH FROM TIMESTAMP '2024-03-05 14:30:15'), 1);
+  VALUES CAST(DATE_TRUNC('month', TIMESTAMP '2024-03-05 14:30:15') AS DATE);
   -- COL1: 2024-03-01
 
 A text has to be a timestamp literal (or cast to ``TIMESTAMP``) first, since
 only ``'2024-03-05'`` itself can be cast to a ``DATE``. ``'now'`` is in UTC
 in SQLite, and ``CURRENT_DATE`` is in the time zone of the session. ``'start of year'`` is
-``MAKE_DATE`` with the month as 1 as well.
+``DATE_TRUNC('year', ...)``, and ``'start of day'`` (of a ``datetime``) is
+``DATE_TRUNC('day', ...)``.
 
 datetime
 ^^^^^^^^

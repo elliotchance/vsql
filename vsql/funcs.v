@@ -56,6 +56,7 @@ const builtin_arg_names = {
 	'BINARY_TO_HEX':    ['OCTETS']
 	'CBRT':             ['X']
 	'CHR':              ['CODE_POINT']
+	'DATE_TRUNC':       ['FIELD', 'SOURCE']
 	'DEGREES':          ['X']
 	'ERF':              ['X']
 	'ERFC':             ['X']
@@ -258,6 +259,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 		6, 0), false, false, [vsql_now], [], false})!
 
 	register_datetime_funcs(mut conn)!
+	register_date_trunc_funcs(mut conn)!
 	register_math_funcs(mut conn)!
 	register_string_funcs(mut conn)!
 	register_decfloat_funcs(mut conn)!

@@ -198,6 +198,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			return_type = rounding_function_type(func_name, arg_types[0], places.as_int())
 		}
 	}
+	// DATE_TRUNC (V402-20) has the type of its source, and its field is
+	// checked when it's compiled.
+	if func_name == 'DATE_TRUNC' && found_func.features == [vsql_date_trunc] {
+		return_type = date_trunc_type(mut c, compiled_args[0], arg_types[1])!
+	}
 	is_exact := func_name in ['ABS', 'MOD', 'FLOOR', 'CEIL', 'CEILING', 'ROUND', 'TRUNC', 'SIGN']
 		&& return_type.typ in [.is_numeric, .is_decimal]
 

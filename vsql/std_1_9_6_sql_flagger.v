@@ -128,6 +128,11 @@ import arrays
 // V304: Dynamic parameters.
 // V304-01: $1, $2, etc. (numbered parameters) instead of ?.
 //
+// V305: Datetime subtraction.
+// V305-01: DATE - DATE without an interval qualifier.
+// V305-02: TIME - TIME without an interval qualifier.
+// V305-03: TIMESTAMP - TIMESTAMP without an interval qualifier.
+//
 // V402: Date and time functions.
 // V402-01: NOW() instead of CURRENT_TIMESTAMP.
 // V402-02 to V402-08: EXTRACT fields (see vsql_extract_fields).
@@ -237,6 +242,9 @@ const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
 const vsql_double_colon_cast = 'V303-01'
 const vsql_numbered_parameter = 'V304-01'
+const vsql_date_subtraction = 'V305-01'
+const vsql_time_subtraction = 'V305-02'
+const vsql_timestamp_subtraction = 'V305-03'
 const vsql_now = 'V402-01'
 
 // vsql_extract_fields are the fields of EXTRACT that aren't in the standard.

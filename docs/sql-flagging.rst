@@ -315,6 +315,21 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V304-01``
      - ``$1``, ``$2``, etc. (numbered parameters) instead of ``?``.
 
+   * - ``V305``
+     - Datetime subtraction (see :doc:`dates-times`).
+
+   * - ``V305-01``
+     - ``DATE - DATE`` without an interval qualifier, such as
+       ``DATE '2026-11-17' - DATE '2026-01-01'``.
+
+   * - ``V305-02``
+     - ``TIME - TIME`` without an interval qualifier, such as
+       ``TIME '08:00:00' - TIME '09:15:30'``.
+
+   * - ``V305-03``
+     - ``TIMESTAMP - TIMESTAMP`` without an interval qualifier, such as
+       ``TIMESTAMP '2026-11-17 14:30:00' - TIMESTAMP '2026-11-16 12:00:00'``.
+
    * - ``V402``
      - Date and time functions (see :doc:`dates-times`).
 

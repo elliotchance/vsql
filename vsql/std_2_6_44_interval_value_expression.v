@@ -73,8 +73,15 @@ fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y Co
 				datetime_plus_interval_type(r, l) or { return not_exist }
 			} else if l.typ.is_interval() && l.typ == r.typ {
 				combine_interval_types(l, r, max_interval_leading_precision)
-			} else if op == '-' && l.typ.is_datetime() && r.typ.is_datetime() {
-				return sqlstate_42601('${l} - ${r} needs an interval qualifier, such as (A - B) DAY TO SECOND')
+			} else if op == '-' && l.typ.is_datetime() && r.typ.is_datetime()
+				&& datetime_fields(l.typ) == datetime_fields(r.typ) {
+				// A vsql extension (V305-01 to V305-03): the standard needs an
+				// interval qualifier, such as (a - b) DAY TO SECOND.
+				typ, code := implied_difference_type(l, r)
+				if c.conn.flagging {
+					c.conn.flagged_features << code
+				}
+				return c.compile_datetime_difference(left, right, typ)!, true
 			} else {
 				return not_exist
 			}
@@ -114,6 +121,29 @@ fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y Co
 		contains_agg: left.contains_agg || right.contains_agg
 		constant:     left.constant && right.constant
 	}.fold(), true
+}
+
+// implied_difference_type is the declared type of "a - b" for two datetimes
+// without an interval qualifier, and its flagger code, which is the same as "(a - b) IQ"
+// with the implied IQ: DAY for two DATEs, HOUR TO SECOND for two TIMEs and DAY
+// TO SECOND for two TIMESTAMPs. The leading field precision is enough for any
+// difference (the maximum for a DAY, which is more than the 3652058 days from
+// 0001-01-01 to 9999-12-31, and 2 for HOUR, since two TIMEs are less than 24
+// hours apart), and the fractional seconds precision is the larger of the two.
+// A year-month interval is never implied, since it counts calendar months.
+fn implied_difference_type(a Type, b Type) (Type, string) {
+	precision := int_max(a.size, b.size)
+	return match a.typ {
+		.is_date {
+			new_interval_type(IntervalQualifier{.day, .day, max_interval_leading_precision, 0}), vsql_date_subtraction
+		}
+		.is_time_with_time_zone, .is_time_without_time_zone {
+			new_interval_type(IntervalQualifier{.hour, .second, 2, precision}), vsql_time_subtraction
+		}
+		else {
+			new_interval_type(IntervalQualifier{.day, .second, max_interval_leading_precision, precision}), vsql_timestamp_subtraction
+		}
+	}
 }
 
 // datetime_parameter_type is the type of a dynamic parameter that's an operand

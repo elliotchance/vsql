@@ -653,9 +653,10 @@ module vsql
 %token USING
 %token VACUUM
 %token COMPACT
+%token INDEXES
+%token OBJECTS
 %token PAGES
 %token TIMEOUT
-%token VERBOSE
 %token VALUE
 %token VALUES
 %token VALUE_OF

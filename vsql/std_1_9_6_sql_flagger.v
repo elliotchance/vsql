@@ -43,6 +43,7 @@ import arrays
 //
 // V004: VACUUM.
 // V004-01: VACUUM.
+// V004-02: VSQL.LAST_VACUUM.
 //
 // V101: CREATE SCHEMA.
 // V101-01: CREATE SCHEMA IF NOT EXISTS.
@@ -240,6 +241,7 @@ const vsql_create_index_if_not_exists = 'V002-03'
 const vsql_drop_index = 'V003-01'
 const vsql_drop_index_if_exists = 'V003-02'
 const vsql_vacuum = 'V004-01'
+const vsql_last_vacuum = 'V004-02'
 const vsql_create_schema_if_not_exists = 'V101-01'
 const vsql_drop_schema_if_exists = 'V102-01'
 const vsql_create_table_if_not_exists = 'V103-01'

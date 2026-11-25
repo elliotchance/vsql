@@ -17,7 +17,6 @@ enum VacuumOptionKind {
 	compact
 	full
 	free_pages
-	verbose
 	timeout
 }
 
@@ -26,7 +25,6 @@ fn (kind VacuumOptionKind) sql() string {
 		.compact { 'COMPACT' }
 		.full { 'FULL' }
 		.free_pages { 'FREE PAGES' }
-		.verbose { 'VERBOSE' }
 		.timeout { 'TIMEOUT' }
 	}
 }
@@ -38,23 +36,95 @@ struct VacuumOption {
 	timeout Value
 }
 
-// VACUUM [ COMPACT | FULL | FREE PAGES ] [ VERBOSE ] [ TIMEOUT seconds ]
+enum VacuumObjectKind {
+	all
+	catalog
+	schema
+	table
+	index
+}
+
+// VacuumObject is one of the objects of VACUUM, before it's resolved (see
+// VacuumStatement.targets).
+struct VacuumObject {
+	kind          VacuumObjectKind
+	name          Identifier
+	indexes       bool = true
+	large_objects bool = true
+}
+
+// VacuumTableClause is WITH or WITHOUT INDEXES (or LARGE OBJECTS) of a TABLE.
+struct VacuumTableClause {
+	large_objects bool
+	with          bool
+}
+
+// new_vacuum_table checks that INDEXES and LARGE OBJECTS are each only given
+// once.
+fn new_vacuum_table(name Identifier, clauses []VacuumTableClause) !VacuumObject {
+	mut seen := []bool{}
+	mut indexes := true
+	mut large_objects := true
+	for clause in clauses {
+		if clause.large_objects in seen {
+			what := if clause.large_objects { 'LARGE OBJECTS' } else { 'INDEXES' }
+			return sqlstate_42601('VACUUM TABLE can only have one of WITH ${what} and WITHOUT ${what}')
+		}
+		seen << clause.large_objects
+		if clause.large_objects {
+			large_objects = clause.with
+		} else {
+			indexes = clause.with
+		}
+	}
+
+	return VacuumObject{
+		kind:          .table
+		name:          name
+		indexes:       indexes
+		large_objects: large_objects
+	}
+}
+
+// new_vacuum_catalog is the name of a catalog, which is an identifier on its
+// own (it may need to be delimited, such as "my-db").
+fn new_vacuum_catalog(s string) !VacuumObject {
+	parts := split_identifier_parts(s)!
+	if parts.len != 1 {
+		return sqlstate_42602('invalid catalog name: ${s}')
+	}
+
+	return VacuumObject{
+		kind: .catalog
+		name: Identifier{
+			catalog_name: parts[0]
+		}
+	}
+}
+
+// VACUUM [ ON object ... ] [ COMPACT | FULL | FREE PAGES ] [ TIMEOUT seconds ]
 //
-// The options can be in any order, but each can only be given once.
+// object is ALL (the default), CATALOG name, SCHEMA name, TABLE name [ { WITH
+// | WITHOUT } INDEXES ] [ { WITH | WITHOUT } LARGE OBJECTS ] or INDEX name. The
+// options can be in any order, but each can only be given once.
 struct VacuumStatement {
+	objects     []VacuumObject
 	mode        VacuumMode
-	verbose     bool
 	has_timeout bool
 	timeout     time.Duration
 }
 
-// new_vacuum_statement checks that no option is given more than once, and that
-// there's only one mode.
-fn new_vacuum_statement(options []VacuumOption) !VacuumStatement {
+// new_vacuum_statement checks that no option is given more than once, that
+// there's only one mode, that ALL is on its own, and that FULL is only for
+// whole catalogs.
+fn new_vacuum_statement(objects []VacuumObject, options []VacuumOption) !VacuumStatement {
+	if objects.len > 1 && objects.any(it.kind == .all) {
+		return sqlstate_42601('VACUUM ALL can only be on its own')
+	}
+
 	mut seen := []VacuumOptionKind{}
 	mut mode := VacuumMode.compact
 	mut has_mode := false
-	mut verbose := false
 	mut has_timeout := false
 	mut timeout := time.Duration(0)
 	for option in options {
@@ -75,9 +145,6 @@ fn new_vacuum_statement(options []VacuumOption) !VacuumStatement {
 					else { VacuumMode.compact }
 				}
 			}
-			.verbose {
-				verbose = true
-			}
 			.timeout {
 				has_timeout = true
 				timeout = time.Duration(i64(option.timeout.as_f64()! * f64(time.second)))
@@ -85,9 +152,13 @@ fn new_vacuum_statement(options []VacuumOption) !VacuumStatement {
 		}
 	}
 
+	if mode == .full && objects.any(it.kind !in [.all, .catalog]) {
+		return sqlstate_42601('VACUUM FULL can only be used for ALL or a CATALOG')
+	}
+
 	return VacuumStatement{
+		objects:     objects
 		mode:        mode
-		verbose:     verbose
 		has_timeout: has_timeout
 		timeout:     timeout
 	}
@@ -96,99 +167,274 @@ fn new_vacuum_statement(options []VacuumOption) !VacuumStatement {
 // vacuum_batch_pages is the most pages that COMPACT and FREE PAGES change
 // before they're committed, so that other connections can use the database in
 // between, and the changes don't need much memory. It's smaller for the SQL
-// tests (see testing_d_vsqltest.v), so that they have more than one batch.
+// tests, so that they have more than one batch.
 const vacuum_batch_pages = $if vsqltest ? { 4 } $else { 1000 }
 
-// VacuumRun is what a VACUUM has done so far.
-struct VacuumRun {
-	stmt  VacuumStatement
-	timer Timer
+// VacuumRange is the keys from start up to (but not including) end, of one of
+// the objects (see vacuum_object).
+struct VacuumRange {
+	start []u8
+	end   []u8
+	id    string
+}
+
+// VacuumTarget is a catalog that VACUUM makes smaller, and what it has done so
+// far.
+@[heap]
+struct VacuumTarget {
+	catalog string
 mut:
-	// scanned is the number of pages that were read (and moved, for FREE
-	// PAGES), see VacuumStatement.execute.
-	scanned int
+	// whole is true for every page of the B-tree (ALL or CATALOG), otherwise
+	// only the pages of ranges are packed, which are the objects of ids.
+	whole  bool
+	ranges []VacuumRange
+	ids    []string
 	// total_before and total_after are the pages of the file before the first
 	// batch and after the last one.
 	total_before int = -1
 	total_after  int
-	// packed is true once COMPACT has packed every leaf page, otherwise
-	// pack_stop is the key that the next batch would have started at.
-	packed    bool
-	pack_stop []u8
+	// packed is true once every page has been packed. Otherwise, for a whole
+	// catalog, pack_stop is the key that the next batch would have started at,
+	// or the objects in unfinished weren't packed.
+	packed     bool
+	pack_stop  []u8
+	unfinished map[string]bool
 	// shrunk is true once there are no free pages left before the end of the
 	// file (or FULL has rebuilt it).
 	shrunk bool
+	// objects are the pages that were packed, for each object (see
+	// vacuum_object), and file_pages_read is the pages that were moved by
+	// shrink (or read by FULL).
+	objects         map[string]VacuumObjectCounts
+	file_pages_read int
+}
+
+// VacuumObjectCounts is the leaf pages of an object (see vacuum_object) that
+// were read and freed by Btree.pack_leaves.
+struct VacuumObjectCounts {
+mut:
+	pages_read  int
+	pages_freed int
+	// last_key is the first key of the last page that was read.
+	last_key []u8
+}
+
+// count_read counts a leaf page that was read for the object that's being
+// packed (owner), or otherwise the object of its first key.
+fn (mut objects map[string]VacuumObjectCounts) count_read(owner string, key []u8) {
+	id := if owner != '' { owner } else { vacuum_object(key) }
+	if id == '' {
+		return
+	}
+	mut object := objects[id] or { VacuumObjectCounts{} }
+	object.pages_read++
+	object.last_key = key.clone()
+	objects[id] = object
+}
+
+// count_freed counts a leaf page that was freed, like count_read.
+fn (mut objects map[string]VacuumObjectCounts) count_freed(owner string, key []u8) {
+	id := if owner != '' { owner } else { vacuum_object(key) }
+	if id == '' {
+		return
+	}
+	mut object := objects[id] or { VacuumObjectCounts{} }
+	object.pages_freed++
+	objects[id] = object
+}
+
+// observe keeps the number of pages of the file, once the write connection is
+// open.
+fn (mut target VacuumTarget) observe(total_pages int) {
+	if target.total_before < 0 {
+		target.total_before = total_pages
+	}
+	target.total_after = total_pages
+}
+
+// add_range adds the range of the keys of an object, which start with prefix and
+// then the ID as a u64, along with the blob and fragment objects of a large
+// value of the object (see blob_object_key and fragment_object_key).
+fn (mut target VacuumTarget) add_range(prefix u8, id u64, object string) {
+	if object !in target.ids {
+		target.ids << object
+	}
+	for parts in [[prefix], [u8(`B`), prefix], [u8(`F`), prefix]] {
+		mut start := new_empty_bytes()
+		start.write_u8s(parts)
+		start.write_u64(id)
+		mut end := new_empty_bytes()
+		end.write_u8s(parts)
+		end.write_u64(id + 1)
+		if !target.ranges.any(it.start == start.bytes()) {
+			target.ranges << VacuumRange{start.bytes(), end.bytes(), object}
+		}
+	}
+}
+
+// add_table adds the rows of a table, and its indexes and large objects.
+fn (mut target VacuumTarget) add_table(storage Storage, table Table, indexes bool, large_objects bool) {
+	target.add_range(`R`, table.id, 'TABLE ${table.id}')
+	if large_objects {
+		target.add_range(`L`, table.id, 'LARGE OBJECTS ${table.id}')
+	}
+	if indexes {
+		for _, index in storage.indexes {
+			if index.table_id == table.id {
+				target.add_range(`X`, index.id, 'INDEX ${index.id}')
+			}
+		}
+	}
+}
+
+// targets resolves the objects into the catalogs that they're in (in order of
+// their names), with the files locked for reading. A table must exist (42P01),
+// and an index (42704), schema (3F000) or catalog (3D000).
+fn (stmt VacuumStatement) targets(mut conn Connection) ![]&VacuumTarget {
+	conn.open_read_connection()!
+	defer {
+		conn.release_read_connection()
+	}
+
+	mut targets := map[string]&VacuumTarget{}
+	objects := if stmt.objects.len > 0 { stmt.objects } else { [VacuumObject{}] }
+	for object in objects {
+		match object.kind {
+			.all {
+				for name, _ in conn.catalogs {
+					vacuum_target(mut targets, name).whole = true
+				}
+			}
+			.catalog {
+				name := conn.resolve_catalog_identifier(object.name)!
+				vacuum_target(mut targets, name.catalog_name).whole = true
+			}
+			.schema {
+				name := conn.resolve_schema_identifier(object.name)!
+				catalog := conn.catalog_for(name)
+				mut target := vacuum_target(mut targets, name.catalog_name)
+				for _, table in catalog.storage.tables {
+					if table.name.schema_name == name.schema_name {
+						target.add_table(catalog.storage, table, true, true)
+					}
+				}
+			}
+			.table {
+				name := conn.resolve_table_identifier(object.name, false)!
+				catalog := conn.catalog_for(name)
+				mut target := vacuum_target(mut targets, name.catalog_name)
+				target.add_table(catalog.storage, catalog.storage.table(name.storage_id()),
+					object.indexes, object.large_objects)
+			}
+			.index {
+				name := conn.resolve_schema_identifier(object.name)!
+				catalog := conn.catalog_for(name)
+				index := catalog.storage.indexes[name.storage_id()] or {
+					return sqlstate_42704('index', name.str())
+				}
+				vacuum_target(mut targets, name.catalog_name).add_range(`X`, index.id,
+					'INDEX ${index.id}')
+			}
+		}
+	}
+
+	mut names := targets.keys()
+	names.sort()
+	mut sorted := []&VacuumTarget{}
+	for name in names {
+		mut target := targets[name] or { continue }
+		target.ranges.sort_with_compare(fn (a &VacuumRange, b &VacuumRange) int {
+			return compare_bytes(a.start, b.start)
+		})
+		sorted << target
+	}
+
+	return sorted
+}
+
+fn vacuum_target(mut targets map[string]&VacuumTarget, catalog string) &VacuumTarget {
+	if catalog !in targets {
+		targets[catalog] = &VacuumTarget{
+			catalog: catalog
+		}
+	}
+
+	return targets[catalog] or { panic(catalog) }
+}
+
+// VacuumRun is a VACUUM that's running.
+struct VacuumRun {
+	stmt  VacuumStatement
+	timer Timer
+mut:
+	// scanned is the number of pages that were read (and moved), see
+	// VacuumStatement.execute.
+	scanned int
 }
 
 fn (run VacuumRun) timed_out() bool {
 	return run.stmt.has_timeout && run.timer.elapsed() >= run.stmt.timeout
 }
 
-// observe keeps the number of pages of the file, once the write connection is
-// open.
-fn (mut run VacuumRun) observe(total_pages int) {
-	if run.total_before < 0 {
-		run.total_before = total_pages
-	}
-	run.total_after = total_pages
-}
-
-// execute makes the file of the current catalog smaller. It can't be in a
-// transaction (it's a 25001 error), because it changes pages, rather than
-// rows, which can't be undone by a ROLLBACK. Another connection can have a
-// transaction (see Storage.transaction_leaf_pages).
+// execute makes the files of the catalogs of the objects smaller (every
+// catalog, without any objects). It can't be in a transaction (it's a 25001
+// error), because it changes pages, rather than rows, which can't be undone by
+// a ROLLBACK. Another connection can have a transaction (see
+// Storage.transaction_leaf_pages).
 //
-// COMPACT (the default) packs the objects of the leaf pages of the B-tree into
-// as few pages as they fit in (see Btree.pack_leaves), and then shrinks the
-// file (see Btree.shrink). Both are done in batches of vacuum_batch_pages,
-// each of which is committed, so the file is unlocked in between. FREE PAGES
-// only shrinks the file. FULL rebuilds the whole B-tree in one go (see
-// Storage.vacuum).
+// COMPACT (the default) packs the objects of the leaf pages of the B-tree (or
+// only the pages of the objects, see VacuumTarget) into as few pages as they
+// fit in (see Btree.pack_leaves), and then shrinks the file (see Btree.shrink).
+// Both are done in batches of vacuum_batch_pages, each of which is committed,
+// so the file is unlocked in between. FREE PAGES only shrinks the files of
+// the objects. FULL rebuilds the whole B-tree in one go (see Storage.vacuum).
 //
 // TIMEOUT stops it after the batch that's running when the time is up, keeping
 // what was done (FULL is either done or not changed at all). That isn't an
 // error.
 //
 // The result is "VACUUM scanned removed": the number of pages that were read
-// (and moved), and how many pages were removed from the file (including free
-// pages). VERBOSE returns a row for each object instead (see vacuum_rows).
+// (and moved), and how many pages were removed from the files (including free
+// pages). The rows of VSQL.LAST_VACUUM (see Connection.last_vacuum) have the
+// same numbers for each object and file. They're cleared first, so they're
+// empty if VACUUM fails.
 fn (stmt VacuumStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	if conn.in_transaction() {
 		return sqlstate_25001()
 	}
+	conn.last_vacuum = [][]Value{}
 
 	mut run := VacuumRun{
 		stmt:  stmt
 		timer: t
 	}
-	before := if stmt.verbose { vacuum_stats(mut conn)! } else { VacuumStats{} }
+	mut targets := stmt.targets(mut conn)!
 
-	match stmt.mode {
-		.full {
-			run.full(mut conn)!
-		}
-		.compact {
-			run.pack(mut conn)!
-			run.shrink(mut conn)!
-		}
-		.free_pages {
-			run.packed = true
-			run.shrink(mut conn)!
+	for mut target in targets {
+		match stmt.mode {
+			.full {
+				run.full(mut conn, mut target)!
+			}
+			.compact {
+				run.pack(mut conn, mut target)!
+				run.shrink(mut conn, mut target)!
+			}
+			.free_pages {
+				target.packed = true
+				run.shrink(mut conn, mut target)!
+			}
 		}
 	}
 
-	if stmt.verbose {
-		after := vacuum_stats(mut conn)!
-		return new_result(vacuum_columns(), run.rows(before, after), elapsed_parse, t.elapsed())
+	mut removed := 0
+	mut rows := [][]Value{}
+	for target in targets {
+		removed += target.pages_removed()
+		rows << target.rows(vacuum_names(mut conn, target.catalog)!)
 	}
-
-	removed := if run.total_before > run.total_after {
-		run.total_before - run.total_after
-	} else {
-		0
-	}
+	conn.last_vacuum = rows
 
 	return new_result_msg('VACUUM ${run.scanned} ${removed}', elapsed_parse, t.elapsed())
 }
@@ -198,80 +444,138 @@ fn (stmt VacuumStatement) explain(mut _ Connection, _ map[string]Value, _ time.D
 }
 
 // full rebuilds the B-tree, see Storage.vacuum.
-fn (mut run VacuumRun) full(mut conn Connection) ! {
-	run.full_batch(mut conn)!
+fn (mut run VacuumRun) full(mut conn Connection, mut target VacuumTarget) ! {
+	run.full_batch(mut conn, mut target)!
 	conn.finish_write(true)!
 }
 
-fn (mut run VacuumRun) full_batch(mut conn Connection) ! {
-	conn.open_write_connection()!
+fn (mut run VacuumRun) full_batch(mut conn Connection, mut target VacuumTarget) ! {
+	mut catalog := conn.catalog_for(Identifier{ catalog_name: target.catalog })
+	catalog.open_write_connection()!
 	defer {
-		conn.release_write_connection()
+		catalog.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
-	run.observe(catalog.storage.btree.pager.total_pages())
+	target.observe(catalog.storage.btree.pager.total_pages())
 	scanned, finished := catalog.storage.vacuum(run)!
 	run.scanned += scanned
-	run.packed = finished
-	run.shrunk = finished
-	run.observe(catalog.storage.btree.pager.total_pages())
+	target.file_pages_read += scanned
+	target.packed = finished
+	target.shrunk = finished
+	target.observe(catalog.storage.btree.pager.total_pages())
 }
 
-// pack packs the leaf pages, one batch at a time, see Btree.pack_leaves.
-fn (mut run VacuumRun) pack(mut conn Connection) ! {
-	mut start := []u8{}
-	for !run.timed_out() {
-		done, next := run.pack_batch(mut conn, start)!
-		conn.finish_write(true)!
-		if done {
-			run.packed = true
-			return
+// pack packs the leaf pages (of the whole B-tree, or each range), one batch at
+// a time, see Btree.pack_leaves.
+fn (mut run VacuumRun) pack(mut conn Connection, mut target VacuumTarget) ! {
+	if target.whole {
+		mut start := []u8{}
+		for !run.timed_out() {
+			done, next := run.pack_batch(mut conn, mut target, start, []u8{}, '')!
+			if done {
+				target.packed = true
+				return
+			}
+			start = next.clone()
 		}
-		start = next.clone()
+		target.pack_stop = start
+		return
 	}
-	run.pack_stop = start
+
+	for i, range in target.ranges {
+		// A range without any keys (such as the large objects of a table that
+		// doesn't have any) isn't packed, or counted.
+		if !run.has_keys(mut conn, target, range)! {
+			continue
+		}
+
+		mut start := range.start.clone()
+		for {
+			if run.timed_out() {
+				for unfinished in target.ranges[i..] {
+					target.unfinished[unfinished.id] = true
+				}
+				return
+			}
+
+			done, next := run.pack_batch(mut conn, mut target, start, range.end, range.id)!
+			if done {
+				break
+			}
+			start = next.clone()
+		}
+	}
+	target.packed = true
 }
 
-fn (mut run VacuumRun) pack_batch(mut conn Connection, start []u8) !(bool, []u8) {
-	conn.open_write_connection()!
+// has_keys is true if there's an object in the range.
+fn (run VacuumRun) has_keys(mut conn Connection, target VacuumTarget, range VacuumRange) !bool {
+	mut catalog := conn.catalog_for(Identifier{ catalog_name: target.catalog })
+	catalog.open_read_connection()!
 	defer {
-		conn.release_write_connection()
+		catalog.release_read_connection()
 	}
 
-	mut catalog := conn.catalog()
-	run.observe(catalog.storage.btree.pager.total_pages())
-	read, done, next := catalog.storage.btree.pack_leaves(start, vacuum_batch_pages)!
+	// The end isn't a key itself, since a key always has more after the ID.
+	mut iter := catalog.storage.btree.new_range_iterator(range.start, range.end)
+	if _ := iter.next() {
+		return true
+	}
+	if err := iter.err {
+		return err
+	}
+
+	return false
+}
+
+fn (mut run VacuumRun) pack_batch(mut conn Connection, mut target VacuumTarget, start []u8, end []u8, owner string) !(bool, []u8) {
+	done, next := run.pack_pages(mut conn, mut target, start, end, owner)!
+	conn.finish_write(true)!
+
+	return done, next
+}
+
+fn (mut run VacuumRun) pack_pages(mut conn Connection, mut target VacuumTarget, start []u8, end []u8, owner string) !(bool, []u8) {
+	mut catalog := conn.catalog_for(Identifier{ catalog_name: target.catalog })
+	catalog.open_write_connection()!
+	defer {
+		catalog.release_write_connection()
+	}
+
+	target.observe(catalog.storage.btree.pager.total_pages())
+	read, done, next := catalog.storage.btree.pack_leaves(start, end, vacuum_batch_pages, owner, mut
+		target.objects)!
 	run.scanned += read
-	run.observe(catalog.storage.btree.pager.total_pages())
+	target.observe(catalog.storage.btree.pager.total_pages())
 
 	return done, next
 }
 
 // shrink moves pages from the end of the file into free pages, and makes the
 // file shorter, one batch at a time, see Btree.shrink.
-fn (mut run VacuumRun) shrink(mut conn Connection) ! {
+fn (mut run VacuumRun) shrink(mut conn Connection, mut target VacuumTarget) ! {
 	for !run.timed_out() {
-		done := run.shrink_batch(mut conn)!
+		done := run.shrink_batch(mut conn, mut target)!
 		conn.finish_write(true)!
 		if done {
-			run.shrunk = true
+			target.shrunk = true
 			return
 		}
 	}
 }
 
-fn (mut run VacuumRun) shrink_batch(mut conn Connection) !bool {
-	conn.open_write_connection()!
+fn (mut run VacuumRun) shrink_batch(mut conn Connection, mut target VacuumTarget) !bool {
+	mut catalog := conn.catalog_for(Identifier{ catalog_name: target.catalog })
+	catalog.open_write_connection()!
 	defer {
-		conn.release_write_connection()
+		catalog.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
-	run.observe(catalog.storage.btree.pager.total_pages())
+	target.observe(catalog.storage.btree.pager.total_pages())
 	moved, done := catalog.storage.btree.shrink(vacuum_batch_pages)!
 	run.scanned += moved
-	run.observe(catalog.storage.btree.pager.total_pages())
+	target.file_pages_read += moved
+	target.observe(catalog.storage.btree.pager.total_pages())
 
 	return done
 }
@@ -343,16 +647,22 @@ fn (mut f Storage) vacuum(run VacuumRun) !(int, bool) {
 // the pages above it don't change. The pages of different parents aren't
 // packed together.
 //
-// It stops after reading about max_pages leaf pages, and returns the number of
-// leaf pages that it read, true if it reached the last leaf page, or otherwise
-// the key that the next batch starts at.
-fn (mut p Btree) pack_leaves(start []u8, max_pages int) !(int, bool, []u8) {
+// It stops at the first page with a key that's not less than end (unless end is
+// empty), or after reading about max_pages leaf pages. It returns the number of
+// leaf pages that it read, true if it reached the end, or otherwise the key
+// that the next batch starts at. Each page that's read (and freed) is counted in
+// objects, for owner (the object of the range, if any), see count_read.
+fn (mut p Btree) pack_leaves(start []u8, end []u8, max_pages int, owner string, mut objects map[string]VacuumObjectCounts) !(int, bool, []u8) {
 	mut read := 0
 	mut key := start.clone()
 	for read < max_pages {
 		path, positions := p.search_page(key)!
 		if path.len < 2 {
 			// The root is the only page.
+			root := p.pager.read_page(path.last())!
+			if root.used > page_header_size {
+				objects.count_read(owner, root.object_key(0))
+			}
 			return read + 1, true, []u8{}
 		}
 
@@ -363,7 +673,9 @@ fn (mut p Btree) pack_leaves(start []u8, max_pages int) !(int, bool, []u8) {
 		mut changed := false
 		mut stopped := false
 		mut split := false
+		mut reached_end := false
 		read++
+		objects.count_read(owner, left.object_key(0))
 		for i in positions.last() + 1 .. parent.len {
 			if read >= max_pages {
 				stopped = true
@@ -371,11 +683,17 @@ fn (mut p Btree) pack_leaves(start []u8, max_pages int) !(int, bool, []u8) {
 			}
 
 			right_number := page_pointer(parent[i])
-			objects := (p.pager.read_page(right_number)!).objects()
+			right := (p.pager.read_page(right_number)!).objects()
 			read++
-			moved := p.move_objects(mut left, objects)!
+			objects.count_read(owner, right[0].key)
+			if end.len > 0 && compare_bytes(right[0].key, end) >= 0 {
+				reached_end = true
+				break
+			}
+			moved := p.move_objects(mut left, right)!
 			changed = changed || moved > 0
-			if moved == objects.len {
+			if moved == right.len {
+				objects.count_freed(owner, right[0].key)
 				mut right_path := parent_path.clone()
 				right_path << right_number
 				p.free_path(right_path)!
@@ -387,14 +705,14 @@ fn (mut p Btree) pack_leaves(start []u8, max_pages int) !(int, bool, []u8) {
 			}
 			left_number = right_number
 			left = new_page(kind_leaf, p.page_size)
-			for object in objects[moved..] {
+			for object in right[moved..] {
 				left.add(object)!
 			}
 			changed = false
 			if moved > 0 {
 				p.store_page(left_number, left)!
 				mut parent_page := p.pager.fetch_page(parent_path.last())!
-				if p.replace_pointer(parent_path, mut parent_page, parent[i].key, new_page_object(objects[moved].key,
+				if p.replace_pointer(parent_path, mut parent_page, parent[i].key, new_page_object(right[moved].key,
 					0, 0, parent[i].value))! {
 					// The parent was split (the new key is longer), so the
 					// pointers have changed. It carries on from this page.
@@ -410,13 +728,16 @@ fn (mut p Btree) pack_leaves(start []u8, max_pages int) !(int, bool, []u8) {
 		if stopped {
 			return read, false, left.object_key(0).clone()
 		}
+		if reached_end {
+			return read, true, []u8{}
+		}
 		if split {
 			key = left.object_key(0).clone()
 			continue
 		}
 
 		key = p.next_subtree(path, positions)!
-		if key.len == 0 {
+		if key.len == 0 || (end.len > 0 && compare_bytes(key, end) >= 0) {
 			return read, true, []u8{}
 		}
 	}
@@ -536,84 +857,29 @@ fn (mut p Btree) move_page(from int, to int) ! {
 	p.store_page(parent_number, parent)!
 }
 
-// VacuumObjectStats is the leaf pages of a table, an index, or the large
-// objects of a table, see vacuum_stats.
-struct VacuumObjectStats {
-mut:
-	pages int
-	used  i64
-	// last_key is the first key of the last leaf page.
-	last_key []u8
-}
-
-// VacuumStats is the leaf pages of each object (see vacuum_object), the pages
-// of the file, and how many bytes of the pages of the B-tree are used.
-struct VacuumStats {
-mut:
-	objects     map[string]VacuumObjectStats
-	total_pages int
-	used        i64
-	catalog     string
-	page_size   int
-	// names has the catalog, schema and name of each object, the name of its
-	// table (to sort by) and its kind, for every table and index, whether it
-	// has pages or not.
-	names map[string][]string
-}
-
-// vacuum_stats reads every page of the B-tree of the current catalog, with the
-// file locked for reading.
-fn vacuum_stats(mut conn Connection) !VacuumStats {
-	conn.open_read_connection()!
+// vacuum_names has the schema and name of each object of a catalog (see
+// vacuum_object), the name of its table (to sort by) and its type, for every
+// table and index.
+fn vacuum_names(mut conn Connection, catalog_name string) !map[string][]string {
+	mut catalog := conn.catalog_for(Identifier{ catalog_name: catalog_name })
+	catalog.open_read_connection()!
 	defer {
-		conn.release_read_connection()
+		catalog.release_read_connection()
 	}
 
-	mut catalog := conn.catalog()
-	mut stats := VacuumStats{
-		total_pages: catalog.storage.btree.pager.total_pages()
-		catalog:     conn.current_catalog
-		page_size:   catalog.storage.btree.page_size
-	}
+	mut names := map[string][]string{}
 	for _, table in catalog.storage.tables {
-		catalog_name := table.name.catalog_name
 		schema_name := table.name.schema_name
 		name := table.name.entity_name
-		stats.names['TABLE ${table.id}'] = [catalog_name, schema_name, name, name, '1 TABLE']
-		stats.names['LARGE OBJECTS ${table.id}'] = [catalog_name, schema_name, name, name,
-			'3 LARGE OBJECTS']
+		names['TABLE ${table.id}'] = [schema_name, name, name, '1 TABLE']
+		names['LARGE OBJECTS ${table.id}'] = [schema_name, name, name, '3 LARGE OBJECTS']
 	}
 	for _, index in catalog.storage.indexes {
-		stats.names['INDEX ${index.id}'] = [index.name.catalog_name, index.name.schema_name,
-			index.name.entity_name, index.table_name.entity_name, '2 INDEX']
-	}
-	catalog.storage.btree.vacuum_stats(catalog.storage.btree.pager.root_page(), mut stats)!
-
-	return stats
-}
-
-fn (mut p Btree) vacuum_stats(page_number int, mut stats VacuumStats) ! {
-	page := p.pager.read_page(page_number)!
-	stats.used += page.used
-	if page.kind == kind_not_leaf {
-		for pointer in page.objects() {
-			p.vacuum_stats(page_pointer(pointer), mut stats)!
-		}
-		return
+		names['INDEX ${index.id}'] = [index.name.schema_name, index.name.entity_name,
+			index.table_name.entity_name, '2 INDEX']
 	}
 
-	// Only the root page can be empty.
-	key := if page.used > page_header_size { page.object_key(0) } else { []u8{} }
-	id := vacuum_object(key)
-	if id == '' {
-		return
-	}
-
-	mut object := stats.objects[id] or { VacuumObjectStats{} }
-	object.pages++
-	object.used += page.used
-	object.last_key = key.clone()
-	stats.objects[id] = object
+	return names
 }
 
 // vacuum_object is the object that a key belongs to: "TABLE id" for a row,
@@ -635,88 +901,71 @@ fn vacuum_object(key []u8) string {
 	}
 }
 
-fn vacuum_columns() Columns {
-	mut columns := []Column{}
-	for name in ['CATALOG', 'SCHEMA', 'NAME', 'KIND'] {
-		columns << Column{
-			name: Identifier{
-				sub_entity_name: name
-			}
-			typ:  new_type('VARCHAR', 0, 0)
-		}
+// pages_removed is the number of pages that the file is shorter by.
+fn (target VacuumTarget) pages_removed() int {
+	return if target.total_before > target.total_after {
+		target.total_before - target.total_after
+	} else {
+		0
 	}
-	for name in ['PAGES', 'FILL', 'PAGES_AFTER'] {
-		columns << Column{
-			name:     Identifier{
-				sub_entity_name: name
-			}
-			typ:      new_type('INTEGER', 0, 0)
-			not_null: true
-		}
-	}
-	columns << Column{
-		name:     Identifier{
-			sub_entity_name: 'FINISHED'
-		}
-		typ:      new_type('BOOLEAN', 0, 0)
-		not_null: true
-	}
-
-	return columns
 }
 
-// rows are the rows of VERBOSE: one for each table, index and the large
-// objects of each table (that have pages), in order of their names, and then
-// one for the file. PAGES is the leaf pages before, FILL is how full they were
-// (as a percentage of their bytes), and PAGES_AFTER is the leaf pages after.
-// FINISHED is false when the TIMEOUT ran out before the object was packed. For
-// the file, PAGES is every page of the file (including free pages), and
-// FINISHED is false if there are still free pages that could be removed.
-fn (run VacuumRun) rows(before VacuumStats, after VacuumStats) []Row {
-	// The objects are sorted by their catalog, schema, table name, kind and
-	// name, which are followed by the ID so that it can be found again.
-	mut sorted := []string{}
-	for id, name in before.names {
-		if id in before.objects || id in after.objects {
-			sorted << '${name[0]}\x00${name[1]}\x00${name[3]}\x00${name[4]}\x00${name[2]}\x01${id}'
+// rows are the rows of VSQL.LAST_VACUUM for the catalog (see
+// register_vsql_schema): one for each table, index and the large objects of a
+// table that had pages packed (or that wasn't finished), in order of their
+// names, and then one for the file. For a whole catalog, a page is counted for
+// the object of its first key (a page with only definitions isn't counted for
+// any). Otherwise, each page that was read to pack an object is counted for it,
+// including the pages at its start and end that it shares with another object.
+// An object is finished when all of its pages were packed before the TIMEOUT. The file has
+// the pages that were moved (or read by FULL) and removed, and is finished when
+// there are no free pages left.
+fn (target VacuumTarget) rows(names map[string][]string) [][]Value {
+	// The objects are sorted by their schema, table name, type and name, which
+	// are followed by the ID so that it can be found again. An object that was
+	// created or dropped since the VACUUM started has no name, so it's left out.
+	mut ids := target.objects.keys()
+	for id, _ in target.unfinished {
+		if id !in target.objects {
+			ids << id
 		}
+	}
+	mut sorted := []string{}
+	for id in ids {
+		name := names[id] or { continue }
+		sorted << '${name[0]}\x00${name[2]}\x00${name[3]}\x00${name[1]}\x01${id}'
 	}
 	sorted.sort()
 
-	mut rows := []Row{}
+	mut rows := [][]Value{}
 	for key in sorted {
 		id := key.all_after('\x01')
-		name := before.names[id]
-		object := before.objects[id] or { VacuumObjectStats{} }
-		object_after := after.objects[id] or { VacuumObjectStats{} }
-		finished := run.packed || compare_bytes(object.last_key, run.pack_stop) < 0
-		rows << new_row({
-			'CATALOG':     new_varchar_value(name[0])
-			'SCHEMA':      new_varchar_value(name[1])
-			'NAME':        new_varchar_value(name[2])
-			'KIND':        new_varchar_value(name[4][2..])
-			'PAGES':       new_integer_value(object.pages)
-			'FILL':        new_integer_value(vacuum_fill(object.used, object.pages, before.page_size))
-			'PAGES_AFTER': new_integer_value(object_after.pages)
-			'FINISHED':    new_boolean_value(finished)
-		})
+		name := names[id] or { continue }
+		object := target.objects[id] or { VacuumObjectCounts{} }
+		finished := if target.whole {
+			target.packed || compare_bytes(object.last_key, target.pack_stop) < 0
+		} else {
+			id !in target.unfinished
+		}
+		rows << [
+			new_varchar_value(target.catalog),
+			new_varchar_value(name[0]),
+			new_varchar_value(name[1]),
+			new_varchar_value(name[3][2..]),
+			new_integer_value(object.pages_read),
+			new_integer_value(object.pages_freed),
+			yes_or_no(finished),
+		]
 	}
-	rows << new_row({
-		'CATALOG':     new_varchar_value(before.catalog)
-		'SCHEMA':      new_null_value(.is_varchar)
-		'NAME':        new_null_value(.is_varchar)
-		'KIND':        new_varchar_value('FILE')
-		'PAGES':       new_integer_value(before.total_pages)
-		'FILL':        new_integer_value(vacuum_fill(before.used, before.total_pages, before.page_size))
-		'PAGES_AFTER': new_integer_value(after.total_pages)
-		'FINISHED':    new_boolean_value(run.shrunk)
-	})
+	rows << [
+		new_varchar_value(target.catalog),
+		new_null_value(.is_varchar),
+		new_null_value(.is_varchar),
+		new_varchar_value('FILE'),
+		new_integer_value(target.file_pages_read),
+		new_integer_value(target.pages_removed()),
+		yes_or_no(target.shrunk),
+	]
 
 	return rows
-}
-
-fn vacuum_fill(used i64, pages int, page_size int) int {
-	size := i64(if pages > 0 { pages } else { 1 }) * page_size
-
-	return int((used * 100 + size / 2) / size)
 }

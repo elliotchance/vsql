@@ -145,6 +145,7 @@ non_reserved_word:
 | INCLUDING
 | INCREMENT
 | INDEX
+| INDEXES
 | INITIALLY
 | INPUT
 | INSTANCE
@@ -187,6 +188,7 @@ non_reserved_word:
 | NULLS
 | NUMBER
 | OBJECT
+| OBJECTS
 | OCTETS
 | OPTION
 | OPTIONS
@@ -307,7 +309,6 @@ non_reserved_word:
 | UTF32
 | UTF8
 | VACUUM
-| VERBOSE
 | VIEW
 | WORK
 | WRAPPER

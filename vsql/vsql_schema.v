@@ -68,3 +68,44 @@ fn (conn &Connection) vsql_routines() []VsqlRoutine {
 
 	return routines
 }
+
+// register_vsql_schema adds the views of the VSQL schema to a catalog.
+//
+// LAST_VACUUM has the rows of the last VACUUM of the connection that reads it
+// (see VacuumTarget.rows), which are only in memory and are gone when the
+// connection is closed. It's the same in every catalog, since a VACUUM can be
+// of more than one catalog. Its columns are named and typed like the views of
+// the INFORMATION_SCHEMA.
+fn register_vsql_schema(mut catalog CatalogConnection) ! {
+	create_table := 'CREATE TABLE LAST_VACUUM (
+		OBJECT_CATALOG ${information_schema_sql_identifier} NOT NULL,
+		OBJECT_SCHEMA ${information_schema_sql_identifier},
+		OBJECT_NAME ${information_schema_sql_identifier},
+		OBJECT_TYPE ${information_schema_character_data} NOT NULL,
+		PAGES_READ ${information_schema_cardinal_number} NOT NULL,
+		PAGES_FREED ${information_schema_cardinal_number} NOT NULL,
+		IS_FINISHED ${information_schema_yes_or_no} NOT NULL
+	)'
+	stmt := parse_definition(create_table.bytes())!
+	if stmt is TableDefinition {
+		table_name := Identifier{
+			catalog_name: catalog.catalog_name
+			schema_name:  vsql_schema_name
+			entity_name:  stmt.table_name.entity_name
+		}
+		catalog.virtual_tables[table_name.storage_id()] = VirtualTable{
+			create_table_sql:  create_table
+			create_table_stmt: TableDefinition{
+				...stmt
+				table_name: table_name
+			}
+			data:              fn (mut t VirtualTable) ! {
+				for row in t.conn.last_vacuum {
+					t.next_values(row)
+				}
+				t.done()
+			}
+			features:          [vsql_last_vacuum]
+		}
+	}
+}

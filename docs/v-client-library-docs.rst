@@ -863,6 +863,9 @@ struct Connection
    	// default_isolation_level is ConnectionOptions.isolation_level, see
    	// enduring_characteristics.
    	default_isolation_level IsolationLevel = .serializable
+   	// last_vacuum are the rows of VSQL.LAST_VACUUM, from the last VACUUM of
+   	// this connection (see VacuumStatement.execute).
+   	last_vacuum [][]Value
    	// cancel_state is whether a statement is executing (statement_running) and
    	// whether it's been asked to stop (statement_canceled), see cancel. It's
    	// changed by other threads, so it's only used atomically.

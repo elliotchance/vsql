@@ -129,6 +129,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V004-01``
      - ``VACUUM`` (see :doc:`vacuum`).
 
+   * - ``V004-02``
+     - ``VSQL.LAST_VACUUM`` (see :doc:`vacuum`).
+
    * - ``V101``
      - ``CREATE SCHEMA``.
 

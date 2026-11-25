@@ -46,3 +46,49 @@ SELECT column_name, data_type, character_maximum_length, character_octet_length 
 
 VALUES CAST('a' AS CHAR(0 OCTETS));
 -- error 42601: syntax error: CHARACTER length must be greater than 0
+
+-- # The length of a CHARACTER LARGE OBJECT can also be in CHARACTERS or OCTETS,
+-- # with or without a multiplier (Syntax Rules, 16.b.iii).
+/* flags */
+CREATE TABLE t (a CLOB(3 CHARACTERS), b CLOB(4 OCTETS), c CHARACTER LARGE OBJECT(1K OCTETS), d CHAR LARGE OBJECT(2 OCTETS));
+INSERT INTO t (a, b, c) VALUES ('ééé', 'éé', 'é');
+SELECT a, b, c, OCTET_LENGTH(b) FROM t;
+-- flags: T046, T062
+-- msg: CREATE TABLE 1
+-- flags:
+-- msg: INSERT 1
+-- flags: T047, T050
+-- A: ééé B: éé C: é COL4: 4
+
+-- # A string with more octets than the length is an error, unless the extra
+-- # octets are spaces (9.2, General Rules, 3.b.vi and 3.b.vii).
+CREATE TABLE t (b CLOB(4 OCTETS));
+INSERT INTO t (b) VALUES ('ééé');
+INSERT INTO t (b) VALUES ('éé  ');
+SELECT b || '|' FROM t;
+-- msg: CREATE TABLE 1
+-- error 22001: string data right truncation for CHARACTER LARGE OBJECT(4 OCTETS)
+-- msg: INSERT 1
+-- COL1: éé|
+
+-- # A cast cuts the string to the last whole character that fits, with a
+-- # warning if it isn't spaces (6.13, General Rules, 11).
+/* types */
+VALUES CAST('aéb' AS CLOB(2 OCTETS));
+-- warning 01004: string data, right truncation
+-- COL1: a (CHARACTER LARGE OBJECT(2 OCTETS))
+
+/* types */
+VALUES CAST('aé' AS CLOB(5 OCTETS));
+-- COL1: aé (CHARACTER LARGE OBJECT(5 OCTETS))
+
+-- # The length in octets is also its maximum length in characters (General
+-- # Rules, 3).
+CREATE TABLE t (b CLOB(4 OCTETS), a CLOB(4 CHARACTERS));
+SELECT column_name, data_type, character_maximum_length, character_octet_length FROM information_schema.columns WHERE table_name = 'T';
+-- msg: CREATE TABLE 1
+-- COLUMN_NAME: B DATA_TYPE: CHARACTER LARGE OBJECT CHARACTER_MAXIMUM_LENGTH: 4 CHARACTER_OCTET_LENGTH: 4
+-- COLUMN_NAME: A DATA_TYPE: CHARACTER LARGE OBJECT CHARACTER_MAXIMUM_LENGTH: 4 CHARACTER_OCTET_LENGTH: 16
+
+VALUES CAST('a' AS CLOB(0 OCTETS));
+-- error 42601: syntax error: CHARACTER LARGE OBJECT length must be greater than 0

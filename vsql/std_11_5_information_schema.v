@@ -943,7 +943,9 @@ fn data_type_descriptor(catalog_name string, t Type) []Value {
 			// A CHARACTER LARGE OBJECT without a length has the maximum length.
 			length := if t.size == 0 { max_large_object_length } else { t.size }
 			character_maximum_length = length
-			character_octet_length = if length > max_large_object_length / 4 {
+			character_octet_length = if t.octets {
+				length
+			} else if length > max_large_object_length / 4 {
 				max_large_object_length
 			} else {
 				length * 4

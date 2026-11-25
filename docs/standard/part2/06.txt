@@ -36,7 +36,7 @@
 6.1/SR/16.b              container    - -
 6.1/SR/16.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
 6.1/SR/16.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
-6.1/SR/16.b.iii          n/a          - - a large object length can't have char length units (T061)
+6.1/SR/16.b.iii          implemented  vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_char_length_units.sql
 6.1/SR/17                impl-defined vsql/std_2_6_1_data_type.v tests/std_2_6_1_type_limits.sql,tests/std_2_6_1_large_object_length.sql the maximum length is 10485760, and the maximum large object length is 2147483647
 6.1/SR/18                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the character set is always UTF8
 6.1/SR/19                implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_binary.sql

@@ -60,6 +60,9 @@ Every function, in alphabetical order:
    * - :ref:`BINARY_TO_HEX <functions-string:BINARY_TO_HEX>`
      - Convert a binary string to hexadecimal digits
      - String
+   * - :ref:`BINARY_TO_UUID <functions-uuid:BINARY_TO_UUID>`
+     - Convert 16 octets to a UUID string
+     - UUID
    * - :ref:`BIT_AND <functions-aggregate:BIT_AND>`
      - Bitwise AND of the values
      - Aggregate
@@ -174,6 +177,12 @@ Every function, in alphabetical order:
    * - :ref:`GCD <functions-arithmetic:GCD>`
      - Greatest common divisor
      - Arithmetic
+   * - :ref:`GENERATE_UUID_V4 <functions-uuid:GENERATE_UUID_V4>`
+     - Generate a random (version 4) UUID
+     - UUID
+   * - :ref:`GENERATE_UUID_V7 <functions-uuid:GENERATE_UUID_V7>`
+     - Generate a time-ordered (version 7) UUID
+     - UUID
    * - :ref:`GREATEST <functions-conditional:GREATEST>`
      - Greatest of the values
      - Conditional
@@ -393,6 +402,9 @@ Every function, in alphabetical order:
    * - :ref:`UPPER <functions-string:UPPER>`
      - Convert a string to upper case
      - String
+   * - :ref:`UUID_TO_BINARY <functions-uuid:UUID_TO_BINARY>`
+     - Convert a UUID string to 16 octets
+     - UUID
    * - :ref:`VAR_POP <functions-statistical:VAR_POP>`
      - Population variance
      - Statistical

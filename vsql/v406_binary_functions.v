@@ -136,3 +136,12 @@ fn base64_sextet(c u8) !u8 {
 		else { sqlstate_22018() }
 	}
 }
+
+// binary_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const binary_arg_names = {
+	'BASE64_TO_BINARY': ['STRING']
+	'BINARY_TO_BASE64': ['OCTETS']
+	'BINARY_TO_HEX':    ['OCTETS']
+	'HEX_TO_BINARY':    ['STRING']
+}

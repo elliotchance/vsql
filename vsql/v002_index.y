@@ -1,6 +1,6 @@
 %%
 
-// CREATE INDEX and DROP INDEX aren't part of the standard (see index.v). The
+// CREATE INDEX and DROP INDEX aren't part of the standard (see v002_index.v). The
 // name of the index can't be qualified, because it's always in the schema of
 // the table.
 create_index_statement:

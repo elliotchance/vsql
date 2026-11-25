@@ -12,6 +12,14 @@ import time
 // datetime. The result is NULL when any argument is NULL.
 
 fn register_datetime_funcs(mut conn Connection) ! {
+	// NOW() is a vsql extension (V402-01) that reads the wall clock each time
+	// it's called, so unlike CURRENT_TIMESTAMP (which is fixed for the whole
+	// statement) it's NOT DETERMINISTIC. That's why it can't be in a CHECK, and as
+	// a function it can't be where only a datetime value function can, such as a
+	// DEFAULT.
+	conn.register_func(Func{'NOW', [], false, func_now, new_type('TIMESTAMP WITH TIME ZONE',
+		6, 0), false, false, [vsql_now], [], false})!
+
 	double_precision := Type{SQLType.is_double_precision, 0, 0, false, false}
 	numeric := Type{SQLType.is_numeric, 0, 0, false, false}
 	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
@@ -163,4 +171,18 @@ fn make_datetime_microseconds(second Value) !i64 {
 	}
 
 	return big_integer_to_i64(n.numerator * big.integer_from_int(1000000) / n.denominator)
+}
+
+// datetime_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const datetime_arg_names = {
+	'LAST_DAY':         ['SOURCE']
+	'MAKE_DATE':        ['YEARS', 'MONTHS', 'DAYS']
+	'MAKE_TIME':        ['HOURS', 'MINUTES', 'SECONDS']
+	'MAKE_TIMESTAMP':   ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS']
+	'MAKE_TIMESTAMPTZ': ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS', 'TIME_ZONE']
+}
+
+fn func_now(ctx FunctionContext, _ []Value) !Value {
+	return ctx.clock_timestamp()
 }

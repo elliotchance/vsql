@@ -291,3 +291,19 @@ fn func_split_part(_ FunctionContext, args []Value) !Value {
 
 	return new_varchar_value(fields[index])
 }
+
+// string_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const string_arg_names = {
+	'CHR':         ['CODE_POINT']
+	'ENDS_WITH':   ['STRING', 'SUFFIX']
+	'INITCAP':     ['STRING']
+	'LENGTH':      ['STRING']
+	'QUOTE_IDENT': ['NAME']
+	'REPEAT':      ['STRING', 'N']
+	'REPLACE':     ['STRING', 'TARGET', 'REPLACEMENT']
+	'REVERSE':     ['STRING']
+	'SPLIT_PART':  ['STRING', 'DELIMITER', 'N']
+	'STARTS_WITH': ['STRING', 'PREFIX']
+	'UNICODE':     ['STRING']
+}

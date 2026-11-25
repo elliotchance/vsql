@@ -564,7 +564,7 @@
 9.14/SR/2.g              definition   - -
 9.14/SR/2.h              definition   - -
 9.14/SR/2.i              implemented  vsql/std_2_6_15_greatest_or_least_function.v tests/std_2_6_15_greatest_or_least.sql
-9.14/SR/3                implemented  vsql/std_2_9_12_grouping_operations.v,vsql/index.v tests/std_2_9_14_ordering_operations.sql,tests/std_2_6_1_character_large_object.sql there are no arrays, multisets, reference types or user-defined types
+9.14/SR/3                implemented  vsql/std_2_9_12_grouping_operations.v,vsql/v002_index.v tests/std_2_9_14_ordering_operations.sql,tests/std_2_6_1_character_large_object.sql there are no arrays, multisets, reference types or user-defined types
 9.14/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql only the default collation
 9.14/CR/1                n/a          - - structured types (S024)
 9.14/CR/2                n/a          - - JSON data type (T801)

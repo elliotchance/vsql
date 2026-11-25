@@ -19,6 +19,23 @@ vacuum_statement:
     $$.v = yy_box(Stmt(new_vacuum_statement($3.v as []VacuumObject,
       $4.v as []VacuumOption)!))
   }
+| VACUUM ANALYZE {
+    flag(mut yylex, vsql_vacuum)
+    $$.v = yy_box(Stmt(new_vacuum_analyze_statement([], [])!))
+  }
+| VACUUM ANALYZE ON vacuum_objects {
+    flag(mut yylex, vsql_vacuum)
+    $$.v = yy_box(Stmt(new_vacuum_analyze_statement($4.v as []VacuumObject, [])!))
+  }
+| VACUUM ANALYZE vacuum_options {
+    flag(mut yylex, vsql_vacuum)
+    $$.v = yy_box(Stmt(new_vacuum_analyze_statement([], $3.v as []VacuumOption)!))
+  }
+| VACUUM ANALYZE ON vacuum_objects vacuum_options {
+    flag(mut yylex, vsql_vacuum)
+    $$.v = yy_box(Stmt(new_vacuum_analyze_statement($4.v as []VacuumObject,
+      $5.v as []VacuumOption)!))
+  }
 
 vacuum_objects:
   vacuum_object { $$.v = yy_box([$1.v as VacuumObject]) }

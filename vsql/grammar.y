@@ -652,6 +652,7 @@ module vsql
 %token USER
 %token USING
 %token VACUUM
+%token ANALYZE
 %token COMPACT
 %token INDEXES
 %token OBJECTS

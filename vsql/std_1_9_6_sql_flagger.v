@@ -209,6 +209,10 @@ import arrays
 // V407-03: UUID_TO_BINARY.
 // V407-04: BINARY_TO_UUID.
 //
+// V410: Size functions.
+// V410-01: FORMAT_SIZE.
+// V410-02: PARSE_SIZE.
+//
 // V501: PostgreSQL functions.
 // V501-01: version().
 // V501-02: current_setting().
@@ -353,6 +357,8 @@ const vsql_generate_uuid_v4 = 'V407-01'
 const vsql_generate_uuid_v7 = 'V407-02'
 const vsql_uuid_to_binary = 'V407-03'
 const vsql_binary_to_uuid = 'V407-04'
+const vsql_format_size = 'V410-01'
+const vsql_parse_size = 'V410-02'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

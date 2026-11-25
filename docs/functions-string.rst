@@ -374,6 +374,98 @@ ENDS_WITH
   - Snowflake: ``ENDSWITH``, ClickHouse: ``endsWith``, Spark: ``endswith``.
   - MySQL, SQL Server, Oracle, SQLite and Db2: no equivalent.
 
+FORMAT_SIZE
+^^^^^^^^^^^
+
+.. code-block:: sql
+
+   FORMAT_SIZE(bytes NUMERIC) CHARACTER VARYING
+   FORMAT_SIZE(bytes NUMERIC, significant_figures BIGINT) CHARACTER VARYING
+   FORMAT_SIZE(bytes NUMERIC, significant_figures BIGINT, unit CHARACTER VARYING) CHARACTER VARYING
+   FORMAT_SIZE(bytes NUMERIC, significant_figures BIGINT, unit CHARACTER VARYING, base BIGINT) CHARACTER VARYING
+
+Formats a number of bytes as a size, such as ``24 MB``. Any exact number can be
+used, and it's rounded to whole bytes.
+
+Without a ``unit`` (or a ``NULL`` one), the size is in the largest decimal unit
+that isn't more than the bytes, so the number is at least 1 and less than 1000:
+``B``, ``kB``, ``MB``, ``GB``, ``TB``, ``PB``, ``EB``, ``ZB`` or ``YB`` (each
+is 1000 of the one before it). A ``unit`` gives the result in that unit,
+however big or small it is. It can be written in any way that ``PARSE_SIZE``
+reads, including a binary unit (``KiB``, ``MiB`` to ``YiB``, each 1024 of the
+one before it), and it's shown the standard way, such as ``MiB`` for
+``'mebibytes'`` or ``kB`` for ``'KB'``. An unknown unit is a ``22023`` error.
+
+``base`` (``0`` or ``NULL`` by default) is ``2`` for the largest binary unit
+instead when there isn't a ``unit``, so the number is at least 1 and less than
+1024: ``B``, ``KiB``, ``MiB`` to ``YiB``. ``10`` is the same as the default.
+With a ``unit``, a ``base`` of ``2`` or ``10`` is used for it, the same as
+``PARSE_SIZE``, so ``FORMAT_SIZE(24117248, 0, 'MB', 2)`` is ``23 MB`` (and
+``PARSE_SIZE`` with the same ``base`` reads it back). It's a ``22023`` error if
+the ``base`` isn't ``0``, ``2`` or ``10``.
+
+``significant_figures`` (``0`` or ``NULL`` by default) is the most digits that
+the number can have. The zeros at the end of a fraction aren't shown, so it's
+``1.5 kB`` rather than ``1.50 kB``, and ``1 MB`` rather than ``1.00 MB``.
+``0`` rounds to a whole number. The digits before the decimal point are never
+rounded off, so 999 kB is ``999 kB`` with 2 significant figures, and bytes
+never have a fraction. A number that's less than 1 (only with a ``unit``) is
+rounded to the significant figures after its zeros, such as ``0.000488 MiB``. A
+number is rounded to the nearest, with a half rounded away from zero. When that
+makes it 1000 (or 1024 for a ``base`` of ``2``) without a ``unit``, it's 1 of
+the next unit. It's a ``22023`` error
+if ``significant_figures`` isn't from 0 to 20.
+
+The result is ``NULL`` if ``bytes`` is ``NULL``. ``PARSE_SIZE`` converts a size
+back to bytes.
+
+``FORMAT_SIZE`` is a vsql extension flagged by ``V410-01`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES FORMAT_SIZE(24117248);
+  -- COL1: 24 MB
+
+  VALUES FORMAT_SIZE(1500);
+  -- COL1: 2 kB
+
+  VALUES FORMAT_SIZE(1500, 3);
+  -- COL1: 1.5 kB
+
+  VALUES FORMAT_SIZE(24117248, 3);
+  -- COL1: 24.1 MB
+
+  VALUES FORMAT_SIZE(999999);
+  -- COL1: 1 MB
+
+  VALUES FORMAT_SIZE(24117248, 3, CAST(NULL AS VARCHAR(3)), 2);
+  -- COL1: 23 MiB
+
+  VALUES FORMAT_SIZE(1048575, 0, CAST(NULL AS VARCHAR(3)), 2);
+  -- COL1: 1 MiB
+
+  VALUES FORMAT_SIZE(1073741824, 0, 'MiB');
+  -- COL1: 1024 MiB
+
+  VALUES FORMAT_SIZE(24117248, 0, 'MB', 2);
+  -- COL1: 23 MB
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``pg_size_pretty``, which uses ``kB``, ``MB`` and so on for
+    1024, only changes to the next unit at 10 of it, and doesn't have the
+    significant figures or the unit. ``FORMAT_SIZE(x, 0, NULL, 2)`` is the
+    closest, with the ``KiB`` names.
+  - MySQL: ``FORMAT_BYTES`` (8.0.16), in ``KiB``, ``MiB`` and so on, with two
+    decimal places, like a ``base`` of ``2``.
+  - SQLite, SQL Server and Oracle: none.
+
 HEX_TO_BINARY
 ^^^^^^^^^^^^^
 
@@ -718,6 +810,78 @@ result is a ``BINARY VARYING`` (or a ``BINARY LARGE OBJECT`` if either one is).
   - SQL Server: ``STUFF(string, start, length, replacement)``. The ``LENGTH``
     is required, and a ``START`` outside of the string returns ``NULL``.
   - SQLite and Oracle: ``SUBSTR(...) || replacement || SUBSTR(...)``.
+
+PARSE_SIZE
+^^^^^^^^^^
+
+.. code-block:: sql
+
+   PARSE_SIZE(size CHARACTER VARYING) BIGINT
+   PARSE_SIZE(size CHARACTER VARYING, base BIGINT) BIGINT
+
+Converts a size, such as ``'23 MiB'``, to a number of bytes, rounded to a whole
+number (with a half rounded away from zero).
+
+The number can have a sign, a fraction and an exponent, such as ``-1.5e3``. Its
+digits can be grouped by an underscore anywhere between two of them
+(``1_048_576``), or by commas in groups of three (``1,048,576``), so ``1,5`` is
+an error rather than ``15``.
+
+The unit is in upper or lower case, and can be nothing (bytes), ``B``,
+``BYTE`` or ``BYTES``, or for each of kilo, mega, giga, tera, peta, exa, zetta
+and yotta (``K``, ``M``, ``G``, ``T``, ``P``, ``E``, ``Z`` and ``Y``):
+
+- A decimal unit: ``K``, ``KB`` or ``KILOBYTE(S)``, which is 1000 (and 1000 to
+  the power of each one after it).
+- A binary unit: ``KI``, ``KIB`` or ``KIBIBYTE(S)``, which is 1024 (and 1024 to
+  the power of each one after it).
+
+There can be any white space before, between and after the number and the
+unit. An ``E`` that's followed by a digit is an exponent, otherwise it's the
+unit (``1EB`` is 1 exabyte).
+
+``base`` (``0`` or ``NULL`` by default) decides the unit from its name, as above.
+``2`` or ``10`` is used for every unit instead (1024 or 1000), whatever it's
+called, for a system that's known to name its units wrongly (such as ``MB`` for
+1024 KiB). Bytes are always bytes. It's a ``22023`` error if the ``base`` isn't
+``0``, ``2`` or ``10``.
+
+It's a ``22018`` error if the size can't be read, and a ``22003`` error if it's
+more than a ``BIGINT``. The result is ``NULL`` if ``size`` is ``NULL``.
+``FORMAT_SIZE`` formats a number of bytes as a size.
+
+``PARSE_SIZE`` is a vsql extension flagged by ``V410-02`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES PARSE_SIZE('23 MiB');
+  -- COL1: 24117248
+
+  VALUES PARSE_SIZE('  23mib ');
+  -- COL1: 24117248
+
+  VALUES PARSE_SIZE('23 MB');
+  -- COL1: 23000000
+
+  VALUES PARSE_SIZE('23 MiB', 10);
+  -- COL1: 23000000
+
+  VALUES PARSE_SIZE('23 MB', 2);
+  -- COL1: 24117248
+
+  VALUES PARSE_SIZE('1,024 KiB');
+  -- COL1: 1048576
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **Other databases:**
+
+  - PostgreSQL: ``pg_size_bytes``, where ``kB``, ``MB`` and so on are 1024.
+  - MySQL, SQLite, SQL Server and Oracle: none.
 
 POSITION
 ^^^^^^^^

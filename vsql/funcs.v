@@ -65,6 +65,7 @@ const builtin_arg_names = {
 	'ERF':              ['X']
 	'ERFC':             ['X']
 	'FACTORIAL':        ['N']
+	'FORMAT_SIZE':      ['BYTES', 'SIGNIFICANT_FIGURES', 'UNIT', 'BASE']
 	'GAMMA':            ['X']
 	'GCD':              ['A', 'B']
 	'HEX_TO_BINARY':    ['STRING']
@@ -78,6 +79,7 @@ const builtin_arg_names = {
 	'MAKE_TIMESTAMP':   ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS']
 	'MAKE_TIMESTAMPTZ': ['YEARS', 'MONTHS', 'DAYS', 'HOURS', 'MINUTES', 'SECONDS', 'TIME_ZONE']
 	'MIN_SCALE':        ['X']
+	'PARSE_SIZE':       ['SIZE', 'BASE']
 	'RADIANS':          ['X']
 	'RANDOM':           ['MIN', 'MAX']
 	'RANDOM_BINARY':    ['N']
@@ -277,6 +279,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	register_decfloat_funcs(mut conn)!
 	register_binary_funcs(mut conn)!
 	register_uuid_funcs(mut conn)!
+	register_size_funcs(mut conn)!
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can

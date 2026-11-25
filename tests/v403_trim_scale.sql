@@ -27,7 +27,7 @@ SELECT TRIM_SCALE(n), MIN_SCALE(n), TRIM_SCALE(d), MIN_SCALE(d), TRIM_SCALE(i), 
 -- # It removes the zeros of a division or an average.
 SELECT TRIM_SCALE(AVG(n)), TRIM_SCALE(SUM(d) / 8) FROM t;
 -- warning 01003: null value eliminated in set function
--- COL1: 0.7187 COL2: 0.53
+-- COL1: 0.71875 COL2: 0.53125
 
 -- # The result keeps its decimal places in a row, a UNION, a CAST to a string
 -- # and an expression. Stored in a NUMERIC column, it has the scale of the

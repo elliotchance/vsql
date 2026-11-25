@@ -149,7 +149,7 @@
 10.9/SR/7.g              container    - -
 10.9/SR/7.g.i            implemented  vsql/funcs.v tests/std_2_10_9_set_functions.sql
 10.9/SR/7.g.ii           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql BIGINT for an integer, otherwise the NUMERIC or DECIMAL of the argument without a precision
-10.9/SR/7.g.iii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
+10.9/SR/7.g.iii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql NUMERIC (DECIMAL for a DECIMAL) with scale MAX(S, 16) and the same digits before the decimal point (truncated)
 10.9/SR/7.g.iv           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_set_functions.sql the type of the argument
 10.9/SR/7.g.v            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_decfloat_set_functions.sql the precision of DT
 10.9/SR/7.g.vi           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_interval_aggregates.sql the leading field precision of the SUM of intervals is 8

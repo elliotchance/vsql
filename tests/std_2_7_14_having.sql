@@ -35,7 +35,7 @@ SELECT a FROM t GROUP BY a HAVING MAX(b) - MIN(b) = 10 AND COUNT(b) = 2;
 
 SELECT a, AVG(b) FROM t GROUP BY a HAVING COUNT(DISTINCT b) < 2;
 -- warning 01003: null value eliminated in set function
--- A: 2 COL2: 30
+-- A: 2 COL2: 30.0000000000000000
 
 -- # A grouping column can be used directly.
 SELECT a, SUM(b) FROM t GROUP BY a HAVING a <> 2;

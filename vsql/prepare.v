@@ -41,6 +41,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| TableDefinition
 	| UpdateStatementPositioned
 	| UpdateStatementSearched
+	| VacuumStatement
 
 // A prepared statement is compiled and validated, but not executed. It can then
 // be executed with a value for each dynamic parameter ("?") in the statement,
@@ -209,8 +210,8 @@ fn (mut p PreparedStmt) with_parameters(params map[string]Value) !map[string]Val
 // command_function returns the identifier and code of the statement, from
 // Table 39, "SQL-statement codes" in ISO/IEC 9075-2 (the COMMAND_FUNCTION and
 // DYNAMIC_FUNCTION of a diagnostics area). A query is a <dynamic select
-// statement> ("SELECT CURSOR"). EXPLAIN, DECLARE CURSOR, CREATE INDEX and DROP
-// INDEX aren't standard statements, so their codes are negative.
+// statement> ("SELECT CURSOR"). EXPLAIN, DECLARE CURSOR, CREATE INDEX, DROP
+// INDEX and VACUUM aren't standard statements, so their codes are negative.
 pub fn (p PreparedStmt) command_function() (string, int) {
 	// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 2.c to 2.e
 	if p.explain {
@@ -253,6 +254,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		TableDefinition { 'CREATE TABLE', 77 }
 		UpdateStatementPositioned { 'UPDATE CURSOR', 81 }
 		UpdateStatementSearched { 'UPDATE WHERE', 82 }
+		VacuumStatement { 'VACUUM', -5 }
 	}
 }
 
@@ -518,6 +520,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		DropIndexStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		VacuumStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

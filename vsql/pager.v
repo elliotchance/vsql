@@ -28,6 +28,10 @@ mut:
 	// The free list is a chain of kind_free pages, starting at first_free_page.
 	free_page(page_number int) !
 	first_free_page() int
+	// replace_pages replaces all of the pages with pages (which are numbered
+	// from 0), and root as the root page. Any other pages are removed from the
+	// end of the file, and there are no free pages. See Storage.vacuum.
+	replace_pages(pages []Page, root int) !
 	// discard forgets the pages changed by the current statement, because it
 	// failed. See Storage.discard_statement.
 	discard()
@@ -108,6 +112,16 @@ fn (mut p MemoryPager) first_free_page() int {
 	return p.free
 }
 
+fn (mut p MemoryPager) replace_pages(pages []Page, root int) ! {
+	p.dirty = map[int]Page{}
+	for i, page in pages {
+		p.dirty[i] = page
+	}
+	p.total = pages.len
+	p.root_page = root
+	p.free = -1
+}
+
 // commit keeps the pages changed by the current statement.
 fn (mut p MemoryPager) commit() {
 	// Only the changed pages are replaced, rather than copying all of them,
@@ -115,6 +129,7 @@ fn (mut p MemoryPager) commit() {
 	for p.pages.len < p.total {
 		p.pages << Page{}
 	}
+	p.pages.trim(p.total)
 	for i, page in p.dirty {
 		p.pages[i] = page
 	}
@@ -373,6 +388,17 @@ fn (mut p FilePager) free_page(page_number int) ! {
 
 fn (mut p FilePager) first_free_page() int {
 	return p.free
+}
+
+// replace_pages only changes the pages in memory. The file is made shorter when
+// they're written, see wal_checkpoint.
+fn (mut p FilePager) replace_pages(pages []Page, root int) ! {
+	for i, page in pages {
+		p.store_page(i, page)!
+	}
+	p.total_pages = pages.len
+	p.root_page = root
+	p.free = -1
 }
 
 // new_free_page is a kind_free page that's followed on the free list by next

@@ -456,8 +456,8 @@ when it's the first page of its parent) if they fit in one page, and the page
 that's left empty is removed. A non-leaf page is removed when it has no pointers
 left, except for the root page.
 
-A file is never made shorter, the free pages stay in the file until they're
-used again.
+A file is only made shorter by :doc:`vacuum`, otherwise the free pages stay in
+the file until they're used again.
 
 Object
 ------

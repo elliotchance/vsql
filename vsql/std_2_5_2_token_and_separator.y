@@ -303,6 +303,7 @@ non_reserved_word:
 | UTF16
 | UTF32
 | UTF8
+| VACUUM
 | VIEW
 | WORK
 | WRAPPER

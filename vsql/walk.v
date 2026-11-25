@@ -23,6 +23,11 @@ mut:
 	// moving to the next leaf doesn't read them again. They are read when they
 	// are first needed (see parent), so there may be fewer than path.
 	parents [][]PageObject
+	// pages_read is the number of pages of the B-tree that the iteration has
+	// visited (leaf and non-leaf), each counted once. Reading the objects of a
+	// large value (see read_blob) isn't counted again, since they're in leaf
+	// pages of the B-tree.
+	pages_read int
 	// err is set if a page can't be read, which also ends the iteration. V
 	// iterators can't return an error, so the caller must check it after the
 	// loop.
@@ -56,6 +61,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 	// On the first iteration we fast-forward to the starting page.
 	if iter.path.len == 0 {
 		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min) or { return iter.fail(err) }
+		iter.pages_read += iter.path.len
 
 		// search_page does not include the last depth_iterator becuase that
 		// belongs to the leaf not which is does not search.
@@ -102,6 +108,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 			depth := iter.path.len - 1
 			if depth >= iter.parents.len {
 				page := iter.btree.pager.read_page(iter.path[depth]) or { return iter.fail(err) }
+				iter.pages_read++
 				if page.kind != kind_not_leaf {
 					// The page is only used by the iterator, so its objects don't
 					// need to be copied.

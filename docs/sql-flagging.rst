@@ -123,6 +123,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V003-02``
      - ``DROP INDEX IF EXISTS`` (see :doc:`drop-index`).
 
+   * - ``V004``
+     - ``VACUUM``.
+
+   * - ``V004-01``
+     - ``VACUUM`` (see :doc:`vacuum`).
+
    * - ``V101``
      - ``CREATE SCHEMA``.
 

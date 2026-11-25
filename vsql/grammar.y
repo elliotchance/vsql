@@ -651,6 +651,7 @@ module vsql
 %token UPPER
 %token USER
 %token USING
+%token VACUUM
 %token VALUE
 %token VALUES
 %token VALUE_OF

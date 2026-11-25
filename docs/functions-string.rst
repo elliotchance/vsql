@@ -338,6 +338,42 @@ The type of the result, and the arguments it accepts, are the same as
   - Snowflake: the result is ``NULL`` if any argument is.
   - Oracle, Db2 and BigQuery: no ``CONCAT_WS``.
 
+ENDS_WITH
+^^^^^^^^^
+
+.. code-block:: sql
+
+   ENDS_WITH(string CHARACTER VARYING, suffix CHARACTER VARYING) BOOLEAN
+   ENDS_WITH(string BINARY VARYING, suffix BINARY VARYING) BOOLEAN
+
+``TRUE`` if ``STRING`` ends with ``SUFFIX``. It works the same way as
+`STARTS_WITH`_, but compares the end of the string.
+
+``ENDS_WITH`` is a vsql extension flagged by ``V404-13`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ENDS_WITH('report.csv', '.csv');
+  -- COL1: TRUE
+
+  VALUES ENDS_WITH(CAST('ab' AS CHARACTER(5)), 'b');
+  -- COL1: FALSE
+
+**Compatibility**
+
+- **SQL standard:** not standard. ``LIKE`` works for a constant, but a suffix
+  from a column or parameter needs its ``%``, ``_`` and escape characters to be
+  escaped.
+- **Other databases:**
+
+  - BigQuery and DuckDB: ``ENDS_WITH``.
+  - PostgreSQL: no equivalent.
+  - Snowflake: ``ENDSWITH``, ClickHouse: ``endsWith``, Spark: ``endswith``.
+  - MySQL, SQL Server, Oracle, SQLite and Db2: no equivalent.
+
 HEX_TO_BINARY
 ^^^^^^^^^^^^^
 
@@ -960,6 +996,55 @@ doesn't split the string, so it's the only field. The result is a
   - Oracle: ``REGEXP_SUBSTR``.
   - SQL Server: ``STRING_SPLIT``, which returns a table.
   - SQLite: no equivalent.
+
+STARTS_WITH
+^^^^^^^^^^^
+
+.. code-block:: sql
+
+   STARTS_WITH(string CHARACTER VARYING, prefix CHARACTER VARYING) BOOLEAN
+   STARTS_WITH(string BINARY VARYING, prefix BINARY VARYING) BOOLEAN
+
+``TRUE`` if ``STRING`` starts with ``PREFIX``. Unlike ``LIKE``, no character is
+special, so ``%`` and ``_`` are only themselves. An empty prefix is always
+``TRUE``, and a prefix that's longer than the string is ``FALSE``. If either
+argument is ``NULL``, the result is ``NULL``.
+
+The comparison is exact, by code point, and case-sensitive. Unlike ``=``,
+nothing is padded with spaces, so spaces at the end, and the padding of a
+``CHARACTER(n)``, count (see :doc:`text`). Both arguments can also be binary
+strings (see :doc:`binary`), which are compared by octet.
+
+``STARTS_WITH`` is a vsql extension flagged by ``V404-12`` (see
+:doc:`sql-flagging`). It can't use an index yet.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES STARTS_WITH('hello world', 'hello');
+  -- COL1: TRUE
+
+  VALUES STARTS_WITH('100%', '100%');
+  -- COL1: TRUE
+
+  VALUES STARTS_WITH('1000', '10%');
+  -- COL1: FALSE
+
+  VALUES STARTS_WITH(X'010203', X'0102');
+  -- COL1: TRUE
+
+**Compatibility**
+
+- **SQL standard:** not standard. ``LIKE`` works for a constant, but a prefix
+  from a column or parameter needs its ``%``, ``_`` and escape characters to be
+  escaped.
+- **Other databases:**
+
+  - BigQuery and DuckDB: ``STARTS_WITH``.
+  - PostgreSQL: ``starts_with`` or the ``^@`` operator.
+  - Snowflake: ``STARTSWITH``, ClickHouse: ``startsWith``, Spark: ``startswith``.
+  - MySQL, SQL Server, Oracle, SQLite and Db2: no equivalent.
 
 SUBSTRING
 ^^^^^^^^^

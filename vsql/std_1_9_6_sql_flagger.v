@@ -179,6 +179,8 @@ import arrays
 // V404-09: CONCAT_WS.
 // V404-10: LENGTH.
 // V404-11: REVERSE.
+// V404-12: STARTS_WITH.
+// V404-13: ENDS_WITH.
 //
 // V405: Aggregate functions.
 // V405-01: MODE() WITHIN GROUP.
@@ -317,6 +319,8 @@ const vsql_concat = 'V404-08'
 const vsql_concat_ws = 'V404-09'
 const vsql_length = 'V404-10'
 const vsql_reverse = 'V404-11'
+const vsql_starts_with = 'V404-12'
+const vsql_ends_with = 'V404-13'
 const vsql_mode = 'V405-01'
 const vsql_product = 'V405-02'
 const vsql_median = 'V405-03'

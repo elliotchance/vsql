@@ -622,14 +622,25 @@ of the standard, whatever order they're written in.
 ``DATA`` must be the same type as its parameter (otherwise it's ``22005``):
 ``SMALLINT``, ``INTEGER``, ``BIGINT``, ``REAL``, ``DOUBLE PRECISION`` (which is
 also a ``FLOAT``), ``BOOLEAN``, ``CHARACTER(L)`` or ``BINARY(L)`` with a
-``LENGTH`` of ``L``, or ``CHARACTER VARYING(L)`` or ``BINARY VARYING(L)`` with
-a ``LENGTH`` of ``L`` (or less, to get a value). A ``BINARY`` is ``TYPE``
-``60`` and a ``BINARY VARYING`` is ``TYPE`` ``61``, and their ``LENGTH`` is in
-octets (setting ``TYPE`` sets it to ``1``).
-A ``NUMERIC``, ``DECIMAL``, ``DECFLOAT``, ``DATE``, ``TIME`` or ``TIMESTAMP``
-has no C type, so its ``DATA`` is a ``CHARACTER`` or ``CHARACTER VARYING``
-string. A ``DECFLOAT`` is ``TYPE`` ``26``, and its ``PRECISION`` is ``16`` or
-``34`` (setting ``TYPE`` to ``26`` sets it to ``34``). A ``NULL`` value without
+``LENGTH`` of ``L``, or ``CHARACTER VARYING(L)``, ``CHARACTER LARGE
+OBJECT(L)``, ``BINARY VARYING(L)`` or ``BINARY LARGE OBJECT(L)`` with a
+``LENGTH`` of ``L`` (or less, to get a value). A ``BINARY`` is ``TYPE``
+``60``, a ``BINARY VARYING`` is ``TYPE`` ``61`` and a ``BINARY LARGE OBJECT``
+is ``TYPE`` ``30``, and their ``LENGTH`` is in octets. A ``CHARACTER LARGE
+OBJECT`` is ``TYPE`` ``40``, and its ``LENGTH`` is in characters. Setting
+``TYPE`` sets the ``LENGTH`` of any of them to ``1``.
+A ``NUMERIC``, ``DECIMAL``, ``DECFLOAT``, ``DATE``, ``TIME``, ``TIMESTAMP`` or
+``INTERVAL`` has no C type, so its ``DATA`` is a ``CHARACTER`` or ``CHARACTER
+VARYING`` string. A ``DECFLOAT`` is ``TYPE`` ``26``, and its ``PRECISION`` is
+``16`` or ``34`` (setting ``TYPE`` to ``26`` sets it to ``34``). An
+``INTERVAL`` is ``TYPE`` ``10``, with a ``DATETIME_INTERVAL_CODE`` of ``1``
+(``YEAR``) to ``13`` (``MINUTE TO SECOND``), its leading field precision in
+``DATETIME_INTERVAL_PRECISION`` (``1`` to ``8``) and its fractional seconds
+precision in ``PRECISION`` (setting ``TYPE`` or ``DATETIME_INTERVAL_CODE`` sets
+``DATETIME_INTERVAL_PRECISION`` to ``2``, and ``DATETIME_INTERVAL_CODE`` sets
+``PRECISION`` to ``6`` if it ends with ``SECOND``, otherwise ``0``). Its
+``DATA`` is its literal, such as ``INTERVAL '1-02' YEAR(2) TO MONTH``, and it
+can be set to a literal or a string such as ``'1-2'``. A ``NULL`` value without
 ``INDICATOR`` is ``22002``. These are the other errors:
 
 - ``33000`` (invalid SQL descriptor name): The SQL descriptor area doesn't

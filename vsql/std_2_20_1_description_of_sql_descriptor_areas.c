@@ -134,11 +134,13 @@ vsql_m_descriptor(char *sqlstate, const char *name, const void *module) {
 /*
  * vsql_m_matches is 1 if the data type of a host parameter matches the data
  * type of an item descriptor area. type is a code from Table 28, and length is
- * the length of a CHARACTER, CHARACTER VARYING, BINARY or BINARY VARYING. A
- * CHARACTER VARYING (or BINARY VARYING) target also matches a shorter one. As an implementation-defined rule,
- * a DOUBLE PRECISION matches a FLOAT, and a character string matches a
- * NUMERIC, DECIMAL, DECFLOAT or datetime (which don't have a C data type), as
- * its value cast to a character string.
+ * the length of a CHARACTER, CHARACTER VARYING, CHARACTER LARGE OBJECT,
+ * BINARY, BINARY VARYING or BINARY LARGE OBJECT. A CHARACTER VARYING,
+ * CHARACTER LARGE OBJECT, BINARY VARYING or BINARY LARGE OBJECT target also
+ * matches a shorter one. As an implementation-defined rule, a DOUBLE PRECISION
+ * matches a FLOAT, and a character string matches a NUMERIC, DECIMAL,
+ * DECFLOAT, datetime or interval (which don't have a C data type), as its
+ * value cast to a character string.
  *
  * ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 7 and 8
  */
@@ -150,21 +152,35 @@ static int vsql_m_matches(struct vsql_m_item *item, SQLSMALLINT type,
   case SQL_CHAR:
   case SQL_VARCHAR:
     if (t == SQL_NUMERIC || t == SQL_DECIMAL || t == SQL_DECFLOAT ||
-        t == SQL_DATETIME) {
+        t == SQL_DATETIME || t == SQL_INTERVAL) {
       return 1;
     }
     return t == type &&
            (l == length || (type == SQL_VARCHAR && target && length >= l));
+  case SQL_CLOB:
   case SQL_BINARY:
   case SQL_VARBINARY:
-    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 7.d and 7.e */
-    return t == type &&
-           (l == length || (type == SQL_VARBINARY && target && length >= l));
+  case SQL_BLOB:
+    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 7.b, 7.d and 7.e */
+    return t == type && (l == length || (type != SQL_BINARY && target &&
+                                         length >= l));
   case SQL_DOUBLE:
     return t == SQL_DOUBLE || t == SQL_FLOAT;
   }
 
   return t == type;
+}
+
+/* section seconds */
+/*
+ * vsql_m_has_seconds is 1 if a DATETIME_INTERVAL_CODE of an interval ends with
+ * SECOND, so it has a fractional seconds precision.
+ *
+ * ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, General Rules, 3
+ */
+static int vsql_m_has_seconds(SQLINTEGER code) {
+  return code == SQL_CODE_SECOND || code == SQL_CODE_DAY_TO_SECOND ||
+         code == SQL_CODE_HOUR_TO_SECOND || code == SQL_CODE_MINUTE_TO_SECOND;
 }
 
 /* section items */
@@ -187,10 +203,23 @@ static int vsql_m_valid(struct vsql_m_item *item) {
   case SQL_CHAR:
   case SQL_VARCHAR:
     return number[VSQL_M_LENGTH] >= 1;
+  case SQL_CLOB:
   case SQL_BINARY:
   case SQL_VARBINARY:
-    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 6.c */
+  case SQL_BLOB:
+    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 6.a and 6.c */
     return number[VSQL_M_LENGTH] >= 1;
+  case SQL_INTERVAL:
+    /* The leading field precision is 1 to 8, and the fractional seconds
+     * precision (of an interval that ends with SECOND) is 0 to 6.
+     *
+     * ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 6.l */
+    return number[VSQL_M_DATETIME_INTERVAL_CODE] >= SQL_CODE_YEAR &&
+           number[VSQL_M_DATETIME_INTERVAL_CODE] <= SQL_CODE_MINUTE_TO_SECOND &&
+           number[VSQL_M_DATETIME_INTERVAL_PRECISION] >= 1 &&
+           number[VSQL_M_DATETIME_INTERVAL_PRECISION] <= 8 &&
+           (!vsql_m_has_seconds(number[VSQL_M_DATETIME_INTERVAL_CODE]) ||
+            (number[VSQL_M_PRECISION] >= 0 && number[VSQL_M_PRECISION] <= 6));
   case SQL_NUMERIC:
   case SQL_DECIMAL:
     return number[VSQL_M_PRECISION] >= 1 && number[VSQL_M_SCALE] >= 0 &&
@@ -255,8 +284,8 @@ static int vsql_m_items(char *sqlstate, struct vsql_m_descriptor *d, int n,
  * vsql_m_c_type is the C data type of DATA (for SQLBindParameter and
  * SQLGetData), and sets size to its size in bytes. A binary string is its
  * octets (see the octets of the item). A value of a type that doesn't have a C
- * data type is a character string, which is long enough for any value of the
- * type.
+ * data type (such as an interval, which is its literal) is a character string,
+ * which is long enough for any value of the type.
  */
 static SQLSMALLINT vsql_m_c_type(struct vsql_m_item *item, size_t *size) {
   SQLINTEGER *number = item->number;
@@ -280,11 +309,13 @@ static SQLSMALLINT vsql_m_c_type(struct vsql_m_item *item, size_t *size) {
     return SQL_DOUBLE;
   case SQL_CHAR:
   case SQL_VARCHAR:
+  case SQL_CLOB:
     /* A character is up to 4 bytes of UTF-8. */
     *size = (size_t)number[VSQL_M_LENGTH] * 4 + 1;
     return SQL_CHAR;
   case SQL_BINARY:
   case SQL_VARBINARY:
+  case SQL_BLOB:
     *size = (size_t)number[VSQL_M_LENGTH];
     return (SQLSMALLINT)number[VSQL_M_TYPE];
   case SQL_NUMERIC:
@@ -434,8 +465,9 @@ static struct vsql_m_item *vsql_m_get_item(char *sqlstate, const char *name,
  * length (in characters, for a string, see vsql_m_put). It isn't assigned
  * when the value is null, or undefined. It returns 1 if a string was
  * truncated. A binary string always fits, since the data types match: a
- * BINARY(L) is padded with X'00' to L octets, and a BINARY VARYING(L) gets its
- * length portion set.
+ * BINARY(L) is padded with X'00' to L octets, and a BINARY VARYING(L) or
+ * BINARY LARGE OBJECT(L) gets its length portion set. So does a CHARACTER
+ * LARGE OBJECT(L), in characters (its data portion has no null character).
  *
  * ISO/IEC 9075-2:2023, 20.4, <get descriptor statement>, General Rules, 7.b.ii
  */
@@ -453,8 +485,18 @@ static int vsql_m_get_data(struct vsql_m_item *item, void *target,
     memcpy(target, item->data, (size_t)item->octets);
     return 0;
   case SQL_VARBINARY:
+  case SQL_BLOB:
     v->length = (unsigned long)item->octets;
     memcpy(v->data, item->data, (size_t)item->octets);
+    return 0;
+  case SQL_CLOB:
+    v->length = 0;
+    for (length = 0; ((char *)item->data)[length] != '\0'; length++) {
+      if ((((unsigned char *)item->data)[length] & 0xC0) != 0x80) {
+        v->length++;
+      }
+    }
+    memcpy(v->data, item->data, length);
     return 0;
   case SQL_SMALLINT:
     *(short *)target = *(SQLSMALLINT *)item->data;
@@ -564,14 +606,18 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
     level = number[VSQL_M_LEVEL];
     vsql_m_reset_item(item);
     number[VSQL_M_LEVEL] = level;
-    if (value == SQL_CHAR || value == SQL_VARCHAR) {
+    if (value == SQL_CHAR || value == SQL_VARCHAR || value == SQL_CLOB) {
       number[VSQL_M_LENGTH] = 1;
       vsql_m_copy(&item->string[VSQL_M_CHARACTER_SET_SCHEMA],
                   "INFORMATION_SCHEMA");
       vsql_m_copy(&item->string[VSQL_M_CHARACTER_SET_NAME], "UTF8");
-    } else if (value == SQL_BINARY || value == SQL_VARBINARY) {
+    } else if (value == SQL_BINARY || value == SQL_VARBINARY ||
+               value == SQL_BLOB) {
       /* ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.c.iii.3 */
       number[VSQL_M_LENGTH] = 1;
+    } else if (value == SQL_INTERVAL) {
+      /* ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.c.iii.6 */
+      number[VSQL_M_DATETIME_INTERVAL_PRECISION] = 2;
     } else if (value == SQL_NUMERIC || value == SQL_DECIMAL) {
       number[VSQL_M_PRECISION] = 18;
     } else if (value == SQL_DECFLOAT) {
@@ -582,9 +628,21 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
     }
     break;
   case VSQL_M_DATETIME_INTERVAL_CODE:
-    /* INTERVAL isn't supported in a descriptor area yet (#1744).
+    /* The PRECISION of an interval that ends with SECOND is 6, and its
+     * DATETIME_INTERVAL_PRECISION is 2.
      *
-     * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.d.i and 4.d.iii */
+     * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.d.ii, 4.d.ii.1, 4.d.ii.2 and 4.d.ii.3 */
+    if (number[VSQL_M_TYPE] == SQL_INTERVAL) {
+      if (value < SQL_CODE_YEAR || value > SQL_CODE_MINUTE_TO_SECOND) {
+        vsql_m_status(sqlstate, "0700F");
+        return 0;
+      }
+      number[VSQL_M_PRECISION] = vsql_m_has_seconds((SQLINTEGER)value) ? 6 : 0;
+      number[VSQL_M_DATETIME_INTERVAL_PRECISION] = 2;
+      break;
+    }
+
+    /* ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.d.i and 4.d.iii */
     if (number[VSQL_M_TYPE] != SQL_DATETIME || value < SQL_CODE_DATE ||
         value > 5) {
       vsql_m_status(sqlstate, "0700F");
@@ -618,7 +676,9 @@ static int vsql_m_set_string(struct vsql_m_item *item, int component,
  * data type type and length (for a string or binary string). It returns 0
  * (with the status parameter set) if it doesn't match the data type of the
  * item: data exception — error in assignment. A BINARY(L) is L octets, and a
- * BINARY VARYING(L) is the octets of its data portion (up to L).
+ * BINARY VARYING(L) or BINARY LARGE OBJECT(L) is the octets of its data
+ * portion (up to L). A CHARACTER LARGE OBJECT(L) is the characters of its data
+ * portion (up to L), which DATA has as a C string.
  *
  * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.a.iii and 4.a.iv
  */
@@ -627,7 +687,7 @@ static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
                            const void *value) {
   const struct vsql_m_varbinary *v = (const struct vsql_m_varbinary *)value;
   size_t size = 0;
-  SQLINTEGER integer;
+  SQLINTEGER integer, characters = 0;
 
   if (!vsql_m_matches(item, type, length, 0)) {
     vsql_m_status(sqlstate, "22005");
@@ -669,11 +729,31 @@ static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
     size = (size_t)length;
     break;
   case SQL_VARBINARY:
+  case SQL_BLOB:
     item->octets = v->length < (unsigned long)length ? (SQLINTEGER)v->length
                                                       : length;
     value = v->data;
     size = (size_t)item->octets;
     break;
+  case SQL_CLOB:
+    /* The octets of the first length portion characters (of up to length
+     * characters), then the null character. */
+    for (; size < (size_t)length * 4; size++) {
+      if (((unsigned char)v->data[size] & 0xC0) != 0x80) {
+        if ((unsigned long)characters == v->length || characters == length) {
+          break;
+        }
+        characters++;
+      }
+    }
+    item->data = realloc(item->data, size + 1);
+    if (item->data == NULL) {
+      vsql_m_status(sqlstate, "HY001");
+      return 0;
+    }
+    memcpy(item->data, v->data, size);
+    ((char *)item->data)[size] = '\0';
+    return 1;
   default:
     size = strlen((const char *)value) + 1;
   }

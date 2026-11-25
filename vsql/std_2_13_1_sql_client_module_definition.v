@@ -82,6 +82,8 @@ const c_runtime_requires = {
 	'set_count':             ['descriptor']
 	'set_item':              ['descriptor']
 	'set_data':              ['match']
+	'set_number':            ['seconds']
+	'items':                 ['seconds']
 	'prepared':              ['connection', 'cursors']
 	'prepared_statement':    ['prepared']
 	'prepare':               ['prepared']

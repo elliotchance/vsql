@@ -53,6 +53,7 @@ const variadic_parameter_name = 'VARIADIC'
 // the documentation of each function.
 const builtin_arg_names = {
 	'ATAN2':            ['Y', 'X']
+	'BINARY_TO_HEX':    ['OCTETS']
 	'CBRT':             ['X']
 	'CHR':              ['CODE_POINT']
 	'DEGREES':          ['X']
@@ -61,6 +62,7 @@ const builtin_arg_names = {
 	'FACTORIAL':        ['N']
 	'GAMMA':            ['X']
 	'GCD':              ['A', 'B']
+	'HEX_TO_BINARY':    ['STRING']
 	'INITCAP':          ['STRING']
 	'LCM':              ['A', 'B']
 	'LGAMMA':           ['X']
@@ -258,6 +260,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	register_math_funcs(mut conn)!
 	register_string_funcs(mut conn)!
 	register_decfloat_funcs(mut conn)!
+	register_binary_funcs(mut conn)!
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can

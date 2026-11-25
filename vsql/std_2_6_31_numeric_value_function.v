@@ -22,6 +22,44 @@ fn func_position(_ FunctionContext, args []Value) !Value {
 	return new_integer_value(s[..index].len_utf8() + 1)
 }
 
+// new_position_expression is a <character position expression>, with the
+// <char length units> of USING, or ''.
+fn new_position_expression(a CharacterValueExpression, b CharacterValueExpression, using string) RoutineInvocation {
+	return RoutineInvocation{
+		function_name: 'POSITION'
+		args:          [ValueExpression(CommonValueExpression(a)),
+			ValueExpression(CommonValueExpression(b))]
+		using:         using
+	}
+}
+
+// new_char_length_expression is a <char length expression>, with the <char
+// length units> of USING, or ''.
+fn new_char_length_expression(e CharacterValueExpression, using string) RoutineInvocation {
+	return RoutineInvocation{
+		function_name: 'CHAR_LENGTH'
+		args:          [ValueExpression(CommonValueExpression(e))]
+		using:         using
+	}
+}
+
+// POSITION(CHARACTER VARYING IN CHARACTER VARYING USING OCTETS) INTEGER, and
+// with a CHARACTER LARGE OBJECT for either one. The position is counted in
+// octets of the UTF-8 (see using_function).
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 2.b
+fn func_octet_position(_ FunctionContext, args []Value) !Value {
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 2.a
+	needle := args[0].string_value()
+	if needle == '' {
+		return new_integer_value(1)
+	}
+
+	index := args[1].string_value().index(needle) or { return new_integer_value(0) }
+
+	return new_integer_value(index + 1)
+}
+
 // POSITION(BINARY VARYING IN BINARY VARYING) INTEGER, and with a BINARY LARGE
 // OBJECT for either one. The position is counted in octets.
 //

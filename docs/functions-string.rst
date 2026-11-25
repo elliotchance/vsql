@@ -170,6 +170,10 @@ start or the end.
 CHAR_LENGTH
 ^^^^^^^^^^^
 
+.. code-block:: text
+
+   CHAR_LENGTH(STRING [ USING { CHARACTERS | OCTETS } ])
+
 .. code-block:: sql
 
    CHAR_LENGTH(CHARACTER VARYING) INTEGER
@@ -178,6 +182,9 @@ CHAR_LENGTH
 Returns the number of characters (a multibyte character is counted as a single
 character). The length of an empty string is 0, and the length of a
 ``CHARACTER(n)`` is ``n``, including the padding.
+
+``USING CHARACTERS`` is the default. ``USING OCTETS`` counts the bytes of the
+UTF-8 instead, like ``OCTET_LENGTH``.
 
 **Examples**
 
@@ -189,13 +196,16 @@ character). The length of an empty string is 0, and the length of a
   VALUES CHAR_LENGTH(CAST('ab' AS CHARACTER(5)));
   -- COL1: 5
 
+  VALUES CHAR_LENGTH('😊£' USING OCTETS);
+  -- COL1: 6
+
 **Compatibility**
 
-- **SQL standard:** Core SQL (E021-04).
+- **SQL standard:** Core SQL (E021-04), including ``USING``.
 - **Other databases:**
 
   - PostgreSQL: ``CHAR_LENGTH``, ``CHARACTER_LENGTH`` or ``LENGTH``, which don't
-    count the padding of a ``CHARACTER``.
+    count the padding of a ``CHARACTER``. None of them have ``USING``.
   - MySQL: ``CHAR_LENGTH`` or ``CHARACTER_LENGTH`` (``LENGTH`` is in bytes).
   - SQLite and Oracle: ``LENGTH``. vsql has ``LENGTH`` too, see `LENGTH`_.
   - SQL Server: ``LEN``, which doesn't count spaces at the end.
@@ -207,8 +217,8 @@ CHARACTER_LENGTH
 
    CHARACTER_LENGTH(CHARACTER VARYING) INTEGER
 
-``CHARACTER_LENGTH`` is another name for ``CHAR_LENGTH``, see
-``CHAR_LENGTH``.
+``CHARACTER_LENGTH`` is another name for ``CHAR_LENGTH`` (including
+``USING``), see ``CHAR_LENGTH``.
 
 **Compatibility**
 
@@ -886,6 +896,10 @@ more than a ``BIGINT``. The result is ``NULL`` if ``size`` is ``NULL``.
 POSITION
 ^^^^^^^^
 
+.. code-block:: text
+
+   POSITION(SEARCH IN STRING [ USING { CHARACTERS | OCTETS } ])
+
 .. code-block:: sql
 
    POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
@@ -894,14 +908,15 @@ POSITION
 ``POSITION(SEARCH IN STRING)`` returns the start of the left most (first)
 match of ``SEARCH`` within ``STRING``. 1 will be the smallest index on a match and 0 is returned if
 ``SEARCH`` does not exist in ``STRING``. The position is counted in characters
-(a multibyte character counts as one).
+(a multibyte character counts as one), unless it's ``USING OCTETS``, which
+counts the bytes of the UTF-8.
 
 Matching is case-sensitive. An empty ``SEARCH`` is found at the start of any
 ``STRING`` (even an empty one), so the result is 1.
 
 ``SEARCH`` and ``STRING`` can also both be binary strings (see :doc:`binary`),
 including a ``BINARY LARGE OBJECT``, and then the position is counted in
-octets.
+octets and can't have ``USING``.
 
 **Examples**
 
@@ -916,9 +931,12 @@ octets.
   VALUES POSITION('£' IN '😊£');
   -- COL1: 2
 
+  VALUES POSITION('£' IN '😊£' USING OCTETS);
+  -- COL1: 5
+
 **Compatibility**
 
-- **SQL standard:** Core SQL (E021-11).
+- **SQL standard:** Core SQL (E021-11), including ``USING``.
 - **Other databases:**
 
   - PostgreSQL: ``POSITION(search IN string)`` or ``STRPOS(string, search)``.

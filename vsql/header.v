@@ -29,7 +29,7 @@ const oldest_file_format_version = u16(1)
 // header_reserved_offset is where the reserved space of the header starts.
 // Fields that are added to the header in the future must go in this space, and
 // it must be zero until then.
-const header_reserved_offset = 2104
+const header_reserved_offset = 2108
 
 // The Header contains important metadata about the database and always occupies
 // the first header_size bytes of the database. It's encoded by write_header and
@@ -77,6 +77,10 @@ mut:
 	// IDs are never reused. It was added in version 2 of the file format, in
 	// space that was reserved (and so is zero in an older file).
 	index_id u64
+	// free_page is the first page of the free list (see Pager.free_page), or -1
+	// when there are no free pages. It's stored as the page number plus one, so
+	// that a file from before the free list (where it's zero) doesn't have any.
+	free_page int
 	// reserved is the rest of the header. It's written back exactly as it was
 	// read, so that a version of vsql that doesn't know about a field added by
 	// a newer version doesn't erase it.
@@ -97,6 +101,7 @@ fn new_header(page_size int) Header {
 		// always incremented before returning the next value.
 		transaction_id: 2
 		row_id:         0
+		free_page:      -1
 		reserved:       []u8{len: header_size - header_reserved_offset}
 	}
 }
@@ -130,6 +135,7 @@ fn (h Header) bytes() []u8 {
 	}
 	b.write_u64(h.table_id)
 	b.write_u64(h.index_id)
+	b.write_i32(h.free_page + 1)
 
 	b.write_u8s(h.reserved)
 
@@ -168,6 +174,7 @@ fn new_header_from_bytes(data []u8) !Header {
 	header.active_transaction_ids.update_end()
 	header.table_id = b.read_u64()
 	header.index_id = b.read_u64()
+	header.free_page = b.read_i32() - 1
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)
 
 	if header.page_size <= page_header_size || header.page_size > max_page_size {

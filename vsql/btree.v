@@ -218,8 +218,8 @@ fn (mut p Btree) read_blob(ref PageObject) !PageObject {
 // remove_blob removes the blob and fragment objects of a blob reference. The
 // reference itself must be removed separately.
 //
-// Like COMMIT and ROLLBACK, the objects are removed from their pages without
-// removing pages that become empty.
+// A page that's left without any objects is put on the free list (see
+// store_leaf).
 fn (mut p Btree) remove_blob(ref PageObject) ! {
 	blob_peices, has_fragment := ref.blob_info()
 	mut keys := [][]u8{}
@@ -237,7 +237,7 @@ fn (mut p Btree) remove_blob(ref PageObject) ! {
 		mut page := p.pager.fetch_page(page_number)!
 		object := page.get(key, ref.tid)
 		if page.delete(key, ref.tid) {
-			p.store_page(page_number, page)!
+			p.store_leaf(path, page)!
 			p.record_undo(.deleted, object)
 		}
 	}
@@ -740,6 +740,104 @@ fn (mut p Btree) replace_value(obj PageObject, value []u8) ! {
 	p.store_page(page_number, page)!
 }
 
+// store_leaf stores a leaf page (at the end of path, see search_page) that
+// objects were removed from. When it has no objects left it's removed from the
+// B-tree instead, and put on the free list (see free_path), so that the file
+// doesn't keep growing when rows are deleted and others are added. When it's
+// less than a quarter full, it's merged with the page next to it if they fit in
+// one page (see merge_leaf). The root page is always kept.
+fn (mut p Btree) store_leaf(path []int, page Page) ! {
+	if path.len > 1 {
+		if page.used == page_header_size {
+			return p.free_path(path)
+		}
+
+		if page.used < p.page_size / 4 && p.merge_leaf(path, page)! {
+			return
+		}
+	}
+
+	p.store_page(path.last(), page)!
+}
+
+// merge_leaf moves the objects of a leaf page (at the end of path, which hasn't
+// been stored yet) into the page before it with the same parent, or the objects
+// of the page after it into it when it's the first page of its parent. Then the
+// page that's left empty is freed (see free_path). The keys only move to an
+// earlier page, so the pointers in the parent are still the lower bound of
+// each page. It returns false when the objects don't fit in one page.
+fn (mut p Btree) merge_leaf(path []int, page Page) !bool {
+	page_number := path.last()
+	parent := p.pager.read_page(path[path.len - 2])!
+	pointers := parent.objects().map(page_pointer(it))
+	index := pointers.index(page_number)
+	if index < 0 || pointers.len < 2 {
+		return false
+	}
+
+	left_number := pointers[if index > 0 { index - 1 } else { 0 }]
+	right_number := pointers[if index > 0 { index } else { 1 }]
+	mut left := if left_number == page_number {
+		page.clone()
+	} else {
+		p.pager.fetch_page(left_number)!
+	}
+	right := if right_number == page_number { page } else { p.pager.read_page(right_number)! }
+	if left.used + right.used - page_header_size > p.page_size {
+		return false
+	}
+
+	for object in right.objects() {
+		left.add(object)!
+	}
+	p.store_page(left_number, left)!
+
+	mut right_path := path[..path.len - 1].clone()
+	right_path << right_number
+	p.free_path(right_path)!
+
+	return true
+}
+
+// page_pointer is the page number that a pointer in a non-leaf page points to.
+fn page_pointer(pointer PageObject) int {
+	mut buf := new_bytes(pointer.value)
+	return buf.read_i32()
+}
+
+// free_path puts the page at the end of path (see search_page) on the free list
+// (see Pager.free_page), and removes the pointer to it from its parent. A parent
+// that's left without any pointers is removed as well, except for the root,
+// which becomes an empty leaf page.
+//
+// The parent's key for a page is only a lower bound, so the pointers that are
+// left don't need to change: a key that was in the removed page is now found in
+// the page before it (or the first page).
+fn (mut p Btree) free_path(path []int) ! {
+	page_number := path.last()
+	p.pager.free_page(page_number)!
+	p.written_pages[page_number] = true
+
+	parent_number := path[path.len - 2]
+	mut parent := p.pager.fetch_page(parent_number)!
+	for object in parent.objects() {
+		if page_pointer(object) == page_number {
+			parent.delete(object.key.clone(), 0)
+			break
+		}
+	}
+
+	if parent.used > page_header_size {
+		return p.store_page(parent_number, parent)
+	}
+
+	if path.len > 2 {
+		return p.free_path(path[..path.len - 1])
+	}
+
+	p.store_page(parent_number, new_page(kind_leaf, p.page_size))!
+}
+
 fn (mut p Btree) record_undo(kind UndoKind, obj PageObject) {
 	if p.undo.recording {
 		p.undo.entries << UndoEntry{kind, obj}
@@ -748,8 +846,8 @@ fn (mut p Btree) record_undo(kind UndoKind, obj PageObject) {
 
 // undo_to undoes every change in the undo log after position, newest first, and
 // removes them from the log. Each object is found by its key, because a page
-// split can move objects after they are changed. Like COMMIT and ROLLBACK, it
-// doesn't remove pages that become empty.
+// split can move objects after they are changed. A page that's left without any
+// objects is put on the free list (see store_leaf).
 fn (mut p Btree) undo_to(position int) ! {
 	p.undo.recording = false
 	for i := p.undo.entries.len - 1; i >= position; i-- {
@@ -760,7 +858,7 @@ fn (mut p Btree) undo_to(position int) ! {
 				page_number := path[path.len - 1]
 				mut page := p.pager.fetch_page(page_number)!
 				page.delete(entry.obj.key, entry.obj.tid)
-				p.store_page(page_number, page)!
+				p.store_leaf(path, page)!
 			}
 			.deleted {
 				p.add(entry.obj)!

@@ -23,6 +23,11 @@ mut:
 	total_pages() int
 	root_page() int
 	set_root_page(page_number int) !
+	// free_page puts a page that's no longer in the B-tree on the free list, so
+	// that append_page can use it again instead of adding a page to the end.
+	// The free list is a chain of kind_free pages, starting at first_free_page.
+	free_page(page_number int) !
+	first_free_page() int
 	// discard forgets the pages changed by the current statement, because it
 	// failed. See Storage.discard_statement.
 	discard()
@@ -40,6 +45,9 @@ mut:
 	dirty           map[int]Page
 	total           int
 	saved_root_page int
+	// free is the first free page (see Pager.free_page), or -1 for none.
+	free       int = -1
+	saved_free int = -1
 }
 
 fn new_memory_pager() &MemoryPager {
@@ -70,6 +78,13 @@ fn (mut p MemoryPager) total_pages() int {
 }
 
 fn (mut p MemoryPager) append_page(page Page) !int {
+	if p.free >= 0 {
+		page_number := p.free
+		p.free = next_free_page(p.read_page(page_number)!)
+		p.dirty[page_number] = page
+		return page_number
+	}
+
 	p.dirty[p.total] = page
 	p.total++
 
@@ -82,6 +97,15 @@ fn (mut p MemoryPager) root_page() int {
 
 fn (mut p MemoryPager) set_root_page(page_number int) ! {
 	p.root_page = page_number
+}
+
+fn (mut p MemoryPager) free_page(page_number int) ! {
+	p.store_page(page_number, new_free_page(p.free, p.read_page(page_number)!.page_size()))!
+	p.free = page_number
+}
+
+fn (mut p MemoryPager) first_free_page() int {
+	return p.free
 }
 
 // commit keeps the pages changed by the current statement.
@@ -97,12 +121,14 @@ fn (mut p MemoryPager) commit() {
 
 	p.dirty = map[int]Page{}
 	p.saved_root_page = p.root_page
+	p.saved_free = p.free
 }
 
 fn (mut p MemoryPager) discard() {
 	p.dirty = map[int]Page{}
 	p.total = p.pages.len
 	p.root_page = p.saved_root_page
+	p.free = p.saved_free
 }
 
 struct FilePager {
@@ -135,6 +161,9 @@ mut:
 	undo_new         map[int]bool
 	undo_total_pages int
 	undo_root_page   int
+	undo_free_page   int
+	// free is the first free page (see Pager.free_page), or -1 for none.
+	free int = -1
 	// file_total_pages is the number of pages in the file, which is less than
 	// total_pages while new pages haven't been written yet.
 	file_total_pages int
@@ -256,6 +285,7 @@ fn (mut p FilePager) begin() {
 	p.undo_new = map[int]bool{}
 	p.undo_total_pages = p.total_pages
 	p.undo_root_page = p.root_page
+	p.undo_free_page = p.free
 }
 
 // discard forgets the changes of the current statement. The pages that earlier
@@ -269,6 +299,7 @@ fn (mut p FilePager) discard() {
 	}
 	p.total_pages = p.undo_total_pages
 	p.root_page = p.undo_root_page
+	p.free = p.undo_free_page
 	p.begin()
 
 	// A page that was committed before (see wal_prepare) may be different to the
@@ -295,7 +326,7 @@ fn (mut p FilePager) committed() {
 // drop_dirty forgets every page that hasn't been written to the file, so it's
 // read from the file again, see Storage.drop_kept_pages. They're put back if
 // the statement fails, like any other change (see discard).
-fn (mut p FilePager) drop_dirty(root_page int) {
+fn (mut p FilePager) drop_dirty(root_page int, free_page int) {
 	for page_number, data in p.dirty {
 		if page_number !in p.undo && page_number !in p.undo_new {
 			p.undo[page_number] = data
@@ -304,6 +335,7 @@ fn (mut p FilePager) drop_dirty(root_page int) {
 	p.dirty = map[int][]u8{}
 	p.total_pages = p.file_total_pages
 	p.root_page = root_page
+	p.free = free_page
 }
 
 fn (mut p FilePager) total_pages() int {
@@ -311,6 +343,13 @@ fn (mut p FilePager) total_pages() int {
 }
 
 fn (mut p FilePager) append_page(page Page) !int {
+	if p.free >= 0 {
+		page_number := p.free
+		p.free = next_free_page(p.read_page(page_number)!)
+		p.store_page(page_number, page)!
+		return page_number
+	}
+
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.store_page(p.total_pages, page) or { return sqlstate_58030('unable to store page: ${err}') }
@@ -325,4 +364,27 @@ fn (mut p FilePager) root_page() int {
 
 fn (mut p FilePager) set_root_page(page_number int) ! {
 	p.root_page = page_number
+}
+
+fn (mut p FilePager) free_page(page_number int) ! {
+	p.store_page(page_number, new_free_page(p.free, p.page_size))!
+	p.free = page_number
+}
+
+fn (mut p FilePager) first_free_page() int {
+	return p.free
+}
+
+// new_free_page is a kind_free page that's followed on the free list by next
+// (-1 for none).
+fn new_free_page(next int, page_size int) Page {
+	mut page := new_page(kind_free, page_size)
+	binary.big_endian_put_u32(mut page.data, u32(next))
+
+	return page
+}
+
+// next_free_page is the page after a free page on the free list, or -1.
+fn next_free_page(page Page) int {
+	return int(i32(binary.big_endian_u32(page.data)))
 }

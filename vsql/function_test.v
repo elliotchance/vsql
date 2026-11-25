@@ -219,3 +219,40 @@ fn test_function_context() ! {
 	db.query('START TRANSACTION')!
 	assert db.query('VALUES context_values()')!.rows[0].get_string('COL1')! == '${expected} true true'
 }
+
+// TIMESTAMP is in the type precedence list of DATE (F054), so a DATE argument
+// can be passed to a TIMESTAMP parameter, and is cast to a TIMESTAMP. A
+// function with a DATE parameter is still preferred, and a TIMESTAMP is never
+// passed to a DATE parameter.
+fn test_custom_function_date_to_timestamp() ! {
+	mut db := open(':memory:')!
+	db.register_function('describe_ts(timestamp) varchar', fn (_ FunctionContext, a []Value) !Value {
+		return new_varchar_value('${a[0].typ} ${a[0].str()}')
+	})!
+	db.register_function('describe_tstz(timestamp with time zone) varchar', fn (_ FunctionContext, a []Value) !Value {
+		return new_varchar_value('${a[0].typ} ${a[0].str()}')
+	})!
+	db.register_function('pick(date) varchar', fn (_ FunctionContext, a []Value) !Value {
+		return new_varchar_value('date')
+	})!
+	db.register_function('pick(timestamp) varchar', fn (_ FunctionContext, a []Value) !Value {
+		return new_varchar_value('timestamp')
+	})!
+	db.register_function('only_date(date) varchar', fn (_ FunctionContext, a []Value) !Value {
+		return new_varchar_value('date')
+	})!
+
+	assert db.query("VALUES describe_ts(DATE '2024-03-15')")!.rows[0].get_string('COL1')! == 'TIMESTAMP(0) WITHOUT TIME ZONE 2024-03-15T00:00:00'
+	assert db.query("SET TIME ZONE INTERVAL '+05:00' HOUR TO MINUTE")!.rows.len == 0
+	assert db.query("VALUES describe_tstz(DATE '2024-03-15')")!.rows[0].get_string('COL1')! == 'TIMESTAMP(0) WITH TIME ZONE 2024-03-15T00:00:00+0500'
+	assert db.prepare("VALUES describe_ts(DATE '2024-03-15')")!.features() == ['F054', 'F641',
+		'F661']
+	assert db.prepare("VALUES pick(DATE '2024-03-15')")!.features() == ['F641', 'F661']
+	assert db.query("VALUES pick(DATE '2024-03-15')")!.rows[0].get_string('COL1')! == 'date'
+	assert db.query("VALUES pick(TIMESTAMP '2024-03-15 10:00:00')")!.rows[0].get_string('COL1')! == 'timestamp'
+	db.query("VALUES only_date(TIMESTAMP '2024-03-15 10:00:00')") or {
+		assert err.msg() == 'function does not exist: ONLY_DATE(TIMESTAMP(0) WITHOUT TIME ZONE)'
+		return
+	}
+	assert false
+}

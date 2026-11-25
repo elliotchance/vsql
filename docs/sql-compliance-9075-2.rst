@@ -677,7 +677,7 @@ Optional Features
    * - ✅ **F053**
      - **OVERLAPS predicate**
 
-   * - ❌ **F054**
+   * - ✅ **F054**
      - **TIMESTAMP in DATE type precedence list**
 
    * - ✅ **F111**

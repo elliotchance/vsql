@@ -128,6 +128,16 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	found_func := c.conn.find_function_in(schema_name, func_name, arg_types)!
 	if c.conn.flagging {
 		c.conn.flagged_features << found_func.features
+
+		// A DATE argument of a TIMESTAMP parameter needs TIMESTAMP in the type
+		// precedence list of DATE.
+		//
+		// ISO/IEC 9075-2:2023, 9.7, Type precedence list determination, Conformance Rules, 1
+		for i, t in arg_types {
+			if t.typ == .is_date && found_func.arg_types[i].typ != .is_date {
+				c.conn.flagged_features << 'F054'
+			}
+		}
 	}
 	// Only an aggregate function can have DISTINCT or a <filter clause>, such as
 	// PRODUCT(DISTINCT x).
@@ -222,6 +232,12 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 					target = return_type
 				} else if typ.typ != param_typ.typ && typ.typ.is_number() {
 					target = implicit_cast_type(arg, param_typ)
+				} else if typ.typ == .is_date && param_typ.typ != .is_date {
+					// A DATE argument of a TIMESTAMP parameter (see implicit_cast_cost)
+					// is cast to the TIMESTAMP.
+					//
+					// ISO/IEC 9075-2:2023, 9.18, Invoking an SQL-invoked routine, General Rules, 4.b
+					target = param_typ
 				}
 
 				args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, target)!

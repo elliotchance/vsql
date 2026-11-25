@@ -370,7 +370,7 @@
 9.7/SR/9.c.iv.2.B        n/a          - - SQL-invoked routines (T321)
 9.7/SR/10                n/a          - - SQL-invoked routines (T321)
 9.7/SR/11                n/a          - - SQL-invoked routines (T321)
-9.7/SR/12                n/a          - - SQL-invoked routines (T321)
+9.7/SR/12                implemented  vsql/connection.v vsql/function_test.v only for the built-in functions and register_function, there are no SQL-invoked routines (T321)
 9.7/SR/13                n/a          - - SQL-invoked routines (T321)
 9.7/SR/14                n/a          - - SQL-invoked routines (T321)
 9.7/SR/15                n/a          - - SQL-invoked routines (T321)
@@ -381,7 +381,7 @@
 9.7/SR/20                n/a          - - SQL-invoked routines (T321)
 9.7/SR/21                n/a          - - SQL-invoked routines (T321)
 9.7/SR/22                n/a          - - SQL-invoked routines (T321)
-9.7/CR/1                 n/a          - - SQL-invoked routines (T321)
+9.7/CR/1                 implemented  vsql/std_2_10_4_routine_invocation.v vsql/function_test.v only for the built-in functions and register_function, there are no SQL-invoked routines (T321)
 # 9.8, Host parameter mode determination
 9.8                      implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
 9.8/SR/1                 definition   - -
@@ -914,7 +914,7 @@
 9.18/GR/3.b.v.2          n/a          - - SQL-invoked routines (T321)
 9.18/GR/4                n/a          - - SQL-invoked routines (T321)
 9.18/GR/4.a              n/a          - - SQL-invoked routines (T321)
-9.18/GR/4.b              n/a          - - SQL-invoked routines (T321)
+9.18/GR/4.b              implemented  vsql/std_2_10_4_routine_invocation.v vsql/function_test.v only for the built-in functions and register_function, there are no SQL-invoked routines (T321)
 9.18/GR/4.c              container    - -
 9.18/GR/4.c.i            n/a          - - SQL-invoked routines (T321)
 9.18/GR/4.c.ii           n/a          - - SQL-invoked routines (T321)

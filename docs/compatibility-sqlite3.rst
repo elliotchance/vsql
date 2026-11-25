@@ -276,9 +276,9 @@ Returns the number of characters in a text (or of bytes in a blob).
 .. code-block:: sql
 
   -- length(X)
-  VALUES CHAR_LENGTH(/*X*/);
+  VALUES LENGTH(/*X*/);
   -- SELECT length('Cherry');
-  VALUES CHAR_LENGTH('Cherry');
+  VALUES LENGTH('Cherry');
   -- COL1: 6
 
 SQLite counts the characters of a number as text, such as 3 for

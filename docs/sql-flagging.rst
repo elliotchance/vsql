@@ -481,6 +481,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-09``
      - ``CONCAT_WS``.
+
+   * - ``V404-10``
+     - ``LENGTH``.
    * - ``V405``
      - Aggregate functions (see :doc:`functions-aggregate`).
 

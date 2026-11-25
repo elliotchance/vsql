@@ -168,6 +168,9 @@ Every function, in alphabetical order:
    * - :ref:`LEAST <functions-conditional:LEAST>`
      - Least of the values
      - Conditional
+   * - :ref:`LENGTH <functions-string:LENGTH>`
+     - Same as ``CHAR_LENGTH``
+     - String
    * - :ref:`LGAMMA <functions-error-and-gamma:LGAMMA>`
      - Natural logarithm of the gamma function
      - Error and Gamma

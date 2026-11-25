@@ -358,7 +358,7 @@ VALUES SUBSTRING('abcde' FROM 1 FOR 2);
 
 -- # length
 -- # length('jose')
-VALUES CHAR_LENGTH('jose');
+VALUES LENGTH('jose');
 -- COL1: 4
 
 -- # lower

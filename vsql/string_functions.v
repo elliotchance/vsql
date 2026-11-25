@@ -16,6 +16,8 @@ fn register_string_funcs(mut conn Connection) ! {
 	varchar := Type{SQLType.is_varchar, 0, 0, false, false}
 	integer := Type{SQLType.is_integer, 0, 0, false, false}
 	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
+	varbinary := Type{SQLType.is_varbinary, 0, 0, false, false}
+	blob := Type{SQLType.is_blob, 0, 0, false, false}
 
 	// The result of REPLACE can be longer than any of its arguments, so it's a
 	// CHARACTER VARYING without a maximum length, rather than the type of the
@@ -41,6 +43,18 @@ fn register_string_funcs(mut conn Connection) ! {
 	// SUBSTRING (see RoutineInvocation.compile).
 	conn.register_func(Func{'SPLIT_PART', [varchar, varchar, bigint], false, func_split_part, varchar, false, true, [
 		vsql_split_part,
+	], [], false})!
+	// LENGTH (V404-10) is another name for CHAR_LENGTH. Like PostgreSQL and
+	// SQLite, the length of a binary string is its number of octets, the same
+	// as OCTET_LENGTH.
+	conn.register_func(Func{'LENGTH', [varchar], false, func_char_length, integer, false, true, [
+		vsql_length,
+	], [], false})!
+	conn.register_func(Func{'LENGTH', [varbinary], false, func_octet_length, integer, false, true, [
+		vsql_length,
+	], [], false})!
+	conn.register_func(Func{'LENGTH', [blob], false, func_octet_length, integer, false, true, [
+		vsql_length,
 	], [], false})!
 }
 

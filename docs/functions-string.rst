@@ -117,7 +117,7 @@ character). The length of an empty string is 0, and the length of a
   - PostgreSQL: ``CHAR_LENGTH``, ``CHARACTER_LENGTH`` or ``LENGTH``, which don't
     count the padding of a ``CHARACTER``.
   - MySQL: ``CHAR_LENGTH`` or ``CHARACTER_LENGTH`` (``LENGTH`` is in bytes).
-  - SQLite and Oracle: ``LENGTH``.
+  - SQLite and Oracle: ``LENGTH``. vsql has ``LENGTH`` too, see `LENGTH`_.
   - SQL Server: ``LEN``, which doesn't count spaces at the end.
 
 CHARACTER_LENGTH
@@ -330,6 +330,50 @@ case mappings, so it can also be truncated with a ``01004`` warning.
 
   - PostgreSQL and Oracle: ``INITCAP``.
   - MySQL, SQLite and SQL Server: no equivalent.
+
+LENGTH
+^^^^^^
+
+.. code-block:: sql
+
+   LENGTH(string CHARACTER VARYING) INTEGER
+   LENGTH(string BINARY VARYING) INTEGER
+   LENGTH(string BINARY LARGE OBJECT) INTEGER
+
+``LENGTH`` is another name for ``CHAR_LENGTH``: the number of characters, where
+a multibyte character counts as one. Spaces at the end are counted, and so is
+the padding of a ``CHARACTER(n)``. The length of an empty string is 0.
+
+The length of a binary string (see :doc:`binary`) is its number of octets, the
+same as ``OCTET_LENGTH``.
+
+``LENGTH`` is a vsql extension flagged by ``V404-10`` (see
+:doc:`sql-flagging`). The standard name is ``CHAR_LENGTH``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LENGTH('hello');
+  -- COL1: 5
+
+  VALUES LENGTH('😊£');
+  -- COL1: 2
+
+  VALUES LENGTH(X'010203');
+  -- COL1: 3
+
+**Compatibility**
+
+- **SQL standard:** not standard, use ``CHAR_LENGTH`` (or ``OCTET_LENGTH`` for
+  a binary string).
+- **Other databases:**
+
+  - PostgreSQL, SQLite, Oracle, Db2 and DuckDB: the same, but PostgreSQL
+    doesn't count the padding of a ``CHARACTER``.
+  - MySQL and MariaDB: ``LENGTH`` is the number of bytes, which is
+    ``OCTET_LENGTH`` in vsql.
+  - SQL Server: ``LEN``, which doesn't count spaces at the end.
 
 LOWER
 ^^^^^

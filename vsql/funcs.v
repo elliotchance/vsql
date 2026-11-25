@@ -65,6 +65,7 @@ const builtin_arg_names = {
 	'HEX_TO_BINARY':    ['STRING']
 	'INITCAP':          ['STRING']
 	'LCM':              ['A', 'B']
+	'LENGTH':           ['STRING']
 	'LGAMMA':           ['X']
 	'MAKE_DATE':        ['YEARS', 'MONTHS', 'DAYS']
 	'MAKE_TIME':        ['HOURS', 'MINUTES', 'SECONDS']

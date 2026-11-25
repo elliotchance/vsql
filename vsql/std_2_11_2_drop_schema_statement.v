@@ -52,7 +52,15 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 		}
 	}
 
-	if stmt.behavior == 'RESTRICT' && (table_names.len > 0 || sequences.len > 0) {
+	mut views := []View{}
+	for _, view in catalog.storage.views {
+		if view.name.schema_name == schema_name {
+			views << view
+		}
+	}
+
+	if stmt.behavior == 'RESTRICT'
+		&& (table_names.len > 0 || sequences.len > 0 || views.len > 0) {
 		return sqlstate_2bp01(schema_name)
 	}
 
@@ -65,6 +73,10 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 
 	for table_name in table_names {
 		catalog.storage.delete_table(table_name, catalog.storage.table(table_name).tid)!
+	}
+
+	for view in views {
+		catalog.storage.delete_view(view)!
 	}
 
 	for sequence in sequences {

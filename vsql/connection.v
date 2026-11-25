@@ -1589,6 +1589,12 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 		check_writable_schema(ident)!
 	}
 
+	// A view can only be read (see create_view_plan), it can't be changed yet
+	// (#1448).
+	if id in catalog.storage.views {
+		return sqlstate_42601('${ident} is a view, not a table')
+	}
+
 	return sqlstate_42p01_table(ident) // table does not exist
 }
 

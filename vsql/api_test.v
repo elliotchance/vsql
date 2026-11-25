@@ -1212,6 +1212,42 @@ fn test_data_types_raise_file_format_version() ! {
 	}
 }
 
+// The first view raises the Write Version, because an older version would
+// ignore it (and could create a table with the same name), but it can still
+// read the file. The view is read back from the file.
+fn test_view_raises_write_version() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-sql-test-view-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(session_path(path)) or {}
+		os.rm(path + '.wal') or {}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('INSERT INTO t (x) VALUES (1), (2)')!
+	db.close()
+	mut file := os.open(path)!
+	mut header := read_header(mut file)!
+	file.close()
+	assert header.read_version == 1 && header.write_version == 1
+
+	db = open(path)!
+	db.query('CREATE VIEW v (y) AS SELECT x * 10 FROM t -- tens\n')!
+	db.close()
+	file = os.open(path)!
+	header = read_header(mut file)!
+	file.close()
+	assert header.read_version == 1 && header.write_version == view_file_format_version
+
+	db = open(path)!
+	defer {
+		db.close()
+	}
+	result := db.query('SELECT y FROM v')!
+	assert result.rows.map(it.get_string('Y')!) == ['10', '20']
+}
+
 // A connection that's used from a thread other than the one that opened it
 // still releases the closures of each statement (see PreparedStmt.query).
 fn test_query_from_another_thread() ! {

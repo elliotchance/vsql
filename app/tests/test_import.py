@@ -158,7 +158,7 @@ def test_import_sqlite(ui, db_file):
 
 def test_import_unsupported_without_option(ui):
     open_import(ui.catalog_menu('db'))
-    choose_file(ui, 'sqlite.sql', 'CREATE VIEW v AS SELECT 1;\n')
+    choose_file(ui, 'sqlite.sql', 'CREATE VIEW v AS SELECT nope(1);\n')
     run_import(ui)
     expect(failures(ui)).to_contain_text('Line 1')
 
@@ -182,7 +182,7 @@ def test_import_messages(ui):
     open_import(ui.catalog_menu('db'))
     choose_file(ui, 'load.sql', """CREATE TABLE foo.t (x INT);
 DELETE FROM foo.t WHERE x = 1;
-CREATE VIEW v AS SELECT 1;
+CREATE VIEW v AS SELECT nope(1);
 INSERT INTO foo.nope (x) VALUES (1);
 INSERT INTO foo.t (x) VALUES (1);
 """)
@@ -194,7 +194,7 @@ INSERT INTO foo.t (x) VALUES (1);
     expect(messages).to_have_count(3)
     expect(messages.nth(0)).to_have_text('Line 2 NOTICE 02000 no data')
     expect(messages.nth(0)).to_have_class('import-notice')
-    expect(messages.nth(1)).to_have_text('Line 3 WARNING 01000 CREATE VIEW is not supported, so it was ignored')
+    expect(messages.nth(1)).to_contain_text('Line 3 WARNING 01000 CREATE VIEW failed, so it was ignored: function does not exist')
     expect(messages.nth(1)).to_have_class('import-warning')
     expect(messages.nth(2)).to_contain_text('Line 4 ERROR 42P01 no such table')
     expect(messages.nth(2)).to_have_class('import-error')

@@ -422,6 +422,11 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 	match from_clause.body {
 		Identifier {
+			if view, catalog_name := conn.find_view(from_clause.body) {
+				return create_view_plan(body, from_clause, view, params, mut conn, catalog_name,
+					filter)
+			}
+
 			// A table with a correlation name, such as "t AS x (c1, c2)", is
 			// read like a derived table so that its rows use the new names.
 			if from_clause.correlation.name.sub_entity_name != '' {
@@ -575,7 +580,11 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 	//
 	// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 12.b.ii.1
 	correlation_columns := correlation.columns
-	if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
+	mut subplan_columns := subplan.columns()
+	if correlation.degree > 0 {
+		subplan_columns = subplan_columns[..correlation.degree]
+	}
+	if correlation_columns.len > 0 && correlation_columns.len != subplan_columns.len {
 		return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
 	}
 
@@ -592,7 +601,6 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 	// position, and a reference to the name is ambiguous (see is_ambiguous_in).
 	//
 	// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 12.b.ii.3
-	subplan_columns := subplan.columns()
 	mut names := map[string]int{}
 	for col in subplan_columns {
 		names[col.name.sub_entity_name]++
@@ -605,9 +613,16 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 		} else {
 			col.name.sub_entity_name
 		}
+		// The columns of a view (which is named like a table, see
+		// create_view_plan) are named like the columns of a table.
 		columns << Column{
 			name:           Identifier{
-				entity_name:     table_name.id()
+				schema_name:     table_name.schema_name
+				entity_name:     if table_name.entity_name != '' {
+					table_name.entity_name
+				} else {
+					table_name.id()
+				}
 				sub_entity_name: name
 				custom_id:       if correlation_columns.len == 0 && names[name] > 1 {
 					'${table_name.id()}.${name}\x00${i + 1}'
@@ -1271,7 +1286,14 @@ fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables
 		}
 	}
 
-	table_name := conn.resolve_table_identifier(e.table_name, true)!
+	table_name := if view, catalog_name := conn.find_view(e.table_name) {
+		Identifier{
+			...view.name
+			catalog_name: catalog_name
+		}
+	} else {
+		conn.resolve_table_identifier(e.table_name, true)!
+	}
 
 	// A table loaded from the file doesn't have the catalog in its name (see
 	// new_table_from_bytes).

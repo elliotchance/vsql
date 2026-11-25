@@ -755,8 +755,8 @@ fn is_transaction_statement(stmt string) bool {
 
 // unsupported_statement is what a statement is if -ignore-unsupported can ignore
 // it. They would be a loss, but the rest of the file is still useful without them.
-// CREATE INDEX is run, but some forms of it (such as a partial index) aren't
-// supported.
+// CREATE VIEW and CREATE INDEX are run, but some forms of them (such as a
+// partial index) aren't supported.
 fn unsupported_statement(words []string) string {
 	if words.len < 2 || words[0] != 'CREATE' {
 		return ''
@@ -1023,8 +1023,13 @@ fn (mut s ImportSql) translated(mut conn vsql.Connection, stmt string, line int,
 			line:        line
 		}
 	} else if unsupported != '' {
+		// A view is run, so its names are quoted like the rest of the file.
 		s.execute(mut conn, ImportStatement{
-			sql:         stmt
+			sql:         if options.compat == 'sqlite3' && unsupported == 'CREATE VIEW' {
+				sqlite_normalize(stmt)
+			} else {
+				stmt
+			}
 			unsupported: unsupported
 		}, line, done)
 	} else if options.compat == 'sqlite3' {
@@ -1053,8 +1058,8 @@ fn (mut s ImportSql) execute(mut conn vsql.Connection, stmt ImportStatement, lin
 			s.run.print_statement(line, done, 'DROP TABLE 0')
 			return
 		}
-		if stmt.unsupported == 'CREATE INDEX' {
-			s.run.print_condition('WARNING', vsql.sqlstate_to_int('01000'), line, done, 'CREATE INDEX failed, so it was ignored: ${err.msg()}')
+		if stmt.unsupported in ['CREATE VIEW', 'CREATE INDEX'] {
+			s.run.print_condition('WARNING', vsql.sqlstate_to_int('01000'), line, done, '${stmt.unsupported} failed, so it was ignored: ${err.msg()}')
 			return
 		}
 		if stmt.unsupported != '' {

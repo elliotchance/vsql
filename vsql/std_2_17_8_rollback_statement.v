@@ -84,7 +84,8 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			if (obj.tid == catalog.storage.transaction_id
-				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`, `N`] {
+				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`, `N`,
+				`W`] {
 				schema_changed = true
 			}
 

@@ -129,7 +129,7 @@
 # 4.8.5.5, Triggers
 4.8.5.5                  n/a          - - triggers (T211)
 # 4.8.6, View definitions
-4.8.6                    missing      - - views aren't supported (F031-02, #731)
+4.8.6                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql a view can't be changed yet (#1448)
 # 4.8.7, Assertions
 4.8.7                    n/a          - - assertions (F521)
 # 4.8.8, SQL-server modules (defined in ISO/IEC 9075-4)

@@ -107,6 +107,9 @@ import arrays
 // V118: EXECUTE IMMEDIATE.
 // V118-01: EXECUTE IMMEDIATE of a literal, rather than a host parameter.
 //
+// V119: DROP VIEW.
+// V119-01: DROP VIEW without a <drop behavior> (it's RESTRICT).
+//
 // V201: FROM.
 // V201-01: SELECT without a FROM clause.
 // V201-02: A derived table without a correlation name.
@@ -307,6 +310,7 @@ const vsql_rollback_transaction = 'V116-01'
 const vsql_abort = 'V116-02'
 const vsql_prepare_literal = 'V117-01'
 const vsql_execute_immediate_literal = 'V118-01'
+const vsql_drop_view_behavior = 'V119-01'
 const vsql_select_without_from = 'V201-01'
 const vsql_derived_table_without_name = 'V201-02'
 const vsql_sort_key_without_column = 'V202-01'

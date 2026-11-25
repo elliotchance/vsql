@@ -12,12 +12,14 @@ Syntax
 
   <schema_element> ::=
       <create_table>
+    | <create_view>
     | <create_sequence>
 
 A schema is a container for other objects such as tables.
 
-Each ``CREATE TABLE`` (see :doc:`create-table`) and ``CREATE SEQUENCE`` (see
-:doc:`create-sequence`) is created in the new schema. The foreign keys are added
+Each ``CREATE TABLE`` (see :doc:`create-table`), ``CREATE VIEW`` (see
+:doc:`create-view`) and ``CREATE SEQUENCE`` (see :doc:`create-sequence`) is
+created in the new schema, in order. The foreign keys are added
 after all of the tables are created, so a ``FOREIGN KEY`` can reference a table
 that's after it, and two tables can reference each other. An unqualified name in
 them is in the new schema, whatever the current schema is. If one of them fails,

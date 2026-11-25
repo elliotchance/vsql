@@ -47,6 +47,8 @@ mut:
 	// operations (including read and writing rows). All tables must be loaded
 	// when the database is opened.
 	tables map[string]Table
+	// views are kept in memory like tables, see View.
+	views map[string]View
 	// file is opened by the first statement and stays open (but is only locked
 	// during each statement) until the connection is closed, because opening
 	// and closing it takes longer than the statement. It's unbuffered, so
@@ -168,6 +170,7 @@ struct StatementSnapshot {
 mut:
 	header            Header
 	tables            map[string]Table
+	views             map[string]View
 	schemas           map[string]Schema
 	indexes           map[string]Index
 	transaction_state TransactionState
@@ -234,6 +237,7 @@ fn (mut f Storage) begin_statement() {
 fn (mut f Storage) save_schema() {
 	if f.snapshot.in_statement && !f.snapshot.schema_saved {
 		f.snapshot.tables = f.tables.clone()
+		f.snapshot.views = f.views.clone()
 		f.snapshot.schemas = f.schemas.clone()
 		f.snapshot.indexes = f.indexes.clone()
 		f.snapshot.schema_saved = true
@@ -492,6 +496,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.header = f.snapshot.header
 	if f.snapshot.schema_saved {
 		f.tables = f.snapshot.tables.clone()
+		f.views = f.snapshot.views.clone()
 		f.schemas = f.snapshot.schemas.clone()
 		f.indexes = f.snapshot.indexes.clone()
 	}
@@ -657,6 +662,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	}
 
 	f.load_indexes()!
+	f.load_views()!
 }
 
 // parse_definition parses the definition of a schema object (such as a table),
@@ -822,6 +828,7 @@ fn (mut f Storage) create_table(definition Table) ! {
 
 	f.check_concurrent_referenced_tables(definition, [])!
 	f.check_concurrent_name(`T`, definition.name)!
+	f.check_concurrent_name(`W`, definition.name)!
 
 	f.header.table_id++
 	table := Table{
@@ -1362,6 +1369,8 @@ fn (mut f Storage) check_concurrent_name(kind u8, name Identifier) ! {
 		mut other := Identifier{}
 		if stmt is TableDefinition {
 			other = stmt.table_name
+		} else if stmt is ViewDefinition {
+			other = stmt.table_name
 		} else if stmt is CreateIndexStatement {
 			other = Identifier{
 				schema_name: stmt.table_name.schema_name
@@ -1369,7 +1378,11 @@ fn (mut f Storage) check_concurrent_name(kind u8, name Identifier) ! {
 			}
 		}
 		if other.schema_name == name.schema_name && other.entity_name == name.entity_name {
-			kind_name := if kind == `T` { 'table' } else { 'index' }
+			kind_name := match kind {
+				`T` { 'table' }
+				`W` { 'view' }
+				else { 'index' }
+			}
 			return sqlstate_40001('avoiding concurrent write on ${kind_name} ${name}')
 		}
 	}

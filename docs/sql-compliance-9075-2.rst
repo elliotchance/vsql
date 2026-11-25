@@ -12,7 +12,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 128 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
+**vsql supports 131 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
 
 .. list-table:: Table H.1 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -347,7 +347,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F031-01
      - ``CREATE TABLE`` statement to create persistent base tables
 
-   * - ❌ F031-02
+   * - ✅ F031-02
      - ``CREATE VIEW`` statement
 
    * - ❌ F031-03
@@ -359,7 +359,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F031-13
      - ``DROP TABLE`` statement: ``RESTRICT`` clause
 
-   * - ❌ F031-16
+   * - ✅ F031-16
      - ``DROP VIEW`` statement: ``RESTRICT`` clause
 
    * - ❌ F031-19
@@ -470,7 +470,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F311-02
      - ``CREATE TABLE`` for persistent base tables
 
-   * - ❌ F311-03
+   * - ✅ F311-03
      - ``CREATE VIEW``
 
    * - ❌ F311-04

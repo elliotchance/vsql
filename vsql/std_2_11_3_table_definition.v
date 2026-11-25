@@ -133,6 +133,7 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 	check_writable_schema(table_name)!
 	mut catalog := conn.catalog_for(table_name)
 	if table_name.storage_id() in catalog.storage.tables
+		|| table_name.storage_id() in catalog.storage.views
 		|| table_name.storage_id() in catalog.virtual_tables {
 		// The existing table isn't changed or compared with this definition,
 		// which isn't checked either.

@@ -683,9 +683,13 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		// columns of a subquery can have the same name, then the key of each one
 		// is its id (see new_expr_operation), and the column of the same position
 		// is used.
+		//
+		// A view leaves out the columns of its query that it wasn't created with
+		// (see Correlation.degree). Their key is empty, and they're removed.
 		mut names := map[string]string{}
-		for i, column in subplan.columns() {
-			key := o.table.columns[i].name.id()
+		subplan_columns := subplan.columns()
+		for i, column in subplan_columns {
+			key := if i < o.table.columns.len { o.table.columns[i].name.id() } else { '' }
 			names[column.name.id()] = key
 			if column.name.sub_entity_name !in names {
 				names[column.name.sub_entity_name] = key
@@ -703,7 +707,19 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 			}
 
 			// The id is kept for a cursor, see ExprOperation.execute.
-			rows << Row{row.id, row.tid, RowData{keys, row.data.values}}
+			if subplan_columns.len > o.table.columns.len {
+				mut kept_keys := []string{}
+				mut kept_values := []Value{}
+				for i, key in keys {
+					if key != '' {
+						kept_keys << key
+						kept_values << row.data.values[i]
+					}
+				}
+				rows << Row{row.id, row.tid, RowData{kept_keys, kept_values}}
+			} else {
+				rows << Row{row.id, row.tid, RowData{keys, row.data.values}}
+			}
 		}
 	} else {
 		mut catalog := o.conn.catalogs[o.table_name.catalog_name] or {

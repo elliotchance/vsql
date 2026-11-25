@@ -1922,7 +1922,7 @@
 6.41/CR/1                n/a          - - JSON data type (T801)
 # 6.42, <datetime value expression>
 6.42                     implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
-6.42/SR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v tests/std_2_6_42_at_local.sql,tests/std_2_6_42_datetime_arithmetic.sql
+6.42/SR/1                implemented  vsql/std_2_6_42_datetime_value_expression.v,vsql/std_2_6_44_interval_value_expression.v,vsql/std_2_6_30_numeric_value_expression.y tests/std_2_6_42_at_local.sql,tests/std_2_6_42_datetime_arithmetic.sql,tests/std_2_6_42_datetime_value_function_arithmetic.sql
 6.42/SR/2                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_43_date_time_value_function.sql
 6.42/SR/3                implemented  vsql/std_2_6_42_datetime_value_expression.v tests/std_2_6_42_at_local.sql
 6.42/SR/4                container    - -

@@ -483,20 +483,6 @@ fn (t Table) is_constraint_index(index Index) bool {
 	return t.unique_constraints_to_check().any(it.name == index.name.entity_name)
 }
 
-// is_foreign_key_index is true when the index is the one that a FOREIGN KEY of
-// t made for itself (see foreign_key_index), which has the name of the
-// constraint and only its columns, in ascending order.
-fn (t Table) is_foreign_key_index(index Index) bool {
-	return t.foreign_keys.any(is_own_foreign_key_index(it, index))
-}
-
-// is_own_foreign_key_index is whether index is the one that key made for itself,
-// see Table.is_foreign_key_index.
-fn is_own_foreign_key_index(key ForeignKey, index Index) bool {
-	return !index.unique && index.name.entity_name == key.name
-		&& index.columns.map(if it.desc { '' } else { it.name }) == key.columns
-}
-
 // constraint_index is the index of the UNIQUE constraint of t, see
 // build_constraint_indexes. A table in a file from before indexes doesn't have
 // one until it's needed, so it's created then.
@@ -508,23 +494,20 @@ fn (mut f Storage) constraint_index(t Table, constraint UniqueConstraint) !Index
 }
 
 // foreign_key_index is the index that a FOREIGN KEY of t uses to find the rows
-// that reference a row, see build_constraint_indexes. Like constraint_index,
-// it's created when it's needed if there isn't one.
-fn (mut f Storage) foreign_key_index(t Table, key ForeignKey) !Index {
-	return f.find_foreign_key_index(t, key, '') or {
-		f.create_constraint_index(t, t.constraint_identifier(key.name), key.columns, false)!
-	}
-}
-
-// find_foreign_key_index is the first index of t (by name), other than the one
-// named except, whose first columns are the columns of a FOREIGN KEY of t (in
-// any order), so it has the entries of every row that references a row in the
-// order of that row's key.
-fn (f Storage) find_foreign_key_index(t Table, key ForeignKey, except string) ?Index {
+// that reference a row: the first index of t (by name) whose first columns are
+// the columns of the FOREIGN KEY (in any order), so it has the entries of every
+// row that references a row in the order of that row's key. Any index will do,
+// including one with more columns, the index of a UNIQUE constraint, or one
+// that was created after the FOREIGN KEY.
+//
+// A FOREIGN KEY doesn't need an index. Without one, every row of t is read to
+// find the rows that reference a row (see scan_referencing_rows), which is
+// only needed when a referenced row is deleted, or its key is updated.
+fn (f Storage) foreign_key_index(t Table, key ForeignKey) ?Index {
 	mut columns := key.columns.clone()
 	columns.sort()
 	for index in f.table_indexes(t.id) {
-		if index.columns.len < columns.len || index.name.entity_name == except {
+		if index.columns.len < columns.len {
 			continue
 		}
 
@@ -538,19 +521,17 @@ fn (f Storage) find_foreign_key_index(t Table, key ForeignKey, except string) ?I
 	return none
 }
 
-// build_constraint_indexes creates an index for each UNIQUE constraint and
-// FOREIGN KEY of a new definition of t (whose old definition is old) that
-// doesn't have one. These indexes let the constraints be checked without
-// reading every row of a table.
+// build_constraint_indexes creates an index for each UNIQUE constraint of a new
+// definition of t (whose old definition is old) that doesn't have one, and drops
+// the index of each one that was dropped. These indexes let the constraints be
+// checked without reading every row of a table.
 //
 // A UNIQUE constraint has its own UNIQUE index with the same name as the
-// constraint, which is dropped with it. A FOREIGN KEY uses any index whose first
-// columns are its columns (see find_foreign_key_index), otherwise it gets a new
-// one with the same name as the constraint, which is kept as an ordinary index
-// if the constraint is dropped.
+// constraint, which is dropped with it. A FOREIGN KEY doesn't get an index, it
+// uses any index that has its columns (see foreign_key_index).
 //
-// A new constraint can't have the same name as an index in the schema of the
-// table, because its index would need the name.
+// A new UNIQUE constraint can't have the same name as an index in the schema of
+// the table, because its index would need the name.
 fn (mut f Storage) build_constraint_indexes(old Table, t Table) ! {
 	for constraint in old.unique_constraints_to_check() {
 		if t.unique_constraints_to_check().any(it.name == constraint.name) {
@@ -568,10 +549,6 @@ fn (mut f Storage) build_constraint_indexes(old Table, t Table) ! {
 			f.create_constraint_index(t, t.constraint_identifier(constraint.name), constraint.columns,
 				true)!
 		}
-	}
-
-	for key in t.foreign_keys {
-		f.foreign_key_index(t, key)!
 	}
 }
 
@@ -599,22 +576,12 @@ fn (mut f Storage) create_constraint_index(t Table, name Identifier, columns []s
 	return f.indexes[name.storage_id()]
 }
 
-// check_drop_index returns an error if a constraint of t needs the index, so it
-// can't be dropped: the index of a UNIQUE constraint, or the only index that a
-// FOREIGN KEY can use (see build_constraint_indexes).
+// check_drop_index returns an error if the index belongs to a UNIQUE constraint
+// of t, so it can't be dropped (see build_constraint_indexes). An index that a
+// FOREIGN KEY uses can be dropped (see foreign_key_index).
 fn (f Storage) check_drop_index(t Table, index Index) ! {
 	if t.is_constraint_index(index) {
 		return sqlstate_2bp01('constraint ${requote_identifier(index.name.entity_name)} on ${t.name}')
-	}
-
-	for key in t.foreign_keys {
-		used := f.find_foreign_key_index(t, key, '') or { continue }
-		if used.name.entity_name != index.name.entity_name {
-			continue
-		}
-		f.find_foreign_key_index(t, key, index.name.entity_name) or {
-			return sqlstate_2bp01('constraint ${requote_identifier(key.name)} on ${t.name}')
-		}
 	}
 }
 

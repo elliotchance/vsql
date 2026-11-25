@@ -473,10 +473,10 @@ A table that's referenced can only be dropped with ``CASCADE``, which also
 drops the ``FOREIGN KEY`` constraints that reference it (see :doc:`drop-table`).
 
 A new row finds the row that it references by its ``PRIMARY KEY`` or the index
-of its ``UNIQUE`` constraint. A ``FOREIGN KEY`` also uses an index on its
-columns (or gets one with its name) to find the rows that reference a row that's
-deleted or updated, see :doc:`create-index`. So neither reads every row of a
-table.
+of its ``UNIQUE`` constraint, so it doesn't read every row of a table. A
+``FOREIGN KEY`` uses an index on its columns, if there is one, to find the rows
+that reference a row that's deleted or updated. Otherwise, every row of the
+table is read. See :doc:`create-index`.
 
 Check Constraints
 -----------------

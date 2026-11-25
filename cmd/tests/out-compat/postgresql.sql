@@ -17,7 +17,6 @@ CREATE TABLE "foo"."child" (
 INSERT INTO "foo"."child" ("id", "pid", "Mixed Case", "order") VALUES (1, 1, 'x', 3);
 INSERT INTO "foo"."child" ("id", "pid", "Mixed Case", "order") VALUES (2, NULL, NULL, 4);
 ALTER TABLE "foo"."child" ALTER COLUMN "id" RESTART WITH 3;
-CREATE INDEX "fk1" ON "foo"."child" ("pid");
 
 CREATE TABLE "foo"."parent" (
   "id" INTEGER NOT NULL,

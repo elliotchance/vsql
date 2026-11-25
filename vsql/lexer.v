@@ -1144,7 +1144,8 @@ pub fn reserved_words() []string {
 // are for display, such as highlighting SQL, and mustn't decide if a name needs
 // quotes.
 pub fn extension_keywords() []string {
-	return ['COMPACT', 'IF', 'ILIKE', 'INDEX', 'LIMIT', 'PAGES', 'TIMEOUT', 'VACUUM', 'VERBOSE']
+	return ['COMPACT', 'IF', 'ILIKE', 'INDEX', 'INDEXES', 'LIMIT', 'OBJECTS', 'PAGES', 'TIMEOUT',
+		'VACUUM']
 }
 
 // multi_operator_token returns the token of an operator with two characters, or

@@ -1,5 +1,5 @@
 -- # The options of VACUUM (V004-01): one of COMPACT (the default), FULL and
--- # FREE PAGES, and VERBOSE and TIMEOUT, in any order.
+-- # FREE PAGES, and TIMEOUT, in any order.
 
 /* setup */
 CREATE TABLE t (k VARCHAR(20) PRIMARY KEY, n INT, v VARCHAR(50) UNIQUE, c CLOB);
@@ -51,65 +51,63 @@ SELECT COUNT(*), SUM(n) FROM t WHERE v >= '';
 -- COL1: 30 COL2: 2295 COL3: 1800
 -- COL1: 30 COL2: 2295
 
--- # VERBOSE has a row for each table, index and the large objects of a table,
--- # and one for the file. PAGES and PAGES_AFTER are the leaf pages (every page
--- # of the file for the file), and FILL is how full they were (as a
--- # percentage).
+-- # VSQL.LAST_VACUUM (V004-02) has a row for each table, index and the large
+-- # objects of a table that had pages packed, and one for the file. A page with
+-- # only definitions isn't counted for an object, so PAGES_READ can add up to
+-- # less than the first number of the message. FULL and FREE PAGES don't pack
+-- # the objects, so they only have the file.
 /* extensions V004-01 */
-VACUUM VERBOSE;
-VACUUM FULL VERBOSE;
-VACUUM VERBOSE FREE PAGES;
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: TABLE PAGES: 24 FILL: 61 PAGES_AFTER: 20 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T_UNIQUE_1 KIND: INDEX PAGES: 26 FILL: 35 PAGES_AFTER: 20 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: LARGE OBJECTS PAGES: 14 FILL: 83 PAGES_AFTER: 13 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: NULL NAME: NULL KIND: FILE PAGES: 317 FILL: 25 PAGES_AFTER: 138 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: TABLE PAGES: 20 FILL: 72 PAGES_AFTER: 18 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T_UNIQUE_1 KIND: INDEX PAGES: 20 FILL: 42 PAGES_AFTER: 9 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: LARGE OBJECTS PAGES: 13 FILL: 88 PAGES_AFTER: 13 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: NULL NAME: NULL KIND: FILE PAGES: 138 FILL: 54 PAGES_AFTER: 62 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: TABLE PAGES: 18 FILL: 82 PAGES_AFTER: 18 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T_UNIQUE_1 KIND: INDEX PAGES: 9 FILL: 86 PAGES_AFTER: 9 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: LARGE OBJECTS PAGES: 13 FILL: 92 PAGES_AFTER: 13 FINISHED: TRUE
--- CATALOG: :memory: SCHEMA: NULL NAME: NULL KIND: FILE PAGES: 62 FILL: 81 PAGES_AFTER: 62 FINISHED: TRUE
+VACUUM;
+SELECT * FROM vsql.last_vacuum;
+VACUUM FULL;
+SELECT * FROM vsql.last_vacuum;
+VACUUM FREE PAGES;
+SELECT * FROM vsql.last_vacuum;
+-- msg: VACUUM 149 179
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: PUBLIC OBJECT_NAME: T OBJECT_TYPE: TABLE PAGES_READ: 27 PAGES_FREED: 4 IS_FINISHED: YES
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: PUBLIC OBJECT_NAME: T_UNIQUE_1 OBJECT_TYPE: INDEX PAGES_READ: 26 PAGES_FREED: 6 IS_FINISHED: YES
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: PUBLIC OBJECT_NAME: T OBJECT_TYPE: LARGE OBJECTS PAGES_READ: 16 PAGES_FREED: 1 IS_FINISHED: YES
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: NULL OBJECT_NAME: NULL OBJECT_TYPE: FILE PAGES_READ: 74 PAGES_FREED: 179 IS_FINISHED: YES
+-- msg: VACUUM 138 76
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: NULL OBJECT_NAME: NULL OBJECT_TYPE: FILE PAGES_READ: 138 PAGES_FREED: 76 IS_FINISHED: YES
+-- msg: VACUUM 0 0
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: NULL OBJECT_NAME: NULL OBJECT_TYPE: FILE PAGES_READ: 0 PAGES_FREED: 0 IS_FINISHED: YES
 
 -- # TIMEOUT stops it after the batch that's running when the time is up, which
--- # isn't an error. FINISHED is FALSE for what it didn't get to. FULL is either
+-- # isn't an error. IS_FINISHED is NO for what it didn't get to (an object of a
+-- # whole catalog that wasn't reached doesn't have a row). FULL is either
 -- # finished or doesn't change anything.
 /* extensions V004-01 */
-VACUUM TIMEOUT 0 VERBOSE;
-VACUUM FULL TIMEOUT 0 VERBOSE;
+VACUUM TIMEOUT 0;
+SELECT * FROM vsql.last_vacuum;
+VACUUM FULL TIMEOUT 0;
+SELECT * FROM vsql.last_vacuum;
 VACUUM FREE PAGES TIMEOUT 0;
 VACUUM TIMEOUT 3600;
 VACUUM TIMEOUT 60.5 COMPACT;
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: TABLE PAGES: 24 FILL: 61 PAGES_AFTER: 24 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T_UNIQUE_1 KIND: INDEX PAGES: 26 FILL: 35 PAGES_AFTER: 26 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: LARGE OBJECTS PAGES: 14 FILL: 83 PAGES_AFTER: 14 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: NULL NAME: NULL KIND: FILE PAGES: 317 FILL: 25 PAGES_AFTER: 317 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: TABLE PAGES: 24 FILL: 61 PAGES_AFTER: 24 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T_UNIQUE_1 KIND: INDEX PAGES: 26 FILL: 35 PAGES_AFTER: 26 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: PUBLIC NAME: T KIND: LARGE OBJECTS PAGES: 14 FILL: 83 PAGES_AFTER: 14 FINISHED: FALSE
--- CATALOG: :memory: SCHEMA: NULL NAME: NULL KIND: FILE PAGES: 317 FILL: 25 PAGES_AFTER: 317 FINISHED: FALSE
+-- msg: VACUUM 0 0
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: NULL OBJECT_NAME: NULL OBJECT_TYPE: FILE PAGES_READ: 0 PAGES_FREED: 0 IS_FINISHED: NO
+-- msg: VACUUM 0 0
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: NULL OBJECT_NAME: NULL OBJECT_TYPE: FILE PAGES_READ: 0 PAGES_FREED: 0 IS_FINISHED: NO
 -- msg: VACUUM 0 0
 -- msg: VACUUM 149 179
 -- msg: VACUUM 59 0
 
 -- # Each option can only be given once, and only one of COMPACT, FULL and FREE
 -- # PAGES.
-VACUUM VERBOSE VERBOSE;
 VACUUM TIMEOUT 1 TIMEOUT 2;
 VACUUM FULL COMPACT;
 VACUUM FREE PAGES FULL;
 VACUUM COMPACT COMPACT;
--- error 42601: syntax error: VACUUM VERBOSE is given more than once
 -- error 42601: syntax error: VACUUM TIMEOUT is given more than once
 -- error 42601: syntax error: VACUUM can only have one of COMPACT, FULL and FREE PAGES
 -- error 42601: syntax error: VACUUM can only have one of COMPACT, FULL and FREE PAGES
 -- error 42601: syntax error: VACUUM COMPACT is given more than once
 
 -- # The words of the options aren't reserved.
-CREATE TABLE verbose (compact INT, pages INT, timeout INT);
-INSERT INTO verbose (compact, pages, timeout) VALUES (1, 2, 3);
-SELECT compact, pages, timeout FROM verbose;
+CREATE TABLE full_pages (compact INT, pages INT, timeout INT);
+INSERT INTO full_pages (compact, pages, timeout) VALUES (1, 2, 3);
+SELECT compact, pages, timeout FROM full_pages;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- COMPACT: 1 PAGES: 2 TIMEOUT: 3
@@ -140,8 +138,55 @@ SELECT k FROM s WHERE k = 'a298zzzzzzzzzzzzzzzzzzzz';
 DROP TABLE t RESTRICT;
 VACUUM FULL;
 VACUUM;
-VACUUM VERBOSE;
+VACUUM;
+SELECT * FROM vsql.last_vacuum;
 -- msg: DROP TABLE 1
 -- msg: VACUUM 7 316
 -- msg: VACUUM 1 0
--- CATALOG: :memory: SCHEMA: NULL NAME: NULL KIND: FILE PAGES: 1 FILL: 27 PAGES_AFTER: 1 FINISHED: TRUE
+-- msg: VACUUM 1 0
+-- OBJECT_CATALOG: :memory: OBJECT_SCHEMA: NULL OBJECT_NAME: NULL OBJECT_TYPE: FILE PAGES_READ: 0 PAGES_FREED: 0 IS_FINISHED: YES
+
+-- # LAST_VACUUM is empty before the first VACUUM of the connection, and after
+-- # a VACUUM that fails. It's only the rows of the connection that ran it.
+/* extensions V004-01 */
+SELECT COUNT(*) FROM vsql.last_vacuum;
+VACUUM FREE PAGES;
+SELECT COUNT(*) FROM vsql.last_vacuum;
+VACUUM ON TABLE nope;
+SELECT COUNT(*) FROM vsql.last_vacuum;
+-- COL1: 0
+-- msg: VACUUM 74 167
+-- COL1: 1
+-- error 42P01: no such table: ":memory:".PUBLIC.NOPE
+-- COL1: 0
+
+-- # LAST_VACUUM is the same in every catalog, and can be filtered or copied
+-- # into a table like any other view. It can be read in a transaction.
+/* extensions V004-01 */
+/* create_catalog FOO */
+VACUUM;
+START TRANSACTION;
+CREATE TABLE vac AS (SELECT * FROM vsql.last_vacuum) WITH DATA;
+SELECT object_name, SUM(pages_read) FROM vac WHERE object_schema = 'PUBLIC' AND object_type <> 'INDEX' GROUP BY object_name;
+SELECT COUNT(*) FROM foo.vsql.last_vacuum;
+COMMIT;
+-- msg: VACUUM 150 179
+-- msg: START TRANSACTION
+-- msg: CREATE TABLE 1
+-- OBJECT_NAME: T COL2: 43
+-- COL1: 5
+-- msg: COMMIT
+
+-- # LAST_VACUUM is read-only, and VERBOSE isn't an option any more.
+INSERT INTO vsql.last_vacuum (object_catalog, object_type, pages_read, pages_freed, is_finished) VALUES ('x', 'FILE', 0, 0, 'NO');
+DELETE FROM vsql.last_vacuum;
+VACUUM VERBOSE;
+-- error 42501: insufficient privilege: VSQL is read-only
+-- error 42501: insufficient privilege: VSQL is read-only
+-- error 42601: syntax error: unexpected identifier at line 1, column 8 near "VACUUM VERBOSE"
+
+-- # Reading LAST_VACUUM is flagged.
+/* flags */
+SELECT COUNT(*) FROM vsql.last_vacuum;
+-- flags: V004-02
+-- COL1: 0

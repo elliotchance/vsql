@@ -20,6 +20,13 @@ with its name:
   CREATE SCHEMA vsql;
   -- error 42P06: duplicate schema: VSQL
 
+Views
+-----
+
+``LAST_VACUUM`` is what the last ``VACUUM`` of the connection did, see
+:doc:`vacuum`. Its columns are named and typed like the views of the
+``INFORMATION_SCHEMA``.
+
 Functions
 ---------
 

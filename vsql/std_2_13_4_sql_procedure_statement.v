@@ -290,6 +290,9 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 		typ := parameter.typ or { HostParameterType{} }
 		params << '    ${typ.c_parameter(parameter.name)}'
 		b.used << parameter.name.to_upper()
+		if typ.typ == .is_clob && 'clob' !in b.sections {
+			b.sections << 'clob'
+		}
 
 		mut check := ''
 		if typ.is_string() {

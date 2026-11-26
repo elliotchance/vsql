@@ -67,20 +67,20 @@ static SQLINTEGER vsql_m_characters(const char *s) {
 
 /*
  * vsql_m_assign_binary assigns a binary string to a BINARY(L) target (which is
- * padded with X'00' octets to L octets) or a BINARY VARYING(L) target (which
- * gets its length portion set). A value of more than L octets is cut to its
+ * padded with X'00' octets to L octets) or a BINARY VARYING(L) or BINARY LARGE
+ * OBJECT(L) target (which gets its length portion set). A value of more than L octets is cut to its
  * first L octets (warning: string data, right truncation), and the indicator
  * is its length in octets. A null value without an indicator parameter is
  * retrieved again without a length, which raises data exception — null value,
  * no indicator parameter.
  *
- * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.h to 7.l
- * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.i and 5.j
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.h to 7.n
+ * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.h.ii, 5.i and 5.j
  */
 static SQLRETURN vsql_m_assign_binary(SQLHSTMT stmt, SQLSMALLINT i,
                                       struct vsql_m_target *t) {
   struct vsql_m_varbinary *v = (struct vsql_m_varbinary *)t->value;
-  char *data = t->type == SQL_VARBINARY ? v->data : (char *)t->value;
+  char *data = t->type == SQL_BINARY ? (char *)t->value : v->data;
   SQLINTEGER length = 0;
   SQLRETURN rc;
 
@@ -97,7 +97,7 @@ static SQLRETURN vsql_m_assign_binary(SQLHSTMT stmt, SQLSMALLINT i,
     return rc;
   }
 
-  if (t->type == SQL_VARBINARY) {
+  if (t->type != SQL_BINARY) {
     v->length = (unsigned long)(length < t->length ? length : t->length);
   }
   if (length <= t->length) {
@@ -108,6 +108,75 @@ static SQLRETURN vsql_m_assign_binary(SQLHSTMT stmt, SQLSMALLINT i,
     return VSQL_M_INDICATOR_OVERFLOW;
   }
   t->indicator = length;
+
+  return SQL_SUCCESS_WITH_INFO;
+}
+
+/*
+ * vsql_m_assign_clob assigns a character string to a CHARACTER LARGE OBJECT(L)
+ * target, which is a struct with a length portion (in characters) and a data
+ * portion of L*4 octets (without a null character). A value of more than L
+ * characters is cut to its first L characters (warning: string data, right
+ * truncation), and the indicator is its length in characters.
+ *
+ * ISO/IEC 9075-2:2023, 9.1, Retrieval assignment, General Rules, 7.f and 7.g
+ * ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.h, 5.h.i and 5.h.i.1
+ */
+static SQLRETURN vsql_m_assign_clob(SQLHSTMT stmt, SQLSMALLINT i,
+                                    struct vsql_m_target *t) {
+  struct vsql_m_varbinary *v = (struct vsql_m_varbinary *)t->value;
+  SQLINTEGER size = t->length * 4 + 1, length = 0, octets, characters = 0;
+  char *b = (char *)malloc((size_t)size), piece[256];
+  SQLRETURN rc;
+
+  if (b == NULL) {
+    return SQL_ERROR;
+  }
+  rc = SQLGetData(stmt, i, SQL_CHAR, b, size, &length);
+  if (!vsql_m_failed(rc) && length == SQL_NULL_DATA) {
+    if (t->max_indicator == 0) {
+      rc = SQLGetData(stmt, i, SQL_CHAR, b, size, NULL);
+    } else {
+      t->indicator = SQL_NULL_DATA;
+    }
+    free(b);
+    return rc;
+  }
+  if (vsql_m_failed(rc)) {
+    free(b);
+    return rc;
+  }
+
+  /* The first L characters. */
+  for (octets = 0; b[octets] != '\0'; octets++) {
+    if (((unsigned char)b[octets] & 0xC0) != 0x80) {
+      if (characters == t->length) {
+        break;
+      }
+      characters++;
+    }
+  }
+  memcpy(v->data, b, (size_t)octets);
+  v->length = (unsigned long)characters;
+  characters = vsql_m_characters(b);
+  free(b);
+
+  /* The characters of the rest of a long value are counted in pieces. */
+  while (rc == SQL_SUCCESS_WITH_INFO) {
+    rc = SQLGetData(stmt, i, SQL_CHAR, piece, sizeof(piece), NULL);
+    if (vsql_m_failed(rc)) {
+      return rc;
+    }
+    characters += vsql_m_characters(piece);
+  }
+  if (characters <= t->length) {
+    t->indicator = 0;
+    return rc;
+  }
+  if (t->max_indicator > 0 && characters > t->max_indicator) {
+    return VSQL_M_INDICATOR_OVERFLOW;
+  }
+  t->indicator = characters;
 
   return SQL_SUCCESS_WITH_INFO;
 }
@@ -166,8 +235,12 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
     return rc;
   }
 
-  if (t->type == SQL_BINARY || t->type == SQL_VARBINARY) {
+  if (t->type == SQL_BINARY || t->type == SQL_VARBINARY ||
+      t->type == SQL_BLOB) {
     return vsql_m_assign_binary(stmt, i, t);
+  }
+  if (t->type == SQL_CLOB) {
+    return vsql_m_assign_clob(stmt, i, t);
   }
 
   if (t->type != SQL_CHAR && t->type != SQL_VARCHAR) {

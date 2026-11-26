@@ -4,8 +4,9 @@ module vsql
 //
 // The <host variable definition>s in a declare section of an embedded SQL C
 // program. Only the <C numeric variable>s, <C character variable>s (char), <C
-// VARCHAR variable>s (without a CHARACTER SET), <C BINARY variable>s and <C
-// VARBINARY variable>s are supported.
+// VARCHAR variable>s and <C CLOB variable>s (without a CHARACTER SET), <C
+// BINARY variable>s, <C VARBINARY variable>s and <C BLOB variable>s are
+// supported. There are no locators (T041).
 //
 // ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 1 to 3
 
@@ -47,8 +48,9 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 			}
 			word = cs[i..j].string()
 
-			// A <C BINARY variable> or <C VARBINARY variable> is replaced up to
-			// its semicolon, keeping its lines.
+			// A <C BINARY variable>, <C VARBINARY variable>, <C CLOB variable>
+			// or <C BLOB variable> is replaced up to its semicolon, keeping its
+			// lines.
 			if word.to_upper() == 'SQL' && depth == 0 && !initial {
 				end := c_definition_end(cs, i)
 				definition := cs[i..end].string()
@@ -93,13 +95,15 @@ fn c_definition_end(cs []rune, i int) int {
 	return j
 }
 
-// c_binary_definition is the C that replaces a <C BINARY variable> or a <C
-// VARBINARY variable> (without the semicolon). Each <C host identifier> has
-// its own struct for a VARBINARY.
+// c_binary_definition is the C that replaces a <C BINARY variable>, a <C
+// VARBINARY variable>, a <C CLOB variable> or a <C BLOB variable> (without the
+// semicolon). Each <C host identifier> has its own struct for a VARBINARY,
+// CLOB or BLOB. The data portion of a CLOB(L) has L*k octets.
 //
-// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 5.h and 5.i
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 5.f, 5.g, 5.h and 5.i
 fn c_binary_definition(definition string) !string {
 	typ, length, declarators := c_binary_type(definition)!
+	octets := if typ == 'CLOB' { length * max_utf8_octets } else { length }
 	mut c := []string{}
 	for declarator in declarators {
 		name := declarator.all_before('=').trim_space()
@@ -107,23 +111,24 @@ fn c_binary_definition(definition string) !string {
 		c << if typ == 'BINARY' {
 			'${name}[${length}]${initial}'
 		} else {
-			'struct { long ${name}_reserved; unsigned long ${name}_length; char ${name}_data[${length}]; } ${name}${initial}'
+			'struct { long ${name}_reserved; unsigned long ${name}_length; char ${name}_data[${octets}]; } ${name}${initial}'
 		}
 	}
 
 	return if typ == 'BINARY' { 'unsigned char ${c.join(', ')}' } else { c.join('; ') }
 }
 
-// c_binary_type reads the type (BINARY or VARBINARY), the length and the
-// declarators of a <C BINARY variable> or a <C VARBINARY variable>, which is
-// "SQL TYPE IS BINARY ( L )" or "SQL TYPE IS VARBINARY ( L )" followed by one or
-// more <C host identifier>s, each with an optional <C initial value>.
+// c_binary_type reads the type (BINARY, VARBINARY, CLOB or BLOB), the length
+// and the declarators of a <C BINARY variable>, <C VARBINARY variable>, <C CLOB
+// variable> or <C BLOB variable>, which is "SQL TYPE IS BINARY ( L )" (and so
+// on) followed by one or more <C host identifier>s, each with an optional <C
+// initial value>. The length of a CLOB or BLOB is a number, without K, M or G.
 //
 // ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.c.i and 4.c.ii
 fn c_binary_type(definition string) !(string, int, []string) {
 	words := definition.replace('(', ' ( ').replace(')', ' ) ').fields()
 	if words.len < 8 || words[..3].map(it.to_upper()) != ['SQL', 'TYPE', 'IS']
-		|| words[3].to_upper() !in ['BINARY', 'VARBINARY'] || words[4] != '(' || words[6] != ')'
+		|| words[3].to_upper() !in ['BINARY', 'VARBINARY', 'CLOB', 'BLOB'] || words[4] != '(' || words[6] != ')'
 		|| words[5].int() < 1 || words[5].int().str() != words[5] {
 		return sqlstate_42601('unsupported host variable definition: ${definition.trim_space()}')
 	}
@@ -178,19 +183,24 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 		words.delete(0)
 	}
 
-	// The <host parameter data type> of a BINARY or VARBINARY. It's a host
-	// parameter of the implied module, which needs T021 (see
-	// parameter_features).
+	// The <host parameter data type> of a BINARY, VARBINARY, CLOB or BLOB.
+	// It's a host parameter of the implied module, which needs T021, T046 or
+	// T045 (see parameter_features).
 	//
-	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.c.i and 4.c.ii
-	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Conformance Rules, 12 and 13
+	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.b.i, 4.b.v, 4.c.i, 4.c.ii and 4.c.iii
+	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Conformance Rules, 7, 8, 12 and 13
 	if words.len > 0 && words[0].to_upper() == 'SQL' {
 		typ, length, declarators := c_binary_type(words.join(' '))!
 		for declarator in declarators {
 			name := declarator.all_before('=').trim_space()
 			check_new_c_host_variable(variables, name)!
 			variables[name] = CHostVariable{
-				typ: if typ == 'BINARY' { 'BINARY(${length})' } else { 'BINARY VARYING(${length})' }
+				typ: match typ {
+					'BINARY' { 'BINARY(${length})' }
+					'VARBINARY' { 'BINARY VARYING(${length})' }
+					'CLOB' { 'CHARACTER LARGE OBJECT(${length})' }
+					else { 'BINARY LARGE OBJECT(${length})' }
+				}
 				arg: if typ == 'BINARY' { '(char *)${name}' } else { '&${name}' }
 			}
 		}

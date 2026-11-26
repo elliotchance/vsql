@@ -3,16 +3,19 @@ module vsql
 // ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>
 //
 // The <host variable definition>s in a declare section of an embedded SQL C
-// program. Only the <C numeric variable>s, <C character variable>s (char) and
-// <C VARCHAR variable>s are supported, without a CHARACTER SET.
+// program. Only the <C numeric variable>s, <C character variable>s (char), <C
+// VARCHAR variable>s (without a CHARACTER SET), <C BINARY variable>s and <C
+// VARBINARY variable>s are supported.
 //
 // ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 1 to 3
 
-// CHostVariable is a host variable. typ is its <host parameter data type>. A
-// string is a char array, and anything else is passed by its address.
+// CHostVariable is a host variable. typ is its <host parameter data type>, and
+// arg is the C argument that passes it to a procedure of the implied module: a
+// string is a char array, a BINARY is an unsigned char array (passed as a char
+// array), and anything else is passed by its address.
 struct CHostVariable {
-	typ      string
-	is_array bool
+	typ string
+	arg string
 }
 
 // c_declare_section reads the <C variable definition>s of a declare section,
@@ -44,6 +47,17 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 			}
 			word = cs[i..j].string()
 
+			// A <C BINARY variable> or <C VARBINARY variable> is replaced up to
+			// its semicolon, keeping its lines.
+			if word.to_upper() == 'SQL' && depth == 0 && !initial {
+				end := c_definition_end(cs, i)
+				definition := cs[i..end].string()
+				c += c_binary_definition(remove_c_comments(definition))! +
+					'\n'.repeat(definition.count('\n'))
+				i = end
+				continue
+			}
+
 			// VARCHAR can be in any case.
 			//
 			// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 7
@@ -66,6 +80,64 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 	}
 
 	return c
+}
+
+// c_definition_end is the position of the semicolon that ends the <C variable
+// definition> at cs[i] (or the end of cs).
+fn c_definition_end(cs []rune, i int) int {
+	mut j := i
+	for j < cs.len && cs[j] != `;` {
+		j = skip_c_token(cs, j)
+	}
+
+	return j
+}
+
+// c_binary_definition is the C that replaces a <C BINARY variable> or a <C
+// VARBINARY variable> (without the semicolon). Each <C host identifier> has
+// its own struct for a VARBINARY.
+//
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 5.h and 5.i
+fn c_binary_definition(definition string) !string {
+	typ, length, declarators := c_binary_type(definition)!
+	mut c := []string{}
+	for declarator in declarators {
+		name := declarator.all_before('=').trim_space()
+		initial := if declarator.contains('=') { ' =${declarator.all_after('=')}' } else { '' }
+		c << if typ == 'BINARY' {
+			'${name}[${length}]${initial}'
+		} else {
+			'struct { long ${name}_reserved; unsigned long ${name}_length; char ${name}_data[${length}]; } ${name}${initial}'
+		}
+	}
+
+	return if typ == 'BINARY' { 'unsigned char ${c.join(', ')}' } else { c.join('; ') }
+}
+
+// c_binary_type reads the type (BINARY or VARBINARY), the length and the
+// declarators of a <C BINARY variable> or a <C VARBINARY variable>, which is
+// "SQL TYPE IS BINARY ( L )" or "SQL TYPE IS VARBINARY ( L )" followed by one or
+// more <C host identifier>s, each with an optional <C initial value>.
+//
+// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.c.i and 4.c.ii
+fn c_binary_type(definition string) !(string, int, []string) {
+	words := definition.replace('(', ' ( ').replace(')', ' ) ').fields()
+	if words.len < 8 || words[..3].map(it.to_upper()) != ['SQL', 'TYPE', 'IS']
+		|| words[3].to_upper() !in ['BINARY', 'VARBINARY'] || words[4] != '(' || words[6] != ')'
+		|| words[5].int() < 1 || words[5].int().str() != words[5] {
+		return sqlstate_42601('unsupported host variable definition: ${definition.trim_space()}')
+	}
+	rest := definition.all_after(')')
+	declarators := split_c_declarators(rest)
+	for declarator in declarators {
+		name := declarator.all_before('=').trim_space()
+		if name == '' || !name.runes().all(is_identifier_char(it, true))
+			|| !is_identifier_char(name.runes()[0], false) {
+			return sqlstate_42601('unsupported host variable definition: ${definition.trim_space()}')
+		}
+	}
+
+	return words[3].to_upper(), words[5].int(), declarators
 }
 
 // skip_c_token returns the position after the C comment, string literal or
@@ -105,6 +177,25 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 	for words.len > 0 && words[0] in ['auto', 'extern', 'static', 'const', 'volatile'] {
 		words.delete(0)
 	}
+
+	// The <host parameter data type> of a BINARY or VARBINARY. It's a host
+	// parameter of the implied module, which needs T021 (see
+	// parameter_features).
+	//
+	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Syntax Rules, 4.c.i and 4.c.ii
+	// ISO/IEC 9075-2:2023, 21.4, <embedded SQL C program>, Conformance Rules, 12 and 13
+	if words.len > 0 && words[0].to_upper() == 'SQL' {
+		typ, length, declarators := c_binary_type(words.join(' '))!
+		for declarator in declarators {
+			name := declarator.all_before('=').trim_space()
+			check_new_c_host_variable(variables, name)!
+			variables[name] = CHostVariable{
+				typ: if typ == 'BINARY' { 'BINARY(${length})' } else { 'BINARY VARYING(${length})' }
+				arg: if typ == 'BINARY' { '(char *)${name}' } else { '&${name}' }
+			}
+		}
+		return
+	}
 	mut c_type := if words.len > 0 { words[0] } else { '' }
 	mut type_words := 1
 	if c_type == 'long' && words.len > 1 && words[1] == 'long' {
@@ -142,10 +233,7 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 			|| !is_identifier_char(name.runes()[0], false) {
 			return sqlstate_42601('unsupported host variable definition: ${definition.trim_space()}')
 		}
-		// ISO/IEC 9075-2:2023, 21.1, <embedded SQL host program>, Syntax Rules, 16
-		if name in variables {
-			return sqlstate_42601('host variable ${name} is defined more than once')
-		}
+		check_new_c_host_variable(variables, name)!
 
 		// A string has a terminating null character, so the length is one less
 		// than the array.
@@ -164,9 +252,19 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 		}
 
 		variables[name] = CHostVariable{
-			typ:      if is_array { '${sql_type}(${length.int() - 1})' } else { sql_type }
-			is_array: is_array
+			typ: if is_array { '${sql_type}(${length.int() - 1})' } else { sql_type }
+			arg: if is_array { name } else { '&${name}' }
 		}
+	}
+}
+
+// check_new_c_host_variable returns an error if a host variable called name is
+// already defined.
+//
+// ISO/IEC 9075-2:2023, 21.1, <embedded SQL host program>, Syntax Rules, 16
+fn check_new_c_host_variable(variables map[string]CHostVariable, name string) ! {
+	if name in variables {
+		return sqlstate_42601('host variable ${name} is defined more than once')
 	}
 }
 

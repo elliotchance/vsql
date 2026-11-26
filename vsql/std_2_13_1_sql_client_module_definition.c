@@ -18,6 +18,20 @@ struct vsql_m_connection {
   struct vsql_m_connection *next;
 };
 
+/*
+ * A BINARY VARYING(L) host parameter is a struct with a length portion (the
+ * length in octets) and a data portion (char hvn_data[L]), which the program
+ * declares itself. This has the same layout, so it can read and write any of
+ * them.
+ *
+ * ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 22
+ */
+struct vsql_m_varbinary {
+  long reserved;
+  unsigned long length;
+  char data[1];
+};
+
 /* The CLI statement of each cursor of a module that has been opened in an
  * SQL-connection (see 14.1). */
 struct vsql_m_cursors {

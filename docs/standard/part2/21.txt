@@ -218,7 +218,7 @@
 21.3/CR/13               n/a          - - Embedded Ada (B011)
 21.3/CR/14               n/a          - - Embedded Ada (B011)
 # 21.4, <embeddedSQLCprogram>
-21.4                     partial      vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v only numeric, char and VARCHAR host variables
+21.4                     partial      vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v only numeric, char, VARCHAR, BINARY and VARBINARY host variables
 21.4/SR/1                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the C compiler checks the C
 21.4/SR/2                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the C compiler checks where it is
 21.4/SR/3                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
@@ -235,9 +235,9 @@
 21.4/SR/4.b.iii          implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/4.b.iv           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/4.b.v            n/a          - - LOBs (T041)
-21.4/SR/4.c              n/a          - - the only <C derived variable> is a <C VARCHAR variable>
-21.4/SR/4.c.i            n/a          - - binary strings (T021)
-21.4/SR/4.c.ii           n/a          - - binary strings (T021)
+21.4/SR/4.c              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v the <C derived variable>s are <C VARCHAR variable>, <C BINARY variable> and <C VARBINARY variable>
+21.4/SR/4.c.i            implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
+21.4/SR/4.c.ii           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/4.c.iii          n/a          - - LOBs (T041)
 21.4/SR/4.c.iv           n/a          - - transforms (S241)
 21.4/SR/4.c.v            n/a          - - there are no locators (T041)
@@ -257,8 +257,8 @@
 21.4/SR/5.e              n/a          - - national character (F421)
 21.4/SR/5.f              n/a          - - LOBs (T041)
 21.4/SR/5.g              n/a          - - LOBs (T041)
-21.4/SR/5.h              n/a          - - binary strings (T021)
-21.4/SR/5.i              n/a          - - binary strings (T021)
+21.4/SR/5.h              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
+21.4/SR/5.i              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 21.4/SR/5.j              n/a          - - transforms (S241)
 21.4/SR/5.k              n/a          - - there are no locators (T041)
 21.4/SR/5.l              n/a          - - there are no locators (T041)
@@ -280,8 +280,8 @@
 21.4/CR/9                n/a          - - LOBs (T041)
 21.4/CR/10               n/a          - - LOBs (T041)
 21.4/CR/11               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/module_test.v
-21.4/CR/12               n/a          - - binary strings (T021)
-21.4/CR/13               n/a          - - binary strings (T021)
+21.4/CR/12               implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
+21.4/CR/13               implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/module_test.v
 # 21.5, <embeddedSQL COBOL program>
 21.5                     n/a          - - Embedded COBOL (B013)
 21.5/SR/1                n/a          - - Embedded COBOL (B013)

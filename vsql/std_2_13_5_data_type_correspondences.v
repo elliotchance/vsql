@@ -21,8 +21,9 @@ module vsql
 const max_utf8_octets = 4
 
 // HostParameterType is the <data type> of a host parameter that has a C data
-// type in Table 20, "Data type correspondences for C". The length (in
-// characters) is only for CHARACTER and CHARACTER VARYING.
+// type in Table 20, "Data type correspondences for C". The length is only for
+// CHARACTER and CHARACTER VARYING (in characters), and BINARY and BINARY
+// VARYING (in octets).
 struct HostParameterType {
 	typ    SQLType
 	length int
@@ -48,6 +49,18 @@ fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 
 			return HostParameterType{if varying { .is_varchar } else { .is_character }, length}
 		}
+		'BINARY', 'VARBINARY' {
+			varying := word == 'VARBINARY' || t.accept('VARYING')
+			mut length := 1
+			if t.accept('(') {
+				length = t.length()!
+				t.expect(')')!
+			} else if varying {
+				return sqlstate_42601('host parameter :${name}: BINARY VARYING must have a length')
+			}
+
+			return HostParameterType{if varying { .is_varbinary } else { .is_binary }, length}
+		}
 		'SMALLINT' {
 			return HostParameterType{.is_smallint, 0}
 		}
@@ -68,19 +81,26 @@ fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 			return HostParameterType{.is_double_precision, 0}
 		}
 		else {
-			return sqlstate_42601('host parameter :${name}: the data type must be CHARACTER, CHARACTER VARYING, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN')
+			return sqlstate_42601('host parameter :${name}: the data type must be CHARACTER, CHARACTER VARYING, BINARY, BINARY VARYING, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN')
 		}
 	}
 }
 
 // c_declaration is the C data type of a host parameter, such as "long *x".
-// A string is a char array, and anything else is a pointer.
+// A string is a char array, and anything else is a pointer. A BINARY(L) is a
+// char array of L octets. A BINARY VARYING(L) is a struct (with a length and
+// the data, see vsql_m_varbinary in the C runtime), which each program declares
+// itself, so it's passed as a void pointer, since two struct types without a
+// tag aren't compatible in C.
 //
 // ISO/IEC 9075-2:2023, 9.3, Passing a value from a host language to the SQL-server, General Rules, 3 and 4.b
 // ISO/IEC 9075-2:2023, 9.4, Passing a value from the SQL-server to a host language, General Rules, 2 and 3.b
+// ISO/IEC 9075-2:2023, 13.5, Data type correspondences, Table 22
 fn (t HostParameterType) c_declaration(name string) string {
 	return match t.typ {
 		.is_character, .is_varchar { 'char ${name}[${t.size()}]' }
+		.is_binary { 'char ${name}[${t.length}]' }
+		.is_varbinary { 'void *${name}' }
 		.is_smallint { 'short *${name}' }
 		.is_integer, .is_boolean { 'long *${name}' }
 		.is_bigint { 'long long *${name}' }
@@ -92,11 +112,20 @@ fn (t HostParameterType) c_declaration(name string) string {
 // c_parameter is the struct vsql_m_param (see the C runtime) that binds a host
 // parameter to a dynamic parameter. A BOOLEAN is passed as 'TRUE' or 'FALSE',
 // since libvsql can't cast a number to a BOOLEAN. An INTEGER is passed as a
-// VSQL_M_LONG. Any other value is passed as it is.
+// VSQL_M_LONG. A BINARY(L) is its L octets, and a BINARY VARYING(L) is the
+// octets of its data portion, with the length of its length portion. Any other
+// value is passed as it is.
 //
 // ISO/IEC 9075-2:2023, 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.e.ii and 5.j
+// ISO/IEC 9075-2:2023, 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.h.i and 5.h.ii
 fn (t HostParameterType) c_parameter(name string) string {
 	return match t.typ {
+		.is_binary {
+			'{SQL_BINARY, SQL_BINARY, ${t.length}, ${name}, ${t.length}}'
+		}
+		.is_varbinary {
+			'{SQL_VARBINARY, SQL_VARBINARY, ${t.length}, ((struct vsql_m_varbinary *)${name})->data, (SQLINTEGER)((struct vsql_m_varbinary *)${name})->length}'
+		}
 		.is_character { '{SQL_CHAR, SQL_CHAR, ${t.length}, ${name}, SQL_NTS}' }
 		.is_varchar { '{SQL_CHAR, SQL_VARCHAR, ${t.length}, ${name}, SQL_NTS}' }
 		.is_smallint { '{SQL_SMALLINT, SQL_SMALLINT, 0, ${name}, 0}' }
@@ -114,7 +143,7 @@ fn (t HostParameterType) c_parameter(name string) string {
 // row of a <select statement: single row> is assigned to. max_indicator is 0
 // (zero) if it has no indicator parameter.
 fn (t HostParameterType) c_target(name string, max_indicator int) string {
-	length := if t.is_string() { t.length } else { 0 }
+	length := if t.is_string() || t.is_binary() { t.length } else { 0 }
 
 	return '{${t.c_code()}, ${length}, ${name}, ${max_indicator}, 0}'
 }
@@ -134,6 +163,8 @@ fn (t HostParameterType) c_code() string {
 	return match t.typ {
 		.is_character { 'SQL_CHAR' }
 		.is_varchar { 'SQL_VARCHAR' }
+		.is_binary { 'SQL_BINARY' }
+		.is_varbinary { 'SQL_VARBINARY' }
 		.is_smallint { 'SQL_SMALLINT' }
 		.is_integer { 'SQL_INTEGER' }
 		.is_bigint { 'SQL_BIGINT' }
@@ -150,7 +181,7 @@ fn (t HostParameterType) c_type() string {
 
 // sql is the SQL data type, such as CHARACTER VARYING(10).
 fn (t HostParameterType) sql() string {
-	return if t.is_string() { '${t.typ}(${t.length})' } else { t.typ.str() }
+	return if t.is_string() || t.is_binary() { '${t.typ}(${t.length})' } else { t.typ.str() }
 }
 
 // size is the size in bytes of the char array of a CHARACTER(L) or CHARACTER
@@ -164,6 +195,11 @@ fn (t HostParameterType) size() int {
 
 fn (t HostParameterType) is_string() bool {
 	return t.typ in [.is_character, .is_varchar]
+}
+
+// is_binary is true for BINARY and BINARY VARYING.
+fn (t HostParameterType) is_binary() bool {
+	return t.typ in [.is_binary, .is_varbinary]
 }
 
 fn (t HostParameterType) is_exact_numeric() bool {

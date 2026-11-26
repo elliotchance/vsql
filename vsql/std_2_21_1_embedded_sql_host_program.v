@@ -297,7 +297,7 @@ fn embedded_procedure(mut procedure_lines []int, line int, text string, names []
 			return sqlstate_42601('host variable :${name} is not defined')
 		}
 		parameters << ':${name} ${variable.typ}'
-		args << if variable.is_array { name } else { '&${name}' }
+		args << variable.arg
 	}
 
 	return 'PROCEDURE ${procedure} (${parameters.join(', ')});\n  ${text.trim_space()};\n', '${procedure}(${args.join(', ')})'

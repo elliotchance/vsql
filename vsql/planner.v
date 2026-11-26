@@ -304,7 +304,7 @@ fn join_lookup(inner_reference TableReference, inner_names []string, outer_names
 	}
 	name := match inner.body {
 		Identifier { inner.body }
-		QueryExpression { return none }
+		QueryExpression, TableFunction { return none }
 	}
 
 	inner_name := conn.resolve_table_identifier(name, allow_virtual) or { return none }
@@ -508,6 +508,18 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				}
 			} else {
 				return sqlstate_42p01_table(table_name)
+			}
+		}
+		TableFunction {
+			table = table_function_plan(mut &plan, from_clause.body, from_clause.correlation,
+				params, mut conn)!
+
+			if filter {
+				add_where_plan(mut &plan, body, params, conn, {
+					table.name.id(): &Table{
+						...table
+					}
+				}, [])!
 			}
 		}
 		QueryExpression {

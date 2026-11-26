@@ -5530,15 +5530,17 @@ Returns a row for each value from a start to a stop, counting by a step.
 
 .. code-block:: sql
 
-  -- generate_series(start integer, stop integer [, step integer]) → setof integer
-  SELECT n FROM (VALUES /*start*/, /*...*/, /*stop*/) AS t (n) ORDER BY n;
+  -- generate_series(start, stop [, step]) → setof numbers or timestamps
+  SELECT * FROM GENERATE_SERIES(/*start*/, /*stop*/, /*step*/);
   -- SELECT * FROM generate_series(1, 3)
-  SELECT n FROM (VALUES 1, 2, 3) AS t (n) ORDER BY n;
-  -- N: 1
-  -- N: 2
-  -- N: 3
+  SELECT * FROM GENERATE_SERIES(1, 3);
+  -- GENERATE_SERIES: 1
+  -- GENERATE_SERIES: 2
+  -- GENERATE_SERIES: 3
 
-Each value has to be written out. The forms for timestamps (with an interval as the step) have no equivalent.
+See :ref:`GENERATE_SERIES <functions-table:GENERATE_SERIES>`. A date needs a
+``DATE`` and an interval of days, months or years, and adding a month to the
+31st is an error rather than the last day of the month.
 
 generate_subscripts
 ^^^^^^^^^^^^^^^^^^^

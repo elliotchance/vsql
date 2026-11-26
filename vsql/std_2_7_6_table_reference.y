@@ -46,6 +46,17 @@ table_primary:
       correlation: $2.v as Correlation
     })
   }
+| table_function {
+    $$.v = yy_box(TablePrimary{
+      body: $1.v as TableFunction
+    })
+  }
+| table_function correlation_or_recognition {
+    $$.v = yy_box(TablePrimary{
+      body:        $1.v as TableFunction
+      correlation: $2.v as Correlation
+    })
+  }
 | derived_table {
     // ISO/IEC 9075-2:2023, 7.6, <table reference>, Format
     flag(mut yylex, vsql_derived_table_without_name)
@@ -95,6 +106,17 @@ derived_table:
     // ISO/IEC 9075-2:2023, 7.6, <table reference>, Conformance Rules, 6
     flag(mut yylex, 'F591')
     $$.v = $1.v
+  }
+
+// A function call in FROM, such as GENERATE_SERIES(1, 3), is a vsql extension
+// (see TableFunction). Its name can't be qualified, since "FROM a.b" is a table
+// until the "(" that follows it.
+table_function:
+  identifier sql_argument_list {
+    $$.v = yy_box(TableFunction{
+      name: new_function_identifier(($1.v as IdentifierChain).identifier)!
+      args: $2.v as []ValueExpression
+    })
   }
 
 table_or_query_name:

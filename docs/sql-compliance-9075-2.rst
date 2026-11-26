@@ -1007,7 +1007,7 @@ Optional Features
    * - ✅ **F851**
      - **<order by clause> in subqueries**
 
-   * - ❌ **F852**
+   * - ✅ **F852**
      - **Top-level <order by clause> in views**
 
    * - ✅ **F855**
@@ -1022,7 +1022,7 @@ Optional Features
    * - ✅ **F858**
      - **<fetch first clause> in subqueries**
 
-   * - ❌ **F859**
+   * - ✅ **F859**
      - **Top-level <fetch first clause> in views**
 
    * - ❌ **F860**
@@ -1037,7 +1037,7 @@ Optional Features
    * - ✅ **F863**
      - **Nested <result offset clause> in <query expression>**
 
-   * - ❌ **F864**
+   * - ✅ **F864**
      - **Top-level <result offset clause> in views**
 
    * - ❌ **F865**

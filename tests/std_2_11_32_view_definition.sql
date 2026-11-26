@@ -177,13 +177,39 @@ CREATE VIEW v AS SELECT NEXT VALUE FOR seq FROM t;
 -- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a view
 
--- # A top-level ORDER BY, OFFSET or FETCH FIRST isn't supported yet (F852,
--- # F864 and F859).
-CREATE VIEW v AS SELECT x FROM t ORDER BY x;
--- error 0A000: ORDER BY, OFFSET and FETCH FIRST are not supported in a view
-
-CREATE VIEW v AS SELECT x FROM t FETCH FIRST 1 ROW ONLY;
--- error 0A000: ORDER BY, OFFSET and FETCH FIRST are not supported in a view
+-- # The query can end with an ORDER BY (F852), OFFSET (F864) and FETCH FIRST
+-- # (F859), which pick the rows of the view.
+CREATE VIEW v AS SELECT x FROM t ORDER BY x DESC;
+CREATE VIEW w AS SELECT x FROM t ORDER BY x FETCH FIRST 2 ROWS ONLY;
+CREATE VIEW u AS SELECT x FROM t ORDER BY x OFFSET 1 ROW;
+CREATE VIEW s AS SELECT x FROM t ORDER BY y DESC OFFSET 1 ROW FETCH NEXT 1 ROW ONLY;
+CREATE VIEW r AS SELECT x FROM t UNION VALUES 9 ORDER BY x DESC FETCH FIRST 2 ROWS ONLY;
+SELECT * FROM v;
+SELECT * FROM w;
+SELECT * FROM u;
+SELECT * FROM s;
+SELECT * FROM r;
+SELECT * FROM w JOIN u ON w.x + 1 = u.x ORDER BY w.x DESC;
+SELECT view_name, column_name FROM information_schema.view_column_usage WHERE view_name = 'S';
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- X: 3
+-- X: 2
+-- X: 1
+-- X: 1
+-- X: 2
+-- X: 2
+-- X: 3
+-- X: 1
+-- X: 9
+-- X: 3
+-- X: 2 X: 3
+-- X: 1 X: 2
+-- VIEW_NAME: S COLUMN_NAME: X
+-- VIEW_NAME: S COLUMN_NAME: Y
 
 -- # The names in the query are resolved in the schema of the view, whatever the
 -- # current schema is when it's created or read.

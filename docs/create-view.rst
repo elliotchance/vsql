@@ -16,7 +16,10 @@ by another view. Its rows aren't stored: the query is run each time the view is
 read, so it always sees the rows of the tables as they are at that time.
 
 The query can be any query, including one that combines queries with ``UNION``,
-``EXCEPT`` or ``INTERSECT``.
+``EXCEPT`` or ``INTERSECT``. It can end with an ``ORDER BY``, ``OFFSET`` and
+``FETCH FIRST`` (or ``LIMIT``) to pick which rows are in the view, such as the
+ten most recent. A query that reads the view needs its own ``ORDER BY`` if it
+needs the rows in order.
 
 The columns of the view have the names of the columns of the query, unless a
 list of column names is given. Each column must have its own name, and the list
@@ -43,8 +46,7 @@ Limitations
   ambiguous because another table it reads has a column with the same name)
   doesn't use anything, so they can be dropped. The view is then an error when
   it's read.
-- The query can't have a ``?`` parameter or ``NEXT VALUE FOR``, and it can't
-  end with an ``ORDER BY``, ``OFFSET`` or ``FETCH FIRST`` (or ``LIMIT``).
+- The query can't have a ``?`` parameter or ``NEXT VALUE FOR``.
 - ``RECURSIVE`` and ``WITH CHECK OPTION`` aren't supported.
 
 Examples

@@ -569,8 +569,18 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 		write_line(mut w, foreign_key)!
 	}
 
+	// The query of a view is in vsql's SQL, which might not mean the same thing
+	// (or anything) in the other database.
+	views := if options.data_only { []View{} } else { selected_views(objects, selection) }
+	if views.len > 0 && foreign_keys.len > 0 {
+		write_line(mut w, '')!
+	}
+	for view in views {
+		write_line(mut w, compat_comment('The view ${c.table_sql(options.output_name(view.name))} is left out: ${view.bytes().bytestr()}'))!
+	}
+
 	if options.transaction {
-		if foreign_keys.len > 0 {
+		if foreign_keys.len > 0 || views.len > 0 {
 			write_line(mut w, '')!
 		}
 		write_line(mut w, 'COMMIT;')!

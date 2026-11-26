@@ -292,3 +292,74 @@ fn test_dump_options() {
 	}
 	assert false
 }
+
+fn test_dump_views() {
+	mut db := open(':memory:')!
+	for stmt in [
+		'CREATE SCHEMA foo',
+		'CREATE TABLE foo.parent (id INT NOT NULL PRIMARY KEY)',
+		'CREATE TABLE foo.child (pid INT, CONSTRAINT fk1 FOREIGN KEY (pid) REFERENCES foo.parent (id))',
+		'INSERT INTO foo.parent (id) VALUES (1)',
+		'CREATE VIEW foo.v1 AS SELECT id FROM parent',
+		'CREATE VIEW foo.v2 (x) AS SELECT id + 1 FROM v1',
+	] {
+		db.query(stmt)!
+	}
+	v1 := 'CREATE VIEW "FOO"."V1"'
+	v2 := 'CREATE VIEW "FOO"."V2"'
+
+	// A view is selected by its name, like a table.
+	assert dump_with(mut db, include: ['foo.v*'])! == ['CREATE SCHEMA "FOO"', v1, v2]
+	assert dump_with(mut db, include: ['foo.*'], exclude: ['foo.v1', 'foo.parent', 'foo.child'])! == [
+		'CREATE SCHEMA "FOO"',
+		'ALTER TABLE "FOO"."CHILD" ADD CONSTRAINT "FK1" FOREIGN KEY',
+		v2,
+	]
+	// The transaction is around the views too.
+	assert dump_with(mut db, transaction: true, include: ['foo.v2'])! == [
+		'START TRANSACTION',
+		'CREATE SCHEMA "FOO"',
+		v2,
+		'COMMIT',
+	]
+
+	mut schema := strings.new_builder(1024)
+	db.dump(mut schema, schema_only: true)!
+	assert schema.str().contains('${v2} ("X") AS SELECT id + 1 FROM v1;')
+
+	mut data := strings.new_builder(1024)
+	db.dump(mut data, data_only: true)!
+	assert !data.str().contains('VIEW')
+
+	// Without the schema, the query is the same, so its names are found in the
+	// current schema of whatever loads it.
+	mut sb := strings.new_builder(1024)
+	db.dump(mut sb, no_schema: true)!
+	output := sb.str()
+	assert output.contains('CREATE VIEW "V1" ("ID") AS SELECT id FROM parent;')
+	mut copy := open(':memory:')!
+	for stmt in split_statements(output) {
+		copy.query(stmt)!
+	}
+	assert copy.query('SELECT x FROM v2')!.rows[0].get_int('X')! == 2
+
+	// Another database can't load the query, so the view is left out with a
+	// comment.
+	for compat, view in {
+		DumpCompat.sqlite3:    '"foo_v1"'
+		DumpCompat.mysql:      '"foo"."v1"'
+		DumpCompat.postgresql: '"foo"."v1"'
+	} {
+		mut compat_sb := strings.new_builder(1024)
+		db.dump(mut compat_sb, compat: compat, transaction: true)!
+		assert compat_sb.str().contains('-- The view ${view} is left out: ${v1} ("ID") AS SELECT id FROM parent\n')
+
+		mut views_only := strings.new_builder(1024)
+		db.dump(mut views_only, compat: compat, transaction: true, include: ['foo.v1'])!
+		assert views_only.str().contains('AS SELECT id FROM parent\n\nCOMMIT;')
+
+		mut compat_data := strings.new_builder(1024)
+		db.dump(mut compat_data, compat: compat, data_only: true)!
+		assert !compat_data.str().contains('VIEW')
+	}
+}

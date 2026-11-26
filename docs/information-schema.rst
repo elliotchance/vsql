@@ -74,8 +74,8 @@ One row for each schema, including the ``INFORMATION_SCHEMA`` and ``VSQL``
 ``TABLES``
 ----------
 
-One row for each table, including the tables of the ``INFORMATION_SCHEMA``
-(which are a ``VIEW``). Rows are ordered by schema and table name.
+One row for each table and view (see :doc:`create-view`), including the tables
+of the ``INFORMATION_SCHEMA`` (which are a ``VIEW``). Rows are ordered by schema and table name.
 
 .. list-table::
   :header-rows: 1
@@ -87,11 +87,11 @@ One row for each table, including the tables of the ``INFORMATION_SCHEMA``
     - The fully qualified name of the table.
 
   * - ``TABLE_TYPE``
-    - ``BASE TABLE``, or ``VIEW`` for the tables of the
+    - ``BASE TABLE``, or ``VIEW`` for a view and the tables of the
       ``INFORMATION_SCHEMA``.
 
   * - ``IS_INSERTABLE_INTO``
-    - ``YES``, or ``NO`` for the tables of the ``INFORMATION_SCHEMA``.
+    - ``YES``, or ``NO`` for a view and the tables of the ``INFORMATION_SCHEMA``.
 
   * - ``IS_TYPED``
     - Always ``NO``.
@@ -104,9 +104,8 @@ One row for each table, including the tables of the ``INFORMATION_SCHEMA``
 ``VIEWS``
 ---------
 
-One row for each view in ``TABLES``, in the same order. Views created with
-:doc:`create-view` aren't described yet, so these are only the tables of the
-``INFORMATION_SCHEMA``.
+One row for each view in ``TABLES``, in the same order: the views made by
+:doc:`create-view` and the tables of the ``INFORMATION_SCHEMA``.
 
 .. code-block:: sql
 
@@ -124,7 +123,7 @@ One row for each view in ``TABLES``, in the same order. Views created with
     - The fully qualified name of the view.
 
   * - ``VIEW_DEFINITION``
-    - The SQL of the view's query. It's ``NULL`` for the tables of the
+    - The SQL of the view's query, as it was written. It's ``NULL`` for the tables of the
       ``INFORMATION_SCHEMA``, which are built by vsql rather than by a query.
 
   * - ``CHECK_OPTION``
@@ -136,9 +135,31 @@ One row for each view in ``TABLES``, in the same order. Views created with
 ``VIEW_COLUMN_USAGE``, ``VIEW_ROUTINE_USAGE`` and ``VIEW_TABLE_USAGE``
 ----------------------------------------------------------------------
 
-The columns, routines and tables that each view uses. They're always empty,
-because the tables of the ``INFORMATION_SCHEMA`` (the only views that are
-described) aren't described by them. ``VIEW_COLUMN_USAGE`` and ``VIEW_TABLE_USAGE`` have the
+The columns, routines and tables that the query of each view made by
+:doc:`create-view` uses:
+
+- A table is a table or view that the query reads, but not the tables that
+  another view reads for it. A derived table (a subquery in the ``FROM``) isn't
+  a table, but the tables that it reads are.
+- A column is a column of one of those tables that the query references,
+  including with ``*``. A column of a table with a correlation name (such as
+  ``t AS x (a, b)``) is the column of the table.
+- A routine is a function of the ``VSQL`` schema (see ``ROUTINES``), by its
+  specific name.
+
+A view that can't be read (such as when a table that it reads was dropped) uses
+nothing. The tables of the ``INFORMATION_SCHEMA`` don't use anything that's
+described here.
+
+.. code-block:: sql
+
+  CREATE TABLE t (x INT, y INT);
+  CREATE VIEW v AS SELECT x, CBRT(y) AS c FROM t;
+  SELECT table_name, column_name FROM information_schema.view_column_usage;
+  -- TABLE_NAME: T COLUMN_NAME: X
+  -- TABLE_NAME: T COLUMN_NAME: Y
+
+``VIEW_COLUMN_USAGE`` and ``VIEW_TABLE_USAGE`` have the
 ``VIEW_CATALOG``, ``VIEW_SCHEMA`` and ``VIEW_NAME`` of the view, then the
 ``TABLE_CATALOG``, ``TABLE_SCHEMA`` and ``TABLE_NAME`` of a table that it uses
 (and ``COLUMN_NAME`` for a column). ``VIEW_ROUTINE_USAGE`` has the
@@ -235,7 +256,7 @@ One row for each column of each table in ``TABLES``.
       an older version has the text that vsql printed it as.
 
   * - ``IS_UPDATABLE``
-    - ``YES``, or ``NO`` for the tables of the ``INFORMATION_SCHEMA``.
+    - ``YES``, or ``NO`` for a column of a view and the tables of the ``INFORMATION_SCHEMA``.
 
   * - ``COLLATION_CATALOG``, ``COLLATION_SCHEMA``, ``COLLATION_NAME``,
       ``DOMAIN_CATALOG``, ``DOMAIN_SCHEMA``, ``DOMAIN_NAME``, ``UDT_CATALOG``,

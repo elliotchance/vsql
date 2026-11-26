@@ -404,6 +404,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	aggregated_columns := c.aggregated_columns.len
 	compiled := e.compile_column(mut c)!
 	c.flag_column_reference(e)
+	c.record_column_usage(e)
 
 	// A sort key of a grouped query that references a column that isn't a
 	// column of the result (one that isn't in the select list, including in an

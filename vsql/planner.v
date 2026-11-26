@@ -423,6 +423,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 	match from_clause.body {
 		Identifier {
 			if view, catalog_name := conn.find_view(from_clause.body) {
+				if !isnil(conn.view_usage) {
+					conn.view_usage.add_table(view.name)
+				}
 				return create_view_plan(body, from_clause, view, params, mut conn, catalog_name,
 					filter)
 			}
@@ -435,6 +438,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				}, params, mut conn, allow_virtual, false)!
 				table = add_correlation_plan(mut &plan, from_clause.correlation.name,
 					subplan, from_clause.correlation, params, mut conn)!
+				if !isnil(conn.view_usage) {
+					conn.view_usage.add_correlation(table, base_table.name, base_table.column_names())
+				}
 
 				// The primary key can only be found once the columns have their
 				// new names, then the table is read again with the lookup.
@@ -467,6 +473,11 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 			if conn.collect_subquery_tables && conn.subquery_scopes.len > 0 {
 				conn.subquery_tables << table_name.id()
+			}
+			// A table registered on the connection isn't part of the catalog.
+			if !isnil(conn.view_usage) && (table_name_id in catalog.storage.tables
+				|| table_name.schema_name in system_schema_names) {
+				conn.view_usage.add_table(table_name)
 			}
 
 			if allow_virtual && table_name_id in catalog.virtual_tables {

@@ -227,7 +227,14 @@ fn create_view_plan(body QuerySpecification, from_clause TablePrimary, view View
 		...view.name
 		catalog_name: catalog_name
 	}
-	subplan := view_query_plan(mut conn, name, query)!
+	// What the view's query uses isn't used by the query that reads the view.
+	usage := conn.view_usage
+	conn.view_usage = unsafe { nil }
+	subplan := view_query_plan(mut conn, name, query) or {
+		conn.view_usage = usage
+		return err
+	}
+	conn.view_usage = usage
 
 	// A column that the query no longer has (such as a column of a table that
 	// was dropped) is an error, but extra columns (a table read with * that
@@ -259,6 +266,9 @@ fn create_view_plan(body QuerySpecification, from_clause TablePrimary, view View
 	mut plan := Plan{}
 	table := add_correlation_plan(mut &plan, correlation.name, subplan, correlation,
 		params, mut conn)!
+	if !isnil(conn.view_usage) {
+		conn.view_usage.add_correlation(table, view.name, view.columns)
+	}
 
 	if filter {
 		add_where_plan(mut &plan, body, params, conn, {

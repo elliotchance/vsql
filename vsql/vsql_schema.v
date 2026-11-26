@@ -69,6 +69,22 @@ fn (conn &Connection) vsql_routines() []VsqlRoutine {
 	return routines
 }
 
+// vsql_routine_specific_name is the specific name of a routine of the VSQL
+// schema, see vsql_routines.
+fn (conn &Connection) vsql_routine_specific_name(f Func) string {
+	mut overload := 0
+	for g in conn.funcs {
+		if g.is_vsql_routine() && g.name == f.name {
+			overload++
+			if g.arg_types == f.arg_types {
+				break
+			}
+		}
+	}
+
+	return '${f.name}_${overload}'
+}
+
 // register_vsql_schema adds the views of the VSQL schema to a catalog.
 //
 // LAST_VACUUM has the rows of the last VACUUM of the connection that reads it

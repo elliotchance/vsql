@@ -282,6 +282,8 @@ CREATE VIEW v AS SELECT * FROM d WHERE ts = tz WITH CHECK OPTION;
 CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT id FROM t WHERE x < EXTRACT(YEAR FROM CURRENT_DATE)) WITH CHECK OPTION;
 CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT DISTINCT s FROM e) WITH CHECK OPTION;
 CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT s FROM e GROUP BY s) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT MAX(id) FROM e GROUP BY s HAVING s > 'a') WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT MAX(id) FROM e GROUP BY tz, s HAVING MIN(tz) IS NOT NULL) WITH CHECK OPTION;
 CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT id FROM t FETCH FIRST 1 ROW ONLY) WITH CHECK OPTION;
 CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT id FROM t OFFSET 1 ROW) WITH CHECK OPTION;
 CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT s FROM e UNION SELECT s FROM e) WITH CHECK OPTION;
@@ -293,6 +295,8 @@ CREATE VIEW v AS SELECT * FROM d WHERE tz IN (SELECT ts FROM e UNION ALL SELECT 
 -- error 42601: syntax error: CURRENT_DATE cannot be used in a view with CHECK OPTION
 -- error 42601: syntax error: SELECT DISTINCT of CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
 -- error 42601: syntax error: GROUP BY of CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: GROUP BY of CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: GROUP BY of TIMESTAMP(6) WITH TIME ZONE cannot be used in a view with CHECK OPTION
 -- error 42601: syntax error: FETCH FIRST cannot be used in a view with CHECK OPTION
 -- error 42601: syntax error: OFFSET cannot be used in a view with CHECK OPTION
 -- error 42601: syntax error: UNION of CHARACTER VARYING(10) and CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
@@ -301,6 +305,13 @@ CREATE VIEW v AS SELECT * FROM d WHERE tz IN (SELECT ts FROM e UNION ALL SELECT 
 -- # A deterministic query is fine, and so is UNION ALL of strings, DISTINCT of
 -- # numbers and a comparison with a time zone on both sides.
 CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT s FROM e UNION ALL SELECT s FROM e) AND id IN (SELECT DISTINCT x FROM t) AND tz < TIMESTAMP '2020-01-01 00:00:00+00:00' WITH CHECK OPTION;
+-- msg: CREATE VIEW 1
+
+-- # A grouping column that's a character string is fine when the select list
+-- # and HAVING don't reference it, even in ORDER BY.
+CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT MAX(id) FROM e GROUP BY s HAVING COUNT(*) > 1) WITH CHECK OPTION;
+CREATE VIEW w AS SELECT * FROM d WHERE id IN (SELECT MAX(id) FROM e GROUP BY s ORDER BY s) WITH CHECK OPTION;
+-- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
 
 -- # A view that it reads can't be non-deterministic either, except for the view

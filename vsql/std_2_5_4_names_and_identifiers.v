@@ -435,6 +435,18 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		if is_column_reference && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
 			return sqlstate_42803(e.column_str())
 		}
+
+		// A reference (even in an aggregate function) in the select list or
+		// HAVING to a grouping column that's a character string or a datetime
+		// with a time zone. Without functional dependencies (T301), a grouping
+		// column is the only column that's functionally dependent on the
+		// grouping columns. ORDER BY isn't included.
+		//
+		// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.ac
+		if is_column_reference && !c.in_sort_key && is_nondeterministic_type(compiled.typ)
+			&& e.is_grouping_column(grouping_columns) {
+			c.conn.check_deterministic('GROUP BY of ${compiled.typ}')!
+		}
 	}
 
 	if distinct_columns := c.distinct_columns {

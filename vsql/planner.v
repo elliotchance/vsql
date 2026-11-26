@@ -854,15 +854,6 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 		grouping_columns << group_column(col, tables)!
 	}
 
-	// A grouping column is the only column that can be referenced, but it's
-	// rejected even when it isn't (which is stricter, #1795).
-	//
-	// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.ac
-	for column in grouping_columns {
-		if is_nondeterministic_type(column.typ) {
-			conn.check_deterministic('GROUP BY of ${column.typ}')!
-		}
-	}
 	c.grouping_columns = grouping_columns
 	for e in select_exprs {
 		e.expr.compile(mut c)!

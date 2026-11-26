@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # amalgamation.sh makes the amalgamation, the C for vsql and libvsql, so that
 # they can be built without V (see amalgamation/Makefile). It's one C file for
@@ -197,17 +197,13 @@ bundle_absolute_includes() {
   perl -pi -e 's{^(\s*#\s*include\s*")(?:/|[A-Za-z]:)[^"]*[/\\]([^"/\\]+")}{$1$2}' "$1"
 }
 
-# python runs Python 3. On Windows (MSYS), it's the py launcher or "python",
-# since "python3" there may be the Microsoft Store's placeholder, or WSL's.
+# python finds Python 3, which is "python" on Windows ("python3" may be a
+# placeholder that opens the Microsoft Store).
 python() {
-  if command -v cygpath > /dev/null; then
-    if command -v py > /dev/null; then
-      py -3 "$@"
-    else
-      command python "$@"
-    fi
-  else
+  if python3 -c '' 2> /dev/null; then
     python3 "$@"
+  else
+    command python "$@"
   fi
 }
 

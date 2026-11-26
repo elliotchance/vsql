@@ -34,7 +34,6 @@ for that platform.
 import hashlib
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -406,12 +405,7 @@ def diff(a, b):
                 for c in items:
                     f.write(hashlib.sha1(c.encode('utf-8', 'surrogateescape')).hexdigest() + '\n')
             paths.append(path)
-        # The full path, since Windows looks in its own folders (which have
-        # WSL's programs) before PATH.
-        diff_command = shutil.which('diff')
-        if diff_command is None:
-            sys.exit('the diff command is needed')
-        out = subprocess.run([diff_command, paths[0], paths[1]], capture_output=True, text=True)
+        out = subprocess.run(['diff', paths[0], paths[1]], capture_output=True, text=True)
         if out.returncode > 1:
             sys.exit(f'diff failed: {out.stderr}')
 

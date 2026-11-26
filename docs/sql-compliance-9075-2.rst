@@ -1296,7 +1296,7 @@ Optional Features
    * - ❌ **T111**
      - **Updatable joins, unions, and columns**
 
-   * - ❌ **T121**
+   * - ✅ **T121**
      - **WITH (excluding RECURSIVE) in query expression**
 
    * - ❌ **T122**

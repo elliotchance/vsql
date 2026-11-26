@@ -215,7 +215,7 @@
 5.4/SR/28                n/a          - - SQL-invoked routines (T321)
 5.4/GR/1                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_5_select_from.sql
 5.4/GR/2                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_6_correlation_name.sql
-5.4/GR/3                 n/a          - - WITH (T121)
+5.4/GR/3                 implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 5.4/GR/4                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_6_6_column_qualifier.sql
 5.4/GR/5                 n/a          - - domains (F251)
 5.4/GR/6                 n/a          - - authorization identifiers (E081)
@@ -259,7 +259,7 @@
 5.4/CR/1                 n/a          - - row pattern recognition (R010)
 5.4/CR/2                 implemented  vsql/std_2_17_5_savepoint_statement.y tests/std_2_17_5_savepoints.sql
 5.4/CR/3                 n/a          - - roles (T331)
-5.4/CR/4                 n/a          - - WITH (T121)
+5.4/CR/4                 implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
 5.4/CR/5                 n/a          - - user-defined types (S023)
 5.4/CR/6                 n/a          - - row types (T051)
 5.4/CR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_1_9_6_flagging.sql

@@ -47,6 +47,12 @@ Syntax
   | OFFSET <integer> [ ROW | ROWS ] LIMIT <integer>
   | LIMIT <offset>, <count> }
 
+Any of these can start with a ``WITH`` (see `WITH`_):
+
+.. code-block:: text
+
+  WITH <name> [ ( <column_name> , ... ) ] AS ( <query> ) , ...
+
 A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION``, ``EXCEPT`` or
 ``INTERSECT``. It can be in parentheses, such as
 ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
@@ -284,6 +290,34 @@ most one row, even when the table is empty:
 .. code-block:: sql
 
   SELECT COUNT(*) FROM products HAVING COUNT(*) = 0;
+
+WITH
+----
+
+``WITH`` names queries that the rest of the query can read like tables, so a
+query can be written in steps:
+
+.. code-block:: sql
+
+  WITH city_totals (city, total) AS (
+    SELECT city, SUM(price) FROM products GROUP BY city
+  ), big_cities AS (
+    SELECT city FROM city_totals WHERE total > 1000
+  )
+  SELECT * FROM products WHERE city IN (SELECT city FROM big_cities);
+
+Each query can read the ones before it, and the query after the ``WITH`` can
+read any of them, any number of times (including in its subqueries). A name
+hides a table with the same name, unless the table is qualified by its schema
+(such as ``public.products``). The columns have the names of the query's
+columns, unless a list of column names is given, which is needed when two
+columns have the same name.
+
+A ``WITH`` can start the query of a statement, such as a ``SELECT``, a
+:doc:`create-view` or an :doc:`insert`, but not a subquery yet. Each query is
+run again each time its name is read, which only matters for a function that
+has a different value each time, such as ``RANDOM()``. ``WITH RECURSIVE``
+isn't supported yet.
 
 TABLE
 -----

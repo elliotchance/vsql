@@ -90,6 +90,9 @@ mut:
 	text string
 	// at_end is true once the parser has been given the end of the tokens.
 	at_end bool
+	// with_scopes are the <with list>s whose names are in scope where the parser
+	// is (see add_with_list_element), innermost last.
+	with_scopes [][]WithListElement
 }
 
 fn (mut l Lexer) lex(mut lval YYSymType) int {

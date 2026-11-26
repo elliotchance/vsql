@@ -4,15 +4,79 @@
 //
 // Specify a table.
 //
-// There's no WITH (T121), CORRESPONDING (F301) or FETCH
-// NEXT (#331). LIMIT isn't in the standard, see limit_clause.
+// There's no WITH in a subquery (T122, #1296), WITH RECURSIVE (T131, #1284),
+// CORRESPONDING (F301) or FETCH NEXT (#331). LIMIT isn't in the standard, see
+// limit_clause.
 
 // A query_expression is either a parenthesized_query_expression or a
 // nonparenthesized_query_expression, so that a query_expression in parentheses
 // is always parsed the same way (see nonparenthesized_query_expression).
+//
+// Only a query_expression can have a with_clause, which is never in a subquery
+// (a subquery is a parenthesized_query_expression).
 query_expression:
   nonparenthesized_query_expression { $$.v = $1.v }
 | parenthesized_query_expression { $$.v = $1.v }
+| with_clause nonparenthesized_query_expression {
+    $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
+      $2.v as QueryExpression))
+  }
+| with_clause parenthesized_query_expression {
+    flag_query_expression(mut yylex, $2.v as QueryExpression, .query_primary)
+    $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
+      QueryExpression{
+        body: new_parenthesized_query_expression($2.v as QueryExpression)
+      }))
+  }
+
+// The names of a with_list are in scope as each with_list_element is parsed
+// (see add_with_list_element), until the end of the query_expression that
+// contains it (see with_query_expression).
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.i.i
+with_clause:
+  WITH with_list {
+    // A <query name> is only in a <with clause> (or where it's read).
+    //
+    // ISO/IEC 9075-2:2023, 5.4, Names and identifiers, Conformance Rules, 4
+    // ISO/IEC 9075-2:2023, 7.6, <table reference>, Conformance Rules, 4
+    // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 1
+    flag(mut yylex, 'T121')
+    $$.v = $2.v
+  }
+
+with_list:
+  with_list_element {
+    $$.v = yy_box(add_with_list_element(mut yylex, []WithListElement{},
+      $1.v as WithListElement)!)
+  }
+| with_list comma with_list_element {
+    $$.v = yy_box(add_with_list_element(mut yylex, $1.v as []WithListElement,
+      $3.v as WithListElement)!)
+  }
+
+with_list_element:
+  query_name AS table_subquery {
+    $$.v = yy_box(WithListElement{
+      name:  $1.v as Identifier
+      query: ($3.v as TablePrimary).body as QueryExpression
+    })
+  }
+| query_name left_paren with_column_list right_paren AS table_subquery {
+    $$.v = yy_box(WithListElement{
+      name:    $1.v as Identifier
+      columns: $3.v as []Identifier
+      query:   ($6.v as TablePrimary).body as QueryExpression
+    })
+  }
+
+query_name:
+  identifier {
+    $$.v = yy_box(new_column_identifier(($1.v as IdentifierChain).identifier)!)
+  }
+
+with_column_list:
+  column_name_list { $$.v = $1.v }
 
 query_expression_with_clauses:
   query_expression_body query_expression_clauses {
@@ -282,9 +346,8 @@ simple_table:
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 13.b
 explicit_table:
   TABLE table_or_query_name {
-    table_expression := TableExpression{TableReference(TablePrimary{
-      body: $2.v as Identifier
-    }), none, []Identifier{}, none}
+    table_expression := TableExpression{TableReference(table_or_query_name_primary(mut yylex,
+      $2.v as Identifier, Correlation{})), none, []Identifier{}, none}
     $$.v = yy_box(QuerySpecification{
       exprs:            SelectList(AsteriskExpr(true))
       table_expression: &table_expression

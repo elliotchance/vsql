@@ -21,6 +21,145 @@ struct QueryExpression {
 	// cursor (see PreparedStmt.open_cursor). It's always none for any other
 	// query, including a subquery.
 	updatability ?UpdatabilityClause
+	// with_list is the <with list> of the <with clause>, if there is one. Each
+	// <query name> that's read is replaced with the query that it names when
+	// it's parsed (see table_or_query_name_primary), so this is only used to
+	// check them (see WithListElement.check).
+	with_list []WithListElement
+}
+
+// WithListElement is a <with list element>, which is a query with a name (and
+// optionally names for its columns) that the rest of the <query expression> can
+// read like a table.
+struct WithListElement {
+	// name only has a sub_entity_name, like a correlation name.
+	name    Identifier
+	columns []Identifier
+	query   QueryExpression
+}
+
+// add_with_list_element adds element to list, the <with list> that's being
+// parsed. Its name is in scope from now on, for the rest of the <with list> and
+// the <query expression body> (until with_query_expression).
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.c and 3.i.i
+fn add_with_list_element(mut yylex YYLexer, list []WithListElement, element WithListElement) ![]WithListElement {
+	for other in list {
+		if other.name.sub_entity_name == element.name.sub_entity_name {
+			return sqlstate_42601('WITH query ${element.name.sub_entity_name} is specified more than once')
+		}
+	}
+
+	if mut yylex is Lexer {
+		if list.len == 0 {
+			yylex.with_scopes << []WithListElement{}
+		}
+		yylex.with_scopes[yylex.with_scopes.len - 1] << element
+	}
+
+	mut new_list := list.clone()
+	new_list << element
+
+	return new_list
+}
+
+// with_query_expression is the <query expression> that has a <with clause>. The
+// names of its <with list> are no longer in scope.
+fn with_query_expression(mut yylex YYLexer, list []WithListElement, query QueryExpression) QueryExpression {
+	if mut yylex is Lexer {
+		yylex.with_scopes.pop()
+	}
+
+	return QueryExpression{
+		...query
+		with_list: list
+	}
+}
+
+// table_or_query_name_primary is the <table primary> of a <table or query name>.
+// An unqualified name that's a <query name> in scope (the innermost one) is the
+// query that it names, which is read like a derived table, with the <query
+// name> as its correlation name. Otherwise, it's a table.
+//
+// Each time the name is read, the query is run again, so a nondeterministic
+// function (such as RANDOM) can have a different value each time (#1781).
+//
+// ISO/IEC 9075-2:2023, 4.17.4, Transient tables
+// ISO/IEC 9075-2:2023, 5.4, Names and identifiers, General Rules, 3
+// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 9.a.i and 9.a.iii
+// ISO/IEC 9075-2:2023, 7.6, <table reference>, General Rules, 2.a
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 1, 1.b and 1.c
+fn table_or_query_name_primary(mut yylex YYLexer, name Identifier, correlation Correlation) TablePrimary {
+	if mut yylex is Lexer {
+		if name.catalog_name == '' && name.schema_name == '' {
+			for i := yylex.with_scopes.len - 1; i >= 0; i-- {
+				for element in yylex.with_scopes[i] {
+					if element.name.sub_entity_name == name.entity_name {
+						return TablePrimary{
+							body:        element.query
+							correlation: Correlation{
+								name:    if correlation.name.sub_entity_name != '' {
+									correlation.name
+								} else {
+									element.name
+								}
+								columns: if correlation.columns.len > 0 {
+									correlation.columns
+								} else {
+									element.columns
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return TablePrimary{
+		body:        name
+		correlation: correlation
+	}
+}
+
+// check checks the query of a <with list element>, even when it's not read.
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3 and 3.d
+fn (element WithListElement) check(params map[string]Value, mut conn Connection) ! {
+	next_value_not_allowed := conn.next_value_not_allowed
+	in_derived_table := conn.in_derived_table
+	if next_value_not_allowed == '' {
+		conn.next_value_not_allowed = 'a WITH query'
+	}
+	conn.in_derived_table = true
+	defer {
+		conn.next_value_not_allowed = next_value_not_allowed
+		conn.in_derived_table = in_derived_table
+	}
+
+	plan := create_query_expression_plan(element.query, params, mut conn, Correlation{})!
+	columns := plan.columns()
+	name := element.name.sub_entity_name
+
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.d.ii
+	if element.columns.len > 0 {
+		if element.columns.len != columns.len {
+			return sqlstate_42601('WITH query ${name} has ${element.columns.len} columns, but its query has ${columns.len}')
+		}
+		for i, column in element.columns {
+			if element.columns[..i].any(it.sub_entity_name == column.sub_entity_name) {
+				return sqlstate_42601('column ${column.sub_entity_name} is specified more than once')
+			}
+		}
+		return
+	}
+
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.d.i
+	for i, column in columns {
+		if columns[..i].any(it.name.sub_entity_name == column.name.sub_entity_name) {
+			return sqlstate_42601('WITH query ${name} has more than one column named ${column.name.sub_entity_name}, so it needs a column list')
+		}
+	}
 }
 
 fn (e QueryExpression) pstr(params map[string]Value) string {

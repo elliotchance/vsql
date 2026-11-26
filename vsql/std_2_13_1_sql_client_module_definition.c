@@ -109,8 +109,8 @@ enum {
 /*
  * An SQL descriptor area has max item descriptor areas. A string component is
  * NULL when it's a zero-length string, and DATA is NULL when it's undefined.
- * length is the length/indicator of DATA when it's bound to a dynamic
- * parameter. A descriptor name is unique in the module, or in the SQL-session
+ * octets is the length in octets of DATA when it's a binary string. length is
+ * the length/indicator of DATA when it's bound to a dynamic parameter. A descriptor name is unique in the module, or in the SQL-session
  * when the module is NULL (GLOBAL).
  *
  * ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 1 and 2
@@ -119,6 +119,7 @@ struct vsql_m_item {
   SQLINTEGER number[VSQL_M_NUMBERS];
   char *string[VSQL_M_STRINGS];
   void *data;
+  SQLINTEGER octets;
   SQLINTEGER length;
 };
 

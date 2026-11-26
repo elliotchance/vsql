@@ -180,9 +180,11 @@ static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
  * a column, from the IRD of the prepared statement. A datetime is the concise
  * data type (such as SQL_TYPE_DATE) in the IRD. LEVEL is 0 (zero), and a
  * collation that isn't set is the zero-length string. The PRECISION of a
- * DECFLOAT is its precision in decimal digits.
+ * DECFLOAT is its precision in decimal digits. The LENGTH and OCTET_LENGTH of
+ * a BINARY or BINARY VARYING are its (maximum) length in octets.
  *
  * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7
+ * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.d.ii
  * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.d.v
  */
 static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
@@ -411,14 +413,16 @@ static SQLRETURN vsql_m_bind_item(SQLHSTMT stmt, SQLSMALLINT i,
     type = (SQLSMALLINT)(SQL_TYPE_DATE - SQL_CODE_DATE +
                          number[VSQL_M_DATETIME_INTERVAL_CODE]);
   }
-  if (type == SQL_CHAR || type == SQL_VARCHAR) {
+  if (type == SQL_CHAR || type == SQL_VARCHAR || type == SQL_BINARY ||
+      type == SQL_VARBINARY) {
     size = number[VSQL_M_LENGTH];
   } else if (type != SQL_BOOLEAN) {
     size = number[VSQL_M_PRECISION];
   }
   item->length = number[VSQL_M_INDICATOR] < 0 ? SQL_NULL_DATA
                  : c == SQL_CHAR              ? SQL_NTS
-                                              : 0;
+                 : c == SQL_BINARY || c == SQL_VARBINARY ? item->octets
+                                                         : 0;
 
   return SQLBindParameter(stmt, i, SQL_PARAM_MODE_IN, c, type, size,
                           (SQLSMALLINT)number[VSQL_M_SCALE],
@@ -554,6 +558,7 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
     } while (rc == SQL_SUCCESS_WITH_INFO);
   }
 
+  memset(data, 0, size);
   rc = SQLGetData(stmt, i, c, data, (SQLINTEGER)size, &length);
   if (vsql_m_failed(rc)) {
     free(data);
@@ -563,6 +568,25 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
   item->data = data;
   number[VSQL_M_INDICATOR] = length == SQL_NULL_DATA ? -1 : 0;
   if (length == SQL_NULL_DATA) {
+    return rc;
+  }
+
+  /*
+   * A binary string is cut to LENGTH octets (with a warning, like a <cast
+   * specification>), and a BINARY is padded with X'00' to LENGTH octets.
+   *
+   * ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 13.a and 13.b
+   */
+  if (c == SQL_BINARY || c == SQL_VARBINARY) {
+    item->octets =
+        c == SQL_BINARY || length > (SQLINTEGER)size ? (SQLINTEGER)size : length;
+    if (c == SQL_VARBINARY) {
+      number[VSQL_M_RETURNED_LENGTH] = item->octets;
+      number[VSQL_M_RETURNED_OCTET_LENGTH] = item->octets;
+    } else if (column_type == SQL_VARBINARY) {
+      number[VSQL_M_RETURNED_LENGTH] = length;
+      number[VSQL_M_RETURNED_OCTET_LENGTH] = length;
+    }
     return rc;
   }
 

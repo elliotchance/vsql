@@ -134,8 +134,8 @@ vsql_m_descriptor(char *sqlstate, const char *name, const void *module) {
 /*
  * vsql_m_matches is 1 if the data type of a host parameter matches the data
  * type of an item descriptor area. type is a code from Table 28, and length is
- * the length of a CHARACTER or CHARACTER VARYING. A CHARACTER VARYING target
- * also matches a shorter CHARACTER VARYING. As an implementation-defined rule,
+ * the length of a CHARACTER, CHARACTER VARYING, BINARY or BINARY VARYING. A
+ * CHARACTER VARYING (or BINARY VARYING) target also matches a shorter one. As an implementation-defined rule,
  * a DOUBLE PRECISION matches a FLOAT, and a character string matches a
  * NUMERIC, DECIMAL, DECFLOAT or datetime (which don't have a C data type), as
  * its value cast to a character string.
@@ -155,6 +155,11 @@ static int vsql_m_matches(struct vsql_m_item *item, SQLSMALLINT type,
     }
     return t == type &&
            (l == length || (type == SQL_VARCHAR && target && length >= l));
+  case SQL_BINARY:
+  case SQL_VARBINARY:
+    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 7.d and 7.e */
+    return t == type &&
+           (l == length || (type == SQL_VARBINARY && target && length >= l));
   case SQL_DOUBLE:
     return t == SQL_DOUBLE || t == SQL_FLOAT;
   }
@@ -181,6 +186,10 @@ static int vsql_m_valid(struct vsql_m_item *item) {
   switch (number[VSQL_M_TYPE]) {
   case SQL_CHAR:
   case SQL_VARCHAR:
+    return number[VSQL_M_LENGTH] >= 1;
+  case SQL_BINARY:
+  case SQL_VARBINARY:
+    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 6.c */
     return number[VSQL_M_LENGTH] >= 1;
   case SQL_NUMERIC:
   case SQL_DECIMAL:
@@ -244,9 +253,10 @@ static int vsql_m_items(char *sqlstate, struct vsql_m_descriptor *d, int n,
 
 /*
  * vsql_m_c_type is the C data type of DATA (for SQLBindParameter and
- * SQLGetData), and sets size to its size in bytes. A value of a type that
- * doesn't have a C data type is a character string, which is long enough for
- * any value of the type.
+ * SQLGetData), and sets size to its size in bytes. A binary string is its
+ * octets (see the octets of the item). A value of a type that doesn't have a C
+ * data type is a character string, which is long enough for any value of the
+ * type.
  */
 static SQLSMALLINT vsql_m_c_type(struct vsql_m_item *item, size_t *size) {
   SQLINTEGER *number = item->number;
@@ -273,6 +283,10 @@ static SQLSMALLINT vsql_m_c_type(struct vsql_m_item *item, size_t *size) {
     /* A character is up to 4 bytes of UTF-8. */
     *size = (size_t)number[VSQL_M_LENGTH] * 4 + 1;
     return SQL_CHAR;
+  case SQL_BINARY:
+  case SQL_VARBINARY:
+    *size = (size_t)number[VSQL_M_LENGTH];
+    return (SQLSMALLINT)number[VSQL_M_TYPE];
   case SQL_NUMERIC:
   case SQL_DECIMAL:
     *size = (size_t)number[VSQL_M_PRECISION] + 3;
@@ -419,17 +433,29 @@ static struct vsql_m_item *vsql_m_get_item(char *sqlstate, const char *name,
  * vsql_m_get_data assigns DATA to the target, which has the data type type and
  * length (in characters, for a string, see vsql_m_put). It isn't assigned
  * when the value is null, or undefined. It returns 1 if a string was
- * truncated.
+ * truncated. A binary string always fits, since the data types match: a
+ * BINARY(L) is padded with X'00' to L octets, and a BINARY VARYING(L) gets its
+ * length portion set.
  *
  * ISO/IEC 9075-2:2023, 20.4, <get descriptor statement>, General Rules, 7.b.ii
  */
 static int vsql_m_get_data(struct vsql_m_item *item, void *target,
                            SQLSMALLINT type, size_t length) {
+  struct vsql_m_varbinary *v = (struct vsql_m_varbinary *)target;
+
   if (item->data == NULL || item->number[VSQL_M_INDICATOR] < 0) {
     return 0;
   }
 
   switch (type) {
+  case SQL_BINARY:
+    memset(target, 0, length);
+    memcpy(target, item->data, (size_t)item->octets);
+    return 0;
+  case SQL_VARBINARY:
+    v->length = (unsigned long)item->octets;
+    memcpy(v->data, item->data, (size_t)item->octets);
+    return 0;
   case SQL_SMALLINT:
     *(short *)target = *(SQLSMALLINT *)item->data;
     return 0;
@@ -532,6 +558,7 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
     /* The other components (except LEVEL) are reset to 0 (zero), so SCALE is
      * 0 (zero) and so is the PRECISION of a datetime. The default PRECISION of
      * a NUMERIC or DECIMAL is 18, of a DECFLOAT is 34, and of a FLOAT is 53.
+     * The default LENGTH of a string or binary string is 1 (one).
      *
      * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.c.i to 5.c.iii */
     level = number[VSQL_M_LEVEL];
@@ -542,6 +569,9 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
       vsql_m_copy(&item->string[VSQL_M_CHARACTER_SET_SCHEMA],
                   "INFORMATION_SCHEMA");
       vsql_m_copy(&item->string[VSQL_M_CHARACTER_SET_NAME], "UTF8");
+    } else if (value == SQL_BINARY || value == SQL_VARBINARY) {
+      /* ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.c.iii.3 */
+      number[VSQL_M_LENGTH] = 1;
     } else if (value == SQL_NUMERIC || value == SQL_DECIMAL) {
       number[VSQL_M_PRECISION] = 18;
     } else if (value == SQL_DECFLOAT) {
@@ -585,15 +615,17 @@ static int vsql_m_set_string(struct vsql_m_item *item, int component,
 /* section set_data */
 /*
  * vsql_m_set_data sets DATA to the value of a host parameter, which has the
- * data type type and length (for a string). It returns 0 (with the status
- * parameter set) if it doesn't match the data type of the item: data exception
- * — error in assignment.
+ * data type type and length (for a string or binary string). It returns 0
+ * (with the status parameter set) if it doesn't match the data type of the
+ * item: data exception — error in assignment. A BINARY(L) is L octets, and a
+ * BINARY VARYING(L) is the octets of its data portion (up to L).
  *
  * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.a.iii and 4.a.iv
  */
 static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
                            SQLSMALLINT type, SQLINTEGER length,
                            const void *value) {
+  const struct vsql_m_varbinary *v = (const struct vsql_m_varbinary *)value;
   size_t size = 0;
   SQLINTEGER integer;
 
@@ -601,6 +633,7 @@ static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
     vsql_m_status(sqlstate, "22005");
     return 0;
   }
+  item->octets = 0;
 
   /* A BOOLEAN is 1 or 0 in C, and 'TRUE' or 'FALSE' in DATA. */
   if (type == SQL_BOOLEAN) {
@@ -631,12 +664,23 @@ static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
   case SQL_DOUBLE:
     size = sizeof(double);
     break;
+  case SQL_BINARY:
+    item->octets = length;
+    size = (size_t)length;
+    break;
+  case SQL_VARBINARY:
+    item->octets = v->length < (unsigned long)length ? (SQLINTEGER)v->length
+                                                      : length;
+    value = v->data;
+    size = (size_t)item->octets;
+    break;
   default:
     size = strlen((const char *)value) + 1;
   }
 
   free(item->data);
-  item->data = malloc(size);
+  /* A zero-length binary string still has DATA. */
+  item->data = malloc(size + 1);
   if (item->data == NULL) {
     vsql_m_status(sqlstate, "HY001");
     return 0;

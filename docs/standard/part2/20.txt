@@ -16,7 +16,7 @@
 20.1/SR/6                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c the character set isn't checked, since it's always UTF8
 20.1/SR/6.b              n/a          - - LOBs (T041)
-20.1/SR/6.c              n/a          - - binary strings (T021)
+20.1/SR/6.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
 20.1/SR/6.d              n/a          - - LOBs (T041)
 20.1/SR/6.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/6.f              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
@@ -39,10 +39,10 @@
 20.1/SR/7.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.1/SR/7.c              n/a          - - LOBs (T041)
-20.1/SR/7.d              n/a          - - binary strings (T021)
-20.1/SR/7.e              n/a          - - binary strings (T021)
-20.1/SR/7.e.i            n/a          - - binary strings (T021)
-20.1/SR/7.e.ii           n/a          - - binary strings (T021)
+20.1/SR/7.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
+20.1/SR/7.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
+20.1/SR/7.e.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
+20.1/SR/7.e.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
 20.1/SR/7.f              n/a          - - LOBs (T041)
 20.1/SR/7.g              n/a          - - a host parameter can't be NUMERIC or DECIMAL (Table 20)
 20.1/SR/7.h              n/a          - - a host parameter can't be NUMERIC or DECIMAL (Table 20)
@@ -157,7 +157,7 @@
 20.5/GR/4.c.iii          container    - -
 20.5/GR/4.c.iii.1        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c UTF8
 20.5/GR/4.c.iii.2        n/a          - - LOBs (T041)
-20.5/GR/4.c.iii.3        n/a          - - binary strings (T021)
+20.5/GR/4.c.iii.3        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_binary_main.c
 20.5/GR/4.c.iii.4        n/a          - - LOBs (T041)
 20.5/GR/4.c.iii.5        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.5/GR/4.c.iii.6        n/a          - - intervals (F052)
@@ -457,7 +457,7 @@
 20.10/GR/7.d.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.i.4         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the zero-length string, since there are no collations (F690)
-20.10/GR/7.d.ii          n/a          - - binary strings (T021)
+20.10/GR/7.d.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_binary_main.c
 20.10/GR/7.d.iii         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.iv          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.10/GR/7.d.v           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_decfloat_main.c

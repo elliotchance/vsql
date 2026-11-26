@@ -1162,6 +1162,10 @@ Linux, macOS and Windows, each on x86-64 and ARM64, with V master:
   else with llvm-mingw's native toolchain.
 
 Each job also generates the C for the amalgamation (see
-``scripts/amalgamation.sh``). Once every job has passed, the release job zips
-the amalgamation, then builds it with ``make`` and runs ``make example`` from
-the zip, like a user without V would.
+``scripts/amalgamation.sh``), and builds the binaries that are released and
+tested from it. The binaries that V builds are only used to check that vsql
+runs, and for V's C compiler commands. Once every job has passed, the release
+job merges the C from each job into ``vsql.c`` and ``libvsql.c`` (see
+``scripts/amalgamation-merge.py``) and zips the amalgamation, then builds it
+with ``make`` and runs ``make example`` from the zip, like a user without V
+would.

@@ -54,8 +54,9 @@ compiler and options, without installing V.
 
 Download ``vsql-<version>-amalgamation.zip`` from the
 `latest release <https://github.com/elliotchance/vsql/releases/latest>`_. It
-has the C that V generates for vsql and libvsql on Linux, macOS and Windows,
-``libvsql.h`` and a ``Makefile``:
+has the C that V generates for vsql and libvsql on Linux, macOS and Windows, in
+one file for each (``vsql.c`` and ``libvsql.c``), ``libvsql.h`` and a
+``Makefile``:
 
 .. code-block:: sh
 
@@ -69,7 +70,17 @@ has the C that V generates for vsql and libvsql on Linux, macOS and Windows,
 ``example.c`` with the library. ``CC``, ``CFLAGS`` and ``LDFLAGS`` can be set as
 usual. On Windows it needs MinGW (``gcc`` and ``make``).
 
-The amalgamation is tested on Linux, macOS and Windows on x86-64 and ARM64.
+``vsql.c`` and ``libvsql.c`` don't need any other C files, so they can also be
+built without the ``Makefile``, such as:
+
+.. code-block:: sh
+
+   cc -std=gnu11 -fwrapv -w -O2 vsql.c -o vsql -lpthread -lm
+
+``vsql.mk`` has the libraries and linker options for each OS and architecture.
+
+The amalgamation is tested on Linux, macOS and Windows on x86-64 and ARM64, and
+the prebuilt binaries are built from it.
 
 Docker
 ------

@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # amalgamation.sh makes the amalgamation, the C for vsql and libvsql, so that
-# they can be built without V (see amalgamation/Makefile). It has three steps:
+# they can be built without V (see amalgamation/Makefile). It's one C file for
+# each of them (vsql.c and libvsql.c), with the C for every OS and architecture.
+# It has three steps:
 #
 #   scripts/amalgamation.sh generate DIR [SHOWCC_DIR]
 #
@@ -18,14 +20,18 @@
 # with -showcc. The generated C includes some headers by their absolute path in
 # V, so they're copied too and included by name instead.
 #
-#   scripts/amalgamation.sh check DIR...
+#   scripts/amalgamation.sh build DIR...
 #
-# Builds and tests the amalgamation with the files in each DIR (from generate).
+# Builds and tests the amalgamation with the files in each DIR (from generate),
+# then copies vsql and libvsql that it built into bin/, in place of the ones
+# that V built. This is what CI releases and tests, so the amalgamation is what
+# gets used.
 #
 #   scripts/amalgamation.sh package VERSION DIR...
 #
-# Makes vsql-VERSION-amalgamation.zip, a folder of the same name with the files
-# in each DIR (from generate), amalgamation/ and libvsql.h.
+# Makes vsql-VERSION-amalgamation.zip, a folder of the same name with vsql.c and
+# libvsql.c merged from the files in each DIR (from generate) by
+# scripts/amalgamation-merge.py, amalgamation/ and libvsql.h.
 
 set -euo pipefail
 
@@ -179,27 +185,43 @@ bundle_absolute_includes() {
   perl -pi -e 's{^(\s*#\s*include\s*")(?:/|[A-Za-z]:)[^"]*[/\\]([^"/\\]+")}{$1$2}' "$1"
 }
 
-# assemble puts the amalgamation in a new folder, with the files in each DIR
-# (from generate).
+# python finds Python 3, which is "python" on Windows ("python3" may be a
+# placeholder that opens the Microsoft Store).
+python() {
+  if python3 -c '' 2> /dev/null; then
+    python3 "$@"
+  else
+    command python "$@"
+  fi
+}
+
+# assemble puts the amalgamation in a new folder, with vsql.c and libvsql.c
+# merged from the files in each DIR (from generate).
 assemble() {
   folder="$1"
   shift
   rm -rf "$folder"
   mkdir -p "$folder"
 
+  merge="$(mktemp -d)"
   for dir in "$@"; do
     for file in "$dir"/*; do
-      if [ -f "$folder/$(basename "$file")" ] && ! cmp -s "$file" "$folder/$(basename "$file")"; then
+      if [ -f "$merge/$(basename "$file")" ] && ! cmp -s "$file" "$merge/$(basename "$file")"; then
         echo "warning: $(basename "$file") is different in each folder, using the one from $dir" >&2
       fi
-      cp -R "$file" "$folder/"
+      cp -R "$file" "$merge/"
     done
   done
+  cp amalgamation/gc.h "$merge/"
+  python scripts/amalgamation-merge.py "$merge"
 
-  cp amalgamation/* libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c LICENSE "$folder/"
+  cp "$merge/vsql.c" "$merge/libvsql.c" "$merge/vsql.mk" "$merge/LICENSE-V" "$folder/"
+  cp amalgamation/Makefile amalgamation/libvsql.exports amalgamation/libvsql.map "$folder/"
+  cp libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c LICENSE "$folder/"
+  rm -rf "$merge"
 }
 
-check() {
+build() {
   folder="$(mktemp -d)/amalgamation"
   root="$PWD"
   assemble "$folder" "$@"
@@ -209,6 +231,8 @@ check() {
   make -j2
   "$root/.github/workflows/hello-test.sh" bin/vsql
   make example
+  rm -f bin/example bin/example.exe
+  cp bin/* "$root/bin/"
   cd "$root"
   rm -rf "$(dirname "$folder")"
 }

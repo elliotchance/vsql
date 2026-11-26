@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # all-tests.sh writes vsql/all_test.v, which has all of the V tests in vsql/
 # (vsql/*_test.v: the SQL, unit and B-tree tests) in one file. Each test file is

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # all-examples.sh writes examples/all/main.v, which runs every example in
 # examples/ from one program, so that "make examples-test" builds vsql once for

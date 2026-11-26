@@ -36,6 +36,7 @@ libvsql/module/test_returned_length.[ch]
 libvsql/module/test_decfloat.[ch]
 libvsql/module/test_binary.[ch]
 libvsql/module/test_lob.[ch]
+libvsql/module/test_interval.[ch]
 libvsql/module/test_more.[ch]
 libvsql/module/test_updatability.[ch]
 

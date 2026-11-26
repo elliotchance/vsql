@@ -181,17 +181,22 @@ static void vsql_m_deallocate_prepare(char *sqlstate, const char *name) {
  * data type (such as SQL_TYPE_DATE) in the IRD. LEVEL is 0 (zero), and a
  * collation that isn't set is the zero-length string. The PRECISION of a
  * DECFLOAT is its precision in decimal digits. The LENGTH and OCTET_LENGTH of
- * a BINARY or BINARY VARYING are its (maximum) length in octets.
+ * a binary string are its (maximum) length in octets. An interval is the
+ * concise data type (such as SQL_INTERVAL_YEAR) in the IRD, and has its
+ * DATETIME_INTERVAL_CODE and DATETIME_INTERVAL_PRECISION.
  *
  * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7
  * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.d.ii
  * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.d.v
+ * ISO/IEC 9075-2:2023, 20.10, <describe statement>, General Rules, 7.d.vii
  */
 static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
                                    struct vsql_m_item *item) {
   static const int numbers[][2] = {
       {SQL_DESC_TYPE, VSQL_M_TYPE},
       {SQL_DESC_DATETIME_INTERVAL_CODE, VSQL_M_DATETIME_INTERVAL_CODE},
+      {SQL_DESC_DATETIME_INTERVAL_PRECISION,
+       VSQL_M_DATETIME_INTERVAL_PRECISION},
       {SQL_DESC_LENGTH, VSQL_M_LENGTH},
       {SQL_DESC_OCTET_LENGTH, VSQL_M_OCTET_LENGTH},
       {SQL_DESC_PRECISION, VSQL_M_PRECISION},
@@ -230,6 +235,10 @@ static void vsql_m_describe_column(SQLHSTMT stmt, SQLSMALLINT column,
   if (item->number[VSQL_M_TYPE] >= SQL_TYPE_DATE &&
       item->number[VSQL_M_TYPE] <= SQL_TYPE_TIMESTAMP_WITH_TIMEZONE) {
     item->number[VSQL_M_TYPE] = SQL_DATETIME;
+  }
+  if (item->number[VSQL_M_TYPE] >= SQL_INTERVAL_YEAR &&
+      item->number[VSQL_M_TYPE] <= SQL_INTERVAL_MINUTE_TO_SECOND) {
+    item->number[VSQL_M_TYPE] = SQL_INTERVAL;
   }
 }
 
@@ -283,7 +292,8 @@ static void vsql_m_describe(char *sqlstate, const char *statement,
 /*
  * vsql_m_describe_parameter sets the item descriptor area to the description
  * of dynamic parameter i, from the IPD of the prepared statement, which is set
- * when it's prepared. Like a column, a datetime is SQL_DATETIME. A dynamic
+ * when it's prepared. Like a column, a datetime is SQL_DATETIME and an interval
+ * is SQL_INTERVAL. A dynamic
  * parameter is nullable and unnamed, its NAME is the zero-length string, and
  * it's never a KEY_MEMBER.
  *
@@ -295,6 +305,8 @@ static void vsql_m_describe_parameter(SQLHDESC ipd, SQLSMALLINT i,
   static const int numbers[][3] = {
       {SQL_DESC_TYPE, VSQL_M_TYPE, 1},
       {SQL_DESC_DATETIME_INTERVAL_CODE, VSQL_M_DATETIME_INTERVAL_CODE, 1},
+      {SQL_DESC_DATETIME_INTERVAL_PRECISION, VSQL_M_DATETIME_INTERVAL_PRECISION,
+       1},
       {SQL_DESC_LENGTH, VSQL_M_LENGTH, 0},
       {SQL_DESC_OCTET_LENGTH, VSQL_M_OCTET_LENGTH, 0},
       {SQL_DESC_PRECISION, VSQL_M_PRECISION, 1},
@@ -338,6 +350,10 @@ static void vsql_m_describe_parameter(SQLHDESC ipd, SQLSMALLINT i,
   if (item->number[VSQL_M_TYPE] >= SQL_TYPE_DATE &&
       item->number[VSQL_M_TYPE] <= SQL_TYPE_TIMESTAMP_WITH_TIMEZONE) {
     item->number[VSQL_M_TYPE] = SQL_DATETIME;
+  }
+  if (item->number[VSQL_M_TYPE] >= SQL_INTERVAL_YEAR &&
+      item->number[VSQL_M_TYPE] <= SQL_INTERVAL_MINUTE_TO_SECOND) {
+    item->number[VSQL_M_TYPE] = SQL_INTERVAL;
   }
 }
 
@@ -401,11 +417,19 @@ struct vsql_m_input {
  * own type, and is cast to the type of the dynamic parameter when the
  * statement is executed (see PreparedStmt.with_parameters).
  *
+ * An interval is its concise data type (such as SQL_INTERVAL_YEAR), and
+ * SQLBindParameter works out its leading field precision from its length in
+ * positions (the ColumnSize), so that's the length of the fields after the
+ * leading field (and their separators), the fractional seconds and a period,
+ * and the sign of the value, if it has one (see ISO/IEC 9075-3:2003, 6.6,
+ * BindParameter, General Rules, 18.b).
+ *
  * ISO/IEC 9075-2:2023, 20.11, <input using clause>, General Rules, 6.b.i */
 static SQLRETURN vsql_m_bind_item(SQLHSTMT stmt, SQLSMALLINT i,
                                   struct vsql_m_item *item) {
-  SQLINTEGER *number = item->number, size = 0;
-  SQLSMALLINT type = (SQLSMALLINT)number[VSQL_M_TYPE], c;
+  SQLINTEGER *number = item->number, size = 0, code;
+  SQLSMALLINT type = (SQLSMALLINT)number[VSQL_M_TYPE], c,
+              digits = (SQLSMALLINT)number[VSQL_M_SCALE];
   size_t buffer;
 
   c = vsql_m_c_type(item, &buffer);
@@ -413,19 +437,42 @@ static SQLRETURN vsql_m_bind_item(SQLHSTMT stmt, SQLSMALLINT i,
     type = (SQLSMALLINT)(SQL_TYPE_DATE - SQL_CODE_DATE +
                          number[VSQL_M_DATETIME_INTERVAL_CODE]);
   }
-  if (type == SQL_CHAR || type == SQL_VARCHAR || type == SQL_BINARY ||
-      type == SQL_VARBINARY) {
+  if (type == SQL_CHAR || type == SQL_VARCHAR || type == SQL_CLOB ||
+      type == SQL_BINARY || type == SQL_VARBINARY || type == SQL_BLOB) {
     size = number[VSQL_M_LENGTH];
+  } else if (type == SQL_INTERVAL) {
+    code = number[VSQL_M_DATETIME_INTERVAL_CODE];
+    type = (SQLSMALLINT)(SQL_INTERVAL_YEAR - SQL_CODE_YEAR + code);
+    size = number[VSQL_M_DATETIME_INTERVAL_PRECISION];
+    if (code == SQL_CODE_DAY_TO_SECOND) {
+      size += 9;
+    } else if (code == SQL_CODE_DAY_TO_MINUTE ||
+               code == SQL_CODE_HOUR_TO_SECOND) {
+      size += 6;
+    } else if (code == SQL_CODE_YEAR_TO_MONTH || code == SQL_CODE_DAY_TO_HOUR ||
+               code == SQL_CODE_HOUR_TO_MINUTE ||
+               code == SQL_CODE_MINUTE_TO_SECOND) {
+      size += 3;
+    }
+    digits = 0;
+    if (vsql_m_has_seconds(code)) {
+      digits = (SQLSMALLINT)number[VSQL_M_PRECISION];
+      size += digits > 0 ? digits + 1 : 0;
+    }
+    if (item->data != NULL &&
+        (*(char *)item->data == '+' || *(char *)item->data == '-')) {
+      size++;
+    }
   } else if (type != SQL_BOOLEAN) {
     size = number[VSQL_M_PRECISION];
   }
   item->length = number[VSQL_M_INDICATOR] < 0 ? SQL_NULL_DATA
                  : c == SQL_CHAR              ? SQL_NTS
-                 : c == SQL_BINARY || c == SQL_VARBINARY ? item->octets
-                                                         : 0;
+                 : c == SQL_BINARY || c == SQL_VARBINARY || c == SQL_BLOB
+                     ? item->octets
+                     : 0;
 
-  return SQLBindParameter(stmt, i, SQL_PARAM_MODE_IN, c, type, size,
-                          (SQLSMALLINT)number[VSQL_M_SCALE],
+  return SQLBindParameter(stmt, i, SQL_PARAM_MODE_IN, c, type, size, digits,
                           item->data == NULL ? &item->length : item->data, 0,
                           &item->length);
 }
@@ -546,8 +593,17 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
    * below would continue from where it was cut, rather than from its start. An
    * error here is also an error for the same value below.
    */
-  if (number[VSQL_M_TYPE] != SQL_VARCHAR) {
+  if (number[VSQL_M_TYPE] != SQL_VARCHAR && number[VSQL_M_TYPE] != SQL_CLOB) {
     SQLColAttribute(stmt, i, SQL_DESC_TYPE, NULL, 0, NULL, &column_type);
+  }
+
+  /* A CHARACTER LARGE OBJECT (or BINARY LARGE OBJECT) has a length like a
+   * CHARACTER VARYING (or BINARY VARYING). */
+  if (column_type == SQL_CLOB) {
+    column_type = SQL_VARCHAR;
+  }
+  if (column_type == SQL_BLOB) {
+    column_type = SQL_VARBINARY;
   }
   if (column_type == SQL_VARCHAR) {
     do {
@@ -577,10 +633,10 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
    *
    * ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 13.a and 13.b
    */
-  if (c == SQL_BINARY || c == SQL_VARBINARY) {
+  if (c == SQL_BINARY || c == SQL_VARBINARY || c == SQL_BLOB) {
     item->octets =
         c == SQL_BINARY || length > (SQLINTEGER)size ? (SQLINTEGER)size : length;
-    if (c == SQL_VARBINARY) {
+    if (c != SQL_BINARY) {
       number[VSQL_M_RETURNED_LENGTH] = item->octets;
       number[VSQL_M_RETURNED_OCTET_LENGTH] = item->octets;
     } else if (column_type == SQL_VARBINARY) {
@@ -590,7 +646,8 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
     return rc;
   }
 
-  if (number[VSQL_M_TYPE] == SQL_CHAR || number[VSQL_M_TYPE] == SQL_VARCHAR) {
+  if (number[VSQL_M_TYPE] == SQL_CHAR || number[VSQL_M_TYPE] == SQL_VARCHAR ||
+      number[VSQL_M_TYPE] == SQL_CLOB) {
     int truncated = 0;
 
     while (rc == SQL_SUCCESS_WITH_INFO) {
@@ -612,7 +669,7 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
     }
     *s = '\0';
   }
-  if (number[VSQL_M_TYPE] == SQL_VARCHAR) {
+  if (number[VSQL_M_TYPE] == SQL_VARCHAR || number[VSQL_M_TYPE] == SQL_CLOB) {
     characters = vsql_m_characters(data);
     octets = (SQLINTEGER)strlen(data);
     column_type = SQL_VARCHAR;

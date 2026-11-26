@@ -1274,8 +1274,12 @@ Optional Features
    * - ❌ **T061**
      - **UCS support**
 
-   * - ✅ **T062**
+   * - ⭕ **T062**
      - **Character length units**
+
+       Character length units are supported, but SQL:2023 (Table 42) says that
+       T062 implies T061 (UCS support, #1182), which implies F690. So T062
+       can't be claimed until T061 is.
 
    * - ✅ **T071**
      - **BIGINT data type**

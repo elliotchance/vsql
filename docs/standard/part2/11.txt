@@ -1155,7 +1155,7 @@
 11.32/SR/23.u.iii.3      n/a          - - reference types (S043)
 11.32/SR/24              container    - -
 11.32/SR/24.a            container    - -
-11.32/SR/24.a.i          deviates     vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql a view column list is needed when two columns have the same name, but not for a column with a name that vsql made up, such as COL1 (#1770)
+11.32/SR/24.a.i          implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql the name of a UNION, EXCEPT or INTERSECT column is the name of its left column (7.17, SR 18.a and 19.b.i)
 11.32/SR/24.a.ii         implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/24.b            n/a          - - reference types (S043)
 11.32/SR/24.b.i          n/a          - - reference types (S043)

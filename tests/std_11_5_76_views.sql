@@ -20,7 +20,7 @@ SELECT COUNT(*) FROM information_schema.tables t JOIN information_schema.views v
 CREATE TABLE t (x INT);
 CREATE SCHEMA s;
 CREATE VIEW v (y) AS SELECT x /* the x */ FROM t;
-CREATE VIEW s."lower" AS VALUES 1;
+CREATE VIEW s."lower" (a) AS VALUES 1;
 SELECT * FROM information_schema.views WHERE table_schema <> 'INFORMATION_SCHEMA';
 SELECT table_schema, table_name, table_type, is_insertable_into FROM information_schema.tables WHERE table_schema <> 'INFORMATION_SCHEMA';
 -- msg: CREATE TABLE 1

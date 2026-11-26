@@ -746,6 +746,10 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			not_null:       col.not_null
 			from_aggregate: col.from_aggregate
 			features:       col.features
+			// A column without a name keeps its implementation-dependent name.
+			//
+			// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 12.b.ii.3.B
+			unnamed:        correlation_columns.len == 0 && col.unnamed
 		}
 		if conn.collect_columns {
 			conn.correlated_columns[columns[i].name.id()] << col.name.id()

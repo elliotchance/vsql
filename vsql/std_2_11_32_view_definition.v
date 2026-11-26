@@ -150,8 +150,8 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 	subplan := view_query_plan(mut conn, name, stmt.query)!
 	query_columns := subplan.columns()
 
-	// A column with a name that vsql made up (such as COL1) doesn't need a view
-	// column list (#1770).
+	// A view column list is needed for a column with an implementation-dependent
+	// name (such as COL1), or two columns with the same name.
 	//
 	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 14 and 24.a
 	mut columns := []string{}
@@ -161,7 +161,12 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 		}
 		columns = stmt.columns.map(it.sub_entity_name)
 	} else {
-		columns = query_columns.map(it.name.sub_entity_name)
+		for i, column in query_columns {
+			if column.unnamed {
+				return sqlstate_42601('column ${i + 1} of the query needs a name, or a view column list is needed')
+			}
+			columns << column.name.sub_entity_name
+		}
 	}
 	for i, column in columns {
 		if column in columns[..i] {

@@ -27,7 +27,13 @@ needs the rows in order.
 
 The columns of the view have the names of the columns of the query, unless a
 list of column names is given. Each column must have its own name, and the list
-must have one name for each column of the query.
+must have one name for each column of the query. The list is needed when a
+column of the query doesn't have a name, such as an expression without ``AS``
+or a column of ``VALUES``:
+
+.. code-block:: sql
+
+  CREATE VIEW v (id, total) AS SELECT id, x * 10 FROM t;
 
 The names in the query are resolved in the schema of the view, both when the
 view is created and when it's read, so a view means the same thing whatever the

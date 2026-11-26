@@ -20,15 +20,15 @@ SELECT x FROM v;
 -- # A view column list names the columns (General Rules, 1.e.i.1), otherwise
 -- # they're the names of the query's columns (General Rules, 1.e.i.2).
 CREATE VIEW v (a, b) AS SELECT x, y FROM t;
-CREATE VIEW w AS SELECT x * 10 AS ten, UPPER(y) FROM t;
+CREATE VIEW w (ten, u) AS SELECT x * 10 AS ten, UPPER(y) FROM t;
 SELECT a, b FROM v WHERE a = 1;
 SELECT * FROM w;
 -- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
 -- A: 1 B: a
--- TEN: 10 COL2: A
--- TEN: 20 COL2: B
--- TEN: 30 COL2: NULL
+-- TEN: 10 U: A
+-- TEN: 20 U: B
+-- TEN: 30 U: NULL
 
 CREATE VIEW v (a, b) AS SELECT x, y FROM t;
 SELECT x FROM v;
@@ -48,6 +48,34 @@ CREATE VIEW v (a, a) AS SELECT x, y FROM t;
 
 CREATE VIEW v AS SELECT x, x FROM t;
 -- error 42601: syntax error: column X is specified more than once
+
+-- # A column without a name (that vsql would call COL1, for example) needs a
+-- # view column list too (Syntax Rules, 24.a.i), including through a derived
+-- # table, a WITH query and UNION (which always has the names of its first
+-- # query).
+CREATE VIEW v AS SELECT x * 10 FROM t;
+CREATE VIEW v AS SELECT x, UPPER(y) FROM t;
+CREATE VIEW v AS VALUES 1;
+CREATE VIEW v AS SELECT * FROM (SELECT x * 10 FROM t) AS d;
+CREATE VIEW v AS WITH w AS (SELECT x + 1 FROM t) SELECT * FROM w;
+CREATE VIEW v AS SELECT x * 2 FROM t UNION SELECT x FROM t;
+-- error 42601: syntax error: column 1 of the query needs a name, or a view column list is needed
+-- error 42601: syntax error: column 2 of the query needs a name, or a view column list is needed
+-- error 42601: syntax error: column 1 of the query needs a name, or a view column list is needed
+-- error 42601: syntax error: column 1 of the query needs a name, or a view column list is needed
+-- error 42601: syntax error: column 1 of the query needs a name, or a view column list is needed
+-- error 42601: syntax error: column 1 of the query needs a name, or a view column list is needed
+
+CREATE VIEW v1 (a) AS SELECT x * 10 FROM t;
+CREATE VIEW v2 AS SELECT * FROM (VALUES 1) AS d (a);
+CREATE VIEW v3 AS WITH w (a) AS (SELECT x + 1 FROM t) SELECT * FROM w;
+CREATE VIEW v4 AS SELECT x FROM t UNION SELECT x * 2 FROM t;
+SELECT * FROM v1 JOIN v2 ON v1.a = 10 JOIN v3 ON v3.a = v1.a / 10 + 1 JOIN v4 ON v4.x = v2.a;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- A: 10 A: 1 A: 2 X: 1
 
 CREATE VIEW v (a, b) AS SELECT x, x FROM t;
 SELECT * FROM v;

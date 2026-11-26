@@ -267,14 +267,14 @@
 7.6/SR/21                container    - -
 7.6/SR/21.a              n/a          - - table functions (T326), collection derived tables (S301), JSON (T811), data change delta tables (T495) and row pattern recognition (R010)
 7.6/SR/21.b              container    - -
-7.6/SR/21.b.i            missing      - - a derived table or WITH query in a view (#1788)
-7.6/SR/21.b.ii           missing      - - a derived table or WITH query in a view (#1788)
-7.6/SR/21.b.iii          missing      - - a derived table or WITH query in a view (#1788)
-7.6/SR/21.b.iv           missing      - - a derived table or WITH query in a view (#1788)
+7.6/SR/21.b.i            implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
+7.6/SR/21.b.ii           implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
+7.6/SR/21.b.iii          implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
+7.6/SR/21.b.iv           implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.6/SR/22                implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
 7.6/SR/22.a              implemented  vsql/std_2_7_6_table_reference.v tests/std_2_14_14_update.sql
 7.6/SR/22.b              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
-7.6/SR/22.c              missing      - - a derived table or WITH query in a view (#1788)
+7.6/SR/22.c              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.6/AR/1                 n/a          - - privileges (E081, #732)
 7.6/AR/1.a               n/a          - - privileges (E081, #732)
 7.6/AR/1.b               container    - -
@@ -1306,12 +1306,12 @@
 7.17/SR/8.d              n/a          - - updatable unions (T111)
 7.17/SR/8.e              n/a          - - updatable unions (T111)
 7.17/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable unions (T111)
-7.17/SR/10               missing      - - a derived table or WITH query in a view (#1788)
+7.17/SR/10               implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.17/SR/11               implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.17/SR/11.a             implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.17/SR/11.b             implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.17/SR/11.c             implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
-7.17/SR/12               missing      - - a derived table or WITH query in a view (#1788)
+7.17/SR/12               implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 7.17/SR/13               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.b             implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql

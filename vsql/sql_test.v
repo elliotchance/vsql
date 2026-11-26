@@ -1090,7 +1090,7 @@ fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions
 	mut db := open_sql_test_database(path, options)!
 	db.now = sql_test_now
 	if postgresql {
-		db.register_postgresql() or {
+		db.register_postgresql('') or {
 			db.close()
 			return err
 		}

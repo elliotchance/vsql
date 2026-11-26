@@ -232,7 +232,7 @@ fn (s &Server) handle_client(mut c net.TcpConn) {
 		return
 	}
 
-	s.handle_conn(mut db, mut conn) or { s.log('error: ${err}') }
+	s.handle_conn(mut db, mut conn, database) or { s.log('error: ${err}') }
 
 	// A client that disconnects in the middle of a transaction implicitly rolls
 	// it back.
@@ -320,6 +320,15 @@ fn rewrite_pg_syntax(query string) string {
 			continue
 		}
 
+		// current_schema() is a function in PostgreSQL, but CURRENT_SCHEMA is a
+		// value without parentheses in SQL.
+		if query[i..].to_lower().starts_with('current_schema()')
+			&& (i == 0 || !is_pg_name_byte(query[i - 1])) {
+			out << 'CURRENT_SCHEMA'.bytes()
+			i += 'current_schema()'.len
+			continue
+		}
+
 		if pg_is_untyped_null(query, i, out) {
 			out << 'CAST(NULL AS BIGINT)'.bytes()
 			i += 4
@@ -387,10 +396,10 @@ fn pg_type_name(name string) string {
 	}
 }
 
-fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
+fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
-	db.register_postgresql()!
+	db.register_postgresql(database)!
 
 	if s.options.select_without_from {
 		db.query('CREATE TABLE singlerow (x INT)') or {}

@@ -225,6 +225,18 @@ import arrays
 // V501-06: pg_table_size().
 // V501-07: pg_indexes_size().
 // V501-08: pg_get_function_identity_arguments().
+// V501-09: current_database().
+// V501-10: pg_database_size().
+// V501-11: format_type().
+// V501-12: pg_get_expr().
+// V501-13: pg_tablespace_location().
+// V501-14: pg_encoding_to_char().
+// V501-15: pg_relation_size().
+// V501-16: pg_stat_get_numscans().
+// V501-17: pg_get_indexdef().
+// V501-18: pg_get_constraintdef().
+// V501-19: pg_get_ruledef().
+// V501-20: shobj_description().
 //
 // V502: PostgreSQL system catalog tables.
 // V502-01: pg_database.
@@ -234,6 +246,30 @@ import arrays
 // V502-05: pg_type.
 // V502-06: pg_enum.
 // V502-07: pg_proc.
+// V502-08: pg_attribute.
+// V502-09: pg_attrdef.
+// V502-10: pg_roles.
+// V502-11: pg_tablespace.
+// V502-12: pg_settings.
+// V502-13: pg_description.
+// V502-14: pg_shdescription.
+// V502-15: pg_depend.
+// V502-16: pg_conversion.
+// V502-17: pg_collation.
+// V502-18: pg_am.
+// V502-19: pg_language.
+// V502-20: pg_inherits.
+// V502-21: pg_constraint.
+// V502-22: pg_index.
+// V502-23: pg_trigger.
+// V502-24: pg_rewrite.
+// V502-25: pg_aggregate.
+// V502-26: pg_default_acl.
+// V502-27: pg_extension.
+// V502-28: pg_available_extensions.
+// V502-29: pg_event_trigger.
+// V502-30: pg_foreign_data_wrapper.
+// V502-31: pg_foreign_server.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -373,11 +409,47 @@ const vsql_pg_total_relation_size = 'V501-05'
 const vsql_pg_table_size = 'V501-06'
 const vsql_pg_indexes_size = 'V501-07'
 const vsql_pg_get_function_identity_arguments = 'V501-08'
+const vsql_pg_current_database = 'V501-09'
+const vsql_pg_database_size = 'V501-10'
+const vsql_pg_format_type = 'V501-11'
+const vsql_pg_get_expr = 'V501-12'
+const vsql_pg_tablespace_location = 'V501-13'
+const vsql_pg_encoding_to_char = 'V501-14'
+const vsql_pg_relation_size = 'V501-15'
+const vsql_pg_stat_get_numscans = 'V501-16'
+const vsql_pg_get_indexdef = 'V501-17'
+const vsql_pg_get_constraintdef = 'V501-18'
+const vsql_pg_get_ruledef = 'V501-19'
+const vsql_shobj_description = 'V501-20'
 const vsql_pg_database = 'V502-01'
 const vsql_pg_namespace = 'V502-02'
 const vsql_pg_class = 'V502-03'
 const vsql_pg_statio_user_tables = 'V502-04'
 const vsql_pg_type = 'V502-05'
+const vsql_pg_attribute = 'V502-08'
+const vsql_pg_attrdef = 'V502-09'
+const vsql_pg_roles = 'V502-10'
+const vsql_pg_tablespace = 'V502-11'
+const vsql_pg_settings = 'V502-12'
+const vsql_pg_description = 'V502-13'
+const vsql_pg_shdescription = 'V502-14'
+const vsql_pg_depend = 'V502-15'
+const vsql_pg_conversion = 'V502-16'
+const vsql_pg_collation = 'V502-17'
+const vsql_pg_am = 'V502-18'
+const vsql_pg_language = 'V502-19'
+const vsql_pg_inherits = 'V502-20'
+const vsql_pg_constraint = 'V502-21'
+const vsql_pg_index = 'V502-22'
+const vsql_pg_trigger = 'V502-23'
+const vsql_pg_rewrite = 'V502-24'
+const vsql_pg_aggregate = 'V502-25'
+const vsql_pg_default_acl = 'V502-26'
+const vsql_pg_extension = 'V502-27'
+const vsql_pg_available_extensions = 'V502-28'
+const vsql_pg_event_trigger = 'V502-29'
+const vsql_pg_foreign_data_wrapper = 'V502-30'
+const vsql_pg_foreign_server = 'V502-31'
 const vsql_pg_enum = 'V502-06'
 const vsql_pg_proc = 'V502-07'
 

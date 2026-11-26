@@ -69,7 +69,7 @@
 5.3/SR/14                implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql
 5.3/SR/15                definition   - -
 5.3/SR/15.a              definition   - -
-5.3/SR/15.b              n/a          - - national character (F421) and named character sets (F461)
+5.3/SR/15.b              definition   - -
 5.3/SR/16                container    - -
 5.3/SR/16.a              implemented  vsql/lexer.v tests/std_2_5_3_unicode.sql the character set is always UTF8
 5.3/SR/16.b              n/a          - - named character sets (F461)

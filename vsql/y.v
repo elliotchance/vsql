@@ -56402,7 +56402,7 @@ fn yy_action_1160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 fn yy_action_1161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5082
 	{
-		// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 3
+		// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 3 and 4
 		flag(mut yylex, 'T312')
 		yy_val.v = yy_box(CharacterValueFunction(yy_unbox[OverlayFunction](yy_dollar[1].v)))
 	}

@@ -475,13 +475,14 @@ Returns a value written as an SQL literal, such as a text in single quotes.
 .. code-block:: sql
 
   -- quote(X)
-  VALUES '''' || REPLACE(/*X*/, '''', '''''') || '''';
+  VALUES QUOTE(/*X*/);
   -- SELECT quote('It''s');
-  VALUES '''' || REPLACE('It''s', '''', '''''') || '''';
+  VALUES QUOTE('It''s');
   -- COL1: 'It''s'
 
-This is for a text. A number cast to text is already a literal, and a
-``NULL`` needs a ``CASE`` to become ``'NULL'``.
+``QUOTE`` works for every type, and a ``NULL`` is ``NULL``, the same as SQLite.
+A real number has an exponent (``1.5e0``) so that it stays approximate, and a
+date or time is a literal such as ``DATE '2026-11-17'``.
 
 random
 ^^^^^^

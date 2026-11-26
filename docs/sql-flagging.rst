@@ -523,6 +523,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-13``
      - ``ENDS_WITH``.
+
+   * - ``V404-14``
+     - ``QUOTE``.
+
+   * - ``V404-15``
+     - ``QUOTE_IDENT``.
    * - ``V405``
      - Aggregate functions (see :doc:`functions-aggregate`).
 

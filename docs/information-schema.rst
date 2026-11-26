@@ -593,10 +593,10 @@ vsql has beyond the SQL standard. A function of the SQL standard (such as
 
   * - ``IS_NULL_CALL``
     - ``YES`` for a function that returns ``NULL`` when any argument is
-      ``NULL`` (every built-in function except ``CONCAT`` and ``CONCAT_WS``),
-      ``NO`` for a function that's always called (``CONCAT``, ``CONCAT_WS``, a
-      function that's registered with ``register_function``, or a PostgreSQL
-      function).
+      ``NULL`` (every built-in function except ``CONCAT``, ``CONCAT_WS`` and
+      ``QUOTE``), ``NO`` for a function that's always called (``CONCAT``,
+      ``CONCAT_WS``, ``QUOTE``, a function that's registered with
+      ``register_function``, or a PostgreSQL function).
 
   * - ``SCHEMA_LEVEL_ROUTINE``, ``MAX_DYNAMIC_RESULT_SETS``,
       ``IS_USER_DEFINED_CAST``, ``AS_LOCATOR``, ``IS_UDT_DEPENDENT``

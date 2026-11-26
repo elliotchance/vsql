@@ -551,8 +551,8 @@ VALUES POSITION('bar' IN 'foobarbar');
 
 -- # QUOTE
 -- # QUOTE('Don''t!')
-VALUES '''' || REPLACE('Don''t!', '''', '\''') || '''';
--- COL1: 'Don\'t!'
+VALUES QUOTE('Don''t!');
+-- COL1: 'Don''t!'
 
 -- # REGEXP_LIKE
 -- # REGEXP_LIKE('abc', 'b')

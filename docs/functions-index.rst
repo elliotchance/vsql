@@ -306,6 +306,12 @@ Every function, in alphabetical order:
    * - :ref:`PRODUCT <functions-aggregate:PRODUCT>`
      - Every value multiplied together
      - Aggregate
+   * - :ref:`QUOTE <functions-string:QUOTE>`
+     - An SQL literal for a value
+     - String
+   * - :ref:`QUOTE_IDENT <functions-string:QUOTE_IDENT>`
+     - A delimited identifier for a name
+     - String
    * - :ref:`RADIANS <functions-trigonometric:RADIANS>`
      - Degrees to radians
      - Trigonometric

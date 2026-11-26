@@ -589,8 +589,8 @@ The row count of an ``OFFSET`` must not be negative.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An argument of a function isn't one that it accepts, such as ``CHR`` of a number
-that isn't a Unicode code point, or field 0 of ``SPLIT_PART`` (see
-:doc:`functions-string`).
+that isn't a Unicode code point, field 0 of ``SPLIT_PART`` or ``QUOTE_IDENT`` of
+an empty string (see :doc:`functions-string`).
 
 **Examples**
 

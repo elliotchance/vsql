@@ -82,6 +82,68 @@ fn register_string_funcs(mut conn Connection) ! {
 			}
 		}
 	}
+
+	// QUOTE (V404-14) accepts a value of any type, so there's one for each type
+	// (a CHARACTER is a CHARACTER VARYING and a BINARY is a BINARY VARYING, see
+	// find_function). It's always called, because a NULL is quoted as NULL. The
+	// literal of a large object is a CHARACTER LARGE OBJECT.
+	$for typ in SQLType.values {
+		if typ.value !in [.is_character, .is_binary] {
+			conn.register_func(Func{
+				name:                 'QUOTE'
+				arg_types:            [
+					match typ.value {
+						// An interval's size is its qualifier, so 0 isn't valid.
+						.is_interval_year_month { make_interval_year_month }
+						.is_interval_day_time { make_interval_day_time }
+						else { Type{typ.value, 0, 0, false, false} }
+					},
+				]
+				func:                 func_quote
+				return_type:          if typ.value in [.is_clob, .is_blob] {
+					Type{.is_clob, 0, 0, false, false}
+				} else {
+					varchar
+				}
+				called_on_null_input: true
+				is_deterministic:     true
+				features:             [vsql_quote]
+				arg_names:            ['VALUE']
+			})!
+		}
+	}
+	conn.register_func(Func{'QUOTE_IDENT', [varchar], false, func_quote_ident, varchar, false, true, [
+		vsql_quote_ident,
+	], [], false})!
+}
+
+// QUOTE(any) CHARACTER VARYING
+//
+// The value as an SQL literal that results in the same value, such as 'it''s',
+// 1.5e0 or DATE '2026-11-17' (see Value.literal). A NULL of any type is NULL.
+fn func_quote(_ FunctionContext, args []Value) !Value {
+	s := args[0].literal()
+	if args[0].typ.typ in [.is_clob, .is_blob] {
+		return new_clob_value(s)
+	}
+
+	// The type is a CHARACTER VARYING without a maximum length, like the
+	// declared type, even for NULL.
+	return new_varchar_value(s).with_type(Type{.is_varchar, 0, 0, false, false})
+}
+
+// QUOTE_IDENT(CHARACTER VARYING) CHARACTER VARYING
+//
+// The name as a <delimited identifier>, in double quotes with each double quote
+// doubled. It's always quoted, so it keeps its case. An empty name is a 22023
+// error, because a <delimited identifier> can't be empty.
+fn func_quote_ident(_ FunctionContext, args []Value) !Value {
+	name := args[0].string_value()
+	if name == '' {
+		return sqlstate_22023("QUOTE_IDENT: an identifier can't be empty")
+	}
+
+	return new_varchar_value('"${name.replace('"', '""')}"')
 }
 
 // STARTS_WITH(CHARACTER VARYING, CHARACTER VARYING) BOOLEAN, and for binary

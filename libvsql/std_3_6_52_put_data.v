@@ -7,7 +7,9 @@ import vsql
 // Provide a deferred parameter value.
 //
 // A string can be given in pieces, by calling PutData again for the same
-// parameter. There are no large objects (General Rules 8.c).
+// parameter. There are no large objects, but a binary string (SQL_BINARY or
+// SQL_VARBINARY, which aren't in SQL/CLI 2003) is the same as a BINARY LARGE
+// OBJECT (General Rules 7, 8.c and 10.b).
 
 @[export: 'SQLPutData']
 fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInteger) i16 {
@@ -43,7 +45,7 @@ fn put_data(mut stmt Stmt, data voidptr, iv i64) !i16 {
 	// - 7. If there is a parameter value associated with DPN and PT does not
 	// indicate CHARACTER, then an exception is raised: CLI-specific condition —
 	// non-string data cannot be sent in pieces.
-	if stmt.deferred_value != none && typ != .is_varchar {
+	if stmt.deferred_value != none && typ !in [.is_varchar, .is_varbinary] {
 		return cli_error('HY019', 'non-string data cannot be sent in pieces')
 	}
 
@@ -54,6 +56,12 @@ fn put_data(mut stmt Stmt, data voidptr, iv i64) !i16 {
 	} else {
 		if data == unsafe { nil } {
 			return cli_error('HY009', 'invalid use of null pointer')
+		}
+
+		// - 8.c.i.2. The length of a binary string can't be negative:
+		// CLI-specific condition — invalid attribute value.
+		if typ == .is_varbinary && iv < 0 {
+			return cli_error('HY024', 'invalid attribute value')
 		}
 		read_c_value(typ, data, iv)!
 	}
@@ -70,7 +78,11 @@ fn put_data(mut stmt Stmt, data voidptr, iv i64) !i16 {
 		stmt.cancel_deferred()
 		return cli_error('HY020', 'attempt to concatenate a null value')
 	}
-	nv := vsql.new_varchar_value(pv.str() + v.str())
+	nv := if typ == .is_varbinary {
+		vsql.new_binary_value((pv.string_value() + v.string_value()).bytes())
+	} else {
+		vsql.new_varchar_value(pv.str() + v.str())
+	}
 	check_piece(typ, nv)!
 	stmt.deferred_value = nv
 

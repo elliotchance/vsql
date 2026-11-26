@@ -29,6 +29,13 @@ const sql_bigint = i16(25)
 // SQL (ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Table
 // 30), which isn't used by any other type in SQL/CLI.
 const sql_decfloat = i16(26)
+
+// BINARY and BINARY VARYING aren't in SQL/CLI 2003 either, so they have their
+// codes in dynamic SQL (the same Table 30). The C data type of each is an array
+// of octets (unsigned char) with a length, like a BINARY LARGE OBJECT in
+// SQL/CLI (Table 45).
+const sql_binary = i16(60)
+const sql_varbinary = i16(61)
 const sql_blob_locator = i16(31)
 const sql_clob_locator = i16(41)
 const sql_type_date = i16(91)
@@ -59,6 +66,8 @@ fn data_type_code(typ vsql.Type) i16 {
 		.is_decimal { sql_decimal }
 		.is_numeric { sql_numeric }
 		.is_decfloat { sql_decfloat }
+		.is_binary { sql_binary }
+		.is_varbinary { sql_varbinary }
 		.is_date { sql_type_date }
 		.is_time_without_time_zone { sql_type_time }
 		.is_time_with_time_zone { sql_type_time_with_timezone }
@@ -68,10 +77,12 @@ fn data_type_code(typ vsql.Type) i16 {
 }
 
 // c_type returns the SQL type for an application data type, or none if the
-// type has no C data type in Table 45.
+// type has no C data type in Table 45. Both binary string types are a BINARY
+// VARYING, since their C data type is the same.
 fn c_type(code i16) ?vsql.SQLType {
 	return match code {
 		sql_char { vsql.SQLType.is_varchar }
+		sql_binary, sql_varbinary { vsql.SQLType.is_varbinary }
 		sql_smallint { vsql.SQLType.is_smallint }
 		sql_integer { vsql.SQLType.is_integer }
 		sql_bigint { vsql.SQLType.is_bigint }
@@ -83,15 +94,17 @@ fn c_type(code i16) ?vsql.SQLType {
 
 // cast_value is CAST ( SV AS TDT ). For SQL_CHAR the TDT is a CHARACTER VARYING
 // of the maximum length, and there's no maximum length so it's never truncated
-// here. A datetime or BOOLEAN can't be cast to a number: dynamic SQL error —
-// restricted data type attribute violation.
+// here (the same for a binary string, which is a BINARY VARYING). A datetime
+// or BOOLEAN can't be cast to a number, and a binary string can only be cast to
+// a binary string: dynamic SQL error — restricted data type attribute
+// violation.
 //
 // ISO/IEC 9075-3:2003, 5.8, General Rules, 3.h.iii.1
 // ISO/IEC 9075-3:2003, 6.30, General Rules, 24.a
 fn cast_value(stmt &Stmt, value vsql.Value, column vsql.Column, typ vsql.SQLType) !vsql.Value {
-	if typ != .is_varchar && column.typ.typ in [.is_date, .is_time_without_time_zone,
+	if (typ != .is_varchar && column.typ.typ in [.is_date, .is_time_without_time_zone,
 		.is_time_with_time_zone, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone,
-		.is_boolean] {
+		.is_boolean]) || (typ == .is_varbinary) != is_binary_string(column.typ.typ) {
 		return cli_error('07006', 'restricted data type attribute violation')
 	}
 	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
@@ -99,6 +112,11 @@ fn cast_value(stmt &Stmt, value vsql.Value, column vsql.Column, typ vsql.SQLType
 	}
 
 	return conn.store_assignment(value, vsql.Type{ typ: typ })!
+}
+
+// is_binary_string is true for BINARY, BINARY VARYING and BINARY LARGE OBJECT.
+fn is_binary_string(typ vsql.SQLType) bool {
+	return typ in [.is_binary, .is_varbinary, .is_blob]
 }
 
 // assign_number sets the host variable (of the C type for typ) at target to a

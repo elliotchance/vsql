@@ -1190,7 +1190,7 @@
 6.30/GR/30.b.ii.1        implemented  libvsql/std_3_6_30_get_data.v libvsql/std_3_6_30_get_data_test.c
 6.30/GR/30.b.ii.1.A      impl-defined libvsql/std_3_6_30_get_data.v - no exception condition
 6.30/GR/30.b.ii.1.B      implemented  libvsql/std_3_6_30_get_data.v libvsql/std_3_6_30_get_data_test.c
-6.30/GR/30.b.ii.2        n/a          - - there are no large objects
+6.30/GR/30.b.ii.2        implemented  libvsql/std_3_6_30_get_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
 6.30/GR/30.b.ii.3        implemented  libvsql/std_3_6_30_get_data.v libvsql/std_3_6_30_get_data_test.c
 6.30/GR/30.b.ii.4        implemented  libvsql/std_3_6_30_get_data.v libvsql/std_3_6_30_get_data_test.c
 6.30/GR/30.b.ii.5        implemented  libvsql/std_3_6_30_get_data.v libvsql/std_3_6_30_get_data_test.c
@@ -1933,9 +1933,9 @@
 6.49/GR/11.a.i.2         n/a          - - there are no large objects
 6.49/GR/11.a.i.2.A       n/a          - - there are no large objects
 6.49/GR/11.a.i.2.B       n/a          - - there are no large objects
-6.49/GR/11.a.i.3         n/a          - - there are no large objects
-6.49/GR/11.a.i.3.A       n/a          - - there are no large objects
-6.49/GR/11.a.i.3.B       n/a          - - there are no large objects
+6.49/GR/11.a.i.3         implemented  libvsql/std_3_6_49_param_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+6.49/GR/11.a.i.3.A       implemented  libvsql/std_3_6_49_param_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+6.49/GR/11.a.i.3.B       n/a          - - there's no maximum length
 6.49/GR/11.a.i.4         implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/11.a.ii          implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/11.b             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
@@ -2120,11 +2120,11 @@
 6.52/GR/8.b.i.2          implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/8.b.i.3          implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/8.b.ii           implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
-6.52/GR/8.c              n/a          - - there are no large objects
+6.52/GR/8.c              implemented  libvsql/std_3_6_52_put_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
 6.52/GR/8.c.i            container    - -
-6.52/GR/8.c.i.1          n/a          - - there are no large objects
-6.52/GR/8.c.i.2          n/a          - - there are no large objects
-6.52/GR/8.c.ii           n/a          - - there are no large objects
+6.52/GR/8.c.i.1          implemented  libvsql/std_3_6_52_put_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+6.52/GR/8.c.i.2          implemented  libvsql/std_3_6_52_put_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
+6.52/GR/8.c.ii           implemented  libvsql/std_3_6_52_put_data.v libvsql/binary_test.c for BINARY and BINARY VARYING, there are no BLOBs (T041)
 6.52/GR/8.d              implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/9                implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c the string so far is checked, so a piece can end with part of a character
 6.52/GR/10               implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c

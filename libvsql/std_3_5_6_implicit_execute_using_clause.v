@@ -20,6 +20,13 @@ import vsql
 // is true if the length is DATA AT EXEC. The length of a character string must
 // be greater than 0 (zero) or NULL TERMINATED (Syntax Rules, 12.c.i.3 and
 // 12.c.i.4), so an empty string has to be null terminated.
+//
+// A binary string (SQL_BINARY or SQL_VARBINARY, which aren't in SQL/CLI 2003)
+// is the octets at DATA_POINTER. Its length is the value at
+// OCTET_LENGTH_POINTER, or the OCTET_LENGTH (the BufferLength of
+// BindParameter) if that's a null pointer. The length can be 0 (zero), but it
+// can't be NULL TERMINATED or negative (dynamic SQL error — using clause does
+// not match dynamic parameter specifications).
 
 // Codes from Table 10, "Codes associated with <parameter mode> in SQL/CLI".
 const sql_param_mode_in = i16(1)
@@ -92,12 +99,14 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 		if data == unsafe { nil } {
 			return using_clause_error()
 		}
-		q := if length == unsafe { nil } {
-			sql_nts
-		} else {
+		q := if length != unsafe { nil } {
 			unsafe { *&SQLInteger(length) }
+		} else if typ == .is_varbinary {
+			SQLInteger(apd.record_int(i, sql_desc_octet_length))
+		} else {
+			sql_nts
 		}
-		if typ == .is_varchar && q <= 0 && q != sql_nts {
+		if (typ == .is_varchar && q <= 0 && q != sql_nts) || (typ == .is_varbinary && q < 0) {
 			return using_clause_error()
 		}
 		mut sv := read_c_value(typ, data, q)!
@@ -148,6 +157,18 @@ fn ipd_type(ipd &Desc, i int) vsql.Type {
 		sql_varchar {
 			vsql.Type{
 				typ:  .is_varchar
+				size: length
+			}
+		}
+		sql_binary {
+			vsql.Type{
+				typ:  .is_binary
+				size: length
+			}
+		}
+		sql_varbinary {
+			vsql.Type{
+				typ:  .is_varbinary
 				size: length
 			}
 		}
@@ -215,10 +236,13 @@ fn ipd_type(ipd &Desc, i int) vsql.Type {
 }
 
 // read_c_value is the value of a host variable of a C type. A string has a
-// length in octets, or SQL_NTS.
+// length in octets, or SQL_NTS. A binary string has a length in octets.
 fn read_c_value(typ vsql.SQLType, data voidptr, length i64) !vsql.Value {
 	return unsafe {
 		match typ {
+			.is_varbinary {
+				vsql.new_binary_value((&u8(data)).vbytes(int(length)))
+			}
 			.is_smallint {
 				vsql.new_smallint_value(*&i16(data))
 			}
@@ -290,11 +314,14 @@ fn parameter_value(stmt &Stmt, prepared vsql.PreparedStmt, i int, sv vsql.Value,
 }
 
 // cast_parameter is CAST ( SV AS TDT ). A number can't be cast to a datetime
-// or BOOLEAN: dynamic SQL error — restricted data type attribute violation.
+// or BOOLEAN, and only a binary string can be cast to a binary string (and the
+// other way around): dynamic SQL error — restricted data type attribute
+// violation.
 fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
-	if !sv.is_null && sv.typ.typ != .is_varchar
-		&& tdt.typ in [.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
-			.is_timestamp_without_time_zone, .is_timestamp_with_time_zone, .is_boolean] {
+	if !sv.is_null && ((sv.typ.typ != .is_varchar && tdt.typ in [.is_date, .is_time_without_time_zone,
+		.is_time_with_time_zone, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone,
+		.is_boolean])
+		|| is_binary_string(sv.typ.typ) != is_binary_string(tdt.typ)) {
 		return cli_error('07006', 'restricted data type attribute violation')
 	}
 	mut conn := stmt_connection(stmt)!
@@ -305,8 +332,12 @@ fn cast_parameter(stmt &Stmt, sv vsql.Value, tdt vsql.Type) !vsql.Value {
 // is_restricted_cast is true if a value of one type can't be CAST to the
 // other (ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 6):
 // a number, datetime or BOOLEAN can only be cast to the same kind of type (or
-// a character string), and a DATE and a TIME can't be cast to each other.
+// a character string), and a DATE and a TIME can't be cast to each other. A
+// binary string can only be cast to a binary string.
 fn is_restricted_cast(from vsql.SQLType, to vsql.SQLType) bool {
+	if is_binary_string(from) != is_binary_string(to) {
+		return true
+	}
 	kind := fn (t vsql.SQLType) int {
 		return match t {
 			.is_character, .is_varchar { 0 }

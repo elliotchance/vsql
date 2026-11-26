@@ -82,6 +82,8 @@
  *   DECIMAL                  SQL_DECIMAL                      numbers, SQL_CHAR
  *   NUMERIC                  SQL_NUMERIC                      numbers, SQL_CHAR
  *   DECFLOAT                 SQL_DECFLOAT                     numbers, SQL_CHAR
+ *   BINARY                   SQL_BINARY                       binary strings
+ *   BINARY VARYING           SQL_VARBINARY                    binary strings
  *   CHARACTER                SQL_CHAR                         SQL_CHAR
  *   CHARACTER VARYING        SQL_VARCHAR                      SQL_CHAR
  *   BOOLEAN                  SQL_BOOLEAN                      SQL_CHAR
@@ -91,10 +93,17 @@
  *   TIMESTAMP                SQL_TYPE_TIMESTAMP               SQL_CHAR
  *   TIMESTAMP WITH TIME ZONE SQL_TYPE_TIMESTAMP_WITH_TIMEZONE SQL_CHAR
  *
+ * "binary strings" is SQL_BINARY or SQL_VARBINARY, which are the octets of the
+ * value in an array of unsigned char (without a null terminator), and its length
+ * in octets (a value of BufferLength octets, or the StrLen_or_Ind of
+ * SQLBindParameter). A binary string can't be retrieved as (or bound from) any
+ * other C type, and no other value can be retrieved as a binary string (07006).
+ *
  * "numbers" is SQL_SMALLINT, SQL_INTEGER, SQL_BIGINT, SQL_REAL or SQL_DOUBLE
  * (a value out of range is 22003). SQL_DEFAULT retrieves a column as its own
  * type, so it only works for the types that have a C type (SMALLINT, INTEGER,
- * BIGINT, REAL, DOUBLE PRECISION and CHARACTER), otherwise it's 07002.
+ * BIGINT, REAL, DOUBLE PRECISION, CHARACTER, BINARY and BINARY VARYING),
+ * otherwise it's 07002.
  */
 
 #ifndef LIBVSQL_H
@@ -163,6 +172,12 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_BOOLEAN  16 /* BOOLEAN */
 #define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
 #define SQL_DECFLOAT 26 /* DECFLOAT (not in SQL/CLI 2003, see Part 2, Table 30) */
+
+/* BINARY and BINARY VARYING aren't in SQL/CLI 2003, so these are their codes
+ * in dynamic SQL (Part 2, Table 30). The C data type of each is an array of
+ * unsigned char, with a length in octets. */
+#define SQL_BINARY    60 /* BINARY */
+#define SQL_VARBINARY 61 /* BINARY VARYING */
 
 /* Large object locator types, for the LocatorType of SQLGetLength,
  * SQLGetPosition and SQLGetSubString. */

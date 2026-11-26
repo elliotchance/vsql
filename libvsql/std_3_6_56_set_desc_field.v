@@ -226,10 +226,11 @@ fn is_identifier(s string) bool {
 fn check_desc_type(desc &Desc, code i64) ! {
 	supported := if desc.is_application() {
 		[i64(sql_default), sql_char, sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float,
-			sql_real, sql_double, sql_bigint]
+			sql_real, sql_double, sql_bigint, sql_binary, sql_varbinary]
 	} else {
 		[i64(sql_char), sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
-			sql_double, sql_datetime, sql_varchar, sql_boolean, sql_bigint, sql_decfloat]
+			sql_double, sql_datetime, sql_varchar, sql_boolean, sql_bigint, sql_decfloat, sql_binary,
+			sql_varbinary]
 	}
 	if code in supported {
 		return
@@ -271,6 +272,11 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 			record[sql_desc_character_set_catalog] = catalog
 			record[sql_desc_character_set_schema] = 'INFORMATION_SCHEMA'
 			record[sql_desc_character_set_name] = 'UTF8'
+			record[sql_desc_length] = i64(10485760)
+		}
+		sql_binary, sql_varbinary {
+			// The maximum length of a binary string, the same as a character
+			// string.
 			record[sql_desc_length] = i64(10485760)
 		}
 		sql_datetime {
@@ -324,7 +330,7 @@ fn (desc &Desc) is_consistent(record map[int]DescValue) bool {
 	}
 
 	return match code {
-		sql_char, sql_varchar {
+		sql_char, sql_varchar, sql_binary, sql_varbinary {
 			int_field(sql_desc_length) > 0
 		}
 		sql_numeric, sql_decimal {

@@ -96,11 +96,14 @@ mut:
 	// is empty after the last row) by Fetch or FetchScroll.
 	fetched bool
 	// fetched_column is the fetched column number, which is negative while a
-	// character value is being retrieved in pieces by GetData. fetched_length
-	// is the number of octets of fetched_value already retrieved.
+	// character or binary string value is being retrieved in pieces by GetData.
+	// fetched_length is the number of octets of fetched_value already
+	// retrieved, and fetched_type is its C type (CHARACTER VARYING or BINARY
+	// VARYING).
 	fetched_column int
 	fetched_length int
 	fetched_value  string
+	fetched_type   vsql.SQLType
 	// cursor_name is the name of the cursor, or empty if it doesn't have one
 	// yet (see cursor_name). is_query is true if the executed statement opened
 	// a cursor (which may be closed now). has_cursor is true from when the

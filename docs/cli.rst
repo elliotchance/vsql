@@ -404,6 +404,12 @@ that's not possible:
   has its own index as well as the index of a ``UNIQUE`` constraint, so that the
   table ends up with the same indexes.
 
+Views (see :doc:`create-view`) come last, with the query as it was written. A
+view comes after the views that it reads (otherwise they're in the order of
+their names). With ``-no-schema``, the names in the query don't change, so they
+need to be found in the schema that the output is loaded into. ``-data-only``
+leaves them out.
+
 Options must be before the file. These can be used with each ``-format``:
 
 .. list-table::
@@ -594,6 +600,8 @@ out with a ``--`` comment above the statement it would have been in:
 - A ``DEFAULT`` of ``CURRENT_CATALOG`` or ``CURRENT_SCHEMA``, in SQLite and MySQL.
 - An index in MySQL that has a ``LONGTEXT`` column, or a key that can be over
   3072 bytes (four for each character of a ``CHAR`` or ``VARCHAR`` column).
+- A view, in every database, because its query is vsql's SQL. Its comment is at
+  the end, and has the ``CREATE VIEW`` so that it can be rewritten by hand.
 
 These are left out without a comment: ``NOT NULL`` constraint names,
 ``DEFERRABLE`` and ``INITIALLY DEFERRED`` in SQLite and MySQL (the constraint is
@@ -617,8 +625,8 @@ them so that they aren't expanded by your shell.
 
    $ vsql out -include 'sales.*' -exclude '*.tmp_*' mydatabase.vsql
 
-They select sequences, tables (with their rows) and foreign keys, by the name of
-each. Other constraints and identity columns are part of their table. A schema
+They select sequences, tables (with their rows), foreign keys and views, by the
+name of each. Other constraints and identity columns are part of their table. A schema
 is included if any of its objects are, and a schema with nothing in it is
 included unless it's ruled out by the schema of the patterns, such as
 ``-exclude 'foo.*'``.

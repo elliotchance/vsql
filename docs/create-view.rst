@@ -39,8 +39,7 @@ Limitations
 - The query can't have a ``?`` parameter or ``NEXT VALUE FOR``, and it can't
   end with an ``ORDER BY``, ``OFFSET`` or ``FETCH FIRST`` (or ``LIMIT``).
 - ``RECURSIVE`` and ``WITH CHECK OPTION`` aren't supported.
-- Views aren't in the ``INFORMATION_SCHEMA`` yet, and ``vsql out`` doesn't
-  write them.
+- Views aren't in the ``INFORMATION_SCHEMA`` yet.
 
 Examples
 --------

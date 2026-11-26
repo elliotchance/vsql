@@ -1006,7 +1006,7 @@ struct DumpOptions
    	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
    	// by default because every catalog already has it.
    	create_public_schema bool
-   	// include only includes the objects (sequences, tables and foreign keys)
+   	// include only includes the objects (sequences, tables, foreign keys and views)
    	// that match one of these "schema.name" patterns. Each part can have the
    	// wildcards of string.match_glob, and case is ignored. Without any it's the
    	// same as "*.*".

@@ -11,7 +11,7 @@ pub:
 	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
 	// by default because every catalog already has it.
 	create_public_schema bool
-	// include only includes the objects (sequences, tables and foreign keys)
+	// include only includes the objects (sequences, tables, foreign keys and views)
 	// that match one of these "schema.name" patterns. Each part can have the
 	// wildcards of string.match_glob, and case is ignored. Without any it's the
 	// same as "*.*".
@@ -138,6 +138,9 @@ struct DumpSchema {
 	// other than the index of a UNIQUE constraint (which is made by its CREATE
 	// TABLE). An index is in the output with its table.
 	indexes []Index
+	// views are by name. They're in the output after everything else, see
+	// view_dump_order.
+	views []View
 }
 
 // DumpTable is a table in the output, and the FOREIGN KEYs that are part of its
@@ -207,6 +210,7 @@ fn (s DumpSchema) names() []string {
 		names << table.name.entity_name
 		names << table.foreign_keys.map(it.name)
 	}
+	names << s.views.map(it.name.entity_name)
 
 	return names
 }
@@ -271,7 +275,11 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				}
 			}
 		}
-		objects << DumpSchema{schema, sequences, tables, indexes}
+		mut views := catalog.storage.views.values().filter(it.name.schema_name == schema.name)
+		views.sort_with_compare(fn (a &View, b &View) int {
+			return a.name.entity_name.compare(b.name.entity_name)
+		})
+		objects << DumpSchema{schema, sequences, tables, indexes, views}
 	}
 
 	for pattern in options.include {
@@ -461,12 +469,82 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		write_line(mut w, foreign_key)!
 	}
 
+	// A view is created after everything else, because it can read any table
+	// (and a table can't read a view).
+	views := if options.data_only { []View{} } else { selected_views(objects, selection) }
+	if views.len > 0 && foreign_keys.len > 0 {
+		write_line(mut w, '')!
+	}
+	for view in views {
+		write_line(mut w, View{
+			...view
+			name: options.output_name(view.name)
+		}.bytes().bytestr() + ';')!
+	}
+
 	if options.transaction {
-		if foreign_keys.len > 0 {
+		if foreign_keys.len > 0 || views.len > 0 {
 			write_line(mut w, '')!
 		}
 		write_line(mut w, 'COMMIT;')!
 	}
+}
+
+// selected_views are the views of the output, in the order of view_dump_order.
+fn selected_views(objects []DumpSchema, selection DumpFilter) []View {
+	mut views := []View{}
+	for object in objects {
+		views << object.views.filter(selection.selected(object.schema.name, it.name.entity_name))
+	}
+
+	return view_dump_order(views)
+}
+
+// view_dump_order orders views so that each one comes after the views that its
+// query reads, otherwise they stay in order. A view reads another view if its
+// query has a name that's the same as the name of the other view (it might not
+// really be the view, but that only changes the order). When each of the
+// views left reads another one of them, the first of them is next.
+fn view_dump_order(views []View) []View {
+	mut names := [][]string{}
+	for view in views {
+		mut view_names := []string{}
+		// The query was tokenized when the view was created. A name that's a
+		// non-reserved word (such as T) is the token of the word.
+		for token in tokenize(view.query) or { []Token{} } {
+			match token.value {
+				IdentifierChain {
+					name := token.value.identifier
+					view_names << if name.starts_with('"') {
+						name[1..name.len - 1]
+					} else {
+						name.to_upper()
+					}
+				}
+				string {
+					view_names << token.value
+				}
+				else {}
+			}
+		}
+		names << view_names
+	}
+
+	mut remaining := []int{len: views.len, init: index}
+	mut ordered := []View{}
+	for remaining.len > 0 {
+		mut next := 0
+		for i, view_index in remaining {
+			if !remaining.any(it != view_index && views[it].name.entity_name in names[view_index]) {
+				next = i
+				break
+			}
+		}
+		ordered << views[remaining[next]]
+		remaining.delete(next)
+	}
+
+	return ordered
 }
 
 // write_indexes writes the CREATE INDEX of each index, and returns true if

@@ -7,9 +7,10 @@ import vsql
 // Provide a deferred parameter value.
 //
 // A string can be given in pieces, by calling PutData again for the same
-// parameter. There are no large objects, but a binary string (SQL_BINARY or
-// SQL_VARBINARY, which aren't in SQL/CLI 2003) is the same as a BINARY LARGE
-// OBJECT (General Rules 7, 8.c and 10.b).
+// parameter. A CHARACTER LARGE OBJECT (SQL_CLOB) is the same as a CHARACTER
+// (General Rules, 8.b), and a binary string (SQL_BINARY or SQL_VARBINARY,
+// which aren't in SQL/CLI 2003) is the same as a BINARY LARGE OBJECT (General
+// Rules 7, 8.c and 10.b).
 
 @[export: 'SQLPutData']
 fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInteger) i16 {

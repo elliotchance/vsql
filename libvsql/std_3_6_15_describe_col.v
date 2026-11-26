@@ -6,8 +6,8 @@ import vsql
 //
 // Get column attributes.
 //
-// There are no interval or reference types (General Rules 9.a.ii, 9.b.iv and
-// 9.c.iii). DecimalDigits is 0 (zero) for a type that doesn't have a scale or
+// There are no reference types (General Rules 9.b.iv). DecimalDigits is 0
+// (zero) for a type that doesn't have a scale or
 // fractional seconds precision (General Rules, 9.c.iv), which is
 // implementation-dependent.
 
@@ -64,8 +64,12 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 	unsafe {
 		*data_type = i16(concise_type_code(typ, ird.record_int(cn, sql_desc_datetime_interval_code)))
 		*column_size = SQLInteger(describe_column_size(ird, cn))
-		*decimal_digits = i16(if typ in [i64(sql_numeric), sql_decimal, sql_datetime] {
-			ird.record_int(cn, if typ == sql_datetime { sql_desc_precision } else { sql_desc_scale })
+		*decimal_digits = i16(if typ in [i64(sql_numeric), sql_decimal, sql_datetime, sql_interval] {
+			ird.record_int(cn, if typ in [i64(sql_datetime), sql_interval] {
+				sql_desc_precision
+			} else {
+				sql_desc_scale
+			})
 		} else {
 			0
 		})
@@ -82,11 +86,12 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 }
 
 // - 9.b. describe_column_size is the maximum length in octets of a character
-// string or binary string, the maximum length in decimal digits of a number, or the length in
-// positions of a datetime. For a BOOLEAN, it's the length of FALSE.
+// string or binary string, the maximum length in decimal digits of a number,
+// or the length in positions of a datetime or interval. For a BOOLEAN, it's
+// the length of FALSE.
 fn describe_column_size(ird &Desc, cn int) i64 {
 	return match ird.record_int(cn, sql_desc_type) {
-		sql_char, sql_varchar, sql_binary, sql_varbinary {
+		sql_char, sql_varchar, sql_binary, sql_varbinary, sql_clob, sql_blob {
 			ird.record_int(cn, sql_desc_octet_length)
 		}
 		sql_smallint { 5 }
@@ -95,7 +100,7 @@ fn describe_column_size(ird &Desc, cn int) i64 {
 		sql_real { 7 }
 		sql_double { 15 }
 		sql_numeric, sql_decimal, sql_decfloat { ird.record_int(cn, sql_desc_precision) }
-		sql_datetime { ird.record_int(cn, sql_desc_length) }
+		sql_datetime, sql_interval { ird.record_int(cn, sql_desc_length) }
 		else { 5 }
 	}
 }

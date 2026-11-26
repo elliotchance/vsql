@@ -16,10 +16,9 @@ import encoding.utf8
 // limited (General Rules, 13.a.i). There are no ROW, ARRAY or MULTISET types,
 // so every LEVEL is 0 (zero) (General Rules, 14). Setting the TYPE removes the
 // length, precision, scale, character set and collation (General Rules, 19.a),
-// but setting the DATETIME_INTERVAL_CODE only sets the PRECISION (General
-// Rules, 20.a), and both are implementation-dependent. There are no interval
-// types (General Rules, 19.b.ii, 19.b.iv and 21), or implementation-defined
-// data types (General Rules, 19.b.ix). The restrictions between the
+// but setting the DATETIME_INTERVAL_CODE of a datetime only sets the PRECISION
+// (General Rules, 20.a), and both are implementation-dependent. There are no
+// implementation-defined data types (General Rules, 19.b.ix). The restrictions between the
 // implementation and application descriptors (General Rules, 22) are those of
 // 5.6 and 5.8.
 
@@ -152,6 +151,19 @@ fn set_desc_field(mut desc Desc, rn int, fi int, value voidptr, buffer_length i6
 		desc.set_type_defaults(rn, n)
 	}
 
+	// - 21. Setting the DATETIME_INTERVAL_CODE of an interval sets its
+	// DATETIME_INTERVAL_PRECISION to 2, and its PRECISION to 6 if it ends with
+	// SECOND.
+	if fi == sql_desc_datetime_interval_code && desc.record_int(rn, sql_desc_type) == sql_interval {
+		desc.records[rn - 1][sql_desc_datetime_interval_precision] = i64(2)
+		desc.records[rn - 1][sql_desc_precision] = i64(if n in [i64(sql_code_second),
+			sql_code_day_to_second, sql_code_hour_to_second, sql_code_minute_to_second] {
+			6
+		} else {
+			0
+		})
+	}
+
 	// - 20. Setting the DATETIME_INTERVAL_CODE of a datetime sets its
 	// PRECISION.
 	if fi == sql_desc_datetime_interval_code && desc.record_int(rn, sql_desc_type) == sql_datetime {
@@ -226,20 +238,19 @@ fn is_identifier(s string) bool {
 fn check_desc_type(desc &Desc, code i64) ! {
 	supported := if desc.is_application() {
 		[i64(sql_default), sql_char, sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float,
-			sql_real, sql_double, sql_bigint, sql_binary, sql_varbinary]
+			sql_real, sql_double, sql_bigint, sql_binary, sql_varbinary, sql_clob, sql_blob]
 	} else {
 		[i64(sql_char), sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
 			sql_double, sql_datetime, sql_varchar, sql_boolean, sql_bigint, sql_decfloat, sql_binary,
-			sql_varbinary]
+			sql_varbinary, sql_clob, sql_blob, sql_interval]
 	}
 	if code in supported {
 		return
 	}
 
-	// The other data types in Table 6 and Table 7 (intervals, large objects,
-	// locators, user-defined, reference, row, array and multiset types) aren't
-	// supported by vsql.
-	if code in [i64(10), 17, 18, 19, 20, 30, 31, 40, 41, 50, 51, 55, 56] {
+	// The other data types in Table 6 and Table 7 (locators, user-defined,
+	// reference, row, array and multiset types) aren't supported by vsql.
+	if code in [i64(17), 18, 19, 20, 31, 41, 50, 51, 55, 56] {
 		return cli_error('HYC00', 'optional feature not implemented')
 	}
 
@@ -261,7 +272,7 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 	}
 
 	match code {
-		sql_char, sql_varchar {
+		sql_char, sql_varchar, sql_clob {
 			// - 19.b.i. The default character set and the maximum length.
 			mut catalog := ''
 			if dbc := dbcs[desc.dbc] {
@@ -272,15 +283,23 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 			record[sql_desc_character_set_catalog] = catalog
 			record[sql_desc_character_set_schema] = 'INFORMATION_SCHEMA'
 			record[sql_desc_character_set_name] = 'UTF8'
-			record[sql_desc_length] = i64(10485760)
+			record[sql_desc_length] = if code == sql_clob { max_lob_length } else { i64(10485760) }
 		}
 		sql_binary, sql_varbinary {
 			// The maximum length of a binary string, the same as a character
 			// string.
 			record[sql_desc_length] = i64(10485760)
 		}
+		sql_blob {
+			// - 19.b.ii. The maximum length of a BINARY LARGE OBJECT.
+			record[sql_desc_length] = max_lob_length
+		}
 		sql_datetime {
 			record[sql_desc_precision] = i64(0)
+		}
+		sql_interval {
+			// - 19.b.iv. The default leading field precision.
+			record[sql_desc_datetime_interval_precision] = i64(2)
 		}
 		sql_numeric, sql_decimal, sql_smallint, sql_integer, sql_bigint {
 			// - 19.b.v, 19.b.vi. The default precision of a NUMERIC or DECIMAL is
@@ -330,8 +349,19 @@ fn (desc &Desc) is_consistent(record map[int]DescValue) bool {
 	}
 
 	return match code {
-		sql_char, sql_varchar, sql_binary, sql_varbinary {
+		sql_char, sql_varchar, sql_binary, sql_varbinary, sql_clob, sql_blob {
 			int_field(sql_desc_length) > 0
+		}
+		sql_interval {
+			// The code must be in Table 9, and the leading field precision 1 to
+			// 8. The fractional seconds precision (0 to 6) is only for an
+			// interval that ends with SECOND.
+			dic := int_field(sql_desc_datetime_interval_code)
+			lp := int_field(sql_desc_datetime_interval_precision)
+			p := int_field(sql_desc_precision)
+			dic >= sql_code_year && dic <= sql_code_minute_to_second && lp >= 1 && lp <= 8
+				&& (dic !in [i64(sql_code_second), sql_code_day_to_second, sql_code_hour_to_second,
+					sql_code_minute_to_second] || (p >= 0 && p <= 6))
 		}
 		sql_numeric, sql_decimal {
 			p := int_field(sql_desc_precision)

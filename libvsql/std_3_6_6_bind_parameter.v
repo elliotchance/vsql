@@ -14,8 +14,10 @@ module main
 //
 // There are no nested descriptor areas, so the TOP_LEVEL_COUNT of the IPD and
 // APD is the same as their COUNT (General Rules, 14.b and 15.b). Memory isn't
-// limited (General Rules, 14.a and 15.a). There
-// are no interval types (General Rules, 18.b and 28). Everything is checked
+// limited (General Rules, 14.a and 15.a). The value of an interval
+// parameter is a character string, and its leading field precision is worked
+// out from its first character when the parameter is bound (General Rules,
+// 18.b.v and 28), as if it's the whole value. Everything is checked
 // before anything is set, so an exception condition doesn't change the
 // descriptors (General Rules, 20). The parameter mode is set in the IPD
 // (General Rules, 21 says IDA2, the APD, but 5.6 and 5.13 use the
@@ -73,13 +75,61 @@ fn bind_parameter(mut stmt Stmt, parameter_number i16, iom i16, value_type i16, 
 		ipd_record[sql_desc_datetime_interval_code] = i64(dic)
 		ipd_record[sql_desc_length] = column_size
 		ipd_record[sql_desc_precision] = i64(if dic == sql_code_date { 0 } else { decimal_digits })
+	} else if parameter_type >= sql_interval_year && parameter_type <= sql_interval_minute_to_second {
+		// - 18.b. An interval is INTERVAL with the DATETIME_INTERVAL_CODE of the
+		// concise code, and CS is its length in positions.
+		dic := parameter_type - 100
+		ipd_record[sql_desc_type] = i64(sql_interval)
+		ipd_record[sql_desc_datetime_interval_code] = i64(dic)
+		ipd_record[sql_desc_length] = column_size
+
+		// - 18.b.iv, 18.b.v. LS is 1 (one) if the value has a sign.
+		mut ls := 0
+		if iom != sql_param_mode_out && parameter_value != unsafe { nil } && buffer_length > 0 {
+			fc := unsafe { *&u8(parameter_value) }
+			if fc in [`+`, `-`] {
+				ls = 1
+			}
+		}
+
+		// - 18.b.vi. The fractional seconds precision is DD for an interval
+		// that ends with SECOND. DP is 1 (one) for its period.
+		has_seconds := dic in [sql_code_second, sql_code_day_to_second, sql_code_hour_to_second,
+			sql_code_minute_to_second]
+		dd := if has_seconds { i64(decimal_digits) } else { 0 }
+		dp := if dd > 0 { 1 } else { 0 }
+		ipd_record[sql_desc_precision] = dd
+
+		// - 18.b.vii. IL is the length of the fields after the leading field.
+		il := match dic {
+			sql_code_year_to_month, sql_code_day_to_hour, sql_code_hour_to_minute,
+			sql_code_minute_to_second {
+				3
+			}
+			sql_code_day_to_minute, sql_code_hour_to_second {
+				6
+			}
+			sql_code_day_to_second {
+				9
+			}
+			else {
+				0
+			}
+		}
+
+		// - 18.b.viii. The leading field precision is what's left of CS.
+		ipd_record[sql_desc_datetime_interval_precision] = if has_seconds {
+			column_size - il - dd - dp - ls
+		} else {
+			column_size - il - ls
+		}
 	} else {
 		check_concise_type(parameter_type)!
 
 		// - 18.c. The length of a string (or a binary string) is CS, and the
 		// precision and scale of a number are CS and DD.
 		ipd_record[sql_desc_type] = i64(parameter_type)
-		if parameter_type in [sql_char, sql_varchar, sql_binary, sql_varbinary] {
+		if parameter_type in [sql_char, sql_varchar, sql_clob, sql_binary, sql_varbinary, sql_blob] {
 			ipd_record[sql_desc_length] = column_size
 		} else if parameter_type != sql_boolean {
 			ipd_record[sql_desc_precision] = column_size
@@ -129,7 +179,8 @@ fn check_concise_type(code i16) ! {
 		return cli_error('HYC00', 'optional feature not implemented')
 	}
 	if code !in [sql_char, sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
-		sql_double, sql_varchar, sql_boolean, sql_bigint, sql_decfloat, sql_binary, sql_varbinary] {
+		sql_double, sql_varchar, sql_boolean, sql_bigint, sql_decfloat, sql_binary, sql_varbinary,
+		sql_clob, sql_blob] {
 		return cli_error('HY004', 'invalid data type')
 	}
 }

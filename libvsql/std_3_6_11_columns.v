@@ -6,8 +6,10 @@ module main
 // information about columns of tables stored in the information schemas of the
 // connected data source.
 //
-// There are no interval, LOB or reference types (General Rules, 7.e.i, 7.g.v,
-// 7.g.vi, 7.n.ii and 7.r.ii). TYPE_NAME is the DATA_TYPE of the COLUMNS view,
+// There are no reference types (General Rules, 7.g.vi). The fractional seconds
+// precision of an interval is in DATETIME_PRECISION of the COLUMNS view, not
+// NUMERIC_PRECISION (General Rules, 7.g.v.3), since that's where the
+// INFORMATION_SCHEMA has it. TYPE_NAME is the DATA_TYPE of the COLUMNS view,
 // the COLUMN_SIZE of a number is its decimal digits, and REMARKS is the null
 // value (General Rules, 7.f, 7.g.iii and 7.l), which are
 // implementation-defined.
@@ -54,6 +56,24 @@ fn columns(mut stmt Stmt, catalog_name &char, name_length1 i16, schema_name &cha
 
 // columns_query is COLUMNS_QUERY (General Rules 5 to 7), without its alias.
 fn columns_query() string {
+	// - 7.e.i, 7.n.ii. The code of an interval from Table 9 (see
+	// interval_codes), from its INTERVAL_TYPE.
+	mut interval_code := 'CASE INTERVAL_TYPE'
+	mut interval_fields := 'CASE INTERVAL_TYPE'
+	names := ['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND']
+	for fields, code in interval_codes {
+		start, end := fields / 10, fields % 10
+		name := if start == end {
+			names[start - 1]
+		} else {
+			'${names[start - 1]} TO ${names[end - 1]}'
+		}
+		interval_code += " WHEN '${name}' THEN ${code}"
+		interval_fields += " WHEN '${name}' THEN ${end - start}"
+	}
+	interval_code += ' END'
+	interval_fields += ' END'
+
 	// - 7.e. DATA_TYPE is the concise code for the data type.
 	data_type := 'CASE DATA_TYPE
 		WHEN \'CHARACTER\' THEN ${sql_char}
@@ -71,15 +91,23 @@ fn columns_query() string {
 		WHEN \'TIMESTAMP\' THEN ${sql_type_timestamp}
 		WHEN \'TIME WITH TIME ZONE\' THEN ${sql_type_time_with_timezone}
 		WHEN \'TIMESTAMP WITH TIME ZONE\' THEN ${sql_type_timestamp_with_timezone}
+		WHEN \'CHARACTER LARGE OBJECT\' THEN ${sql_clob}
+		WHEN \'BINARY LARGE OBJECT\' THEN ${sql_blob}
+		WHEN \'INTERVAL\' THEN 100 + ${interval_code}
 	END'
 
 	// - 7.g. COLUMN_SIZE is the length of a string, the precision of a
 	// DECIMAL or NUMERIC (and the decimal digits of other numbers), or the
-	// length in positions of a datetime (including the fractional seconds).
+	// length in positions of a datetime or interval (including the fractional
+	// seconds, see interval_length).
 	fraction := 'CASE WHEN DATETIME_PRECISION > 0 THEN DATETIME_PRECISION + 1 ELSE 0 END'
+	interval_fraction := "CASE WHEN INTERVAL_TYPE LIKE '%SECOND' THEN ${fraction} ELSE 0 END"
 	column_size := 'CASE DATA_TYPE
 		WHEN \'CHARACTER\' THEN CHARACTER_MAXIMUM_LENGTH
 		WHEN \'CHARACTER VARYING\' THEN CHARACTER_MAXIMUM_LENGTH
+		WHEN \'CHARACTER LARGE OBJECT\' THEN CHARACTER_MAXIMUM_LENGTH
+		WHEN \'BINARY LARGE OBJECT\' THEN CHARACTER_MAXIMUM_LENGTH
+		WHEN \'INTERVAL\' THEN 1 + INTERVAL_PRECISION + 3 * ${interval_fields} + ${interval_fraction}
 		WHEN \'NUMERIC\' THEN NUMERIC_PRECISION
 		WHEN \'DECIMAL\' THEN NUMERIC_PRECISION
 		WHEN \'SMALLINT\' THEN 5
@@ -99,6 +127,8 @@ fn columns_query() string {
 	// (which is what SQL_DEFAULT retrieves).
 	buffer_length := 'CASE DATA_TYPE
 		WHEN \'CHARACTER\' THEN CHARACTER_OCTET_LENGTH
+		WHEN \'CHARACTER LARGE OBJECT\' THEN CHARACTER_OCTET_LENGTH
+		WHEN \'BINARY LARGE OBJECT\' THEN CHARACTER_OCTET_LENGTH
 		WHEN \'SMALLINT\' THEN 2
 		WHEN \'INTEGER\' THEN ${sizeof(SQLInteger)}
 		WHEN \'BIGINT\' THEN 8
@@ -106,15 +136,17 @@ fn columns_query() string {
 		WHEN \'DOUBLE PRECISION\' THEN 8
 	END'
 
-	// - 7.i. DECIMAL_DIGITS is the fractional seconds of a datetime, or the
-	// scale of an exact number.
+	// - 7.i. DECIMAL_DIGITS is the fractional seconds of a datetime or
+	// interval, or the scale of an exact number.
 	decimal_digits := "CASE
-		WHEN DATA_TYPE IN ('DATE', 'TIME', 'TIMESTAMP', 'TIME WITH TIME ZONE', 'TIMESTAMP WITH TIME ZONE') THEN DATETIME_PRECISION
+		WHEN DATA_TYPE IN ('DATE', 'TIME', 'TIMESTAMP', 'TIME WITH TIME ZONE', 'TIMESTAMP WITH TIME ZONE', 'INTERVAL') THEN DATETIME_PRECISION
 		WHEN DATA_TYPE IN ('NUMERIC', 'DECIMAL', 'SMALLINT', 'INTEGER', 'BIGINT') THEN NUMERIC_SCALE
 	END"
 
-	// - 7.n, 7.r. A datetime is DATETIME, with its DATETIME_INTERVAL_CODE.
+	// - 7.n, 7.r. A datetime is DATETIME and an interval is INTERVAL, with its
+	// DATETIME_INTERVAL_CODE.
 	datetime_sub := 'CASE DATA_TYPE
+		WHEN \'INTERVAL\' THEN ${interval_code}
 		WHEN \'DATE\' THEN ${sql_code_date}
 		WHEN \'TIME\' THEN ${sql_code_time}
 		WHEN \'TIMESTAMP\' THEN ${sql_code_timestamp}
@@ -136,7 +168,7 @@ fn columns_query() string {
 		CAST(CASE IS_NULLABLE WHEN \'NO\' THEN ${sql_no_nulls} ELSE ${sql_nullable} END AS SMALLINT) AS NULLABLE,
 		CAST(NULL AS VARCHAR(254)) AS REMARKS,
 		CAST(COLUMN_DEFAULT AS VARCHAR(254)) AS COLUMN_DEF,
-		CAST(CASE WHEN ${datetime_sub} IS NULL THEN ${data_type} ELSE ${sql_datetime} END AS SMALLINT) AS SQL_DATA_TYPE,
+		CAST(CASE WHEN DATA_TYPE = \'INTERVAL\' THEN ${sql_interval} WHEN ${datetime_sub} IS NULL THEN ${data_type} ELSE ${sql_datetime} END AS SMALLINT) AS SQL_DATA_TYPE,
 		CAST(${datetime_sub} AS INTEGER) AS SQL_DATETIME_SUB,
 		CAST(CHARACTER_OCTET_LENGTH AS INTEGER) AS CHAR_OCTET_LENGTH,
 		CAST(ORDINAL_POSITION AS INTEGER) AS ORDINAL_POSITION,

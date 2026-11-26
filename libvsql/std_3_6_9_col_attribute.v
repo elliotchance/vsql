@@ -3,8 +3,6 @@ module main
 // ISO/IEC 9075-3:2003, 6.9, ColAttribute
 //
 // Get a column attribute.
-//
-// There are no interval types (General Rules, 12.b.i.2).
 
 @[export: 'SQLColAttribute']
 fn sql_col_attribute(statement_handle SQLInteger, column_number i16, field_identifier i16, character_attribute &char, buffer_length i16, string_length &i16, numeric_attribute &SQLInteger) i16 {
@@ -55,7 +53,7 @@ fn col_attribute(mut stmt Stmt, column_number i16, fi i16, character_attribute &
 
 	// - 12. The information is retrieved from the IRD by implicitly executing
 	// GetDescField. A TYPE is the concise code (with a code for each datetime
-	// type).
+	// and interval type).
 	mut v := desc_field_value(ird, rn, fi)!
 	if fi == sql_desc_type {
 		v = DescValue(concise_type_code(ird.record_int(rn, sql_desc_type), ird.record_int(rn,

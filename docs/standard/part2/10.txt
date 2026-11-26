@@ -20,16 +20,16 @@
 10.1/GR/2.a              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 10.1/GR/2.b              implemented  vsql/interval.v tests/std_2_6_1_interval.sql
 10.1/GR/3                implemented  vsql/interval.v tests/std_2_6_1_interval.sql
-10.1/GR/4                n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.a              n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.a.i            n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.a.ii           n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.b              n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.b.i            n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.b.ii           n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.b.iii          n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.b.iii.1        n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
-10.1/GR/4.b.iii.2        n/a          - - an interval is cast to a character string as its literal (6.13, General Rules, 11.e.i.2), which doesn't need the length of its type
+10.1/GR/4                implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c the length of an interval type in SQL/CLI
+10.1/GR/4.a              implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.a.i            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.a.ii           implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.b              implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.b.i            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.b.ii           implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.b.iii          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.b.iii.1        implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
+10.1/GR/4.b.iii.2        implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/interval_test.c
 10.1/CR/1                implemented  vsql/interval.v tests/std_2_6_1_data_types.sql
 # 10.2, <languageclause>
 10.2                     partial      vsql/std_2_13_1_sql_client_module_definition.v libvsql/module/test.mod only LANGUAGE C (B112)

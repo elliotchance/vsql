@@ -269,7 +269,7 @@ UTEST_F(db, 6_6_bind_parameter_top_level_count) {
 UTEST_F(db, 6_6_bind_parameter_concise_types) {
   SQLINTEGER x;
   SQLSMALLINT invalid[] = {9, 10, 18, 31, 41, 51, 56};
-  SQLSMALLINT unsupported[] = {17, 19, 20, 30, 40, 50, 55, 101, 113};
+  SQLSMALLINT unsupported[] = {17, 19, 20, 50, 55};
   size_t i;
 
   for (i = 0; i < sizeof(invalid) / sizeof(invalid[0]); i++) {

@@ -550,10 +550,36 @@ fn describe_type(typ vsql.Type, catalog string) map[int]DescValue {
 			record[sql_desc_character_set_schema] = 'INFORMATION_SCHEMA'
 			record[sql_desc_character_set_name] = 'UTF8'
 		}
+		.is_clob {
+			// A CHARACTER LARGE OBJECT without a length has the maximum length.
+			length := lob_length(typ)
+			record[sql_desc_length] = length
+			record[sql_desc_octet_length] = if length > max_lob_length / 4 {
+				max_lob_length
+			} else {
+				length * 4
+			}
+			record[sql_desc_character_set_catalog] = catalog
+			record[sql_desc_character_set_schema] = 'INFORMATION_SCHEMA'
+			record[sql_desc_character_set_name] = 'UTF8'
+		}
 		.is_binary, .is_varbinary {
 			// The length of a binary string is in octets.
 			record[sql_desc_length] = i64(typ.size)
 			record[sql_desc_octet_length] = i64(typ.size)
+		}
+		.is_blob {
+			// - 5.c.iv.2. The length of a BINARY LARGE OBJECT is in octets.
+			record[sql_desc_length] = lob_length(typ)
+			record[sql_desc_octet_length] = lob_length(typ)
+		}
+		.is_interval_year_month, .is_interval_day_time {
+			// - 5.c.iv.6. The length in positions, the code from Table 9, the
+			// leading field precision and the fractional seconds precision.
+			record[sql_desc_length] = i64(interval_length(typ))
+			record[sql_desc_datetime_interval_code] = i64(interval_code(typ))
+			record[sql_desc_datetime_interval_precision] = i64(typ.size % 100)
+			record[sql_desc_precision] = i64(typ.scale)
 		}
 		.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric, .is_real,
 		.is_double_precision {
@@ -578,9 +604,121 @@ fn describe_type(typ vsql.Type, catalog string) map[int]DescValue {
 
 // implementation_type_code is the code for the data type of a column from
 // Table 6, "Codes used for implementation data types in SQL/CLI". Unlike
-// data_type_code, each datetime type is DATETIME.
+// data_type_code, each datetime type is DATETIME and each interval type is
+// INTERVAL.
 fn implementation_type_code(typ vsql.Type) i16 {
+	if typ.typ in [.is_interval_year_month, .is_interval_day_time] {
+		return sql_interval
+	}
+
 	return if datetime_interval_code(typ) > 0 { sql_datetime } else { data_type_code(typ) }
+}
+
+// max_lob_length is the maximum length of a CHARACTER LARGE OBJECT (in
+// characters) or BINARY LARGE OBJECT (in octets), the same as the
+// INFORMATION_SCHEMA.
+const max_lob_length = i64(max_i32)
+
+// lob_length is the length of a large object type, which is the maximum length
+// when it isn't specified.
+fn lob_length(typ vsql.Type) i64 {
+	return if typ.size == 0 { max_lob_length } else { i64(typ.size) }
+}
+
+// The codes from Table 9, "Codes associated with <interval qualifier> in
+// SQL/CLI" (ISO/IEC 9075-3:2003, 5.13, Description of CLI item descriptor
+// areas, General Rules, 4), and Table 41, "Concise codes used with interval data types in
+// SQL/CLI" (which is the code plus 100).
+const sql_code_year = i16(1)
+const sql_code_month = i16(2)
+const sql_code_day = i16(3)
+const sql_code_hour = i16(4)
+const sql_code_minute = i16(5)
+const sql_code_second = i16(6)
+const sql_code_year_to_month = i16(7)
+const sql_code_day_to_hour = i16(8)
+const sql_code_day_to_minute = i16(9)
+const sql_code_day_to_second = i16(10)
+const sql_code_hour_to_minute = i16(11)
+const sql_code_hour_to_second = i16(12)
+const sql_code_minute_to_second = i16(13)
+const sql_interval_year = i16(101)
+const sql_interval_month = i16(102)
+const sql_interval_day = i16(103)
+const sql_interval_hour = i16(104)
+const sql_interval_minute = i16(105)
+const sql_interval_second = i16(106)
+const sql_interval_year_to_month = i16(107)
+const sql_interval_day_to_hour = i16(108)
+const sql_interval_day_to_minute = i16(109)
+const sql_interval_day_to_second = i16(110)
+const sql_interval_hour_to_minute = i16(111)
+const sql_interval_hour_to_second = i16(112)
+const sql_interval_minute_to_second = i16(113)
+
+// interval_codes is the code from Table 9 for the start field and end field of
+// an interval (1 to 6 for YEAR to SECOND, see vsql.IntervalField), as
+// start * 10 + end.
+const interval_codes = {
+	11: sql_code_year
+	22: sql_code_month
+	33: sql_code_day
+	44: sql_code_hour
+	55: sql_code_minute
+	66: sql_code_second
+	12: sql_code_year_to_month
+	34: sql_code_day_to_hour
+	35: sql_code_day_to_minute
+	36: sql_code_day_to_second
+	45: sql_code_hour_to_minute
+	46: sql_code_hour_to_second
+	56: sql_code_minute_to_second
+}
+
+// interval_fields is the start field and end field of an interval type, which
+// are part of its size (see vsql.new_interval_type).
+fn interval_fields(typ vsql.Type) (int, int) {
+	return typ.size / 1000, typ.size / 100 % 10
+}
+
+// interval_code is the code from Table 9 for an interval type.
+fn interval_code(typ vsql.Type) i16 {
+	start, end := interval_fields(typ)
+
+	return interval_codes[start * 10 + end] or { 0 }
+}
+
+// new_interval_type is the interval type for a code from Table 9, with its
+// leading field precision and fractional seconds precision. A code that isn't
+// in Table 9 is a DAY TO SECOND.
+fn new_interval_type(code i64, leading_precision int, fractional_precision int) vsql.Type {
+	mut fields := 36
+	for f, c in interval_codes {
+		if c == code {
+			fields = f
+		}
+	}
+
+	return vsql.Type{
+		typ:   if fields / 10 <= 2 { .is_interval_year_month } else { .is_interval_day_time }
+		size:  fields / 10 * 1000 + fields % 10 * 100 + leading_precision
+		scale: i16(if fields % 10 == 6 { fractional_precision } else { 0 })
+	}
+}
+
+// interval_length is the length in positions of an interval type: its sign,
+// the digits of the leading field, 3 for each other field (2 digits and a
+// separator) and the fractional seconds (after a period).
+//
+// ISO/IEC 9075-2:2023, 10.1, <interval qualifier>, General Rules, 4
+fn interval_length(typ vsql.Type) int {
+	start, end := interval_fields(typ)
+	mut length := 1 + typ.size % 100 + 3 * (end - start)
+	if end == 6 && typ.scale > 0 {
+		length += int(typ.scale) + 1
+	}
+
+	return length
 }
 
 // datetime_interval_code is the code from Table 8, "Codes associated with
@@ -614,9 +752,17 @@ fn numeric_precision_of(typ vsql.Type) int {
 
 // concise_type_code converts a TYPE (and DATETIME_INTERVAL_CODE) to the codes
 // used by DescribeCol and ColAttribute, where each datetime type has its own
-// code from Table 40, "Concise codes used with datetime data types in SQL/CLI".
+// code from Table 40, "Concise codes used with datetime data types in SQL/CLI",
+// and each interval type from Table 41, "Concise codes used with interval data
+// types in SQL/CLI".
 fn concise_type_code(typ i64, datetime_interval_code i64) i64 {
-	return if typ == sql_datetime { 90 + datetime_interval_code } else { typ }
+	return if typ == sql_datetime {
+		90 + datetime_interval_code
+	} else if typ == sql_interval {
+		100 + datetime_interval_code
+	} else {
+		typ
+	}
 }
 
 // desc_statements is the statements for which the descriptor is the current

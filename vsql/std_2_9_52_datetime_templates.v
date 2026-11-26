@@ -247,7 +247,7 @@ fn (t DatetimeTemplate) is_delimited(i int) bool {
 //
 // ISO/IEC 9075-2:2023, 9.52, Datetime templates, Syntax Rules, 16
 fn (t DatetimeTemplate) max_field_length(i int) int {
-	part := t.parts[i]
+	part := own_elem(t.parts, i)
 	return match part.kind {
 		.hour_12, .hour_24, .time_zone_minute { 2 }
 		.fraction { part.text[2..].int() }

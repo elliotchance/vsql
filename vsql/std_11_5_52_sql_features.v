@@ -77,7 +77,7 @@ fn sql_features_view_rows(features []SqlFeature) [][]Value {
 	mut feature_names := map[string]string{}
 	mut rows := [][]Value{}
 	for feature in features {
-		mut feature_id := feature.id
+		mut feature_id := own_string(feature.id)
 		mut sub_feature_id := ' '
 		mut sub_feature_name := ' '
 		if feature.id.len == 4 {
@@ -89,7 +89,7 @@ fn sql_features_view_rows(features []SqlFeature) [][]Value {
 		}
 		rows << [
 			new_varchar_value(feature_id), // FEATURE_ID
-			new_varchar_value(feature_names[feature_id] or { '' }), // FEATURE_NAME
+			new_varchar_value(map_value(feature_names, feature_id) or { '' }), // FEATURE_NAME
 			new_varchar_value(sub_feature_id), // SUB_FEATURE_ID
 			new_varchar_value(sub_feature_name), // SUB_FEATURE_NAME
 			yes_or_no(feature.is_supported), // IS_SUPPORTED

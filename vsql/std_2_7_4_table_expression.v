@@ -14,7 +14,7 @@ struct TableExpression {
 fn (e TableExpression) pstr(params map[string]Value) string {
 	mut s := 'FROM ${e.from_clause.pstr(params)}'
 
-	if where := e.where_clause {
+	if where := opt_copy(e.where_clause) {
 		s += ' WHERE ${where.pstr(params)}'
 	}
 
@@ -26,7 +26,7 @@ fn (e TableExpression) pstr(params map[string]Value) string {
 		s += ' GROUP BY ${columns.join(', ')}'
 	}
 
-	if having := e.having_clause {
+	if having := opt_copy(e.having_clause) {
 		s += ' HAVING ${having.pstr(params)}'
 	}
 

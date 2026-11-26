@@ -25,7 +25,7 @@ struct CharacterLikePredicatePart2 {
 }
 
 fn ref_character_value_expression(e CharacterValueExpression) &CharacterValueExpression {
-	return &e
+	return heap_copy(&e)
 }
 
 // check_string_operands returns an error if either operand of LIKE or SIMILAR
@@ -48,7 +48,7 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 	}
 	s += ' ${e.operator()} ${e.right.pstr(params)}'
 
-	if escape := e.escape {
+	if escape := opt_copy(e.escape) {
 		s += ' ESCAPE ${escape.pstr(params)}'
 	}
 
@@ -59,9 +59,14 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 1
 fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &CharacterLikePredicate{
+		...e
+	}
 	mut compiled_right := e.right.compile(mut c)!
 	mut compiled_l := e.left.compile(mut c)!
-	mut compiled_escape := if escape := e.escape {
+	mut compiled_escape := if escape := opt_copy(e.escape) {
 		escape.compile(mut c)!
 	} else {
 		CompileResult{
@@ -84,7 +89,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 	c.flag_lob_pattern(compiled_l, compiled_right)
 
 	return CompileResult{
-		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
@@ -109,7 +114,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 			// The escape character is found in the pattern before it's folded, so
 			// it only ever escapes what it's written as.
 			pattern := like_pattern(right.string_value(), escape)!
-			result := if e.insensitive {
+			result := if e_ref.insensitive {
 				like_matches(ilike_value(left.string_value()), ilike_pattern(pattern))
 			} else {
 				like_matches(like_value(left.string_value()), pattern)
@@ -117,7 +122,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 
 			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 3.b
 			// and 3.c
-			if e.not {
+			if e_ref.not {
 				return new_boolean_value(!result)
 			}
 
@@ -149,6 +154,20 @@ fn (mut c Compiler) flag_lob_pattern(value CompileResult, pattern CompileResult)
 // ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 2 and 4
 // ISO/IEC 9075-2:2023, 8.5, <like predicate>, Conformance Rules, 1
 fn (e CharacterLikePredicate) compile_octet_like(mut c Compiler, compiled_l CompileResult, compiled_right CompileResult, compiled_escape CompileResult, has_escape bool) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	compiled_escape_ref := &CompileResult{
+		...compiled_escape
+	}
+	compiled_l_ref := &CompileResult{
+		...compiled_l
+	}
+	compiled_right_ref := &CompileResult{
+		...compiled_right
+	}
+	e_ref := &CharacterLikePredicate{
+		...e
+	}
 	if !compiled_right.typ.typ.is_binary_string()
 		|| (has_escape && !compiled_escape.typ.typ.is_binary_string()) {
 		return sqlstate_42883('operator does not exist: ${compiled_l.typ.typ} LIKE ${compiled_right.typ.typ}')
@@ -158,9 +177,9 @@ fn (e CharacterLikePredicate) compile_octet_like(mut c Compiler, compiled_l Comp
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
-			left := compiled_l.run(mut conn, data, params)!
-			right := compiled_right.run(mut conn, data, params)!
+		run:          fn [e_ref, compiled_l_ref, compiled_right_ref, compiled_escape_ref, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
+			left := compiled_l_ref.run(mut conn, data, params)!
+			right := compiled_right_ref.run(mut conn, data, params)!
 
 			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 4.a.i
 			if left.is_null || right.is_null {
@@ -169,7 +188,7 @@ fn (e CharacterLikePredicate) compile_octet_like(mut c Compiler, compiled_l Comp
 
 			mut escape := ?rune(none)
 			if has_escape {
-				escape_value := compiled_escape.run(mut conn, data, params)!
+				escape_value := compiled_escape_ref.run(mut conn, data, params)!
 
 				// ISO/IEC 9075-2:2023, 8.5, <like predicate>, General Rules, 4.a.ii
 				if escape_value.is_null {
@@ -193,7 +212,7 @@ fn (e CharacterLikePredicate) compile_octet_like(mut c Compiler, compiled_l Comp
 				pattern)
 
 			// ISO/IEC 9075-2:2023, 8.5, <like predicate>, Syntax Rules, 4.b and 4.c
-			if e.not {
+			if e_ref.not {
 				return new_boolean_value(!result)
 			}
 
@@ -243,7 +262,7 @@ fn like_pattern_runes(runes []rune, escape ?rune) ![]LikeChar {
 	mut chars := []LikeChar{cap: runes.len}
 	mut i := 0
 	for i < runes.len {
-		if esc := escape {
+		if esc := opt_copy(escape) {
 			if runes[i] == esc {
 				if i + 1 >= runes.len || (runes[i + 1] != `%` && runes[i + 1] != `_`
 					&& runes[i + 1] != esc) {

@@ -21,6 +21,10 @@ fn (e QuantifiedComparisonPredicate) pstr(params map[string]Value) string {
 
 // plan_compared_subquery plans a subquery whose rows are compared with expr,
 // which is a row or a single value (see compile_fields).
+// plan_compared_subquery is manualfree because the Compiler.with_* functions
+// can return their arguments, so -autofree would free expr when it's replaced
+// (https://github.com/vlang/v/issues/32932).
+@[manualfree]
 fn plan_compared_subquery(mut c Compiler, subquery Subquery, mut expr []CompileResult) !SubqueryPlan {
 	plan := subquery.plan_row(mut c, expr.len)!
 
@@ -33,6 +37,11 @@ fn plan_compared_subquery(mut c Compiler, subquery Subquery, mut expr []CompileR
 }
 
 fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &QuantifiedComparisonPredicate{
+		...e
+	}
 	mut compiled_expr := e.expr.compile_fields(mut c)!
 	plan := plan_compared_subquery(mut c, e.subquery, mut compiled_expr)!
 	mut types := compiled_expr.map(it.typ)
@@ -42,11 +51,11 @@ fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	e.op.check_ordering_operands(types)!
 
 	return CompileResult{
-		run:          fn [e, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := run_fields(mut conn, compiled_expr, data, params)!
 			rows := subquery_rows(mut conn, plan, data)!
 
-			return quantified_comparison(conn, expr, e.op, e.all, rows)!.value()
+			return quantified_comparison(conn, expr, e_ref.op, e_ref.all, rows)!.value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_expr.any(it.contains_agg) || plan.contains_agg

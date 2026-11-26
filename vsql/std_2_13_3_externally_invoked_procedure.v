@@ -102,7 +102,7 @@ fn (p ExternallyInvokedProcedure) parameter(name string) ?HostParameterDeclarati
 fn (p ExternallyInvokedProcedure) c_prototype() string {
 	mut parameters := []string{}
 	for parameter in p.parameters {
-		if typ := parameter.typ {
+		if typ := opt_copy(parameter.typ) {
 			parameters << typ.c_declaration(parameter.name)
 		} else {
 			// An SQLSTATE host parameter is a char with length 6.

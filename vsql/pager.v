@@ -73,15 +73,25 @@ fn (mut p MemoryPager) fetch_page(page_number int) !Page {
 }
 
 fn (mut p MemoryPager) read_page(page_number int) !Page {
-	if page := p.dirty[page_number] {
-		return page
+	page := if page_number in p.dirty {
+		unsafe { &p.dirty[page_number] }
+	} else {
+		unsafe { &p.pages[page_number] }
 	}
 
-	return p.pages[page_number]
+	// -autofree frees the page that's returned, so it must be a copy
+	// (https://github.com/vlang/v/issues/32937).
+	$if autofree {
+		return page.clone()
+	}
+	return *page
 }
 
+// The pages that MemoryPager keeps are copies (see own_copy), because
+// -autofree frees the page that's given, and the old pages when they're
+// replaced (https://github.com/vlang/v/issues/32943).
 fn (mut p MemoryPager) store_page(page_number int, page Page) ! {
-	p.dirty[page_number] = page
+	p.dirty[page_number] = own_copy(&page)
 }
 
 fn (mut p MemoryPager) total_pages() int {
@@ -92,11 +102,11 @@ fn (mut p MemoryPager) append_page(page Page) !int {
 	if p.free >= 0 {
 		page_number := p.free
 		p.free = next_free_page(p.read_page(page_number)!)
-		p.dirty[page_number] = page
+		p.dirty[page_number] = own_copy(&page)
 		return page_number
 	}
 
-	p.dirty[p.total] = page
+	p.dirty[p.total] = own_copy(&page)
 	p.total++
 
 	return p.total - 1
@@ -135,7 +145,7 @@ fn (mut p MemoryPager) truncate(total_pages int) {
 fn (mut p MemoryPager) replace_pages(pages []Page, root int) ! {
 	p.dirty = map[int]Page{}
 	for i, page in pages {
-		p.dirty[i] = page
+		p.dirty[i] = own_copy(&page)
 	}
 	p.total = pages.len
 	p.root_page = root
@@ -151,7 +161,7 @@ fn (mut p MemoryPager) commit() {
 	}
 	p.pages.trim(p.total)
 	for i, page in p.dirty {
-		p.pages[i] = page
+		p.pages[i] = own_copy(&page)
 	}
 
 	p.dirty = map[int]Page{}

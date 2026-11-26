@@ -43,11 +43,8 @@ fn (e ParenthesizedValueExpression) compile(mut c Compiler) !CompileResult {
 
 // new_ref copies v to the heap.
 fn new_ref[T](v T) &T {
-	mut ptr := unsafe { &T(voidptr(malloc(int(sizeof(T))))) }
-	unsafe {
-		*ptr = v
-	}
-	return ptr
+	// The caller may free v with -autofree, see heap_copy.
+	return heap_copy(&v)
 }
 
 // The biggest types are references, so that this (and every expression that

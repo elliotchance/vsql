@@ -3,6 +3,11 @@
 
 module vsql
 
+// Every function in key_order.v is manualfree: a plan is made once for each
+// statement, and its operations share values (tables, columns and expressions)
+// with the syntax tree and each other without copies, which -autofree would
+// free twice. They leak with -autofree for now.
+
 // A KeyOrderColumn is a column of a key (the PRIMARY KEY or an index), in the
 // order that the rows are read in.
 struct KeyOrderColumn {
@@ -26,6 +31,7 @@ struct KeyOrderColumn {
 // of the rest of the key (and then the row).
 //
 // ISO/IEC 9075-2:2023, 10.10, <sort specification list>, General Rules, 1
+@[manualfree]
 fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[string][]ValueExpression, params map[string]Value, mut conn Connection) bool {
 	// Only the rows of one table are read, and they're still the rows of the
 	// table (not groups) when they're sorted. A query specification always has
@@ -36,27 +42,16 @@ fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[st
 		}
 	}
 
-	mut operation := plan.operations[0]
-	mut table := Table{}
-	mut key := ?&KeyOperation(none)
-	if mut operation is TableOperation {
-		if operation.table_is_subplan {
-			return false
-		}
-		table = operation.table
-	} else if mut operation is KeyOperation {
-		table = operation.table
-		key = operation
-	} else {
-		return false
-	}
+	read := key_order_read(mut plan) or { return false }
+	table := read.table
+	key := read.key
 
 	mut columns := []string{}
 	for spec in order {
 		columns << sort_key_column(spec, table, result_columns, conn) or { return false }
 	}
 
-	if k := key {
+	if k := opt_copy(key) {
 		return is_key_order(order, columns, k.order_columns(), k.equal_columns())
 	}
 
@@ -83,6 +78,7 @@ fn use_key_order(mut plan Plan, order []SortSpecification, result_columns map[st
 // it's only a column reference. A name that's a column of the result is that
 // column's expression (see set_result_columns). The name can't be ambiguous,
 // that's already an error when the sort key is compiled.
+@[manualfree]
 fn sort_key_column(spec SortSpecification, table Table, result_columns map[string][]ValueExpression, conn &Connection) ?string {
 	mut column := value_column_reference(spec.expr)?
 	if column.entity_name == '' && column.custom_id == '' {
@@ -102,6 +98,7 @@ fn sort_key_column(spec SortSpecification, table Table, result_columns map[strin
 // reference, such as "a" or "t.a". A column reference is parsed as a
 // BooleanValueExpression, and each column of "SELECT *" is a DatetimePrimary
 // (see new_expr_operation).
+@[manualfree]
 fn value_column_reference(expr ValueExpression) ?Identifier {
 	if expr is CommonValueExpression {
 		common := CommonValueExpression(expr)
@@ -129,6 +126,7 @@ fn value_column_reference(expr ValueExpression) ?Identifier {
 // is_key_order is true when the rows in the order of the key_columns are also
 // in the order of the sort keys, which are the columns. equal_columns are the
 // positions of the key_columns that have the same value in every row.
+@[manualfree]
 fn is_key_order(order []SortSpecification, columns []string, key_columns []KeyOrderColumn, equal_columns []int) bool {
 	if key_columns.len == 0 {
 		return false
@@ -162,8 +160,9 @@ fn is_key_order(order []SortSpecification, columns []string, key_columns []KeyOr
 
 // order_columns are the columns of the key, in the order that the rows are read
 // in.
+@[manualfree]
 fn (o &KeyOperation) order_columns() []KeyOrderColumn {
-	if index := o.index {
+	if index := opt_copy(o.index) {
 		return index.columns.map(KeyOrderColumn{it.name, it.desc})
 	}
 
@@ -172,6 +171,7 @@ fn (o &KeyOperation) order_columns() []KeyOrderColumn {
 
 // equal_columns are the positions of the columns of the key that are compared
 // with = in the WHERE clause, so every row has the same value for them.
+@[manualfree]
 fn (o &KeyOperation) equal_columns() []int {
 	mut columns := []int{}
 	for condition in o.conditions {
@@ -181,4 +181,35 @@ fn (o &KeyOperation) equal_columns() []int {
 	}
 
 	return columns
+}
+
+// KeyOrderRead is the table that the first operation of a plan reads, and the
+// key operation when it reads the rows of a key.
+struct KeyOrderRead {
+	table Table
+	key   ?&KeyOperation
+}
+
+// key_order_read is none when the first operation doesn't read the rows of a
+// table (or reads a subquery). It's a separate function so the operation isn't
+// borrowed when use_key_order replaces it.
+@[manualfree]
+fn key_order_read(mut plan Plan) ?KeyOrderRead {
+	mut operation := &plan.operations[0]
+	if mut operation is TableOperation {
+		if operation.table_is_subplan {
+			return none
+		}
+		// A copy, because the caller frees it with -autofree.
+		return KeyOrderRead{
+			table: operation.table.copy()
+		}
+	} else if mut operation is KeyOperation {
+		return KeyOrderRead{
+			table: operation.table.copy()
+			key:   operation
+		}
+	}
+
+	return none
 }

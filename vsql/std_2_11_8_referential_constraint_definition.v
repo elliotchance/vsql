@@ -28,7 +28,7 @@ struct ReferentialConstraintDefinition {
 fn new_referential_constraint_definition(columns []Identifier, references ReferentialConstraintDefinition) ReferentialConstraintDefinition {
 	return ReferentialConstraintDefinition{
 		...references
-		columns: columns
+		columns: own_copy(&columns)
 	}
 }
 
@@ -129,8 +129,10 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			return sqlstate_0a000('FOREIGN KEY cannot reference a table in another catalog: ${name}')
 		}
 
+		// The copy works around https://github.com/vlang/v/issues/32932
+		// (-autofree).
 		referenced := if name.storage_id() == table.name.storage_id() {
-			table
+			table.copy()
 		} else {
 			name = conn.resolve_table_identifier(name, false)!
 			conn.catalog_for(name).storage.table(name.storage_id())
@@ -410,7 +412,7 @@ fn (mut f Storage) find_objects(start []u8, end []u8) !(bool, bool) {
 			found = true
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -461,7 +463,7 @@ fn (mut f Storage) scan_referencing_rows(key ForeignKey, referencing Table, type
 	for {
 		objects << iter.next() or { break }
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -644,7 +646,7 @@ fn (mut s ChangedSites) add(conn &Connection, table Table, changes []RowChange, 
 	for change in changes {
 		before := changed_site_key(table, change.old)!
 		before_keys << before
-		mut sites := (s.updated[before] or { map[string]Value{} }).clone()
+		mut sites := (map_value(s.updated, before) or { map[string]Value{} }).clone()
 		if change.is_delete {
 			if sites.len > 0 {
 				return sqlstate_27000('a row of ${table.name} that was updated is deleted')
@@ -708,6 +710,9 @@ fn is_distinct(conn &Connection, a Value, b Value) !bool {
 //
 // ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 9, 10 and 17
 // ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 12 and 13
+// It's manualfree because -autofree frees one of its maps of rows while it's
+// still used (no small repro yet).
+@[manualfree]
 fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
 	if changes.len == 0 {
 		return
@@ -793,10 +798,11 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				mut actions := []RowChange{}
 				mut restricted := []RowChange{}
 				for change in table_changes {
+					// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
 					rule := if change.is_delete {
-						key.delete_rule
+						own_string(key.delete_rule)
 					} else if is_updated(key, change, types, time_zone) {
-						key.update_rule
+						own_string(key.update_rule)
 					} else {
 						''
 					}
@@ -809,7 +815,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 
 				if restricted.len > 0 {
 					f.check_restrict(mut conn, key, referencing, table, types, restricted,
-						old[table_name] or { []Row{} }, time_zone)!
+						map_value(old, table_name) or { []Row{} }, time_zone)!
 				}
 				if actions.len == 0 {
 					continue
@@ -832,7 +838,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				} else {
 					[]Row{}
 				}
-				for m in key.referential_matches(sites.deleted[table_name] or { []Row{} }, referenced_rows,
+				for m in key.referential_matches(map_value(sites.deleted, table_name) or { []Row{} }, referenced_rows,
 					actions, changes_by_key, types, time_zone) {
 					if !m.referenced.is_delete || key.delete_rule != 'CASCADE' {
 						return sqlstate_27000('a row of ${referencing.name} that was deleted is updated')
@@ -868,16 +874,11 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						data: row.data.clone()
 					}
 					for i in key.changed_columns(m, types, time_zone) {
-						column_name := key.columns[i]
+						column_name := own_elem(key.columns, i)
 						column := referencing.column(column_name)!
 						new_value := match rule {
 							'CASCADE' {
-								v := cast(mut conn, 'for column ${column_name}', m.referenced.new.data.value(key.referenced_columns[i]),
-									column.typ)!
-								if column.not_null && v.is_null {
-									return sqlstate_23502(referencing, column_name)
-								}
-								v
+								cascaded_value(mut conn, referencing, column, m.referenced.new.data.value(key.referenced_columns[i]))!
 							}
 							'SET NULL' {
 								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(NullSpecification{}))!
@@ -953,15 +954,18 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		}
 
 		table := f.table(table_name)
-		rows := (written[table_name] or { map[string]Row{} }).values()
+		// The local stops V from panicking ("map method `values` should be
+		// lowered", no small repro yet).
+		written_rows := map_value(written, table_name) or { map[string]Row{} }
+		rows := written_rows.values()
 		f.check_unique_indexes(table, rows)!
 		f.check_unique_constraints(table, rows)!
 		f.check_foreign_keys(mut conn, table, rows)!
-		f.check_referencing_rows(mut conn, table, old[table_name] or { []Row{} }, rows, time_zone)!
+		f.check_referencing_rows(mut conn, table, map_value(old, table_name) or { []Row{} }, rows, time_zone)!
 	}
 
 	for table_name in table_names {
-		table_changes := action_changes[table_name] or { []RowChange{} }
+		table_changes := map_value(action_changes, table_name) or { []RowChange{} }
 		conn.note_row_changes(f.table(table_name), table_changes.map(it.old), table_changes,
 			none)!
 	}
@@ -1182,7 +1186,7 @@ fn (mut f Storage) matching_rows(mut conn Connection, key ForeignKey, referencin
 	mut row_keys := matching.keys()
 	row_keys.sort()
 
-	return row_keys.map(matching[it] or { Row{} })
+	return row_keys.map(map_value(matching, it) or { Row{} })
 }
 
 // read_existing_objects are the objects (index entries or rows) from start to
@@ -1201,7 +1205,7 @@ fn (mut f Storage) read_existing_objects(start []u8, end []u8) ![]PageObject {
 			objects << object
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -1260,4 +1264,17 @@ fn foreign_key_types(referencing Table, columns []string, referenced Table, refe
 	}
 
 	return types
+}
+
+// cascaded_value is the new value of a referencing column for an ON UPDATE
+// CASCADE: the new value of the referenced column. It's a separate function,
+// rather than a branch of the match in apply_referential_actions, because
+// -autofree frees its variable in the other branches.
+fn cascaded_value(mut conn Connection, referencing Table, column Column, value Value) !Value {
+	v := cast(mut conn, 'for column ${column.name.sub_entity_name}', value, column.typ)!
+	if column.not_null && v.is_null {
+		return sqlstate_23502(referencing, column.name.sub_entity_name)
+	}
+
+	return v
 }

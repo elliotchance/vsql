@@ -210,7 +210,7 @@ fn round_numeric(n Numeric, places i64, truncate bool) Numeric {
 	numerator := n.numerator.abs()
 	ten := big.integer_from_int(10)
 	factor := ten.pow(u32(math.abs(places)))
-	mut divisor := n.denominator
+	mut divisor := own_integer(n.denominator)
 	mut dividend := numerator
 	if places >= 0 {
 		dividend = numerator * factor
@@ -241,7 +241,7 @@ fn round_numeric(n Numeric, places i64, truncate bool) Numeric {
 fn rounding_function_type(name string, arg Type, places ?i64) Type {
 	p, s := arg.exact_precision(), arg.scale
 	mut scale := s
-	if k := places {
+	if k := opt_copy(places) {
 		scale = if k < 0 {
 			0
 		} else if k < s {
@@ -323,7 +323,7 @@ fn func_factorial(_ FunctionContext, args []Value) !Value {
 		return sqlstate_22003()
 	}
 
-	mut result := big.one_int
+	mut result := own_integer(big.one_int)
 	for i in 2 .. n + 1 {
 		result = result * big.integer_from_i64(i)
 	}

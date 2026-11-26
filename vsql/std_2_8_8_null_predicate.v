@@ -20,10 +20,15 @@ fn (e NullPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &NullPredicate{
+		...e
+	}
 	compiled := e.expr.compile_fields(mut c)!
 
 	return CompileResult{
-		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 			// ISO/IEC 9075-2:2023, 8.8, <null predicate>, General Rules, 2:
 			// for a row, IS NULL is true when every value is NULL and IS NOT
 			// NULL is true when none are. So a row with some NULLs is neither
@@ -35,7 +40,7 @@ fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
 				}
 			}
 
-			if e.not {
+			if e_ref.not {
 				return new_boolean_value(nulls == 0)
 			}
 

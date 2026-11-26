@@ -65,7 +65,7 @@ fn session_name_value(mut conn Connection, mut c Compiler, value ValueSpecificat
 // is that catalog, otherwise it's an identifier.
 fn (conn Connection) catalog_named(value string) ?string {
 	if value in conn.catalogs {
-		return value
+		return own_string(value)
 	}
 
 	name := normalize_identifier(value) or { return none }

@@ -40,13 +40,13 @@ struct CastSpecification {
 
 fn new_cast_specification(expr CastOperand, target Type) CastSpecification {
 	return CastSpecification{
-		expr:   &expr
+		expr:   heap_copy(&expr)
 		target: target
 	}
 }
 
 fn (e CastSpecification) pstr(params map[string]Value) string {
-	if template := e.template {
+	if template := opt_copy(e.template) {
 		return 'CAST(${e.expr.pstr(params)} AS ${e.target} FORMAT ${template})'
 	}
 
@@ -54,9 +54,14 @@ fn (e CastSpecification) pstr(params map[string]Value) string {
 }
 
 fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &CastSpecification{
+		...e
+	}
 	check_data_type(e.target)!
 
-	if template := e.template {
+	if template := opt_copy(e.template) {
 		return e.compile_template(mut c, template)
 	}
 
@@ -64,9 +69,9 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 	// no type of its own to cast from.
 	if e.expr is NullSpecification {
 		return CompileResult{
-			run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e_ref] (mut conn Connection, data Row, params map[string]Value) !Value {
 				return Value{
-					typ:     e.target
+					typ:     e_ref.target
 					is_null: true
 				}
 			}
@@ -102,10 +107,10 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_expr.run(mut conn, data, params)!
 
-			return cast_specification(mut conn, value, e.target)
+			return cast_specification(mut conn, value, e_ref.target)
 		}
 		typ:          e.target
 		contains_agg: compiled_expr.contains_agg
@@ -123,6 +128,14 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, Syntax Rules, 4
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11.e.i.1, 12.e.i.1, 14.a.i, 16.a.i, 17.a.i, 18.a.i and 19.a.i
 fn (e CastSpecification) compile_template(mut c Compiler, template DatetimeTemplate) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &CastSpecification{
+		...e
+	}
+	template_ref := &DatetimeTemplate{
+		...template
+	}
 	if e.expr is NullSpecification {
 		return sqlstate_42601('NULL cannot be cast with a FORMAT')
 	}
@@ -149,21 +162,21 @@ fn (e CastSpecification) compile_template(mut c Compiler, template DatetimeTempl
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled_expr, template] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_expr, template_ref] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_expr.run(mut conn, data, params)!
 			if value.is_null {
 				return Value{
-					typ:     e.target
+					typ:     e_ref.target
 					is_null: true
 				}
 			}
 
-			if e.target.uses_time() {
-				return template.parse_datetime(mut conn, value.string_value(), e.target)!
+			if e_ref.target.uses_time() {
+				return template_ref.parse_datetime(mut conn, value.string_value(), e_ref.target)!
 			}
 
-			return formatted_character_value(template.format_datetime(value.time_value()),
-				e.target)!
+			return formatted_character_value(template_ref.format_datetime(value.time_value()),
+				e_ref.target)!
 		}
 		typ:          e.target
 		contains_agg: compiled_expr.contains_agg
@@ -359,7 +372,7 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 	return Value{
 		typ: to
 		v:   InternalValue{
-			string_value: s
+			string_value: box_string(s)
 		}
 	}
 }
@@ -373,7 +386,7 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 // ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.b.i and 16.b.ii
 // ISO/IEC 9075-2:2023, 6.13, <cast specification>, General Rules, 11 and 12
 fn cast_character_to_octets(mut conn Connection, s string, to Type) Value {
-	mut result := s
+	mut result := own_string(s)
 	if s.len > to.size {
 		mut end := to.size
 		for end > 0 && (s[end] & 0xC0) == 0x80 {
@@ -391,7 +404,7 @@ fn cast_character_to_octets(mut conn Connection, s string, to Type) Value {
 	return Value{
 		typ: to
 		v:   InternalValue{
-			string_value: result
+			string_value: box_string(result)
 		}
 	}
 }
@@ -519,7 +532,7 @@ fn cast_string_to_datetime(mut conn Connection, v Value, to Type) !Value {
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Format
 fn unquote_datetime_literal(s string, keyword string) string {
 	if s.len < keyword.len || s[..keyword.len].to_upper() != keyword {
-		return s
+		return own_string(s)
 	}
 
 	// Any white space can separate the keyword and the string, but a comment
@@ -531,7 +544,7 @@ fn unquote_datetime_literal(s string, keyword string) string {
 	}
 	quoted := rest[start..].string()
 	if quoted.len < 2 || quoted[0] != `'` || quoted[quoted.len - 1] != `'` {
-		return s
+		return own_string(s)
 	}
 
 	// A datetime string never contains a quote, so leaving one in (from a

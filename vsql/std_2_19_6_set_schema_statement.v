@@ -41,10 +41,11 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 		return sqlstate_3f000(value)
 	}
 	new_schema := normalize_identifier(parts.last()) or { return sqlstate_3f000(value) }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
 	new_catalog := if parts.len == 2 {
 		conn.catalog_named(parts[0]) or { return sqlstate_3d000(parts[0]) }
 	} else {
-		conn.current_catalog
+		conn.current_catalog.clone()
 	}
 
 	// The schema must exist in that catalog.

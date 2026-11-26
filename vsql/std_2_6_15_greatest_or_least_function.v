@@ -73,7 +73,7 @@ fn (e GreatestOrLeastFunction) compile(mut c Compiler) !CompileResult {
 				values << convert_to_combined_type(mut conn, 'in ${name}', value, typ)!
 			}
 
-			mut result := values[0]
+			mut result := own_elem(values, 0)
 			for value in values[1..] {
 				cmp := compare(conn, value, result)!
 				if (greatest && cmp == .is_greater) || (!greatest && cmp == .is_less) {

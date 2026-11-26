@@ -25,24 +25,30 @@ fn (stmt SetSessionCharacteristicsStatement) execute(mut conn Connection, params
 		match mode {
 			// ISO/IEC 9075-2:2023, 19.1, <set session characteristics statement>, General Rules, 1 and 2
 			IsolationLevel {
-				characteristics = TransactionCharacteristics{
+				// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+				new_characteristics := TransactionCharacteristics{
 					...characteristics
 					isolation_level: mode
 				}
+				characteristics = new_characteristics
 			}
 			// ISO/IEC 9075-2:2023, 19.1, <set session characteristics statement>, General Rules, 3
 			TransactionAccessMode {
-				characteristics = TransactionCharacteristics{
+				// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+				new_characteristics := TransactionCharacteristics{
 					...characteristics
 					read_only: mode == .read_only
 				}
+				characteristics = new_characteristics
 			}
 			// ISO/IEC 9075-2:2023, 19.1, <set session characteristics statement>, General Rules, 4
 			DiagnosticsSize {
-				characteristics = TransactionCharacteristics{
+				// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+				new_characteristics := TransactionCharacteristics{
 					...characteristics
 					condition_area_limit: condition_area_limit(mut conn, params, mode)!
 				}
+				characteristics = new_characteristics
 			}
 		}
 	}

@@ -104,7 +104,7 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 		if name == 'ALL' {
 			return sqlstate_42601('procedure ${p.name}: GET DIAGNOSTICS ... = ALL is not supported')
 		}
-		id := items[name] or {
+		id := map_value(items, name) or {
 			t.pos--
 			return sqlstate_42601('procedure ${p.name}: expected a ${kind} item name${t.near()}')
 		}

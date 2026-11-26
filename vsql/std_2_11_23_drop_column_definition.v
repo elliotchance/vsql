@@ -32,6 +32,9 @@ struct DropColumnDefinition {
 // The rows are written again, because the values of a row are stored in the
 // order of the columns (see Row.bytes). The current value of the sequence of
 // an identity column is dropped with it.
+// It's manualfree because -autofree frees the constraints that are kept, with
+// the loop variables (no small repro yet).
+@[manualfree]
 fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, original_table Table) ! {
 	mut table := original_table
 	column := table.column(d.column_name.sub_entity_name)!
@@ -60,7 +63,7 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 	mut dependent := [][]string{}
 
 	mut primary_key := table.primary_key.clone()
-	mut primary_key_name := table.primary_key_name
+	mut primary_key_name := own_string(table.primary_key_name)
 	if name in table.primary_key {
 		if table.primary_key.len > 1 {
 			dependent << [table.name.str(), table.primary_key_name]
@@ -147,7 +150,7 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 	mut deferrable_not_nulls := table.deferrable_not_nulls.clone()
 	deferrable_not_nulls.delete(name)
 	new_table := Table{
-		...table
+		...table.copy()
 		columns:              columns
 		primary_key:          primary_key
 		primary_key_name:     primary_key_name
@@ -162,7 +165,7 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 		catalog.storage.update_table(referencing)!
 	}
 	replace_table_definition(mut conn, mut catalog, table, new_table)!
-	if _ := column.identity {
+	if _ := opt_copy(column.identity) {
 		catalog.storage.delete_identity(table.id)!
 	}
 }

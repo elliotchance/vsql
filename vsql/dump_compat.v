@@ -115,7 +115,7 @@ fn (c DumpCompat) type_sql(typ Type) string {
 // escape. NO_BACKSLASH_ESCAPES can't be used because MySQL reads a DEFAULT with
 // a quote in it back as if it wasn't set.
 fn (c DumpCompat) string_sql(literal string) string {
-	return if c == .mysql { literal.replace('\\', '\\\\') } else { literal }
+	return if c == .mysql { literal.replace('\\', '\\\\') } else { own_string(literal) }
 }
 
 // literal_sql is a value in a statement. PostgreSQL ignores the offset of a
@@ -178,7 +178,7 @@ fn (c DumpCompat) default_sql(option DefaultOption) ?string {
 	}
 
 	// A LONGTEXT or a function can only be a DEFAULT in parentheses.
-	return if c == .mysql { '(${sql_text})' } else { sql_text }
+	return if c == .mysql { '(${sql_text})' } else { own_string(sql_text) }
 }
 
 // expression_sql is the expression of a CHECK or generated column for the
@@ -296,14 +296,14 @@ fn (c DumpCompat) create_table_sql(table Table, foreign_keys []ForeignKey) []str
 		name := col.name.sub_entity_name
 		mut column_type := c.type_sql(col.typ)
 		mut clauses := ''
-		if default_value := col.default_value {
+		if default_value := opt_copy(col.default_value) {
 			if sql_text := c.default_sql(default_value) {
 				clauses += ' DEFAULT ${sql_text}'
 			} else {
 				comments << 'The DEFAULT of ${compat_name(name)} is left out: ${*default_value}'
 			}
 		}
-		if generated := col.generated {
+		if generated := opt_copy(col.generated) {
 			expr := generated.expr.pstr(map[string]Value{})
 			if sql_text := c.expression_sql(expr, columns) {
 				clauses += ' GENERATED ALWAYS AS (${sql_text}) STORED'
@@ -311,7 +311,7 @@ fn (c DumpCompat) create_table_sql(table Table, foreign_keys []ForeignKey) []str
 				comments << 'The generated column ${compat_name(name)} is a normal column: ${expr}'
 			}
 		}
-		if identity := col.identity {
+		if identity := opt_copy(col.identity) {
 			if !c.is_kept_identity(table, col) {
 				comments << 'The identity column ${compat_name(name)} is a normal column.'
 			} else if c == .postgresql {
@@ -509,7 +509,7 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 					[]ForeignKey{}
 				}
 				definition := c.create_table_sql(Table{
-					...table
+					...table.copy()
 					name: options.output_name(table.name)
 				}, keys.map(options.output_foreign_key(it))).join('\n')
 				write_line(mut w, options.output_compat_definition(definition, table.name))!
@@ -526,7 +526,7 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 
 				identity_column := table.identity_column()
 				mut overriding := ''
-				if column := identity_column {
+				if column := opt_copy(identity_column) {
 					if c == .postgresql && (column.identity or { &IdentityColumn{} }).always {
 						overriding = ' OVERRIDING SYSTEM VALUE'
 					}
@@ -540,13 +540,13 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 					write_line(mut w, 'INSERT INTO ${name} (${columns})${overriding} VALUES (${data.join(', ')});')!
 				}
 
-				if column := identity_column {
+				if column := opt_copy(identity_column) {
 					sequence := catalog.identity_sequence(table)!
 					next_value := (sequence.next() or { sequence }).current_value
 					if c.is_kept_identity(table, column)
 						&& (!sequence.unused || next_value != sequence.start_value) {
 						write_line(mut w, c.identity_restart_sql(Table{
-							...table
+							...table.copy()
 							name: options.output_name(table.name)
 						}, column, next_value).join('\n'))!
 					}
@@ -556,7 +556,7 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 			if !options.data_only {
 				for index in object.table_indexes(table) {
 					write_line(mut w, c.create_index_sql(Table{
-						...table
+						...table.copy()
 						name: options.output_name(table.name)
 					}, index))!
 				}
@@ -583,7 +583,7 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 // text can be scanned for the names.
 fn (o DumpOptions) output_compat_definition(definition string, name Identifier) string {
 	if !o.no_schema {
-		return definition
+		return own_string(definition)
 	}
 
 	mut prefixes := map[string]string{}

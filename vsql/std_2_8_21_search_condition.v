@@ -33,7 +33,8 @@ fn (o &WhereOperation) str() string {
 fn (o &WhereOperation) columns() Columns {
 	// WHERE does not change the columns so pass through from the last
 	// operation.
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 fn (mut o WhereOperation) execute(rows []Row) ![]Row {

@@ -23,11 +23,14 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 	//
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxiv
 	typed := c.with_row_types([e.left.compile_fields(mut c)!, e.right.compile_fields(mut c)!])
-	compiled_left := typed[0]
-	compiled_right := typed[1]
+	compiled_left := own_elem(typed, 0)
+	compiled_right := own_elem(typed, 1)
+	// The array literals have copies to work around
+	// https://github.com/vlang/v/issues/32947 (-autofree).
+	rows := [own_array(compiled_left), own_array(compiled_right)]
 
 	// ISO/IEC 9075-2:2023, 8.14, <overlaps predicate>, Syntax Rules, 1
-	for compiled in [compiled_left, compiled_right] {
+	for compiled in rows {
 		if compiled.len != 2 {
 			return sqlstate_42601('OVERLAPS needs a row of degree 2, not ${compiled.len}')
 		}
@@ -38,12 +41,12 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 	// an interval that can be added to the first field, and they must all be
 	// comparable. A dynamic parameter whose value is NULL is allowed, as it is
 	// for a comparison (see check_comparison).
-	for field in [compiled_left[0], compiled_right[0]] {
+	for field in [own_copy(&compiled_left[0]), own_copy(&compiled_right[0])] {
 		if !field.null_parameter && !field.typ.typ.is_datetime() {
 			return sqlstate_42804('in OVERLAPS', 'DATE, TIME or TIMESTAMP', field.typ.str())
 		}
 	}
-	for row in [compiled_left, compiled_right] {
+	for row in rows {
 		if row[1].typ.typ.is_interval() {
 			datetime_plus_interval_type(row[0].typ, row[1].typ) or {
 				return sqlstate_42804('in OVERLAPS', 'an interval that can be added to ${row[0].typ}',
@@ -54,10 +57,10 @@ fn (e OverlapsPredicate) compile(mut c Compiler) !CompileResult {
 				row[1].typ.str())
 		}
 	}
-	mut pairs := [[compiled_left[0], compiled_right[0]]]
-	for row in [compiled_left, compiled_right] {
+	mut pairs := [[own_copy(&compiled_left[0]), own_copy(&compiled_right[0])]]
+	for row in rows {
 		if !row[1].typ.typ.is_interval() {
-			pairs << row
+			pairs << own_array(row)
 		}
 	}
 	for pair in pairs {

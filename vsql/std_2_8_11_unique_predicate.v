@@ -17,6 +17,11 @@ fn (e UniquePredicate) pstr(params map[string]Value) string {
 }
 
 fn (e UniquePredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &UniquePredicate{
+		...e
+	}
 	plan := e.subquery.plan(mut c)!
 
 	// ISO/IEC 9075-2:2023, 9.12, Grouping operations, Syntax Rules, 1.h
@@ -25,10 +30,10 @@ fn (e UniquePredicate) compile(mut c Compiler) !CompileResult {
 	}
 
 	return CompileResult{
-		run:          fn [plan, e] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [plan, e_ref] (mut conn Connection, data Row, params map[string]Value) !Value {
 			rows := subquery_rows(mut conn, plan, data)!
 
-			return new_boolean_value(is_unique_rows(conn, rows, e.nulls_not_distinct)!)
+			return new_boolean_value(is_unique_rows(conn, rows, e_ref.nulls_not_distinct)!)
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: plan.contains_agg

@@ -48,21 +48,28 @@ mut:
 	hand    int
 }
 
+// find and add copy the statement in and out of the cache, so that the cache
+// and the caller never free the same statement. That works around
+// https://github.com/vlang/v/issues/32949 (-autofree), where a copy of the
+// element of an array (or the parameter that's stored in one) is freed while
+// the array still holds it.
+@[manualfree]
 fn (mut c StatementCache) find(sql_stmt string) ?ParsedStmt {
 	i := c.slot_of[sql_stmt] or { return none }
 	c.slots[i].used = true
 
-	return c.slots[i].parsed
+	return own_copy(&c.slots[i].parsed)
 }
 
+@[manualfree]
 fn (mut c StatementCache) add(sql_stmt string, parsed ParsedStmt) {
 	if sql_stmt.len > statement_cache_max_length {
 		return
 	}
 
 	slot := StatementSlot{
-		sql_stmt: sql_stmt
-		parsed:   parsed
+		sql_stmt: own_string(sql_stmt)
+		parsed:   own_copy(&parsed)
 	}
 	if c.slots.len < statement_cache_size {
 		c.slot_of[sql_stmt] = c.slots.len

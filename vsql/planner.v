@@ -5,6 +5,11 @@
 
 module vsql
 
+// Every function in planner.v is manualfree: a plan is made once for each
+// statement, and its operations share values (tables, columns and expressions)
+// with the syntax tree and each other without copies, which -autofree would
+// free twice. They leak with -autofree for now.
+
 import time
 
 interface PlanOperation {
@@ -18,6 +23,7 @@ mut:
 	execute(row []Row) ![]Row
 }
 
+@[manualfree]
 fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 	match stmt {
 		DeleteStatementSearched {
@@ -35,6 +41,7 @@ fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 	}
 }
 
+@[manualfree]
 fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]&Table) {
 	match body {
 		QuerySpecification {
@@ -55,7 +62,7 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			// INTERSECT.
 			//
 			// ISO/IEC 9075-2:2023, 6.14, <next value expression>, Syntax Rules, 1
-			next_value_not_allowed := conn.next_value_not_allowed
+			next_value_not_allowed := own_string(conn.next_value_not_allowed)
 			if next_value_not_allowed == '' {
 				conn.next_value_not_allowed = body.op
 			}
@@ -64,13 +71,15 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			}
 
 			mut plan := Plan{}
-			plan.subplans['\$1'] = create_query_expression_plan(*body.left, params, mut
-				conn, Correlation{})!
-			plan.subplans['\$2'] = create_query_expression_plan(*body.right, params, mut
-				conn, Correlation{})!
-
-			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'] or { Plan{} },
-				plan.subplans['\$2'] or { Plan{} }, mut conn)!
+			left := create_query_expression_plan(*body.left, params, mut conn, Correlation{})!
+			right := create_query_expression_plan(*body.right, params, mut conn, Correlation{})!
+			plan.operations << new_set_operation_operation(body, left, right, mut conn)!
+			plan.subplans['\$1'] = &Plan{
+				...left
+			}
+			plan.subplans['\$2'] = &Plan{
+				...right
+			}
 
 			return plan, map[string]&Table{}
 		}
@@ -80,6 +89,10 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 	}
 }
 
+// create_select_plan is manualfree because the operations keep select_exprs
+// (and the tables) without a copy, and -autofree frees them at the end (no
+// small repro yet).
+@[manualfree]
 fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]&Table) {
 	from_clause := body.table_expression.from_clause
 
@@ -98,14 +111,14 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 				}
 				plan.operations << &SingleRowOperation{}
 				tables[table.name.id()] = &Table{
-					...table
+					...table.copy()
 				}
 			} else {
 				table_plan, table := create_select_plan_without_join(body, from_clause,
 					params, mut conn, allow_virtual, true)!
 				plan = table_plan
 				tables[table.name.id()] = &Table{
-					...table
+					...table.copy()
 					columns: table.result_columns()
 				}
 			}
@@ -135,7 +148,9 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 						table := qualified_asterisk_table(item, mut conn, tables)!
 						conn.flag_asterisk(table)
 						for column in table.columns {
-							select_exprs << column_derived_column(column)
+							// A clone works around https://github.com/vlang/v/issues/32930
+							// (-autofree).
+							select_exprs << column_derived_column(column.clone())
 						}
 					}
 				}
@@ -145,7 +160,9 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 			for _, table in tables {
 				conn.flag_asterisk(table)
 				for column in table.columns {
-					select_exprs << column_derived_column(column)
+					// A clone works around https://github.com/vlang/v/issues/32930
+					// (-autofree).
+					select_exprs << column_derived_column(column.clone())
 				}
 			}
 		}
@@ -176,25 +193,32 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 // the FROM clause. Then the WHERE clause can be used to read only some of the
 // rows of a table on a side of the join that isn't NULL-extended either (see
 // create_table_reference_plan), although it's still applied to every joined row.
+@[manualfree]
 fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table, preserved bool) !Plan {
 	outside_join := tables.keys()
 
 	mut plan := Plan{}
 	before_left := tables.keys()
 	first_table := tables.len
-	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
+	left := create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
 			.right,
 			.full,
 		])!
 	before_right := tables.keys()
-	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
+	right := create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
 			.left,
 			.full,
 		])!
-	left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
-	right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
+	left_columns := left.columns()
+	right_columns := right.columns()
+	plan.subplans['\$1'] = &Plan{
+		...left
+	}
+	plan.subplans['\$2'] = &Plan{
+		...right
+	}
 
 	range_variable := '\$USING${tables.len}'
 	mut common_columns := []CommonColumn{}
@@ -247,14 +271,14 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		join_lookup(join.right_table, right_names, left_names, specification, tables,
 			params, mut conn, allow_virtual)
 	}
-	if l := lookup {
+	if l := opt_copy(lookup) {
 		// EXPLAIN shows the lookup instead of reading the whole table.
 		inner := if join.join_type == .right { '\$1' } else { '\$2' }
-		mut inner_plan := plan.subplans[inner] or { Plan{} }
+		mut inner_plan := plan.subplans[inner] or { &Plan{} }
 		if l.table.name.id() == l.base_table.name.id() {
 			inner_plan.operations[0] = l.operation
 		} else {
-			inner_plan.subplans[l.table.name.id()] = Plan{
+			inner_plan.subplans[l.table.name.id()] = &Plan{
 				operations: [l.operation]
 			}
 		}
@@ -272,7 +296,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	for name, table in tables.clone() {
 		if name in null_extended {
 			tables[name] = &Table{
-				...table
+				...table.copy()
 				columns: possibly_nullable_columns(table.columns)
 			}
 		}
@@ -297,6 +321,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 // side (the tables named in outer_names), the inner side is named in
 // inner_names. It's none when there isn't one, such as when the inner side is a
 // derived table or another join.
+@[manualfree]
 fn join_lookup(inner_reference TableReference, inner_names []string, outer_names []string, specification BooleanValueExpression, tables map[string]&Table, params map[string]Value, mut conn Connection, allow_virtual bool) ?JoinLookup {
 	inner := match inner_reference {
 		TablePrimary { inner_reference }
@@ -337,6 +362,7 @@ fn join_lookup(inner_reference TableReference, inner_names []string, outer_names
 // first in "SELECT *".
 //
 // ISO/IEC 9075-2:2023, 7.10, <joined table>, Syntax Rules, 10.a.ii, 10.f.iv and 11.a.i
+@[manualfree]
 fn add_common_columns_range_variable(tables map[string]&Table, first_table int, range_variable string, common_columns []CommonColumn) map[string]&Table {
 	mut hidden := map[string]bool{}
 	for common in common_columns {
@@ -356,7 +382,7 @@ fn add_common_columns_range_variable(tables map[string]&Table, first_table int, 
 			}
 		}
 		new_tables[name] = &Table{
-			...table
+			...table.copy()
 			columns: table.columns.filter(it.name.id() !in hidden)
 		}
 		i++
@@ -365,6 +391,7 @@ fn add_common_columns_range_variable(tables map[string]&Table, first_table int, 
 	return new_tables
 }
 
+@[manualfree]
 fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]&Table, preserved bool) !Plan {
 	match table_reference {
 		TablePrimary {
@@ -400,7 +427,7 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 				}
 			}
 			tables[table.name.id()] = &Table{
-				...table
+				...table.copy()
 				columns: table.result_columns()
 			}
 
@@ -416,6 +443,7 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 // create_select_plan_without_join reads the rows of one table. The WHERE clause
 // is only applied (and used to choose a primary key lookup) with filter, when
 // the table is the whole FROM clause.
+@[manualfree]
 fn create_select_plan_without_join(body QuerySpecification, from_clause TablePrimary, params map[string]Value, mut conn Connection, allow_virtual bool, filter bool) !(Plan, Table) {
 	mut plan := Plan{}
 	mut table := Table{}
@@ -451,7 +479,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): &Table{
-							...table
+							...table.copy()
 						}
 					}, covered)!
 				}
@@ -481,7 +509,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): &Table{
-							...table
+							...table.copy()
 						}
 					}, [])!
 				}
@@ -489,7 +517,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				table = catalog.storage.table(table_name_id)
 				conn.flag_subquery_table(table_name)
 
-				mut operation := PlanOperation(TableOperation{table_name, false, table, params, conn, plan.subplans})
+				// The operation has its own copy of table, which is also returned (and
+				// freed with -autofree).
+				mut operation := PlanOperation(TableOperation{table_name, false, table.copy(), params, conn, plan.subplans})
 				mut covered := []bool{}
 				if filter {
 					if key := key_operation(body, table, table, params, mut conn) {
@@ -502,7 +532,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): &Table{
-							...table
+							...table.copy()
 						}
 					}, covered)!
 				}
@@ -522,7 +552,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			// A derived table can't contain a NEXT VALUE FOR either.
 			//
 			// ISO/IEC 9075-2:2023, 6.14, <next value expression>, Syntax Rules, 1
-			next_value_not_allowed := conn.next_value_not_allowed
+			next_value_not_allowed := own_string(conn.next_value_not_allowed)
 			if next_value_not_allowed == '' {
 				conn.next_value_not_allowed = 'a derived table'
 			}
@@ -544,7 +574,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
 					table.name.id(): &Table{
-						...table
+						...table.copy()
 					}
 				}, [])!
 			}
@@ -559,6 +589,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 // tables, or two correlation names, have their full names compared instead.
 //
 // ISO/IEC 9075-2:2023, 7.5, <from clause>, Syntax Rules, 5.b and 5.c
+@[manualfree]
 fn is_same_range_variable(a Identifier, b Identifier) bool {
 	return (a.entity_name != '') != (b.entity_name != '')
 		&& unqualified_range_variable(a) == unqualified_range_variable(b)
@@ -566,14 +597,18 @@ fn is_same_range_variable(a Identifier, b Identifier) bool {
 
 // unqualified_range_variable is the name of a table without its catalog and
 // schema, or a correlation name.
+@[manualfree]
 fn unqualified_range_variable(name Identifier) string {
 	return if name.entity_name != '' { name.entity_name } else { name.sub_entity_name }
 }
 
 // add_correlation_plan reads the rows of subplan as the table table_name. A
 // derived column list in the correlation renames the columns.
+@[manualfree]
 fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, mut conn Connection) !Table {
-	plan.subplans[table_name.id()] = subplan
+	plan.subplans[table_name.id()] = &Plan{
+		...subplan
+	}
 
 	// A derived column list must have a name for each column, and each name only
 	// once.
@@ -608,10 +643,12 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 
 	mut columns := []Column{}
 	for i, col in subplan_columns {
+		// The copies work around https://github.com/vlang/v/issues/32932
+		// (-autofree).
 		name := if correlation_columns.len > 0 {
-			correlation_columns[i].sub_entity_name
+			own_string(correlation_columns[i].sub_entity_name)
 		} else {
-			col.name.sub_entity_name
+			own_string(col.name.sub_entity_name)
 		}
 		// The columns of a view (which is named like a table, see
 		// create_view_plan) are named like the columns of a table.
@@ -634,7 +671,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			typ:            col.typ
 			not_null:       col.not_null
 			from_aggregate: col.from_aggregate
-			features:       col.features
+			features:       own_array(col.features)
 		}
 		if conn.collect_columns {
 			conn.correlated_columns[columns[i].name.id()] << col.name.id()
@@ -648,7 +685,8 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 		columns: columns
 	}
 
-	plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
+	// The operation has its own copy of table, see create_select_plan_without_join.
+	plan.operations << TableOperation{table_name, true, table.copy(), params, conn, plan.subplans}
 
 	return table
 }
@@ -660,8 +698,9 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 // covered is true for each part of the AND (see and_factors) that the rows of
 // the last operation (a KeyOperation) are already known to be true for, which
 // are left out of the filter. There's no filter when they all are.
+@[manualfree]
 fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]&Table, covered []bool) ! {
-	if where := body.table_expression.where_clause {
+	if where := opt_copy(body.table_expression.where_clause) {
 		mut c := Compiler{
 			conn:                   conn
 			params:                 params
@@ -700,12 +739,16 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 			compiled_condition = [condition.compile(mut c)!]
 		}
 
-		last_operation := plan.operations[plan.operations.len - 1]
-		plan.operations << new_where_operation(condition, params, conn, last_operation.columns(),
+		last_columns := plan.operations[plan.operations.len - 1].columns()
+		plan.operations << new_where_operation(condition, params, conn, last_columns,
 			tables, compiled_condition)
 	}
 }
 
+// add_group_by_plan is manualfree because the operations keep order and the
+// grouping columns without a copy, and -autofree frees them at the end (no
+// small repro yet).
+@[manualfree]
 fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]&Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function (or there is a HAVING) we need to
@@ -746,7 +789,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	// The HAVING has the same rule and must be a boolean.
 	//
 	// ISO/IEC 9075-2:2023, 7.14, <having clause>, Syntax Rules, 3
-	if having := having_clause {
+	if having := opt_copy(having_clause) {
 		c.next_value_not_allowed = 'HAVING'
 		compiled_having := c.with_boolean_type(having.compile(mut c)!)
 		if compiled_having.typ.typ != .is_boolean {
@@ -780,12 +823,13 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	// The HAVING filters the groups, each of which is now a row.
 	//
 	// ISO/IEC 9075-2:2023, 7.14, <having clause>, General Rules, 1
-	if having := having_clause {
+	if having := opt_copy(having_clause) {
 		plan.operations << new_where_operation(having, params, conn, plan.columns(),
 			tables, [])
 	}
 }
 
+@[manualfree]
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
 	select_stmt := QuerySpecification{
 		exprs:            AsteriskExpr(true)
@@ -805,6 +849,7 @@ fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut
 	return plan
 }
 
+@[manualfree]
 fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut conn Connection) !Plan {
 	select_stmt := QuerySpecification{
 		exprs:            AsteriskExpr(true)
@@ -824,11 +869,12 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 	return plan
 }
 
+@[manualfree]
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
 	// The peers of WITH TIES are decided by the ORDER BY, so there must be one.
 	//
 	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 30
-	if fetch := stmt.fetch {
+	if fetch := opt_copy(stmt.fetch) {
 		if fetch.with_ties && stmt.order.len == 0 {
 			return sqlstate_42601('FETCH FIRST WITH TIES requires an ORDER BY')
 		}
@@ -977,13 +1023,20 @@ mut:
 	params     map[string]Value
 	// subplans represent the subqueries. These are indexed by name and may be
 	// referenced by expressions.
-	subplans map[string]Plan
+	subplans map[string]&Plan
 }
+
+// free stops -autofree from freeing a plan, which is copied (sharing its
+// operations) by subqueries and their scopes. Plans leak with -autofree for now.
+fn (mut p Plan) free() {}
 
 // scan_batch_size is how many rows of a table are read at a time when the
 // operations after it work on each row by itself, see Plan.execute.
 const scan_batch_size = 1024
 
+// execute is manualfree because an operation can return rows of its input
+// (such as WHERE), so -autofree would free them when rows is replaced.
+@[manualfree]
 fn (mut o Plan) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
 	mut next := 0
@@ -995,7 +1048,7 @@ fn (mut o Plan) execute(_ []Row) ![]Row {
 	// change the table while it's being read (NEXT VALUE FOR, which does
 	// write, is a separate SequenceValuesOperation).
 	if o.operations.len > 1 {
-		mut first := o.operations[0]
+		mut first := &o.operations[0]
 		if mut first is TableOperation {
 			mut end := 1
 			for end < o.operations.len
@@ -1023,6 +1076,7 @@ fn (mut o Plan) execute(_ []Row) ![]Row {
 // (its columns aren't all known until it runs) or a column isn't one of the
 // table's. The expressions have already been compiled when the plan was made,
 // so they compile again without an error.
+@[manualfree]
 fn (mut o Plan) needed_columns(mut table TableOperation, end int) ![]bool {
 	if !o.operations[1..end].any(it is ExprOperation) {
 		return []
@@ -1041,7 +1095,7 @@ fn (mut o Plan) needed_columns(mut table TableOperation, end int) ![]bool {
 	}
 
 	for i in 1 .. end {
-		operation := o.operations[i]
+		operation := &o.operations[i]
 		if operation is WhereOperation {
 			mut c := Compiler{
 				conn:   conn
@@ -1071,6 +1125,7 @@ fn (mut o Plan) needed_columns(mut table TableOperation, end int) ![]bool {
 
 // execute_scan reads the rows of table some at a time, passing each batch
 // through the operations before end.
+@[manualfree]
 fn (mut o Plan) execute_scan(mut table TableOperation, end int) ![]Row {
 	mut catalog := table.conn.catalog_for(table.table_name)
 	needed := o.needed_columns(mut table, end)!
@@ -1095,12 +1150,14 @@ fn (mut o Plan) execute_scan(mut table TableOperation, end int) ![]Row {
 	return rows
 }
 
+@[manualfree]
 fn (p Plan) columns() Columns {
 	// The columns at the end of the plan will always be whatever the last
 	// operation returns.
 	return p.operations[p.operations.len - 1].columns()
 }
 
+@[manualfree]
 fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	mut rows := []Row{}
 	for line in p.explain_lines() {
@@ -1121,6 +1178,7 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 
 // explain_lines lists the subplans (indented under their names) followed by the
 // operations. Subplans of a join can also be joins, so this is recursive.
+@[manualfree]
 fn (p Plan) explain_lines() []string {
 	mut lines := []string{}
 
@@ -1148,6 +1206,10 @@ mut:
 	tables  map[string]&Table
 }
 
+// new_expr_operation is manualfree because a column name is in both the
+// columns and the expressions, and a select list expression is copied without a
+// clone, so -autofree would free them twice.
+@[manualfree]
 fn new_expr_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]&Table) !ExprOperation {
 	mut exprs := []DerivedColumn{}
 	mut columns := []Column{}
@@ -1170,7 +1232,9 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 						table := qualified_asterisk_table(item, mut conn, tables)!
 						columns << star_columns(table)
 						for column in table.columns {
-							exprs << column_derived_column(column)
+							// A clone works around https://github.com/vlang/v/issues/32930
+							// (-autofree).
+							exprs << column_derived_column(column.clone())
 						}
 					}
 					DerivedColumn {
@@ -1264,6 +1328,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 // T101 isn't supported, as can a column of an outer query.
 //
 // ISO/IEC 9075-2:2023, 7.16, <query specification>, Syntax Rules, 18 and 19
+@[manualfree]
 fn column_not_null(reference Identifier, conn &Connection, tables map[string]&Table) bool {
 	for _, table in tables {
 		if column := table.column(reference.sub_entity_name) {
@@ -1277,6 +1342,7 @@ fn column_not_null(reference Identifier, conn &Connection, tables map[string]&Ta
 }
 
 // qualified_asterisk_table returns the table that "t.*" refers to.
+@[manualfree]
 fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables map[string]&Table) !Table {
 	// A derived table, such as "(SELECT ...) AS t", is only known by its
 	// correlation name.
@@ -1312,6 +1378,7 @@ fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables
 // star_columns are the columns of a table in the result of "*" or "t.*". A
 // column of a derived table with a name that's not unique has a key for its
 // position (see add_correlation_plan), which isn't the key in the result.
+@[manualfree]
 fn star_columns(table Table) []Column {
 	return table.columns.map(Column{
 		...it
@@ -1322,6 +1389,7 @@ fn star_columns(table Table) []Column {
 	})
 }
 
+@[manualfree]
 fn column_derived_column(column Column) DerivedColumn {
 	return DerivedColumn{ValueExpression(BooleanValueExpression{
 		term: BooleanTerm{
@@ -1333,14 +1401,18 @@ fn column_derived_column(column Column) DerivedColumn {
 	}}
 }
 
+@[manualfree]
 fn (o ExprOperation) str() string {
 	return 'EXPR (${o.columns()})'
 }
 
+@[manualfree]
 fn (o ExprOperation) columns() Columns {
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
+@[manualfree]
 fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	mut c := Compiler{
 		conn:   o.conn

@@ -60,7 +60,8 @@ fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !
 	// table.
 	//
 	// ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 7
-	columns := if stmt.columns.len > 0 { stmt.columns } else { table.columns.map(it.name) }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	columns := if stmt.columns.len > 0 { stmt.columns.clone() } else { table.columns.map(it.name) }
 	stmt.check_override_clause(table, columns)!
 
 	// Each element of the VALUES is a row, and so is each row of a query. All
@@ -77,7 +78,7 @@ fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !
 	// every column of the table.
 	//
 	// ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 6
-	row_values := if query := stmt.query {
+	row_values := if query := opt_copy(stmt.query) {
 		stmt.query_rows(mut conn, params, table, columns, query)!
 	} else if stmt.from_default {
 		[
@@ -134,16 +135,24 @@ fn row_elements(row_value ContextuallyTypedRowValueConstructor) []ContextuallyTy
 // NULL or DEFAULT on its own, because they get their type from the column.
 //
 // ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Format
+//
+// It's manualfree, and the rows and elements are copies, because the
+// constructors keep them and -autofree frees loop variables (no small repro
+// yet).
+@[manualfree]
 fn row_value_constructors(rows []ContextuallyTypedRowValueConstructor) ![]RowValueConstructor {
 	mut constructors := []RowValueConstructor{}
-	for row in rows {
+	for i in 0 .. rows.len {
+		row := own_elem(rows, i)
 		match row {
 			CommonValueExpression, BooleanValueExpression {
 				constructors << RowValueConstructor(row)
 			}
 			ContextuallyTypedValueSpecification, []ContextuallyTypedRowValueConstructorElement {
 				mut exprs := []ValueExpression{}
-				for element in row_elements(row) {
+				elements := row_elements(row)
+				for j in 0 .. elements.len {
+					element := own_elem(elements, j)
 					if element is ValueExpression {
 						exprs << element
 					} else {
@@ -171,7 +180,7 @@ fn (stmt InsertStatement) query_rows(mut conn Connection, params map[string]Valu
 
 	for i, column in columns {
 		table_column := table.column(column.sub_entity_name)!
-		if identity := table_column.identity {
+		if identity := opt_copy(table_column.identity) {
 			if identity.always && stmt.overriding == '' {
 				return sqlstate_428c9(column.sub_entity_name)
 			}
@@ -250,8 +259,8 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 		// ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 13.d
 		// ISO/IEC 9075-2:2023, 14.11, <insert statement>, General Rules, 7.e
 		// ISO/IEC 9075-2:2023, 15.11, Effect of inserting tables into base tables, General Rules, 3.a
-		mut value := values[i]
-		if identity := table_column.identity {
+		mut value := own_elem(values, i)
+		if identity := opt_copy(table_column.identity) {
 			if identity.always && stmt.overriding == '' && !is_default_specification(value) {
 				return sqlstate_428c9(column.sub_entity_name)
 			}

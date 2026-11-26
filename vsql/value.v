@@ -41,9 +41,14 @@ pub:
 }
 
 fn (e Value) compile(mut _ Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &Value{
+		...e
+	}
 	return CompileResult{
-		run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-			return e
+		run:          fn [e_ref] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return *e_ref
 		}
 		typ:          e.typ
 		contains_agg: false
@@ -53,8 +58,10 @@ fn (e Value) compile(mut _ Compiler) !CompileResult {
 
 union InternalValue {
 mut:
-	// BOOLEAN
-	bool_value Boolean
+	// BOOLEAN, a Boolean. It's a u8 rather than a Boolean so that a NULL (which
+	// doesn't set any field of the union) has 0, which isn't TRUE or FALSE. V
+	// sets an enum field of a union that isn't set to its first value (FALSE).
+	bool_value u8
 	// DOUBLE PRECISION and REAL
 	f64_value f64
 	// BIGINT, INTEGER and SMALLINT
@@ -62,8 +69,12 @@ mut:
 	int_value i64
 	// CHARACTER VARYING(n), CHARACTER(n) and CHARACTER LARGE OBJECT(n)
 	// BINARY(n), BINARY VARYING(n) and BINARY LARGE OBJECT(n) (each byte of the
-	// string is an octet)
-	string_value string
+	// string is an octet), see box_string.
+	//
+	// The string is behind a pointer because -autofree frees a string in a
+	// union whichever field is set:
+	// https://github.com/vlang/v/issues/32933
+	string_value voidptr
 	// DATE
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
 	// TIMESTAMP(n) WITH TIME ZONE and TIMESTAMP(n) WITHOUT TIME ZONE
@@ -81,6 +92,91 @@ mut:
 	large_value voidptr
 }
 
+// StringBox holds the string of a Value, see box_string.
+struct StringBox {
+	s string
+}
+
+// own_string is a copy of s with -autofree, and s without it. It's for a
+// string that's borrowed (such as a field of a parameter) but put into a value
+// that the caller frees. -autofree doesn't copy it, so it frees the original
+// (https://github.com/vlang/v/issues/32932). It's also used for a variable
+// that's reassigned (https://github.com/vlang/v/issues/32944). The garbage
+// collector doesn't need the copy.
+fn own_string(s string) string {
+	$if autofree {
+		return s.clone()
+	}
+	return s
+}
+
+// map_value is the value of key in m (a copy), or none. It's used instead of
+// "m[key] or { ... }", which -autofree doesn't copy, so the caller frees the
+// value that's still in m (https://github.com/vlang/v/issues/32937).
+@[manualfree]
+fn map_value[K, V](m map[K]V, key K) ?V {
+	if key in m {
+		v := m[key]
+		$if autofree {
+			return own_copy(&v)
+		}
+		return v
+	}
+	return none
+}
+
+// own_elem is a[i], which is a copy with -autofree. "x := a[i]" isn't a copy,
+// so -autofree frees the element when x is freed
+// (https://github.com/vlang/v/issues/32949).
+@[inline]
+fn own_elem[T](a []T, i int) T {
+	$if autofree {
+		return own_copy(unsafe { &a[i] })
+	}
+	return a[i]
+}
+
+// opt_copy is o. "if x := o { ... }" on a local option moves its value out
+// with -autofree, so o is none afterwards
+// (https://github.com/vlang/v/issues/32951). "if x := opt_copy(o) { ... }"
+// leaves o as it is. The same happens to a field of a mut receiver.
+@[inline]
+fn opt_copy[T](o ?T) ?T {
+	return o
+}
+
+// heap_copy is a copy of *v on the heap, which is a deep copy (see own_copy)
+// with -autofree. It's used instead of &v for a parameter v that's kept, since
+// the caller frees v with -autofree (https://github.com/vlang/v/issues/32943).
+fn heap_copy[T](v &T) &T {
+	mut p := unsafe { &T(voidptr(vcalloc(int(sizeof(T))))) }
+	$if autofree {
+		unsafe {
+			*p = own_copy(v)
+		}
+	} $else {
+		unsafe {
+			*p = *v
+		}
+	}
+	return p
+}
+
+// own_array is a copy of a with -autofree, and a without it, like own_string.
+fn own_array[T](a []T) []T {
+	$if autofree {
+		return a.clone()
+	}
+	return a
+}
+
+// box_string is s on the heap, for InternalValue.string_value.
+fn box_string(s string) voidptr {
+	// -autofree can't see that s is kept by the box, so the caller would free
+	// it.
+	return voidptr(&StringBox{own_string(s)})
+}
+
 // box_time is t on the heap, for InternalValue.time_value.
 fn box_time(t Time) voidptr {
 	return voidptr(&Time{
@@ -90,8 +186,11 @@ fn box_time(t Time) voidptr {
 
 // box_numeric is n on the heap, for InternalValue.numeric_value.
 fn box_numeric(n Numeric) voidptr {
+	// The integers are copied with -autofree, see own_integer.
 	return voidptr(&Numeric{
-		...n
+		typ:         n.typ
+		numerator:   own_integer(n.numerator)
+		denominator: own_integer(n.denominator)
 	})
 }
 
@@ -122,7 +221,7 @@ pub fn new_boolean_value(b bool) Value {
 	return Value{
 		typ: Type{.is_boolean, 0, 0, false, false}
 		v:   InternalValue{
-			bool_value: if b { .is_true } else { .is_false }
+			bool_value: u8(if b { Boolean.is_true } else { Boolean.is_false })
 		}
 	}
 }
@@ -228,7 +327,7 @@ pub fn new_varchar_value(x string) Value {
 	return Value{
 		typ: Type{.is_varchar, x.len_utf8(), 0, false, false}
 		v:   InternalValue{
-			string_value: x
+			string_value: box_string(x)
 		}
 	}
 }
@@ -239,7 +338,7 @@ pub fn new_character_value(x string) Value {
 	return Value{
 		typ: Type{.is_character, x.len_utf8(), 0, false, false}
 		v:   InternalValue{
-			string_value: x
+			string_value: box_string(x)
 		}
 	}
 }
@@ -249,7 +348,7 @@ pub fn new_clob_value(x string) Value {
 	return Value{
 		typ: Type{.is_clob, x.len_utf8(), 0, false, false}
 		v:   InternalValue{
-			string_value: x
+			string_value: box_string(x)
 		}
 	}
 }
@@ -266,7 +365,7 @@ fn new_binary_string_value(typ SQLType, x string) Value {
 	return Value{
 		typ: Type{typ, x.len, 0, false, false}
 		v:   InternalValue{
-			string_value: x
+			string_value: box_string(x)
 		}
 	}
 }
@@ -511,7 +610,7 @@ pub fn (v Value) literal() string {
 }
 
 fn approximate_numeric_literal(s string) string {
-	return if s.contains('e') { s } else { s + 'e0' }
+	return if s.contains('e') { own_string(s) } else { s + 'e0' }
 }
 
 // The string representation of this value. Different types will have different
@@ -569,7 +668,7 @@ pub fn (v Value) str() string {
 
 pub fn (v Value) bool_value() Boolean {
 	unsafe {
-		return v.v.bool_value
+		return Boolean(v.v.bool_value)
 	}
 }
 
@@ -592,12 +691,18 @@ pub fn (v Value) f64_value() f64 {
 pub fn (v Value) string_value() string {
 	if v.is_large {
 		mut lv := v.large_value()
-		return lv.load() or { '' }
+		return own_string(lv.load() or { '' })
 	}
 
-	unsafe {
-		return v.v.string_value
+	// A NULL has the empty string.
+	p := unsafe { v.v.string_value }
+	if isnil(p) {
+		return ''
 	}
+
+	// The copy works around https://github.com/vlang/v/issues/32932
+	// (-autofree): the caller would free the value's string.
+	return own_string(unsafe { (&StringBox(p)).s })
 }
 
 pub fn (v Value) time_value() Time {
@@ -609,11 +714,23 @@ pub fn (v Value) time_value() Time {
 fn (v Value) decfloat_value() DecFloat {
 	// A NULL has the zero DecFloat.
 	p := unsafe { v.v.decfloat_value }
-	return if isnil(p) { DecFloat{} } else { unsafe { *(&DecFloat(p)) } }
+	if isnil(p) {
+		return DecFloat{}
+	}
+
+	// The caller gets its own coefficient with -autofree, see own_integer.
+	d := unsafe { &DecFloat(p) }
+	return DecFloat{own_integer(d.coefficient), d.exponent}
 }
 
 pub fn (v Value) numeric_value() Numeric {
 	// A NULL has the zero Numeric.
 	p := unsafe { v.v.numeric_value }
-	return if isnil(p) { Numeric{} } else { unsafe { *(&Numeric(p)) } }
+	if isnil(p) {
+		return Numeric{}
+	}
+
+	// The caller gets its own integers with -autofree, see own_integer.
+	n := unsafe { &Numeric(p) }
+	return Numeric{n.typ, own_integer(n.numerator), own_integer(n.denominator)}
 }

@@ -15,7 +15,7 @@ struct NumericValueExpression {
 }
 
 fn (e NumericValueExpression) pstr(params map[string]Value) string {
-	if n := e.n {
+	if n := opt_copy(e.n) {
 		return '${n.pstr(params)} ${e.op} ${e.term.pstr(params)}'
 	}
 
@@ -23,9 +23,14 @@ fn (e NumericValueExpression) pstr(params map[string]Value) string {
 }
 
 fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &NumericValueExpression{
+		...e
+	}
 	mut compiled_term := e.term.compile(mut c)!
 
-	if n := e.n {
+	if n := opt_copy(e.n) {
 		mut compiled_n := n.compile(mut c)!
 		datetime_result, is_datetime := c.compile_datetime_arithmetic(compiled_n, e.op,
 			compiled_term)!
@@ -37,11 +42,11 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 		compiled_n, compiled_term = c.with_pair_types(compiled_n, compiled_term, same_type)
 
 		return CompileResult{
-			run:          fn [e, compiled_n, compiled_term] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e_ref, compiled_n, compiled_term] (mut conn Connection, data Row, params map[string]Value) !Value {
 				mut left := compiled_n.run(mut conn, data, params)!
 				mut right := compiled_term.run(mut conn, data, params)!
 
-				return eval_binary(mut conn, left, e.op, right)!
+				return eval_binary(mut conn, left, e_ref.op, right)!
 			}
 			typ:          arithmetic_type(compiled_n.typ, compiled_term.typ, e.op)!
 			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
@@ -59,7 +64,7 @@ struct Term {
 }
 
 fn (e Term) pstr(params map[string]Value) string {
-	if term := e.term {
+	if term := opt_copy(e.term) {
 		return '${term.pstr(params)} ${e.op} ${e.factor.pstr(params)}'
 	}
 
@@ -67,9 +72,14 @@ fn (e Term) pstr(params map[string]Value) string {
 }
 
 fn (e Term) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &Term{
+		...e
+	}
 	mut compiled_factor := e.factor.compile(mut c)!
 
-	if term := e.term {
+	if term := opt_copy(e.term) {
 		mut compiled_term := term.compile(mut c)!
 		datetime_result, is_datetime := c.compile_datetime_arithmetic(compiled_term, e.op,
 			compiled_factor)!
@@ -82,11 +92,11 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 			same_type)
 
 		return CompileResult{
-			run:          fn [e, compiled_term, compiled_factor] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e_ref, compiled_term, compiled_factor] (mut conn Connection, data Row, params map[string]Value) !Value {
 				mut left := compiled_term.run(mut conn, data, params)!
 				mut right := compiled_factor.run(mut conn, data, params)!
 
-				return eval_binary(mut conn, left, e.op, right)!
+				return eval_binary(mut conn, left, e_ref.op, right)!
 			}
 			typ:          arithmetic_type(compiled_term.typ, compiled_factor.typ, e.op)!
 			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
@@ -109,13 +119,18 @@ fn (e SignedValueExpressionPrimary) pstr(params map[string]Value) string {
 }
 
 fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &SignedValueExpressionPrimary{
+		...e
+	}
 	compiled := e.e.compile(mut c)!
 
 	return CompileResult{
-		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled.run(mut conn, data, params)!
 
-			key := '${e.sign} ${value.typ.typ}'
+			key := '${e_ref.sign} ${value.typ.typ}'
 			if fnc := conn.unary_operators[key] {
 				if value.is_null {
 					return value
@@ -212,7 +227,7 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 		}
 	}
 
-	return SignedValueExpressionPrimary{sign, &expr}
+	return SignedValueExpressionPrimary{sign, heap_copy(&expr)}
 }
 
 // arithmetic_type is the declared type of a binary arithmetic expression. Two

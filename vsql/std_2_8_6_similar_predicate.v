@@ -32,7 +32,7 @@ fn (e SimilarPredicate) pstr(params map[string]Value) string {
 	}
 	s += ' SIMILAR TO ${e.right.pstr(params)}'
 
-	if escape := e.escape {
+	if escape := opt_copy(e.escape) {
 		s += ' ESCAPE ${escape.pstr(params)}'
 	}
 
@@ -43,9 +43,14 @@ fn (e SimilarPredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Syntax Rules, 1
 fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &SimilarPredicate{
+		...e
+	}
 	mut compiled_l := e.left.compile(mut c)!
 	mut compiled_right := e.right.compile(mut c)!
-	mut compiled_escape := if escape := e.escape {
+	mut compiled_escape := if escape := opt_copy(e.escape) {
 		escape.compile(mut c)!
 	} else {
 		CompileResult{
@@ -64,7 +69,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 	c.flag_lob_pattern(compiled_l, compiled_right)
 
 	return CompileResult{
-		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
@@ -100,7 +105,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 			result := pattern.matches(left.string_value())
 
 			// ISO/IEC 9075-2:2023, 8.6, <similar predicate>,Syntax Rules, 2
-			if e.not {
+			if e_ref.not {
 				return new_boolean_value(!result)
 			}
 
@@ -188,7 +193,7 @@ fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 		}
 	}
 
-	if esc := escape {
+	if esc := opt_copy(escape) {
 		// ISO/IEC 9075-2:2023, 8.6, <similar predicate>, General Rules, 3.c
 		//
 		// With ":" as the escape character, the ":]" of "[:ALPHA:]" would be
@@ -208,7 +213,7 @@ fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 	}
 
 	// ISO/IEC 9075-2:2023, 8.6, <similar predicate>, General Rules, 3.b
-	if esc := escape {
+	if esc := opt_copy(escape) {
 		if p.unescaped_escape && esc in regular_special_characters {
 			return sqlstate_2200c()
 		}
@@ -226,7 +231,7 @@ fn new_regular_parser(pattern string, escape ?rune) RegularParser {
 	mut unescaped_escape := false
 	mut i := 0
 	for i < runes.len {
-		if esc := escape {
+		if esc := opt_copy(escape) {
 			if runes[i] == esc {
 				if i + 1 < runes.len && (runes[i + 1] in regular_special_characters
 					|| runes[i + 1] == esc) {
@@ -464,8 +469,8 @@ fn (mut p RegularParser) parse_character_specifier() !rune {
 	if p.pos >= p.pattern.len {
 		return sqlstate_2201b()
 	}
-	ch := p.pattern[p.pos]
-	is_escape := if esc := p.escape { ch == esc } else { false }
+	ch := own_elem(p.pattern, p.pos)
+	is_escape := if esc := opt_copy(p.escape) { ch == esc } else { false }
 	if !p.escaped[p.pos] && (ch in regular_special_characters || is_escape) {
 		return sqlstate_2201b()
 	}
@@ -613,7 +618,7 @@ fn (n RegularNode) ends(s []rune, starts []bool) []bool {
 			}
 		}
 		.repeat {
-			child := n.children[0]
+			child := own_elem(n.children, 0)
 			mut current := starts.clone()
 			for _ in 0 .. n.min {
 				next := child.ends(s, current)

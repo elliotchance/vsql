@@ -36,6 +36,11 @@ struct NotNullConstraint {
 // kept as a NOT NULL of the column (with its name) rather than a CHECK.
 //
 // ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 17
+//
+// It's @[manualfree] because -autofree frees the fields of column, a copy of
+// the first element, after they've been copied into the new elements:
+// https://github.com/vlang/v/issues/32453
+@[manualfree]
 fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) []TableElement {
 	column := elements[0] as Column
 	match constraint {
@@ -52,19 +57,19 @@ fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) [
 			return new_elements
 		}
 		UniqueConstraintDefinition {
-			return append_list(elements, TableElement(UniqueConstraintDefinition{
+			return append_list(own_copy(&elements), TableElement(UniqueConstraintDefinition{
 				...constraint
 				columns: [column.name]
 			}))
 		}
 		ReferentialConstraintDefinition {
-			return append_list(elements, TableElement(ReferentialConstraintDefinition{
+			return append_list(own_copy(&elements), TableElement(ReferentialConstraintDefinition{
 				...constraint
 				columns: [column.name]
 			}))
 		}
 		CheckConstraintDefinition {
-			return append_list(elements, TableElement(CheckConstraintDefinition{
+			return append_list(own_copy(&elements), TableElement(CheckConstraintDefinition{
 				...constraint
 				column_name: column.name.sub_entity_name
 			}))
@@ -253,7 +258,7 @@ fn (g GenerationClause) compile(mut conn Connection, table Table, column Column,
 		params:                 map[string]Value{}
 		tables:                 {
 			table.name.id(): &Table{
-				...table
+				...table.copy()
 			}
 		}
 		context:                table.name
@@ -279,7 +284,7 @@ fn (g GenerationClause) columns(mut conn Connection, table Table, column Column)
 		params:            map[string]Value{}
 		tables:            {
 			table.name.id(): &Table{
-				...table
+				...table.copy()
 			}
 		}
 		context:           table.name
@@ -321,11 +326,15 @@ struct GeneratedColumns {
 	exprs   []CompileResult
 }
 
+// It's manualfree because the compiled expressions keep parts of the
+// generation clauses, which -autofree would free with each copy of a column's
+// generation clause (no small repro yet).
+@[manualfree]
 fn new_generated_columns(mut conn Connection, table Table) !GeneratedColumns {
 	mut columns := []Column{}
 	mut exprs := []CompileResult{}
 	for column in table.columns {
-		if generated := column.generated {
+		if generated := opt_copy(column.generated) {
 			columns << column
 			exprs << generated.compile(mut conn, table, column, true)!
 		}

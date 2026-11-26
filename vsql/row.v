@@ -72,8 +72,21 @@ fn (d RowData) value(key string) Value {
 	return d.get(key) or { Value{} }
 }
 
+// free stops -autofree from freeing the keys, which are shared by rows (see
+// RowData). Rows leak with -autofree for now.
+fn (mut d RowData) free() {}
+
+// free stops -autofree from freeing a row, which is copied (sharing its id and
+// data) wherever rows are collected, such as by key for referential actions.
+// Rows leak with -autofree for now.
+fn (mut r Row) free() {}
+
 // set replaces the value of key, or adds it after the others. Adding a key
 // copies the keys and values, since they may be shared with other rows.
+//
+// It's manualfree because -autofree would free the old keys, which are still in
+// the new ones.
+@[manualfree]
 fn (mut d RowData) set(key string, value Value) {
 	i := d.index(key)
 	if i >= 0 {
@@ -83,7 +96,9 @@ fn (mut d RowData) set(key string, value Value) {
 
 	mut keys := []string{cap: d.keys.len + 1}
 	keys << d.keys
-	keys << key
+	// The copy works around https://github.com/vlang/v/issues/32930
+	// (-autofree): the caller may free key.
+	keys << own_string(key)
 	mut values := []Value{cap: d.values.len + 1}
 	values << d.values
 	values << value
@@ -250,7 +265,8 @@ fn new_empty_row(columns Columns, table_name string) Row {
 	for col in columns {
 		v := new_empty_value(col.typ)
 
-		key := if table_name == '' { col.name.sub_entity_name } else { col.name.id() }
+		// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+		key := if table_name == '' { col.name.sub_entity_name.clone() } else { col.name.id() }
 		r.data.set(key, v)
 	}
 
@@ -552,7 +568,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 						if b == 0 {
 							is_null = true
 						} else {
-							iv.bool_value = Boolean(b)
+							iv.bool_value = b
 						}
 					}
 				}
@@ -588,7 +604,7 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 						// bytestr copies the bytes, so they don't need to be copied
 						// by read_u8s.
 						buf.at += length
-						iv.string_value = buf.data[buf.at - length..buf.at].bytestr()
+						iv.string_value = box_string(buf.data[buf.at - length..buf.at].bytestr())
 					}
 				}
 				.is_decfloat {

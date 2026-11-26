@@ -34,11 +34,11 @@ fn (e QueryExpression) pstr(params map[string]Value) string {
 		s += ' ORDER BY ${specs.join(', ')}'
 	}
 
-	if offset := e.offset {
+	if offset := opt_copy(e.offset) {
 		s += ' OFFSET ${offset.pstr(params)} ROWS'
 	}
 
-	if fetch := e.fetch {
+	if fetch := opt_copy(e.fetch) {
 		s += ' ${fetch.pstr(params)}'
 	}
 
@@ -79,7 +79,8 @@ struct SetOperation {
 }
 
 fn (e SetOperation) pstr(params map[string]Value) string {
-	op := if e.all { '${e.op} ALL' } else { e.op }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	op := if e.all { '${e.op} ALL' } else { e.op.clone() }
 
 	// A set operation is left associative, so one on the right must have been in
 	// parentheses (or is an INTERSECT, where they don't change anything). A UNION
@@ -104,12 +105,12 @@ fn (e SetOperation) pstr(params map[string]Value) string {
 fn new_set_operation(left SimpleTable, op string, all bool, right SimpleTable) SimpleTable {
 	return SimpleTable(SetOperation{
 		left:  &QueryExpression{
-			body: left
+			body: own_copy(&left)
 		}
 		op:    op
 		all:   all
 		right: &QueryExpression{
-			body: right
+			body: own_copy(&right)
 		}
 	})
 }
@@ -201,6 +202,10 @@ fn new_order_operation(order []SortSpecification, params map[string]Value, conn 
 //
 // ISO/IEC 9075-2:2023, 6.6, <identifier chain>, Syntax Rules, 9.a.i and 9.c
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 26
+// set_result_columns is manualfree because each expression is put into
+// c.result_columns without a copy, and -autofree frees it with exprs (no small
+// repro yet).
+@[manualfree]
 fn (mut c Compiler) set_result_columns(body SimpleTable, columns Columns) ! {
 	mut exprs := columns.map(column_derived_column(Column{
 		name: Identifier{
@@ -231,7 +236,8 @@ fn (o &OrderOperation) str() string {
 fn (o &OrderOperation) columns() Columns {
 	// Ordering doesn't change the columns so just pass through from the last
 	// operation.
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 fn (mut o OrderOperation) execute(rows []Row) ![]Row {
@@ -378,11 +384,11 @@ fn new_limit_operation(fetch ?FetchFirstClause, offset ?ValueSpecification, para
 fn (o &LimitOperation) str() string {
 	mut s := ''
 
-	if offset := o.offset {
+	if offset := opt_copy(o.offset) {
 		s = 'OFFSET ${offset.pstr(o.params)} ROWS'
 	}
 
-	if fetch := o.fetch {
+	if fetch := opt_copy(o.fetch) {
 		s += ' ${fetch.pstr(o.params)}'
 	}
 
@@ -392,7 +398,8 @@ fn (o &LimitOperation) str() string {
 fn (o &LimitOperation) columns() Columns {
 	// Limit doesn't change the columns so just pass through from the last
 	// operation.
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 fn (mut o LimitOperation) execute(rows []Row) ![]Row {
@@ -401,7 +408,7 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 		params: o.params
 	}
 	mut offset := i64(0)
-	if off := o.offset {
+	if off := opt_copy(o.offset) {
 		offset = row_count('OFFSET', off.compile(mut c)!.run(mut o.conn, Row{}, o.params)!)!
 
 		// General Rule 6b: The offset must not be negative.
@@ -417,7 +424,7 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	// The percentage is of all the rows, before any are skipped by OFFSET
 	// (General Rules, 7.b.ii).
 	mut fetch := i64(rows.len)
-	if f := o.fetch {
+	if f := opt_copy(o.fetch) {
 		value := f.count.compile(mut c)!.run(mut o.conn, Row{}, o.params)!
 		fetch = if f.percent {
 			fetch_percentage(value, rows.len)!
@@ -436,7 +443,7 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	}
 
 	mut end := int(offset + fetch)
-	if f := o.fetch {
+	if f := opt_copy(o.fetch) {
 		if f.with_ties && end < rows.len {
 			end = o.end_of_peers(rows, end)!
 		}
@@ -576,10 +583,12 @@ fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn 
 		// T.A, but the result only has the column name (and the key of a
 		// duplicate name, see new_expr_operation), which is what each row of the
 		// result is read with (#716).
+		// The copies work around https://github.com/vlang/v/issues/32453
+		// (-autofree).
 		columns << Column{
 			name: Identifier{
-				custom_id:       column.name.custom_id
-				sub_entity_name: column.name.sub_entity_name
+				custom_id:       own_string(column.name.custom_id)
+				sub_entity_name: own_string(column.name.sub_entity_name)
 			}
 			typ:  typ
 		}
@@ -595,7 +604,8 @@ fn (o &SetOperationOperation) str() string {
 }
 
 fn (o &SetOperationOperation) columns() Columns {
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 // execute combines the rows of both sides. A row R that appears m times on the

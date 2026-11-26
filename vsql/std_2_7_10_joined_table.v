@@ -28,7 +28,7 @@ mut:
 fn new_join_operation(left_columns Columns, join_type JoinType, right_columns Columns, specification BooleanValueExpression, common_columns []CommonColumn, params map[string]Value, conn &Connection, plan Plan, tables map[string]&Table, lookup ?JoinLookup) &JoinOperation {
 	mut names := map[string]string{}
 	mut operation := ?&KeyOperation(none)
-	if l := lookup {
+	if l := opt_copy(lookup) {
 		if l.table.name.id() != l.base_table.name.id() {
 			for i, column in l.base_table.columns {
 				names[column.name.id()] = l.table.columns[i].name.id()
@@ -72,15 +72,17 @@ fn (o &JoinOperation) columns() Columns {
 		hidden[common.right.name.id()] = true
 	}
 
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
 	left_columns := if o.join_type in [.right, .full] {
 		possibly_nullable_columns(o.left_columns)
 	} else {
-		o.left_columns
+		o.left_columns.clone()
 	}
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
 	right_columns := if o.join_type in [.left, .full] {
 		possibly_nullable_columns(o.right_columns)
 	} else {
-		o.right_columns
+		o.right_columns.clone()
 	}
 	for column in left_columns {
 		if column.name.id() !in hidden {
@@ -123,11 +125,11 @@ fn possibly_nullable_columns(columns Columns) Columns {
 fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	outer, inner := if o.join_type == .right { '\$2', '\$1' } else { '\$1', '\$2' }
 	inner_columns := if o.join_type == .right { o.left_columns } else { o.right_columns }
-	mut outer_plan := o.plan.subplans[outer] or { Plan{} }
+	mut outer_plan := o.plan.subplans[outer] or { &Plan{} }
 	outer_rows := outer_plan.execute([]Row{})!
 	mut all_inner_rows := []Row{}
 	if o.lookup == none {
-		mut inner_plan := o.plan.subplans[inner] or { Plan{} }
+		mut inner_plan := o.plan.subplans[inner] or { &Plan{} }
 		all_inner_rows = inner_plan.execute([]Row{})!
 	}
 
@@ -204,7 +206,7 @@ fn (mut o JoinOperation) inner_rows(outer_row Row, all_inner_rows []Row) ![]Row 
 
 	for mut row in rows {
 		row.data = RowData{
-			keys:   row.data.keys.map(o.names[it] or { it })
+			keys:   row.data.keys.map(map_value(o.names, it) or { it })
 			values: row.data.values
 		}
 	}
@@ -253,7 +255,9 @@ fn new_common_columns(names []Identifier, join_type JoinType, left_columns Colum
 
 	mut common_columns := []CommonColumn{}
 	for left in left_columns {
-		name := left.name.sub_entity_name
+		// The copy works around https://github.com/vlang/v/issues/32949
+		// (-autofree).
+		name := own_string(left.name.sub_entity_name)
 		if name !in seen {
 			continue
 		}
@@ -310,7 +314,9 @@ fn natural_join_columns(left_columns Columns, right_columns Columns) []Identifie
 	mut names := []Identifier{}
 	mut seen := map[string]bool{}
 	for left in left_columns {
-		name := left.name.sub_entity_name
+		// The copy works around https://github.com/vlang/v/issues/32949
+		// (-autofree).
+		name := own_string(left.name.sub_entity_name)
 		if name !in seen && right_columns.any(it.name.sub_entity_name == name) {
 			names << Identifier{
 				sub_entity_name: name
@@ -346,5 +352,5 @@ fn join_equalities(common_columns []CommonColumn) BooleanValueExpression {
 }
 
 fn new_boolean_and(term BooleanTerm, factor BooleanTest) BooleanTerm {
-	return BooleanTerm{&term, factor}
+	return BooleanTerm{heap_copy(&term), factor}
 }

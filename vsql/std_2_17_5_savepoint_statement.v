@@ -105,9 +105,9 @@ fn (mut conn Connection) rollback_to_savepoint(name string) ! {
 		conn.release_write_connection()
 	}
 
-	savepoint := conn.savepoints[index]
+	savepoint := own_elem(conn.savepoints, index)
 	for catalog_name, mut catalog in conn.catalogs {
-		catalog.rollback_to(savepoint.catalogs[catalog_name] or { SavepointState{} })!
+		catalog.rollback_to(map_value(savepoint.catalogs, catalog_name) or { SavepointState{} })!
 	}
 	conn.savepoints.trim(index + 1)
 	for _, mut cursor in conn.cursors {

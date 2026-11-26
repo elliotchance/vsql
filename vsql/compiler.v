@@ -92,6 +92,12 @@ mut:
 	stored_definition bool
 }
 
+// free is called by -autofree instead of freeing each field. A Compiler
+// borrows most of its fields (such as params, tables and identity) from the
+// statement being compiled, but -autofree frees them with the Compiler:
+// https://github.com/vlang/v/issues/32938
+fn (mut c Compiler) free() {}
+
 // An AggregatedColumn is a column reference in the argument of an aggregate
 // function. scope is the subquery scope of the query that the column is from
 // (see Identifier.compile_outer), or -1 for a column of this query. ungrouped
@@ -320,7 +326,7 @@ fn (c CompileResult) fold() CompileResult {
 	mut folded := &FoldedValue{}
 	return CompileResult{
 		run:               fn [run, mut folded] (mut conn Connection, data Row, params map[string]Value) !Value {
-			if value := folded.value {
+			if value := opt_copy(folded.value) {
 				return value
 			}
 

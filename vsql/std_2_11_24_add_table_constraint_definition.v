@@ -18,7 +18,8 @@ struct AddTableConstraintDefinition {
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 10
 fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	mut elements := table.elements()
-	elements << d.constraint
+	// The copy works around https://github.com/vlang/v/issues/32943 (-autofree).
+	elements << own_copy(&d.constraint)
 
 	definition := TableDefinition{
 		table_name:     table.name
@@ -48,6 +49,10 @@ fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog Cat
 // the rows are written again because a value is stored by its type. They're
 // moved when it's one of the key columns, and an index of the column is
 // created again, because its key also depends on the type.
+//
+// It's manualfree because -autofree frees the tables (and their rows) while
+// they're still used, in many ways that don't have a small repro yet.
+@[manualfree]
 fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, table Table, new_table Table) ! {
 	check_constraints := new_check_constraints(mut conn, new_table)!
 	mut changed_types := map[string]Type{}

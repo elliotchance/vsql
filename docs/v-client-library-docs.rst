@@ -531,6 +531,103 @@ type Column
 
 
 
+type Condition
+--------------
+
+
+.. code-block:: v
+
+   pub type Condition = OtherError
+   	| SQLState
+   	| SQLState01001
+   	| SQLState01003
+   	| SQLState02000
+   	| SQLState01004
+   	| SQLState21000
+   	| SQLState24000
+   	| SQLState34000
+   	| SQLState22001
+   	| SQLState22003
+   	| SQLState22007
+   	| SQLState22009
+   	| SQLState2200B
+   	| SQLState2200C
+   	| SQLState2200H
+   	| SQLState22011
+   	| SQLState22012
+   	| SQLState2201E
+   	| SQLState2201F
+   	| SQLState2201G
+   	| SQLState22018
+   	| SQLState22019
+   	| SQLState2201B
+   	| SQLState2201W
+   	| SQLState2201X
+   	| SQLState22023
+   	| SQLState22025
+   	| SQLState22027
+   	| SQLState22029
+   	| SQLState23001
+   	| SQLState23502
+   	| SQLState23503
+   	| SQLState23505
+   	| SQLState23514
+   	| SQLState2BP01
+   	| SQLState3B001
+   	| SQLState3D000
+   	| SQLState3F000
+   	| SQLState42601
+   	| SQLState42P03
+   	| SQLState42702
+   	| SQLState42703
+   	| SQLState42704
+   	| SQLState42710
+   	| SQLState42803
+   	| SQLState42804
+   	| SQLState42830
+   	| SQLState42846
+   	| SQLState428C9
+   	| SQLState42P01
+   	| SQLState42P06
+   	| SQLState42P07
+   	| SQLState42P10
+   	| SQLState42723
+   	| SQLState42883
+   	| SQLState42P02
+   	| SQLState07006
+   	| SQLState08001
+   	| SQLState08002
+   	| SQLState08003
+   	| SQLState2C000
+   	| SQLState28000
+   	| SQLState2E000
+   	| SQLState01012
+   	| SQLState35000
+   	| SQLState25001
+   	| SQLState25002
+   	| SQLState25003
+   	| SQLState25004
+   	| SQLState25005
+   	| SQLState25006
+   	| SQLState25008
+   	| SQLState27000
+   	| SQLState0B000
+   	| SQLState40001
+   	| SQLState40002
+   	| SQLState40V01
+   	| SQLState0A000
+   	| SQLState42501
+   	| SQLState42P04
+   	| SQLState42602
+   	| SQLState55P03
+   	| SQLState54000
+   	| SQLState57014
+   	| SQLState58030
+   	| SQLStateXX000
+   	| SQLStateXX001
+
+A Condition is an error (or warning) that's kept after it's returned, such as Connection.warnings. It isn't an IError because -autofree can't copy an IError out of a field or an array (vlang/v#32452): some error types (in vlib) can't be cloned. Every Condition can be, and it's the same error again with ierror.
+
 type ConnectFn
 --------------
 
@@ -651,7 +748,7 @@ struct Agent
    	connected bool
    pub mut:
    	// warnings are the warnings of the last statement.
-   	warnings []IError
+   	warnings []Condition
    }
 
 An Agent is an SQL-agent, which runs <direct SQL statement>s on its SQL-connections, and is how "vsql cli" runs statements. Unlike a Connection, it can run the connection statements: CONNECT TO, SET CONNECTION and DISCONNECT. The SQL-connections that aren't current are dormant, and each keeps its own SQL-session context.
@@ -751,7 +848,7 @@ struct Connection
    	frame_describe ?Stmt
    	frame_params   map[string]Value
    	frame_result   Result
-   	frame_err      IError = none
+   	frame_err      ?Condition
    	// parser_stack is kept between statements, see parse_statement.
    	parser_stack []YYSymType
    	// statement_cache has the statements that have been parsed, by their text,
@@ -892,7 +989,7 @@ struct Connection
    	// (or the DIAGNOSTICS SIZE of the SQL-transaction) are retained. This is to be able to collect all warnings during some
    	// arbitrary process defined by the application. Instead, you should call
    	// clear_warnings() before starting a block of work.
-   	warnings []IError
+   	warnings []Condition
    	// more_conditions is true if a warning has been dropped from warnings since
    	// the last clear_warnings(), because there were more than the limit.
    	//
@@ -1107,7 +1204,7 @@ struct Index
 
 .. code-block:: v
 
-   pub struct Index {
+   pub struct Index implements IClone {
    mut:
    	// tid is the transaction ID that created this index.
    	tid u64
@@ -1159,6 +1256,19 @@ struct Lob
    }
 
 Lob reads a value of a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT (or any other string) without reading all of it, see Row.get_lob. A value that's stored outside of its row is read until the row is changed by another transaction that commits, or the connection is closed.
+
+struct OtherError
+-----------------
+
+
+.. code-block:: v
+
+   pub struct OtherError {
+   	message    string
+   	error_code int
+   }
+
+OtherError is an error that isn't an SQLSTATE error of vsql, such as an error from the file system. Only its message and code are kept.
 
 struct PrecompiledProgram
 -------------------------
@@ -1440,7 +1550,7 @@ struct Table
 
 .. code-block:: v
 
-   pub struct Table {
+   pub struct Table implements IClone {
    mut:
    	// The tid is the transaction ID that created this table.
    	tid u64

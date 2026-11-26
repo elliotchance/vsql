@@ -73,7 +73,7 @@ fn parse_size_unit(text string) ?SizeUnit {
 		if u in [p, p + 'b', name + 'byte', name + 'bytes'] {
 			return SizeUnit{i + 1, false}
 		}
-		binary_name := size_binary_names[i]
+		binary_name := own_elem(size_binary_names, i)
 		if u in [p + 'i', p + 'ib', binary_name + 'byte', binary_name + 'bytes'] {
 			return SizeUnit{i + 1, true}
 		}

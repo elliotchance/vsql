@@ -27,9 +27,13 @@ struct AddColumnDefinition {
 //
 // ISO/IEC 9075-2:2023, 11.11, <add column definition>, Syntax Rules, 3
 // ISO/IEC 9075-2:2023, 11.11, <add column definition>, General Rules, 1, 2 and 4
+// It's manualfree, and the column and sequence are copies, because -autofree
+// frees them while the new table still has them
+// (https://github.com/vlang/v/issues/32943).
+@[manualfree]
 fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table, params map[string]Value) ! {
 	mut elements := table.elements()
-	elements << d.column_definition
+	elements << own_copy(&d.column_definition)
 
 	definition := TableDefinition{
 		table_name:     table.name
@@ -59,8 +63,8 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 		identity: none
 	}, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
 	mut identity_sequence := ?Sequence(none)
-	if identity := column.identity {
-		identity_sequence = identity.sequence
+	if identity := opt_copy(column.identity) {
+		identity_sequence = own_copy(&identity.sequence)
 	}
 
 	// A row that gets a new key, because the column is the PRIMARY KEY, is
@@ -69,7 +73,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	mut updated := []Row{}
 	if !value.is_null || new_table.has_not_null(column) || column.generated != none {
 		for row in catalog.storage.read_rows(table.name)! {
-			if sequence := identity_sequence {
+			if sequence := opt_copy(identity_sequence) {
 				next_sequence := sequence.next()!
 				value = cast(mut conn, 'for column ${column.name.sub_entity_name}', new_bigint_value(next_sequence.current_value),
 					column.typ)!
@@ -94,7 +98,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	}
 
 	catalog.storage.update_table(new_table)!
-	if sequence := identity_sequence {
+	if sequence := opt_copy(identity_sequence) {
 		catalog.storage.create_identity(new_table.id, sequence)!
 	}
 

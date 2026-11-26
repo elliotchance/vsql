@@ -221,7 +221,7 @@ fn (mut f Storage) store_large_values(r Row, t Table, old ?Row) !Row {
 
 		if v.is_large {
 			lv := v.large_value()
-			if old_row := old {
+			if old_row := opt_copy(old) {
 				old_value := old_row.data.value(name)
 				if old_value.is_large && old_value.large_value().table_id == lv.table_id
 					&& old_value.large_value().value_id == lv.value_id {

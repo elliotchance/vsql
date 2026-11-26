@@ -50,5 +50,5 @@ fn release_value(s string) string {
 		return ''
 	}
 
-	return s
+	return own_string(s)
 }

@@ -61,7 +61,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, Syntax Rules, 9.a and 10
 	// ISO/IEC 9075-2:2023, 14.13, <update statement: positioned>, Syntax Rules, 11.a
 	has_correlation := stmt.correlation_name.sub_entity_name != ''
-	row_columns := if has_correlation { plan.columns() } else { table.columns }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	row_columns := if has_correlation { plan.columns() } else { table.columns.clone() }
 	row_table_id := if has_correlation { stmt.correlation_name.id() } else { table_name.id() }
 	mut tables := map[string]&Table{}
 	if has_correlation {
@@ -200,8 +201,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// ISO/IEC 9075-2:2023, 15.7, Effect of a positioned update, General Rules, 17.a
 	// ISO/IEC 9075-2:2023, 15.14, Effect of replacing rows in base tables, General Rules, 10.b
 	for change in changes {
-		mut before := change[0]
-		mut after := change[1]
+		mut before := own_elem(change, 0)
+		mut after := own_elem(change, 1)
 		if before.object_key(table)! != after.object_key(table)! {
 			catalog.storage.delete_row(table_name.storage_id(), mut before)!
 			moved << after

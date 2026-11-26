@@ -44,7 +44,7 @@ struct TimeZoneSpecifier {
 }
 
 fn (e TimeZoneExpression) pstr(params map[string]Value) string {
-	if zone := e.specifier.zone {
+	if zone := opt_copy(e.specifier.zone) {
 		return '${e.expr.pstr(params)} AT TIME ZONE ${zone.pstr(params)}'
 	}
 
@@ -70,7 +70,7 @@ fn (e TimeZoneExpression) compile(mut c Compiler) !CompileResult {
 
 	// The time zone is an INTERVAL HOUR TO MINUTE (Syntax Rule 6).
 	mut compiled_zone := ?CompileResult(none)
-	if zone := e.specifier.zone {
+	if zone := opt_copy(e.specifier.zone) {
 		z := c.with_type(zone.compile(mut c)!, hour_to_minute_type)
 		if !z.null_parameter && (z.typ.typ != .is_interval_day_time
 			|| z.typ.interval_qualifier().start != .hour
@@ -88,14 +88,14 @@ fn (e TimeZoneExpression) compile(mut c Compiler) !CompileResult {
 		c.check_deterministic(e.pstr(c.params))!
 	}
 
-	has_zone := if _ := compiled_zone { true } else { false }
+	has_zone := if _ := opt_copy(compiled_zone) { true } else { false }
 	return CompileResult{
 		run:          fn [compiled, compiled_zone, has_zone, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled.run(mut conn, data, params)!
 			mut zone := Value{
 				is_null: true
 			}
-			if z := compiled_zone {
+			if z := opt_copy(compiled_zone) {
 				zone = z.run(mut conn, data, params)!
 			}
 

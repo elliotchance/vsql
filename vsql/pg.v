@@ -341,7 +341,7 @@ fn (mut c PGConn) write_row_description(columns []Column, formats []int) ! {
 	msg_len += 2 // cols
 	mut names := []string{}
 	for column in columns {
-		mut name := column.name.sub_entity_name
+		mut name := own_string(column.name.sub_entity_name)
 		if c.lower_case_names && name == name.to_upper() {
 			name = name.to_lower()
 		}

@@ -60,7 +60,7 @@ fn (t DatetimeTemplate) match_part(s string, i int, pos int, mut matched []strin
 		return pos == s.len
 	}
 
-	part := t.parts[i]
+	part := own_elem(t.parts, i)
 	match part.kind {
 		.delimiter {
 			if pos < s.len && s[pos..pos + 1] == part.text {
@@ -128,7 +128,7 @@ fn (t DatetimeTemplate) parse_datetime(mut conn Connection, s string, to Type) !
 	mut hour_12 := 0
 	mut pm := false
 	for i, part in t.parts {
-		value := matched[i]
+		value := own_elem(matched, i)
 		match part.kind {
 			.delimiter {}
 			.year {

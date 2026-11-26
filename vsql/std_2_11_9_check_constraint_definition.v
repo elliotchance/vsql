@@ -47,7 +47,7 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table, store
 		params:                 map[string]Value{}
 		tables:                 {
 			table.name.id(): &Table{
-				...table
+				...table.copy()
 			}
 		}
 		context:                table.name
@@ -67,7 +67,7 @@ fn (e CheckConstraintDefinition) columns(mut conn Connection, table Table) ![]st
 		params:            map[string]Value{}
 		tables:            {
 			table.name.id(): &Table{
-				...table
+				...table.copy()
 			}
 		}
 		context:           table.name
@@ -138,7 +138,7 @@ fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 	mut catalog := conn.catalog_for(c.table.name)
 	for column in c.table.columns {
 		column_name := column.name.sub_entity_name
-		characteristics := c.table.deferrable_not_nulls[column_name] or { continue }
+		characteristics := map_value(c.table.deferrable_not_nulls, column_name) or { continue }
 		if row.data.value(column_name).is_null
 			&& !catalog.storage.defer_check(c.table, c.table.not_null_names[column_name], characteristics) {
 			return sqlstate_23502(c.table, column_name)
@@ -154,7 +154,7 @@ fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 	full_row := new_row(data)
 
 	for i, constraint in c.constraints {
-		definition := c.table.check_constraints[i]
+		definition := own_elem(c.table.check_constraints, i)
 		if catalog.storage.defer_check(c.table, definition.name.entity_name, definition.characteristics) {
 			continue
 		}

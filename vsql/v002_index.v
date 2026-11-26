@@ -16,7 +16,7 @@ const index_file_format_version = u16(2)
 // those values, with the row ID of each row. It's stored as an Index Object (the
 // definition) and an Index Entry Object for each row, see "File Format" in the
 // docs.
-pub struct Index {
+pub struct Index implements IClone {
 mut:
 	// tid is the transaction ID that created this index.
 	tid u64
@@ -38,6 +38,10 @@ pub:
 	// values (unless any of them are NULL).
 	unique bool
 }
+
+// free stops -autofree from freeing an index, which is copied (sharing its
+// names) by the schema and the tables. Indexes leak with -autofree for now.
+fn (mut i Index) free() {}
 
 // An IndexColumn is a column of an Index.
 pub struct IndexColumn {
@@ -270,16 +274,22 @@ fn (f Storage) table_indexes(table_id u64) []Index {
 // from the file, once the tables have been loaded. It must be called from inside
 // an isolation block.
 fn (mut f Storage) load_indexes() ! {
-	mut tables := map[u64]Table{}
-	for _, table in f.tables {
-		tables[table.id] = table
+	// The storage IDs of the tables, rather than copies of the tables, see
+	// Storage.find_table.
+	mut storage_ids := map[u64]string{}
+	for storage_id, table in f.tables {
+		storage_ids[table.id] = storage_id.clone()
 	}
 
 	f.save_schema()
 	f.indexes = map[string]Index{}
 	for object in f.read_objects('N'.bytes(), 'O'.bytes())! {
 		mut buf := new_bytes(object.key[1..])
-		table := tables[buf.read_u64()] or { continue }
+		table_id := buf.read_u64()
+		if table_id !in storage_ids {
+			continue
+		}
+		table := f.find_table(storage_ids[table_id]) or { continue }
 		index := new_index_from_bytes(object.key, object.value, object.tid, table)!
 		f.indexes[index.name.storage_id()] = index
 	}
@@ -469,7 +479,7 @@ fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row, nulls_dist
 			return true
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -488,7 +498,7 @@ fn (t Table) is_constraint_index(index Index) bool {
 // one until it's needed, so it's created then.
 fn (mut f Storage) constraint_index(t Table, constraint UniqueConstraint) !Index {
 	name := t.constraint_identifier(constraint.name)
-	return f.indexes[name.storage_id()] or {
+	return f.find_index(name.storage_id()) or {
 		f.create_constraint_index(t, name, constraint.columns, true)!
 	}
 }
@@ -539,7 +549,7 @@ fn (mut f Storage) build_constraint_indexes(old Table, t Table) ! {
 		}
 
 		name := t.constraint_identifier(constraint.name)
-		if index := f.indexes[name.storage_id()] {
+		if index := f.find_index(name.storage_id()) {
 			f.delete_index(index)!
 		}
 	}
@@ -573,7 +583,7 @@ fn (mut f Storage) create_constraint_index(t Table, name Identifier, columns []s
 		unique:     unique
 	}, t, false)!
 
-	return f.indexes[name.storage_id()]
+	return f.find_index(name.storage_id()) or { Index{} }
 }
 
 // check_drop_index returns an error if the index belongs to a UNIQUE constraint
@@ -621,7 +631,7 @@ fn (mut f Storage) check_indexes() ! {
 	}
 
 	for _, index in f.indexes {
-		table := f.tables[index.table_name.storage_id()] or {
+		table := f.find_table(index.table_name.storage_id()) or {
 			return sqlstate_xx001('index ${index.name} is on table ${index.table_name}, which does not exist')
 		}
 		mut expected := []string{}
@@ -761,7 +771,7 @@ fn (stmt DropIndexStatement) execute(mut conn Connection, _ map[string]Value, el
 		return err
 	}
 	mut catalog := conn.catalog_for(name)
-	index := catalog.storage.indexes[name.storage_id()] or {
+	index := catalog.storage.find_index(name.storage_id()) or {
 		if stmt.if_exists {
 			return new_result_msg('DROP INDEX 0', elapsed_parse, t.elapsed())
 		}

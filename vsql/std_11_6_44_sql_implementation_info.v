@@ -204,12 +204,12 @@ fn implementation_info_view_row(item ImplementationInfo) []Value {
 	return [
 		new_varchar_value(item.id.str()), // IMPLEMENTATION_INFO_ID
 		new_varchar_value(item.name), // IMPLEMENTATION_INFO_NAME
-		if v := item.integer_value {
+		if v := opt_copy(item.integer_value) {
 			new_integer_value(v)
 		} else {
 			new_null_value(.is_integer)
 		}, // INTEGER_VALUE
-		if v := item.character_value {
+		if v := opt_copy(item.character_value) {
 			new_varchar_value(v)
 		} else {
 			new_null_value(.is_varchar)
@@ -263,5 +263,5 @@ fn release_info(s string) ?string {
 		return none
 	}
 
-	return s
+	return own_string(s)
 }

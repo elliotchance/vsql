@@ -40,7 +40,7 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 	if c.in_aggregate {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in an aggregate function')
 	}
-	if _ := c.grouping_columns {
+	if _ := opt_copy(c.grouping_columns) {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in a grouped query')
 	}
 
@@ -115,7 +115,8 @@ fn (o &SequenceValuesOperation) str() string {
 }
 
 fn (o &SequenceValuesOperation) columns() Columns {
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 fn (mut o SequenceValuesOperation) execute(rows []Row) ![]Row {

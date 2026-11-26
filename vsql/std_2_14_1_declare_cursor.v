@@ -38,7 +38,7 @@ fn new_declare_cursor(name string, properties CursorProperties, query QueryExpre
 		name:         name
 		hold:         properties.hold
 		scroll:       properties.scroll
-		query:        query
+		query:        own_copy(&query)
 		updatability: updatability
 	}
 }
@@ -57,7 +57,7 @@ struct UpdatabilityClause {
 fn new_cursor_specification(query QueryExpression, updatability UpdatabilityClause) QueryExpression {
 	return QueryExpression{
 		...query
-		updatability: updatability
+		updatability: own_copy(&updatability)
 	}
 }
 
@@ -154,14 +154,14 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	// ISO/IEC 9075-2:2023, 14.3, <cursor specification>, Syntax Rules, 4 to 9
 	mut table := ?Identifier(none)
 	mut update_columns := []string{}
-	if updatability := stmt.updatability {
+	if updatability := opt_copy(stmt.updatability) {
 		if updatability.for_update {
 			if !simply_updatable {
 				return sqlstate_42601('cursor ${stmt.name} is not updatable')
 			}
 			table_name := stmt.table_name(mut conn)!
 			// create_plan has already found the table.
-			target := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+			target := conn.catalog_for(table_name).storage.table(table_name.storage_id())
 			for column in updatability.columns {
 				target.column(column.sub_entity_name)!
 				update_columns << column.sub_entity_name
@@ -173,7 +173,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	}
 
 	mut sort_columns := []string{}
-	if cursor_table := table {
+	if cursor_table := opt_copy(table) {
 		sort_columns = stmt.sort_columns(cursor_table, params, mut conn)!
 	}
 
@@ -335,7 +335,7 @@ fn (stmt DeclareCursor) sort_columns(table_name Identifier, params map[string]Va
 	}
 
 	// create_plan has already found the table.
-	table := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+	table := conn.catalog_for(table_name).storage.table(table_name.storage_id())
 
 	return table.columns.filter(it.name.id() in conn.collected_columns).map(it.name.sub_entity_name)
 }
@@ -549,7 +549,7 @@ fn (mut conn Connection) current_row(name string, table_name Identifier) !&Curso
 	// The SQL/CLI can scroll back to a row that was deleted through the cursor.
 	// Another statement deleting the row isn't an exception, it's a warning (see
 	// note_row_changes).
-	state := cursor.row_states[cursor.position]
+	state := own_elem(cursor.row_states, cursor.position)
 	if state.deleted && !state.changed {
 		return sqlstate_24000(name, 'the current row of cursor ${name} has been deleted')
 	}
@@ -568,11 +568,12 @@ fn (mut conn Connection) current_row(name string, table_name Identifier) !&Curso
 // ISO/IEC 9075-2:2023, 15.6, Effect of a positioned delete, General Rules, 9
 // ISO/IEC 9075-2:2023, 15.7, Effect of a positioned update, General Rules, 16
 fn current_rows(rows []Row, current_of ?&Cursor) []Row {
-	cursor := current_of or { return rows }
+	cursor := current_of or { return own_array(rows) }
 	if cursor.row_states[cursor.position].deleted {
 		return []Row{}
 	}
-	id := cursor.rows[cursor.position].id
+	// The copy works around https://github.com/vlang/v/issues/32949 (-autofree).
+	id := own_copy(&cursor.rows[cursor.position].id)
 
 	return rows.filter(it.id == id)
 }
@@ -612,7 +613,7 @@ fn (conn &Connection) has_open_cursor() bool {
 // ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 14
 fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []RowChange, current_of ?&Cursor) ! {
 	mut own_cursor := ''
-	if cursor := current_of {
+	if cursor := opt_copy(current_of) {
 		own_cursor = cursor.name
 		if rows.len == 0 || cursor.row_states[cursor.position].changed
 			|| rows[0].tid != cursor.rows[cursor.position].tid {
@@ -658,16 +659,19 @@ fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []Row
 
 			// The rows of the cursor follow the row, so that a change to a
 			// PRIMARY KEY doesn't lose it, even if two rows swap their keys.
-			change := changed[id] or { continue }
+			change := map_value(changed, id) or { continue }
 			if change.is_delete {
 				cursor.row_states[i].deleted = true
 				if is_own {
 					cursor.row_states[i].changed = false
 				}
 			} else {
-				mut new_row := change.new
+				// The copies work around https://github.com/vlang/v/issues/32949
+				// (-autofree): new_row and its id are freed at the end of the
+				// iteration.
+				mut new_row := own_copy(&change.new)
 				new_row.object_key(table)!
-				cursor.rows[i].id = new_row.id
+				cursor.rows[i].id = own_copy(&new_row.id)
 				cursor.rows[i].tid = tid
 			}
 		}
@@ -735,8 +739,9 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 	if q.tokens.len == 1 {
 		statement = q.identifier('statement name')!
 	}
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
 	declaration_text := if statement == '' {
-		text
+		text.clone()
 	} else {
 		text.runes()[..text.runes().len - query.runes().len].string() + ' SELECT 1 FROM t'
 	}

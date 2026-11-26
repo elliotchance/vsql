@@ -15,7 +15,7 @@ struct InPredicate {
 
 fn (e InPredicate) pstr(params map[string]Value) string {
 	mut values := ''
-	if subquery := e.subquery {
+	if subquery := opt_copy(e.subquery) {
 		values = subquery.pstr(params)
 	} else {
 		mut list := []string{}
@@ -33,6 +33,11 @@ fn (e InPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e InPredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &InPredicate{
+		...e
+	}
 	mut rows := [e.expr.compile_fields(mut c)!]
 	for value in e.values {
 		rows << value.compile_fields(mut c)!
@@ -40,7 +45,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxiii
 	rows = c.with_row_types(rows)
-	mut compiled_expr := rows[0]
+	mut compiled_expr := own_elem(rows, 0)
 	mut contains_agg := compiled_expr.any(it.contains_agg)
 	compiled_values := rows[1..]
 	for compiled in compiled_values {
@@ -50,14 +55,14 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 	}
 
 	mut plan := ?SubqueryPlan(none)
-	if subquery := e.subquery {
+	if subquery := opt_copy(e.subquery) {
 		subquery_plan := plan_compared_subquery(mut c, subquery, mut compiled_expr)!
 		contains_agg = contains_agg || subquery_plan.contains_agg
 		plan = subquery_plan
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled_expr, compiled_values, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_expr, compiled_values, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := run_fields(mut conn, compiled_expr, data, params)!
 
 			// ISO/IEC 9075-2:2023, 8.4, <in predicate>, Syntax Rules, 2, 4 and
@@ -74,7 +79,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 			// at the first one that's equal, and the rest of the list isn't
 			// evaluated.
 			mut result := Truth.is_false
-			if subquery_plan := plan {
+			if subquery_plan := opt_copy(plan) {
 				result = quantified_comparison(conn, expr, .equal, false, subquery_rows(mut conn,
 					subquery_plan, data)!)!
 			}
@@ -87,7 +92,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 				result = truth_or(result, ComparisonOperator.equal.row_truth(compare_rows(conn,
 					expr, row)!))
 			}
-			if e.not {
+			if e_ref.not {
 				result = truth_not(result)
 			}
 

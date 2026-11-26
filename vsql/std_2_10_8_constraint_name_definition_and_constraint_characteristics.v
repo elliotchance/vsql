@@ -65,6 +65,10 @@ fn (c ConstraintCharacteristics) str() string {
 // of the elements, which is a column followed by the constraints of the column
 // (see add_column_constraint), or a single table constraint. A column without a
 // constraint can't have one.
+//
+// It's manualfree because -autofree frees the last element, which is still in
+// new_elements (no small repro yet).
+@[manualfree]
 fn with_constraint_characteristic(elements []TableElement, clause string) ![]TableElement {
 	mut new_elements := elements.clone()
 	element := elements.last()
@@ -163,7 +167,7 @@ fn (f Storage) is_deferred(t Table, name string, characteristics ConstraintChara
 		return false
 	}
 
-	return f.constraint_modes[constraint_key(t, name)] or {
+	return map_value(f.constraint_modes, constraint_key(t, name)) or {
 		characteristics.is_initially_deferred()
 	}
 }
@@ -191,7 +195,7 @@ fn (mut conn Connection) check_deferred_constraints() ! {
 		for key in keys {
 			storage_id := catalog.storage.deferred_checks[key]
 			catalog.storage.deferred_checks.delete(key)
-			table := catalog.storage.tables[storage_id] or { continue }
+			table := catalog.storage.find_table(storage_id) or { continue }
 
 			mut deferrable_not_nulls := map[string]ConstraintCharacteristics{}
 			for column_name, characteristics in table.deferrable_not_nulls {
@@ -200,7 +204,7 @@ fn (mut conn Connection) check_deferred_constraints() ! {
 				}
 			}
 			constraint := Table{
-				...table
+				...table.copy()
 				deferrable_not_nulls: deferrable_not_nulls
 				foreign_keys:         table.foreign_keys.filter(constraint_key(table, it.name) == key)
 				check_constraints:    table.check_constraints.filter(constraint_key(table,

@@ -71,127 +71,16 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 	// - GR 3.b. Otherwise, by the type of T:
 	match t.typ {
 		.is_character {
-			// - GR 3.b.i. A CHARACTER(L) is set to V when it has L characters.
-			//
-			// It doesn't state that the destination needs to also be a
-			// character-type. This is what allows any string representation (for
-			// example numbers) to be converted to a string, provided they still fit
-			// all the same requirements.
-			// The characters are only counted, rather than decoded with runes()
-			// (which needs 4 bytes for each byte of s), unless it's too long.
-			l := t.size
-			s := cast_character_source(v, l)
-			if t.octets {
-				return store_octets(s, t)!
-			}
-			m := s.len_utf8()
-
-			if l == m {
-				return new_character_value(s)
-			}
-
-			// - GR 3.b.ii. V is longer than L:
-			if m > l {
-				// - GR 3.b.ii.1. It's truncated if the extra characters are all
-				// <truncating whitespace>.
-				chars := s.runes()
-				if chars[l..].all(is_truncating_whitespace(it)) {
-					return new_character_value(chars[..l].string())
-				}
-
-				// - GR 3.b.ii.2. Otherwise, it's 22001 (string data, right
-				// truncation).
-				return sqlstate_22001(t)
-			} else {
-				// - GR 3.b.iii. V is shorter than L, so it's padded with spaces.
-				pad := strings.repeat(` `, l - m)
-				return new_character_value(s + pad)
-			}
+			return cast_character(v, t)
 		}
 		.is_varchar {
-			// - GR 3.b.iv. A CHARACTER VARYING(L) is set to V when it isn't longer
-			// than L.
-			//
-			// See note above about using v.str() instead of string_value().
-			//
-			// A CHARACTER VARYING without a length (such as the declared type of an
-			// expression) has no maximum length. Like CHARACTER, the characters
-			// are only decoded when it's too long.
-			l := t.size
-			s := cast_character_source(v, l)
-			if t.octets {
-				return store_octets(s, t)!
-			}
-			m := s.len_utf8()
-			if l == 0 || m <= l {
-				return new_varchar_value(s)
-			}
-
-			// - GR 3.b.v. V is longer than L:
-			chars := s.runes()
-			if chars[l..].all(is_truncating_whitespace(it)) {
-				// - GR 3.b.v.1. It's truncated if the extra characters are all
-				// <truncating whitespace>.
-				return new_varchar_value(chars[..l].string())
-			}
-
-			// - GR 3.b.v.2. Otherwise, it's 22001 (string data, right truncation).
-			return sqlstate_22001(t)
+			return cast_varchar(v, t)
 		}
 		.is_clob {
-			// - GR 3.b.vi. A CHARACTER LARGE OBJECT(L) is set to V when it isn't
-			// longer than L, which is its maximum length.
-			//
-			// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.a.iii A CHARACTER LARGE OBJECT without a length (a size of
-			// 0) has the maximum length, which is longer than any row.
-			l := t.size
-			s := cast_character_source(v, l)
-			if t.octets {
-				return new_clob_value(store_octets(s, t)!.string_value())
-			}
-			m := s.len_utf8()
-			if l == 0 || m <= l {
-				return new_clob_value(s)
-			}
-
-			// - GR 3.b.vii. V is longer than L:
-			chars := s.runes()
-			if chars[l..].all(is_truncating_whitespace(it)) {
-				// - GR 3.b.vii.1. It's truncated if the extra characters are all
-				// <truncating whitespace>.
-				return new_clob_value(chars[..l].string())
-			}
-
-			// - GR 3.b.vii.2. Otherwise, it's 22001 (string data, right truncation).
-			return sqlstate_22001(t)
+			return cast_clob(v, t)
 		}
 		.is_binary, .is_varbinary, .is_blob {
-			// - GR 3.b.viii-3.b.xiv. A binary string is set to V when it's not
-			// longer than L (a BINARY LARGE OBJECT without a length has the maximum
-			// length). If V is longer, it's truncated if the extra octets are all
-			// X'00', otherwise it's 22001 (string data, right truncation). A BINARY
-			// that's shorter than L is padded with X'00'. A BINARY has a fixed
-			// length, and the others have a maximum length.
-			//
-			// ISO/IEC 9075-1:2023, 4.6.3.3, Binary string types
-			// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 21, 21.a, 21.b and 21.c
-			if !v.typ.typ.is_binary_string() {
-				return sqlstate_42846(v.typ, t)
-			}
-
-			l := t.size
-			mut s := v.string_value()
-			if l > 0 && s.len > l {
-				if !s[l..].bytes().all(it == 0) {
-					return sqlstate_22001(t)
-				}
-				s = s[..l]
-			}
-			if t.typ == .is_binary && s.len < l {
-				s += '\0'.repeat(l - s.len)
-			}
-
-			return new_binary_string_value(t.typ, s)
+			return cast_binary(v, t)
 		}
 		.is_numeric, .is_decimal, .is_smallint, .is_integer, .is_bigint, .is_real,
 		.is_double_precision {
@@ -269,6 +158,145 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 	return sqlstate_42846(v.typ, t)
 }
 
+// cast_character is the store assignment of v to a CHARACTER(L) t, see cast.
+// It's a separate function to work around
+// https://github.com/vlang/v/issues/32973 (-autofree).
+fn cast_character(v Value, t Type) !Value {
+	// - GR 3.b.i. A CHARACTER(L) is set to V when it has L characters.
+	//
+	// It doesn't state that the destination needs to also be a
+	// character-type. This is what allows any string representation (for
+	// example numbers) to be converted to a string, provided they still fit
+	// all the same requirements.
+	// The characters are only counted, rather than decoded with runes()
+	// (which needs 4 bytes for each byte of s), unless it's too long.
+	l := t.size
+	s := cast_character_source(v, l)
+	if t.octets {
+		return store_octets(s, t)!
+	}
+	m := s.len_utf8()
+
+	if l == m {
+		return new_character_value(s)
+	}
+
+	// - GR 3.b.ii. V is longer than L:
+	if m > l {
+		// - GR 3.b.ii.1. It's truncated if the extra characters are all
+		// <truncating whitespace>.
+		chars := s.runes()
+		if chars[l..].all(is_truncating_whitespace(it)) {
+			return new_character_value(chars[..l].string())
+		}
+
+		// - GR 3.b.ii.2. Otherwise, it's 22001 (string data, right
+		// truncation).
+		return sqlstate_22001(t)
+	} else {
+		// - GR 3.b.iii. V is shorter than L, so it's padded with spaces.
+		pad := strings.repeat(` `, l - m)
+		return new_character_value(s + pad)
+	}
+}
+
+// cast_varchar is the store assignment of v to a CHARACTER VARYING(L) t, see
+// cast. It's a separate function to work around
+// https://github.com/vlang/v/issues/32973 (-autofree).
+fn cast_varchar(v Value, t Type) !Value {
+	// - GR 3.b.iv. A CHARACTER VARYING(L) is set to V when it isn't longer
+	// than L.
+	//
+	// See note above about using v.str() instead of string_value().
+	//
+	// A CHARACTER VARYING without a length (such as the declared type of an
+	// expression) has no maximum length. Like CHARACTER, the characters
+	// are only decoded when it's too long.
+	l := t.size
+	s := cast_character_source(v, l)
+	if t.octets {
+		return store_octets(s, t)!
+	}
+	m := s.len_utf8()
+	if l == 0 || m <= l {
+		return new_varchar_value(s)
+	}
+
+	// - GR 3.b.v. V is longer than L:
+	chars := s.runes()
+	if chars[l..].all(is_truncating_whitespace(it)) {
+		// - GR 3.b.v.1. It's truncated if the extra characters are all
+		// <truncating whitespace>.
+		return new_varchar_value(chars[..l].string())
+	}
+
+	// - GR 3.b.v.2. Otherwise, it's 22001 (string data, right truncation).
+	return sqlstate_22001(t)
+}
+
+// cast_binary is the store assignment of v to a BINARY(L), BINARY VARYING(L)
+// or BINARY LARGE OBJECT(L) t, see cast. It's a separate function to work
+// around https://github.com/vlang/v/issues/32973 (-autofree).
+fn cast_binary(v Value, t Type) !Value {
+	// - GR 3.b.viii-3.b.xiv. A binary string is set to V when it's not
+	// longer than L (a BINARY LARGE OBJECT without a length has the maximum
+	// length). If V is longer, it's truncated if the extra octets are all
+	// X'00', otherwise it's 22001 (string data, right truncation). A BINARY
+	// that's shorter than L is padded with X'00'. A BINARY has a fixed
+	// length, and the others have a maximum length.
+	//
+	// ISO/IEC 9075-1:2023, 4.6.3.3, Binary string types
+	// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 21, 21.a, 21.b and 21.c
+	if !v.typ.typ.is_binary_string() {
+		return sqlstate_42846(v.typ, t)
+	}
+
+	l := t.size
+	mut s := v.string_value()
+	if l > 0 && s.len > l {
+		if !s[l..].bytes().all(it == 0) {
+			return sqlstate_22001(t)
+		}
+		s = s[..l]
+	}
+	if t.typ == .is_binary && s.len < l {
+		s += '\0'.repeat(l - s.len)
+	}
+
+	return new_binary_string_value(t.typ, s)
+}
+
+// cast_clob is the store assignment of v to a CHARACTER LARGE OBJECT(L) t, see
+// cast. It's a separate function to work around
+// https://github.com/vlang/v/issues/32973 (-autofree).
+fn cast_clob(v Value, t Type) !Value {
+	// - GR 3.b.vi. A CHARACTER LARGE OBJECT(L) is set to V when it isn't
+	// longer than L, which is its maximum length.
+	//
+	// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.a.iii A CHARACTER LARGE OBJECT without a length (a size of
+	// 0) has the maximum length, which is longer than any row.
+	l := t.size
+	s := cast_character_source(v, l)
+	if t.octets {
+		return new_clob_value(store_octets(s, t)!.string_value())
+	}
+	m := s.len_utf8()
+	if l == 0 || m <= l {
+		return new_clob_value(s)
+	}
+
+	// - GR 3.b.vii. V is longer than L:
+	chars := s.runes()
+	if chars[l..].all(is_truncating_whitespace(it)) {
+		// - GR 3.b.vii.1. It's truncated if the extra characters are all
+		// <truncating whitespace>.
+		return new_clob_value(chars[..l].string())
+	}
+
+	// - GR 3.b.vii.2. Otherwise, it's 22001 (string data, right truncation).
+	return sqlstate_22001(t)
+}
+
 // cast_character_source returns the string representation of v used when the
 // target is a character string of length l (0 for no maximum). For datetimes,
 // the shortest <literal> (such as "DATE '2022-06-30'") is required rather than
@@ -318,7 +346,7 @@ fn exact_character_string(s string, l int) string {
 		}
 	}
 
-	return s
+	return own_string(s)
 }
 
 // approximate_character_string converts the shortest representation of an
@@ -795,7 +823,7 @@ fn check_numeric_range(x Numeric, typ SQLType) ! {
 // ISO/IEC 9075-2:2023, 9.2, Store assignment, General Rules, 3.b.i to 3.b.vii
 fn store_octets(s string, t Type) !Value {
 	l := t.size
-	mut result := s
+	mut result := own_string(s)
 	if s.len > l {
 		if !s[l..].bytes().all(it == ` `) {
 			return sqlstate_22001(t)

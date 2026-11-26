@@ -19,7 +19,7 @@ fn normalize_nfc(s string) string {
 	// Everything below U+0300 is already NFC and can't combine with what's before
 	// it. In UTF-8 that's every lead byte below 0xCC.
 	if s.bytes().all(it < 0xCC) {
-		return s
+		return own_string(s)
 	}
 
 	mut runes := []rune{cap: s.len}

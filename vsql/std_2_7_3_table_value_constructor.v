@@ -116,8 +116,10 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 
 	mut columns := []Column{}
 	for i, typ in types {
+		// The clone works around https://github.com/vlang/v/issues/32932
+		// (-autofree).
 		name := if correlation.columns.len > 0 {
-			correlation.columns[i]
+			correlation.columns[i].clone()
 		} else {
 			Identifier{
 				sub_entity_name: 'COL${i + 1}'
@@ -145,7 +147,8 @@ fn (o &ValuesOperation) str() string {
 }
 
 fn (o &ValuesOperation) columns() Columns {
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 // execute returns every row. OFFSET and FETCH are a LimitOperation.
@@ -163,7 +166,7 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 		for mut row in rows {
 			mut data := RowData{}
 			for i in 1 .. row.data.len() + 1 {
-				column := columns[i - 1]
+				column := own_elem(columns, i - 1)
 				data.set(column.name.sub_entity_name, convert_to_combined_type(mut o.conn,
 					'in VALUES', row.data.value('COL${i}'), column.typ)!)
 			}

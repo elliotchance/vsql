@@ -57,7 +57,7 @@ fn (mut conn Connection) describe_parameters(stmt Stmt, params map[string]Value)
 	conn.frame_describe = none
 	mut described := true
 	if ran {
-		described = conn.frame_err is none
+		described = conn.frame_err == none
 	} else {
 		conn.describe_statement(stmt, params) or { described = false }
 	}
@@ -122,7 +122,7 @@ fn (mut conn Connection) describe_statement(stmt Stmt, params map[string]Value) 
 			describe_session_name(mut conn, params, stmt.value)!
 		}
 		SetLocalTimeZoneStatement {
-			if value := stmt.value {
+			if value := opt_copy(stmt.value) {
 				mut c := Compiler{
 					conn:   conn
 					params: params
@@ -158,9 +158,10 @@ fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
-	columns := if stmt.columns.len > 0 { stmt.columns } else { table.columns.map(it.name) }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	columns := if stmt.columns.len > 0 { stmt.columns.clone() } else { table.columns.map(it.name) }
 	mut rows := stmt.values.map(row_elements(it))
-	if query := stmt.query {
+	if query := opt_copy(stmt.query) {
 		rows = contained_rows(query.body)
 	}
 	for row in rows {
@@ -180,7 +181,7 @@ fn (stmt InsertStatement) describe_values(mut conn Connection, params map[string
 		}
 	}
 
-	if query := stmt.query {
+	if query := opt_copy(stmt.query) {
 		create_plan(query, params, mut conn)!
 	}
 }
@@ -265,10 +266,15 @@ fn (stmt UpdateStatementSearched) describe_set_clauses(mut conn Connection, para
 // being determined (see describe_parameters). Its value is the null value,
 // since it's never executed. untyped is its name if its type isn't known yet.
 fn parameter_result(untyped string, typ Type) CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	typ_ref := &Type{
+		...typ
+	}
 	return CompileResult{
-		run:               fn [typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:               fn [typ_ref] (mut conn Connection, data Row, params map[string]Value) !Value {
 			return Value{
-				typ:     typ
+				typ:     *typ_ref
 				is_null: true
 			}
 		}
@@ -284,12 +290,18 @@ fn (c Compiler) is_untyped(r CompileResult) bool {
 	return r.untyped_parameter != '' && r.untyped_parameter !in c.conn.parameter_types
 }
 
+// The with_* functions are manualfree, and return copies of their arguments
+// rather than the arguments, because -autofree frees what's returned and the
+// caller often assigns it to the same variable:
+// https://github.com/vlang/v/issues/32932
+
 // with_type returns r, unless it's a dynamic parameter whose type hasn't been
 // determined yet. Then its type is typ (without NOT NULL, since it can be the
 // null value), and the result has that type.
+@[manualfree]
 fn (mut c Compiler) with_type(r CompileResult, typ Type) CompileResult {
 	if !c.is_untyped(r) {
-		return r
+		return own_copy(&r)
 	}
 
 	t := Type{typ.typ, typ.size, typ.scale, false, false}
@@ -302,9 +314,10 @@ fn (mut c Compiler) with_type(r CompileResult, typ Type) CompileResult {
 // determined the type that the other results combine to (9.5, Result of data
 // type combinations), passed through derive. They stay untyped if every result
 // is a dynamic parameter, or if the types of the others can't be combined.
+@[manualfree]
 fn (mut c Compiler) with_types(results []CompileResult, derive fn (Type) Type) []CompileResult {
 	if !c.conn.describing {
-		return results
+		return own_array(results)
 	}
 
 	mut combined := ?Type(none)
@@ -312,14 +325,14 @@ fn (mut c Compiler) with_types(results []CompileResult, derive fn (Type) Type) [
 		if c.is_untyped(r) {
 			continue
 		}
-		if typ := combined {
-			combined = combine_types(typ, r.typ) or { return results }
+		if typ := opt_copy(combined) {
+			combined = combine_types(typ, r.typ) or { return own_array(results) }
 		} else {
 			combined = r.typ
 		}
 	}
 
-	typ := combined or { return results }
+	typ := combined or { return own_array(results) }
 	return results.map(c.with_type(it, derive(typ)))
 }
 
@@ -329,23 +342,27 @@ fn (mut c Compiler) with_types(results []CompileResult, derive fn (Type) Type) [
 // isn't always a BOOLEAN.
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xii
+@[manualfree]
 fn (mut c Compiler) with_boolean_type(r CompileResult) CompileResult {
 	return c.with_type(r, Type{.is_boolean, 0, 0, false, false})
 }
 
 // with_pair_types is with_types for two operands, such as the sides of a
 // comparison.
+@[manualfree]
 fn (mut c Compiler) with_pair_types(a CompileResult, b CompileResult, derive fn (Type) Type) (CompileResult, CompileResult) {
-	typed := c.with_types([a, b], derive)
+	// The copies work around https://github.com/vlang/v/issues/32947 (-autofree).
+	typed := c.with_types([own_copy(&a), own_copy(&b)], derive)
 
 	return typed[0], typed[1]
 }
 
 // with_row_types is with_types for each position of rows that are compared
 // with each other, such as "(a, b) = (?, ?)" or the values of an IN.
+@[manualfree]
 fn (mut c Compiler) with_row_types(rows [][]CompileResult) [][]CompileResult {
 	if !c.conn.describing {
-		return rows
+		return own_array(rows)
 	}
 
 	mut typed := rows.map(it.clone())
@@ -378,6 +395,7 @@ fn (mut c Compiler) with_row_types(rows [][]CompileResult) [][]CompileResult {
 // with_field_types gives each dynamic parameter in fields whose type hasn't
 // been determined the type at the same position of types, such as the columns
 // of a subquery that it's compared with.
+@[manualfree]
 fn (mut c Compiler) with_field_types(fields []CompileResult, types []Type) []CompileResult {
 	mut typed := fields.clone()
 	for i, typ in types {
@@ -395,19 +413,26 @@ fn (mut c Compiler) with_field_types(fields []CompileResult, types []Type) []Com
 // they're all dynamic parameters.
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxv
+@[manualfree]
 fn (mut c Compiler) with_pattern_types(value CompileResult, pattern CompileResult, escape CompileResult, has_escape bool) (CompileResult, CompileResult, CompileResult) {
-	mut operands := [value, pattern]
+	// The copies work around https://github.com/vlang/v/issues/32947 and
+	// https://github.com/vlang/v/issues/32944 (-autofree).
+	mut operands := [own_copy(&value), own_copy(&pattern)]
 	if has_escape {
-		operands << escape
+		operands << own_copy(&escape)
 	}
 
-	operands = if operands.all(c.is_untyped(it)) {
+	typed := if operands.all(c.is_untyped(it)) {
 		operands.map(c.with_type(it, character_type(untyped_parameter_type)))
 	} else {
 		c.with_types(operands, character_type)
 	}
 
-	return operands[0], operands[1], if has_escape { operands[2] } else { escape }
+	return own_elem(typed, 0), own_elem(typed, 1), if has_escape {
+		own_elem(typed, 2)
+	} else {
+		own_copy(&escape)
+	}
 }
 
 // with_similar_substring_types gives the dynamic parameters of a SUBSTRING ...
@@ -416,9 +441,12 @@ fn (mut c Compiler) with_pattern_types(value CompileResult, pattern CompileResul
 // is a CHARACTER(1). They stay untyped if they're all dynamic parameters.
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.vii, 5.a.vii.1.A-D, 5.a.vii.2, 5.a.vii.2.A and 5.a.vii.2.B
+@[manualfree]
 fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern CompileResult, escape CompileResult) (CompileResult, CompileResult, CompileResult) {
-	if ![value, pattern, escape].any(!c.is_untyped(it) && it.typ.typ.is_string()) {
-		return value, pattern, escape
+	// The copies work around https://github.com/vlang/v/issues/32947 (-autofree).
+	if ![own_copy(&value), own_copy(&pattern), own_copy(&escape)].any(!c.is_untyped(it)
+		&& it.typ.typ.is_string()) {
+		return own_copy(&value), own_copy(&pattern), own_copy(&escape)
 	}
 
 	typ := character_type(untyped_parameter_type)
@@ -435,6 +463,7 @@ fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern Co
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.iii, 5.a.iv and 5.a.v
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxx.1 and 5.a.xxx
+@[manualfree]
 fn (mut c Compiler) with_argument_types(function_name string, args []CompileResult) []CompileResult {
 	return match function_name {
 		// UPPER and LOWER also have a CHARACTER LARGE OBJECT form, but a dynamic
@@ -454,7 +483,7 @@ fn (mut c Compiler) with_argument_types(function_name string, args []CompileResu
 			if candidates.len == 1 {
 				c.with_field_types(args, candidates[0].arg_types.map(character_type(it)))
 			} else {
-				args
+				own_array(args)
 			}
 		}
 	}

@@ -188,8 +188,8 @@ or ``impl-defined``, such as::
 
   Standard index: 5103 of 18806 rules (implemented, deviates or impl-defined)
 
-It runs in CI, which also shows that count in the "SQL tests" status of each
-commit.
+It runs in CI, which also shows that count in the "Stats for nerds" status of
+each commit.
 
 Reviewing a Subclause
 ---------------------

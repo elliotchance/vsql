@@ -136,7 +136,7 @@ jobs:
             v_arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    # statuses is for the "SQL tests" status (see "Report the SQL tests").
+    # statuses is for the "Stats for nerds" status (see "Report stats for nerds").
     permissions:
       contents: read
       statuses: write
@@ -157,7 +157,7 @@ jobs:
         if: matrix.arch == 'x86-64'
         run: make fmt-verify
 
-      # The output is also kept for "Report the SQL tests".
+      # The output is also kept for "Report stats for nerds".
       - name: Verify standard index
         if: matrix.arch == 'x86-64'
         run: |
@@ -213,7 +213,7 @@ jobs:
 
       # MAX_RUN_TIME fails big-test if a run takes 100 seconds or more (see
       # docs/testing.rst).
-      # The output is also kept for "Report the SQL tests".
+      # The output is also kept for "Report stats for nerds".
       #
       # The V tests are built with tcc (TEST_OPTIMIZE=, see the Makefile). With
       # gcc -O2 the SQL tests run in a third of the time, but it takes 5 to 8
@@ -223,15 +223,21 @@ jobs:
           set -o pipefail
           make test MAX_RUN_TIME=100 TEST_OPTIMIZE= 2>&1 | tee "$RUNNER_TEMP/test.log"
 
-      # Adds the summary of the SQL tests to the commit as the "SQL tests"
-      # status, such as "1,234 of 7,890 rules · 12,345 statements · 4,567
-      # assertions · 5.32 seconds", so it can be seen in the checks of a pull
-      # request without opening the run. The rules are the rows of the standard
-      # index that are implemented, deviates or impl-defined (see "Verify
-      # standard index"), and are left out if it failed. It's skipped when the
-      # tests didn't get as far as their summary, and for a pull request from a
-      # fork, since its token can't add a status.
-      - name: Report the SQL tests
+      # Adds a summary to the commit as the "Stats for nerds" status, such as
+      # "141/179 mandatory 140/432 optional 1234/7890 rules 12345 stmts 4567
+      # asserts", so it can be seen in the checks of a pull request without
+      # opening the run. It's kept short (no commas or separators) so GitHub
+      # doesn't cut it off:
+      # - The features are the mandatory and optional features of every part
+      #   that are fully supported, from docs/sql-compliance.rst.
+      # - The rules are the rows of the standard index that are implemented,
+      #   deviates or impl-defined (see "Verify standard index"), and are left
+      #   out if it failed.
+      # - The statements and assertions are from the summary of the SQL tests,
+      #   with the failures (and a failed status) when there are some.
+      # It's skipped when the tests didn't get as far as their summary, and for
+      # a pull request from a fork, since its token can't add a status.
+      - name: Report stats for nerds
         if: >-
           ${{ !cancelled() && matrix.arch == 'x86-64'
           && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
@@ -241,27 +247,33 @@ jobs:
         run: |
           summary=$(grep -m1 '^SQL tests: ' "$RUNNER_TEMP/test.log" || true)
           if [ -z "$summary" ]; then exit 0; fi
-          # "SQL tests: 12345 statements, 4567 assertions, 0 failed, 5.32
-          # seconds" becomes "12,345 statements · 4,567 assertions · 5.32
-          # seconds", with the failures only when there are some, and the
-          # rules in front. The items are separated by "·" rather than a
-          # comma, since the numbers have commas.
-          read -r statements assertions failed seconds < <(echo "$summary" | sed -E 's/^SQL tests: ([0-9]+) statements, ([0-9]+) assertions, ([0-9]+) failed, ([0-9.]+) seconds$/\1 \2 \3 \4/')
-          group() { echo "$1" | sed -E -e ':a' -e 's/^([0-9]+)([0-9]{3})/\1,\2/' -e 'ta'; }
-          description="$(group "$statements") statements · $(group "$assertions") assertions"
+          # Each part in the table of docs/sql-compliance.rst has a row with
+          # its mandatory and optional features, such as "128 of 163" (or
+          # "None"), which are added up.
+          read -r mandatory mandatory_total optional optional_total < <(awk '
+            /^   \* - :doc:/ { row = 1; next }
+            row { row++ }
+            row == 3 && /^     - [0-9]+ of [0-9]+$/ { m += $2; mt += $4 }
+            row == 4 && /^     - [0-9]+ of [0-9]+$/ { o += $2; ot += $4 }
+            END { print m + 0, mt + 0, o + 0, ot + 0 }
+          ' docs/sql-compliance.rst)
+          description="$mandatory/$mandatory_total mandatory $optional/$optional_total optional"
           rules=$(grep -m1 '^Standard index: ' "$RUNNER_TEMP/standard-index.log" 2>/dev/null || true)
           if [ -n "$rules" ]; then
             read -r covered total < <(echo "$rules" | sed -E 's/^Standard index: ([0-9]+) of ([0-9]+) rules.*$/\1 \2/')
-            description="$(group "$covered") of $(group "$total") rules · $description"
+            description="$description $covered/$total rules"
           fi
+          # "SQL tests: 12345 statements, 4567 assertions, 0 failed, 5.32
+          # seconds" becomes "12345 stmts 4567 asserts".
+          read -r statements assertions failed < <(echo "$summary" | sed -E 's/^SQL tests: ([0-9]+) statements, ([0-9]+) assertions, ([0-9]+) failed, .*$/\1 \2 \3/')
+          description="$description $statements stmts $assertions asserts"
           state=success
           if [ "$failed" != 0 ]; then
-            description="$description · $(group "$failed") failed"
+            description="$description $failed failed"
             state=failure
           fi
-          description="$description · $seconds seconds"
           echo "$description"
-          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$state" -f context="SQL tests" \
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$state" -f context="Stats for nerds" \
             -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
 
       # The tests for "vsql app" drive it in a headless Chromium (see

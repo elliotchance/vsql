@@ -85,7 +85,8 @@ fn main() {
 
 	// The rules that vsql does in some way: as the standard says, differently
 	// (with an issue for it) or with an implementation-defined choice. The
-	// total is every row of every part. CI adds it to the "SQL tests" status.
+	// total is every row of every part. CI adds it to the "Stats for nerds"
+	// status.
 	mut covered := 0
 	mut total := 0
 	for _, rows in index.rows {

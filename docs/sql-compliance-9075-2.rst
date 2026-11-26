@@ -1299,7 +1299,7 @@ Optional Features
    * - ✅ **T121**
      - **WITH (excluding RECURSIVE) in query expression**
 
-   * - ❌ **T122**
+   * - ✅ **T122**
      - **WITH (excluding RECURSIVE) in subquery**
 
    * - ❌ **T131**

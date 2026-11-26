@@ -79,9 +79,44 @@ WITH a AS (VALUES 1) SELECT * FROM t WHERE x = 0;
 SELECT * FROM a;
 -- error 42P01: no such table: ":memory:".PUBLIC.A
 
--- # A subquery can't have a WITH yet (T122, #1296).
+-- # A subquery can have a WITH too (T122), such as a derived table, a scalar
+-- # subquery, the query of IN or EXISTS, a query in parentheses, or another
+-- # WITH query.
 SELECT * FROM (WITH a AS (VALUES 1) SELECT * FROM a) AS d;
--- error 42601: syntax error: unexpected WITH at line 1, column 16 near "* FROM (WITH a"
+SELECT x, (WITH a (n) AS (VALUES 10) SELECT n FROM a) FROM t WHERE x = 1;
+SELECT y FROM t WHERE x IN (WITH a (n) AS (VALUES 2) SELECT n FROM a);
+(WITH a (n) AS (VALUES 4) SELECT n FROM a);
+SELECT x FROM t WHERE x = 1 UNION (WITH a (n) AS (VALUES 7) SELECT n FROM a) ORDER BY x;
+WITH a AS (WITH b (n) AS (VALUES 3) SELECT n FROM b) SELECT * FROM a;
+-- COL1: 1
+-- X: 1 COL2: 10
+-- Y: b
+-- N: 4
+-- X: 1
+-- X: 7
+-- N: 3
+
+-- # A WITH in a subquery can read the names of the WITH around it, and its own
+-- # names hide them. A query of the WITH can refer to the columns of the query
+-- # that contains the subquery.
+WITH a (n) AS (VALUES 5) SELECT y FROM t WHERE x IN (WITH b AS (SELECT n - 3 AS m FROM a) SELECT m FROM b);
+WITH a (n) AS (VALUES 1) SELECT * FROM (WITH a (n) AS (VALUES 2) SELECT n FROM a) AS d, a;
+SELECT y FROM t WHERE EXISTS (WITH a AS (SELECT x FROM t AS t2 WHERE t2.x = t.x + 1) SELECT * FROM a);
+-- Y: b
+-- N: 2 N: 1
+-- Y: a
+-- Y: b
+
+-- # The names of a WITH in a subquery aren't in scope after the subquery.
+SELECT * FROM (WITH a AS (VALUES 1) SELECT * FROM a) AS d, a;
+-- error 42P01: no such table: ":memory:".PUBLIC.A
+
+-- # A WITH can't start the query after a WITH, unless it's in parentheses
+-- # (Syntax Rules, 1).
+WITH a AS (VALUES 1) WITH b AS (VALUES 2) SELECT * FROM b;
+WITH a (n) AS (VALUES 1) (WITH b (m) AS (VALUES 2) SELECT n, m FROM a, b);
+-- error 42601: syntax error: unexpected WITH at line 1, column 22 near "VALUES 1) WITH b", expecting SELECT or TABLE or VALUES or "("
+-- N: 1 M: 2
 
 -- # Every query of a statement can have a WITH, such as a view or an INSERT.
 CREATE VIEW v AS WITH a AS (SELECT x FROM t WHERE x <> 2) SELECT x * 2 AS d FROM a;

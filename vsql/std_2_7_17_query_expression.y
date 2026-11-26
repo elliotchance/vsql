@@ -4,29 +4,19 @@
 //
 // Specify a table.
 //
-// There's no WITH in a subquery (T122, #1296), WITH RECURSIVE (T131, #1284),
-// CORRESPONDING (F301) or FETCH NEXT (#331). LIMIT isn't in the standard, see
-// limit_clause.
+// There's no WITH RECURSIVE (T131, #1284), CORRESPONDING (F301) or FETCH NEXT
+// (#331). LIMIT isn't in the standard, see limit_clause.
 
 // A query_expression is either a parenthesized_query_expression or a
 // nonparenthesized_query_expression, so that a query_expression in parentheses
 // is always parsed the same way (see nonparenthesized_query_expression).
-//
-// Only a query_expression can have a with_clause, which is never in a subquery
-// (a subquery is a parenthesized_query_expression).
 query_expression:
   nonparenthesized_query_expression { $$.v = $1.v }
-| parenthesized_query_expression { $$.v = $1.v }
-| with_clause nonparenthesized_query_expression {
-    $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
-      $2.v as QueryExpression))
-  }
-| with_clause parenthesized_query_expression {
-    flag_query_expression(mut yylex, $2.v as QueryExpression, .query_primary)
-    $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
-      QueryExpression{
-        body: new_parenthesized_query_expression($2.v as QueryExpression)
-      }))
+| parenthesized_query_expression {
+    // A query_expression in parentheses is the query_primary of another
+    // query_expression, so a WITH in it needs T122 (see flag_query_expression).
+    flag_if(mut yylex, ($1.v as QueryExpression).with_list.len > 0, 'T122')
+    $$.v = $1.v
   }
 
 // The names of a with_list are in scope as each with_list_element is parsed
@@ -241,7 +231,25 @@ query_expression_clauses:
 
 // nonparenthesized_query_expression is a query_expression that isn't only a
 // query_expression in parentheses (a parenthesized_query_expression).
+//
+// A WITH can only be at the start of a query_expression, not of its
+// query_expression_body, so "WITH a AS (...) WITH b AS (...) SELECT ..." is a
+// syntax error, but a WITH in parentheses or a subquery is not.
 nonparenthesized_query_expression:
+  query_expression_without_with { $$.v = $1.v }
+| with_clause query_expression_without_with {
+    $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
+      $2.v as QueryExpression))
+  }
+| with_clause parenthesized_query_expression {
+    flag_query_expression(mut yylex, $2.v as QueryExpression, .query_primary)
+    $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
+      QueryExpression{
+        body: new_parenthesized_query_expression($2.v as QueryExpression)
+      }))
+  }
+
+query_expression_without_with:
   simple_table { $$.v = yy_box(QueryExpression{body: $1.v as SimpleTable}) }
 | query_set_operation { $$.v = yy_box(QueryExpression{body: $1.v as SimpleTable}) }
 | query_intersect_operation { $$.v = yy_box(QueryExpression{body: $1.v as SimpleTable}) }

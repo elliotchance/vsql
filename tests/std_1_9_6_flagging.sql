@@ -276,6 +276,30 @@ WITH a AS (SELECT x FROM t ORDER BY x) SELECT * FROM a;
 -- flags: F850, F851, T121
 -- X: 1
 
+-- # A WITH in a query that's contained in another query also needs T122 (Part
+-- # 2, 7.17, Conformance Rules, 2), such as in a subquery, in parentheses or in
+-- # a WITH query. A WITH at the start of an INSERT's query doesn't (but reading
+-- # the table that's inserted into needs F781).
+/* flags */
+SELECT * FROM (WITH a AS (SELECT x FROM t) SELECT * FROM a) AS d;
+-- flags: F591, T121, T122
+-- X: 1
+
+/* flags */
+(WITH a AS (SELECT x FROM t) SELECT * FROM a);
+-- flags: T121, T122
+-- X: 1
+
+/* flags */
+WITH a AS (WITH b AS (SELECT x FROM t) SELECT * FROM b) SELECT * FROM a;
+-- flags: T121, T122
+-- X: 1
+
+/* flags */
+INSERT INTO t (x) WITH a AS (SELECT x FROM t) SELECT x + 1 FROM a;
+-- flags: F781, T121
+-- msg: INSERT 1
+
 -- # A derived table needs F591. ORDER BY, OFFSET and FETCH FIRST need features
 -- # that depend on where the query is: at the top (F861, F857), in a subquery
 -- # (F850, F851, F862, F858 as well) or in parentheses as a query primary

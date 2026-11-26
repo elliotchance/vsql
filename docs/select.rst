@@ -314,10 +314,11 @@ columns, unless a list of column names is given, which is needed when two
 columns have the same name.
 
 A ``WITH`` can start the query of a statement, such as a ``SELECT``, a
-:doc:`create-view` or an :doc:`insert`, but not a subquery yet. Each query is
-run again each time its name is read, which only matters for a function that
-has a different value each time, such as ``RANDOM()``. ``WITH RECURSIVE``
-isn't supported yet.
+:doc:`create-view` or an :doc:`insert`, and any query in parentheses, such as a
+subquery. A ``WITH`` in a subquery can read the names of the ``WITH`` around it,
+and its own names hide them. Each query is run again each time its name is read,
+which only matters for a function that has a different value each time, such as
+``RANDOM()``. ``WITH RECURSIVE`` isn't supported yet.
 
 TABLE
 -----

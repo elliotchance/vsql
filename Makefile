@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: all-test app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -9,7 +9,24 @@
 # `-gc` values.
 BUILD_OPTIONS =
 
+# Everything that's built, the binaries and the tests, is optimized the same way
+# as the binaries that are released, with CFLAGS for the C compiler (-O2 by
+# default). "CFLAGS=-O0" builds them much quicker, but they run slower (see
+# docs/contributing.rst).
+#
+# The binaries are built with -prod (OPTIMIZE), which can be turned off with
+# "PROD=". -prod also removes every assert, even in a test, so the tests are
+# built without it, with the same C compiler (V_CC, otherwise V uses tcc) and
+# CFLAGS instead (TEST_OPTIMIZE).
 PROD = -prod
+CFLAGS ?= -O2
+OPTIMIZE = $(PROD) -cflags '$(CFLAGS)'
+ifeq ($(OS),Windows_NT)
+V_CC ?= gcc
+else
+V_CC ?= cc
+endif
+TEST_OPTIMIZE = -cc $(V_CC) -cflags '$(CFLAGS)'
 
 # OLDV let's you specify a differnt V version rather than the default one. This
 # is important for testing V language changes or legacy performance tests. It is
@@ -37,11 +54,11 @@ SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.c
 
 bin/vsql: $(SOURCES)
 	mkdir -p bin
-	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql
+	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(OPTIMIZE) cmd/vsql-cli -o bin/vsql
 
 bin/vsql.exe: $(SOURCES)
 	mkdir -p bin
-	v $(V3_OPTIONS) -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql.exe
+	v $(V3_OPTIONS) -os windows $(BUILD_OPTIONS) $(OPTIMIZE) cmd/vsql-cli -o bin/vsql.exe
 
 # libvsql is the SQL/CLI (ISO/IEC 9075-3) shared library, see
 # libvsql/libvsql.h. On macOS the install name must be set so that programs can
@@ -85,7 +102,7 @@ libvsql: $(LIBVSQL)
 
 $(LIBVSQL): $(SOURCES) $(wildcard libvsql/*.v)
 	mkdir -p bin
-	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) -enable-globals -shared $(LIBVSQL_OPTIONS) libvsql -o bin/libvsql
+	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(OPTIMIZE) -enable-globals -shared $(LIBVSQL_OPTIONS) libvsql -o bin/libvsql
 ifeq ($(OS),Windows_NT)
 	(echo 'LIBRARY libvsql.dll'; echo 'EXPORTS'; sed -nE 's/^[A-Za-z_][A-Za-z_0-9 *]*[ *](SQL[A-Za-z]+|vsql_[a-z_]+)\(.*/\1/p' libvsql/libvsql.h libvsql/test.h) > bin/libvsql-exports.def
 	dlltool -d bin/libvsql-exports.def -l bin/libvsql.dll.a
@@ -177,9 +194,30 @@ check-function-index:
 
 # Tests
 
-# test runs every test suite. Each one can also be run on its own. coverage
-# checks that sql-test and unit-test cover every line of vsql/ between them.
-test: sql-test unit-test coverage vorm-test btree-test big-test examples-test cli-test concurrency-test libvsql-test module-test embed-test
+# test runs every test suite. Each one can also be run on its own. Building vsql
+# takes about a minute (with -prod), so test builds it as few times as it can:
+# all-test runs the SQL, unit and B-tree tests (sql-test, unit-test and
+# btree-test) from one build, and examples-test builds all of the examples as
+# one program.
+test: all-test vorm-test big-test examples-test cli-test concurrency-test libvsql-test module-test embed-test
+
+# all-test runs all of the V tests in vsql/ (vsql/*_test.v: the SQL, unit and
+# B-tree tests) as one program, vsql/all_test.v (see scripts/all-tests.sh), so
+# vsql is only built once for them. Like coverage, it checks that they cover
+# every line of vsql/, unless COVERAGE=0.
+all-test: oldv
+	scripts/all-tests.sh
+ifeq ($(COVERAGE),0)
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vsql/all_test.v
+else
+	rm -rf coverage/all-data
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/all-data) $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vsql/all_test.v
+	$(call vsql_lcov,coverage/all-data,coverage/vsql.lcov)
+	$(call coverage_summary,coverage/vsql.lcov,V test,coverage-uncovered)
+ifeq ($(TEST)$(filter 0,$(MEMORY) $(FILE) $(SERVER)),)
+	$(call verify_full_coverage,coverage/vsql.lcov)
+endif
+endif
 
 # VSQL_TEST_OPTIONS build the SQL tests and the V tests in vsql/ with the
 # helpers that they share (vsql/testing_d_vsqltest.v).
@@ -200,10 +238,10 @@ UNIT_TESTS = $(filter-out vsql/btree_test.v vsql/sql_test.v,$(wildcard vsql/*_te
 # prints how much of vsql/ they cover, unless COVERAGE=0.
 unit-test: oldv
 ifeq ($(COVERAGE),0)
-	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) test $(UNIT_TESTS)
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) $(TEST_OPTIMIZE) test $(UNIT_TESTS)
 else
 	rm -rf coverage/unit-data
-	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/unit-data) $(BUILD_OPTIONS) test $(UNIT_TESTS)
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/unit-data) $(BUILD_OPTIONS) $(TEST_OPTIMIZE) test $(UNIT_TESTS)
 	$(call vsql_lcov,coverage/unit-data,coverage/unit.lcov)
 	$(call coverage_summary,coverage/unit.lcov,Unit test,unit-test-uncovered)
 endif
@@ -213,11 +251,8 @@ endif
 unit-test-uncovered:
 	$(call coverage_uncovered,coverage/unit.lcov,unit-test)
 
-# Only the B-tree tests are built with -prod. They take 5 minutes without it
-# (rather than 70 seconds), but the other tests are much quicker to build
-# without it.
 btree-test: oldv
-	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vsql/btree_test.v
 
 # big-test runs the big suite of "vsql bench" (see docs/benchmark.rst) in memory
 # and in a file, with 1,000 MiB of values of 1 to 10 MiB. It fails unless every
@@ -246,10 +281,10 @@ big_test_run = start=$$(date +%s) \
 # On GitHub Actions the coverage is also added to the job summary.
 sql-test: oldv
 ifeq ($(COVERAGE),0)
-	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) vsql/sql_test.v
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vsql/sql_test.v
 else
 	rm -rf coverage/sql-data
-	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/sql-data) $(BUILD_OPTIONS) vsql/sql_test.v
+	$(V) $(V3_OPTIONS) -stats $(VSQL_TEST_OPTIONS) $(call COVERAGE_OPTIONS,coverage/sql-data) $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vsql/sql_test.v
 	$(call vsql_lcov,coverage/sql-data,coverage/sql.lcov)
 	$(call coverage_summary,coverage/sql.lcov,SQL test,sql-test-uncovered)
 endif
@@ -288,10 +323,10 @@ vsql_lcov = $(V) cover $(1) --filter "$(CURDIR)/vsql/" --lcov $(2).tmp > /dev/nu
 # every line of vorm/.
 vorm-test: oldv
 ifeq ($(COVERAGE),0)
-	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) vorm/vorm_test.v
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vorm/vorm_test.v
 else
 	rm -rf coverage/vorm-data
-	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/vorm-data $(BUILD_OPTIONS) vorm/vorm_test.v
+	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/vorm-data $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vorm/vorm_test.v
 	$(V) cover coverage/vorm-data --filter "$(CURDIR)/vorm/" --lcov coverage/vorm.lcov > /dev/null
 	$(call coverage_summary,coverage/vorm.lcov,vorm test,vorm-test-uncovered)
 	$(call verify_full_coverage,coverage/vorm.lcov)
@@ -358,10 +393,11 @@ app-test: bin/vsql
 
 # Examples
 
-examples-test:
-	for f in `ls examples/*.v`; do \
-		echo $$f; v $(V3_OPTIONS) run $$f || exit 1; \
-	done
+# examples-test runs every example in examples/, built as one program (see
+# scripts/all-examples.sh), so vsql is only built once for them.
+examples-test: vsql/y.v
+	scripts/all-examples.sh
+	v $(V3_OPTIONS) $(TEST_OPTIMIZE) run examples/all/main.v
 	$(MAKE) libvsql-example module-example embed-example
 
 # The C programs that use libvsql must be C99.
@@ -427,7 +463,7 @@ libvsql-test: $(LIBVSQL)
 	i=0; while [ $$i -lt 20 ]; do bin/libvsql-first-call || exit 1; i=$$((i+1)); done
 
 examples/%: vsql/y.v
-	v $(V3_OPTIONS) run examples/$*.v
+	v $(V3_OPTIONS) $(TEST_OPTIMIZE) run examples/$*.v
 
 # Benchmarking
 

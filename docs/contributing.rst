@@ -21,6 +21,35 @@ Before sending a pull request, run ``make fmt`` and make sure ``make test``
 passes (see :doc:`testing`). CI fails if ``make fmt`` would change anything,
 which ``make fmt-verify`` checks.
 
+Building Faster
+^^^^^^^^^^^^^^^
+
+Everything that ``make`` builds, the binaries and the tests, is optimized the
+same way as the binaries that are released, with ``-O2`` from ``CFLAGS``. CI
+always builds it that way. The binaries are also built with ``-prod``, but the
+tests aren't, since ``-prod`` removes every ``assert``. Building vsql with
+``-O2`` takes about a minute, so ``make test`` builds it as few times as it can
+(see :doc:`testing`).
+
+While working on a change, run only the tests for it (such as ``TEST=std_11_5_
+make sql-test``, see :doc:`testing`), and leave the rest to CI. ``COVERAGE=0``
+skips the coverage. ``CFLAGS=-O0`` builds in a fraction of the time, but what's
+built runs several times slower, so it's only quicker for something that runs
+briefly, such as trying out ``bin/vsql`` or a few unit tests:
+
+.. code-block:: sh
+
+  make bin/vsql CFLAGS=-O0
+  v -d vsqltest -cc cc -cflags -O0 test vsql/row_test.v
+
+For the SQL tests, ``-O2`` is quicker, even for a few of them. On an Apple
+Silicon Mac, ``TEST=std_11_5_ make sql-test COVERAGE=0`` (1,040 statements)
+took 59 seconds with ``-O2`` (45 to build, 14 to run the tests), and 94 seconds
+with ``-O0`` (14 to build, 80 to run the tests).
+
+make doesn't build ``bin/vsql`` again when only ``CFLAGS`` changes, so remove
+it first to switch between them.
+
 Debugging
 ---------
 

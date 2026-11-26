@@ -4,7 +4,7 @@ import os
 import sync
 import time
 
-const verbose = os.getenv('VERBOSE') != ''
+const connection_test_verbose = os.getenv('VERBOSE') != ''
 
 fn test_concurrent_writes() ! {
 	file_name := 'test_concurrent_writes.vsql'
@@ -29,11 +29,11 @@ fn test_concurrent_writes() ! {
 		waits << spawn fn (file_name string, i int, options ConnectionOptions) {
 			mut db := open_database(file_name, options) or { panic(err) }
 			for j in 0 .. 100 {
-				if verbose {
+				if connection_test_verbose {
 					println('${i}.${j}: INSERT start')
 				}
 				db.query('INSERT INTO foo (x) VALUES (1)') or { panic(err) }
-				if verbose {
+				if connection_test_verbose {
 					println('${i}.${j}: INSERT done')
 				}
 			}

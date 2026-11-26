@@ -223,10 +223,14 @@ jobs:
       # MAX_RUN_TIME fails big-test if a run takes 100 seconds or more (see
       # docs/testing.rst).
       # The output is also kept for "Report the SQL tests".
+      #
+      # The V tests are built with tcc (TEST_OPTIMIZE=, see the Makefile). With
+      # gcc -O2 the SQL tests run in a third of the time, but it takes 5 to 8
+      # minutes longer to build them, which is longer than it saves.
       - name: Run tests
         run: |
           set -o pipefail
-          make test MAX_RUN_TIME=100 2>&1 | tee "$RUNNER_TEMP/test.log"
+          make test MAX_RUN_TIME=100 TEST_OPTIMIZE= 2>&1 | tee "$RUNNER_TEMP/test.log"
 
       # Adds the summary of the SQL tests to the commit as the "SQL tests"
       # status, such as "1,234 of 7,890 rules · 12,345 statements · 4,567
@@ -309,11 +313,17 @@ jobs:
             runner: macos-15-intel
             # The Intel runner is about three times slower than the others.
             max_run_time: 250
+            # The SQL tests run in a third of the time with -O2, which saves
+            # more than it takes to build them (see the Makefile).
+            test_optimize: -cc cc -cflags -O2
           - arch: arm64
             name: ARM64
             v_arch: arm64
             runner: macos-latest
             max_run_time: 100
+            # With -O2, it took as long to build the tests as it saved in
+            # running them. -O1 builds quicker.
+            test_optimize: -cc cc -cflags -O1
     runs-on: ${{ matrix.runner }}
     # About twice the longest run on macOS, so that a test that hangs fails the
     # job instead of holding a runner for GitHub's limit of 6 hours.
@@ -368,7 +378,7 @@ jobs:
       # MAX_RUN_TIME fails big-test if a run takes max_run_time seconds or more
       # (see docs/testing.rst).
       - name: Run tests
-        run: make test MAX_RUN_TIME=${{ matrix.max_run_time }}
+        run: make test MAX_RUN_TIME=${{ matrix.max_run_time }} TEST_OPTIMIZE="${{ matrix.test_optimize }}"
 
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7
@@ -505,12 +515,16 @@ jobs:
       # On ARM64, V builds without -prod with the x86-64 tcc that setup-v.sh
       # downloads, and those programs crash under emulation (even V's own test
       # runner), so everything is built with llvm-mingw's clang instead.
+      #
+      # The V tests aren't optimized (TEST_OPTIMIZE=, see the Makefile): on
+      # Windows the SQL tests take about as long with -O2, so it would only
+      # make them slower to build.
       - name: Run tests
         env:
           VFLAGS: ${{ matrix.arch == 'arm64' && '-cc clang' || '' }}
         run: |
           export PATH="$(cygpath -u "$PGBIN"):$PATH"
-          make -k test
+          make -k test TEST_OPTIMIZE=
 
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7

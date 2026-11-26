@@ -9,15 +9,19 @@
 # `-gc` values.
 BUILD_OPTIONS =
 
-# Everything that's built, the binaries and the tests, is optimized the same way
-# as the binaries that are released, with CFLAGS for the C compiler (-O2 by
-# default). "CFLAGS=-O0" builds them much quicker, but they run slower (see
-# docs/contributing.rst).
+# The binaries are optimized with -prod and CFLAGS for the C compiler (-O2 by
+# default), OPTIMIZE. -prod can be turned off with "PROD=".
 #
-# The binaries are built with -prod (OPTIMIZE), which can be turned off with
-# "PROD=". -prod also removes every assert, even in a test, so the tests are
-# built without it, with the same C compiler (V_CC, otherwise V uses tcc) and
-# CFLAGS instead (TEST_OPTIMIZE).
+# -prod also removes every assert, even in a test, so the V tests in vsql/
+# (all-test, sql-test, unit-test and btree-test) are built without it, with the
+# same C compiler (V_CC) and CFLAGS instead, TEST_OPTIMIZE. That makes the SQL
+# tests run 2 to 3 times quicker, but they take minutes rather than seconds to
+# build, so "TEST_OPTIMIZE=" builds them with V's default C compiler (tcc, which
+# doesn't optimize) instead. Which is quicker overall depends on the machine
+# (see docs/contributing.rst), CI picks one for each runner.
+#
+# Every other test (vorm-test and the examples) runs for about a second, so they
+# are always built with V's default C compiler.
 PROD = -prod
 CFLAGS ?= -O2
 OPTIMIZE = $(PROD) -cflags '$(CFLAGS)'
@@ -26,7 +30,7 @@ V_CC ?= gcc
 else
 V_CC ?= cc
 endif
-TEST_OPTIMIZE = -cc $(V_CC) -cflags '$(CFLAGS)'
+TEST_OPTIMIZE ?= -cc $(V_CC) -cflags '$(CFLAGS)'
 
 # OLDV let's you specify a differnt V version rather than the default one. This
 # is important for testing V language changes or legacy performance tests. It is
@@ -49,8 +53,10 @@ ready: grammar fmt snippets
 
 # Binaries
 
-# The binaries are rebuilt when any of the source files change.
-SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.css app/*.js)
+# The binaries are rebuilt when any of the source files change. vsql/all_test.v
+# is made by all-test, and isn't one of them, otherwise "make test" would build
+# the binaries again after all-test.
+SOURCES = vsql/y.v $(filter-out vsql/all_test.v,$(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.css app/*.js))
 
 bin/vsql: $(SOURCES)
 	mkdir -p bin
@@ -195,7 +201,8 @@ check-function-index:
 # Tests
 
 # test runs every test suite. Each one can also be run on its own. Building vsql
-# takes about a minute (with -prod), so test builds it as few times as it can:
+# takes up to a few minutes when it's optimized, so test builds it as few times
+# as it can:
 # all-test runs the SQL, unit and B-tree tests (sql-test, unit-test and
 # btree-test) from one build, and examples-test builds all of the examples as
 # one program.
@@ -323,10 +330,10 @@ vsql_lcov = $(V) cover $(1) --filter "$(CURDIR)/vsql/" --lcov $(2).tmp > /dev/nu
 # every line of vorm/.
 vorm-test: oldv
 ifeq ($(COVERAGE),0)
-	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vorm/vorm_test.v
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) vorm/vorm_test.v
 else
 	rm -rf coverage/vorm-data
-	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/vorm-data $(BUILD_OPTIONS) $(TEST_OPTIMIZE) vorm/vorm_test.v
+	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/vorm-data $(BUILD_OPTIONS) vorm/vorm_test.v
 	$(V) cover coverage/vorm-data --filter "$(CURDIR)/vorm/" --lcov coverage/vorm.lcov > /dev/null
 	$(call coverage_summary,coverage/vorm.lcov,vorm test,vorm-test-uncovered)
 	$(call verify_full_coverage,coverage/vorm.lcov)
@@ -397,7 +404,7 @@ app-test: bin/vsql
 # scripts/all-examples.sh), so vsql is only built once for them.
 examples-test: vsql/y.v
 	scripts/all-examples.sh
-	v $(V3_OPTIONS) $(TEST_OPTIMIZE) run examples/all/main.v
+	v $(V3_OPTIONS) run examples/all/main.v
 	$(MAKE) libvsql-example module-example embed-example
 
 # The C programs that use libvsql must be C99.
@@ -463,7 +470,7 @@ libvsql-test: $(LIBVSQL)
 	i=0; while [ $$i -lt 20 ]; do bin/libvsql-first-call || exit 1; i=$$((i+1)); done
 
 examples/%: vsql/y.v
-	v $(V3_OPTIONS) $(TEST_OPTIMIZE) run examples/$*.v
+	v $(V3_OPTIONS) run examples/$*.v
 
 # Benchmarking
 

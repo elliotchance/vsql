@@ -11,13 +11,15 @@ vsql is tested in a variety of ways, but most functional tests are SQL files
 for the database itself (and its tests need Python and a browser). See
 `Continuous Integration`_ for what CI runs on each platform.
 
-Every test is optimized the same way as the binaries that are released, with
-the ``CFLAGS`` for the C compiler (``-O2``, see :doc:`contributing`). They
-aren't built with ``-prod`` like the binaries, since it removes every
-``assert``. Building each program that has vsql takes about a minute, so
-``make test`` builds as few of them as it can: `all-test`_ runs `btree-test`_,
-`sql-test`_ and `unit-test`_ from one build, and `examples-test`_ builds all of
-the examples as one program.
+The V tests in ``vsql/`` are optimized like the binaries that are released,
+with the ``CFLAGS`` for the C compiler (``-O2``), but without ``-prod``, since
+it removes every ``assert``. ``TEST_OPTIMIZE=`` builds them with V's default C
+compiler instead, which is quicker to build but slower to run (see
+:doc:`contributing` for which one CI uses on each platform). The other tests
+are always built with V's default C compiler. Each program that has vsql takes
+time to build, so ``make test`` builds as few of them as it can: `all-test`_
+runs `btree-test`_, `sql-test`_ and `unit-test`_ from one build, and
+`examples-test`_ builds all of the examples as one program.
 
 all-test
 --------

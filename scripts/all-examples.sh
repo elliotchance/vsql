@@ -2,8 +2,7 @@
 
 # all-examples.sh writes examples/all/main.v, which runs every example in
 # examples/ from one program, so that "make examples-test" builds vsql once for
-# all of them, rather than once for each example (about a minute each, with
-# -prod).
+# all of them, rather than once for each example.
 #
 # Each example has a main() and an example() (see examples/simple.v). They're
 # renamed after the example (such as main_simple() and example_simple()), and

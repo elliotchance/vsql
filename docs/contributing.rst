@@ -24,12 +24,27 @@ which ``make fmt-verify`` checks.
 Building Faster
 ^^^^^^^^^^^^^^^
 
-Everything that ``make`` builds, the binaries and the tests, is optimized the
-same way as the binaries that are released, with ``-O2`` from ``CFLAGS``. CI
-always builds it that way. The binaries are also built with ``-prod``, but the
-tests aren't, since ``-prod`` removes every ``assert``. Building vsql with
-``-O2`` takes about a minute, so ``make test`` builds it as few times as it can
-(see :doc:`testing`).
+The binaries (such as ``bin/vsql``) are optimized the same way as the ones that
+are released, with ``-prod`` and ``-O2`` from ``CFLAGS``. The V tests in
+``vsql/`` (the SQL, unit and B-tree tests) are built with the same C compiler
+and ``CFLAGS``, but not ``-prod``, since it removes every ``assert``
+(``TEST_OPTIMIZE`` in the Makefile). Building vsql with ``-O2`` takes one to a
+few minutes, so ``make test`` builds it as few times as it can (see
+:doc:`testing`). The other tests (the ORM tests and the examples) only run for
+about a second, so they're built with V's default C compiler (tcc), which takes
+seconds.
+
+``TEST_OPTIMIZE=`` builds the V tests with tcc as well. Which is quicker
+overall depends on the machine. In CI, the SQL tests ran 2.4 to 3.6 times
+quicker with ``-O2``, but building them took 2 to 8 minutes rather than 12 to 33
+seconds:
+
+- Linux (x86-64 and ARM64): tcc is quicker (6 rather than 8 minutes on x86-64,
+  and 4 rather than 11 on ARM64).
+- macOS x86-64: ``-O2`` is quicker (7 rather than 12 minutes).
+- macOS ARM64: they're about the same (6 minutes), so CI uses ``-O1``.
+- Windows: the SQL tests take about as long either way, so tcc (or clang
+  without optimizing on ARM64) is quicker.
 
 While working on a change, run only the tests for it (such as ``TEST=std_11_5_
 make sql-test``, see :doc:`testing`), and leave the rest to CI. ``COVERAGE=0``

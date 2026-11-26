@@ -2,8 +2,8 @@
 
 # all-tests.sh writes vsql/all_test.v, which has all of the V tests in vsql/
 # (vsql/*_test.v: the SQL, unit and B-tree tests) in one file. Each test file is
-# built on its own with all of vsql, which takes about a minute with -prod, so
-# "make test" builds this one instead (see all-test in the Makefile).
+# built on its own with all of vsql, which takes up to a few minutes when it's
+# optimized, so "make test" builds this one instead (see all-test in the Makefile).
 #
 # The files are put one after the other, without their module and import lines,
 # which are put once at the top. Each file's testsuite_begin and testsuite_end

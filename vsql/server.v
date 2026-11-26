@@ -140,12 +140,18 @@ pub fn (mut s Server) serve() ! {
 	s.serving = true
 	s.mutex.unlock()
 
-	for !s.stopping {
+	for {
 		mut conn := s.accept() or {
 			s.log('${err}')
 			continue
 		}
-		if s.stopping {
+
+		// stop holds the mutex while it connects to wake this up, so the
+		// listener isn't closed (below) before it has connected.
+		s.mutex.lock()
+		stopping := s.stopping
+		s.mutex.unlock()
+		if stopping {
 			conn.close() or {}
 			break
 		}
@@ -185,20 +191,26 @@ pub fn (mut s Server) stop() ! {
 	address := s.address()!
 
 	s.mutex.lock()
+	defer {
+		s.mutex.unlock()
+	}
+	if s.stopping {
+		return
+	}
 	s.stopping = true
-	serving := s.serving
-	s.mutex.unlock()
 
-	if !serving {
+	if !s.serving {
 		s.listener.close()!
 		return
 	}
 
-	// Connecting wakes up serve, which closes the listener. It can't connect if
-	// serve has already seen that it's stopping and closed it.
-	if mut wake := net.dial_tcp(address.replace('0.0.0.0:', '127.0.0.1:').replace('[::]:', '[::1]:')) {
-		wake.close()!
-	}
+	// Connecting wakes up serve, which closes the listener. The mutex is held
+	// until it has connected, otherwise serve could wake up for another client,
+	// see that it's stopping and close the listener first. Connecting to a
+	// closed port takes about 2 seconds on Windows, rather than failing straight
+	// away.
+	mut wake := net.dial_tcp(address.replace('0.0.0.0:', '127.0.0.1:').replace('[::]:', '[::1]:'))!
+	wake.close()!
 }
 
 // handle_client runs in its own thread for each client. An error only

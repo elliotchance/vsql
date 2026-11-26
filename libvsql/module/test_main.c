@@ -178,6 +178,12 @@ int main(void) {
   /* 9.1 GR 7.o.iii: The value must fit in the host parameter. */
   EXPECT(select_too_big(sqlstate, &s), "22003");
 
+  /* F131-05: A <select statement: single row> can read a grouped view, and
+   * have a GROUP BY and HAVING. */
+  EXPECT(create_grouped_view(sqlstate), "00000");
+  EXPECT(select_grouped_view(sqlstate, &x, &rows), "00000");
+  CHECK(x == 1 && rows == 2);
+
   /* 6.14 SR 1.a.iv: NEXT VALUE FOR can be in a <select statement: single
    * row>. */
   EXPECT(create_sequence(sqlstate), "00000");

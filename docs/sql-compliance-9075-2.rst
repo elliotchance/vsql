@@ -12,7 +12,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 132 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
+**vsql supports 138 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
 
 .. list-table:: Table H.1 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -419,22 +419,22 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ **F081**
      - **UNION and EXCEPT in views**
 
-   * - ❌ **F131**
+   * - ✅ **F131**
      - **Grouped operations**
 
-   * - ❌ F131-01
+   * - ✅ F131-01
      - ``WHERE``, ``GROUP BY``, and ``HAVING`` clauses supported in queries with grouped views
 
-   * - ❌ F131-02
+   * - ✅ F131-02
      - Multiple tables supported in queries with grouped views
 
-   * - ❌ F131-03
+   * - ✅ F131-03
      - Set functions supported in queries with grouped views
 
-   * - ❌ F131-04
+   * - ✅ F131-04
      - Subqueries with ``GROUP BY`` and ``HAVING`` clauses and grouped views
 
-   * - ❌ F131-05
+   * - ✅ F131-05
      - Single row ``SELECT`` with ``GROUP BY`` and ``HAVING`` clauses and grouped views
 
    * - ✅ **F181**

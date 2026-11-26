@@ -15,8 +15,9 @@ a table can, such as in a ``SELECT``, a join or a subquery, and it can be read
 by another view. Its rows aren't stored: the query is run each time the view is
 read, so it always sees the rows of the tables as they are at that time.
 
-The query can be any query, including one that combines queries with ``UNION``,
-``EXCEPT`` or ``INTERSECT``. It can end with an ``ORDER BY``, ``OFFSET`` and
+The query can be any query, including one with a ``GROUP BY`` (a grouped view,
+which can be read like any other table) or one that combines queries with
+``UNION``, ``EXCEPT`` or ``INTERSECT``. It can end with an ``ORDER BY``, ``OFFSET`` and
 ``FETCH FIRST`` (or ``LIMIT``) to pick which rows are in the view, such as the
 ten most recent. A query that reads the view needs its own ``ORDER BY`` if it
 needs the rows in order.

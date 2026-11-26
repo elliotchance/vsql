@@ -373,8 +373,15 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 
 			// The WHERE clause is applied after the join, but a key can be used to
 			// read only the rows of the table that it can be true for, when they
-			// can't be NULL-extended (see create_join_plan).
-			reads_table := plan.operations.len == 1 && plan.operations[0] is TableOperation
+			// can't be NULL-extended (see create_join_plan). A view is read from
+			// a subplan, so it has no key.
+			mut reads_table := false
+			if plan.operations.len == 1 {
+				first := plan.operations[0]
+				if first is TableOperation {
+					reads_table = !first.table_is_subplan
+				}
+			}
 			if preserved && reads_table && table_reference.correlation.name.sub_entity_name == '' {
 				if key := key_operation(body, table, table, params, mut conn) {
 					plan.operations = [PlanOperation(key)]

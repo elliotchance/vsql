@@ -137,8 +137,8 @@ vsql_m_descriptor(char *sqlstate, const char *name, const void *module) {
  * the length of a CHARACTER or CHARACTER VARYING. A CHARACTER VARYING target
  * also matches a shorter CHARACTER VARYING. As an implementation-defined rule,
  * a DOUBLE PRECISION matches a FLOAT, and a character string matches a
- * NUMERIC, DECIMAL or datetime (which don't have a C data type), as its value
- * cast to a character string.
+ * NUMERIC, DECIMAL, DECFLOAT or datetime (which don't have a C data type), as
+ * its value cast to a character string.
  *
  * ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 7 and 8
  */
@@ -149,7 +149,8 @@ static int vsql_m_matches(struct vsql_m_item *item, SQLSMALLINT type,
   switch (type) {
   case SQL_CHAR:
   case SQL_VARCHAR:
-    if (t == SQL_NUMERIC || t == SQL_DECIMAL || t == SQL_DATETIME) {
+    if (t == SQL_NUMERIC || t == SQL_DECIMAL || t == SQL_DECFLOAT ||
+        t == SQL_DATETIME) {
       return 1;
     }
     return t == type &&
@@ -187,6 +188,9 @@ static int vsql_m_valid(struct vsql_m_item *item) {
            number[VSQL_M_SCALE] <= number[VSQL_M_PRECISION];
   case SQL_FLOAT:
     return number[VSQL_M_PRECISION] >= 1;
+  case SQL_DECFLOAT:
+    /* ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Syntax Rules, 6.h */
+    return number[VSQL_M_PRECISION] == 16 || number[VSQL_M_PRECISION] == 34;
   case SQL_SMALLINT:
   case SQL_INTEGER:
   case SQL_BIGINT:
@@ -272,6 +276,10 @@ static SQLSMALLINT vsql_m_c_type(struct vsql_m_item *item, size_t *size) {
   case SQL_NUMERIC:
   case SQL_DECIMAL:
     *size = (size_t)number[VSQL_M_PRECISION] + 3;
+    return SQL_CHAR;
+  case SQL_DECFLOAT:
+    /* A sign, the digits, a point and an exponent of up to 4 digits. */
+    *size = (size_t)number[VSQL_M_PRECISION] + 10;
     return SQL_CHAR;
   }
 
@@ -523,7 +531,7 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
   case VSQL_M_TYPE:
     /* The other components (except LEVEL) are reset to 0 (zero), so SCALE is
      * 0 (zero) and so is the PRECISION of a datetime. The default PRECISION of
-     * a NUMERIC or DECIMAL is 18, and of a FLOAT is 53.
+     * a NUMERIC or DECIMAL is 18, of a DECFLOAT is 34, and of a FLOAT is 53.
      *
      * ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.c.i to 5.c.iii */
     level = number[VSQL_M_LEVEL];
@@ -536,6 +544,9 @@ static int vsql_m_set_number(char *sqlstate, struct vsql_m_item *item,
       vsql_m_copy(&item->string[VSQL_M_CHARACTER_SET_NAME], "UTF8");
     } else if (value == SQL_NUMERIC || value == SQL_DECIMAL) {
       number[VSQL_M_PRECISION] = 18;
+    } else if (value == SQL_DECFLOAT) {
+      /* ISO/IEC 9075-2:2023, 20.5, <set descriptor statement>, General Rules, 4.c.iii.8 */
+      number[VSQL_M_PRECISION] = 34;
     } else if (value == SQL_FLOAT) {
       number[VSQL_M_PRECISION] = 53;
     }

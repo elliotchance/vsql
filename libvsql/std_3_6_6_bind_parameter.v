@@ -129,7 +129,7 @@ fn check_concise_type(code i16) ! {
 		return cli_error('HYC00', 'optional feature not implemented')
 	}
 	if code !in [sql_char, sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
-		sql_double, sql_varchar, sql_boolean, sql_bigint] {
+		sql_double, sql_varchar, sql_boolean, sql_bigint, sql_decfloat] {
 		return cli_error('HY004', 'invalid data type')
 	}
 }

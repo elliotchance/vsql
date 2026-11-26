@@ -593,9 +593,11 @@ of the standard, whatever order they're written in.
 ``SMALLINT``, ``INTEGER``, ``BIGINT``, ``REAL``, ``DOUBLE PRECISION`` (which is
 also a ``FLOAT``), ``BOOLEAN``, ``CHARACTER(L)`` with a ``LENGTH`` of ``L``, or
 ``CHARACTER VARYING(L)`` with a ``LENGTH`` of ``L`` (or less, to get a value).
-A ``NUMERIC``, ``DECIMAL``, ``DATE``, ``TIME`` or ``TIMESTAMP`` has no C type,
-so its ``DATA`` is a ``CHARACTER`` or ``CHARACTER VARYING`` string. A ``NULL``
-value without ``INDICATOR`` is ``22002``. These are the other errors:
+A ``NUMERIC``, ``DECIMAL``, ``DECFLOAT``, ``DATE``, ``TIME`` or ``TIMESTAMP``
+has no C type, so its ``DATA`` is a ``CHARACTER`` or ``CHARACTER VARYING``
+string. A ``DECFLOAT`` is ``TYPE`` ``26``, and its ``PRECISION`` is ``16`` or
+``34`` (setting ``TYPE`` to ``26`` sets it to ``34``). A ``NULL`` value without
+``INDICATOR`` is ``22002``. These are the other errors:
 
 - ``33000`` (invalid SQL descriptor name): The SQL descriptor area doesn't
   exist in this SQL-connection, or already exists.

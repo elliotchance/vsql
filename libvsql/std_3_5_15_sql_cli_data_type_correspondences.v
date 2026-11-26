@@ -24,6 +24,11 @@ const sql_datetime = i16(9)
 const sql_varchar = i16(12)
 const sql_boolean = i16(16)
 const sql_bigint = i16(25)
+
+// DECFLOAT isn't in SQL/CLI 2003, so it has the code for DECFLOAT in dynamic
+// SQL (ISO/IEC 9075-2:2023, 20.1, Description of SQL descriptor areas, Table
+// 30), which isn't used by any other type in SQL/CLI.
+const sql_decfloat = i16(26)
 const sql_blob_locator = i16(31)
 const sql_clob_locator = i16(41)
 const sql_type_date = i16(91)
@@ -53,6 +58,7 @@ fn data_type_code(typ vsql.Type) i16 {
 		.is_varchar { sql_varchar }
 		.is_decimal { sql_decimal }
 		.is_numeric { sql_numeric }
+		.is_decfloat { sql_decfloat }
 		.is_date { sql_type_date }
 		.is_time_without_time_zone { sql_type_time }
 		.is_time_with_time_zone { sql_type_time_with_timezone }

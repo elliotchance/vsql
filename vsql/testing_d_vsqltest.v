@@ -105,10 +105,17 @@ mut:
 struct PGTestClient {
 mut:
 	conn &net.TcpConn
+	// parameters are the run-time parameters the server reported (with
+	// ParameterStatus) when the client connected.
+	parameters map[string]string
+	// backend_key_data is true if the server sent BackendKeyData.
+	backend_key_data bool
 }
 
 fn new_pg_test_client(port int, database string) !&PGTestClient {
-	mut client := &PGTestClient{net.dial_tcp('127.0.0.1:${port}')!}
+	mut client := &PGTestClient{
+		conn: net.dial_tcp('127.0.0.1:${port}')!
+	}
 
 	// A statement can take longer than V's default of 30 seconds on a slow
 	// machine.
@@ -126,13 +133,24 @@ fn new_pg_test_client(port int, database string) !&PGTestClient {
 	startup << body
 	client.conn.write(startup)!
 
-	// AuthenticationOk, then ReadyForQuery. An error means the database couldn't
-	// be opened.
+	// AuthenticationOk, ParameterStatus for each parameter, BackendKeyData, then
+	// ReadyForQuery. An error means the database couldn't be opened.
 	for {
 		msg_type, msg := client.read_message()!
 		match msg_type {
-			`E` { return error(pg_test_fields(msg)['M']) }
-			`Z` { break }
+			`E` {
+				return error(pg_test_fields(msg)['M'])
+			}
+			`S` {
+				end := pg_test_string_end(msg, 0)
+				client.parameters[msg[..end].bytestr()] = msg[end + 1..msg.len - 1].bytestr()
+			}
+			`K` {
+				client.backend_key_data = true
+			}
+			`Z` {
+				break
+			}
 			else {}
 		}
 	}
@@ -149,29 +167,44 @@ fn (mut c PGTestClient) query(stmt string) !SQLTestOutput {
 
 	mut output := SQLTestOutput{}
 	mut columns := []string{}
+	mut booleans := []bool{}
 	for {
 		msg_type, msg := c.read_message()!
 		match msg_type {
-			// RowDescription: the name of each column, followed by 18 bytes that
-			// aren't needed.
+			// RowDescription: the name of each column, the table and column
+			// (6 bytes), the type oid, then 8 bytes that aren't needed.
 			`T` {
 				columns = []
+				booleans = []
 				mut at := 2
 				for _ in 0 .. pg_test_read_int16(msg, 0) {
 					end := pg_test_string_end(msg, at)
 					columns << msg[at..end].bytestr()
+					booleans << (pg_test_read_int32(msg, end + 7) == 16)
 					at = end + 1 + 18
 				}
 			}
-			// DataRow: the length and text of each value.
+			// DataRow: the length and text of each value. A length of -1 is a
+			// NULL (UNKNOWN for a BOOLEAN), and a BOOLEAN is "t" or "f".
 			`D` {
 				mut line := ''
 				mut at := 2
-				for column in columns {
+				for i, column in columns {
 					len := pg_test_read_int32(msg, at)
 					at += 4
-					line += '${column}: ${msg[at..at + len].bytestr()} '
-					at += len
+					mut text := 'NULL'
+					if len >= 0 {
+						text = msg[at..at + len].bytestr()
+						at += len
+					}
+					if booleans[i] {
+						text = match text {
+							't' { 'TRUE' }
+							'f' { 'FALSE' }
+							else { 'UNKNOWN' }
+						}
+					}
+					line += '${column}: ${text} '
 				}
 				output.rows << line.trim_space()
 			}
@@ -267,7 +300,7 @@ fn pg_test_int32(x int) []u8 {
 }
 
 fn pg_test_read_int32(b []u8, at int) int {
-	return int(binary.big_endian_u32(b[at..at + 4]))
+	return int(i32(binary.big_endian_u32(b[at..at + 4])))
 }
 
 fn pg_test_read_int16(b []u8, at int) int {

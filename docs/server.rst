@@ -49,19 +49,49 @@ PostgreSQL clients also set PostgreSQL's run-time parameters, such as
 ``SET [ SESSION | LOCAL ] <name> { TO | = } ...`` without running it. A ``SET``
 in the SQL standard, such as ``SET SCHEMA``, still runs.
 
-Clients also read PostgreSQL's system catalog to list the schemas and tables.
-Each connection of a client (but no other connection) has the parts of it that
-clients use, which are flagged as ``V5XX`` (see :doc:`sql-flagging`):
-``pg_namespace``, ``pg_class`` and ``pg_statio_user_tables`` (from the schemas and tables of the
-database), an empty ``pg_type``, ``pg_enum`` and ``pg_proc``, and the
-``pg_get_userbyid()``, ``pg_get_function_identity_arguments()``,
-``obj_description()``, ``pg_total_relation_size()``, ``pg_table_size()`` and
-``pg_indexes_size()`` functions (there are no comments, and the sizes are
-``NULL``). ``vsql server`` also accepts the PostgreSQL syntax that clients use
-in these queries: it removes ``pg_catalog.`` before a name (the catalog is in
-the default schema), changes the PostgreSQL type of a cast (``::``, see
-:doc:`expressions`) such as ``reltuples::int8`` into an SQL type (``BIGINT``), and
-runs a ``NULL`` column of a select list (such as ``SELECT NULL AS size``) as a
+When a client connects, ``vsql server`` reports PostgreSQL's run-time
+parameters, such as ``server_version`` (``9.3.10``, the same as ``version()``)
+and ``client_encoding`` (``UTF8``), which some clients (such as JDBC) need.
+Results are sent like PostgreSQL: each column has its PostgreSQL type (or
+``text`` for a type that PostgreSQL doesn't have), a ``NULL`` is a null value
+(not the text ``NULL``), and a ``BOOLEAN`` is ``t`` or ``f``.
+
+Clients also read PostgreSQL's system catalog to list the schemas, tables and
+columns. Each connection of a client (but no other connection) has the parts of
+it that clients use, which are flagged as ``V5XX`` (see :doc:`sql-flagging`):
+
+- ``pg_namespace``, ``pg_class``, ``pg_attribute``, ``pg_attrdef`` and
+  ``pg_statio_user_tables`` describe the schemas, tables and columns of the
+  database. Each object has its own oid.
+- ``pg_database`` has the only database, with the name that the client connected
+  with (which is also ``current_database()``).
+- ``pg_type`` has the built-in types (in the ``pg_catalog`` schema), and
+  ``format_type()`` is the SQL name of a type.
+- ``pg_roles``, ``pg_tablespace``, ``pg_conversion``, ``pg_collation``,
+  ``pg_am`` and ``pg_language`` have the only user, tablespace, encoding
+  (``UTF8``), collation, index access method and the built-in languages.
+  ``pg_settings`` has the run-time parameters.
+- The rest are empty: there are no comments (``pg_description`` and
+  ``pg_shdescription``), constraints, indexes, triggers, rules, functions,
+  enums or extensions to describe (``pg_constraint``, ``pg_index``,
+  ``pg_trigger``, ``pg_rewrite``, ``pg_proc``, ``pg_aggregate``, ``pg_enum``,
+  ``pg_extension``, ``pg_available_extensions``, ``pg_event_trigger``,
+  ``pg_foreign_data_wrapper``, ``pg_foreign_server``, ``pg_depend``,
+  ``pg_inherits`` and ``pg_default_acl``).
+- The ``pg_get_userbyid()``, ``pg_get_function_identity_arguments()``,
+  ``obj_description()``, ``shobj_description()``, ``pg_get_expr()``,
+  ``pg_get_indexdef()``, ``pg_get_constraintdef()``, ``pg_get_ruledef()``,
+  ``pg_tablespace_location()`` and ``pg_encoding_to_char()`` functions, and the
+  size functions (``pg_database_size()``, ``pg_total_relation_size()``,
+  ``pg_relation_size()``, ``pg_table_size()``, ``pg_indexes_size()`` and
+  ``pg_stat_get_numscans()``), which are ``NULL``.
+
+``vsql server`` also accepts the PostgreSQL syntax that clients use in these
+queries: it removes ``pg_catalog.`` before a name (the catalog is in the default
+schema), changes the PostgreSQL type of a cast (``::``, see :doc:`expressions`)
+such as ``reltuples::int8`` into an SQL type (``BIGINT``), changes
+``current_schema()`` into ``CURRENT_SCHEMA``, and runs a ``NULL`` column of a
+select list (such as ``SELECT NULL AS size``) as a
 ``BIGINT``. Like PostgreSQL, it sends the name of a column in lower case if it
 has no lower case letters, so ``SELECT relname AS name`` has a ``name`` column.
 

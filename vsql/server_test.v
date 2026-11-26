@@ -134,6 +134,29 @@ fn test_server_empty_query() ! {
 	assert client.query('VALUES 1;')!.rows == ['COL1: 1']
 }
 
+// The server reports its run-time parameters when a client connects. JDBC (used
+// by DBeaver) needs server_version, and only accepts UTF8 for client_encoding.
+fn test_server_parameter_status() ! {
+	mut server := start_sql_test_server_with(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	defer {
+		client.close()
+	}
+
+	assert client.parameters == pg_parameters
+	assert client.parameters['server_version'] == '9.3.10'
+	assert client.parameters['client_encoding'] == 'UTF8'
+	assert client.backend_key_data
+	assert client.query('VALUES 1')!.rows == ['COL1: 1']
+}
+
 // A client that disconnects in the middle of a transaction is rolled back. If
 // the rollback fails, the server only logs it.
 fn test_server_disconnect_rollback_fails() ! {
@@ -378,24 +401,26 @@ fn test_server_ignore_pg_set() ! {
 // removes "pg_catalog." before a name, but not in quotes or comments.
 fn test_rewrite_pg_syntax() {
 	for query, expected in {
-		'SELECT reltuples::int8 FROM pg_class':                       'SELECT reltuples::BIGINT FROM pg_class'
-		'SELECT c.x :: pg_catalog.int2, 1::int, 2::int4, 3::oid':     'SELECT c.x ::SMALLINT, 1::INTEGER, 2::INTEGER, 3::INTEGER'
-		'VALUES 1.5::float4 + 2::float8, true::bool':                 'VALUES 1.5::REAL + 2::DOUBLE PRECISION, true::BOOLEAN'
-		"VALUES 'it''s'::text, 'x'::name, (1 + (2))::numeric":        "VALUES 'it''s'::VARCHAR(255), 'x'::VARCHAR(255), (1 + (2))::NUMERIC"
-		"VALUES count(*)::regclass, 'a'::regproc, 'b'::regnamespace": "VALUES count(*)::VARCHAR(255), 'a'::VARCHAR(255), 'b'::VARCHAR(255)"
-		"x = 'pg_catalog.trigger'::pg_catalog.regtype":               "x = 'pg_catalog.trigger'::VARCHAR(255)"
-		'SELECT "a::b"::int8, "x""y"::int8 FROM PG_CATALOG.pg_class': 'SELECT "a::b"::BIGINT, "x""y"::BIGINT FROM pg_class'
-		'SELECT pg_catalog.f(x), my_pg_catalog.t, "pg_catalog.x"':    'SELECT f(x), my_pg_catalog.t, "pg_catalog.x"'
-		"SELECT 'unterminated::int":                                  "SELECT 'unterminated::int"
-		'SELECT 1 -- pg_catalog.x::int\nFROM pg_catalog.t':           'SELECT 1 -- pg_catalog.x::int\nFROM t'
-		'SELECT 1 -- x::int':                                         'SELECT 1 -- x::int'
-		'SELECT /* pg_catalog.x::int */ 1::int8':                     'SELECT /* pg_catalog.x::int */ 1::BIGINT'
-		'SELECT /* x::int':                                           'SELECT /* x::int'
-		'SELECT NULL AS a, 1, null as b UNION SELECT 1,NULL\tAS c':   'SELECT CAST(NULL AS BIGINT) AS a, 1, CAST(NULL AS BIGINT) as b UNION SELECT 1,CAST(NULL AS BIGINT)\tAS c'
-		'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, NULL AS':       'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, CAST(NULL AS BIGINT) AS'
-		'NULL AS a, NULL':                                            'NULL AS a, NULL'
-		'XSELECT NULL AS a':                                          'XSELECT NULL AS a'
-		'::int':                                                      '::INTEGER'
+		'SELECT reltuples::int8 FROM pg_class':                           'SELECT reltuples::BIGINT FROM pg_class'
+		'SELECT c.x :: pg_catalog.int2, 1::int, 2::int4, 3::oid':         'SELECT c.x ::SMALLINT, 1::INTEGER, 2::INTEGER, 3::INTEGER'
+		'VALUES 1.5::float4 + 2::float8, true::bool':                     'VALUES 1.5::REAL + 2::DOUBLE PRECISION, true::BOOLEAN'
+		"VALUES 'it''s'::text, 'x'::name, (1 + (2))::numeric":            "VALUES 'it''s'::VARCHAR(255), 'x'::VARCHAR(255), (1 + (2))::NUMERIC"
+		"VALUES count(*)::regclass, 'a'::regproc, 'b'::regnamespace":     "VALUES count(*)::VARCHAR(255), 'a'::VARCHAR(255), 'b'::VARCHAR(255)"
+		"x = 'pg_catalog.trigger'::pg_catalog.regtype":                   "x = 'pg_catalog.trigger'::VARCHAR(255)"
+		'SELECT "a::b"::int8, "x""y"::int8 FROM PG_CATALOG.pg_class':     'SELECT "a::b"::BIGINT, "x""y"::BIGINT FROM pg_class'
+		'SELECT pg_catalog.f(x), my_pg_catalog.t, "pg_catalog.x"':        'SELECT f(x), my_pg_catalog.t, "pg_catalog.x"'
+		"SELECT 'unterminated::int":                                      "SELECT 'unterminated::int"
+		'SELECT 1 -- pg_catalog.x::int\nFROM pg_catalog.t':               'SELECT 1 -- pg_catalog.x::int\nFROM t'
+		'SELECT 1 -- x::int':                                             'SELECT 1 -- x::int'
+		'SELECT /* pg_catalog.x::int */ 1::int8':                         'SELECT /* pg_catalog.x::int */ 1::BIGINT'
+		'SELECT /* x::int':                                               'SELECT /* x::int'
+		'SELECT NULL AS a, 1, null as b UNION SELECT 1,NULL\tAS c':       'SELECT CAST(NULL AS BIGINT) AS a, 1, CAST(NULL AS BIGINT) as b UNION SELECT 1,CAST(NULL AS BIGINT)\tAS c'
+		'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, NULL AS':           'SELECT x IS NULL AS a, NULLS AS b, NULL ASC, CAST(NULL AS BIGINT) AS'
+		'NULL AS a, NULL':                                                'NULL AS a, NULL'
+		'XSELECT NULL AS a':                                              'XSELECT NULL AS a'
+		'::int':                                                          '::INTEGER'
+		'SELECT current_schema(), my_current_schema(), CURRENT_SCHEMA()': 'SELECT CURRENT_SCHEMA, my_current_schema(), CURRENT_SCHEMA'
+		'current_schema()':                                               'CURRENT_SCHEMA'
 	} {
 		assert rewrite_pg_syntax(query) == expected, query
 	}

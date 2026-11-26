@@ -616,6 +616,42 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V501-08``
      - ``pg_get_function_identity_arguments()``.
 
+   * - ``V501-09``
+     - ``current_database()``.
+
+   * - ``V501-10``
+     - ``pg_database_size()``.
+
+   * - ``V501-11``
+     - ``format_type()``.
+
+   * - ``V501-12``
+     - ``pg_get_expr()``.
+
+   * - ``V501-13``
+     - ``pg_tablespace_location()``.
+
+   * - ``V501-14``
+     - ``pg_encoding_to_char()``.
+
+   * - ``V501-15``
+     - ``pg_relation_size()``.
+
+   * - ``V501-16``
+     - ``pg_stat_get_numscans()``.
+
+   * - ``V501-17``
+     - ``pg_get_indexdef()``.
+
+   * - ``V501-18``
+     - ``pg_get_constraintdef()``.
+
+   * - ``V501-19``
+     - ``pg_get_ruledef()``.
+
+   * - ``V501-20``
+     - ``shobj_description()``.
+
    * - ``V502``
      - PostgreSQL system catalog tables (see :doc:`server`).
 
@@ -639,3 +675,75 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V502-07``
      - ``pg_proc``.
+
+   * - ``V502-08``
+     - ``pg_attribute``.
+
+   * - ``V502-09``
+     - ``pg_attrdef``.
+
+   * - ``V502-10``
+     - ``pg_roles``.
+
+   * - ``V502-11``
+     - ``pg_tablespace``.
+
+   * - ``V502-12``
+     - ``pg_settings``.
+
+   * - ``V502-13``
+     - ``pg_description``.
+
+   * - ``V502-14``
+     - ``pg_shdescription``.
+
+   * - ``V502-15``
+     - ``pg_depend``.
+
+   * - ``V502-16``
+     - ``pg_conversion``.
+
+   * - ``V502-17``
+     - ``pg_collation``.
+
+   * - ``V502-18``
+     - ``pg_am``.
+
+   * - ``V502-19``
+     - ``pg_language``.
+
+   * - ``V502-20``
+     - ``pg_inherits``.
+
+   * - ``V502-21``
+     - ``pg_constraint``.
+
+   * - ``V502-22``
+     - ``pg_index``.
+
+   * - ``V502-23``
+     - ``pg_trigger``.
+
+   * - ``V502-24``
+     - ``pg_rewrite``.
+
+   * - ``V502-25``
+     - ``pg_aggregate``.
+
+   * - ``V502-26``
+     - ``pg_default_acl``.
+
+   * - ``V502-27``
+     - ``pg_extension``.
+
+   * - ``V502-28``
+     - ``pg_available_extensions``.
+
+   * - ``V502-29``
+     - ``pg_event_trigger``.
+
+   * - ``V502-30``
+     - ``pg_foreign_data_wrapper``.
+
+   * - ``V502-31``
+     - ``pg_foreign_server``.

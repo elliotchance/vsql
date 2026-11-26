@@ -9,7 +9,8 @@ These functions return the current date and time (see :doc:`dates-times` for
 the types), build one from its fields (``MAKE_DATE``, ``MAKE_TIME``,
 ``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``, and ``MAKE_INTERVAL`` for an
 interval), return a part of one
-(``EXTRACT``), or round one down to the start of a unit (``DATE_TRUNC``). The current time is taken once for each statement, so every use
+(``EXTRACT``), round one down to the start of a unit (``DATE_TRUNC``), or find
+the last day of its month (``LAST_DAY``). The current time is taken once for each statement, so every use
 in the same statement has the same value, even if the statement takes a while
 (except ``NOW()``). Each execution of a prepared statement has a new time.
 
@@ -340,6 +341,54 @@ and the result has the sign of the interval.
     fraction of ``SECOND``.
   - SQL Server: ``DATEPART(year, d)``.
   - SQLite: ``STRFTIME('%Y', d)``, as a string.
+
+LAST_DAY
+^^^^^^^^
+
+.. code-block:: sql
+
+   LAST_DAY(source DATE) DATE
+   LAST_DAY(source TIMESTAMP(p)) DATE
+
+Returns the last day of the month of a date or timestamp (with or without a time
+zone), as a ``DATE``. A value ``WITH TIME ZONE`` uses the date in its own time
+zone, the same as a ``CAST`` to ``DATE``. A NULL source is NULL.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LAST_DAY(DATE '2024-02-10');
+  -- COL1: 2024-02-29
+
+  VALUES LAST_DAY(TIMESTAMP '2026-11-17 14:35:21');
+  -- COL1: 2026-11-30
+
+The last day of the month before, or a number of months after, starts from the
+first day of the month, since adding a month to a day that isn't in every month
+(such as the 31st) is an error:
+
+.. code-block:: sql
+
+  VALUES LAST_DAY(DATE_TRUNC('month', DATE '2026-01-31') + INTERVAL '1' MONTH);
+  -- COL1: 2026-02-28
+
+  VALUES DATE_TRUNC('month', DATE '2026-11-17') - INTERVAL '1' DAY;
+  -- COL1: 2026-10-31
+
+**Compatibility**
+
+- **SQL standard:** not standard.
+- **vsql:** ``LAST_DAY`` is ``V402-22`` (see :doc:`sql-flagging`).
+- **Other databases:**
+
+  - MySQL, MariaDB, DuckDB and Snowflake: ``LAST_DAY``.
+  - Oracle: ``LAST_DAY``, which keeps the time of a ``DATE`` (an Oracle
+    ``DATE`` has a time).
+  - SQL Server and spreadsheets: ``EOMONTH(d)``, which can also add a number of
+    months.
+  - PostgreSQL: ``(date_trunc('month', d) + interval '1 month' - interval '1
+    day')::date``.
 
 LOCALTIME
 ^^^^^^^^^

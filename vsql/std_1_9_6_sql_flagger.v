@@ -151,6 +151,7 @@ import arrays
 // V402-13 to V402-19: more EXTRACT fields (see vsql_extract_fields).
 // V402-20: DATE_TRUNC.
 // V402-21: MAKE_INTERVAL.
+// V402-22: LAST_DAY.
 //
 // V403: Mathematical functions.
 // V403-01: MOD with an argument that has a scale or is approximate.
@@ -350,6 +351,7 @@ const vsql_make_timestamp = 'V402-11'
 const vsql_make_timestamptz = 'V402-12'
 const vsql_date_trunc = 'V402-20'
 const vsql_make_interval = 'V402-21'
+const vsql_last_day = 'V402-22'
 const vsql_mod_not_integer = 'V403-01'
 const vsql_round = 'V403-02'
 const vsql_trunc = 'V403-03'

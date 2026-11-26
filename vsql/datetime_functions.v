@@ -44,6 +44,29 @@ fn register_datetime_funcs(mut conn Connection) ! {
 			vsql_make_timestamptz,
 		], [], false})!
 	}
+
+	// LAST_DAY (V402-22) takes a DATE or TIMESTAMP, and a TIMESTAMP with a lower
+	// precision is implicitly cast to 6.
+	for source in [date, timestamp6, timestamptz6] {
+		conn.register_func(Func{'LAST_DAY', [source], false, func_last_day, date, false, true, [
+			vsql_last_day,
+		], [], false})!
+	}
+}
+
+// func_last_day is the last day of the month of a DATE or TIMESTAMP, as a DATE.
+// A value WITH TIME ZONE uses the date in its own time zone, the same as a CAST
+// to DATE.
+fn func_last_day(_ FunctionContext, args []Value) !Value {
+	t := args[0].time_value().t
+	date := Type{SQLType.is_date, 0, 0, false, false}
+	return Value{
+		typ: date
+		v:   InternalValue{
+			time_value: box_time(Time{date, 0, new_lenient_time(t.year, t.month, days_in_month(t.month,
+				t.year), 0, 0, 0, 0)})
+		}
+	}
 }
 
 fn func_make_date(_ FunctionContext, args []Value) !Value {

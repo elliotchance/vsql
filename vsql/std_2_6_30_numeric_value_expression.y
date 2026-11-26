@@ -65,5 +65,15 @@ numeric_primary:
   }
 | numeric_value_function { $$.v = $1.v }
 | interval_qualified_primary { $$.v = $1.v }
+// A datetime_factor that isn't only a value_expression_primary (a datetime
+// value function, or anything with a time zone) is an operand of datetime
+// arithmetic, which is parsed as a numeric_value_expression (see
+// compile_datetime_arithmetic).
+//
+// ISO/IEC 9075-2:2023, 6.42, <datetime value expression>, Format
+// ISO/IEC 9075-2:2023, 6.44, <interval value expression>, Format
+| datetime_factor {
+    $$.v = yy_box(numeric_primary_of_datetime($1.v as DatetimePrimary))
+  }
 
 %%

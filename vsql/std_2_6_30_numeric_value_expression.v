@@ -133,7 +133,9 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	}.fold()
 }
 
-type NumericPrimary = ExtractExpression
+type NumericPrimary = &TimeZoneExpression
+	| DatetimeValueFunction
+	| ExtractExpression
 	| IntervalQualifiedPrimary
 	| RoutineInvocation
 	| SignedValueExpressionPrimary
@@ -142,7 +144,7 @@ type NumericPrimary = ExtractExpression
 fn (e NumericPrimary) pstr(params map[string]Value) string {
 	return match e {
 		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression,
-		IntervalQualifiedPrimary {
+		IntervalQualifiedPrimary, DatetimeValueFunction, &TimeZoneExpression {
 			e.pstr(params)
 		}
 	}
@@ -151,10 +153,22 @@ fn (e NumericPrimary) pstr(params map[string]Value) string {
 fn (e NumericPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
 		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation, ExtractExpression,
-		IntervalQualifiedPrimary {
+		IntervalQualifiedPrimary, DatetimeValueFunction, &TimeZoneExpression {
 			return e.compile(mut c)!
 		}
 	}
+}
+
+// numeric_primary_of_datetime is the NumericPrimary of a datetime_factor that's
+// an operand of datetime arithmetic. A datetime_factor is never only a
+// ValueExpressionPrimary (that's a numeric_primary already), so it's a datetime
+// value function or has a time zone.
+fn numeric_primary_of_datetime(e DatetimePrimary) NumericPrimary {
+	if e is DatetimeValueFunction {
+		return NumericPrimary(e)
+	}
+
+	return NumericPrimary(e as &TimeZoneExpression)
 }
 
 fn (e NumericPrimary) value() ?Value {

@@ -59,7 +59,7 @@
 # 4.6.3, Predefined types
 4.6.3                    implemented  vsql/type.v tests/std_2_6_1_type_limits.sql
 # 4.6.3.1, Numeric types
-4.6.3.1                  partial      vsql/decfloat.v tests/std_2_6_1_decfloat.sql DECFLOAT (T076) can only be stored and cast, it has no operations yet
+4.6.3.1                  implemented  vsql/decfloat.v tests/std_2_6_1_decfloat.sql
 # 4.6.3.2, Character string types
 4.6.3.2                  implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 # 4.6.3.3, Binary string types

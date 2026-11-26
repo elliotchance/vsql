@@ -327,7 +327,8 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	}
 
 	// The binary set functions accept any two numbers, which are used as DOUBLE
-	// PRECISION (see eval_binary_set_function), so they're the only aggregate
+	// PRECISION, or as DECFLOAT if either one is (see binary_set_function_type
+	// and eval_binary_set_function), so they're the only aggregate
 	// functions with arguments that are implicitly cast (see find_function).
 	//
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Format

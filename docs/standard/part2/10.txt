@@ -169,7 +169,7 @@
 10.9/SR/9.c              container    - -
 10.9/SR/9.c.i            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql INTEGER
 10.9/SR/9.c.ii           container    - -
-10.9/SR/9.c.ii.1         n/a          - - DECFLOAT (T076)
+10.9/SR/9.c.ii.1         impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_decfloat_binary_set_functions.sql the larger precision of the arguments
 10.9/SR/9.c.ii.2         impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql DOUBLE PRECISION
 10.9/SR/10               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
 10.9/SR/10.a             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql

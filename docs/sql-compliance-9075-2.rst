@@ -1280,7 +1280,7 @@ Optional Features
    * - ✅ **T071**
      - **BIGINT data type**
 
-   * - ⭕ **T076**
+   * - ✅ **T076**
      - **DECFLOAT data type**
 
    * - ✅ **T081**

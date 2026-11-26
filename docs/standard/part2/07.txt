@@ -1247,7 +1247,7 @@
 7.17/SR/3.h              n/a          - - data change delta tables (T495)
 7.17/SR/3.i              container    - -
 7.17/SR/3.i.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
-7.17/SR/3.i.ii           deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql a name can't be read before its <with list element> (#1784)
+7.17/SR/3.i.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/3.j              container    - -
 7.17/SR/3.j.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/3.j.ii           definition   - -

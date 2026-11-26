@@ -78,31 +78,44 @@ mut:
 	rows []Row
 }
 
-// A RecursiveQuery is a <with list element> of a WITH RECURSIVE. Its name is in
-// scope from its <query name>, so its own query can read it, but a query that
-// reads itself can't be replaced by the query, like other <query name>s are (see
-// table_or_query_name_primary). Each <query name> that refers to it is a
-// RecursiveQueryReference instead, which all share this.
+// A RecursiveQuery is a <with list element> of a WITH RECURSIVE. Every name of
+// the <with list> is in scope in all of its queries (see start_recursive_with),
+// so a query can read itself, or a query that's after it. While the <with list>
+// is being parsed, it isn't known which queries are recursive, so each <query
+// name> that refers to it in the <with list> is a RecursiveQueryReference, which
+// all share this (see table_or_query_name_primary).
 @[heap]
 struct RecursiveQuery {
 mut:
 	name    Identifier
 	columns []Identifier
 	query   QueryExpression
-	// parsed is true once its query has been parsed. A <query name> before that
-	// is in its own query.
+	// parsed is true once its query has been parsed.
 	parsed bool
-	// recursive is true when its own query reads it, so it's recursive.
+	// reads are the queries of the same <with list> that its query reads (it
+	// depends immediately on them).
+	reads []&RecursiveQuery
+	// stratum is the queries of the <with list> that it's strongly connected
+	// with, including itself, and recursive is true when it's in a cycle (it
+	// reads itself, maybe through other queries). See finish_recursive_with.
+	stratum   []&RecursiveQuery
 	recursive bool
 }
 
 // A RecursiveQueryReference is a <query name> that refers to a RecursiveQuery.
-// When working is true, it's in the query of the RecursiveQuery, and it reads
-// the rows of the previous iteration (see RecursiveUnionOperation). Otherwise,
-// it reads the result of the RecursiveQuery.
+// from is the RecursiveQuery whose query it's in, if any. When the query it
+// refers to is in the same stratum as from, it reads the rows of the previous
+// iteration (see RecursiveUnionOperation). Otherwise, it reads the result of
+// the RecursiveQuery.
 struct RecursiveQueryReference {
-	query   &RecursiveQuery
-	working bool
+	query &RecursiveQuery
+	from  &RecursiveQuery = unsafe { nil }
+}
+
+// working is true when the reference reads the rows of the previous iteration
+// of its query, in a query of the same stratum.
+fn (r RecursiveQueryReference) working() bool {
+	return r.from != unsafe { nil } && r.from.stratum.any(it == r.query)
 }
 
 // add_with_list_element adds element to list, the <with list> that's being
@@ -152,13 +165,15 @@ fn with_query_expression(mut yylex YYLexer, list []WithListElement, query QueryE
 	}
 }
 
-// start_recursive_with starts the <with list> of a WITH RECURSIVE. Each of its
-// names is in scope from its <query name> (see add_recursive_query_name), so
-// that its own query can read it. A WITH RECURSIVE can't be in the query of
-// another WITH RECURSIVE.
+// start_recursive_with starts the <with list> of a WITH RECURSIVE. The scope of
+// each of its names is the whole <with list> (and the query after it), so
+// they're found before the <with list> is parsed (see recursive_query_names). A
+// WITH RECURSIVE can't be in the query of another WITH RECURSIVE. names_after
+// is false for a CREATE RECURSIVE VIEW, which only has its own name.
 //
-// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.e and 3.g
-fn start_recursive_with(mut yylex YYLexer) ! {
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.e, 3.g and
+// 3.i.ii
+fn start_recursive_with(mut yylex YYLexer, names_after bool) ! {
 	if mut yylex is Lexer {
 		for scope in yylex.with_scopes {
 			for element in scope {
@@ -167,40 +182,153 @@ fn start_recursive_with(mut yylex YYLexer) ! {
 				}
 			}
 		}
-		yylex.recursive_table_names[yylex.with_scopes.len] = []string{}
-		yylex.with_scopes << []WithListElement{}
+		mut scope := []WithListElement{}
+		if names_after {
+			for name in yylex.recursive_query_names()! {
+				if scope.any(it.name.sub_entity_name == name.sub_entity_name) {
+					continue
+				}
+				scope << WithListElement{
+					name:            name
+					recursive_query: &RecursiveQuery{
+						name: name
+					}
+				}
+			}
+		}
+		yylex.with_scopes << scope
 	}
 }
 
-// add_recursive_query_name puts the <query name> of a <with list element> of a
-// WITH RECURSIVE in scope, before its query is parsed.
-//
-// A name can't be read before its <with list element>, which the standard
-// allows, but it's an error instead of reading a table with the same name
-// (#1784).
+// recursive_query_names are the <query name>s of the <with list> after the
+// WITH RECURSIVE that the parser has just read. They're found by skipping over
+// the tokens of each <with list element>: a name, an optional column list in
+// parentheses, AS and a query in parentheses, followed by a comma if there's
+// another one. If the tokens are anything else, the names stop there, and the
+// parser finds the error.
+fn (l Lexer) recursive_query_names() ![]Identifier {
+	// The parser may have read the token after RECURSIVE already.
+	mut i := if l.tokens[l.pos - 1].token == token_recursive { l.pos } else { l.pos - 1 }
+
+	mut names := []Identifier{}
+	for i < l.tokens.len {
+		name := l.tokens[i].value
+		chain := match name {
+			IdentifierChain { name }
+			string { IdentifierChain{name} }
+			Value { break }
+		}
+		names << new_column_identifier(chain.identifier)!
+		i++
+		if i < l.tokens.len && l.tokens[i].token == token_operator_left_paren {
+			i = l.after_parentheses(i)
+		}
+		if i >= l.tokens.len || l.tokens[i].token != token_as {
+			break
+		}
+		i++
+		if i >= l.tokens.len || l.tokens[i].token != token_operator_left_paren {
+			break
+		}
+		i = l.after_parentheses(i)
+		if i >= l.tokens.len || l.tokens[i].token != token_operator_comma {
+			break
+		}
+		i++
+	}
+
+	return names
+}
+
+// after_parentheses is the position of the token after the right parenthesis
+// that matches the left parenthesis at i.
+fn (l Lexer) after_parentheses(i int) int {
+	mut depth := 0
+	mut j := i
+	for j < l.tokens.len {
+		match l.tokens[j].token {
+			token_operator_left_paren, token_operator_left_paren_asterisk { depth++ }
+			token_operator_right_paren { depth-- }
+			else {}
+		}
+		j++
+		if depth == 0 {
+			break
+		}
+	}
+
+	return j
+}
+
+// add_recursive_query_name is the <query name> of a <with list element> of a
+// WITH RECURSIVE, which is already in scope (see start_recursive_with). Its
+// query is parsed next.
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.c and 3.i.ii
 fn add_recursive_query_name(mut yylex YYLexer, name Identifier) !&RecursiveQuery {
+	if mut yylex is Lexer {
+		for element in yylex.with_scopes[yylex.with_scopes.len - 1] {
+			if element.name.sub_entity_name == name.sub_entity_name {
+				if element.recursive_query.parsed {
+					return sqlstate_42601('WITH query ${name.sub_entity_name} is specified more than once')
+				}
+				yylex.parsing_recursive_query = element.recursive_query
+
+				return element.recursive_query
+			}
+		}
+	}
+
+	// A CREATE RECURSIVE VIEW isn't in scope yet.
 	query := &RecursiveQuery{
 		name: name
 	}
 	if mut yylex is Lexer {
-		mut scope := yylex.with_scopes[yylex.with_scopes.len - 1]
-		for other in scope {
-			if other.name.sub_entity_name == name.sub_entity_name {
-				return sqlstate_42601('WITH query ${name.sub_entity_name} is specified more than once')
-			}
-		}
-		if name.sub_entity_name in yylex.recursive_table_names[yylex.with_scopes.len - 1] {
-			return sqlstate_42601("WITH RECURSIVE query ${name.sub_entity_name} cannot be read before it's defined")
-		}
 		yylex.with_scopes[yylex.with_scopes.len - 1] << WithListElement{
 			name:            name
 			recursive_query: query
 		}
+		yylex.parsing_recursive_query = query
 	}
 
 	return query
+}
+
+// finish_recursive_with is the end of the <with list> of a WITH RECURSIVE. The
+// queries that each query reads (the query name dependency graph) are known
+// now, so the strata (the strongly connected queries) are found, and which
+// queries are recursive.
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.ii,
+// 3.j.ii.1, 3.j.ii.2, 3.j.iii, 3.j.iv, 3.j.v and 3.j.vi
+fn finish_recursive_with(list []WithListElement) {
+	mut queries := list.map(it.recursive_query)
+
+	// reaches[i][j] is true when query i depends on query j, immediately or
+	// through other queries.
+	mut reaches := [][]bool{len: queries.len, init: []bool{len: queries.len}}
+	for i, query in queries {
+		mut stack := query.reads.clone()
+		for stack.len > 0 {
+			next := stack.pop()
+			j := queries.index(next)
+			if j < 0 || reaches[i][j] {
+				continue
+			}
+			reaches[i][j] = true
+			stack << next.reads
+		}
+	}
+
+	for i, mut query in queries {
+		query.recursive = reaches[i][i]
+		query.stratum = [query]
+		for j, other in queries {
+			if j != i && reaches[i][j] && reaches[j][i] {
+				query.stratum << other
+			}
+		}
+	}
 }
 
 // recursive_with_list_element finishes a <with list element> of a WITH
@@ -215,6 +343,10 @@ fn recursive_with_list_element(mut yylex YYLexer, mut query RecursiveQuery, colu
 	query.columns = columns
 	query.query = subquery.body as QueryExpression
 	query.parsed = true
+
+	if mut yylex is Lexer {
+		yylex.parsing_recursive_query = unsafe { nil }
+	}
 
 	element := WithListElement{
 		name:            query.name
@@ -256,19 +388,18 @@ fn table_or_query_name_primary(mut yylex YYLexer, name Identifier, correlation C
 						continue
 					}
 
-					// A query of a WITH RECURSIVE that reads itself is read by its
-					// name, and so is its own name in its query.
+					// A query of a WITH RECURSIVE is read by its name in the queries
+					// of the <with list>, and after it when it's recursive.
 					if element.recursive_query != unsafe { nil } {
 						mut query := element.recursive_query
-						if !query.parsed || query.recursive {
-							query.recursive = query.recursive || !query.parsed
+						mut from := yylex.parsing_recursive_query
+						if from != unsafe { nil } && !from.reads.any(it == query) {
+							from.reads << query
+						}
+						if from != unsafe { nil } || query.recursive {
 							return TablePrimary{
-								body:        RecursiveQueryReference{query, !query.parsed}
-								with_query:  if query.parsed {
-									voidptr(query)
-								} else {
-									unsafe { nil }
-								}
+								body:        RecursiveQueryReference{query, from}
+								with_query:  voidptr(query)
 								correlation: Correlation{
 									name:    if correlation.name.sub_entity_name != '' {
 										correlation.name
@@ -297,16 +428,6 @@ fn table_or_query_name_primary(mut yylex YYLexer, name Identifier, correlation C
 							}
 						}
 					}
-				}
-			}
-
-			// A WITH RECURSIVE that's still being parsed can't have a name that's
-			// read here, because it would refer to the query instead (see
-			// add_recursive_query_name).
-			for i, scope in yylex.with_scopes {
-				if scope.len == 0 || (scope.last().recursive_query != unsafe { nil }
-					&& !scope.last().recursive_query.parsed) {
-					yylex.recursive_table_names[i] << name.entity_name
 				}
 			}
 		}
@@ -1054,7 +1175,20 @@ fn recursive_query_plan(query &RecursiveQuery, params map[string]Value, mut conn
 		conn.recursive_reads = recursive_reads
 	}
 
-	return create_query_expression_plan(query.query, params, mut conn, Correlation{})
+	// The query of the stratum is planned by create_recursive_union_plan. When it
+	// isn't a UNION, the result isn't a query specification either, which would
+	// have its select list applied again.
+	mut stmt := query.query
+	if stmt.body is QuerySpecification {
+		stmt = QueryExpression{
+			...stmt
+			body: ParenthesizedQueryExpression{&QueryExpression{
+				body: stmt.body
+			}}
+		}
+	}
+
+	return create_query_expression_plan(stmt, params, mut conn, Correlation{})
 }
 
 // working_table_plan reads the rows of the previous iteration of a
@@ -1081,50 +1215,180 @@ fn working_table_plan(query &RecursiveQuery, mut conn Connection) !Plan {
 	}
 }
 
-// create_recursive_union_plan is the plan of the <query expression body> of a
-// RecursiveQuery that reads itself, which must be a UNION. One side (the anchor)
-// can't read it, and the other side must. A recursively derived column has the
-// type of the anchor, and any other column has the type of both sides combined.
+// create_recursive_union_plan is the plan of a RecursiveQuery that reads
+// itself, which is planned with the other queries of its stratum (the queries
+// that it reads, which read it). Each cycle of the stratum must have a query
+// that's a UNION of a query (the anchor) that doesn't read the stratum and one
+// that does. The other queries of the stratum don't need to be a UNION. A
+// recursively derived column has the type of the anchor, and any other column
+// has the type of both sides combined.
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.vii,
-// 3.j.vii.1, 3.j.vii.1.A, 3.j.vii.1.B and 3.j.viii
+// 3.j.vii.1, 3.j.vii.1.A, 3.j.vii.1.B, 3.j.vii.2 and 3.j.viii
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 19.b.ii.2,
 // 19.b.ii.2.B, 19.b.ii.2.C.I, 19.b.ii.2.C.II.1 and 19.b.ii.2.C.II.2
-fn create_recursive_union_plan(query &RecursiveQuery, body SimpleTable, params map[string]Value, mut conn Connection) !Plan {
-	name := query.name.sub_entity_name
-	if body !is SetOperation || (body as SetOperation).op != 'UNION' {
-		return sqlstate_42601('WITH RECURSIVE query ${name} must be a UNION of a query that does not read ${name} and one that does')
-	}
-	op := body as SetOperation
-
-	key := voidptr(query)
+fn create_recursive_union_plan(query &RecursiveQuery, params map[string]Value, mut conn Connection) !Plan {
+	stratum := query.stratum
 	defer {
-		conn.recursive_queries.delete(key)
-	}
-
-	// The anchor is the side that doesn't read it, which is usually the left.
-	// Until the anchor is planned, the columns aren't known, so planning the
-	// other side may fail.
-	mut anchor_side := *op.left
-	mut recursive_side := *op.right
-	mut anchor_plan, mut is_anchor := plan_recursive_anchor(key, anchor_side, params, mut
-		conn)!
-	if !is_anchor {
-		anchor_side, recursive_side = recursive_side, anchor_side
-		anchor_plan, is_anchor = plan_recursive_anchor(key, anchor_side, params, mut conn)!
-		if !is_anchor {
-			return sqlstate_42601('WITH RECURSIVE query ${name} must be a UNION of a query that does not read ${name} and one that does')
+		for member in stratum {
+			conn.recursive_queries.delete(voidptr(member))
 		}
 	}
-	anchor_columns := anchor_plan.columns()
-	if anchor_columns.len != query.columns.len {
-		return sqlstate_42601('WITH query ${name} has ${query.columns.len} columns, but its query has ${anchor_columns.len}')
+
+	// The anchor of each query that's a UNION is the side that doesn't read the
+	// stratum, which is usually the left. Until the anchor is planned, the
+	// columns aren't known, so planning the other side may fail.
+	mut members := []RecursiveMember{}
+	mut recursive_sides := []QueryExpression{}
+	for member in stratum {
+		body := member.query.body
+		mut recursive_side := member.query
+		mut anchor := Plan{}
+		mut has_anchor := false
+		mut all := match body {
+			SetOperation { body.all }
+			QuerySpecification { !body.distinct }
+			else { true }
+		}
+		if body is SetOperation && body.op == 'UNION' {
+			anchor, has_anchor = plan_recursive_anchor(stratum, *body.left, params, mut
+				conn)!
+			if has_anchor {
+				recursive_side = *body.right
+			} else {
+				anchor, has_anchor = plan_recursive_anchor(stratum, *body.right, params, mut
+					conn)!
+				if has_anchor {
+					recursive_side = *body.left
+				}
+			}
+		}
+		members << RecursiveMember{
+			key:        voidptr(member)
+			all:        all
+			has_anchor: has_anchor
+			anchor:     anchor
+		}
+		recursive_sides << recursive_side
 	}
 
-	// The columns of the working table are recursive (see Column.recursive).
-	mut columns := []Column{}
-	for i, column in anchor_columns {
-		columns << Column{
+	// Every cycle has an anchor when the queries that aren't anchors don't make
+	// a cycle by themselves. They're planned in the order that they read each
+	// other, after the anchors.
+	mut order := []int{}
+	mut visiting := []bool{len: stratum.len}
+	for i in 0 .. stratum.len {
+		if !members[i].has_anchor {
+			if !recursive_order(stratum, members, i, mut visiting, mut order) {
+				return recursive_anchor_error(stratum)
+			}
+		}
+	}
+
+	// The columns of the working tables are recursive (see Column.recursive).
+	for i, mut member in members {
+		if member.has_anchor {
+			member.columns = working_columns(stratum[i], member.anchor.columns())!
+		}
+	}
+	for i in order {
+		members[i].recursive = plan_recursive_member(members, recursive_sides[i], params, mut
+			conn)!
+		members[i].columns = working_columns(stratum[i], members[i].recursive.columns())!
+	}
+	changed := plan_recursive_sides(stratum, mut members, recursive_sides, params, mut
+		conn)!
+	if changed {
+		for i in order {
+			members[i].recursive = plan_recursive_member(members, recursive_sides[i], params, mut
+				conn)!
+			members[i].columns = working_columns(stratum[i], members[i].recursive.columns())!
+		}
+		plan_recursive_sides(stratum, mut members, recursive_sides, params, mut conn)!
+	}
+
+	// The result isn't recursive outside of its own query.
+	for mut member in members {
+		member.columns = member.columns.map(Column{
+			...it
+			recursive: false
+		})
+	}
+
+	mut plan := Plan{}
+	mut n := 1
+	for member in members {
+		if member.has_anchor {
+			plan.subplans['\$${n}'] = member.anchor
+			n++
+		}
+		plan.subplans['\$${n}'] = member.recursive
+		n++
+	}
+	plan.operations << &RecursiveUnionOperation{members, 0, conn}
+
+	return plan
+}
+
+// RecursiveMember is a query of a recursive stratum (by its key). When it's an
+// anchor expression (has_anchor), anchor is the side of its UNION that doesn't
+// read the stratum, and recursive is the other side. Otherwise, recursive is
+// its whole query. all is false when the rows that are already in its result
+// aren't added again. columns are the columns of its result.
+struct RecursiveMember {
+	key        voidptr
+	all        bool
+	has_anchor bool
+mut:
+	columns   Columns
+	anchor    Plan
+	recursive Plan
+}
+
+// recursive_order adds query i of stratum, which isn't an anchor expression, to
+// order, after the other queries that aren't anchor expressions that it reads.
+// It returns false if they read each other in a cycle.
+fn recursive_order(stratum []&RecursiveQuery, members []RecursiveMember, i int, mut visiting []bool, mut order []int) bool {
+	if i in order {
+		return true
+	}
+	if visiting[i] {
+		return false
+	}
+	visiting[i] = true
+	for read in stratum[i].reads {
+		j := stratum.index(read)
+		if j >= 0 && !members[j].has_anchor
+			&& !recursive_order(stratum, members, j, mut visiting, mut order) {
+			return false
+		}
+	}
+	visiting[i] = false
+	order << i
+
+	return true
+}
+
+fn recursive_anchor_error(stratum []&RecursiveQuery) IError {
+	if stratum.len == 1 {
+		name := stratum[0].name.sub_entity_name
+		return sqlstate_42601('WITH RECURSIVE query ${name} must be a UNION of a query that does not read ${name} and one that does')
+	}
+	names := stratum.map(it.name.sub_entity_name).join(', ')
+
+	return sqlstate_42601('WITH RECURSIVE queries ${names} read each other, so one of them must be a UNION of a query that does not read them and one that does')
+}
+
+// working_columns are the columns of the working table of query, which has
+// the types of columns.
+fn working_columns(query &RecursiveQuery, columns Columns) !Columns {
+	if columns.len != query.columns.len {
+		return sqlstate_42601('WITH query ${query.name.sub_entity_name} has ${query.columns.len} columns, but its query has ${columns.len}')
+	}
+
+	mut working := []Column{}
+	for i, column in columns {
+		working << Column{
 			name:      Identifier{
 				sub_entity_name: query.columns[i].sub_entity_name
 			}
@@ -1133,85 +1397,106 @@ fn create_recursive_union_plan(query &RecursiveQuery, body SimpleTable, params m
 		}
 	}
 
-	mut recursive := plan_recursive_side(key, name, recursive_side, columns, params, mut
-		conn)!
-	mut recursive_columns := recursive.columns()
-	if recursive_columns.len != columns.len {
-		return sqlstate_42601('each UNION query must have the same number of columns')
-	}
+	return working
+}
 
-	// The type of a column that isn't recursively derived doesn't depend on the
-	// types of the working table, so it's known now. The recursive side is
-	// planned again if it changes the type of a column of the working table.
+// plan_recursive_sides plans the side of each UNION of the stratum that reads
+// it, and gives each column of the anchor expression that isn't recursively
+// derived the type of both sides combined. It returns true if that changed the
+// type of a column of a working table, so it must be planned again.
+fn plan_recursive_sides(stratum []&RecursiveQuery, mut members []RecursiveMember, recursive_sides []QueryExpression, params map[string]Value, mut conn Connection) !bool {
 	mut changed := false
-	for i, column in columns {
-		typ := combine_types(column.typ, recursive_columns[i].typ) or {
-			return sqlstate_42804('in column ${i + 1} of UNION', column.typ.str(), recursive_columns[i].typ.str())
+	for i in 0 .. members.len {
+		if !members[i].has_anchor {
+			continue
 		}
-		if !recursive_columns[i].recursive {
-			not_null := anchor_columns[i].not_null || recursive_columns[i].not_null
-			changed = changed || typ != column.typ || not_null != column.not_null
-			columns[i] = Column{
-				...column
-				typ:      typ
-				not_null: not_null
+		before := conn.recursive_reads
+		recursive := plan_recursive_member(members, recursive_sides[i], params, mut
+			conn)!
+		if conn.recursive_reads == before {
+			return recursive_anchor_error(stratum)
+		}
+		recursive_columns := recursive.columns()
+		mut columns := members[i].columns.clone()
+		if recursive_columns.len != columns.len {
+			return sqlstate_42601('each UNION query must have the same number of columns')
+		}
+
+		// The type of a column that isn't recursively derived doesn't depend on
+		// the types of the working tables, so it's known now.
+		anchor_columns := members[i].anchor.columns()
+		for j, column in columns {
+			typ := combine_types(column.typ, recursive_columns[j].typ) or {
+				return sqlstate_42804('in column ${j + 1} of UNION', column.typ.str(),
+					recursive_columns[j].typ.str())
+			}
+			if !recursive_columns[j].recursive {
+				not_null := anchor_columns[j].not_null || recursive_columns[j].not_null
+				changed = changed || typ != column.typ || not_null != column.not_null
+				columns[j] = Column{
+					...column
+					typ:      typ
+					not_null: not_null
+				}
+			}
+			if !members[i].all {
+				check_grouping_operand(columns[j].typ, 'column ${j + 1} of UNION')!
 			}
 		}
-		if !op.all {
-			check_grouping_operand(columns[i].typ, 'column ${i + 1} of UNION')!
+		members[i].recursive = recursive
+		members[i].columns = columns
+	}
+
+	return changed
+}
+
+// plan_recursive_member plans side, the query of a member (or the side of its
+// UNION) that reads the working tables, which have the columns of members (when
+// they're known).
+fn plan_recursive_member(members []RecursiveMember, side QueryExpression, params map[string]Value, mut conn Connection) !Plan {
+	for member in members {
+		if member.columns.len > 0 {
+			conn.recursive_queries[member.key] = RecursiveQueryState{
+				depth:   conn.subquery_scopes.len
+				columns: member.columns
+			}
+		} else {
+			conn.recursive_queries.delete(member.key)
 		}
 	}
-	if changed {
-		recursive = plan_recursive_side(key, name, recursive_side, columns, params, mut
-			conn)!
-	}
 
-	mut plan := Plan{}
-	plan.subplans['\$1'] = anchor_plan
-	plan.subplans['\$2'] = recursive
-	// The result isn't recursive outside of its own query.
-	result_columns := columns.map(Column{
-		...it
-		recursive: false
-	})
-	plan.operations << &RecursiveUnionOperation{key, op.all, result_columns, conn, anchor_plan, recursive}
-
-	return plan
+	return create_query_expression_plan(side, params, mut conn, Correlation{})
 }
 
-// plan_recursive_side plans the side of the UNION of a RecursiveQuery (by its
-// key) that reads it, where the working table has columns.
-fn plan_recursive_side(key voidptr, name string, side QueryExpression, columns []Column, params map[string]Value, mut conn Connection) !Plan {
-	conn.recursive_queries[key] = RecursiveQueryState{
-		depth:   conn.subquery_scopes.len
-		columns: columns
-	}
-	recursive_reads := conn.recursive_reads
-	plan := create_query_expression_plan(side, params, mut conn, Correlation{})!
-	if conn.recursive_reads == recursive_reads {
-		return sqlstate_42601('WITH RECURSIVE query ${name} must be a UNION of a query that does not read ${name} and one that does')
-	}
-
-	return plan
-}
-
-// plan_recursive_anchor plans side of the UNION of a RecursiveQuery (by its key)
-// as its anchor. It returns false if side reads the RecursiveQuery, so it's not
-// the anchor.
-fn plan_recursive_anchor(key voidptr, side QueryExpression, params map[string]Value, mut conn Connection) !(Plan, bool) {
-	conn.recursive_queries[key] = RecursiveQueryState{
-		anchor: true
-		depth:  conn.subquery_scopes.len
+// plan_recursive_anchor plans side of a UNION of a query of stratum as its
+// anchor. It returns false if side reads the stratum, so it's not the anchor.
+fn plan_recursive_anchor(stratum []&RecursiveQuery, side QueryExpression, params map[string]Value, mut conn Connection) !(Plan, bool) {
+	for member in stratum {
+		conn.recursive_queries[voidptr(member)] = RecursiveQueryState{
+			anchor: true
+			depth:  conn.subquery_scopes.len
+		}
 	}
 	plan := create_query_expression_plan(side, params, mut conn, Correlation{}) or {
-		if conn.recursive_queries[key] or { RecursiveQueryState{} }.anchor_read {
+		if stratum_anchor_read(stratum, conn) {
 			return Plan{}, false
 		}
 		return err
 	}
-	is_anchor := !(conn.recursive_queries[key] or { RecursiveQueryState{} }).anchor_read
 
-	return plan, is_anchor
+	return plan, !stratum_anchor_read(stratum, conn)
+}
+
+// stratum_anchor_read is true if a query of stratum was read while the side of
+// a UNION was planned as an anchor (see plan_recursive_anchor).
+fn stratum_anchor_read(stratum []&RecursiveQuery, conn &Connection) bool {
+	for member in stratum {
+		if (conn.recursive_queries[voidptr(member)] or { RecursiveQueryState{} }).anchor_read {
+			return true
+		}
+	}
+
+	return false
 }
 
 // A WorkingTableOperation reads the rows of the previous iteration of a
@@ -1238,91 +1523,108 @@ fn (mut o WorkingTableOperation) execute(_ []Row) ![]Row {
 }
 
 // A RecursiveUnionOperation is the result of a RecursiveQuery that reads
-// itself. The rows of the left side of the UNION are the first iteration. Each
-// iteration after that is the rows of the right side when it reads the rows of
-// the iteration before it, without the rows that are already in the result for
-// UNION DISTINCT. It stops when an iteration has no rows. The result is the rows
-// of every iteration.
+// itself, which is query target of the members of its stratum. The rows of each
+// anchor are the first iteration of its query. Each iteration after that is the
+// rows of the side of each query that reads the working tables, when they're the
+// rows of the iteration before it, without the rows that are already in its
+// result for UNION DISTINCT (or a query that's DISTINCT). It stops when an
+// iteration has no rows. The result is the rows of every iteration.
 //
 // The standard reads the whole result in each iteration until it stops
-// growing, but since the right side must be linearly recursive and can't remove
+// growing, but since each query must be linearly recursive and can't remove
 // any rows that it reads, both give the same result.
 //
 // ISO/IEC 9075-2:2023, 4.17.4, Transient tables
-// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 2, 2.c.i,
-// 2.c.ii, 2.c.ii.1, 2.c.ii.2, 2.c.ii.3, 2.c.ii.4, 2.c.ii.4.A, 2.c.ii.4.B and
-// 2.c.ii.5
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 2, 2.a, 2.b,
+// 2.c, 2.c.i, 2.c.ii, 2.c.ii.1, 2.c.ii.2, 2.c.ii.3, 2.c.ii.4, 2.c.ii.4.A,
+// 2.c.ii.4.B and 2.c.ii.5
 struct RecursiveUnionOperation {
-	key     voidptr
-	all     bool
-	columns Columns
 mut:
-	conn      &Connection
-	anchor    Plan
-	recursive Plan
+	members []RecursiveMember
+	target  int
+	conn    &Connection
 }
 
 fn (o &RecursiveUnionOperation) str() string {
-	quantifier := if o.all { 'ALL' } else { 'DISTINCT' }
+	member := o.members[o.target]
+	quantifier := if member.all { 'ALL' } else { 'DISTINCT' }
 
-	return 'RECURSIVE UNION ${quantifier} (${o.columns})'
+	return 'RECURSIVE UNION ${quantifier} (${member.columns})'
 }
 
 fn (o &RecursiveUnionOperation) columns() Columns {
-	return o.columns
+	return o.members[o.target].columns
 }
 
 fn (mut o RecursiveUnionOperation) execute(_ []Row) ![]Row {
-	previous := o.conn.recursive_queries[o.key] or { RecursiveQueryState{} }
-	was_running := o.key in o.conn.recursive_queries
-	defer {
-		if was_running {
-			o.conn.recursive_queries[o.key] = previous
-		} else {
-			o.conn.recursive_queries.delete(o.key)
+	mut previous := map[voidptr]RecursiveQueryState{}
+	for member in o.members {
+		if state := o.conn.recursive_queries[member.key] {
+			previous[member.key] = state
 		}
 	}
-	mut state := RecursiveQueryState{
-		depth:   o.conn.subquery_scopes.len
-		columns: o.columns
+	defer {
+		for member in o.members {
+			if state := previous[member.key] {
+				o.conn.recursive_queries[member.key] = state
+			} else {
+				o.conn.recursive_queries.delete(member.key)
+			}
+		}
 	}
 
-	mut kept := RowSet{}
-	mut iteration := o.add_rows(mut kept, o.anchor.execute([]Row{})!, o.anchor.columns())!
-	for iteration.len > 0 {
-		state.rows = iteration
-		o.conn.recursive_queries[o.key] = state
-		iteration = o.add_rows(mut kept, o.recursive.execute([]Row{})!, o.recursive.columns())!
+	mut kept := []RowSet{len: o.members.len}
+	mut iterations := [][]Row{len: o.members.len}
+	for i, mut member in o.members {
+		if member.has_anchor {
+			iterations[i] = o.add_rows(i, mut kept[i], member.anchor.execute([]Row{})!,
+				member.anchor.columns())!
+		}
+	}
+	for iterations.any(it.len > 0) {
+		for i, member in o.members {
+			o.conn.recursive_queries[member.key] = RecursiveQueryState{
+				depth:   o.conn.subquery_scopes.len
+				columns: member.columns
+				rows:    iterations[i]
+			}
+		}
+		for i, mut member in o.members {
+			iterations[i] = o.add_rows(i, mut kept[i], member.recursive.execute([]Row{})!,
+				member.recursive.columns())!
+		}
 	}
 
-	return o.rows(kept.rows)
+	return o.rows(o.target, kept[o.target].rows)
 }
 
-// add_rows adds each of rows (which have columns) to kept, unless it's
-// already there for UNION DISTINCT. It returns the rows that were added.
-fn (mut o RecursiveUnionOperation) add_rows(mut kept RowSet, rows []Row, columns Columns) ![]Row {
+// add_rows adds each of rows (which have columns) to kept, the result of member
+// i, unless it's already there for UNION DISTINCT. It returns the rows that were
+// added.
+fn (mut o RecursiveUnionOperation) add_rows(i int, mut kept RowSet, rows []Row, columns Columns) ![]Row {
+	member := o.members[i]
 	mut added := [][]Value{}
 	for row in rows {
 		mut values := []Value{}
-		for i, column in columns {
+		for j, column in columns {
 			values << convert_to_combined_type(mut o.conn, 'in UNION', row.get_column(column)!,
-				o.columns[i].typ)!
+				member.columns[j].typ)!
 		}
-		if o.all || kept.find(o.conn, values)! < 0 {
+		if member.all || kept.find(o.conn, values)! < 0 {
 			kept.add(values)
 			added << values
 		}
 	}
 
-	return o.rows(added)
+	return o.rows(i, added)
 }
 
-fn (o &RecursiveUnionOperation) rows(all_values [][]Value) []Row {
+fn (o &RecursiveUnionOperation) rows(i int, all_values [][]Value) []Row {
 	mut rows := []Row{}
 	for values in all_values {
 		mut data := map[string]Value{}
-		for i, column in o.columns {
-			data[column.name.id()] = values[i]
+		for j, column in o.members[i].columns {
+			data[column.name.id()] = values[j]
 		}
 		rows << new_row(data)
 	}

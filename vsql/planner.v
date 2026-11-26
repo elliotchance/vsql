@@ -634,7 +634,18 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 		}
 		RecursiveQueryReference {
-			mut subplan := if from_clause.body.working {
+			// A query of the same stratum reads the previous iteration. Otherwise,
+			// it's the result of the query, which is read like a derived table
+			// when it isn't recursive.
+			working := from_clause.body.working()
+			mut correlation := from_clause.correlation
+			if correlation.columns.len == 0 {
+				correlation = Correlation{
+					...correlation
+					columns: from_clause.body.query.columns
+				}
+			}
+			mut subplan := if working {
 				working_table_plan(from_clause.body.query, mut conn)!
 			} else {
 				next_value_not_allowed := conn.next_value_not_allowed
@@ -648,11 +659,20 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					conn.in_derived_table = in_derived_table
 				}
 
-				recursive_query_plan(from_clause.body.query, params, mut conn)!
+				if from_clause.body.query.recursive {
+					recursive_query_plan(from_clause.body.query, params, mut conn)!
+				} else {
+					create_query_expression_plan(from_clause.body.query.query, params, mut
+						conn, correlation)!
+				}
 			}
-			subplan.with_result = conn.with_results[from_clause.with_query] or { unsafe { nil } }
-			table = add_correlation_plan(mut &plan, from_clause.correlation.name, subplan,
-				from_clause.correlation, params, mut conn)!
+			if !working {
+				subplan.with_result = conn.with_results[from_clause.with_query] or {
+					unsafe { nil }
+				}
+			}
+			table = add_correlation_plan(mut &plan, correlation.name, subplan, correlation,
+				params, mut conn)!
 
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
@@ -1000,7 +1020,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 
 	recursive_reads := conn.recursive_reads
 	mut plan, mut tables := if recursive_query != unsafe { nil } {
-		create_recursive_union_plan(recursive_query, stmt.body, params, mut conn)!, map[string]&Table{}
+		create_recursive_union_plan(recursive_query, params, mut conn)!, map[string]&Table{}
 	} else {
 		create_basic_plan(stmt.body, params, mut conn, true, correlation)!
 	}

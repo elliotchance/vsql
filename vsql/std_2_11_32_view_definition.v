@@ -537,7 +537,7 @@ fn recursive_view_head(mut yylex YYLexer, table_name Identifier, columns []Ident
 		return sqlstate_42601('RECURSIVE view ${table_name} needs a column list')
 	}
 	flag(mut yylex, 'T131')
-	start_recursive_with(mut yylex)!
+	start_recursive_with(mut yylex, false)!
 
 	return RecursiveViewHead{
 		table_name: table_name
@@ -561,6 +561,7 @@ fn recursive_view_definition(mut yylex YYLexer, head RecursiveViewHead, query Qu
 		TablePrimary{
 			body: query
 		})!
+	finish_recursive_with([element])
 
 	name := head.table_name.entity_name
 	table_expression := TableExpression{TableReference(table_or_query_name_primary(mut yylex,

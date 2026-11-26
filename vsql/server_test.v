@@ -313,6 +313,8 @@ fn test_server_stop_then_listen() ! {
 	})
 	unserved.listen()!
 	unserved.stop()!
+	// Stopping it again does nothing.
+	unserved.stop()!
 	unserved.serve()!
 
 	// A server on every interface is woken up on its loopback address.

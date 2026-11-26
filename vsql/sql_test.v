@@ -417,6 +417,36 @@ fn (test SQLTest) through_server() bool {
 		&& !test.stmts.any(is_empty_query(it))
 }
 
+// testsuite_begin runs this process's share of the SQL tests, and nothing else,
+// when it's one of the processes that test_all starts (SQL_TEST_SHARD is set).
+// It's done here, rather than in test_all, so that no other test runs in it
+// when the SQL tests are built with the other tests (see
+// scripts/all-tests.sh).
+fn testsuite_begin() {
+	shard := os.getenv('SQL_TEST_SHARD')
+	if shard == '' {
+		return
+	}
+	install_sql_test_crash_report()
+	parts := shard.split('/')
+	// An error stops this process's tests, but the process that started it
+	// still needs to know about it.
+	outcome := run_sql_test_shard(parts[0].int(), parts[1].int()) or {
+		SQLTestOutcome{
+			failed: [err.msg()]
+		}
+	}
+	os.write_file(os.getenv('SQL_TEST_OUTCOME'), outcome.encode()) or { panic(err) }
+	// The other tests are run by the process that started this one. The
+	// coverage is still written, when the process exits.
+	exit(0)
+}
+
+fn run_sql_test_shard(shard int, jobs int) !SQLTestOutcome {
+	_, filter_line := get_test_filter()
+	return run_sql_tests(get_tests()!, shard, jobs, false, filter_line)!
+}
+
 fn test_all() ! {
 	stopwatch := time.new_stopwatch()
 	filter_test, filter_line := get_test_filter()
@@ -426,27 +456,11 @@ fn test_all() ! {
 	}
 
 	// The tests are split between SQL_TEST_JOBS processes (by default, one for
-	// each CPU), which are this test program run again with SQL_TEST_SHARD set.
-	// Processes are used rather than threads, because threads wait on each other
-	// to allocate memory. A filter or VERBOSE runs every test in order in this
-	// process, so the output isn't mixed up.
+	// each CPU), which are this test program run again with SQL_TEST_SHARD set
+	// (see testsuite_begin). Processes are used rather than threads, because
+	// threads wait on each other to allocate memory. A filter or VERBOSE runs
+	// every test in order in this process, so the output isn't mixed up.
 	tests := get_tests()!
-	shard := os.getenv('SQL_TEST_SHARD')
-	if shard != '' {
-		install_sql_test_crash_report()
-		parts := shard.split('/')
-		// An error stops this process's tests, but the process that started it
-		// still needs to know about it.
-		outcome := run_sql_tests(tests, parts[0].int(), parts[1].int(), false, filter_line) or {
-			SQLTestOutcome{
-				failed: [err.msg()]
-			}
-		}
-		os.write_file(os.getenv('SQL_TEST_OUTCOME'), outcome.encode())!
-		// The other tests in this file are run by the process that started this
-		// one. The coverage is still written, when the process exits.
-		exit(0)
-	}
 	jobs := if verbose != '' || filter_test != '' {
 		1
 	} else if $env('SQL_TEST_JOBS') != '' {

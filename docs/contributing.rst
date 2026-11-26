@@ -21,6 +21,50 @@ Before sending a pull request, run ``make fmt`` and make sure ``make test``
 passes (see :doc:`testing`). CI fails if ``make fmt`` would change anything,
 which ``make fmt-verify`` checks.
 
+Building Faster
+^^^^^^^^^^^^^^^
+
+The binaries (such as ``bin/vsql``) are optimized the same way as the ones that
+are released, with ``-prod`` and ``-O2`` from ``CFLAGS``. The V tests in
+``vsql/`` (the SQL, unit and B-tree tests) are built with the same C compiler
+and ``CFLAGS``, but not ``-prod``, since it removes every ``assert``
+(``TEST_OPTIMIZE`` in the Makefile). Building vsql with ``-O2`` takes one to a
+few minutes, so ``make test`` builds it as few times as it can (see
+:doc:`testing`). The other tests (the ORM tests and the examples) only run for
+about a second, so they're built with V's default C compiler (tcc), which takes
+seconds.
+
+``TEST_OPTIMIZE=`` builds the V tests with tcc as well. Which is quicker
+overall depends on the machine. In CI, the SQL tests ran 2.4 to 3.6 times
+quicker with ``-O2``, but building them took 2 to 8 minutes rather than 12 to 33
+seconds:
+
+- Linux (x86-64 and ARM64): tcc is quicker (6 rather than 8 minutes on x86-64,
+  and 4 rather than 11 on ARM64).
+- macOS x86-64: ``-O2`` is quicker (7 rather than 12 minutes).
+- macOS ARM64: they're about the same (6 minutes), so CI uses ``-O1``.
+- Windows: the SQL tests take about as long either way, so tcc (or clang
+  without optimizing on ARM64) is quicker.
+
+While working on a change, run only the tests for it (such as ``TEST=std_11_5_
+make sql-test``, see :doc:`testing`), and leave the rest to CI. ``COVERAGE=0``
+skips the coverage. ``CFLAGS=-O0`` builds in a fraction of the time, but what's
+built runs several times slower, so it's only quicker for something that runs
+briefly, such as trying out ``bin/vsql`` or a few unit tests:
+
+.. code-block:: sh
+
+  make bin/vsql CFLAGS=-O0
+  v -d vsqltest -cc cc -cflags -O0 test vsql/row_test.v
+
+For the SQL tests, ``-O2`` is quicker, even for a few of them. On an Apple
+Silicon Mac, ``TEST=std_11_5_ make sql-test COVERAGE=0`` (1,040 statements)
+took 59 seconds with ``-O2`` (45 to build, 14 to run the tests), and 94 seconds
+with ``-O0`` (14 to build, 80 to run the tests).
+
+make doesn't build ``bin/vsql`` again when only ``CFLAGS`` changes, so remove
+it first to switch between them.
+
 Debugging
 ---------
 

@@ -49,3 +49,7 @@ __pycache__/
 *.isolation
 *.isolation.queue
 *.isolation.deferred
+
+# Created by "make all-test" and "make examples-test".
+vsql/all_test.v
+examples/all/

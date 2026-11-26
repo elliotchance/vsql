@@ -67,9 +67,9 @@ SELECT * FROM n;
 -- X: 60
 -- X: 32
 
--- # The CHECK OPTION is CASCADED, so the rows are also checked with the WHERE of
--- # every view that the view reads (Syntax Rules, 16, and 15.17, General Rules,
--- # 4.b.iii.5).
+-- # A CHECK OPTION is CASCADED unless it's LOCAL (Syntax Rules, 16), so the
+-- # rows are also checked with the WHERE of every view that the view reads
+-- # (15.17, General Rules, 4.b.iii.5).
 CREATE VIEW v1 AS SELECT * FROM t WHERE x < 100;
 CREATE VIEW v2 AS SELECT * FROM v1 WHERE x > 15 WITH CHECK OPTION;
 INSERT INTO v2 VALUES (4, 40);
@@ -85,6 +85,70 @@ SELECT * FROM t;
 -- ID: 2 X: 20
 -- ID: 3 X: 30
 -- ID: 4 X: 40
+
+CREATE VIEW v1 AS SELECT * FROM t WHERE x < 100;
+CREATE VIEW v2 AS SELECT * FROM v1 WHERE x > 15 WITH CASCADED CHECK OPTION;
+INSERT INTO v2 VALUES (4, 40);
+INSERT INTO v2 VALUES (5, 500);
+SELECT * FROM t;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: INSERT 1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V2
+-- ID: 1 X: 10
+-- ID: 2 X: 20
+-- ID: 3 X: 30
+-- ID: 4 X: 40
+
+-- # A LOCAL CHECK OPTION only checks the WHERE of the view, without the WHERE
+-- # of the views that it reads (15.17, General Rules, 4.b.iii.5).
+CREATE VIEW v1 AS SELECT * FROM t WHERE x < 100;
+CREATE VIEW v2 AS SELECT * FROM v1 WHERE x > 15 WITH LOCAL CHECK OPTION;
+INSERT INTO v2 VALUES (4, 40);
+INSERT INTO v2 VALUES (5, 500);
+INSERT INTO v2 VALUES (6, 6);
+UPDATE v2 SET x = x * 10 WHERE id = 4;
+UPDATE v2 SET x = 1 WHERE id = 2;
+SELECT * FROM t;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V2
+-- msg: UPDATE 1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V2
+-- ID: 1 X: 10
+-- ID: 2 X: 20
+-- ID: 3 X: 30
+-- ID: 4 X: 400
+-- ID: 5 X: 500
+
+-- # A view with CHECK OPTION that a view with LOCAL CHECK OPTION reads is
+-- # still checked in its own right, with its own CASCADED or LOCAL.
+CREATE VIEW v0 AS SELECT * FROM t WHERE x <> 50;
+CREATE VIEW v1 AS SELECT * FROM v0 WHERE x < 100 WITH LOCAL CHECK OPTION;
+CREATE VIEW v2 AS SELECT * FROM v1 WHERE x > 15 WITH LOCAL CHECK OPTION;
+CREATE VIEW v3 AS SELECT * FROM v1 WHERE x > 15 WITH CHECK OPTION;
+INSERT INTO v2 VALUES (4, 40);
+INSERT INTO v2 VALUES (5, 500);
+INSERT INTO v2 VALUES (6, 6);
+INSERT INTO v2 VALUES (7, 50);
+INSERT INTO v3 VALUES (8, 50);
+SELECT * FROM t;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: INSERT 1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V2
+-- msg: INSERT 1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V3
+-- ID: 1 X: 10
+-- ID: 2 X: 20
+-- ID: 3 X: 30
+-- ID: 4 X: 40
+-- ID: 7 X: 50
 
 -- # A view without CHECK OPTION that reads a view with CHECK OPTION is checked
 -- # with the view that it reads (15.13 and 15.16, General Rules, 3.b.i), but
@@ -160,14 +224,48 @@ CREATE RECURSIVE VIEW v (x) AS VALUES 1 WITH CHECK OPTION;
 -- error 42601: syntax error: unexpected WITH at line 1, column 41 near "AS VALUES 1 WITH CHECK"
 
 -- # The CHECK OPTION is kept with the view, and the INFORMATION_SCHEMA shows it
--- # as CASCADED.
+-- # as CASCADED or LOCAL.
 CREATE VIEW v1 AS SELECT * FROM t WHERE x > 15 WITH CHECK OPTION;
 CREATE VIEW v2 (a, b) AS SELECT * FROM t WITH  CHECK  OPTION;
 CREATE VIEW v3 AS SELECT * FROM t;
+CREATE VIEW v4 AS SELECT * FROM t WITH CASCADED CHECK OPTION;
+CREATE VIEW v5 (a, b) AS SELECT * FROM t WHERE x > 15 WITH LOCAL CHECK OPTION;
 SELECT table_name, view_definition, check_option FROM information_schema.views WHERE table_schema = 'PUBLIC';
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
 -- TABLE_NAME: V1 VIEW_DEFINITION: SELECT * FROM t WHERE x > 15 CHECK_OPTION: CASCADED
 -- TABLE_NAME: V2 VIEW_DEFINITION: SELECT * FROM t CHECK_OPTION: CASCADED
 -- TABLE_NAME: V3 VIEW_DEFINITION: SELECT * FROM t CHECK_OPTION: NONE
+-- TABLE_NAME: V4 VIEW_DEFINITION: SELECT * FROM t CHECK_OPTION: CASCADED
+-- TABLE_NAME: V5 VIEW_DEFINITION: SELECT * FROM t WHERE x > 15 CHECK_OPTION: LOCAL
+
+-- # LOCAL and CASCADED need Feature F751 (Conformance Rules, 2), and so does a
+-- # CHECK OPTION on a view whose query contains another query (Conformance
+-- # Rules, 4).
+/* flags */
+CREATE VIEW v AS SELECT * FROM t WHERE x > 15 WITH CHECK OPTION;
+-- flags:
+-- msg: CREATE VIEW 1
+
+/* flags */
+CREATE VIEW v AS SELECT * FROM t WITH LOCAL CHECK OPTION;
+-- flags: F751
+-- msg: CREATE VIEW 1
+
+/* flags */
+CREATE VIEW v AS SELECT * FROM t WITH CASCADED CHECK OPTION;
+-- flags: F751
+-- msg: CREATE VIEW 1
+
+/* flags */
+CREATE VIEW v AS SELECT * FROM t WHERE x IN (SELECT x FROM n) WITH CHECK OPTION;
+-- flags: F751
+-- msg: CREATE VIEW 1
+
+/* flags */
+CREATE VIEW v AS SELECT * FROM t WHERE x IN (SELECT x FROM n);
+-- flags:
+-- msg: CREATE VIEW 1

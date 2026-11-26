@@ -86,7 +86,7 @@ fn (mut conn Connection) updatable_view(view View, catalog_name string, params m
 	mut table := Identifier{}
 	mut from_columns := []string{}
 	mut base_columns := map[string]string{}
-	mut checked_views := if view.check_option { [name] } else { []Identifier{} }
+	mut checked_views := if view.check_option != '' { [name] } else { []Identifier{} }
 	if inner, inner_catalog := conn.find_view(table_primary.body as Identifier) {
 		updatable := conn.updatable_view(inner, inner_catalog, params) or {
 			return not_updatable

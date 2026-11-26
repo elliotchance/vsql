@@ -836,6 +836,10 @@ struct Connection
    	// recursive_reads counts the RecursiveQuery reads (in its own query) that
    	// have been planned, see check_recursive_reads.
    	recursive_reads int
+   	// without_view_where is set while a view with LOCAL CHECK OPTION is
+   	// checked, so the WHERE of each view that it reads is left out, see
+   	// check_view_option.
+   	without_view_where bool
    	// in_derived_table is set while a derived table is being planned, but not a
    	// subquery in one, see values_aggregation_query.
    	in_derived_table bool

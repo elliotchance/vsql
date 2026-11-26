@@ -9,7 +9,7 @@ Syntax
 .. code-block:: text
 
   CREATE VIEW <view_name> [ ( <column_name> , ... ) ] AS <query>
-    [ WITH CHECK OPTION ]
+    [ WITH [ CASCADED | LOCAL ] CHECK OPTION ]
 
   CREATE RECURSIVE VIEW <view_name> ( <column_name> , ... ) AS <query>
 
@@ -124,10 +124,30 @@ and neither are the changes made to the table directly.
   -- error 44000: with check option violation: ":memory:".PUBLIC.CHEAP
   -- NAME: Bread PRICE: 2.50
 
-The view must be updatable. The check is always ``CASCADED``: the rows must also
-be seen through every view that the view reads, even the views that don't have a
-``WITH CHECK OPTION``. A change through a view that reads a view with
-``WITH CHECK OPTION`` is checked by that view too.
+The view must be updatable. ``WITH CHECK OPTION`` is the same as
+``WITH CASCADED CHECK OPTION``: the rows must also be seen through every view
+that the view reads, even the views that don't have a ``WITH CHECK OPTION``.
+``WITH LOCAL CHECK OPTION`` only checks the ``WHERE`` of the view itself, as if
+the views that it reads (including in a subquery) had no ``WHERE``:
+
+.. code-block:: sql
+
+  CREATE TABLE products (name VARCHAR(20), price DECIMAL(10, 2));
+  CREATE VIEW cheap AS SELECT * FROM products WHERE price < 5;
+  CREATE VIEW priced AS SELECT * FROM cheap WHERE price > 0
+    WITH LOCAL CHECK OPTION;
+  INSERT INTO priced VALUES ('Caviar', 99.00);
+  INSERT INTO priced VALUES ('Water', 0);
+  SELECT * FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE VIEW 1
+  -- msg: CREATE VIEW 1
+  -- msg: INSERT 1
+  -- error 44000: with check option violation: ":memory:".PUBLIC.PRICED
+  -- NAME: Caviar PRICE: 99.00
+
+A change through a view that reads a view with a ``WITH CHECK OPTION`` is
+checked by that view too, with its own ``CASCADED`` or ``LOCAL``.
 
 Limitations
 -----------
@@ -141,8 +161,6 @@ Limitations
   doesn't use anything, so they can be dropped. The view is then an error when
   it's read.
 - The query can't have a ``?`` parameter or ``NEXT VALUE FOR``.
-- ``WITH LOCAL CHECK OPTION`` and ``WITH CASCADED CHECK OPTION`` aren't
-  supported, but ``WITH CHECK OPTION`` is the same as ``CASCADED``.
 
 Examples
 --------

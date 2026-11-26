@@ -455,7 +455,7 @@
 15.16/GR/4               n/a          - - data change delta tables (T495)
 15.16/GR/5               implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 # 15.17, Checking of views that specify CHECK OPTION
-15.17                    implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql only CASCADED, there is no LOCAL (#1262)
+15.17                    implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
 15.17/GR/1               definition   - -
 15.17/GR/2               definition   - -
 15.17/GR/3               n/a          - - MERGE (F312)
@@ -477,7 +477,7 @@
 15.17/GR/4.b.iii.4.B.II  definition   - -
 15.17/GR/4.b.iii.4.B.III n/a          - - MERGE (F312)
 15.17/GR/4.b.iii.4.C     definition   - -
-15.17/GR/4.b.iii.5       missing      - - LOCAL CHECK OPTION (#1262)
+15.17/GR/4.b.iii.5       implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
 15.17/GR/4.c             implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
 15.17/GR/4.d             implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
 15.17/GR/4.e             container    - -

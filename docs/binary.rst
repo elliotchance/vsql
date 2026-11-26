@@ -109,7 +109,8 @@ with the combined length. A ``BINARY VARYING`` result that's longer than
 
 ``SUBSTRING``, ``TRIM``, ``OVERLAY``, ``POSITION`` and ``OCTET_LENGTH`` work
 on binary strings, and count octets (see :doc:`functions`), and so do the vsql
-extensions ``LENGTH``, ``REVERSE``, ``STARTS_WITH`` and ``ENDS_WITH``. Without
+extensions ``LENGTH``, ``LEFT``, ``RIGHT``, ``REVERSE``, ``STARTS_WITH`` and
+``ENDS_WITH``. Without
 a trim octet, ``TRIM`` removes ``X'00'``.
 
 ``LIKE`` matches binary strings octet by octet, where ``X'25'`` (``%``) is any

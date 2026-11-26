@@ -541,6 +541,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V404-15``
      - ``QUOTE_IDENT``.
+
+   * - ``V404-16``
+     - ``LEFT``.
+
+   * - ``V404-17``
+     - ``RIGHT``.
    * - ``V405``
      - Aggregate functions (see :doc:`functions-aggregate`).
 

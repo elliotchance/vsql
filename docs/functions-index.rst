@@ -225,6 +225,9 @@ Every function, in alphabetical order:
    * - :ref:`LEAST <functions-conditional:LEAST>`
      - Least of the values
      - Conditional
+   * - :ref:`LEFT <functions-string:LEFT>`
+     - First characters or octets of a string
+     - String
    * - :ref:`LENGTH <functions-string:LENGTH>`
      - Same as ``CHAR_LENGTH``
      - String
@@ -383,6 +386,9 @@ Every function, in alphabetical order:
      - String
    * - :ref:`REVERSE <functions-string:REVERSE>`
      - Characters or octets in the opposite order
+     - String
+   * - :ref:`RIGHT <functions-string:RIGHT>`
+     - Last characters or octets of a string
      - String
    * - :ref:`ROUND <functions-rounding:ROUND>`
      - Round to the nearest integer or decimal place

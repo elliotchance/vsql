@@ -206,11 +206,15 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// like SUBSTRING, and CHR (V404-05) is a CHARACTER VARYING(1). REVERSE
 	// (V404-11) has the same type as its argument, which is always the same
 	// length. MAKE_INTERVAL (V402-21) has the interval type of its arguments.
-	is_text := func_name in ['SPLIT_PART', 'CHR', 'REVERSE', 'MAKE_INTERVAL']
+	// LEFT and RIGHT (V404-16 and V404-17) are a varying string with the length
+	// of their argument, like SUBSTRING.
+	is_text := func_name in ['SPLIT_PART', 'CHR', 'REVERSE', 'MAKE_INTERVAL', 'LEFT', 'RIGHT']
 	mut return_type := if is_fold || func_name == 'REVERSE' {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false, false}
 	} else if func_name == 'SPLIT_PART' {
 		Type{.is_varchar, arg_types[0].size, 0, false, false}
+	} else if func_name in ['LEFT', 'RIGHT'] {
+		Type{found_func.return_type.typ, arg_types[0].size, 0, false, false}
 	} else if func_name == 'RANDOM' && arg_types.len == 2 {
 		random_range_type(arg_types[0], arg_types[1])
 	} else {

@@ -18,6 +18,7 @@ fn register_string_funcs(mut conn Connection) ! {
 	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
 	varbinary := Type{SQLType.is_varbinary, 0, 0, false, false}
 	blob := Type{SQLType.is_blob, 0, 0, false, false}
+	clob := Type{SQLType.is_clob, 0, 0, false, false}
 
 	// The result of REPLACE can be longer than any of its arguments, so it's a
 	// CHARACTER VARYING without a maximum length, rather than the type of the
@@ -67,6 +68,22 @@ fn register_string_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'REVERSE', [blob], false, func_reverse_binary, blob, false, true, [
 		vsql_reverse,
 	], [], false})!
+	// LEFT and RIGHT (V404-16 and V404-17) are the first or last n characters of
+	// a character string, or octets of a binary string. The result is a varying
+	// string with the length of the argument, like SUBSTRING, or a large object
+	// for a large object (see RoutineInvocation.compile).
+	for name, f in {
+		'LEFT':  [func_left, func_left_binary]
+		'RIGHT': [func_right, func_right_binary]
+	} {
+		features := [if name == 'LEFT' { vsql_left } else { vsql_right }]
+		for t in [varchar, clob] {
+			conn.register_func(Func{name, [t, bigint], false, f[0], t, false, true, features, [], false})!
+		}
+		for t in [varbinary, blob] {
+			conn.register_func(Func{name, [t, bigint], false, f[1], t, false, true, features, [], false})!
+		}
+	}
 	// STARTS_WITH and ENDS_WITH (V404-12 and V404-13) compare character strings
 	// or binary strings (see func_starts_with), like POSITION.
 	boolean := Type{SQLType.is_boolean, 0, 0, false, false}
@@ -181,6 +198,53 @@ fn func_reverse(_ FunctionContext, args []Value) !Value {
 // The octets in the opposite order.
 fn func_reverse_binary(_ FunctionContext, args []Value) !Value {
 	return new_binary_string_value(args[0].typ.typ, args[0].string_value().bytes().reverse().bytestr())
+}
+
+// LEFT(CHARACTER VARYING, BIGINT) CHARACTER VARYING
+//
+// The first n characters. Like PostgreSQL, a negative n is all but the last -n
+// characters. It's the whole string when n is longer than it, and an empty
+// string when -n is.
+fn func_left(_ FunctionContext, args []Value) !Value {
+	runes := args[0].string_value().runes()
+	return new_varchar_value(runes[..left_right_keep(runes.len, args[1].int_value())].string())
+}
+
+// RIGHT(CHARACTER VARYING, BIGINT) CHARACTER VARYING
+//
+// The last n characters, or all but the first -n, see func_left.
+fn func_right(_ FunctionContext, args []Value) !Value {
+	runes := args[0].string_value().runes()
+	return new_varchar_value(runes[runes.len - left_right_keep(runes.len, args[1].int_value())..].string())
+}
+
+// LEFT(BINARY VARYING, BIGINT) BINARY VARYING, and for a BINARY LARGE OBJECT
+//
+// The same as func_left, in octets.
+fn func_left_binary(_ FunctionContext, args []Value) !Value {
+	s := args[0].string_value()
+	return new_binary_string_value(args[0].typ.typ, s[..left_right_keep(s.len, args[1].int_value())])
+}
+
+// RIGHT(BINARY VARYING, BIGINT) BINARY VARYING, and for a BINARY LARGE OBJECT
+//
+// The same as func_right, in octets.
+fn func_right_binary(_ FunctionContext, args []Value) !Value {
+	s := args[0].string_value()
+	return new_binary_string_value(args[0].typ.typ, s[s.len - left_right_keep(s.len, args[1].int_value())..])
+}
+
+// left_right_keep is how many characters (or octets) LEFT or RIGHT keep from a
+// string of length len: n, or len + n for a negative n, between 0 and len.
+fn left_right_keep(len int, n i64) int {
+	keep := if n >= 0 { n } else { len + n }
+	if keep < 0 {
+		return 0
+	}
+	if keep > len {
+		return len
+	}
+	return int(keep)
 }
 
 // REPLACE(CHARACTER VARYING, CHARACTER VARYING, CHARACTER VARYING) CHARACTER VARYING
@@ -298,11 +362,13 @@ const string_arg_names = {
 	'CHR':         ['CODE_POINT']
 	'ENDS_WITH':   ['STRING', 'SUFFIX']
 	'INITCAP':     ['STRING']
+	'LEFT':        ['STRING', 'N']
 	'LENGTH':      ['STRING']
 	'QUOTE_IDENT': ['NAME']
 	'REPEAT':      ['STRING', 'N']
 	'REPLACE':     ['STRING', 'TARGET', 'REPLACEMENT']
 	'REVERSE':     ['STRING']
+	'RIGHT':       ['STRING', 'N']
 	'SPLIT_PART':  ['STRING', 'DELIMITER', 'N']
 	'STARTS_WITH': ['STRING', 'PREFIX']
 	'UNICODE':     ['STRING']

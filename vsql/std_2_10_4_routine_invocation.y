@@ -28,10 +28,25 @@ routine_invocation:
 // A <routine name> can be qualified by a schema (and catalog), such as
 // VSQL.GCD. It's parsed as an identifier chain, like a <column reference>,
 // which it can only be told apart from by the "(" that follows it.
+//
+// LEFT and RIGHT (V404-16 and V404-17) are reserved words, for joins, so
+// they're a <routine name> by themselves. A join is never followed by "(", so
+// this isn't ambiguous.
 routine_name:
   identifier_chain {
     $$.v = yy_box(new_function_identifier(($1.v as IdentifierChain).identifier)!)
   }
+| reserved_routine_name {
+    $$.v = yy_box(new_function_identifier(($1.v as IdentifierChain).identifier)!)
+  }
+| identifier_chain period reserved_routine_name {
+    $$.v = yy_box(new_function_identifier(($1.v as IdentifierChain).identifier + '.' +
+      ($3.v as IdentifierChain).identifier)!)
+  }
+
+reserved_routine_name:
+  LEFT { $$.v = yy_box(IdentifierChain{'LEFT'}) }
+| RIGHT { $$.v = yy_box(IdentifierChain{'RIGHT'}) }
 
 sql_argument_list:
   left_paren right_paren { $$.v = yy_box([]ValueExpression{}) }

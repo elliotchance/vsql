@@ -11,6 +11,31 @@ vsql is tested in a variety of ways, but most functional tests are SQL files
 for the database itself (and its tests need Python and a browser). See
 `Continuous Integration`_ for what CI runs on each platform.
 
+Every test is optimized the same way as the binaries that are released, with
+the ``CFLAGS`` for the C compiler (``-O2``, see :doc:`contributing`). They
+aren't built with ``-prod`` like the binaries, since it removes every
+``assert``. Building each program that has vsql takes about a minute, so
+``make test`` builds as few of them as it can: `all-test`_ runs `btree-test`_,
+`sql-test`_ and `unit-test`_ from one build, and `examples-test`_ builds all of
+the examples as one program.
+
+all-test
+--------
+
+``make all-test`` runs all of the V tests in ``vsql/`` (``vsql/*_test.v``: the
+SQL, unit and B-tree tests) as one program, so vsql is only built once for
+them. ``scripts/all-tests.sh`` puts them in ``vsql/all_test.v`` (which isn't
+committed). The test files can't have the same names as each other at the top
+level, and a test that runs itself in another process does it from
+``testsuite_begin`` (see ``vsql/sql_test.v`` and ``vsql/storage_test.v``), so
+that nothing else runs in that process.
+
+Like ``make coverage``, it fails unless the tests cover every line of
+``vsql/`` (see Coverage in `sql-test`_). ``make test`` runs it rather than
+``make sql-test``, ``make unit-test``, ``make btree-test`` and ``make
+coverage``, which each build vsql on their own, and are best for running one of
+them.
+
 app-test
 --------
 
@@ -255,8 +280,12 @@ the path):
 
    make examples/virtual-tables
 
-``make examples-test`` also runs the C examples in :doc:`language-c`, with
-``make libvsql-example`` and ``make module-example``.
+``make examples-test`` builds all of the examples as one program
+(``examples/all/main.v``, see ``scripts/all-examples.sh``), so vsql is only
+built once for them. Each example has a ``main()`` and an ``example()``, and
+they can't have the same names as each other at the top level otherwise. It
+also runs the C examples in :doc:`language-c`, with ``make libvsql-example``
+and ``make module-example``.
 
 libvsql-test
 ------------
@@ -619,7 +648,9 @@ Coverage
    Unit test coverage: 64.59% (4811 of 7449 lines, run "make unit-test-uncovered" to see the rest)
 
 Between them, they must cover every line. ``make coverage`` runs both, and
-fails unless every line is covered by one or the other (``make test`` runs it).
+fails unless every line is covered by one or the other. ``make all-test``
+(which ``make test`` runs) checks the same thing, from one run of all of the
+tests.
 This is every line that V measures: V's coverage doesn't measure some
 statements, such as a function call on its own line (including one ending in
 ``!``), an ``if`` condition or assigning to a map key. ``make
@@ -653,7 +684,7 @@ the helpers can't be in one of them. That file is only compiled with ``-d
 vsqltest`` (see ``VSQL_TEST_OPTIONS`` in the Makefile), and it isn't counted in
 the coverage.
 
-``make test`` runs ``make coverage``, and the ORM tests with ``make
+``make test`` runs ``make all-test``, and the ORM tests with ``make
 vorm-test``, so CI also shows the coverage (in the log and the summary of the
 run).
 

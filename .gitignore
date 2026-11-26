@@ -56,3 +56,7 @@ __pycache__/
 !/amalgamation/gc.h
 !/amalgamation/libvsql.exports
 !/amalgamation/libvsql.map
+
+# Created by "make all-test" and "make examples-test".
+vsql/all_test.v
+examples/all/

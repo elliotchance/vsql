@@ -798,6 +798,9 @@ struct Connection
    	// in the statement that's executing, by its query (see run_subquery). They're
    	// cleared when each statement starts.
    	subquery_results map[voidptr]SubqueryResult
+   	// with_results has a WithResult for each <with list element> (by its key)
+   	// of the <query expression>s that are being planned.
+   	with_results map[voidptr]&WithResult
    	// subquery_tables has the id of each table that's read by a subquery that's
    	// planned while collect_subquery_tables is set (see tables_of_subqueries).
    	collect_subquery_tables bool

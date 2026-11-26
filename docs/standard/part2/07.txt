@@ -1405,7 +1405,7 @@
 7.17/SR/30               implemented  vsql/planner.v tests/std_2_7_17_fetch_with_ties.sql
 7.17/GR/1                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.17/GR/1.a              n/a          - - data change delta tables (T495)
-7.17/GR/1.b              deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql the query is run again each time its name is read, so a nondeterministic function can have a different value each time (#1781)
+7.17/GR/1.b              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.17/GR/1.c              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.17/GR/2                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/GR/2.a              definition   - -

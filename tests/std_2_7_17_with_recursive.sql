@@ -165,3 +165,13 @@ EXPLAIN WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n WHERE x 
 -- EXPLAIN:   RECURSIVE UNION ALL (X INTEGER)
 -- EXPLAIN: TABLE N (X INTEGER)
 -- EXPLAIN: EXPR (N.X INTEGER)
+
+-- # A recursive query is also run once, so every read of it has the same rows.
+WITH RECURSIVE r (n, z) AS (SELECT 1, RANDOM() FROM edges WHERE a = 1 UNION ALL SELECT n + 1, z FROM r WHERE n < 3) SELECT COUNT(*) FROM r AS r1 JOIN r AS r2 ON r1.n = r2.n AND r1.z = r2.z;
+-- COL1: 3
+
+-- # A WITH in the query of a WITH RECURSIVE is run again each time.
+WITH RECURSIVE r (n) AS (VALUES 1 UNION ALL (WITH s AS (SELECT n + 1 AS m FROM r) SELECT m FROM s WHERE m < 4)) SELECT * FROM r;
+-- N: 1
+-- N: 2
+-- N: 3

@@ -40,6 +40,12 @@ pub:
 	// expression that contains an aggregate function of that query, such as
 	// "COUNT(*) AS c". It's only used by the SQL Flagger.
 	from_aggregate bool
+	// recursive is true for a column of the working table of a RecursiveQuery,
+	// or a column of a result that's derived from one (it's recursively
+	// derived). See create_recursive_union_plan.
+	//
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 19.b.ii.2.A
+	recursive bool
 	// features are what a reference to the column needs, other than the
 	// features of its table, such as T111 for INFORMATION_SCHEMA.COLUMNS.IS_UPDATABLE
 	// (see information_schema_features). It's only used by the SQL Flagger.

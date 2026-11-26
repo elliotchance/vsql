@@ -404,6 +404,15 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	aggregated_columns := c.aggregated_columns.len
 	compiled := e.compile_column(mut c)!
 	c.flag_column_reference(e)
+	if c.conn.recursive_queries.len > 0 && e.custom_id == '' {
+		for _, table in c.tables {
+			if e.is_column_of_table(c.conn, table) {
+				if (table.column(e.sub_entity_name) or { Column{} }).recursive {
+					c.recursive_refs++
+				}
+			}
+		}
+	}
 	c.record_column_usage(e)
 
 	// A sort key of a grouped query that references a column that isn't a

@@ -53,6 +53,21 @@ WITH RECURSIVE n (x) AS (VALUES 'a' UNION ALL SELECT 1 FROM n) SELECT x FROM n;
 -- X: 4e0
 -- error 42804: data type mismatch in column 1 of UNION: expected CHARACTER(1) but got INTEGER
 
+-- # A column that's recursively derived (it reads a column of the query) has
+-- # the type of the left side, and any other column has the types of both
+-- # sides combined (Syntax Rules, 19.b.ii.2).
+/* types */
+WITH RECURSIVE n (x, s, d) AS (VALUES (1, 'a', 'z') UNION ALL SELECT x + 1, 'abc', d FROM n WHERE x < 3) SELECT * FROM n;
+WITH RECURSIVE n (x, s) AS (VALUES (1, 'a') UNION ALL SELECT x + 1, d.s FROM n, (VALUES 'abc') AS d (s) WHERE x < 2) SELECT * FROM n;
+WITH RECURSIVE n (x, s) AS (VALUES (1, 'a') UNION ALL SELECT x + 1, d.s FROM (SELECT x, 'xyz' || 'w' AS s FROM n) AS d WHERE x < 2) SELECT * FROM n;
+-- X: 1 (INTEGER) S: a   (CHARACTER(3)) D: z (CHARACTER(1))
+-- X: 2 (INTEGER) S: abc (CHARACTER(3)) D: z (CHARACTER(1))
+-- X: 3 (INTEGER) S: abc (CHARACTER(3)) D: z (CHARACTER(1))
+-- X: 1 (INTEGER) S: a   (CHARACTER(3))
+-- X: 2 (INTEGER) S: abc (CHARACTER(3))
+-- X: 1 (INTEGER) S: a    (CHARACTER(4))
+-- X: 2 (INTEGER) S: xyzw (CHARACTER(4))
+
 -- # A WITH RECURSIVE can be in a subquery or a view.
 SELECT * FROM (WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n WHERE x < 2) SELECT x FROM n) AS d;
 CREATE VIEW v AS WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n WHERE x < 2) SELECT x * 10 AS y FROM n;

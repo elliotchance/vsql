@@ -1348,7 +1348,7 @@
 7.17/SR/19.b.ii.1.C      n/a          - - enhanced nullability determination (T101)
 7.17/SR/19.b.ii.2        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/19.b.ii.2.A      definition   - -
-7.17/SR/19.b.ii.2.B      deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql the column has the type of the anchor (#1785)
+7.17/SR/19.b.ii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/19.b.ii.2.C      container    - -
 7.17/SR/19.b.ii.2.C.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/19.b.ii.2.C.II   container    - -

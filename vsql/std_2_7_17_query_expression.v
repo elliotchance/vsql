@@ -869,12 +869,13 @@ fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn 
 		// result is read with (#716). The name is always the name of the left
 		// column, so it's unnamed when that is.
 		columns << Column{
-			name:    Identifier{
+			name:      Identifier{
 				custom_id:       column.name.custom_id
 				sub_entity_name: column.name.sub_entity_name
 			}
-			typ:     typ
-			unnamed: column.unnamed
+			typ:       typ
+			unnamed:   column.unnamed
+			recursive: column.recursive || right_columns[i].recursive
 		}
 	}
 
@@ -1034,13 +1035,13 @@ fn working_table_plan(query &RecursiveQuery, mut conn Connection) !Plan {
 
 // create_recursive_union_plan is the plan of the <query expression body> of a
 // RecursiveQuery that reads itself, which must be a UNION. One side (the anchor)
-// can't read it, and the other side must. The columns have the types of the
-// anchor, even a column that isn't recursively derived (#1785).
+// can't read it, and the other side must. A recursively derived column has the
+// type of the anchor, and any other column has the type of both sides combined.
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.vii,
 // 3.j.vii.1, 3.j.vii.1.A, 3.j.vii.1.B and 3.j.viii
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 19.b.ii.2,
-// 19.b.ii.2.C.I, 19.b.ii.2.C.II.1 and 19.b.ii.2.C.II.2
+// 19.b.ii.2.B, 19.b.ii.2.C.I, 19.b.ii.2.C.II.1 and 19.b.ii.2.C.II.2
 fn create_recursive_union_plan(query &RecursiveQuery, body SimpleTable, params map[string]Value, mut conn Connection) !Plan {
 	name := query.name.sub_entity_name
 	if body !is SetOperation || (body as SetOperation).op != 'UNION' {
@@ -1072,43 +1073,76 @@ fn create_recursive_union_plan(query &RecursiveQuery, body SimpleTable, params m
 		return sqlstate_42601('WITH query ${name} has ${query.columns.len} columns, but its query has ${anchor_columns.len}')
 	}
 
+	// The columns of the working table are recursive (see Column.recursive).
 	mut columns := []Column{}
 	for i, column in anchor_columns {
 		columns << Column{
-			name: Identifier{
+			name:      Identifier{
 				sub_entity_name: query.columns[i].sub_entity_name
 			}
-			typ:  column.typ
+			typ:       column.typ
+			recursive: true
 		}
 	}
 
-	conn.recursive_queries[key] = RecursiveQueryState{
-		depth:   conn.subquery_scopes.len
-		columns: columns
-	}
-	recursive_reads := conn.recursive_reads
-	recursive := create_query_expression_plan(recursive_side, params, mut conn, Correlation{})!
-	if conn.recursive_reads == recursive_reads {
-		return sqlstate_42601('WITH RECURSIVE query ${name} must be a UNION of a query that does not read ${name} and one that does')
-	}
-
-	recursive_columns := recursive.columns()
+	mut recursive := plan_recursive_side(key, name, recursive_side, columns, params, mut
+		conn)!
+	mut recursive_columns := recursive.columns()
 	if recursive_columns.len != columns.len {
 		return sqlstate_42601('each UNION query must have the same number of columns')
 	}
+
+	// The type of a column that isn't recursively derived doesn't depend on the
+	// types of the working table, so it's known now. The recursive side is
+	// planned again if it changes the type of a column of the working table.
+	mut changed := false
 	for i, column in columns {
-		combine_types(column.typ, recursive_columns[i].typ) or {
+		typ := combine_types(column.typ, recursive_columns[i].typ) or {
 			return sqlstate_42804('in column ${i + 1} of UNION', column.typ.str(), recursive_columns[i].typ.str())
 		}
-		if !op.all {
-			check_grouping_operand(column.typ, 'column ${i + 1} of UNION')!
+		if !recursive_columns[i].recursive {
+			not_null := anchor_columns[i].not_null || recursive_columns[i].not_null
+			changed = changed || typ != column.typ || not_null != column.not_null
+			columns[i] = Column{
+				...column
+				typ:      typ
+				not_null: not_null
+			}
 		}
+		if !op.all {
+			check_grouping_operand(columns[i].typ, 'column ${i + 1} of UNION')!
+		}
+	}
+	if changed {
+		recursive = plan_recursive_side(key, name, recursive_side, columns, params, mut
+			conn)!
 	}
 
 	mut plan := Plan{}
 	plan.subplans['\$1'] = anchor_plan
 	plan.subplans['\$2'] = recursive
-	plan.operations << &RecursiveUnionOperation{key, op.all, columns, conn, anchor_plan, recursive}
+	// The result isn't recursive outside of its own query.
+	result_columns := columns.map(Column{
+		...it
+		recursive: false
+	})
+	plan.operations << &RecursiveUnionOperation{key, op.all, result_columns, conn, anchor_plan, recursive}
+
+	return plan
+}
+
+// plan_recursive_side plans the side of the UNION of a RecursiveQuery (by its
+// key) that reads it, where the working table has columns.
+fn plan_recursive_side(key voidptr, name string, side QueryExpression, columns []Column, params map[string]Value, mut conn Connection) !Plan {
+	conn.recursive_queries[key] = RecursiveQueryState{
+		depth:   conn.subquery_scopes.len
+		columns: columns
+	}
+	recursive_reads := conn.recursive_reads
+	plan := create_query_expression_plan(side, params, mut conn, Correlation{})!
+	if conn.recursive_reads == recursive_reads {
+		return sqlstate_42601('WITH RECURSIVE query ${name} must be a UNION of a query that does not read ${name} and one that does')
+	}
 
 	return plan
 }

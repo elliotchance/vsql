@@ -64,7 +64,11 @@ fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
 
 // matches_datetime_pattern checks each character of s against the pattern,
 // which must be the same length, where `0` is a digit, a space is any
-// whitespace and `+` is a sign. Any other character must be the same.
+// whitespace and `+` is a sign. Any other character must be the same. So the
+// fields can't have an underscore between their digits, which only a numeric
+// literal can (T662).
+//
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 44, 45 and 46
 fn matches_datetime_pattern(s string, pattern string) bool {
 	for i in 0 .. s.len {
 		ok := match pattern[i] {

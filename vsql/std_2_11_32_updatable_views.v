@@ -23,7 +23,12 @@ module vsql
 // ISO/IEC 9075-2:2023, 15.16, Effect of replacing some rows in a viewed table
 //
 // INSERT puts the new rows in the base table, and its other columns get their
-// default (see InsertStatement.insert). A new row doesn't have to satisfy the
+// default (see InsertStatement.insert). A DEFAULT in an INSERT or UPDATE of the
+// view is the default of the column of the base table:
+//
+// ISO/IEC 9075-2:2023, 11.5, <default clause>, General Rules, 3.d
+//
+// A new row doesn't have to satisfy the
 // WHERE of the view, so it may not be seen through the view, unless the view
 // has a CHECK OPTION (see check_view_option). UPDATE and DELETE only change
 // the rows that are seen through the view. Each row that's read through the

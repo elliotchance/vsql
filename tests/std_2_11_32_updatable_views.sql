@@ -350,3 +350,17 @@ SELECT * FROM v;
 -- msg: INSERT 1
 -- A: 2 B: 25
 -- A: 7 B: 25
+
+-- # A DEFAULT in an INSERT or UPDATE of a view (or of a derived table in it) is
+-- # the default of the column of the base table (11.5, General Rules, 3.d).
+CREATE VIEW v AS SELECT * FROM (SELECT id, y AS z FROM t) AS d;
+INSERT INTO v VALUES (6, DEFAULT);
+UPDATE v SET z = DEFAULT WHERE id = 1;
+SELECT * FROM v;
+-- msg: CREATE VIEW 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- ID: 1 Z: def
+-- ID: 2 Z: b
+-- ID: 3 Z: c
+-- ID: 6 Z: def

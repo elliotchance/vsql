@@ -85,6 +85,27 @@ HEADER = '''\
 # compiled.
 MACOS_SEMAPHORES = ['sem_t', 'sem_init', 'sem_post', 'sem_wait', 'sem_destroy']
 
+# gc.c #undefs the thread functions that gc.h redirects to the collector
+# (pthread_create to GC_pthread_create, ...), so it can call the real ones. V
+# compiles gc.c on its own, but here the #undef would carry on to the rest of
+# the C, and threads that V starts wouldn't be registered with the collector
+# ("Collecting from unknown thread"). gc_pthread_redirects.h defines them again
+# after gc.c, with GC_PTHREAD_REDIRECTS_ONLY so that it only has the #defines.
+def gc_redirects(folder):
+    header = os.path.join(folder, 'gc', 'gc_pthread_redirects.h')
+    if not os.path.isfile(header):
+        return []
+    return ([
+        '#if defined(GC_H) && defined(GC_PTHREADS)\n',
+        '#undef GC_PTHREAD_REDIRECTS_H\n',
+        '#define GC_PTHREAD_REDIRECTS_ONLY\n',
+        '// #include "gc/gc_pthread_redirects.h"\n',
+    ] + inline(folder, header, set()) + [
+        '#undef GC_PTHREAD_REDIRECTS_ONLY\n',
+        '#endif\n',
+    ])
+
+
 GC_PROTOTYPE = re.compile(r'^[A-Za-z_][\w ]*[\w*]\s*\b(GC_\w+)\(.*\);\s*$')
 INCLUDE = re.compile(r'^\s*#\s*include\s*([<"])([^>"]+)[>"]')
 DIRECTIVE = re.compile(r'^\s*#\s*(\w+)')
@@ -149,17 +170,30 @@ def read_flags(folder, os_, arch):
 def platform_source(folder, program, platform, defines):
     """The lines of C for one program on one platform."""
     os_, arch = platform
-    lines = list(defines)
+    once = set()
+    runtime = inline(folder, os.path.join(folder, f'vsql_runtime_{os_}.c'), once,
+                     after={'gc.c': gc_redirects(folder)})
+    generated = inline(folder, os.path.join(folder, f'{program}_{os_}_{arch}.c'), once)
+    lines = list(defines) + thread_stack_size(generated)
     if os_ == 'macos':
         lines += [f'#define {name} vsql_gc_{name}\n' for name in MACOS_SEMAPHORES]
-    once = set()
-    runtime = inline(folder, os.path.join(folder, f'vsql_runtime_{os_}.c'), once)
     lines += runtime
     if os_ == 'macos':
         lines += [f'#undef {name}\n' for name in MACOS_SEMAPHORES]
-    lines += without_gc_prototypes(
-        inline(folder, os.path.join(folder, f'{program}_{os_}_{arch}.c'), once), ''.join(runtime))
+    lines += without_gc_prototypes(generated, ''.join(runtime))
     return lines
+
+
+def thread_stack_size(generated):
+    """thread_helper.h (in the runtime) defines V_THREAD_STACK_SIZE as 0 if it
+    isn't defined yet, which would stop the generated C from defining its own
+    stack size for threads (pthread_attr_setstacksize fails with 0). So the
+    generated C's value is defined before the runtime."""
+    for line in generated:
+        m = re.match(r'^\s*#\s*define\s+V_THREAD_STACK_SIZE\s+(\d+)\s*$', line)
+        if m:
+            return [f'#define V_THREAD_STACK_SIZE {m.group(1)}\n']
+    return []
 
 
 def without_gc_prototypes(lines, runtime):
@@ -177,10 +211,11 @@ def without_gc_prototypes(lines, runtime):
     return out
 
 
-def inline(folder, path, once):
+def inline(folder, path, once, after=None):
     """The lines of a file, with the files that it includes from the folder in
     place of their #include, like the C compiler does with "-I folder". A file
-    with "#pragma once" is only put in once."""
+    with "#pragma once" is only put in once. after has lines to put after an
+    included file, by its name."""
     with open(path, encoding='utf-8', errors='surrogateescape', newline='') as f:
         text = f.read().replace('\r\n', '\n')
     if re.search(r'^\s*#\s*pragma\s+once\b', text, re.M):
@@ -207,6 +242,7 @@ def inline(folder, path, once):
             if found:
                 out.append(f'// {line.strip()}\n')
                 out += inline(folder, found, once)
+                out += (after or {}).get(m.group(2), [])
                 continue
         out.append(line)
     return out

@@ -214,17 +214,19 @@ def without_gc_prototypes(lines, runtime):
 def inline(folder, path, once, after=None):
     """The lines of a file, with the files that it includes from the folder in
     place of their #include, like the C compiler does with "-I folder". A file
-    with "#pragma once" is only put in once. after has lines to put after an
-    included file, by its name."""
+    with "#pragma once", or that's all inside an include guard, is only put in
+    once (gc.h is included by most of the runtime). after has lines to put
+    after an included file, by its name."""
     with open(path, encoding='utf-8', errors='surrogateescape', newline='') as f:
         text = f.read().replace('\r\n', '\n')
-    if re.search(r'^\s*#\s*pragma\s+once\b', text, re.M):
-        if path in once:
-            return []
-        once.add(path)
     lines = text.splitlines(keepends=True)
     if lines and not lines[-1].endswith('\n'):
         lines[-1] += '\n'
+    if re.search(r'^\s*#\s*pragma\s+once\b', text, re.M) or include_guard(lines):
+        key = os.path.realpath(path)
+        if key in once:
+            return []
+        once.add(key)
 
     out = []
     for line in lines:
@@ -246,6 +248,43 @@ def inline(folder, path, once, after=None):
                 continue
         out.append(line)
     return out
+
+
+def include_guard(lines):
+    """The name of the include guard that the whole file is inside, such as
+    GC_H for "#ifndef GC_H", "#define GC_H", ..., "#endif", or None."""
+    directives = []
+    in_comment = False
+    for line in lines:
+        if not in_comment:
+            m = DIRECTIVE.match(line)
+            if m:
+                directives.append((m.group(1), line))
+            elif line.strip() and not line.strip().startswith(('/*', '//')):
+                # Code outside of the guard.
+                if not directives:
+                    return None
+        in_comment = scan(line, in_comment, directive=bool(DIRECTIVE.match(line)))
+    if len(directives) < 3 or directives[0][0] != 'ifndef' or directives[1][0] != 'define':
+        return None
+    m = re.match(r'^\s*#\s*ifndef\s+(\w+)\s*$', directives[0][1])
+    if not m or not re.match(r'^\s*#\s*define\s+' + m.group(1) + r'\b', directives[1][1]):
+        return None
+    # The #endif that matches the #ifndef has to be the last directive, and
+    # there can't be any code after it.
+    depth = 0
+    for i, (name, _) in enumerate(directives):
+        if name in ('if', 'ifdef', 'ifndef'):
+            depth += 1
+        elif name == 'endif':
+            depth -= 1
+            if depth == 0 and i != len(directives) - 1:
+                return None
+    last = max(i for i, line in enumerate(lines) if line == directives[-1][1])
+    for line in lines[last + 1:]:
+        if line.strip() and not line.strip().startswith(('/*', '//', '*')):
+            return None
+    return m.group(1)
 
 
 def chunks(lines):

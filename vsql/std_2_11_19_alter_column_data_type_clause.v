@@ -56,20 +56,26 @@ fn (c AlterColumnDataTypeClause) execute(mut conn Connection, table Table, colum
 // can_widen_to is true when to can hold every value of t: the same kind of
 // type, with at least the same length, precision or scale. A character string
 // must have room for the most characters and the most octets of t (a length can
-// be in either unit). An integer type is compared to a NUMERIC or DECIMAL by the
+// be in either unit). A BINARY or BINARY VARYING must have room for the most
+// octets of t (a BINARY LARGE OBJECT, Feature T041, can only become another
+// one). An integer type is compared to a NUMERIC or DECIMAL by the
 // number of decimal digits that it can always hold (see whole_digits).
 //
-// ISO/IEC 9075-2:2023, 11.19, <alter column data type clause>, Syntax Rules, 15.a, 15.c, 15.d, 15.e, 15.f, 15.g, 15.j and 15.k
+// ISO/IEC 9075-2:2023, 11.19, <alter column data type clause>, Syntax Rules, 15.a, 15.b, 15.c, 15.d, 15.e, 15.f, 15.g, 15.j and 15.k
 fn (t Type) can_widen_to(to Type) bool {
 	integers := [SQLType.is_smallint, .is_integer, .is_bigint]
 	exact := [SQLType.is_smallint, .is_integer, .is_bigint, .is_numeric, .is_decimal]
 	characters := [SQLType.is_character, .is_varchar]
+	binaries := [SQLType.is_binary, .is_varbinary]
 	approximate := [SQLType.is_real, .is_double_precision]
 	datetimes := [SQLType.is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone]
 
 	if t.typ in characters && to.typ in characters {
 		return to.size >= t.size && to.max_octets() >= t.max_octets()
+	}
+	if t.typ in binaries && to.typ in binaries {
+		return to.size >= t.size
 	}
 	if t.typ in integers && to.typ in integers {
 		return integers.index(to.typ) >= integers.index(t.typ)

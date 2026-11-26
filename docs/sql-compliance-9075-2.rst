@@ -1205,7 +1205,7 @@ Optional Features
    * - ❌ **S404**
      - **TRIM_ARRAY**
 
-   * - ⭕ **T021**
+   * - ✅ **T021**
      - **BINARY and VARBINARY data types**
 
    * - ✅ **T022**

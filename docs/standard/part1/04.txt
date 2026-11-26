@@ -63,7 +63,7 @@
 # 4.6.3.2, Character string types
 4.6.3.2                  implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_1_character.sql
 # 4.6.3.3, Binary string types
-4.6.3.3                  partial      vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql binary strings (T021, T045) can only be stored and cast, they have no operations yet
+4.6.3.3                  partial      vsql/std_2_9_2_store_assignment.v tests/std_2_6_1_binary.sql there are no BINARY LARGE OBJECT locators (T041)
 # 4.6.3.4, Boolean type
 4.6.3.4                  implemented  vsql/std_2_6_46_boolean_value_expression.v tests/std_2_6_1_boolean.sql BOOLEAN (T031)
 # 4.6.3.5, Datetime types

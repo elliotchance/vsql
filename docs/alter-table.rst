@@ -117,6 +117,8 @@ error ``42601``. So it must be the same kind of type, and at least as big:
 - A ``CHARACTER`` or ``CHARACTER VARYING`` can be either, with at least the
   same length. A length in ``OCTETS`` must have room for 4 octets for each
   character of a length in ``CHARACTERS``.
+- A ``BINARY`` or ``BINARY VARYING`` can be either, with at least the same
+  length.
 - An exact numeric (``SMALLINT``, ``INTEGER``, ``BIGINT``, ``NUMERIC`` or
   ``DECIMAL``) needs at least the same scale and the same number of digits
   before the decimal point. ``SMALLINT``, ``INTEGER`` and ``BIGINT`` can always

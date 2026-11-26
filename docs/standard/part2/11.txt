@@ -361,7 +361,7 @@
 11.5/SR/4                container    - -
 11.5/SR/4.a              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
-11.5/SR/4.a.ii           n/a          - - binary strings (T021)
+11.5/SR/4.a.ii           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_binary_defaults.sql
 11.5/SR/4.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/SR/4.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
@@ -377,8 +377,8 @@
 11.5/GR/2.a.i            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.ii           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
-11.5/GR/2.a.iv           n/a          - - binary strings (T021)
-11.5/GR/2.a.v            n/a          - - binary strings (T021)
+11.5/GR/2.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_binary_defaults.sql
+11.5/GR/2.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_binary_defaults.sql
 11.5/GR/2.a.vi           implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/2.b              implemented  vsql/std_2_11_5_default_clause.v tests/std_2_11_5_column_defaults.sql only CURRENT_CATALOG and CURRENT_SCHEMA
@@ -685,11 +685,11 @@
 11.19/SR/15.a.iii        implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.a.iv         implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.a.v          implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
-11.19/SR/15.b            n/a          - - binary strings (T021)
-11.19/SR/15.b.i          n/a          - - binary strings (T021)
-11.19/SR/15.b.ii         n/a          - - binary strings (T021)
-11.19/SR/15.b.iii        n/a          - - binary strings (T021)
-11.19/SR/15.b.iv         n/a          - - binary strings (T021)
+11.19/SR/15.b            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_binary.sql a BINARY LARGE OBJECT (T041) can only become another one
+11.19/SR/15.b.i          implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_binary.sql
+11.19/SR/15.b.ii         implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_binary.sql
+11.19/SR/15.b.iii        implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_binary.sql
+11.19/SR/15.b.iv         implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_binary.sql
 11.19/SR/15.c            implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.c.i          implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql
 11.19/SR/15.c.ii         implemented  vsql/std_2_11_19_alter_column_data_type_clause.v tests/std_2_11_19_alter_column_data_type.sql

@@ -8,7 +8,8 @@ vsql is tested in a variety of ways, but most functional tests are SQL files
 ``make`` target that runs it.
 
 ``make test`` runs all of them except ``app-test``, since the app isn't needed
-for the database itself (and its tests need Python and a browser). See
+for the database itself (and its tests need Python and a browser), and
+``amalgamation-test``, which CI runs at the end on the released amalgamation. See
 `Continuous Integration`_ for what CI runs on each platform.
 
 The V tests in ``vsql/`` are optimized like the binaries that are released,
@@ -37,6 +38,38 @@ Like ``make coverage``, it fails unless the tests cover every line of
 ``make sql-test``, ``make unit-test``, ``make btree-test`` and ``make
 coverage``, which each build vsql on their own, and are best for running one of
 them.
+
+amalgamation-test
+-----------------
+
+The amalgamation is the C for vsql and libvsql (``vsql.c`` and ``libvsql.c``)
+that the release has, so that they can be built without V (see
+``scripts/amalgamation.sh``). Most of the tests can't run on it, since V builds
+them from the source (such as ``sql-test``), so it has its own test suite,
+which only needs the binaries and the library built from it:
+
+.. code-block:: sh
+
+   make amalgamation-test
+
+It runs ``make amalgamation`` first, which makes ``amalgamation/`` for the
+current OS and architecture, and builds ``bin/vsql`` and the library from it
+with its own ``Makefile``, like a user without V would. Then it runs:
+
+- ``.github/workflows/hello-test.sh``, which creates a database file, writes a
+  row to it and reads it back in another process.
+- ``cli-test``, which covers files (creating, updating, locking, read-only
+  and crash recovery), importing and exporting, and the server with clients
+  connecting to it, including ``psql``.
+- ``libvsql-c-test`` (``libvsql-test`` without the check of the constants,
+  which needs V), ``libvsql-example``, ``module-test`` and ``embed-test``, for
+  libvsql.
+- ``make example`` in ``amalgamation/``, which builds and runs its
+  ``example.c``.
+
+CI runs it once, at the end (see `Continuous Integration`_), after the
+amalgamation of every OS and architecture is merged into ``amalgamation/``.
+Once it passes, ``amalgamation/`` is what's zipped for the release.
 
 app-test
 --------
@@ -1194,7 +1227,12 @@ Linux, macOS and Windows, each on x86-64 and ARM64, with V master:
   (``.github/workflows/earlier-v.sh``). On ARM64, it builds V and everything
   else with llvm-mingw's native toolchain.
 
-Each job also generates the C for the amalgamation (see
-``scripts/amalgamation.sh``). Once every job has passed, the release job zips
-the amalgamation, then builds it with ``make`` and runs ``make example`` from
-the zip, like a user without V would.
+The binaries (``bin/vsql`` and the library) are always built from the
+amalgamation, locally and on CI (``make amalgamation``, see the Makefile and
+``scripts/amalgamation.sh``). V only generates the C, so the binaries that are
+tested are built the same way as the released ones. The V tests (such as
+``make sql-test`` and ``make unit-test``) are still built by V. Once every job
+has passed, the release job merges the C from each job
+(``amalgamation/generated/``) into ``vsql.c`` and ``libvsql.c`` (see
+``scripts/amalgamation-merge.py``), runs `amalgamation-test`_ on it, on Linux
+x86-64, and zips it.

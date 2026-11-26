@@ -53,3 +53,11 @@ __pycache__/
 # Created by "make all-test" and "make examples-test".
 vsql/all_test.v
 examples/all/
+
+# Created by "make amalgamation" (see the Makefile). The rest of amalgamation/
+# is source.
+/amalgamation/*
+!/amalgamation/Makefile
+!/amalgamation/gc.h
+!/amalgamation/libvsql.exports
+!/amalgamation/libvsql.map

@@ -1,4 +1,4 @@
 {
-  global: SQL*;
+  global: SQL*; vsql_*;
   local: *;
 };

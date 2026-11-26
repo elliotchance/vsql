@@ -17,6 +17,10 @@ Then:
   make bin/vsql       # macOS and linux
   make bin/vsql.exe   # windows
 
+V only generates the C, which is put in ``amalgamation/`` (``make
+amalgamation``), and the binary is built from that with the C compiler, with
+``-O2``, which takes about a minute (see `Building Faster`_).
+
 Before sending a pull request, run ``make fmt`` and make sure ``make test``
 passes (see :doc:`testing`). CI fails if ``make fmt`` would change anything,
 which ``make fmt-verify`` checks.
@@ -24,8 +28,9 @@ which ``make fmt-verify`` checks.
 Building Faster
 ^^^^^^^^^^^^^^^
 
-The binaries (such as ``bin/vsql``) are optimized the same way as the ones that
-are released, with ``-prod`` and ``-O2`` from ``CFLAGS``. The V tests in
+The binaries (such as ``bin/vsql``) are built the same way as the ones that are
+released: their C (the amalgamation) is generated with ``-prod`` and compiled
+with ``-O2`` from ``CFLAGS``. The V tests in
 ``vsql/`` (the SQL, unit and B-tree tests) are built with the same C compiler
 and ``CFLAGS``, but not ``-prod``, since it removes every ``assert``
 (``TEST_OPTIMIZE`` in the Makefile). Building vsql with ``-O2`` takes one to a

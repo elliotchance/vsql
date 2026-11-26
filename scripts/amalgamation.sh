@@ -1,37 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # amalgamation.sh makes the amalgamation, the C for vsql and libvsql, so that
-# they can be built without V (see amalgamation/Makefile). It has three steps:
+# they can be built without V (see amalgamation/Makefile). It's one C file for
+# each of them (vsql.c and libvsql.c). "make amalgamation" uses it to put them
+# in amalgamation/, which the binaries in bin/ are built from (see the
+# Makefile). It has three steps:
 #
-#   scripts/amalgamation.sh generate DIR [SHOWCC_DIR]
+#   scripts/amalgamation.sh generate DIR
 #
-# Generates the C for the current OS and architecture into DIR. SHOWCC_DIR has
-# the output of "make BUILD_OPTIONS=-showcc bin/vsql" and "... libvsql" as
-# vsql.showcc and libvsql.showcc, so that they don't have to be built again to
-# find the C compiler command. It must run on
-# each of them, since V's cross platform C (-os cross) has no garbage collector
+# Generates the C for the current OS and architecture into DIR, with V's
+# -generate-c-project, which writes the C and the C compiler command that V
+# would use, without compiling it. The options for V are in $V_OPTIONS (by
+# default "-n -nocache -prod"). The C that V compiles from outside of the
+# generated C (gc.c and the helpers from "#flag @VEXEROOT/....c" lines) and the
+# defines and libraries come from that command. The generated C includes some
+# headers by their absolute path in V, so they're copied too and included by
+# name instead.
+#
+# The release has the C from each OS and architecture, since V's cross platform
+# C (-os cross) has no garbage collector
 # (https://github.com/vlang/v/issues/31421), and the C that V generates for one
 # architecture (such as inline assembly and closures) doesn't work on another.
-# The C that V compiles from outside
-# of the generated C (gc.c and the helpers from "#flag @VEXEROOT/....o" lines)
-# and the defines and libraries come from the C compiler command that V prints
-# with -showcc. The generated C includes some headers by their absolute path in
-# V, so they're copied too and included by name instead.
 #
-#   scripts/amalgamation.sh check DIR...
+#   scripts/amalgamation.sh assemble FOLDER DIR...
 #
-# Builds and tests the amalgamation with the files in each DIR (from generate).
+# Puts the amalgamation in FOLDER: vsql.c and libvsql.c merged from the files in
+# each DIR (from generate) by scripts/amalgamation-merge.py, the source files in
+# amalgamation/ (Makefile, libvsql.exports and libvsql.map), and libvsql.h. A
+# file that's already in FOLDER is only replaced if it's different, so that make
+# doesn't build it again, and so FOLDER can be amalgamation/ itself.
 #
-#   scripts/amalgamation.sh package VERSION DIR...
+#   scripts/amalgamation.sh package VERSION
 #
-# Makes vsql-VERSION-amalgamation.zip, a folder of the same name with the files
-# in each DIR (from generate), amalgamation/ and libvsql.h.
+# Makes vsql-VERSION-amalgamation.zip from amalgamation/ (once it has been
+# tested, see "make amalgamation-test"), with only the files that assemble puts
+# there (not what's left from building and testing it).
 
 set -euo pipefail
 
 generate() {
   out="$1"
-  showcc_dir="${2:-}"
   case "$(uname -s)" in
     Linux) os=linux ;;
     Darwin) os=macos ;;
@@ -49,10 +57,11 @@ generate() {
 
   vroot="$(dirname "$(realpath "$(command -v v)")")"
   tmp="$(mktemp -d)"
+  rm -rf "$out"
   mkdir -p "$out"
 
-  # Windows uses MinGW, like the release (see the Makefile).
-  v_options="-n -nocache -prod"
+  # Windows uses MinGW, like the release (see amalgamation/Makefile).
+  v_options="${V_OPTIONS:--n -nocache -prod}"
   if [ $os = windows ]; then
     v_options="$v_options -cc gcc"
   fi
@@ -71,16 +80,18 @@ generate() {
       v_program_options="-enable-globals -shared"
     fi
 
-    v $v_options $v_program_options $v_program -o "$out/${program}_${os}_$arch.c"
-    bundle_absolute_includes "$out/${program}_${os}_$arch.c"
-
-    if [ -n "$showcc_dir" ] && grep -qE '^ *> ' "$showcc_dir/$program.showcc"; then
-      cp "$showcc_dir/$program.showcc" "$tmp/$program.showcc"
-    else
-      v $v_options $v_program_options -showcc $v_program -o "$tmp/$program" > "$tmp/$program.showcc" 2>&1 ||
-        { cat "$tmp/$program.showcc"; exit 1; }
+    # shellcheck disable=SC2086
+    v $v_options $v_program_options -generate-c-project "$tmp/$program" $v_program > /dev/null
+    generated=("$tmp/$program"/*.c)
+    if [ ${#generated[@]} != 1 ]; then
+      echo "expected one C file from V for $program: ${generated[*]}" >&2
+      exit 1
     fi
-    cc_command="$(grep -E '^ *> ' "$tmp/$program.showcc" | tail -1)"
+    c="$out/${program}_${os}_$arch.c"
+    mv "${generated[0]}" "$c"
+    bundle_absolute_includes "$c"
+
+    cc_command="$(cat "$tmp/$program/build_command.txt")"
     echo "$program: $cc_command"
 
     # Windows has libraries as "-l dbghelp". The export, install name, rpath
@@ -94,8 +105,15 @@ generate() {
         library=""
       fi
       case "$arg" in
-        *v3_thirdparty_objs*)
-          bundle_object "$(basename "${arg//\\//}")"
+        *.c | *.C)
+          source="$(unix_path "$arg")"
+          if [ "$(basename "$source")" != "$(basename "${generated[0]}")" ]; then
+            bundle_source "$source"
+          fi
+          ;;
+        *.o | *.obj | *.S | *.s)
+          echo "V's C compiler command for $program has an object or assembly file, which the amalgamation can't have: $arg" >&2
+          exit 1
           ;;
         -l)
           library=1
@@ -118,29 +136,35 @@ generate() {
   rm -rf "$tmp"
 }
 
-# bundle_object copies the source of an object from V's C compiler command,
-# such as gc_boehm_helpers_o_8700c3aef5e6b723.o, and includes it from
-# vsql_runtime_OS.c (once, since vsql and libvsql mostly use the same ones).
-bundle_object() {
-  name="${1%_o_*}"
-  if grep -qF "\"$name.c\"" "$runtime"; then
+# unix_path is the path as bash on Windows (MSYS) has it, such as
+# /c/v/thirdparty/libgc/gc.c for C:\v\thirdparty\libgc\gc.c.
+unix_path() {
+  if command -v cygpath > /dev/null; then
+    cygpath -u "$1"
+  else
+    echo "$1"
+  fi
+}
+
+# bundle_source copies a C file from V's C compiler command, such as
+# thirdparty/libgc/gc.c, and includes it from vsql_runtime_OS.c (once, since
+# vsql and libvsql mostly use the same ones).
+bundle_source() {
+  name="$(basename "$1")"
+  if grep -qF "\"$name\"" "$runtime"; then
     return
   fi
 
-  if [ "$name" = gc ]; then
-    cp "$vroot/thirdparty/libgc/gc.c" "$out/"
+  if [ "$name" = gc.c ]; then
+    # gc.c includes the headers in libgc/include/gc/.
+    cp "$1" "$out/"
     rm -rf "$out/gc"
-    cp -R "$vroot/thirdparty/libgc/include/gc" "$out/gc"
+    cp -R "$(dirname "$1")/include/gc" "$out/gc"
   else
-    sources="$(find "$vroot/vlib" "$vroot/thirdparty" -name "$name.c")"
-    if [ "$(echo "$sources" | grep -c .)" != 1 ]; then
-      echo "can't find exactly one source for $1: $sources" >&2
-      exit 1
-    fi
-    bundle_file "$sources"
+    bundle_file "$1"
   fi
 
-  echo "#include \"$name.c\"" >> "$runtime"
+  echo "#include \"$name\"" >> "$runtime"
 }
 
 # bundle_file copies a file into the amalgamation, along with the files it
@@ -170,55 +194,59 @@ bundle_file() {
 # path, and changes them to be included by name.
 bundle_absolute_includes() {
   for include in $(sed -nE 's/^[[:space:]]*#[[:space:]]*include[[:space:]]*"((\/|[A-Za-z]:)[^"]*)".*/\1/p' "$1"); do
-    if command -v cygpath > /dev/null; then
-      bundle_file "$(cygpath -u "$include")"
-    else
-      bundle_file "$include"
-    fi
+    bundle_file "$(unix_path "$include")"
   done
   perl -pi -e 's{^(\s*#\s*include\s*")(?:/|[A-Za-z]:)[^"]*[/\\]([^"/\\]+")}{$1$2}' "$1"
 }
 
-# assemble puts the amalgamation in a new folder, with the files in each DIR
-# (from generate).
+# python finds Python 3, which is "python" on Windows ("python3" may be a
+# placeholder that opens the Microsoft Store).
+python() {
+  if python3 -c '' 2> /dev/null; then
+    python3 "$@"
+  else
+    command python "$@"
+  fi
+}
+
 assemble() {
   folder="$1"
   shift
-  rm -rf "$folder"
   mkdir -p "$folder"
 
+  merge="$(mktemp -d)"
   for dir in "$@"; do
     for file in "$dir"/*; do
-      if [ -f "$folder/$(basename "$file")" ] && ! cmp -s "$file" "$folder/$(basename "$file")"; then
+      if [ -f "$merge/$(basename "$file")" ] && ! cmp -s "$file" "$merge/$(basename "$file")"; then
         echo "warning: $(basename "$file") is different in each folder, using the one from $dir" >&2
       fi
-      cp -R "$file" "$folder/"
+      cp -R "$file" "$merge/"
     done
   done
+  cp amalgamation/gc.h "$merge/"
+  python scripts/amalgamation-merge.py "$merge"
 
-  cp amalgamation/* libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c LICENSE "$folder/"
+  for file in "$merge/vsql.c" "$merge/libvsql.c" "$merge/vsql.mk" "$merge/LICENSE-V" \
+    amalgamation/Makefile amalgamation/libvsql.exports amalgamation/libvsql.map \
+    libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c LICENSE; do
+    if ! cmp -s "$file" "$folder/$(basename "$file")"; then
+      cp "$file" "$folder/"
+    fi
+  done
+  rm -rf "$merge"
 }
 
-check() {
-  folder="$(mktemp -d)/amalgamation"
-  root="$PWD"
-  assemble "$folder" "$@"
-  cd "$folder"
-  # vsql and libvsql are compiled at the same time, since each only uses one
-  # core.
-  make -j2
-  "$root/.github/workflows/hello-test.sh" bin/vsql
-  make example
-  cd "$root"
-  rm -rf "$(dirname "$folder")"
-}
+# amalgamation_files are the files of the amalgamation that assemble puts in
+# FOLDER, which are what the release has.
+amalgamation_files="vsql.c libvsql.c vsql.mk LICENSE-V Makefile libvsql.exports libvsql.map libvsql.h libvsql.def example.c LICENSE"
 
 package() {
-  version="$1"
-  shift
-  name="vsql-$version-amalgamation"
-  rm -f "$name.zip"
-  assemble "$name" "$@"
+  name="vsql-$1-amalgamation"
+  rm -rf "$name" "$name.zip"
+  mkdir "$name"
+  for file in $amalgamation_files; do
+    cp "amalgamation/$file" "$name/"
+  done
   zip -qr "$name.zip" "$name"
   rm -rf "$name"
 }

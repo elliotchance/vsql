@@ -1053,7 +1053,7 @@
 11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_9_6_flagging.sql
 # 11.32, <view definition>
-11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql there's no WITH CHECK OPTION (#1258), and a view can't be changed (#1448)
+11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql there's no WITH CHECK OPTION (#1258), and a view of a derived table can't be changed (#1788)
 11.32/SR/1               definition   - -
 11.32/SR/2               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/3               implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_32_view_definition.sql
@@ -1068,10 +1068,10 @@
 11.32/SR/9.c             n/a          - - WITH CHECK OPTION (#1258)
 11.32/SR/9.d             n/a          - - referenceable views (S043)
 11.32/SR/9.e             implemented  vsql/std_2_11_32_view_definition.v tests/std_2_7_17_with_recursive.sql
-11.32/SR/10              missing      - - a view can't be changed yet (#1448)
-11.32/SR/11              missing      - - a view can't be changed yet (#1448)
-11.32/SR/12              missing      - - a view can't be changed yet (#1448)
-11.32/SR/13              missing      - - a view can't be changed yet (#1448)
+11.32/SR/10              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
+11.32/SR/11              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
+11.32/SR/12              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
+11.32/SR/13              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 11.32/SR/14              implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/15              n/a          - - there are no collations other than the default (F690)
 11.32/SR/16              missing      - - WITH CHECK OPTION (#1258)
@@ -1193,14 +1193,14 @@
 11.32/GR/1.e.ii.2.C      n/a          - - reference types (S043)
 11.32/GR/1.e.ii.3        n/a          - - reference types (S043)
 11.32/GR/1.e.ii.4        n/a          - - reference types (S043)
-11.32/GR/1.f             missing      - - a view can't be changed yet (#1448)
+11.32/GR/1.f             implemented  vsql/std_11_5_76_views.v tests/std_2_11_32_updatable_views.sql
 11.32/GR/1.g             missing      - - WITH CHECK OPTION (#1258)
 11.32/GR/1.h             n/a          - - triggers (T211)
 11.32/GR/1.i             n/a          - - triggers (T211)
 11.32/GR/1.j             n/a          - - triggers (T211)
-11.32/GR/1.k             missing      - - a view can't be changed yet (#1448)
-11.32/GR/1.l             missing      - - a view can't be changed yet (#1448)
-11.32/GR/1.m             missing      - - a view can't be changed yet (#1448)
+11.32/GR/1.k             implemented  vsql/std_11_5_76_views.v tests/std_2_11_32_updatable_views.sql
+11.32/GR/1.l             implemented  vsql/std_11_5_76_views.v tests/std_2_11_32_updatable_views.sql
+11.32/GR/1.m             implemented  vsql/std_11_5_76_views.v tests/std_2_11_32_updatable_views.sql
 11.32/GR/2               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/GR/2.a             container    - -
 11.32/GR/2.a.i           implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql

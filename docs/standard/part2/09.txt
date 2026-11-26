@@ -676,7 +676,7 @@
 9.17/GR/17               container    - -
 9.17/GR/17.a             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_11_8_foreign_key.sql
 9.17/GR/17.b             n/a          - - triggers (T211)
-9.17/GR/18               n/a          - - a view can't be changed yet (#1448)
+9.17/GR/18               missing      - - WITH CHECK OPTION (#1258)
 9.17/GR/19               untestable   - - the values are implementation-dependent
 9.17/GR/20               container    - -
 9.17/GR/20.a             implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c

@@ -49,10 +49,30 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	}
 
 	mut plan := create_plan(stmt, params, mut conn)!
-	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)
-	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	rows := current_rows(plan.execute([]Row{})!, stmt.current_of)
+
+	// The rows of a view are replaced in its base table. Each column that's set
+	// is a column of the table.
+	//
+	// ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, General Rules, 14.b
+	// ISO/IEC 9075-2:2023, 15.16, Effect of replacing some rows in a viewed table
+	target, is_view := conn.view_target(stmt.table_name, params)!
+	mut table_name := if is_view {
+		target.table
+	} else {
+		conn.resolve_table_identifier(stmt.table_name, false)!
+	}
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
+	base_rows := if is_view { conn.base_rows(target, rows)! } else { rows }
+	mut column_names := []string{}
+	for clause in stmt.set {
+		column_names << if is_view {
+			target.base_column(clause.column_name)!
+		} else {
+			clause.column_name
+		}
+	}
 
 	// A correlation name is the only name of the table in the set clauses, as it
 	// is in the search condition. The rows that were read have columns with that
@@ -60,13 +80,19 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	//
 	// ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, Syntax Rules, 9.a and 10
 	// ISO/IEC 9075-2:2023, 14.13, <update statement: positioned>, Syntax Rules, 11.a
-	has_correlation := stmt.correlation_name.sub_entity_name != ''
+	// The rows of a view have the names of the view (or its correlation name).
+	has_correlation := stmt.correlation_name.sub_entity_name != '' || is_view
+	range_name := if stmt.correlation_name.sub_entity_name != '' {
+		stmt.correlation_name
+	} else {
+		target.view.name
+	}
 	row_columns := if has_correlation { plan.columns() } else { table.columns }
-	row_table_id := if has_correlation { stmt.correlation_name.id() } else { table_name.id() }
+	row_table_id := if has_correlation { range_name.id() } else { table_name.id() }
 	mut tables := map[string]&Table{}
 	if has_correlation {
 		tables[row_table_id] = &Table{
-			name:    stmt.correlation_name
+			name:    range_name
 			columns: row_columns
 		}
 	}
@@ -80,15 +106,15 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// set to DEFAULT.
 	//
 	// ISO/IEC 9075-2:2023, 14.15, <set clause list>, Syntax Rules, 5
-	for clause in stmt.set {
-		if table.column(clause.column_name)!.is_generated_always() {
+	for i, clause in stmt.set {
+		if table.column(column_names[i])!.is_generated_always() {
 			is_default := if clause.source is ContextuallyTypedValueSpecification {
 				clause.source is DefaultSpecification
 			} else {
 				false
 			}
 			if !is_default {
-				return sqlstate_428c9(clause.column_name)
+				return sqlstate_428c9(column_names[i])
 			}
 		}
 	}
@@ -117,7 +143,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// The value of each <set clause> is compiled for the first row, then kept
 	// (by its position) for the rows after it.
 	mut compiled_set := map[int]CompileResult{}
-	for mut row in rows {
+	for r, row in rows {
+		base := base_rows[r]
 		conn.begin_row()
 		mut did_modify := false
 
@@ -126,13 +153,13 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		// version of the same semantic row. We also need to maintain the
 		// original tid for the storage to know which version is frozen.
 		mut row2 := Row{
-			data: row.data.clone()
+			data: base.data.clone()
 		}
-		row2.id = row.id
-		row2.tid = row.tid
+		row2.id = base.id
+		row2.tid = base.tid
 
 		for i, clause in stmt.set {
-			column_name := clause.column_name
+			column_name := column_names[i]
 			table_column := table.column(column_name)!
 
 			// A generated column is set once the other columns are known (see
@@ -170,8 +197,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// where the value wasn't NULL, and a NULL that stays NULL isn't a
 			// change.
 			check_store_assignment(raw_value, table_column.typ)!
-			column_id := '${row_table_id}.${column_name}'
-			old_value := row.data.value(column_id)
+			column_id := if is_view {
+				table_column.name.id()
+			} else {
+				'${row_table_id}.${column_name}'
+			}
+			old_value := base.data.value(column_id)
 			if old_value.is_null && raw_value.is_null {
 				continue
 			}
@@ -186,7 +217,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		// A row that doesn't change isn't written, but it's still counted.
 		if did_modify {
 			// To be able to write the row back we need to clean the column names.
-			before := row.for_storage()
+			before := base.for_storage()
 			mut after := row2.for_storage()
 			generated_columns.apply(mut conn, mut after)!
 			check_constraints.verify(mut conn, after)!
@@ -241,8 +272,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		}
 
 		empty_row := new_empty_row(row_columns, row_table_id)
-		for clause in stmt.set {
-			column_name := clause.column_name
+		for i, clause in stmt.set {
+			column_name := column_names[i]
 			table_column := table.column(column_name)!
 			if table_column.generated != none {
 				continue
@@ -267,7 +298,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		}
 	}
 
-	conn.note_row_changes(table, rows, row_changes, stmt.current_of)!
+	conn.note_row_changes(table, base_rows, row_changes, stmt.current_of)!
 
 	// The count is every row identified by the UPDATE, even if its values didn't
 	// change.

@@ -52,11 +52,50 @@ columns that it was created with.
 
 A view can also be created by a :doc:`create-schema`.
 
+Updatable Views
+^^^^^^^^^^^^^^^
+
+A view can be changed by :doc:`insert`, :doc:`update` and :doc:`delete` (and
+through a cursor, see :doc:`cursors`) when it's updatable, which is when
+its query:
+
+- reads one table, which is a base table or another updatable view,
+- has each column of the view as a different column of that table (not an
+  expression),
+- doesn't have ``DISTINCT``, ``GROUP BY``, ``HAVING``, an aggregate function,
+  ``UNION``, ``EXCEPT``, ``INTERSECT``, ``OFFSET`` or ``FETCH FIRST``, and
+- doesn't read the same table in a subquery of its ``WHERE``.
+
+The change is made to the base table that the view reads (through any other
+views). ``INSERT`` adds the rows to the table, and the columns of the table that
+aren't in the view get their default. ``UPDATE`` and ``DELETE`` only change the
+rows that are seen through the view:
+
+.. code-block:: sql
+
+  CREATE TABLE products (name VARCHAR(20), price DECIMAL(10, 2), stock INT DEFAULT 0);
+  CREATE VIEW cheap (product, price) AS SELECT name, price FROM products WHERE price < 5;
+  INSERT INTO cheap VALUES ('Bread', 2.50), ('Caviar', 99.00);
+  UPDATE cheap SET price = price * 2;
+  DELETE FROM cheap WHERE product = 'Caviar';
+  SELECT * FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE VIEW 1
+  -- msg: INSERT 2
+  -- msg: UPDATE 1
+  -- warning 02000: no data
+  -- msg: DELETE 0
+  -- NAME: Bread PRICE: 5.00 STOCK: 0
+  -- NAME: Caviar PRICE: 99.00 STOCK: 0
+
+A new row doesn't have to be seen through the view (``Caviar`` above), because
+``WITH CHECK OPTION`` isn't supported yet.
+
 Limitations
 -----------
 
-- A view can only be read. ``INSERT``, ``UPDATE`` and ``DELETE`` on a view are
-  an error.
+- A view of a derived table or a ``WITH`` query isn't updatable, nor is a view of
+  a join or a ``UNION`` (Feature T111).
 - The tables, views and columns that a view uses can only be dropped with
   ``CASCADE``, which drops the view too, and a column that it uses can't change
   its type. A view that can't be read (such as when a column it uses becomes

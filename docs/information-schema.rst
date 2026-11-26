@@ -91,7 +91,8 @@ of the ``INFORMATION_SCHEMA`` (which are a ``VIEW``). Rows are ordered by schema
       ``INFORMATION_SCHEMA``.
 
   * - ``IS_INSERTABLE_INTO``
-    - ``YES``, or ``NO`` for a view and the tables of the ``INFORMATION_SCHEMA``.
+    - ``YES``, or ``NO`` for a view that isn't updatable (see :doc:`create-view`)
+      and the tables of the ``INFORMATION_SCHEMA``.
 
   * - ``IS_TYPED``
     - Always ``NO``.
@@ -130,7 +131,8 @@ One row for each view in ``TABLES``, in the same order: the views made by
     - Always ``NONE``.
 
   * - ``IS_UPDATABLE``, ``INSERTABLE_INTO``
-    - Always ``NO``.
+    - ``YES`` for a view that's updatable (see :doc:`create-view`), otherwise
+      ``NO``.
 
 ``VIEW_COLUMN_USAGE``, ``VIEW_ROUTINE_USAGE`` and ``VIEW_TABLE_USAGE``
 ----------------------------------------------------------------------
@@ -256,7 +258,8 @@ One row for each column of each table in ``TABLES``.
       an older version has the text that vsql printed it as.
 
   * - ``IS_UPDATABLE``
-    - ``YES``, or ``NO`` for a column of a view and the tables of the ``INFORMATION_SCHEMA``.
+    - ``YES``, or ``NO`` for a column of a view that isn't updatable (see
+      :doc:`create-view`) and the tables of the ``INFORMATION_SCHEMA``.
 
   * - ``COLLATION_CATALOG``, ``COLLATION_SCHEMA``, ``COLLATION_NAME``,
       ``DOMAIN_CATALOG``, ``DOMAIN_SCHEMA``, ``DOMAIN_NAME``, ``UDT_CATALOG``,

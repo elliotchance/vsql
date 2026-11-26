@@ -1657,8 +1657,8 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 		check_writable_schema(ident)!
 	}
 
-	// A view can only be read (see create_view_plan), it can't be changed yet
-	// (#1448).
+	// A view is read as a derived table (see create_view_plan), and INSERT,
+	// UPDATE and DELETE change its base table (see updatable_view).
 	if id in catalog.storage.views {
 		return sqlstate_42601('${ident} is a view, not a table')
 	}

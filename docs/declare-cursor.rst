@@ -51,8 +51,10 @@ Updatable Cursors
 
 A positioned :doc:`delete` or :doc:`update` (``WHERE CURRENT OF``) needs a
 cursor that is updatable. A cursor is updatable if it selects from one table
-(without a join, ``GROUP BY``, aggregate function, ``DISTINCT``, ``OFFSET`` or
-``FETCH FIRST``), unless it's ``FOR READ ONLY``. A cursor with an ``ORDER BY``,
+or updatable view (see :doc:`create-view`) without a join, ``GROUP BY``,
+aggregate function, ``DISTINCT``, ``OFFSET`` or ``FETCH FIRST``, unless it's
+``FOR READ ONLY``. A positioned ``DELETE`` or ``UPDATE`` of a view changes its
+base table. A cursor with an ``ORDER BY``,
 or a ``SCROLL`` cursor, is only updatable with ``FOR UPDATE``. ``FOR UPDATE OF``
 limits the columns that a positioned ``UPDATE`` can change. A positioned
 ``UPDATE`` also can't change a column that's used by a sort key of the

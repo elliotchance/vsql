@@ -52,6 +52,34 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 // insert inserts the rows and returns how many there are. The caller must have
 // the write connection open.
 fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !int {
+	// The rows of a view are inserted into its base table. Each column of the
+	// view is a column of the table, and the other columns of the table get
+	// their default.
+	//
+	// ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 3 and 7
+	// ISO/IEC 9075-2:2023, 14.11, <insert statement>, General Rules, 8.b
+	// ISO/IEC 9075-2:2023, 15.13, Effect of inserting a table into a viewed table
+	target, is_view := conn.view_target(stmt.table_name, params)!
+	if is_view {
+		view_columns := if stmt.columns.len > 0 {
+			stmt.columns.map(it.sub_entity_name)
+		} else {
+			target.view.columns
+		}
+		mut columns := []Identifier{}
+		for column in view_columns {
+			columns << Identifier{
+				sub_entity_name: target.base_column(column)!
+			}
+		}
+
+		return InsertStatement{
+			...stmt
+			table_name: target.table
+			columns:    columns
+		}.insert(mut conn, params)
+	}
+
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())

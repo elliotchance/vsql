@@ -195,12 +195,21 @@ SELECT v.* FROM v WHERE x = 2;
 -- X: 1 Y: a Z: 5
 -- X: 2 Y: b
 
-CREATE VIEW v AS SELECT * FROM t;
+-- # A column that a view uses can't be dropped (see
+-- # std_2_11_23_drop_column.sql), but a view that can't be read (here, because
+-- # k is a column of both tables) doesn't use anything.
+CREATE TABLE u (k INT);
+CREATE VIEW v AS SELECT * FROM t, u WHERE k = 1;
+ALTER TABLE t ADD COLUMN k INT;
 ALTER TABLE t DROP COLUMN y RESTRICT;
+ALTER TABLE t DROP COLUMN k RESTRICT;
 SELECT * FROM v;
+-- msg: CREATE TABLE 1
 -- msg: CREATE VIEW 1
 -- msg: ALTER TABLE 1
--- error 42601: syntax error: view ":memory:".PUBLIC.V has 2 columns, but its query has 1
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- error 42601: syntax error: view ":memory:".PUBLIC.V has 3 columns, but its query has 2
 
 -- # A view can't be changed yet (#1448).
 CREATE VIEW v AS SELECT x FROM t;

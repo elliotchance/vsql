@@ -14,13 +14,14 @@ struct AlterColumnDataTypeClause {
 // the rows are written again (see replace_table_definition).
 //
 // The column can't be used by a CHECK constraint that also uses other columns,
-// or by the generation expression of a generated column. A FOREIGN KEY, a
+// by the generation expression of a generated column, or by a view (see
+// dependent_views). A FOREIGN KEY, a
 // PRIMARY KEY, UNIQUE and an index can use it.
 //
 // Every type is a predefined type. A character string keeps its character set
 // and collation, because there's only UTF8 and its default collation.
 //
-// ISO/IEC 9075-2:2023, 11.19, <alter column data type clause>, Syntax Rules, 6, 10, 12.a, 13 and 14
+// ISO/IEC 9075-2:2023, 11.19, <alter column data type clause>, Syntax Rules, 6, 9, 10, 12.a, 13 and 14
 // ISO/IEC 9075-2:2023, 11.19, <alter column data type clause>, General Rules, 1
 fn (c AlterColumnDataTypeClause) execute(mut conn Connection, table Table, column Column) !Column {
 	name := column.name.sub_entity_name
@@ -35,6 +36,19 @@ fn (c AlterColumnDataTypeClause) execute(mut conn Connection, table Table, colum
 		if name in generated.columns(mut conn, table, generated_column)! {
 			return sqlstate_42601('cannot change the data type of column ${requote_identifier(name)}, it is used by generated column ${requote_identifier(generated_column.name.sub_entity_name)}')
 		}
+	}
+
+	column_id := Identifier{
+		schema_name:     table.name.schema_name
+		entity_name:     table.name.entity_name
+		sub_entity_name: name
+	}.storage_id()
+	views := conn.dependent_views(conn.catalog_for(table.name), [], [column_id])
+	if views.len > 0 {
+		return sqlstate_42601('cannot change the data type of column ${requote_identifier(name)}, it is used by view ${Identifier{
+			...views[0].name
+			catalog_name: table.name.catalog_name
+		}}')
 	}
 
 	if !column.typ.can_widen_to(c.data_type) {

@@ -202,3 +202,14 @@ ALTER TABLE t ALTER COLUMN a SET DATA TYPE INTEGER;
 -- msg: CREATE TABLE 1
 -- flags: F382, F387
 -- msg: ALTER TABLE 1
+
+-- # A column that's used by a view can't change its type (Syntax Rules, 9),
+-- # but the other columns can.
+CREATE TABLE t (a SMALLINT, b SMALLINT);
+CREATE VIEW v AS SELECT a FROM t;
+ALTER TABLE t ALTER COLUMN a SET DATA TYPE INTEGER;
+ALTER TABLE t ALTER COLUMN b SET DATA TYPE INTEGER;
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- error 42601: syntax error: cannot change the data type of column A, it is used by view ":memory:".PUBLIC.V
+-- msg: ALTER TABLE 1

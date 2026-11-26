@@ -25,17 +25,33 @@ CREATE TABLE v (y INT);
 -- error 42P01: no such view: ":memory:".PUBLIC.V
 -- msg: CREATE TABLE 1
 
--- # CASCADE works the same as RESTRICT. Nothing records which views read a
--- # view yet (#1264), so a view that reads a dropped view is an error when it's
--- # read.
+-- # A view that's used by another view can only be dropped with CASCADE,
+-- # which drops the views that use it, and the views that use those (Syntax
+-- # Rules, 5 and 5.a, General Rules, 3.b and 3.b.i).
 CREATE VIEW v AS SELECT x FROM t;
 CREATE VIEW w AS SELECT x FROM v;
+CREATE VIEW w2 AS SELECT COUNT(*) AS c FROM (SELECT * FROM w) AS d;
+CREATE VIEW other AS SELECT x FROM t;
+DROP VIEW v RESTRICT;
+DROP VIEW w RESTRICT;
 DROP VIEW v CASCADE;
-SELECT * FROM w;
+SELECT table_name FROM information_schema.views WHERE table_schema = 'PUBLIC';
 -- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- error 2BP01: dependent objects still exist on ":memory:".PUBLIC.V
+-- error 2BP01: dependent objects still exist on ":memory:".PUBLIC.W
 -- msg: DROP VIEW 1
--- error 42P01: no such table: ":memory:".PUBLIC.V
+-- TABLE_NAME: OTHER
+
+-- # A view that's read by a subquery of another view is used by it too.
+CREATE VIEW v AS SELECT x FROM t;
+CREATE VIEW w AS SELECT x FROM t WHERE x IN (SELECT x FROM v);
+DROP VIEW v RESTRICT;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- error 2BP01: dependent objects still exist on ":memory:".PUBLIC.V
 
 -- # A ROLLBACK undoes it.
 CREATE VIEW v AS SELECT x FROM t;

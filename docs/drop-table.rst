@@ -16,8 +16,9 @@ Deletes a table, including all of its rows.
 object depends on the table. ``CASCADE`` also drops the objects that depend on
 the table. The only objects that can depend on a table are the
 ``FOREIGN KEY`` constraints of other tables that reference it (see
-:doc:`create-table`), so ``CASCADE`` drops those constraints, but not the
-other tables or their rows.
+:doc:`create-table`), and the views that read it (see :doc:`create-view`), so
+``CASCADE`` drops those constraints, but not the other tables or their rows,
+and those views, and the views that read them.
 
 The SQL standard requires one of ``CASCADE`` or ``RESTRICT``, but vsql also
 allows neither, which is the same as ``RESTRICT``.

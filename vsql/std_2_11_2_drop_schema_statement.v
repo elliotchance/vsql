@@ -37,7 +37,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 	// Find all dependencies. A schema can only contain tables and sequences,
 	// which are the only objects that RESTRICT needs to check for.
 	//
-	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, Syntax Rules, 4.n
+	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, Syntax Rules, 4.d and 4.n
 	mut table_names := []string{}
 	for table_name, table in catalog.storage.tables {
 		if table.name.schema_name == schema_name {
@@ -70,6 +70,16 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 	//
 	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, General Rules, 1.b, 12.b and 13
 	catalog.storage.drop_foreign_keys_referencing(table_names)!
+
+	// A view in another schema that uses a table or view of the schema is
+	// dropped too, like DROP VIEW CASCADE.
+	//
+	// ISO/IEC 9075-2:2023, 11.2, <drop schema statement>, General Rules, 2, 2.a and 2.b
+	mut used := table_names.clone()
+	used << views.map(it.name.storage_id())
+	for dependent in conn.dependent_views(catalog, used, []) {
+		catalog.storage.delete_view(dependent)!
+	}
 
 	for table_name in table_names {
 		catalog.storage.delete_table(table_name, catalog.storage.table(table_name).tid)!

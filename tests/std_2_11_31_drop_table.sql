@@ -108,3 +108,23 @@ CREATE TABLE t (y INT);
 -- 1: error 42P01: no such table: "test".PUBLIC.T
 -- 2: error 42P01: no such table: "test".PUBLIC.T
 -- 2: msg: CREATE TABLE 1
+
+-- # A table that's used by a view can only be dropped with CASCADE, which drops
+-- # the view, and the views that use it (Syntax Rules, 7.a).
+CREATE TABLE t (x INT);
+CREATE TABLE u (y INT);
+CREATE VIEW v AS SELECT x FROM t;
+CREATE VIEW w AS SELECT * FROM v;
+CREATE VIEW other AS SELECT y FROM u;
+DROP TABLE t RESTRICT;
+DROP TABLE t CASCADE;
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC';
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- error 2BP01: dependent objects still exist on ":memory:".PUBLIC.T
+-- msg: DROP TABLE 1
+-- TABLE_NAME: OTHER
+-- TABLE_NAME: U

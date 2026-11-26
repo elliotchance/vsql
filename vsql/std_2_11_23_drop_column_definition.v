@@ -24,9 +24,10 @@ struct DropColumnDefinition {
 //
 // A generated column whose generation expression uses the column can also only
 // be dropped with CASCADE, which drops it first. So can a column that's in an
-// index, and CASCADE drops the index.
+// index, and CASCADE drops the index, and a column that's used by a view, and
+// CASCADE drops the view (see dependent_views).
 //
-// ISO/IEC 9075-2:2023, 11.23, <drop column definition>, Syntax Rules, 4, 7.b and 7.f
+// ISO/IEC 9075-2:2023, 11.23, <drop column definition>, Syntax Rules, 4, 7.a, 7.b and 7.f
 // ISO/IEC 9075-2:2023, 11.23, <drop column definition>, General Rules, 3.b to 8
 //
 // The rows are written again, because the values of a row are stored in the
@@ -49,6 +50,21 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 	}
 	if table.columns.len - generated_columns.len == 1 {
 		return sqlstate_42601('cannot drop the only column of ${table.name}')
+	}
+	column_id := Identifier{
+		schema_name:     table.name.schema_name
+		entity_name:     table.name.entity_name
+		sub_entity_name: name
+	}.storage_id()
+	dependents := conn.dependent_views(catalog, [], [column_id])
+	if dependents.len > 0 && d.behavior == 'RESTRICT' {
+		return sqlstate_2bp01('view ${Identifier{
+			...dependents[0].name
+			catalog_name: catalog.catalog_name
+		}}')
+	}
+	for dependent in dependents {
+		catalog.storage.delete_view(dependent)!
 	}
 	for generated_column in generated_columns {
 		DropColumnDefinition{generated_column.name, 'CASCADE'}.execute(mut conn, mut catalog,

@@ -130,8 +130,9 @@ error ``42601``. So it must be the same kind of type, and at least as big:
 - ``DATE`` and ``BOOLEAN`` can only stay the same.
 
 The column can be in the ``PRIMARY KEY``, a ``UNIQUE``, a ``FOREIGN KEY`` or an
-index, but it can't be used by a ``CHECK`` that also uses other columns, or by a
-generated column (both are an error ``42601``). Every row is written again.
+index, but it can't be used by a ``CHECK`` that also uses other columns, by a
+generated column, or by a view (see :doc:`create-view`). They're all an error
+``42601``. Every row is written again.
 
 .. code-block:: sql
 
@@ -160,7 +161,9 @@ only be dropped with ``CASCADE``, which drops it too. Otherwise, it's an error
   the same column of the same table is dropped with the column.
 
 An index (see :doc:`create-index`) that has the column can also only be dropped
-with ``CASCADE``, which drops the index.
+with ``CASCADE``, which drops the index. So can a view (see :doc:`create-view`)
+that uses the column, including with ``*``, and ``CASCADE`` drops the view and
+the views that use it.
 
 Every row of the table is written again, because the values of a row are
 stored in the order of its columns. The rows are also moved when the

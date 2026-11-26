@@ -100,13 +100,19 @@ time_zone_field:
 position_expression:
   character_position_expression { $$.v = $1.v }
 
+// Without USING, it's USING CHARACTERS (see using_function).
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 5.b
 character_position_expression:
   POSITION left_paren character_value_expression_1 IN
   character_value_expression_2 right_paren {
-    $$.v = yy_box(RoutineInvocation{function_name: 'POSITION', args: [
-      ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
-      ValueExpression(CommonValueExpression($5.v as CharacterValueExpression)),
-    ]})
+    $$.v = yy_box(new_position_expression($3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression, ''))
+  }
+| POSITION left_paren character_value_expression_1 IN
+  character_value_expression_2 USING numeric_char_length_units right_paren {
+    $$.v = yy_box(new_position_expression($3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression, $7.v as string))
   }
 
 character_value_expression_1:
@@ -119,17 +125,31 @@ length_expression:
   char_length_expression { $$.v = $1.v }
 | octet_length_expression { $$.v = $1.v }
 
+// CHARACTER_LENGTH is the same as CHAR_LENGTH. Without USING, it's USING
+// CHARACTERS (see using_function).
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 5.b
 char_length_expression:
-  CHAR_LENGTH left_paren character_value_expression right_paren {
-    $$.v = yy_box(RoutineInvocation{function_name: 'CHAR_LENGTH', args: [
-      ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
-    ]})
+  char_length_name left_paren character_value_expression right_paren {
+    $$.v = yy_box(new_char_length_expression($3.v as CharacterValueExpression,
+      ''))
   }
-| CHARACTER_LENGTH left_paren character_value_expression right_paren {
-    $$.v = yy_box(RoutineInvocation{function_name: 'CHAR_LENGTH', args: [
-      ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
-    ]})
+| char_length_name left_paren character_value_expression USING
+  numeric_char_length_units right_paren {
+    $$.v = yy_box(new_char_length_expression($3.v as CharacterValueExpression,
+      $5.v as string))
   }
+
+char_length_name:
+  CHAR_LENGTH { $$.v = $1.v }
+| CHARACTER_LENGTH { $$.v = $1.v }
+
+// Unlike the <char length units> of a data type or SUBSTRING (T061), USING of
+// CHAR_LENGTH or POSITION isn't restricted by a Conformance Rule, so it's part
+// of E021-04 and E021-11.
+numeric_char_length_units:
+  CHARACTERS { $$.v = $1.v as string }
+| OCTETS { $$.v = $1.v as string }
 
 octet_length_expression:
   OCTET_LENGTH left_paren string_value_expression right_paren {

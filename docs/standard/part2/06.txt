@@ -1116,7 +1116,7 @@
 6.31/SR/4.h              n/a          - - POSITION_REGEX (F843)
 6.31/SR/5                container    - -
 6.31/SR/5.a              untestable   - - a character string is always UTF8
-6.31/SR/5.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_length.sql USING isn't supported (T061), it's always CHARACTERS
+6.31/SR/5.b              implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_6_31_length.sql
 6.31/SR/6                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
 6.31/SR/6.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql,tests/std_2_6_31_extract_interval.sql
 6.31/SR/6.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_extract.sql
@@ -1160,7 +1160,7 @@
 6.31/GR/1.b              implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/2                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
 6.31/GR/2.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
-6.31/GR/2.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql USING isn't supported (T061), it's always CHARACTERS
+6.31/GR/2.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
 6.31/GR/2.c              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
 6.31/GR/3                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql
 6.31/GR/3.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql

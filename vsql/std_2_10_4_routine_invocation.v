@@ -28,18 +28,25 @@ struct RoutineInvocation {
 	// filter is the <search condition> of the <filter clause> of an aggregate
 	// function, such as SUM(x) FILTER (WHERE x > 0).
 	filter ?&BooleanValueExpression
+	// using is the <char length units> of a <char length expression> or a
+	// <character position expression>, such as CHAR_LENGTH(x USING OCTETS). It's
+	// CHARACTERS or OCTETS, or '' without USING, which is CHARACTERS.
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 5
+	using string
 }
 
 fn (e RoutineInvocation) pstr(params map[string]Value) string {
 	// The only builtin function that doesn't separate its arguments with commas
 	// (see character_position_expression).
+	using := if e.using != '' { ' USING ${e.using}' } else { '' }
 	if e.function_name == 'POSITION' && e.args.len == 2 {
-		return 'POSITION(${e.args[0].pstr(params)} IN ${e.args[1].pstr(params)})'
+		return 'POSITION(${e.args[0].pstr(params)} IN ${e.args[1].pstr(params)}${using})'
 	}
 
 	args := e.args.map(it.pstr(params)).join(', ')
 	quantifier := if e.distinct { 'DISTINCT ' } else { '' }
-	return '${e.qualified_name()}(${quantifier}${args})${filter_pstr(e.filter, params)}'
+	return '${e.qualified_name()}(${quantifier}${args}${using})${filter_pstr(e.filter, params)}'
 }
 
 // qualified_name is the name of the function, with the schema and catalog
@@ -125,7 +132,10 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		return c.compile_interval_abs(args[0])
 	}
 
-	found_func := c.conn.find_function_in(schema_name, func_name, arg_types)!
+	mut found_func := c.conn.find_function_in(schema_name, func_name, arg_types)!
+	if e.using != '' {
+		found_func = using_function(found_func, e.using, arg_types)!
+	}
 	if c.conn.flagging {
 		c.conn.flagged_features << found_func.features
 
@@ -316,4 +326,28 @@ fn fold_result(mut conn Connection, result Value, typ Type) Value {
 	}
 
 	return cast_character_to_character(mut conn, result, typ)
+}
+
+// using_function is the function that counts in the <char length units> of a
+// CHAR_LENGTH or POSITION, which is found (and flagged) like the function
+// without USING. CHAR_LENGTH(x USING OCTETS) is the same as OCTET_LENGTH(x),
+// and POSITION(a IN b USING OCTETS) is the position in octets. A <binary
+// position expression> is always in octets, so it can't have USING (like
+// SUBSTRING).
+//
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 5.b
+// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 2.b
+fn using_function(f Func, using string, arg_types []Type) !Func {
+	if arg_types.any(it.typ.is_binary_string()) {
+		return sqlstate_42601('${f.name} of ${arg_types.map(it.str()).join(' IN ')} cannot have USING ${using}')
+	}
+
+	if using != 'OCTETS' {
+		return f
+	}
+
+	return Func{
+		...f
+		func: if f.name == 'POSITION' { func_octet_position } else { func_octet_length }
+	}
 }

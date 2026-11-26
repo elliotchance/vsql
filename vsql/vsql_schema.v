@@ -72,12 +72,14 @@ fn (conn &Connection) vsql_routines() []VsqlRoutine {
 // register_vsql_schema adds the views of the VSQL schema to a catalog.
 //
 // LAST_VACUUM has the rows of the last VACUUM of the connection that reads it
-// (see VacuumTarget.rows), which are only in memory and are gone when the
-// connection is closed. It's the same in every catalog, since a VACUUM can be
-// of more than one catalog. Its columns are named and typed like the views of
-// the INFORMATION_SCHEMA.
+// (see VacuumTarget.rows), and LAST_VACUUM_ANALYZE the rows of the last VACUUM
+// ANALYZE (see VacuumAnalysis.rows). They're only in memory and are gone when
+// the connection is closed. Each is the same in every catalog, since a VACUUM
+// can be of more than one catalog. Their columns are named and typed like the
+// views of the INFORMATION_SCHEMA, except the bytes, which can be more than a
+// CARDINAL_NUMBER.
 fn register_vsql_schema(mut catalog CatalogConnection) ! {
-	create_table := 'CREATE TABLE LAST_VACUUM (
+	register_vsql_view(mut catalog, 'CREATE TABLE LAST_VACUUM (
 		OBJECT_CATALOG ${information_schema_sql_identifier} NOT NULL,
 		OBJECT_SCHEMA ${information_schema_sql_identifier},
 		OBJECT_NAME ${information_schema_sql_identifier},
@@ -85,7 +87,42 @@ fn register_vsql_schema(mut catalog CatalogConnection) ! {
 		PAGES_READ ${information_schema_cardinal_number} NOT NULL,
 		PAGES_FREED ${information_schema_cardinal_number} NOT NULL,
 		IS_FINISHED ${information_schema_yes_or_no} NOT NULL
-	)'
+	)', vsql_last_vacuum, fn (mut t VirtualTable) ! {
+		for row in t.conn.last_vacuum {
+			t.next_values(row)
+		}
+		t.done()
+	})!
+
+	register_vsql_view(mut catalog, 'CREATE TABLE LAST_VACUUM_ANALYZE (
+		OBJECT_CATALOG ${information_schema_sql_identifier} NOT NULL,
+		OBJECT_SCHEMA ${information_schema_sql_identifier},
+		OBJECT_NAME ${information_schema_sql_identifier},
+		OBJECT_TYPE ${information_schema_character_data} NOT NULL,
+		PAGE_SIZE ${information_schema_cardinal_number} NOT NULL,
+		PAGES ${information_schema_cardinal_number} NOT NULL,
+		TOTAL_BYTES BIGINT NOT NULL,
+		USED_BYTES BIGINT,
+		VERSIONS ${information_schema_cardinal_number},
+		EXPIRED_VERSIONS ${information_schema_cardinal_number},
+		INTERNAL_PAGES ${information_schema_cardinal_number},
+		FREE_PAGES ${information_schema_cardinal_number},
+		PAGES_AFTER_COMPACT ${information_schema_cardinal_number} NOT NULL,
+		PAGES_AFTER_FULL ${information_schema_cardinal_number},
+		PAGES_AFTER_FREE_PAGES ${information_schema_cardinal_number} NOT NULL,
+		TOTAL_BYTES_AFTER_COMPACT BIGINT NOT NULL,
+		TOTAL_BYTES_AFTER_FULL BIGINT,
+		TOTAL_BYTES_AFTER_FREE_PAGES BIGINT NOT NULL,
+		IS_FINISHED ${information_schema_yes_or_no} NOT NULL
+	)', vsql_last_vacuum_analyze, fn (mut t VirtualTable) ! {
+		for row in t.conn.last_vacuum_analyze {
+			t.next_values(row)
+		}
+		t.done()
+	})!
+}
+
+fn register_vsql_view(mut catalog CatalogConnection, create_table string, feature string, data VirtualTableProviderFn) ! {
 	stmt := parse_definition(create_table.bytes())!
 	if stmt is TableDefinition {
 		table_name := Identifier{
@@ -99,13 +136,8 @@ fn register_vsql_schema(mut catalog CatalogConnection) ! {
 				...stmt
 				table_name: table_name
 			}
-			data:              fn (mut t VirtualTable) ! {
-				for row in t.conn.last_vacuum {
-					t.next_values(row)
-				}
-				t.done()
-			}
-			features:          [vsql_last_vacuum]
+			data:              data
+			features:          [feature]
 		}
 	}
 }

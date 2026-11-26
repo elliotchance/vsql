@@ -112,6 +112,9 @@ struct VacuumStatement {
 	mode        VacuumMode
 	has_timeout bool
 	timeout     time.Duration
+	// analyze is VACUUM ANALYZE, which doesn't change anything, see
+	// VacuumStatement.analyze.
+	analyze bool
 }
 
 // new_vacuum_statement checks that no option is given more than once, that
@@ -161,6 +164,22 @@ fn new_vacuum_statement(objects []VacuumObject, options []VacuumOption) !VacuumS
 		mode:        mode
 		has_timeout: has_timeout
 		timeout:     timeout
+	}
+}
+
+// new_vacuum_analyze_statement is VACUUM ANALYZE, which can have objects and a
+// TIMEOUT, but not COMPACT, FULL or FREE PAGES, since it finds out what each of
+// them would do (it's a 42601 error).
+fn new_vacuum_analyze_statement(objects []VacuumObject, options []VacuumOption) !VacuumStatement {
+	for option in options {
+		if option.kind != .timeout {
+			return sqlstate_42601("VACUUM ANALYZE can't have ${option.kind.sql()}")
+		}
+	}
+
+	return VacuumStatement{
+		...new_vacuum_statement(objects, options)!
+		analyze: true
 	}
 }
 
@@ -399,6 +418,10 @@ fn (run VacuumRun) timed_out() bool {
 // same numbers for each object and file. They're cleared first, so they're
 // empty if VACUUM fails.
 fn (stmt VacuumStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
+	if stmt.analyze {
+		return stmt.analyze(mut conn, elapsed_parse)
+	}
+
 	t := start_timer()
 
 	if conn.in_transaction() {
@@ -746,28 +769,38 @@ fn (mut p Btree) pack_leaves(start []u8, end []u8, max_pages int, owner string, 
 }
 
 // move_objects moves the objects (from the start of the next page) into page
-// while they fit, and returns how many were moved. The versions of a key are
-// kept together (like split_objects), so they're moved together or not at all.
+// while they fit (see objects_that_fit), and returns how many were moved.
 fn (mut p Btree) move_objects(mut page Page, objects []PageObject) !int {
-	mut moved := 0
-	for moved < objects.len {
-		mut end := moved + 1
-		mut size := objects[moved].length()
-		for end < objects.len && objects[end].key == objects[moved].key {
-			size += objects[end].length()
-			end++
-		}
-		if int(page.used) + size > p.page_size {
-			break
-		}
-
-		for object in objects[moved..end] {
-			page.add(object)!
-		}
-		moved = end
+	moved, _ := objects_that_fit(int(page.used), objects, p.page_size)
+	for object in objects[..moved] {
+		page.add(object)!
 	}
 
 	return moved
+}
+
+// objects_that_fit is how many of the objects (from the start of the next page)
+// fit into a page that has used bytes, and their size. The versions of a key are
+// kept together (like split_objects), so they fit together or not at all.
+fn objects_that_fit(used int, objects []PageObject, page_size int) (int, int) {
+	mut moved := 0
+	mut size := 0
+	for moved < objects.len {
+		mut end := moved + 1
+		mut group := objects[moved].length()
+		for end < objects.len && objects[end].key == objects[moved].key {
+			group += objects[end].length()
+			end++
+		}
+		if used + size + group > page_size {
+			break
+		}
+
+		size += group
+		moved = end
+	}
+
+	return moved, size
 }
 
 // next_subtree returns the key of the pointer after the parent of the leaf page

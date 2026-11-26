@@ -179,6 +179,9 @@ mut:
 	// last_vacuum are the rows of VSQL.LAST_VACUUM, from the last VACUUM of
 	// this connection (see VacuumStatement.execute).
 	last_vacuum [][]Value
+	// last_vacuum_analyze are the rows of VSQL.LAST_VACUUM_ANALYZE, from the
+	// last VACUUM ANALYZE of this connection (see VacuumStatement.analyze).
+	last_vacuum_analyze [][]Value
 	// cancel_state is whether a statement is executing (statement_running) and
 	// whether it's been asked to stop (statement_canceled), see cancel. It's
 	// changed by other threads, so it's only used atomically.

@@ -9,6 +9,7 @@ Syntax
 .. code-block:: text
 
   VACUUM [ ON <object> ... ] [ <option> ... ]
+  VACUUM ANALYZE [ ON <object> ... ] [ TIMEOUT <seconds> ]
 
   <object> ::=
       ALL
@@ -30,7 +31,9 @@ A database file never gets smaller on its own. The pages that are no longer
 needed (such as after a ``DELETE`` or ``DROP TABLE``) are kept for the rows that
 are added next (see :doc:`file-format`), and the pages that are left are often
 only partly full. ``VACUUM`` puts the rows, index entries and large values into
-fewer pages, and makes the file shorter.
+fewer pages, and makes the file shorter. ``VACUUM ANALYZE`` doesn't change
+anything, it finds out how much space each table and index takes, and what
+``VACUUM`` would make it (see `ANALYZE`_).
 
 Nothing that can be seen changes: the rows, tables, indexes and sequences are
 the same. Reading the database can be faster afterwards, because there are
@@ -122,6 +125,34 @@ has done. That isn't an error, the result counts only what was done (and
 ``LAST_VACUUM`` shows what wasn't finished). ``FULL`` isn't done in batches, so
 it's either finished or doesn't change anything.
 
+ANALYZE
+-------
+
+``VACUUM ANALYZE`` finds out how much of the file each table, index and the
+large values of each table take, and what each of ``COMPACT``, ``FULL`` and
+``FREE PAGES`` would leave, without changing anything. It's in
+``VSQL.LAST_VACUUM_ANALYZE`` (see `LAST_VACUUM_ANALYZE`_):
+
+.. code-block:: sql
+
+  VACUUM ANALYZE ON TABLE my_table;
+  SELECT object_name, object_type, total_bytes, used_bytes
+  FROM vsql.last_vacuum_analyze;
+
+The objects are the same as for ``VACUUM`` (see `Objects`_), and the
+``TIMEOUT`` stops it after the batch that it's in, but it can't have
+``COMPACT``, ``FULL`` or ``FREE PAGES`` (that's a ``42601`` error).
+
+It reads every leaf page of the objects (or of the B-tree, without any), and
+the free pages, but it doesn't write anything. It's read in batches of about
+1,000 pages, like ``COMPACT``, and other connections can change the database in
+between, so the numbers might not add up exactly when the database is being
+changed. It doesn't wait for a transaction of another connection, and it can be
+in a transaction.
+
+The result is ``VACUUM ANALYZE`` followed by the number of pages that were
+read, such as ``VACUUM ANALYZE 2400``.
+
 LAST_VACUUM
 -----------
 
@@ -191,6 +222,86 @@ another table or index.
 
 Reading ``LAST_VACUUM`` is flagged as ``V004-02`` (see :doc:`sql-flagging`).
 
+LAST_VACUUM_ANALYZE
+-------------------
+
+``VSQL.LAST_VACUUM_ANALYZE`` is what the last ``VACUUM ANALYZE`` of the
+connection found. Like ``LAST_VACUUM``, it belongs to the connection, is only
+kept in memory, is the same in every catalog, is replaced by the next ``VACUUM
+ANALYZE``, is empty before the first one and after one that fails, and is
+read-only. A ``VACUUM`` doesn't change it.
+
+There's a row for each table and index (and the large values of each table that
+has any), in order of their names, and then a row for the file, for each
+catalog. Without objects, that's every table and index of the catalog, even
+the ones that are empty.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``OBJECT_CATALOG``, ``OBJECT_SCHEMA``, ``OBJECT_NAME``, ``OBJECT_TYPE``
+    - The same as ``LAST_VACUUM``.
+
+  * - ``PAGE_SIZE``
+    - The size of each page of the file, in bytes (see :doc:`file-format`).
+
+  * - ``PAGES``, ``TOTAL_BYTES``
+    - The leaf pages of the object, and their size (``PAGES`` times
+      ``PAGE_SIZE``). For the file, every page, including the free pages and
+      the pages above the leaves, which is the size of the file.
+
+  * - ``USED_BYTES``
+    - The bytes of the rows, index entries or large values (and their
+      versions), without the free space in the pages.
+
+  * - ``VERSIONS``, ``EXPIRED_VERSIONS``
+    - The versions of the rows (or index entries) that are stored, and how
+      many of them were deleted or replaced by a transaction that has
+      committed. They're kept while another transaction can still see them.
+
+  * - ``INTERNAL_PAGES``, ``FREE_PAGES``
+    - The pages of the file above the leaf pages, and the free pages. ``NULL``
+      for an object.
+
+  * - ``PAGES_AFTER_COMPACT``, ``PAGES_AFTER_FULL``, ``PAGES_AFTER_FREE_PAGES``
+    - The pages that would be left after ``VACUUM COMPACT``, ``FULL`` or
+      ``FREE PAGES`` (of the same objects).
+
+  * - ``TOTAL_BYTES_AFTER_COMPACT``, ``TOTAL_BYTES_AFTER_FULL``,
+      ``TOTAL_BYTES_AFTER_FREE_PAGES``
+    - The same, in bytes.
+
+  * - ``IS_FINISHED``
+    - ``NO`` if the ``TIMEOUT`` ran out before every page of the object (or
+      the file) was read.
+
+The number of pages and bytes are ``CARDINAL_NUMBER`` and ``BIGINT``
+(since a file can be larger than a ``CARDINAL_NUMBER``).
+
+A page is counted for the table or index of its first row or entry, so a small
+table that shares a page with another one can have ``USED_BYTES`` without any
+``PAGES``, and the ``PAGES`` of the objects add up to the leaf pages of the
+file (except the pages that only have the definitions of the schema).
+
+``PAGES_AFTER_COMPACT`` is found by packing the pages the same way as
+``COMPACT``, without changing them, so it's what ``COMPACT`` would leave when
+nothing else changes the database in between. ``PAGES_AFTER_FULL`` is an
+estimate: the leaf pages of the rows and index entries are exact, but large
+values and the pages above the leaves can take a few more pages.
+``PAGES_AFTER_FREE_PAGES`` is the same as ``PAGES`` for an object, since
+``FREE PAGES`` only moves the pages.
+
+With objects, the columns of the file that need every leaf page (``USED_BYTES``,
+``VERSIONS``, ``EXPIRED_VERSIONS`` and ``INTERNAL_PAGES``) are ``NULL``, and so
+are ``PAGES_AFTER_FULL`` and ``TOTAL_BYTES_AFTER_FULL`` (``FULL`` can only be
+used for whole catalogs).
+
+Reading ``LAST_VACUUM_ANALYZE`` is flagged as ``V004-03`` (see
+:doc:`sql-flagging`).
+
 Transactions
 ------------
 
@@ -209,8 +320,8 @@ the lock timeout, see :doc:`transactions`). It doesn't wait for a ``READ
 COMMITTED`` or ``REPEATABLE READ`` transaction, or a transaction that has only
 read.
 
-``VACUUM`` itself can't be in a transaction (that's a ``25001`` error), because
-it changes pages, rather than rows, which can't be undone by a ``ROLLBACK``.
+``VACUUM`` itself can't be in a transaction (that's a ``25001`` error, except
+``VACUUM ANALYZE``, which doesn't change anything), because it changes pages, rather than rows, which can't be undone by a ``ROLLBACK``.
 Like any other statement, each batch is written through the write-ahead log, so
 if the process stops, the file has every batch that was committed, and none of
 the batch that wasn't.

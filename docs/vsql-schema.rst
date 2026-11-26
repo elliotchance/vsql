@@ -23,9 +23,10 @@ with its name:
 Views
 -----
 
-``LAST_VACUUM`` is what the last ``VACUUM`` of the connection did, see
-:doc:`vacuum`. Its columns are named and typed like the views of the
-``INFORMATION_SCHEMA``.
+``LAST_VACUUM`` is what the last ``VACUUM`` of the connection did, and
+``LAST_VACUUM_ANALYZE`` is how much space each table and index takes, from the
+last ``VACUUM ANALYZE``, see :doc:`vacuum`. Their columns are named and typed
+like the views of the ``INFORMATION_SCHEMA``.
 
 Functions
 ---------

@@ -34,6 +34,7 @@ non_reserved_word:
 | ADMIN
 | AFTER
 | ALWAYS
+| ANALYZE
 | ASC
 | ASSERTION
 | ASSIGNMENT

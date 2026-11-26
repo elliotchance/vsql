@@ -16,9 +16,9 @@
 # linker options that V uses on each OS and architecture.
 #
 # In the release (vsql-VERSION-amalgamation.zip) they have the C for every OS
-# and architecture. "make amalgamation" in vsql's source makes the same folder
-# (amalgamation/) with the C for just the current one, which vsql's Makefile
-# builds its binaries with.
+# and architecture. In vsql's source, "make amalgamation" puts the rest of the
+# files next to this Makefile (in amalgamation/), with the C for just the
+# current one, and vsql's Makefile builds its binaries with it.
 
 ifeq ($(OS),Windows_NT)
 VSQL_OS = windows

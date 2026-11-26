@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # amalgamation.sh makes the amalgamation, the C for vsql and libvsql, so that
-# they can be built without V (see scripts/amalgamation/Makefile). It's one C
-# file for each of them (vsql.c and libvsql.c). "make amalgamation" uses it to
-# make amalgamation/, which the binaries in bin/ are built from (see the
+# they can be built without V (see amalgamation/Makefile). It's one C file for
+# each of them (vsql.c and libvsql.c). "make amalgamation" uses it to put them
+# in amalgamation/, which the binaries in bin/ are built from (see the
 # Makefile). It has three steps:
 #
 #   scripts/amalgamation.sh generate DIR
@@ -25,9 +25,10 @@
 #   scripts/amalgamation.sh assemble FOLDER DIR...
 #
 # Puts the amalgamation in FOLDER: vsql.c and libvsql.c merged from the files in
-# each DIR (from generate) by scripts/amalgamation-merge.py, the files in
-# scripts/amalgamation/, and libvsql.h. A file that's already in FOLDER is only
-# replaced if it's different, so that make doesn't build it again.
+# each DIR (from generate) by scripts/amalgamation-merge.py, the source files in
+# amalgamation/ (Makefile, libvsql.exports and libvsql.map), and libvsql.h. A
+# file that's already in FOLDER is only replaced if it's different, so that make
+# doesn't build it again, and so FOLDER can be amalgamation/ itself.
 #
 #   scripts/amalgamation.sh package VERSION DIR...
 #
@@ -57,7 +58,7 @@ generate() {
   rm -rf "$out"
   mkdir -p "$out"
 
-  # Windows uses MinGW, like the release (see scripts/amalgamation/Makefile).
+  # Windows uses MinGW, like the release (see amalgamation/Makefile).
   v_options="${V_OPTIONS:--n -nocache -prod}"
   if [ $os = windows ]; then
     v_options="$v_options -cc gcc"
@@ -220,11 +221,11 @@ assemble() {
       cp -R "$file" "$merge/"
     done
   done
-  cp scripts/amalgamation/gc.h "$merge/"
+  cp amalgamation/gc.h "$merge/"
   python scripts/amalgamation-merge.py "$merge"
 
   for file in "$merge/vsql.c" "$merge/libvsql.c" "$merge/vsql.mk" "$merge/LICENSE-V" \
-    scripts/amalgamation/Makefile scripts/amalgamation/libvsql.exports scripts/amalgamation/libvsql.map \
+    amalgamation/Makefile amalgamation/libvsql.exports amalgamation/libvsql.map \
     libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c LICENSE; do
     if ! cmp -s "$file" "$folder/$(basename "$file")"; then
       cp "$file" "$folder/"

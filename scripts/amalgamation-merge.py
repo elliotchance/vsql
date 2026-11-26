@@ -5,11 +5,10 @@
 
 DIR has the files from "scripts/amalgamation.sh generate" for one or more
 platforms (vsql_OS_ARCH.c, libvsql_OS_ARCH.c, vsql_runtime_OS.c,
-vsql_OS_ARCH.mk and the files they include), and gc.h from
-scripts/amalgamation/. It writes DIR/vsql.c and DIR/libvsql.c, which build on
-every one of those platforms without any other C file, and DIR/vsql.mk with
-the libraries and linker options that each platform needs (see
-scripts/amalgamation/Makefile).
+vsql_OS_ARCH.mk and the files they include), and gc.h from amalgamation/. It
+writes DIR/vsql.c and DIR/libvsql.c, which build on every one of those
+platforms without any other C file, and DIR/vsql.mk with the libraries and
+linker options that each platform needs (see amalgamation/Makefile).
 
 For each program and platform, the C is:
 

@@ -40,7 +40,9 @@ SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.c
 # the amalgamation with amalgamation/Makefile, so what's tested locally and on
 # CI is what's released. amalgamation/ has everything that's needed to build
 # them without V, and amalgamation/generated/ has the C that V generated, which
-# CI merges with the C from each OS and architecture for the release.
+# CI merges with the C from each OS and architecture for the release. Only
+# AMALGAMATION_FILES are source, the rest of amalgamation/ is made by "make
+# amalgamation" (and ignored by git).
 #
 # The C is compiled with CFLAGS, which is -O2 by default. "make bin/vsql
 # CFLAGS=-O0" compiles it in seconds rather than a minute, but vsql runs about
@@ -49,7 +51,8 @@ SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.c
 # amalgamation/stamp is newer than the C. Files in amalgamation/ are only
 # replaced when they're different, so changing libvsql doesn't build vsql
 # again.
-AMALGAMATION_SOURCES = $(SOURCES) $(wildcard libvsql/*.v) libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c scripts/amalgamation.sh scripts/amalgamation-merge.py $(wildcard scripts/amalgamation/*)
+AMALGAMATION_FILES = amalgamation/Makefile amalgamation/gc.h amalgamation/libvsql.exports amalgamation/libvsql.map
+AMALGAMATION_SOURCES = $(SOURCES) $(wildcard libvsql/*.v) libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c scripts/amalgamation.sh scripts/amalgamation-merge.py $(AMALGAMATION_FILES)
 
 amalgamation: amalgamation/stamp
 

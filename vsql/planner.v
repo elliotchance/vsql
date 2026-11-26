@@ -64,10 +64,26 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			}
 
 			mut plan := Plan{}
+			before_left := conn.recursive_reads
 			plan.subplans['\$1'] = create_query_expression_plan(*body.left, params, mut
 				conn, Correlation{})!
+			before_right := conn.recursive_reads
 			plan.subplans['\$2'] = create_query_expression_plan(*body.right, params, mut
 				conn, Correlation{})!
+
+			// The rows of a WITH RECURSIVE query (in its own query) can't be
+			// removed by another query, or only some of its duplicates.
+			//
+			// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.ix.5.D
+			// and 3.j.ix.5.E
+			reads_left := before_right > before_left
+			reads_right := conn.recursive_reads > before_right
+			if body.op == 'EXCEPT' && reads_right {
+				return sqlstate_42601('the right side of EXCEPT cannot read a WITH RECURSIVE query in its own query')
+			}
+			if body.all && body.op != 'UNION' && (reads_left || reads_right) {
+				return sqlstate_42601('${body.op} ALL cannot read a WITH RECURSIVE query in its own query')
+			}
 
 			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'] or { Plan{} },
 				plan.subplans['\$2'] or { Plan{} }, mut conn)!
@@ -82,6 +98,7 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 
 fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]&Table) {
 	from_clause := body.table_expression.from_clause
+	recursive_reads := conn.recursive_reads
 
 	mut plan := Plan{}
 	mut tables := map[string]&Table{}
@@ -151,8 +168,22 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 		}
 	}
 
-	add_group_by_plan(mut &plan, body.table_expression.group_clause, body.table_expression.having_clause,
-		select_exprs, params, mut conn, tables)!
+	has_aggregate := add_group_by_plan(mut &plan, body.table_expression.group_clause,
+		body.table_expression.having_clause, select_exprs, params, mut conn, tables)!
+
+	// A query that reads a WITH RECURSIVE query in its own query can only read it
+	// once (it's linearly recursive), and it can't have an aggregate function in
+	// its select list or HAVING. There are no window functions.
+	//
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.ix.5.C,
+	// 3.j.ix.5.C.I, 3.j.ix.5.C.II and 3.j.x
+	reads := conn.recursive_reads - recursive_reads
+	if reads > 1 {
+		return sqlstate_42601('a query can only read a WITH RECURSIVE query once in its own query')
+	}
+	if reads > 0 && has_aggregate {
+		return sqlstate_42601('a query that reads a WITH RECURSIVE query in its own query cannot use an aggregate function')
+	}
 
 	if body.distinct {
 		plan.operations << new_distinct_operation(mut conn, params, body.exprs, tables,
@@ -182,17 +213,32 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	mut plan := Plan{}
 	before_left := tables.keys()
 	first_table := tables.len
+	reads_before_left := conn.recursive_reads
 	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
 			.right,
 			.full,
 		])!
 	before_right := tables.keys()
+	reads_before_right := conn.recursive_reads
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
 			.left,
 			.full,
 		])!
+
+	// A WITH RECURSIVE query (in its own query) can't be on a side of an outer
+	// join that's NULL-extended, including a NATURAL join.
+	//
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.ix.5.F,
+	// 3.j.ix.5.F.I, 3.j.ix.5.F.II, 3.j.ix.5.F.III, 3.j.ix.5.G, 3.j.ix.5.G.I,
+	// 3.j.ix.5.G.II and 3.j.ix.5.G.III
+	reads_left := reads_before_right > reads_before_left
+	reads_right := conn.recursive_reads > reads_before_right
+	if (join.join_type in [.left, .full] && reads_right)
+		|| (join.join_type in [.right, .full] && reads_left) {
+		return sqlstate_42601('a WITH RECURSIVE query cannot be read in its own query on the side of an outer join that has NULLs added')
+	}
 	left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
 	right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
 
@@ -304,7 +350,7 @@ fn join_lookup(inner_reference TableReference, inner_names []string, outer_names
 	}
 	name := match inner.body {
 		Identifier { inner.body }
-		QueryExpression { return none }
+		QueryExpression, RecursiveQueryReference { return none }
 	}
 
 	inner_name := conn.resolve_table_identifier(name, allow_virtual) or { return none }
@@ -567,6 +613,34 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				}, [])!
 			}
 		}
+		RecursiveQueryReference {
+			subplan := if from_clause.body.working {
+				working_table_plan(from_clause.body.query, mut conn)!
+			} else {
+				next_value_not_allowed := conn.next_value_not_allowed
+				if next_value_not_allowed == '' {
+					conn.next_value_not_allowed = 'a WITH query'
+				}
+				in_derived_table := conn.in_derived_table
+				conn.in_derived_table = true
+				defer {
+					conn.next_value_not_allowed = next_value_not_allowed
+					conn.in_derived_table = in_derived_table
+				}
+
+				recursive_query_plan(from_clause.body.query, params, mut conn)!
+			}
+			table = add_correlation_plan(mut &plan, from_clause.correlation.name, subplan,
+				from_clause.correlation, params, mut conn)!
+
+			if filter {
+				add_where_plan(mut &plan, body, params, conn, {
+					table.name.id(): &Table{
+						...table
+					}
+				}, [])!
+			}
+		}
 	}
 
 	return plan, table
@@ -724,7 +798,10 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 	}
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]&Table) ! {
+// add_group_by_plan groups the rows for a GROUP BY, or an aggregate function or
+// HAVING without one. It returns true when the select list or HAVING contains an
+// aggregate function.
+fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]&Table) !bool {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function (or there is a HAVING) we need to
 	// have an implicit GROUP BY for the whole set.
@@ -735,16 +812,17 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 		params: params
 		tables: tables
 	}
-	mut has_agg := having_clause != none
+	mut has_set_function := false
 	for e in select_exprs {
 		if e.expr.compile(mut c)!.contains_agg {
-			has_agg = true
+			has_set_function = true
 			break
 		}
 	}
+	has_agg := has_set_function || having_clause != none
 
 	if group_clause.len == 0 && !has_agg {
-		return
+		return false
 	}
 
 	// Every column in the select list must be grouped, or only used in an
@@ -767,6 +845,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	if having := having_clause {
 		c.next_value_not_allowed = 'HAVING'
 		compiled_having := c.with_boolean_type(having.compile(mut c)!)
+		has_set_function = has_set_function || compiled_having.contains_agg
 		if compiled_having.typ.typ != .is_boolean {
 			return sqlstate_42804('in HAVING', 'BOOLEAN', compiled_having.typ.str())
 		}
@@ -802,6 +881,8 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 		plan.operations << new_where_operation(having, params, conn, plan.columns(),
 			tables, [])
 	}
+
+	return has_set_function
 }
 
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
@@ -852,12 +933,26 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		}
 	}
 
+	recursive_query := conn.recursive_query
+	conn.recursive_query = unsafe { nil }
+
 	for element in stmt.with_list {
 		element.check(params, mut conn)!
 	}
 
-	mut plan, mut tables := create_basic_plan(stmt.body, params, mut conn, true,
-		correlation)!
+	recursive_reads := conn.recursive_reads
+	mut plan, mut tables := if recursive_query != unsafe { nil } {
+		create_recursive_union_plan(recursive_query, stmt.body, params, mut conn)!, map[string]&Table{}
+	} else {
+		create_basic_plan(stmt.body, params, mut conn, true, correlation)!
+	}
+
+	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.ix.3 and
+	// 3.j.ix.4
+	if stmt.fetch != none && (recursive_query != unsafe { nil }
+		|| conn.recursive_reads > recursive_reads) {
+		return sqlstate_42601('a query that reads a WITH RECURSIVE query in its own query cannot have FETCH FIRST')
+	}
 
 	// Only a query specification has its own tables. Otherwise, the ORDER BY can
 	// only use the columns of the result. A sort key doesn't have to contain a

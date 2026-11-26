@@ -183,7 +183,7 @@
 # 4.17.3, Derived tables
 4.17.3                   implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_6_subquery.sql
 # 4.17.4, Transienttables
-4.17.4                   partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql only WITH, there are no triggers (T211)
+4.17.4                   partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql,tests/std_2_7_17_with_recursive.sql there are no triggers (T211)
 # 4.17.5, Unique identification of tables
 4.17.5                   implemented  vsql/std_2_4_28_sql_schemas.v tests/std_2_5_4_catalog_qualified_names.sql
 # 4.17.6, Table updatability

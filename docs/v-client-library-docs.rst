@@ -827,6 +827,15 @@ struct Connection
    	// collected_subquery is set if a subquery is planned while collect_columns
    	// is set. The columns that a subquery uses aren't all known until it runs.
    	collected_subquery bool
+   	// recursive_queries are the RecursiveQuerys (by their address) whose own
+   	// query is being planned or run, see RecursiveQueryState.
+   	recursive_queries map[voidptr]RecursiveQueryState
+   	// recursive_query is the RecursiveQuery that the next query expression to
+   	// be planned is the query of, see create_query_expression_plan.
+   	recursive_query &RecursiveQuery = unsafe { nil }
+   	// recursive_reads counts the RecursiveQuery reads (in its own query) that
+   	// have been planned, see check_recursive_reads.
+   	recursive_reads int
    	// in_derived_table is set while a derived table is being planned, but not a
    	// subquery in one, see values_aggregation_query.
    	in_derived_table bool

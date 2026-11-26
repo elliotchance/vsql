@@ -4,8 +4,8 @@
 //
 // Specify a table.
 //
-// There's no WITH RECURSIVE (T131, #1284), CORRESPONDING (F301) or FETCH NEXT
-// (#331). LIMIT isn't in the standard, see limit_clause.
+// There's no SEARCH or CYCLE for WITH RECURSIVE (T133), CORRESPONDING (F301)
+// or FETCH NEXT (#331). LIMIT isn't in the standard, see limit_clause.
 
 // A query_expression is either a parenthesized_query_expression or a
 // nonparenthesized_query_expression, so that a query_expression in parentheses
@@ -16,14 +16,17 @@ query_expression:
     // A query_expression in parentheses is the query_primary of another
     // query_expression, so a WITH in it needs T122 (see flag_query_expression).
     flag_if(mut yylex, ($1.v as QueryExpression).with_list.len > 0, 'T122')
+    flag_if(mut yylex, ($1.v as QueryExpression).with_recursive, 'T132')
     $$.v = $1.v
   }
 
 // The names of a with_list are in scope as each with_list_element is parsed
 // (see add_with_list_element), until the end of the query_expression that
-// contains it (see with_query_expression).
+// contains it (see with_query_expression). The names of a WITH RECURSIVE are
+// in scope from each query_name, so that its own query can read it (see
+// add_recursive_query_name).
 //
-// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.i.i
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.i.i and 3.i.ii
 with_clause:
   WITH with_list {
     // A <query name> is only in a <with clause> (or where it's read).
@@ -33,6 +36,44 @@ with_clause:
     // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 1
     flag(mut yylex, 'T121')
     $$.v = $2.v
+  }
+| with_recursive recursive_with_list {
+    // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 3
+    flag(mut yylex, 'T121')
+    flag(mut yylex, 'T131')
+    $$.v = $2.v
+  }
+
+with_recursive:
+  WITH RECURSIVE { start_recursive_with(mut yylex)! }
+
+recursive_with_list:
+  recursive_with_list_element {
+    $$.v = yy_box([$1.v as WithListElement])
+  }
+| recursive_with_list comma recursive_with_list_element {
+    mut list := ($1.v as []WithListElement).clone()
+    list << $3.v as WithListElement
+    $$.v = yy_box(list)
+  }
+
+recursive_with_list_element:
+  recursive_query_name AS table_subquery {
+    mut reference := $1.v as RecursiveQueryReference
+    $$.v = yy_box(recursive_with_list_element(mut yylex, mut reference.query,
+      []Identifier{}, $3.v as TablePrimary)!)
+  }
+| recursive_query_name left_paren with_column_list right_paren AS table_subquery {
+    mut reference := $1.v as RecursiveQueryReference
+    $$.v = yy_box(recursive_with_list_element(mut yylex, mut reference.query,
+      $3.v as []Identifier, $6.v as TablePrimary)!)
+  }
+
+recursive_query_name:
+  query_name {
+    $$.v = yy_box(RecursiveQueryReference{
+      query: add_recursive_query_name(mut yylex, $1.v as Identifier)!
+    })
   }
 
 with_list:

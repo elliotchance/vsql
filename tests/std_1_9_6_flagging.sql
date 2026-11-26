@@ -296,6 +296,26 @@ WITH a AS (WITH b AS (SELECT x FROM t) SELECT * FROM b) SELECT * FROM a;
 -- X: 1
 
 /* flags */
+WITH RECURSIVE n (y) AS (VALUES 1 UNION ALL SELECT y + 1 FROM n WHERE y < 2) SELECT * FROM n;
+-- flags: F641, F661, T121, T131
+-- Y: 1
+-- Y: 2
+
+-- # WITH RECURSIVE needs T131 (Part 2, 7.17, Conformance Rules, 3), and also
+-- # T132 in a query that's contained in another query (Conformance Rules, 4).
+/* flags */
+SELECT * FROM (WITH RECURSIVE n (y) AS (VALUES 1 UNION ALL SELECT y + 1 FROM n WHERE y < 2) SELECT * FROM n) AS d;
+-- flags: F591, F641, F661, T121, T122, T131, T132
+-- Y: 1
+-- Y: 2
+
+-- # A RECURSIVE view needs T131 (Part 2, 11.32, Conformance Rules, 1).
+/* flags */
+CREATE RECURSIVE VIEW fv (y) AS VALUES 1 UNION ALL SELECT y + 1 FROM fv WHERE y < 2;
+-- flags: F641, F661, T131
+-- msg: CREATE VIEW 1
+
+/* flags */
 INSERT INTO t (x) WITH a AS (SELECT x FROM t) SELECT x + 1 FROM a;
 -- flags: F781, T121
 -- msg: INSERT 1

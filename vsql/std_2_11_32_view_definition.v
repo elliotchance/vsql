@@ -26,10 +26,11 @@ const view_file_format_version = u16(5)
 // ViewDefinition is a CREATE VIEW. text is its <query expression> as it was
 // written, which is how it's stored in the file (see View.bytes).
 struct ViewDefinition {
-	table_name Identifier
-	columns    []Identifier
-	query      QueryExpression
-	text       string
+	table_name   Identifier
+	columns      []Identifier
+	query        QueryExpression
+	text         string
+	check_option bool
 }
 
 // View is a view that has been created.
@@ -38,17 +39,23 @@ struct View {
 	columns []string
 	// query is the text of the <query expression>, as it was written.
 	query string
-	tid   u64
+	// check_option is true for WITH CHECK OPTION, which is always CASCADED (see
+	// check_view_option).
+	//
+	// ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 1.g
+	check_option bool
+	tid          u64
 }
 
 // written_view_query is the text of the <query expression> of the view
 // definition that the parser has just read, which starts after the first AS
-// after the CREATE (that isn't in the parentheses of the column list). CREATE
-// and AS are reserved words, so CREATE can't be in the query, and AS can't be
-// the name of the view or of a column.
-fn written_view_query(mut yylex YYLexer, has_lookahead bool) string {
+// after the CREATE (that isn't in the parentheses of the column list), and ends
+// before the last trailing tokens (the WITH CHECK OPTION). CREATE and AS are
+// reserved words, so CREATE can't be in the query, and AS can't be the name of
+// the view or of a column.
+fn written_view_query(mut yylex YYLexer, has_lookahead bool, trailing int) string {
 	l := yylex as Lexer
-	last := l.last_token(has_lookahead)
+	last := l.last_token(has_lookahead) - trailing
 	mut first := last
 	for l.tokens[first].token != token_create {
 		first--
@@ -130,15 +137,26 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 		}
 	}
 
-	// ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 1
-	catalog.storage.create_view(name, View{
-		name:    Identifier{
+	view := View{
+		name:         Identifier{
 			schema_name: name.schema_name
 			entity_name: name.entity_name
 		}
-		columns: columns
-		query:   stmt.text
-	})!
+		columns:      columns
+		query:        stmt.text
+		check_option: stmt.check_option
+	}
+
+	// A view with CHECK OPTION must be updatable, since the check is made when
+	// it's changed.
+	//
+	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 16 and 17
+	if stmt.check_option {
+		conn.updatable_view(view, name.catalog_name, map[string]Value{})!
+	}
+
+	// ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 1
+	catalog.storage.create_view(name, view)!
 }
 
 fn (stmt ViewDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
@@ -146,14 +164,18 @@ fn (stmt ViewDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Du
 }
 
 // view_query_plan plans the query of the view called name. Its names are
-// resolved in the schema of the view.
+// resolved in the schema of the view, both when it's planned and when it's
+// executed (see Plan.execute).
 fn view_query_plan(mut conn Connection, name Identifier, query QueryExpression) !Plan {
 	scope := conn.enter_view(name)
 	defer {
 		conn.leave_view(scope)
 	}
 
-	return create_query_expression_plan(query, map[string]Value{}, mut conn, Correlation{})
+	mut plan := create_query_expression_plan(query, map[string]Value{}, mut conn, Correlation{})!
+	plan.view = PlanView{name, conn}
+
+	return plan
 }
 
 // ViewScope is how the connection resolved names before it started on the query
@@ -310,7 +332,9 @@ fn create_view_plan(body QuerySpecification, from_clause TablePrimary, view View
 fn (v View) bytes() []u8 {
 	columns := v.columns.map(delimit_identifier(it)).join(', ')
 
-	return 'CREATE VIEW ${v.name.storage_sql()} (${columns}) AS ${v.query}'.bytes()
+	check_option := if v.check_option { ' WITH CHECK OPTION' } else { '' }
+
+	return 'CREATE VIEW ${v.name.storage_sql()} (${columns}) AS ${v.query}${check_option}'.bytes()
 }
 
 // query_expression parses the query of the view again.
@@ -325,13 +349,14 @@ fn new_view_from_bytes(data []u8, tid u64) !View {
 	stmt := parse_definition(data)! as ViewDefinition
 
 	return View{
-		name:    Identifier{
+		name:         Identifier{
 			schema_name: stmt.table_name.schema_name
 			entity_name: stmt.table_name.entity_name
 		}
-		columns: stmt.columns.map(it.sub_entity_name)
-		query:   stmt.text
-		tid:     tid
+		columns:      stmt.columns.map(it.sub_entity_name)
+		query:        stmt.text
+		check_option: stmt.check_option
+		tid:          tid
 	}
 }
 
@@ -450,7 +475,7 @@ fn recursive_view_definition(mut yylex YYLexer, head RecursiveViewHead, query Qu
 	})
 
 	columns := head.columns.map(requote_identifier(it.sub_entity_name)).join(', ')
-	text := written_view_query(mut yylex, has_lookahead)
+	text := written_view_query(mut yylex, has_lookahead, 0)
 
 	return ViewDefinition{
 		table_name: head.table_name

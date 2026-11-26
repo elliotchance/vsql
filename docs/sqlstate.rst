@@ -1233,6 +1233,27 @@ the connection.
   -- msg: CREATE TABLE 1
   -- error 42P10: column B must be in the select list to be used in ORDER BY with SELECT DISTINCT
 
+Class ``44``: With Check Option Violation
+-----------------------------------------
+
+``44000`` with check option violation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An ``INSERT`` or ``UPDATE`` through a view ``WITH CHECK OPTION`` made a row that
+can't be seen through the view (see :doc:`create-view`). The view is the table
+of the condition (for ``GET DIAGNOSTICS``).
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (x INT);
+  CREATE VIEW v AS SELECT * FROM t WHERE x > 0 WITH CHECK OPTION;
+  INSERT INTO v VALUES (-1);
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE VIEW 1
+  -- error 44000: with check option violation: ":memory:".PUBLIC.V
+
 Class ``54``: Program Limit Exceeded
 ------------------------------------
 

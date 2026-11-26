@@ -12,7 +12,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 139 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
+**vsql supports 140 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
 
 .. list-table:: Table H.1 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -473,7 +473,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F311-03
      - ``CREATE VIEW``
 
-   * - ❌ F311-04
+   * - ✅ F311-04
      - ``CREATE VIEW``: ``WITH CHECK OPTION``
 
    * - ❌ F311-05

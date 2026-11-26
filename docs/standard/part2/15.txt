@@ -173,7 +173,7 @@
 15.7/GR/17.a.ii          implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_14_1_cursors.sql
 15.7/GR/17.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_11_32_updatable_views.sql
 15.7/GR/17.b.i           implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_11_32_updatable_views.sql
-15.7/GR/17.b.ii          missing      - - WITH CHECK OPTION (#1258)
+15.7/GR/17.b.ii          implemented  vsql/std_2_14_14_update_statement_searched.v tests/std_2_11_32_check_option.sql
 15.7/GR/18               untestable   - - the position is implementation-dependent
 15.7/GR/19               definition   - -
 # 15.8, Effect of deleting rows from base tables
@@ -335,7 +335,7 @@
 15.13/GR/3.a.ii.6        n/a          - - triggers (T211)
 15.13/GR/3.a.iii         n/a          - - triggers (T211)
 15.13/GR/3.b             implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
-15.13/GR/3.b.i           missing      - - WITH CHECK OPTION (#1258)
+15.13/GR/3.b.i           implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
 15.13/GR/3.b.ii          implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 15.13/GR/4               n/a          - - data change delta tables (T495)
 15.13/GR/5               implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
@@ -450,42 +450,42 @@
 15.16/GR/3.a.ii.6        n/a          - - triggers (T211)
 15.16/GR/3.a.iii         n/a          - - triggers (T211)
 15.16/GR/3.b             implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
-15.16/GR/3.b.i           missing      - - WITH CHECK OPTION (#1258)
+15.16/GR/3.b.i           implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
 15.16/GR/3.b.ii          implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 15.16/GR/4               n/a          - - data change delta tables (T495)
 15.16/GR/5               implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 # 15.17, Checking of views that specify CHECK OPTION
-15.17                    n/a          - - privileges (E081)
-15.17/GR/1               n/a          - - privileges (E081)
-15.17/GR/2               n/a          - - privileges (E081)
-15.17/GR/3               n/a          - - privileges (E081)
-15.17/GR/4               n/a          - - privileges (E081)
-15.17/GR/4.a             n/a          - - privileges (E081)
-15.17/GR/4.b             n/a          - - privileges (E081)
-15.17/GR/4.b.i           n/a          - - privileges (E081)
-15.17/GR/4.b.ii          n/a          - - privileges (E081)
-15.17/GR/4.b.iii         n/a          - - privileges (E081)
-15.17/GR/4.b.iii.1       n/a          - - privileges (E081)
-15.17/GR/4.b.iii.2       n/a          - - privileges (E081)
+15.17                    implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql only CASCADED, there is no LOCAL (#1262)
+15.17/GR/1               definition   - -
+15.17/GR/2               definition   - -
+15.17/GR/3               n/a          - - MERGE (F312)
+15.17/GR/4               implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
+15.17/GR/4.a             definition   - -
+15.17/GR/4.b             definition   - -
+15.17/GR/4.b.i           n/a          - - subtables (S081)
+15.17/GR/4.b.ii          n/a          - - subtables (S081)
+15.17/GR/4.b.iii         definition   - -
+15.17/GR/4.b.iii.1       definition   - -
+15.17/GR/4.b.iii.2       definition   - -
 15.17/GR/4.b.iii.3       container    - -
-15.17/GR/4.b.iii.3.A     n/a          - - privileges (E081)
-15.17/GR/4.b.iii.3.B     n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4       n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4.A     n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4.B     n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4.B.I   n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4.B.II  n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4.B.III n/a          - - privileges (E081)
-15.17/GR/4.b.iii.4.C     n/a          - - privileges (E081)
-15.17/GR/4.b.iii.5       n/a          - - privileges (E081)
-15.17/GR/4.c             n/a          - - privileges (E081)
-15.17/GR/4.d             n/a          - - privileges (E081)
-15.17/GR/4.e             n/a          - - privileges (E081)
-15.17/GR/4.e.i           n/a          - - privileges (E081)
-15.17/GR/4.e.ii          n/a          - - privileges (E081)
-15.17/GR/4.e.iii         n/a          - - privileges (E081)
-15.17/GR/4.f             n/a          - - privileges (E081)
-15.17/GR/5               n/a          - - privileges (E081)
+15.17/GR/4.b.iii.3.A     n/a          - - subtables (S081)
+15.17/GR/4.b.iii.3.B     n/a          - - subtables (S081)
+15.17/GR/4.b.iii.4       definition   - -
+15.17/GR/4.b.iii.4.A     definition   - -
+15.17/GR/4.b.iii.4.B     definition   - -
+15.17/GR/4.b.iii.4.B.I   definition   - -
+15.17/GR/4.b.iii.4.B.II  definition   - -
+15.17/GR/4.b.iii.4.B.III n/a          - - MERGE (F312)
+15.17/GR/4.b.iii.4.C     definition   - -
+15.17/GR/4.b.iii.5       missing      - - LOCAL CHECK OPTION (#1262)
+15.17/GR/4.c             implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
+15.17/GR/4.d             implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
+15.17/GR/4.e             container    - -
+15.17/GR/4.e.i           implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
+15.17/GR/4.e.ii          implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
+15.17/GR/4.e.iii         n/a          - - MERGE (F312)
+15.17/GR/4.f             implemented  vsql/std_2_15_17_check_option.v tests/std_2_11_32_check_option.sql
+15.17/GR/5               definition   - -
 # 15.18, Execution of referential actions
 15.18                    implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/std_2_15_18_foreign_key_delete_rules.sql
 15.18/GR/1               definition   - -

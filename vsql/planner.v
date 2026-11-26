@@ -1095,13 +1095,37 @@ mut:
 	// subplans represent the subqueries. These are indexed by name and may be
 	// referenced by expressions.
 	subplans map[string]Plan
+	// view is set for the query of a view, see view_query_plan.
+	view ?PlanView
+}
+
+// PlanView is the view that a plan is the query of. Some expressions are only
+// compiled when the plan is executed (such as a subquery in the select list),
+// so the names in them are resolved in the schema of the view then too.
+struct PlanView {
+	name Identifier
+mut:
+	conn &Connection
 }
 
 // scan_batch_size is how many rows of a table are read at a time when the
 // operations after it work on each row by itself, see Plan.execute.
 const scan_batch_size = 1024
 
-fn (mut o Plan) execute(_ []Row) ![]Row {
+fn (mut o Plan) execute(rows []Row) ![]Row {
+	if mut view := o.view {
+		scope := view.conn.enter_view(view.name)
+		defer {
+			view.conn.leave_view(scope)
+		}
+
+		return o.execute_rows(rows)
+	}
+
+	return o.execute_rows(rows)
+}
+
+fn (mut o Plan) execute_rows(_ []Row) ![]Row {
 	mut rows := []Row{}
 	mut next := 0
 

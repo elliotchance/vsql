@@ -1202,7 +1202,7 @@
 7.16/SR/25.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/25.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 7.16/SR/25.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
-7.16/SR/25.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
+7.16/SR/25.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql,tests/std_2_7_16_updatable_subqueries.sql
 7.16/SR/26               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable joins (T111)
 7.16/SR/27               definition   - -
 7.16/SR/27.a             definition   - -

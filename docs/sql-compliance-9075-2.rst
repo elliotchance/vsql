@@ -12,7 +12,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 138 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
+**vsql supports 139 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
 
 .. list-table:: Table H.1 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -329,7 +329,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E152-02
      - ``SET TRANSACTION`` statement: ``READ ONLY`` and ``READ WRITE`` clauses
 
-   * - ❌ **E153**
+   * - ✅ **E153**
      - **Updatable queries with subqueries**
 
    * - ✅ **E161**

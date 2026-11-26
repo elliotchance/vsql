@@ -1161,11 +1161,13 @@ Linux, macOS and Windows, each on x86-64 and ARM64, with V master:
   (``.github/workflows/earlier-v.sh``). On ARM64, it builds V and everything
   else with llvm-mingw's native toolchain.
 
-Each job also generates the C for the amalgamation (see
-``scripts/amalgamation.sh``), and builds the binaries that are released and
-tested from it. The binaries that V builds are only used to check that vsql
-runs, and for V's C compiler commands. Once every job has passed, the release
-job merges the C from each job into ``vsql.c`` and ``libvsql.c`` (see
+The binaries (``bin/vsql`` and the library) are always built from the
+amalgamation, locally and on CI (``make amalgamation``, see the Makefile and
+``scripts/amalgamation.sh``). V only generates the C, so the binaries that are
+tested are built the same way as the released ones. The V tests (such as
+``make sql-test`` and ``make unit-test``) are still built by V. Once every job
+has passed, the release job merges the C from each job
+(``amalgamation/generated/``) into ``vsql.c`` and ``libvsql.c`` (see
 ``scripts/amalgamation-merge.py``) and zips the amalgamation, then builds it
 with ``make`` and runs ``make example`` from the zip, like a user without V
 would.

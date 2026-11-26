@@ -9,11 +9,16 @@
 #   make example    Builds and runs example.c with the library.
 #   make clean      Removes bin/.
 #
-# vsql.c and libvsql.c have the C for every OS and architecture in one file
-# each (see scripts/amalgamation-merge.py), so they can also be built without
-# this Makefile, such as with "cc -std=gnu11 -fwrapv -w -O2 vsql.c -o vsql"
-# and the options for the OS and architecture in vsql.mk. vsql.mk has the libraries and linker options
-# that V used to build vsql and libvsql on each OS and architecture.
+# vsql.c and libvsql.c have the C in one file each (see
+# scripts/amalgamation-merge.py), so they can also be built without this
+# Makefile, such as with "cc -std=gnu11 -fwrapv -w -O2 vsql.c -o vsql" and the
+# options for the OS and architecture in vsql.mk, which has the libraries and
+# linker options that V uses on each OS and architecture.
+#
+# In the release (vsql-VERSION-amalgamation.zip) they have the C for every OS
+# and architecture. "make amalgamation" in vsql's source makes the same folder
+# (amalgamation/) with the C for just the current one, which vsql's Makefile
+# builds its binaries with.
 
 ifeq ($(OS),Windows_NT)
 VSQL_OS = windows

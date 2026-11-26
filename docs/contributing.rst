@@ -17,6 +17,13 @@ Then:
   make bin/vsql       # macOS and linux
   make bin/vsql.exe   # windows
 
+V only generates the C, which is put in ``amalgamation/`` (``make
+amalgamation``), and the binary is built from that with the C compiler. It's
+built with ``-O2``, which takes about a minute. ``make bin/vsql CFLAGS=-O0``
+takes a few seconds, but vsql runs about half as fast, which is fine for most
+tests. Since make doesn't rebuild a binary when only ``CFLAGS`` changes, remove
+``bin/vsql`` first to switch between them.
+
 Before sending a pull request, run ``make fmt`` and make sure ``make test``
 passes (see :doc:`testing`). CI fails if ``make fmt`` would change anything,
 which ``make fmt-verify`` checks.

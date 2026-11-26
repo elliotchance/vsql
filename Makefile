@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: amalgamation app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -35,31 +35,46 @@ ready: grammar fmt snippets
 # The binaries are rebuilt when any of the source files change.
 SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.css app/*.js)
 
-bin/vsql: $(SOURCES)
-	mkdir -p bin
-	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql
+# The amalgamation is the C for vsql and libvsql, in one file for each (see
+# scripts/amalgamation.sh). V only generates the C, the binaries are built from
+# the amalgamation with amalgamation/Makefile, so what's tested locally and on
+# CI is what's released. amalgamation/ has everything that's needed to build
+# them without V, and amalgamation/generated/ has the C that V generated, which
+# CI merges with the C from each OS and architecture for the release.
+#
+# The C is compiled with CFLAGS, which is -O2 by default. "make bin/vsql
+# CFLAGS=-O0" compiles it in seconds rather than a minute, but vsql runs about
+# half as fast. make doesn't build a binary again when only CFLAGS is changed.
+#
+# amalgamation/stamp is newer than the C. Files in amalgamation/ are only
+# replaced when they're different, so changing libvsql doesn't build vsql
+# again.
+AMALGAMATION_SOURCES = $(SOURCES) $(wildcard libvsql/*.v) libvsql/libvsql.h libvsql/libvsql.def libvsql/example.c scripts/amalgamation.sh scripts/amalgamation-merge.py $(wildcard scripts/amalgamation/*)
 
-bin/vsql.exe: $(SOURCES)
+amalgamation: amalgamation/stamp
+
+amalgamation/stamp: $(AMALGAMATION_SOURCES)
+	V_OPTIONS="$(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD)" scripts/amalgamation.sh generate amalgamation/generated
+	scripts/amalgamation.sh assemble amalgamation amalgamation/generated
+	touch $@
+
+bin/vsql bin/vsql.exe: amalgamation/stamp
+	$(MAKE) -C amalgamation vsql
 	mkdir -p bin
-	v $(V3_OPTIONS) -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql.exe
+	cp amalgamation/$@ $@
 
 # libvsql is the SQL/CLI (ISO/IEC 9075-3) shared library, see
-# libvsql/libvsql.h. On macOS the install name must be set so that programs can
-# find it by rpath. Windows has no rpath (a program finds the DLL in its own
+# libvsql/libvsql.h. It's built by amalgamation/Makefile, which has how it's
+# built on each OS. Windows has no rpath (a program finds the DLL in its own
 # folder or on the PATH), and it's built with MinGW, since that's what CI has.
-# libgcc is linked statically so that the DLL doesn't need the MinGW runtime,
-# and libvsql.def gives the DLL its name. lld (used by llvm-mingw) ignores the
-# name in libvsql.def, and names the DLL after V's temporary file, so programs
-# link against an import library instead (bin/libvsql.dll.a, which -lvsql
-# finds before the DLL). It has the functions in libvsql.h and test.h.
+# Programs link against an import library (bin/libvsql.dll.a, which -lvsql
+# finds before the DLL).
 ifeq ($(OS),Windows_NT)
 LIBVSQL = bin/libvsql.dll
-LIBVSQL_OPTIONS = -cc gcc -ldflags '-static-libgcc -Wl,--export-all-symbols $(CURDIR)/libvsql/libvsql.def'
 LIBVSQL_C = gcc
 LIBVSQL_CPP = g++
 else ifeq ($(shell uname),Darwin)
 LIBVSQL = bin/libvsql.dylib
-LIBVSQL_OPTIONS = -ldflags '-Wl,-install_name,@rpath/libvsql.dylib'
 LIBVSQL_RPATH = -Wl,-rpath,$(CURDIR)/bin
 else
 LIBVSQL = bin/libvsql.so
@@ -68,8 +83,8 @@ endif
 LIBVSQL_C ?= cc
 LIBVSQL_CPP ?= c++
 # VSQL_BIN is the vsql binary that the CLI tests run and that compiles the
-# modules. On Windows it's bin/vsql.exe, which CI builds with MinGW (see
-# ci.yml), the same as libvsql.dll.
+# modules. On Windows it's bin/vsql.exe, which is built with MinGW, the same as
+# libvsql.dll.
 ifeq ($(OS),Windows_NT)
 VSQL_BIN ?= bin/vsql.exe
 else
@@ -83,12 +98,12 @@ endif
 
 libvsql: $(LIBVSQL)
 
-$(LIBVSQL): $(SOURCES) $(wildcard libvsql/*.v)
+$(LIBVSQL): amalgamation/stamp
+	$(MAKE) -C amalgamation libvsql
 	mkdir -p bin
-	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) -enable-globals -shared $(LIBVSQL_OPTIONS) libvsql -o bin/libvsql
+	cp amalgamation/$(LIBVSQL) $(LIBVSQL)
 ifeq ($(OS),Windows_NT)
-	(echo 'LIBRARY libvsql.dll'; echo 'EXPORTS'; sed -nE 's/^[A-Za-z_][A-Za-z_0-9 *]*[ *](SQL[A-Za-z]+|vsql_[a-z_]+)\(.*/\1/p' libvsql/libvsql.h libvsql/test.h) > bin/libvsql-exports.def
-	dlltool -d bin/libvsql-exports.def -l bin/libvsql.dll.a
+	cp amalgamation/bin/libvsql.dll.a bin/
 endif
 
 # The release is a zip of a folder named after the release (VERSION, such as

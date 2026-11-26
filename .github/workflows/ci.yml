@@ -30,10 +30,11 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || github.run_id }}${{ github.event.action == 'edited' && !github.event.changes.base && format('-edit-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
-# There's one job for each OS and architecture. Each one runs the tests that
-# work there, generates the C for the amalgamation and builds the binaries for
-# the release from it. Checks that don't depend on the OS only run on Linux x86-64,
-# which has the fastest and least limited runners.
+# There's one job for each OS and architecture. Each one generates the C for
+# the amalgamation, builds the binaries for the release from it ("make
+# amalgamation", see the Makefile) and runs the tests that work there. Checks
+# that don't depend on the OS only run on Linux x86-64, which has the fastest
+# and least limited runners.
 #
 # The release package is built once, at the start of each job, then everything
 # after that tests those binaries. It's uploaded at the end, so only what has
@@ -185,36 +186,24 @@ jobs:
           make clean-docs docs
           git diff --exit-code
 
-      # V builds vsql and libvsql, but they're only used to check that vsql
-      # runs, and for the C compiler commands that the amalgamation needs, which
-      # has to be generated on each OS and architecture (see the release job).
-      # What's released, and what everything after this uses, is built from the
-      # amalgamation (scripts/amalgamation.sh build), so that it's what gets
-      # tested. make only builds them again if a source file changes, so the
-      # source goes back to having no version for the V tests, and the binaries
-      # are made newer than it.
+      # This is what's released, and everything after this uses these binaries.
+      # V only generates the C (the amalgamation, which has to be generated on
+      # each OS and architecture, see the release job), and the binaries are
+      # built from it. make only builds them again if a source file changes, so
+      # the source goes back to having no version for the V tests, and the
+      # amalgamation and binaries are made newer than it.
       #
       # vsql and libvsql are built at the same time, since the C compiler only
-      # uses one core for each, and they take a minute or two. y.v is made first,
-      # so that they don't both make it.
+      # uses one core for each, and they take a minute or two.
       - name: Build release package
         shell: bash
         run: |
           .github/workflows/set_version.sh
-          make vsql/y.v
-          mkdir -p "$RUNNER_TEMP/showcc"
-          make BUILD_OPTIONS=-showcc bin/vsql > "$RUNNER_TEMP/showcc/vsql.showcc" 2>&1 & vsql=$!
-          make BUILD_OPTIONS=-showcc libvsql > "$RUNNER_TEMP/showcc/libvsql.showcc" 2>&1 & libvsql=$!
-          status=0
-          wait $vsql || status=1
-          wait $libvsql || status=1
-          cat "$RUNNER_TEMP/showcc/vsql.showcc" "$RUNNER_TEMP/showcc/libvsql.showcc"
-          [ $status = 0 ]
+          make -j2 bin/vsql libvsql
           .github/workflows/hello-test.sh bin/vsql
-          scripts/amalgamation.sh generate amalgamation-linux-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
-          scripts/amalgamation.sh build amalgamation-linux-${{ matrix.v_arch }}
           make release VERSION=${GITHUB_REF##*/}
           git checkout vsql/version.v
+          touch amalgamation/stamp
           touch bin/*
 
       # psql is used by the server tests. It's already installed on the x86-64
@@ -289,7 +278,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: amalgamation-linux-${{ matrix.v_arch }}
-          path: amalgamation-linux-${{ matrix.v_arch }}
+          path: amalgamation/generated
 
       - name: Upload zip
         uses: actions/upload-artifact@v7
@@ -330,36 +319,24 @@ jobs:
       - name: Show V version
         run: v version
 
-      # V builds vsql and libvsql, but they're only used to check that vsql
-      # runs, and for the C compiler commands that the amalgamation needs, which
-      # has to be generated on each OS and architecture (see the release job).
-      # What's released, and what everything after this uses, is built from the
-      # amalgamation (scripts/amalgamation.sh build), so that it's what gets
-      # tested. make only builds them again if a source file changes, so the
-      # source goes back to having no version for the V tests, and the binaries
-      # are made newer than it.
+      # This is what's released, and everything after this uses these binaries.
+      # V only generates the C (the amalgamation, which has to be generated on
+      # each OS and architecture, see the release job), and the binaries are
+      # built from it. make only builds them again if a source file changes, so
+      # the source goes back to having no version for the V tests, and the
+      # amalgamation and binaries are made newer than it.
       #
       # vsql and libvsql are built at the same time, since the C compiler only
-      # uses one core for each, and they take a minute or two. y.v is made first,
-      # so that they don't both make it.
+      # uses one core for each, and they take a minute or two.
       - name: Build release package
         shell: bash
         run: |
           .github/workflows/set_version.sh
-          make vsql/y.v
-          mkdir -p "$RUNNER_TEMP/showcc"
-          make BUILD_OPTIONS=-showcc bin/vsql > "$RUNNER_TEMP/showcc/vsql.showcc" 2>&1 & vsql=$!
-          make BUILD_OPTIONS=-showcc libvsql > "$RUNNER_TEMP/showcc/libvsql.showcc" 2>&1 & libvsql=$!
-          status=0
-          wait $vsql || status=1
-          wait $libvsql || status=1
-          cat "$RUNNER_TEMP/showcc/vsql.showcc" "$RUNNER_TEMP/showcc/libvsql.showcc"
-          [ $status = 0 ]
+          make -j2 bin/vsql libvsql
           .github/workflows/hello-test.sh bin/vsql
-          scripts/amalgamation.sh generate amalgamation-macos-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
-          scripts/amalgamation.sh build amalgamation-macos-${{ matrix.v_arch }}
           make release VERSION=${GITHUB_REF##*/}
           git checkout vsql/version.v
+          touch amalgamation/stamp
           touch bin/*
 
       # libpq is keg-only, so psql must be added to the PATH. It's used by the
@@ -378,7 +355,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: amalgamation-macos-${{ matrix.v_arch }}
-          path: amalgamation-macos-${{ matrix.v_arch }}
+          path: amalgamation/generated
 
       - name: Upload zip
         uses: actions/upload-artifact@v7
@@ -440,32 +417,22 @@ jobs:
       - name: Show V version
         run: v version
 
-      # V builds vsql and libvsql, but they're only used to check that vsql
-      # runs, and for the C compiler commands that the amalgamation needs, which
-      # has to be generated on each OS and architecture (see the release job).
-      # What's released, and what everything after this uses, is built from the
-      # amalgamation (scripts/amalgamation.sh build), so that it's what gets
-      # tested. y.v is made first, otherwise the first make would make it newer
-      # than vsql.exe, and build it again.
+      # This is what's released, and everything after this uses these binaries.
+      # V only generates the C (the amalgamation, which has to be generated on
+      # each OS and architecture, see the release job), and the binaries are
+      # built from it with MinGW. make only builds them again if a source file
+      # changes, so the source goes back to having no version for the V tests,
+      # and the amalgamation and binaries are made newer than it.
       #
       # vsql and libvsql are built at the same time, since the C compiler only
       # uses one core for each.
       - name: Build release package
         run: |
           .github/workflows/set_version.sh
-          make vsql/y.v
-          mkdir -p "$RUNNER_TEMP/showcc"
-          v -n -nocache -prod -cc gcc -showcc cmd/vsql-cli -o bin/vsql.exe > "$RUNNER_TEMP/showcc/vsql.showcc" 2>&1 & vsql=$!
-          make BUILD_OPTIONS=-showcc libvsql > "$RUNNER_TEMP/showcc/libvsql.showcc" 2>&1 & libvsql=$!
-          status=0
-          wait $vsql || status=1
-          wait $libvsql || status=1
-          cat "$RUNNER_TEMP/showcc/vsql.showcc" "$RUNNER_TEMP/showcc/libvsql.showcc"
-          [ $status = 0 ]
+          make -j2 bin/vsql.exe libvsql
           .github/workflows/hello-test.sh bin/vsql.exe
-          scripts/amalgamation.sh generate amalgamation-windows-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
-          scripts/amalgamation.sh build amalgamation-windows-${{ matrix.v_arch }}
           git checkout vsql/version.v
+          touch amalgamation/stamp
           touch bin/*
 
       - name: Zip binary
@@ -518,7 +485,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: amalgamation-windows-${{ matrix.v_arch }}
-          path: amalgamation-windows-${{ matrix.v_arch }}
+          path: amalgamation/generated
 
       - name: Upload zip
         uses: actions/upload-artifact@v7
@@ -532,9 +499,10 @@ jobs:
   #
   # The amalgamation is the C for vsql and libvsql, so that they can be built
   # without V (see scripts/amalgamation.sh). vsql.c and libvsql.c have the C
-  # from each OS and architecture, which that job built the released binaries
-  # from and tested. scripts/amalgamation-merge.py checks that the C for each
-  # one is the same once it's merged.
+  # from each OS and architecture (amalgamation/generated/ in each job), which
+  # that job built the released binaries from and tested.
+  # scripts/amalgamation-merge.py checks that the C for each one is the same
+  # once it's merged.
   release:
     name: Release
     needs: [linux, macos, windows]

@@ -552,9 +552,10 @@ which ones failed. The number of statements is every statement that was run,
 including each time that the setup or an include was run, and in each mode. The
 number of assertions is every ``--`` line that was checked against the output,
 in each mode. The time is how long they took to run, not counting the build.
-CI shows the same counts and time as the "SQL tests" status of each commit (from
-the Linux x86-64 job, where the tests are built for coverage, so they're slower
-than a normal build).
+CI shows the same counts (but not the time) in the "Stats for nerds" status of
+each commit, from the Linux x86-64 job, with the number of rules in the standard
+index (see :doc:`standard-index`) and the mandatory and optional features that
+are supported (see :doc:`sql-compliance`).
 
 However, in some cases (such as debugging crashes) you might want more
 verbose output.

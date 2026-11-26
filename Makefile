@@ -1,4 +1,4 @@
-.PHONY: amalgamation app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: amalgamation amalgamation-test app-test libvsql libvsql-example libvsql-test libvsql-c-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index check-function-index test unit-test unit-test-uncovered big-test coverage coverage-uncovered btree-test cli-test concurrency-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -108,6 +108,29 @@ $(LIBVSQL): amalgamation/stamp
 ifeq ($(OS),Windows_NT)
 	cp amalgamation/bin/libvsql.dll.a bin/
 endif
+
+# amalgamation-test is the amalgamation test suite (see docs/testing.rst). It
+# builds the binaries from the amalgamation in AMALGAMATION (by default
+# amalgamation/, from "make amalgamation", or an unzipped
+# vsql-VERSION-amalgamation.zip) with the amalgamation's own Makefile, like a
+# user without V would, and runs the tests that only need the binaries and
+# libvsql. It isn't part of "make test": CI runs it at the end, on the
+# amalgamation of every OS and architecture merged into one. The binaries are
+# copied into bin/, and the other targets are run with -o, so that make doesn't
+# build them again (which needs V).
+AMALGAMATION ?= amalgamation
+
+amalgamation-test:
+	$(MAKE) -C $(AMALGAMATION) all
+	mkdir -p bin
+	cp $(AMALGAMATION)/$(VSQL_BIN) $(VSQL_BIN)
+	cp $(AMALGAMATION)/$(LIBVSQL) $(LIBVSQL)
+ifeq ($(OS),Windows_NT)
+	cp $(AMALGAMATION)/bin/libvsql.dll.a bin/
+endif
+	.github/workflows/hello-test.sh $(VSQL_BIN)
+	$(MAKE) -o amalgamation/stamp -o $(VSQL_BIN) -o $(LIBVSQL) cli-test libvsql-c-test libvsql-example module-test embed-test
+	$(MAKE) -C $(AMALGAMATION) example
 
 # The release is a zip of a folder named after the release (VERSION, such as
 # v0.34.0), OS and architecture, so that versions can be unzipped side by side:
@@ -437,8 +460,13 @@ embed-test: $(LIBVSQL) $(VSQL_BIN)
 	$(LIBVSQL_CXX) libvsql/embed/test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-test-cpp
 	bin/embed-test-cpp
 
-libvsql-test: $(LIBVSQL)
+# libvsql-test is libvsql-c-test and the check of libvsql.h's constants, which
+# needs V. libvsql-c-test is only the C tests, so amalgamation-test can run it
+# without V.
+libvsql-test: libvsql-c-test
 	v run scripts/check-libvsql-constants.vsh
+
+libvsql-c-test: $(LIBVSQL)
 	$(LIBVSQL_CC) libvsql/test.c libvsql/*_test.c $(LIBVSQL_PTHREAD) -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
 	bin/libvsql-test
 	$(LIBVSQL_CC) libvsql/first_call.c $(LIBVSQL_PTHREAD) -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-first-call

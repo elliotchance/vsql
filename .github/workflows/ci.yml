@@ -493,9 +493,10 @@ jobs:
           name: release-windows-${{ matrix.arch }}
           path: vsql-*-windows-${{ matrix.arch }}.zip
 
-  # The release job makes and tests the amalgamation, then publishes it with
-  # the other zips on a tag, once every job has passed. Uploading replaces a zip
-  # that's already there, so the job can be run again.
+  # The release job makes the amalgamation and runs the amalgamation test suite
+  # on it ("make amalgamation-test"), then publishes it with the other zips on
+  # a tag, once every job has passed. Uploading replaces a zip that's already
+  # there, so the job can be run again.
   #
   # The amalgamation is the C for vsql and libvsql, so that they can be built
   # without V (see scripts/amalgamation.sh). vsql.c and libvsql.c have the C
@@ -523,13 +524,12 @@ jobs:
           scripts/amalgamation.sh package ${GITHUB_REF##*/} amalgamation-*/
           unzip -l vsql-*-amalgamation.zip
 
-      - name: Build and test amalgamation
+      # The amalgamation test suite (see docs/testing.rst) builds the binaries
+      # from the zip and runs the tests that only need them.
+      - name: Amalgamation tests
         run: |
           unzip -q vsql-*-amalgamation.zip
-          cd vsql-*-amalgamation
-          make
-          ../.github/workflows/hello-test.sh bin/vsql
-          make example
+          make amalgamation-test AMALGAMATION="$(echo vsql-*-amalgamation)"
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')

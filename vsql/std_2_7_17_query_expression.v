@@ -1194,18 +1194,24 @@ fn recursive_query_plan(query &RecursiveQuery, params map[string]Value, mut conn
 // working_table_plan reads the rows of the previous iteration of a
 // RecursiveQuery, in its own query. A subquery can only read it in FROM.
 //
+// The ORDER BY of a query of the stratum is compiled after the stratum has been
+// planned (see create_query_expression_plan), so a subquery in it isn't being
+// planned with the stratum, and it can't read the query either.
+//
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.j.ix.5.A and
 // 3.j.ix.5.B
 fn working_table_plan(query &RecursiveQuery, mut conn Connection) !Plan {
 	name := query.name.sub_entity_name
 	mut state := conn.recursive_queries[voidptr(query)] or {
-		return sqlstate_xx000('WITH RECURSIVE query ${name} is not being planned')
+		RecursiveQueryState{
+			depth: -1
+		}
 	}
 	if state.anchor {
 		state.anchor_read = true
 		conn.recursive_queries[voidptr(query)] = state
 	}
-	if conn.subquery_scopes.len > state.depth {
+	if state.depth < 0 || conn.subquery_scopes.len > state.depth {
 		return sqlstate_42601('WITH RECURSIVE query ${name} cannot be read in a subquery of its own query, other than in FROM')
 	}
 	conn.recursive_reads++

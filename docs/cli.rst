@@ -780,3 +780,6 @@ by a shell:
 The same values are returned by ``vsql.build_commit()``,
 ``vsql.build_c_compiler()``, ``vsql.build_date()``, ``vsql.build_version()``,
 ``vsql.build_v_commit()`` and ``vsql.build_v_version()`` in V.
+In SQL, they're returned by ``BUILD_COMMIT()``, ``BUILD_C_COMPILER()``,
+``BUILD_DATE()``, ``BUILD_VERSION()``, ``BUILD_V_COMMIT()`` and
+``BUILD_V_VERSION()`` (see :doc:`functions-build`).

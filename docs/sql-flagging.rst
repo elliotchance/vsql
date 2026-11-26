@@ -592,6 +592,27 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V410-02``
      - ``PARSE_SIZE``.
 
+   * - ``V411``
+     - Build functions (see :doc:`functions`).
+
+   * - ``V411-01``
+     - ``BUILD_VERSION``.
+
+   * - ``V411-02``
+     - ``BUILD_COMMIT``.
+
+   * - ``V411-03``
+     - ``BUILD_DATE``.
+
+   * - ``V411-04``
+     - ``BUILD_V_VERSION``.
+
+   * - ``V411-05``
+     - ``BUILD_V_COMMIT``.
+
+   * - ``V411-06``
+     - ``BUILD_C_COMPILER``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

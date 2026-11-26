@@ -853,6 +853,9 @@ to be split apart:
 ``SQLGetInfo`` of the C API returns them too, with the ``SQL_VSQL_`` constants
 (such as ``SQL_VSQL_BUILD_DATE``).
 
+Each ``BUILD`` item is also returned by a function with the same name, such as
+``BUILD_VERSION()`` (see :doc:`functions-build`).
+
 ``SQL_SIZING``
 --------------
 

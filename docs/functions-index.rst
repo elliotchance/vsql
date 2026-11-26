@@ -75,6 +75,24 @@ Every function, in alphabetical order:
    * - :ref:`BTRIM <functions-string:BTRIM>`
      - Remove characters from both ends of a string
      - String
+   * - :ref:`BUILD_COMMIT <functions-build:BUILD_COMMIT>`
+     - Git commit of the vsql release
+     - Build
+   * - :ref:`BUILD_C_COMPILER <functions-build:BUILD_C_COMPILER>`
+     - C compiler that compiled vsql
+     - Build
+   * - :ref:`BUILD_DATE <functions-build:BUILD_DATE>`
+     - Date that vsql was compiled
+     - Build
+   * - :ref:`BUILD_VERSION <functions-build:BUILD_VERSION>`
+     - Release of vsql
+     - Build
+   * - :ref:`BUILD_V_COMMIT <functions-build:BUILD_V_COMMIT>`
+     - Commit of the V compiler
+     - Build
+   * - :ref:`BUILD_V_VERSION <functions-build:BUILD_V_VERSION>`
+     - Version of the V compiler
+     - Build
    * - :ref:`CBRT <functions-exponent-and-logarithm:CBRT>`
      - Cube root
      - Exponent and Logarithm

@@ -85,6 +85,19 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 				return sqlstate_42601('${body.op} ALL cannot read a WITH RECURSIVE query in its own query')
 			}
 
+			// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.af and 1.ag
+			left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
+			right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
+			for i, left in left_columns {
+				right := right_columns[i] or { continue }
+				if (left.typ.typ.is_datetime() && right.typ.typ.is_datetime()
+					&& left.typ.has_time_zone() != right.typ.has_time_zone())
+					|| ((body.op != 'UNION' || !body.all)
+						&& (is_nondeterministic_type(left.typ) || is_nondeterministic_type(right.typ))) {
+					conn.check_deterministic('${body.op} of ${left.typ} and ${right.typ}')!
+				}
+			}
+
 			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'] or { Plan{} },
 				plan.subplans['\$2'] or { Plan{} }, mut conn)!
 
@@ -186,6 +199,12 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 	}
 
 	if body.distinct {
+		// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.ab
+		for column in plan.columns() {
+			if is_nondeterministic_type(column.typ) {
+				conn.check_deterministic('SELECT DISTINCT of ${column.typ}')!
+			}
+		}
 		plan.operations << new_distinct_operation(mut conn, params, body.exprs, tables,
 			plan.columns())!
 	}
@@ -834,6 +853,16 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	for col in group_clause {
 		grouping_columns << group_column(col, tables)!
 	}
+
+	// A grouping column is the only column that can be referenced, but it's
+	// rejected even when it isn't (which is stricter, #1795).
+	//
+	// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.ac
+	for column in grouping_columns {
+		if is_nondeterministic_type(column.typ) {
+			conn.check_deterministic('GROUP BY of ${column.typ}')!
+		}
+	}
 	c.grouping_columns = grouping_columns
 	for e in select_exprs {
 		e.expr.compile(mut c)!
@@ -924,6 +953,14 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
+	// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.ad and 1.ae
+	if stmt.offset != none {
+		conn.check_deterministic('OFFSET')!
+	}
+	if stmt.fetch != none {
+		conn.check_deterministic('FETCH FIRST')!
+	}
+
 	// The peers of WITH TIES are decided by the ORDER BY, so there must be one.
 	//
 	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 30

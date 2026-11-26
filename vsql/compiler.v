@@ -187,6 +187,27 @@ fn (c Compiler) check_deterministic(what string) ! {
 	if c.restricted != '' {
 		return sqlstate_42601('${what} cannot be used in ${c.restricted}')
 	}
+	c.conn.check_deterministic(what)!
+}
+
+// check_deterministic returns an error if the potential source of
+// non-determinism (described by what) is in the query of a view with CHECK
+// OPTION that's being created (see check_view_deterministic).
+//
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 20
+fn (conn &Connection) check_deterministic(what string) ! {
+	if conn.nondeterministic_not_allowed != '' {
+		return sqlstate_42601('${what} cannot be used in ${conn.nondeterministic_not_allowed}')
+	}
+}
+
+// is_nondeterministic_type is true for a type whose equal values can still be
+// different, so which one is kept by a DISTINCT, GROUP BY, UNION, EXCEPT or
+// INTERSECT isn't decided: a character string (such as 'a' and 'a ') or a
+// datetime with a time zone (the same time in two time zones). There are no
+// user-defined types (S023).
+fn is_nondeterministic_type(t Type) bool {
+	return t.typ.is_string() || t.has_time_zone()
 }
 
 // compile_retrospective compiles the comparand Y of a retrospectively

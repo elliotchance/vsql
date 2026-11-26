@@ -4,18 +4,23 @@ module vsql
 //
 // The VIEWS view has a row for each view that's in the TABLES view (where
 // TABLE_TYPE is VIEW), in the same order (Function of ISO/IEC 9075-11:2006,
-// 6.65, VIEWS base table). Views made by CREATE VIEW aren't in it yet (#1263),
-// so those are the views of the INFORMATION_SCHEMA itself.
+// 6.65, VIEWS base table): the views made by CREATE VIEW and the views of the
+// INFORMATION_SCHEMA itself. A view made by CREATE VIEW is described in the
+// INFORMATION_SCHEMA as soon as it's created:
+//
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 12
 //
 // VIEW_DEFINITION is the text of the view's <query expression> (Description,
-// 2). The views of the INFORMATION_SCHEMA are built by vsql when they're read,
-// rather than from a <query expression>, so there is no text and it's NULL. The
-// standard would also hide it, since the INFORMATION_SCHEMA is its own owner
-// (ISO/IEC 9075-11:2006, 5.1, INFORMATION_SCHEMA Schema).
+// 2). The standard only shows it to the owner of the view's schema (5.76,
+// VIEWS view), but there are no owners (#732), so it's always shown. The views
+// of the INFORMATION_SCHEMA are built by vsql when they're read, rather than
+// from a <query expression>, so there is no text and it's NULL. The standard
+// would also hide it, since the INFORMATION_SCHEMA is its own owner (ISO/IEC
+// 9075-11:2006, 5.1, INFORMATION_SCHEMA Schema).
 //
 // None of them have a CHECK OPTION, and they can't be updated or inserted into
-// (Description, 3 and 4), which is the same as their IS_INSERTABLE_INTO in the
-// TABLES view.
+// yet (#1448) (Description, 3 and 4), which is the same as their
+// IS_INSERTABLE_INTO in the TABLES view.
 fn (mut catalog CatalogConnection) register_views_view() ! {
 	c := &catalog
 	id := information_schema_sql_identifier
@@ -31,13 +36,13 @@ fn (mut catalog CatalogConnection) register_views_view() ! {
 		INSERTABLE_INTO ${yn} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				if table.is_virtual {
 					t.next_values([
 						new_varchar_value(c.catalog_name), // TABLE_CATALOG
 						new_varchar_value(table.name.schema_name), // TABLE_SCHEMA
 						new_varchar_value(table.name.entity_name), // TABLE_NAME
-						new_null_value(.is_varchar), // VIEW_DEFINITION
+						view_definition(c, table), // VIEW_DEFINITION
 						new_varchar_value('NONE'), // CHECK_OPTION
 						yes_or_no(false), // IS_UPDATABLE
 						yes_or_no(false), // INSERTABLE_INTO
@@ -46,6 +51,14 @@ fn (mut catalog CatalogConnection) register_views_view() ! {
 			}
 			t.done()
 		})!
+}
+
+// view_definition is the VIEW_DEFINITION of the VIEWS view, which is NULL for
+// the views of the INFORMATION_SCHEMA.
+fn view_definition(c &CatalogConnection, table Table) Value {
+	view := c.storage.views[table.name.storage_id()] or { return new_null_value(.is_varchar) }
+
+	return new_varchar_value(view.query)
 }
 
 // ISO/IEC 9075-11:2006, 5.73, VIEW_COLUMN_USAGE view

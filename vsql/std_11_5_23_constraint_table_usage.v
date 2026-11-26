@@ -27,7 +27,7 @@ fn (mut catalog CatalogConnection) register_constraint_table_usage_view() ! {
 		CONSTRAINT_NAME ${id} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				mut usages := []ConstraintUsage{}
 				if table.primary_key.len > 0 {
 					usages << ConstraintUsage{table, [], table.primary_key_name}

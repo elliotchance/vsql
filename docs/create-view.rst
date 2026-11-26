@@ -39,7 +39,9 @@ Limitations
 - The query can't have a ``?`` parameter or ``NEXT VALUE FOR``, and it can't
   end with an ``ORDER BY``, ``OFFSET`` or ``FETCH FIRST`` (or ``LIMIT``).
 - ``RECURSIVE`` and ``WITH CHECK OPTION`` aren't supported.
-- Views aren't in the ``INFORMATION_SCHEMA`` yet.
+- Views are in the ``TABLES``, ``VIEWS`` and ``COLUMNS`` views of the
+  ``INFORMATION_SCHEMA``, but not the views that describe what a view uses
+  (such as ``VIEW_TABLE_USAGE``) yet.
 
 Examples
 --------

@@ -34,7 +34,7 @@ fn (mut catalog CatalogConnection) register_constraint_column_usage_view() ! {
 		CONSTRAINT_NAME ${id} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				if table.is_virtual {
 					continue
 				}

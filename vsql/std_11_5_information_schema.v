@@ -92,7 +92,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		COMMIT_ACTION ${cd}
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				t.next_values(tables_view_row(c.catalog_name, table))
 			}
 			t.done()
@@ -146,7 +146,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		IS_UPDATABLE ${yn} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				for i, column in table.columns {
 					t.next_values(columns_view_row(c.catalog_name, table, i, column))
 				}
@@ -162,7 +162,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		CHECK_CLAUSE ${cd}
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				for row in check_constraints_view_rows(c.catalog_name, table) {
 					t.next_values(row)
 				}
@@ -186,7 +186,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		ENFORCED ${yn} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				for row in table_constraints_view_rows(c.catalog_name, table) {
 					t.next_values(row)
 				}
@@ -207,7 +207,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		POSITION_IN_UNIQUE_CONSTRAINT ${cn}
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				if table.is_virtual {
 					continue
 				}
@@ -249,7 +249,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 		DELETE_RULE ${cd} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				for i, key in table.foreign_keys {
 					t.next_values(referential_constraints_view_row(c.catalog_name, table,
 						i, c.storage.table(key.referenced_table.storage_id())))
@@ -503,13 +503,19 @@ fn (mut catalog CatalogConnection) add_information_schema_table(create_table str
 }
 
 // information_schema_tables returns the tables that the INFORMATION_SCHEMA
-// describes, ordered by schema and table name: the tables of the catalog, and
-// the views of the INFORMATION_SCHEMA itself (Note 1). Virtual tables that are
-// registered on a connection aren't part of the catalog.
-fn (catalog &CatalogConnection) information_schema_tables() []Table {
+// describes, ordered by schema and table name: the tables and views of the
+// catalog, and the views of the INFORMATION_SCHEMA itself (Note 1). Virtual
+// tables that are registered on a connection aren't part of the catalog. A view
+// is a virtual table (see view_table), the same as the views of the
+// INFORMATION_SCHEMA. conn is the connection that's reading the
+// INFORMATION_SCHEMA.
+fn (catalog &CatalogConnection) information_schema_tables(mut conn Connection) []Table {
 	mut tables := []Table{}
 	for _, table in catalog.storage.tables {
 		tables << table
+	}
+	for _, view in catalog.storage.views {
+		tables << view_table(mut conn, catalog.catalog_name, view)
 	}
 	for _, virtual_table in catalog.virtual_tables {
 		if virtual_table.create_table_stmt.table_name.schema_name == information_schema_name {
@@ -530,8 +536,8 @@ fn (catalog &CatalogConnection) information_schema_tables() []Table {
 
 // tables_view_row is a row of the TABLES view (ISO/IEC 9075-11:2006, 6.50,
 // TABLES base table). Every table is a persistent base table, except for the
-// views of the INFORMATION_SCHEMA, which can't be inserted into (Description,
-// 2). There are no temporary tables (F531) or typed tables (S081), so the
+// views (made by CREATE VIEW, or of the INFORMATION_SCHEMA), which can't be
+// inserted into yet (#1448) (Description, 2). There are no temporary tables (F531) or typed tables (S081), so the
 // COMMIT_ACTION, the self-referencing column and the structured type are NULL,
 // and IS_TYPED is NO (Description, 3-6 and 8). Without Feature T111, a table is
 // insertable-into if it's also simply updatable (Description, 7.b).
@@ -557,16 +563,16 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 }
 
 // columns_view_row is a row of the COLUMNS view (ISO/IEC 9075-11:2006, 6.20,
-// COLUMNS base table) for the column at index i of a table. The only views are
-// the ones of the INFORMATION_SCHEMA, so the columns are always described by
-// the descriptor of their own table (Description, 1). There are no domains
+// COLUMNS base table) for the column at index i of a table. The columns of a
+// view are described by the columns of its query (Description, 1.b, see
+// view_table), and the views of the INFORMATION_SCHEMA describe themselves. There are no domains
 // (F251) or typed tables (S081), so the domain is NULL and IS_SELF_REFERENCING
 // is NO (Description, 5 and 9). A column is known not nullable if it's NOT NULL,
 // part of the PRIMARY KEY or has a CHECK that's exactly "c IS NOT NULL"
 // (Description, 8, see is_known_not_nullable). The identity columns are
 // described by Description, 10-16, generated columns by Description, 17 and 18,
-// and IS_UPDATABLE is NO for the views of the INFORMATION_SCHEMA (Description,
-// 19).
+// and IS_UPDATABLE is NO for views, which can't be updated yet (#1448)
+// (Description, 19).
 //
 // Every column is accessible, because there are no privileges (#732), so the
 // view has every column of the catalog (ISO/IEC 9075-11:2006, 5.21, COLUMNS

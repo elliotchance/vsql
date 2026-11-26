@@ -1238,7 +1238,7 @@
 11.32/GR/10.a            n/a          - - subtables (S081)
 11.32/GR/10.b            n/a          - - subtables (S081)
 11.32/GR/11              n/a          - - subtables (S081)
-11.32/GR/12              missing      - - views made by CREATE VIEW aren't in the INFORMATION_SCHEMA yet (#1263)
+11.32/GR/12              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 11.32/CR/1               n/a          - - RECURSIVE (#1284)
 11.32/CR/2               n/a          - - LOCAL and CASCADED CHECK OPTION (#1262)
 11.32/CR/3               n/a          - - reference types (S043)

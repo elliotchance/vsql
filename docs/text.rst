@@ -47,9 +47,9 @@ Text Types
     - Is an alias for ``CHARACTER LARGE OBJECT(n)``. [1]_
 
 The length *n* must be from 1 to 10485760 (or 2147483647 for a ``CHARACTER
-LARGE OBJECT``). It's the number of characters, but for a ``CHARACTER`` or
-``CHARACTER VARYING`` it can also be the number of octets (bytes of UTF-8),
-such as ``VARCHAR(10 OCTETS)``. ``VARCHAR(10 CHARACTERS)`` is the same as
+LARGE OBJECT``). It's the number of characters, but it can also be the number
+of octets (bytes of UTF-8), such as ``VARCHAR(10 OCTETS)`` or
+``CLOB(1K OCTETS)``. ``VARCHAR(10 CHARACTERS)`` is the same as
 ``VARCHAR(10)``. A string that has more octets than that is the same as one
 that's too long. A ``CHARACTER(n OCTETS)`` is padded with spaces to *n* octets,
 and a cast to it never cuts a character in half. A ``CHARACTER VARYING`` (or

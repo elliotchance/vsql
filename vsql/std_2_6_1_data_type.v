@@ -108,11 +108,12 @@ fn large_object_length(digits string, scale u64) string {
 // parse_large_object_type is a CHARACTER LARGE OBJECT or BINARY LARGE OBJECT
 // with an explicit <large object length>, which must be from 1 to the maximum
 // length. It's checked when it's parsed, since a longer length doesn't fit in
-// the type.
+// the type. Like parse_type_with_length, a length that ends with " OCTETS" is
+// in octets (T062).
 //
 // ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 12 and 17
 fn parse_large_object_type(name string, length string) !Type {
-	n := strconv.parse_uint(length, 10, 64) or { max_u64 }
+	n := strconv.parse_uint(length.all_before(' '), 10, 64) or { max_u64 }
 	if n < 1 {
 		return sqlstate_42601('${name} length must be greater than 0')
 	}
@@ -121,7 +122,10 @@ fn parse_large_object_type(name string, length string) !Type {
 		return sqlstate_42601('${name} length must not be greater than ${max_large_object_length}')
 	}
 
-	return new_type(name, int(n), 0)
+	mut typ := new_type(name, int(n), 0)
+	typ.octets = length.ends_with(' OCTETS')
+
+	return typ
 }
 
 // parse_type_with_precision is used for a data type with an explicit

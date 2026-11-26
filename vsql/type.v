@@ -470,7 +470,11 @@ pub fn (t Type) str() string {
 			numeric_type_str('NUMERIC', t.size, t.scale)
 		}
 		.is_clob {
-			large_object_type_str('CHARACTER LARGE OBJECT', t.size)
+			if t.octets {
+				'CHARACTER LARGE OBJECT(${t.size_str()})'
+			} else {
+				large_object_type_str('CHARACTER LARGE OBJECT', t.size)
+			}
 		}
 		.is_binary {
 			'BINARY(${t.size})'

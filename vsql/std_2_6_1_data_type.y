@@ -258,8 +258,22 @@ multiplier:
 | T { $$.v = yy_box(u64(1099511627776)) }
 | P { $$.v = yy_box(u64(1125899906842624)) }
 
+// Like <character length>, the length of a CHARACTER LARGE OBJECT is in
+// characters, unless it's OCTETS (T062).
+//
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 8 and 9
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Conformance Rules, 23
 character_large_object_length:
   large_object_length { $$.v = $1.v as string }
+| large_object_length CHARACTERS {
+    flag(mut yylex, 'T062')
+    $$.v = $1.v as string
+  }
+| large_object_length OCTETS {
+    flag(mut yylex, 'T062')
+    length := $1.v as string
+    $$.v = '${length} OCTETS'
+  }
 
 // The length of a character string type is in characters, unless it's OCTETS
 // (T062).

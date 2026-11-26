@@ -146,6 +146,9 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// 0) has the maximum length, which is longer than any row.
 			l := t.size
 			s := cast_character_source(v, l)
+			if t.octets {
+				return new_clob_value(store_octets(s, t)!.string_value())
+			}
 			m := s.len_utf8()
 			if l == 0 || m <= l {
 				return new_clob_value(s)
@@ -782,14 +785,14 @@ fn check_numeric_range(x Numeric, typ SQLType) ! {
 	}
 }
 
-// store_octets assigns the string s to a CHARACTER(L OCTETS) or CHARACTER
-// VARYING(L OCTETS), which is the same as for a length in characters, except
+// store_octets assigns the string s to a CHARACTER(L OCTETS), CHARACTER
+// VARYING(L OCTETS) or CHARACTER LARGE OBJECT(L OCTETS), which is the same as for a length in characters, except
 // that the length of s is in octets (UTF-8 bytes). A string that's too long can
 // only lose spaces, which are one octet each, so it's never cut in the middle of
 // a character. A CHARACTER is padded with spaces to L octets.
 //
-// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.b.i and 16.b.ii
-// ISO/IEC 9075-2:2023, 9.2, Store assignment, General Rules, 3.b.i to 3.b.v
+// ISO/IEC 9075-2:2023, 6.1, <data type>, Syntax Rules, 16.b.i, 16.b.ii and 16.b.iii
+// ISO/IEC 9075-2:2023, 9.2, Store assignment, General Rules, 3.b.i to 3.b.vii
 fn store_octets(s string, t Type) !Value {
 	l := t.size
 	mut result := s

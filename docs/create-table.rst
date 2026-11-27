@@ -13,64 +13,62 @@ Syntax
   CREATE TABLE [ IF NOT EXISTS ] <table_name> [ ( <column_name> , ... ) ]
     AS ( <query> ) WITH [ NO ] DATA
 
-  <element> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
-               [ [ CONSTRAINT <constraint_name> ] <column_constraint>
-                 [ <characteristics> ] ... ]
-             | <column_name> <generated>
-               [ [ CONSTRAINT <constraint_name> ] <column_constraint>
-                 [ <characteristics> ] ... ]
-             | [ CONSTRAINT <constraint_name> ] <table_constraint>
-               [ <characteristics> ]
-             | LIKE <table_name> [ <like_option> ... ]
+  <element> ::= <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
+                [ [ CONSTRAINT <constraint_name> ] <column_constraint>
+                  [ <characteristics> ] ... ]
+              | <column_name> <generated>
+                [ [ CONSTRAINT <constraint_name> ] <column_constraint>
+                  [ <characteristics> ] ... ]
+              | [ CONSTRAINT <constraint_name> ] <table_constraint>
+                [ <characteristics> ]
+              | LIKE <table_name> [ <like_option> ... ]
 
-  <like_option> := { INCLUDING | EXCLUDING } { IDENTITY | DEFAULTS | GENERATED }
+  <like_option> ::= { INCLUDING | EXCLUDING } { IDENTITY | DEFAULTS | GENERATED }
 
-  <table_constraint> := PRIMARY KEY ( <column_name> , ... )
-                      | UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <column_name> , ... )
-                      | FOREIGN KEY ( <column_name> , ... ) <references>
-                      | CHECK ( <condition> )
-
-  <default> := <literal>
-             | CURRENT_DATE | CURRENT_TIME | CURRENT_TIMESTAMP
-             | LOCALTIME | LOCALTIMESTAMP
-             | CURRENT_CATALOG | CURRENT_SCHEMA
-             | NULL
-
-  <identity> := GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY
-                [ ( <sequence_option> ... ) ]
-
-  <generated> := GENERATED ALWAYS AS ( <expr> )
-
-  <sequence_option> := START WITH <value>
-                     | INCREMENT BY <value>
-                     | MINVALUE <value> | NO MINVALUE
-                     | MAXVALUE <value> | NO MAXVALUE
-                     | CYCLE | NO CYCLE
-
-  <column_constraint> := NOT NULL
-                       | PRIMARY KEY
-                       | UNIQUE
-                       | <references>
+  <table_constraint> ::= PRIMARY KEY ( <column_name> , ... )
+                       | UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <column_name> , ... )
+                       | FOREIGN KEY ( <column_name> , ... ) <references>
                        | CHECK ( <condition> )
 
-  <references> := REFERENCES <table_name> [ ( <column_name> , ... ) ]
-                  [ ON UPDATE <referential_action> ]
-                  [ ON DELETE <referential_action> ]
+  <default> ::= <literal>
+              | CURRENT_DATE | CURRENT_TIME | CURRENT_TIMESTAMP
+              | LOCALTIME | LOCALTIMESTAMP
+              | CURRENT_CATALOG | CURRENT_SCHEMA
+              | NULL
 
-  <referential_action> := CASCADE | SET NULL | SET DEFAULT | NO ACTION
+  <identity> ::= GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY
+                 [ ( <sequence_option> ... ) ]
 
-  <characteristics> := [ NOT ] DEFERRABLE [ INITIALLY { DEFERRED | IMMEDIATE } ]
-                     | INITIALLY { DEFERRED | IMMEDIATE } [ [ NOT ] DEFERRABLE ]
+  <generated> ::= GENERATED ALWAYS AS ( <expr> )
 
-1. ``column_name`` must start with a letter, but can be followed by any letter,
-   underscore (``_``) or digit for a maximum length of 128 characters. A
-   quoted name (such as ``"order"``) can contain any characters. See
-   :doc:`keywords`.
-2. ``data_type`` is one of the types in :doc:`binary`, :doc:`booleans`,
-   :doc:`dates-times`, :doc:`numbers` and :doc:`text`.
-3. A table can have up to 1600 columns.
+  <sequence_option> ::= START WITH <value>
+                      | INCREMENT BY <value>
+                      | MINVALUE <value> | NO MINVALUE
+                      | MAXVALUE <value> | NO MAXVALUE
+                      | CYCLE | NO CYCLE
 
-Columns allow ``NULL`` unless they are ``NOT NULL``.
+  <column_constraint> ::= NOT NULL
+                        | PRIMARY KEY
+                        | UNIQUE
+                        | <references>
+                        | CHECK ( <condition> )
+
+  <references> ::= REFERENCES <table_name> [ ( <column_name> , ... ) ]
+                   [ MATCH { SIMPLE | FULL | PARTIAL } ]
+                   [ ON UPDATE <referential_action> ]
+                   [ ON DELETE <referential_action> ]
+
+  <referential_action> ::= CASCADE | SET NULL | SET DEFAULT | RESTRICT | NO ACTION
+
+  <characteristics> ::= [ NOT ] DEFERRABLE [ INITIALLY { DEFERRED | IMMEDIATE } ]
+                      | INITIALLY { DEFERRED | IMMEDIATE } [ [ NOT ] DEFERRABLE ]
+
+The names of the table, columns and constraints are identifiers (see
+:doc:`identifiers`), and each ``<data_type>`` is one of the
+:doc:`data-types`. A table can have up to 1600 columns (see
+:doc:`limitations`).
+
+Columns allow ``NULL`` (see :doc:`null`) unless they are ``NOT NULL``.
 
 IF NOT EXISTS
 -------------
@@ -304,7 +302,7 @@ columns (an error ``23505``), like a ``PRIMARY KEY``. Values that are equal are
 the same in the same way. A row with a ``NULL`` in any of the columns never
 conflicts, so a ``UNIQUE`` column can have any number of ``NULL`` values. This
 is ``NULLS DISTINCT``, which the SQL standard leaves for each database to choose
-when it isn't given (``NULLS [NOT] DISTINCT`` can't be given yet).
+when it isn't given.
 
 With ``NULLS NOT DISTINCT``, a ``NULL`` is the same as another ``NULL``, so two
 rows conflict when they have the same values and ``NULL`` in the same columns
@@ -402,7 +400,6 @@ some of the columns of a ``FOREIGN KEY`` are ``NULL``:
       room INTEGER,
       FOREIGN KEY (building, room) REFERENCES rooms (building, room) MATCH FULL
   );
-
 
 ``ON DELETE`` says what happens to the rows that reference a row that's
 deleted, and ``ON UPDATE`` says what happens to the rows that reference a row
@@ -509,36 +506,6 @@ contain (an error ``42601``):
 
 A condition that isn't a ``BOOLEAN`` is an error ``42804``.
 
-Examples
---------
-
-.. code-block:: sql
-
-  CREATE TABLE products (
-      product_id INTEGER NOT NULL,
-      title CHARACTER VARYING(100),
-      price NUMERIC(10, 2),
-      PRIMARY KEY (product_id)
-  );
-
-  CREATE TABLE categories (
-      category_id INTEGER PRIMARY KEY,
-      name CHARACTER VARYING(100) NOT NULL UNIQUE
-  );
-
-  CREATE TABLE orders (
-      order_id INTEGER PRIMARY KEY,
-      product_id INTEGER NOT NULL REFERENCES products,
-      quantity INTEGER DEFAULT 1 NOT NULL CHECK (quantity > 0),
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE discounts (
-      min_quantity INTEGER,
-      max_quantity INTEGER,
-      CHECK (min_quantity <= max_quantity)
-  );
-
 Constraint Names
 ----------------
 
@@ -615,6 +582,36 @@ just the rows that were changed. ``NOT ENFORCED`` is not supported.
   INSERT INTO child (parent_id) VALUES (1);
   INSERT INTO parent (id) VALUES (1);
   COMMIT;
+
+Examples
+--------
+
+.. code-block:: sql
+
+  CREATE TABLE products (
+      product_id INTEGER NOT NULL,
+      title CHARACTER VARYING(100),
+      price NUMERIC(10, 2),
+      PRIMARY KEY (product_id)
+  );
+
+  CREATE TABLE categories (
+      category_id INTEGER PRIMARY KEY,
+      name CHARACTER VARYING(100) NOT NULL UNIQUE
+  );
+
+  CREATE TABLE orders (
+      order_id INTEGER PRIMARY KEY,
+      product_id INTEGER NOT NULL REFERENCES products,
+      quantity INTEGER DEFAULT 1 NOT NULL CHECK (quantity > 0),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE discounts (
+      min_quantity INTEGER,
+      max_quantity INTEGER,
+      CHECK (min_quantity <= max_quantity)
+  );
 
 See Also
 --------

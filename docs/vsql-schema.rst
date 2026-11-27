@@ -34,7 +34,7 @@ Functions
 The functions that vsql has beyond the SQL standard, such as ``GCD``, ``NOW``
 and ``SPLIT_PART``, are the routines of the ``VSQL`` schema. So are the
 functions that are registered with ``register_function`` (see
-:doc:`v-client-library-docs`), and the PostgreSQL functions that a PostgreSQL
+:doc:`custom-functions`), and the PostgreSQL functions that a PostgreSQL
 client gets (see :doc:`compatibility-postgresql`). They're described by the
 ``ROUTINES`` and ``PARAMETERS`` views of the ``INFORMATION_SCHEMA``, as if each
 one was created as an external function in the ``VSQL`` schema.

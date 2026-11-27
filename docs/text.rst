@@ -63,7 +63,7 @@ A string of any type that's longer than a quarter of a page (1024 bytes, with
 the default page size) is stored outside of its row, so that reading the row
 doesn't read it. A long ``CHARACTER LARGE OBJECT`` is only read when it's used,
 such as when the result is read, and an application can read part of it at a
-time instead (see ``Row.get_lob`` in :doc:`v-client-library-docs`). Other
+time instead (see :ref:`language-v:Large Objects`). Other
 string types are read with the row.
 
 A ``CHARACTER LARGE OBJECT`` can't be in a ``PRIMARY KEY``, a ``UNIQUE`` or
@@ -134,7 +134,8 @@ Casting
 Text is stored as UTF-8, and lengths (such as the *n* in ``VARCHAR(n)``) are
 counted in characters, not bytes. A string that's too long for a column is an
 error ``22001``, but a ``CAST`` to a shorter type only truncates it (with a
-``01004`` warning).
+``01004`` warning). The conversions between text and the other types are in
+:doc:`type-conversion`.
 
 Comparisons are case-sensitive and compare the Unicode code points of the
 characters. When two strings are compared with ``=`` (or ``<``, and so on), the

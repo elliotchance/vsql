@@ -16,7 +16,8 @@ Syntax
   SET <column_name> = <value> , ...
   WHERE CURRENT OF <cursor_name>
 
-If ``WHERE`` is not provided, all records will be updated.
+Changes the rows of a table that match the ``WHERE`` condition. If ``WHERE`` is
+not provided, all rows will be updated.
 
 ``AS <correlation_name>`` gives the table a *correlation name*. The table must
 then be referred to by that name instead (such as ``p.price``), which is useful
@@ -28,8 +29,8 @@ A value can be ``DEFAULT``, which is the default value of the column (see
 A changed row that violates a ``CHECK`` constraint is an error ``23514``, and
 none of the rows are updated.
 
-The result (such as ``UPDATE 8``) contains the number of records matched,
-including records that already had the new values. If no records are matched,
+The result (such as ``UPDATE 8``) contains the number of rows matched,
+including rows that already had the new values. If no rows are matched,
 the result is ``UPDATE 0`` with the completion condition ``02000`` (no data),
 see :doc:`sqlstate`.
 
@@ -55,13 +56,13 @@ Positioned UPDATE
 :doc:`cursors`), and the cursor stays on it.
 
 The SQL standard only allows a positioned ``UPDATE`` in an SQL-client module
-(such as a C program, see :doc:`language-c`). Running it directly is a vsql
+(see :doc:`sql-client-modules`). Running it directly is a vsql
 extension, flagged by ``V113-01`` (see :doc:`sql-flagging`).
 
-The cursor must be updatable (see "Updatable Cursors" in
-:doc:`declare-cursor`). ``FOR UPDATE OF`` limits the columns that a positioned
-``UPDATE`` can change. A positioned ``UPDATE`` also can't change a column that's
-used by a sort key of the ``ORDER BY`` (``42601``).
+The cursor must be updatable (see :ref:`declare-cursor:Updatable Cursors`).
+``FOR UPDATE OF`` limits the columns that a positioned ``UPDATE`` can change. A
+positioned ``UPDATE`` also can't change a column that's used by a sort key of
+the ``ORDER BY`` (``42601``).
 
 The rows of a cursor are found when it's opened, so a ``FETCH`` returns the row
 as it was then, even if it has been changed since. A ``WITH HOLD`` cursor must
@@ -110,16 +111,10 @@ can see this plan by using the ``EXPLAIN`` prefix. See :doc:`explain`.
 Errors
 ------
 
-Only one transaction is allowed to hold a modified version of a record at one
-time. This allows all other transactions to see the previous (frozen) version
-and the in-flight transaction to see its own version.
-
-It's not possible for multiple in-flight transactions to hold different versions
-of the same semantic row. This would break the serialization rules of the
-transaction since this would cause a conflict as to whose version is "correct".
-This situation will return a SQLSTATE 40001 "serialization failure" error, and
-the transaction is rolled back. Clients that receive this error should start
-the entire transaction again.
+A row that has been changed or deleted by another transaction that hasn't been
+committed yet can't be updated. This returns a ``40001`` serialization failure,
+and the transaction is rolled back so that it can be retried, see
+:doc:`transactions`.
 
 See Also
 --------

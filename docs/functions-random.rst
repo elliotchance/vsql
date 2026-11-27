@@ -5,6 +5,9 @@ Random Functions
    :local:
    :depth: 1
 
+Random functions return a random number or binary string. For a random UUID,
+see :doc:`functions-uuid`.
+
 RANDOM
 ^^^^^^
 

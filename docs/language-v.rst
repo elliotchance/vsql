@@ -12,8 +12,8 @@ Requirements
 ------------
 
 The V compiler (see `vlang.io <https://vlang.io>`_). vsql is built and tested
-with the latest V every day, and older versions of V may not be able to compile
-it, so update V first with ``v up``. macOS, Linux and Windows are supported.
+with the latest V, and older versions of V may not be able to compile it, so
+update V first with ``v up``. macOS, Linux and Windows are supported.
 
 Install/Update
 --------------
@@ -775,30 +775,30 @@ ORM Example
    import elliotchance.vsql.vorm
 
    struct Product {
-     id    int @[primary; sql: serial]
-     name  string
-     price f64
+   	id    int @[primary; sql: serial]
+   	name  string
+   	price f64
    }
 
    fn example() ! {
-     mut db := vorm.open('test.vsql')!
+   	mut db := vorm.open('test.vsql')!
 
-     sql db {
-       create table Product
-     }!
+   	sql db {
+   		create table Product
+   	}!
 
-     product := Product{
-       name:  'Bagel'
-       price: 1.25
-     }
-     sql db {
-       insert product into Product
-     }!
+   	product := Product{
+   		name:  'Bagel'
+   		price: 1.25
+   	}
+   	sql db {
+   		insert product into Product
+   	}!
 
-     cheap_products := sql db {
-       select from Product where price < 3.0 order by name
-     }!
-     println(cheap_products)
+   	cheap_products := sql db {
+   		select from Product where price < 3.0 order by name
+   	}!
+   	println(cheap_products)
    }
 
 ``db.conn`` is the ``vsql.Connection``, so ORM statements can be mixed with SQL
@@ -810,7 +810,8 @@ connection can also be used with ``vorm.new()``:
    mut conn := vsql.open('test.vsql')!
    mut db := vorm.new(conn)
 
-See also ``examples/orm.v``.
+See also
+`examples/orm.v <https://github.com/elliotchance/vsql/blob/main/examples/orm.v>`_.
 
 Tables and Columns
 ^^^^^^^^^^^^^^^^^^
@@ -889,7 +890,7 @@ Attributes
     - Makes the field the ``PRIMARY KEY``.
 
   * - ``@[sql: serial]``
-    - See *Serial Fields*.
+    - See `Serial Fields`_.
 
   * - ``@[unique]``
     - Adds a ``UNIQUE`` constraint for the field.
@@ -935,12 +936,12 @@ A ``where`` can use ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``like``,
 .. code-block:: v
 
    products := sql db {
-     select from Product where (price < 3.0 || name like 'Ice%') && id != 1
+   	select from Product where (price < 3.0 || name like 'Ice%') && id != 1
    }!
 
    ids := [1, 3]
    others := sql db {
-     select from Product where name ilike 'ice%' && id !in ids
+   	select from Product where name ilike 'ice%' && id !in ids
    }!
 
 ``ilike`` is ``ILIKE``, which isn't standard SQL (see :ref:`expressions:ILIKE`).

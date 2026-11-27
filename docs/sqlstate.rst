@@ -32,8 +32,8 @@ about. A warning doesn't stop the statement or roll back the transaction.
 
 ``01001`` is a warning (the statement still succeeds) when a positioned
 ``DELETE`` or ``UPDATE`` changes a row that another statement has changed since
-the cursor was opened, or the other way around. See "Positioned DELETE" in
-:doc:`delete` and "Positioned UPDATE" in :doc:`update`.
+the cursor was opened, or the other way around. See :ref:`delete:Positioned DELETE`
+and :ref:`update:Positioned UPDATE`.
 
 **Examples**
 
@@ -208,7 +208,7 @@ A query returned a different number of rows than was expected where it was
 used.
 
 ``21000`` cardinality violation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A subquery used as a value (a scalar subquery) returned more than one row. A
 scalar subquery that returns no rows is ``NULL``.
@@ -472,7 +472,7 @@ with ``SIMILAR``) is not a valid regular expression.
   -- error 2201B: invalid regular expression
 
 ``2201E`` invalid argument for natural logarithm
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -929,7 +929,7 @@ A client that receives this error should retry the transaction. See
 ``40002`` integrity constraint violation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A deferred constraint (see "Deferrable Constraints" in :doc:`create-table`)
+A deferred constraint (see :ref:`create-table:Deferrable Constraints`)
 isn't satisfied at the ``COMMIT``. The whole transaction is rolled back.
 
 **Examples**

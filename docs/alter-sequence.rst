@@ -45,9 +45,9 @@ direction of the sequence. For example, a sequence created without any options
 that's changed to ``INCREMENT BY -1`` still has a minimum value of 1.
 
 A new ``MINVALUE``, ``MAXVALUE``, ``NO MINVALUE`` or ``NO MAXVALUE`` must not
-exclude the next value (or the ``RESTART`` value). Limits that aren't changed aren't checked, so
-a sequence that has gone past its ``MAXVALUE`` can be continued with ``CYCLE``,
-``NO MAXVALUE`` or a higher ``MAXVALUE``.
+exclude the next value (or the ``RESTART`` value). Limits that aren't changed
+aren't checked, so a sequence that has gone past its ``MAXVALUE`` can be
+continued with ``CYCLE``, ``NO MAXVALUE`` or a higher ``MAXVALUE``.
 
 The data type of a sequence can't be changed. The new options must be values of
 its data type (see :doc:`create-sequence`).

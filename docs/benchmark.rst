@@ -2,9 +2,8 @@ Benchmark
 =========
 
 The main focus of vsql is on compatibility and features of the SQL standard.
-That does not mean that speed is not important, but less important since there
-are already a wide array of products out there that are battle tested and tuned
-to perfection. The benchmark is useful to compare the relative performance of
+Speed still matters, but less so, since there are already many mature databases
+that are tuned for it. The benchmark is useful to compare the relative performance of
 two versions, or of a change.
 
 Use the following command to run the on-disk and memory benchmarks:
@@ -39,19 +38,19 @@ The options are:
 
 - ``-file``: Run the benchmark on disk, in this file, which is created if it
   doesn't exist. It can be an existing database, since the benchmark only uses
-  its own schema (see *Schema*). It can't be used with ``-memory``.
+  its own schema (see `Schema`_). It can't be used with ``-memory``.
 
-- ``-suite``: What to run (see *Suites*):
+- ``-suite``: What to run (see `Suites`_):
 
   - ``big``: Insert large values, and read them back.
-  - ``speedtest1``: The tests of speedtest1 from SQLite (see *speedtest1*).
+  - ``speedtest1``: The tests of speedtest1 from SQLite (see `speedtest1`_).
   - ``tpc-b``: ``tpc-b-setup``, ``tpc-b-oltp`` and ``tpc-b-check``, in that
     order (the default).
   - ``tpc-b-check``: Check the rows and totals.
   - ``tpc-b-oltp``: Run the transactions.
   - ``tpc-b-setup``: Create the tables and insert the rows.
 
-- ``-size``: Multiplies the number of rows of each table (see *Process*), like
+- ``-size``: Multiplies the number of rows of each table (see `Process`_), like
   the scale factor of pgbench. The default is 1, and ``-size 10`` creates
   1,000,000 accounts, 100 tellers and 10 branches. It can't be used with the
   ``tpc-b-oltp`` or ``tpc-b-check`` suites, which use the size of the tables in
@@ -67,7 +66,7 @@ The options are:
   ``READ ONLY`` (it runs the same way as ``read-committed`` anyway).
 
 - ``-full-fsync``: Use ``F_FULLFSYNC`` to sync the file on macOS (see
-  ``full_fsync`` in :doc:`v-client-library-docs`). It makes no difference on
+  :ref:`durability:Power Failures on macOS`). It makes no difference on
   other systems, or with ``-memory``.
 
 Suites
@@ -76,11 +75,11 @@ Suites
 ``-suite`` chooses what the benchmark runs:
 
 - ``tpc-b-setup`` creates the ``TPC_B`` schema and its tables, and inserts the
-  rows (steps 1 to 5 of *Process*). The accounts are inserted 1,000 rows to a
+  rows (steps 1 to 5 of `Process`_). The accounts are inserted 1,000 rows to a
   transaction. It fails if the ``TPC_B`` schema already exists.
 
 - ``tpc-b-oltp`` reads every account and then runs the transactions (step 6 of
-  *Process*) on a file that ``tpc-b-setup`` created. It needs ``-file``, since a
+  `Process`_) on a file that ``tpc-b-setup`` created. It needs ``-file``, since a
   new in-memory database wouldn't have any rows.
 
 - ``tpc-b-check`` checks that ``ACCOUNTS``, ``TELLERS`` and ``BRANCHES`` have
@@ -97,8 +96,8 @@ Suites
 - ``big`` creates the ``BIG`` schema and its ``OBJECTS`` table, and inserts
   values of 1 to 10 MiB, one at a time, until they add up to ``-size`` MiB.
   Then it reads each value back by its ``ID``, and fails unless every byte, and
-  its ``CHAR_LENGTH``, is the same as the value that was inserted. See *Big
-  Values*.
+  its ``CHAR_LENGTH``, is the same as the value that was inserted. See `Big
+  Values`_.
 
 Running the suites separately means the rows only need to be inserted once, and
 the transactions can then be run (and measured) as many times as needed:
@@ -245,7 +244,7 @@ something like:
 Where:
 
 - ``build_*`` are how vsql was built, the same as ``vsql version -v`` (see
-  :doc:`cli`), and ``suite``, ``file`` and ``size`` are the options
+  :ref:`cli:version`), and ``suite``, ``file`` and ``size`` are the options
   (``size`` is read from the file for ``tpc-b-oltp`` and ``tpc-b-check``).
   ``duration_seconds`` and ``isolation`` are only shown when the transactions
   run.
@@ -259,7 +258,7 @@ Where:
   connection (see :doc:`transactions`). Each one was rolled back, and the
   benchmark carried on with the next one.
 - ``values``, ``insert_mib*`` and ``select_mib*`` are from the ``big`` suite
-  (see *Big Values*).
+  (see `Big Values`_).
 - ``check_history_rows`` is the number of rows in ``HISTORY`` (every
   transaction that has ever run on the file) and ``check_total`` is the total
   of their deltas, which all the balances added up to.
@@ -290,16 +289,16 @@ Notes
 -----
 
 1. ``INSERT`` only inserts one row per statement (rather than inserting many
-rows with a single statement).
+   rows with a single statement).
 
 2. The benchmark only uses one connection. Benchmarks with several connections
-at the same time are run from separate processes, each with its own
-``tpc-b-oltp`` on the same ``-file``. ``make concurrency-test`` does that (see
-:doc:`testing`).
+   at the same time are run from separate processes, each with its own
+   ``tpc-b-oltp`` on the same ``-file``. ``make concurrency-test`` does that (see
+   :doc:`testing`).
 
 3. As the pgbench documentation says, don't trust a benchmark that only runs for
-a few seconds. Run it for at least a minute (the default), and run it more than
-once to see how much the results change.
+   a few seconds. Run it for at least a minute (the default), and run it more
+   than once to see how much the results change.
 
 speedtest1
 ----------

@@ -407,17 +407,17 @@ so it's still possible to overflow:
 
 .. code-block:: sql
 
-   VALUES 30000 + 30000;
+   VALUES 2147483647 + 1;
    -- error 22003: numeric value out of range
 
-Because ``SMALLINT + SMALLINT`` results in a ``SMALLINT``. If you think it will
+Because ``INTEGER + INTEGER`` results in an ``INTEGER``. If you think it will
 be possible for the value to overflow you should explicitly cast any of the
 values to a larger type:
 
 .. code-block:: sql
 
-   VALUES CAST(30000 AS INTEGER) + 30000;
-   -- COL1: 60000
+   VALUES CAST(2147483647 AS BIGINT) + 1;
+   -- COL1: 2147483648
 
 Implicit casting goes to the supertype in the same category:
 
@@ -496,7 +496,7 @@ for both operands and return this same type. For example ``INTEGER + INTEGER``
 will result in an ``INTEGER``.
 
 When the type of the operands are different it will implicitly cast to the
-supertype of both. See *Implicit Casting*.
+supertype of both (see `Implicit Casting`_).
 
 If either operand is approximate, the result is approximate: both operands are
 cast to ``DOUBLE PRECISION`` (or stay ``REAL`` if they're both ``REAL``). This

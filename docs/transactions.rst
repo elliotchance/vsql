@@ -1,6 +1,8 @@
 Transactions
 ============
 
+.. contents::
+
 vsql supports transactions through the :doc:`start-transaction`, :doc:`commit`
 and :doc:`rollback` statements.
 
@@ -15,7 +17,7 @@ Two transactions can't change the same row at the same time. The second one
 gets a ``40001`` serialization failure, and its transaction is rolled back so
 that it can be retried. That can only happen with ``READ COMMITTED`` and
 ``REPEATABLE READ`` transactions, since only one ``SERIALIZABLE`` transaction
-(the default) can change the database at a time, see *Isolation Levels*.
+(the default) can change the database at a time, see `Isolation Levels`_.
 
 The same applies to a table definition that's changed by a transaction that
 isn't committed yet (such as with ``CREATE TABLE`` or ``ALTER TABLE``). Another
@@ -121,7 +123,7 @@ asks for. vsql has three ways of running a transaction:
 
 - ``SERIALIZABLE`` is the default (it can be changed with the
   ``isolation_level`` of the connection's options, see
-  :doc:`v-client-library-docs`). No other connection can commit changes until
+  :ref:`language-v:Opening a Connection`). No other connection can commit changes until
   the transaction ends, so nothing it reads can change (other than by itself).
   See below.
 
@@ -146,7 +148,7 @@ same time, but not at the same time as a ``READ WRITE`` one.
 
 A transaction that can't start yet waits for the other one to finish. It waits
 for up to the ``lock_timeout`` of the connection (5 seconds by default, see
-:doc:`v-client-library-docs`), and then fails with a ``40001`` serialization
+:ref:`language-v:Opening a Connection`), and then fails with a ``40001`` serialization
 failure. It waits before it reads anything, so it sees all of the changes that
 the other transaction committed. Connections that are waiting take turns, in no
 particular order, and a connection that has just finished a transaction has to

@@ -14,6 +14,11 @@ languages (except V) are built on it:
 - :doc:`Node.js <language-node>`: a synchronous driver like better-sqlite3.
 - :doc:`Swift <language-swift>`: a package that can decode rows as ``Decodable``.
 
+From V, you can also add your own SQL functions (see :doc:`custom-functions`)
+and tables backed by your own code (see :doc:`virtual-tables`). From C, SQL can
+also be written in :doc:`SQL-client modules <sql-client-modules>` or embedded
+in the C source (see :doc:`embedded-sql-c`).
+
 .. toctree::
    :maxdepth: 1
 

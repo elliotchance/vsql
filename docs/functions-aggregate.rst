@@ -112,12 +112,14 @@ that has the same value in every row of a group, without adding it to the
 
 .. code-block:: sql
 
-  SELECT city, ANY_VALUE(country) FROM stores GROUP BY city;
+  SELECT city, ANY_VALUE(country)
+  FROM (VALUES ('Paris', 'France'), ('Paris', 'France')) AS stores (city, country)
+  GROUP BY city;
   -- CITY: Paris COL2: France
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T626.
+- **SQL standard:** T626 (ANY_VALUE).
 - **Other databases:** ``ANY_VALUE`` in PostgreSQL (16 and later), MySQL and
   Oracle. SQLite returns a value from any row for a column that isn't grouped.
 
@@ -371,7 +373,7 @@ with a ``NULL`` sort key aren't ignored.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations).
+- **SQL standard:** T612 (advanced OLAP operations).
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``CUME_DIST`` as a window function.
 
@@ -400,7 +402,7 @@ with a ``NULL`` sort key aren't ignored.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations).
+- **SQL standard:** T612 (advanced OLAP operations).
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``DENSE_RANK`` as a window function.
 
@@ -489,7 +491,7 @@ types, such as ``LISTAGG(CAST(id AS VARCHAR(20)), ', ')``.
 
 **Compatibility**
 
-- **SQL standard:** T625. The standard lets the result be a ``CLOB`` instead,
+- **SQL standard:** T625 (LISTAGG). The standard lets the result be a ``CLOB`` instead,
   which vsql doesn't have.
 - **Other databases:** Oracle and Db2 have the same syntax. Oracle also has
   ``ON OVERFLOW``. SQL Server has ``STRING_AGG(value, separator) WITHIN GROUP
@@ -689,7 +691,7 @@ with a ``NULL`` sort key aren't ignored.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations).
+- **SQL standard:** T612 (advanced OLAP operations).
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``PERCENT_RANK`` as a window function.
 
@@ -729,7 +731,7 @@ PRECISION)`` to keep the fraction.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations).
+- **SQL standard:** T612 (advanced OLAP operations).
 - **Other databases:** PostgreSQL, Oracle and SQL Server (only as a window
   function) have the same syntax. PostgreSQL and Oracle don't truncate a
   percentile of integers. MySQL and SQLite don't have it.
@@ -762,7 +764,7 @@ error.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations). The result is a
+- **SQL standard:** T612 (advanced OLAP operations). The result is a
   ``DOUBLE PRECISION`` because the standard makes it an approximate number.
 - **Other databases:** PostgreSQL, Oracle and SQL Server (only as a window
   function) have the same syntax, and return the type of the sort key. MySQL
@@ -848,7 +850,7 @@ with a ``NULL`` sort key aren't ignored.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations).
+- **SQL standard:** T612 (advanced OLAP operations).
 - **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
   SQLite and SQL Server only have ``RANK`` as a window function.
 

@@ -6,16 +6,9 @@ Command Line Interface (CLI)
 Installing
 ----------
 
-On Linux or macOS, install the latest binary into ``~/.local/bin`` with:
-
-.. code-block:: sh
-
-   curl -fsSL https://raw.githubusercontent.com/elliotchance/vsql/main/install.sh | sh
-
-Or download a binary from the
-`Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
-These binaries do not require V to be installed. Run ``vsql up`` to update it
-(see `up`_). See :doc:`install` for other options.
+See :doc:`install` for how to install the ``vsql`` command. The prebuilt
+binaries don't need V to be installed. Run ``vsql up`` to update it (see
+`up`_).
 
 Commands
 --------
@@ -56,43 +49,17 @@ Options are:
 bench
 ^^^^^
 
-``bench`` runs a benchmark (see :doc:`benchmark`):
+``bench`` runs a benchmark, in memory unless ``-file`` is used:
 
 .. code-block:: sh
 
    vsql bench                                       # in memory
    vsql bench -file bench.vsql                      # on disk, in bench.vsql
-   vsql bench -size 10 -duration 5                  # 10 times the rows, for 5 seconds
-   vsql bench -file bench.vsql -suite tpc-b-setup   # only insert the rows
-   vsql bench -file bench.vsql -suite tpc-b-oltp    # only run the transactions
-   vsql bench -file bench.vsql -suite tpc-b-check   # only check the rows and totals
    vsql bench -suite speedtest1 -size 1             # SQLite's speedtest1, a quick test
 
-Options are:
-
-- ``-memory``: Run the benchmark in memory. This is the default, unless
-  ``-file`` is used.
-- ``-file``: Run the benchmark on disk, in this file. It can be an existing
-  database, since the tables are created in their own ``TPC_B`` schema.
-- ``-suite``: What to run (see :doc:`benchmark`):
-
-  - ``speedtest1``: The tests of speedtest1 from SQLite.
-  - ``tpc-b``: ``tpc-b-setup``, ``tpc-b-oltp`` and ``tpc-b-check``, in that
-    order (the default).
-  - ``tpc-b-check``: Check the rows and totals of a ``-file`` that
-    ``tpc-b-setup`` created.
-  - ``tpc-b-oltp``: Run the transactions on a ``-file`` that ``tpc-b-setup``
-    created.
-  - ``tpc-b-setup``: Create the tables and insert the rows.
-- ``-size``: Multiplies the number of rows of each table, such as ``10`` for
-  1,000,000 accounts (default 1). For ``speedtest1``, most of the tables have
-  500 rows for each size (default 10).
-- ``-duration``: The number of seconds to run transactions for (default 60).
-  It can't be used with ``speedtest1``, which runs each test once.
-- ``-isolation``: The isolation level of the transactions: ``read-committed``,
-  ``repeatable-read`` or ``serializable`` (default ``serializable``).
-  ``read-uncommitted`` can't be used, because it's always ``READ ONLY``. See
-  :doc:`transactions`.
+See :ref:`benchmark:Usage` for the suites and the options (``-memory``,
+``-file``, ``-suite``, ``-size``, ``-duration``, ``-isolation`` and
+``-full-fsync``).
 
 cli
 ^^^
@@ -304,7 +271,7 @@ The options are:
   own ``START TRANSACTION``, ``COMMIT`` or ``ROLLBACK``.
 - ``-table``: The table to import a CSV, TSV or JSON file into. A name is in
   upper case unless it's in double quotes.
-- ``-verbose``: Print each statement as above.
+- ``-verbose`` or ``-v``: Print each statement as above.
 
 A CSV, TSV or JSON file is always in one transaction, with ``INSERT``\ s of up to
 200 rows. If one fails, its rows are run one at a time to find those that are
@@ -363,9 +330,6 @@ This is what's different:
 
 Anything else that isn't supported by vsql, such as ``AUTOINCREMENT`` or a column
 without a type, is an error.
-
-- ``-verbose`` or ``-v``: When enabled, the output of each statement (such as
-  ``CREATE TABLE 1``) will be shown.
 
 module
 ^^^^^^
@@ -749,7 +713,7 @@ Options are:
 version
 ^^^^^^^
 
-Is used to display the current version:
+``version`` shows the current version:
 
 .. code-block:: sh
 

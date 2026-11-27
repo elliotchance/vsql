@@ -16,16 +16,15 @@ A cursor is used with these statements, each of which has its own page:
 - :doc:`open` runs the query, and the cursor is positioned before the first
   row.
 - :doc:`fetch` moves the cursor to another row and returns it (see
-  "Scrollable Cursors" in :doc:`fetch` for the directions of a ``SCROLL``
-  cursor).
+  :ref:`fetch:Scrollable Cursors` for the directions of a ``SCROLL`` cursor).
 - :doc:`close` closes the cursor, which can then be opened again.
 - A positioned :doc:`delete` (``DELETE ... WHERE CURRENT OF``) deletes the row
   that the cursor is on, and a positioned :doc:`update`
   (``UPDATE ... WHERE CURRENT OF``) changes it.
 
 The SQL standard only allows these statements in an SQL-client module (such as
-a C program, see :doc:`sql-client-modules`). Running them directly is a vsql extension
-(see :doc:`sql-flagging`), so ``FETCH`` returns the row instead of putting its
+a C program, see :doc:`sql-client-modules`). Running them directly is a vsql
+extension (see :doc:`sql-flagging`), so ``FETCH`` returns the row instead of putting its
 values into variables.
 
 A cursor belongs to the connection. It's closed when the transaction ends, and
@@ -58,10 +57,11 @@ module) can't have one (``42601``).
 
 The cursor must have been opened before the positioned statement is prepared
 or executed. A closed cursor still exists, so a positioned statement is
-``24000`` (invalid cursor state) until the cursor is destroyed. A prepared positioned statement stays prepared if the cursor is
-closed and opened again, but it's destroyed with the cursor (by preparing or
-executing another statement on ``stmt``, or freeing it), after which
-``SQLExecute`` is a function sequence error.
+``24000`` (invalid cursor state) until the cursor is destroyed. A prepared
+positioned statement stays prepared if the cursor is closed and opened again,
+but it's destroyed with the cursor (by preparing or executing another statement
+on ``stmt``, or freeing it), after which ``SQLExecute`` is a function sequence
+error.
 
 The cursor is holdable unless ``SQL_ATTR_CURSOR_HOLDABLE`` is
 ``SQL_NONHOLDABLE``.

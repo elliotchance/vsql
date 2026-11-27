@@ -12,8 +12,8 @@ Syntax
 
 ``SET CONSTRAINTS`` changes whether ``DEFERRABLE`` constraints are deferred
 (only checked at the ``COMMIT``) or immediate (checked at the end of each
-statement) for the rest of the transaction. See "Deferrable Constraints" in
-:doc:`create-table`.
+statement) for the rest of the transaction. See
+:ref:`create-table:Deferrable Constraints`.
 
 ``ALL`` is every ``DEFERRABLE`` constraint. A named constraint that isn't
 ``DEFERRABLE`` is an error ``42601``, and one that doesn't exist is an error
@@ -40,9 +40,16 @@ Examples
   SET CONSTRAINTS u DEFERRED;
   INSERT INTO t (x) VALUES (1);
   SET CONSTRAINTS u IMMEDIATE;
-  -- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
   DELETE FROM t WHERE x = 1;
   COMMIT;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: START TRANSACTION
+  -- msg: SET CONSTRAINTS
+  -- msg: INSERT 1
+  -- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+  -- msg: DELETE 2
+  -- msg: COMMIT
 
 See Also
 --------

@@ -71,8 +71,8 @@ A module starts with:
 The schema is the default schema of the statements in the module. Without
 ``SCHEMA``, it's the schema with the same name as the ``AUTHORIZATION``. The
 schema must exist when the first SQL-connection is made (it's set with ``SET
-SCHEMA`` at the start of each SQL-connection, see `Multiple Modules`_). For the default schema, use
-``SCHEMA "PUBLIC"``.
+SCHEMA`` at the start of each SQL-connection, see `Multiple Modules`_). For the
+default schema, use ``SCHEMA "PUBLIC"``.
 
 Each procedure is:
 
@@ -111,8 +111,9 @@ The other data types (such as ``NUMERIC`` and ``DATE``) have no C type. The
 length of a string is in characters, and each character is up to 4 bytes (in
 UTF-8), so a ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` can hold any value of
 L characters, followed by the null character. A value of more than L characters
-is cut to its first L characters. A string must end with a null character within its length, otherwise the
-``SQLSTATE`` is ``22024`` (unterminated C string).
+is cut to its first L characters. A string must end with a null character
+within its length, otherwise the ``SQLSTATE`` is ``22024`` (unterminated C
+string).
 
 A binary string is a number of octets, without a null character. A
 ``BINARY(L)`` is all of its L octets (a value of fewer octets is padded with
@@ -346,7 +347,7 @@ that wasn't committed is rolled back.
 Dynamic SQL
 -----------
 
-Dynamic SQL (ISO/IEC 9075-2, 20, Feature B031 "Basic dynamic SQL") runs a
+Dynamic SQL (ISO/IEC 9075-2, Clause 20, Feature B031 "Basic dynamic SQL") runs a
 statement that isn't known until the program runs. It's a string, or a
 ``CHARACTER`` or ``CHARACTER VARYING`` parameter, and uses ``?`` for each value
 that's given when it's executed:
@@ -440,8 +441,8 @@ columns include the ``PRIMARY KEY`` of the table, ``2`` when they only include a
 ``UNIQUE`` whose columns are ``NOT NULL``, or ``0`` otherwise, and the
 ``KEY_MEMBER`` of each column of that key is ``1``. A key is only known for a
 query of one table that isn't grouped (so not for a join, a derived table,
-``GROUP BY``, an aggregate function or ``UNION``). If there are more columns than items, the ``SQLSTATE`` is ``01005``, and only
-``COUNT`` is set.
+``GROUP BY``, an aggregate function or ``UNION``). If there are more columns
+than items, the ``SQLSTATE`` is ``01005``, and only ``COUNT`` is set.
 
 ``DESCRIBE INPUT`` describes the ``?`` of the statement instead, in the order
 they're written: ``COUNT`` is how many there are, and each item has the type
@@ -496,7 +497,8 @@ can be set to a literal or a string such as ``'1-2'``. A ``NULL`` value without
 - ``0700E`` (invalid LEVEL value): ``LEVEL`` isn't ``0``. vsql doesn't have the
   types (such as ``ROW``) that have more than one level.
 - ``0700F`` (invalid DATETIME_INTERVAL_CODE): A ``DATETIME_INTERVAL_CODE``
-  that isn't ``1`` to ``5``, or for a ``TYPE`` that isn't ``9`` (datetime).
+  that isn't ``1`` to ``5`` for a ``TYPE`` of ``9`` (datetime) or ``1`` to
+  ``13`` for a ``TYPE`` of ``10`` (interval), or for any other ``TYPE``.
 
 .. code-block:: sql
 

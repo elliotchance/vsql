@@ -34,7 +34,7 @@ else, such as an operand of an operator or an argument of a function, use
   -- error 42601: syntax error: unexpected $end at line 1, column 12 near "VALUES NULL", expecting "::"
 
 ``NULL::INT`` is the same as ``CAST(NULL AS INT)`` (see
-:doc:`compatibility-postgresql`).
+:ref:`expressions:CAST`).
 
 Comparisons
 -----------

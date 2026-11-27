@@ -5,20 +5,21 @@ The SQL Language
    :maxdepth: 1
 
    lexical-structure.rst
+   identifiers.rst
+   data-types.rst
    numbers.rst
    text.rst
    binary.rst
    booleans.rst
-   data-types.rst
    dates-times.rst
+   null.rst
    type-conversion.rst
    expressions.rst
-   identifiers.rst
    operators.rst
-   null.rst
    functions-index.rst
    catalogs-and-schemas.rst
    transactions.rst
+   locking.rst
    errors-and-warnings.rst
    prepared-statements.rst
    cursors.rst

@@ -157,7 +157,7 @@ vsql app shop.vsql
 Then open http://127.0.0.1:3211. You can open several files at once, and each
 query tab remembers its own file and schema. The colors follow the light or dark
 setting of your system. See the
-[CLI docs](https://vsql.readthedocs.io/en/latest/cli.html#app) for its options.
+[app docs](https://vsql.readthedocs.io/en/latest/app.html) for its options.
 
 <table>
   <tr>

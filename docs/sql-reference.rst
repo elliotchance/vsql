@@ -1,7 +1,17 @@
 SQL Statements
 ==============
 
-Each statement has its own page, in alphabetical order.
+Each statement has its own page, in alphabetical order. Some statements are
+described on the page of a related statement:
+
+- ``BEGIN`` is on :doc:`start-transaction`.
+- ``END`` is on :doc:`commit`, and ``ABORT`` is on :doc:`rollback`.
+- ``RELEASE SAVEPOINT`` and ``ROLLBACK TO SAVEPOINT`` are on :doc:`savepoint`.
+- ``TABLE`` and the ``UNION``, ``EXCEPT`` and ``INTERSECT`` of queries are on
+  :doc:`select`.
+
+The statements that are only used in an SQL-client module, such as
+``PREPARE`` and ``EXECUTE``, are described in :doc:`sql-client-modules`.
 
 .. toctree::
    :maxdepth: 1

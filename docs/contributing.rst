@@ -119,8 +119,9 @@ Parser & SQL Grammar
 --------------------
 
 To make changes to the SQL grammar you will need to modify the ``vsql/*.y``
-files. These rules are partial or complete BNF rules from the
-`2016 SQL standard <https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html>`_.
+files. These rules are partial or complete BNF rules from the SQL standard
+(ISO/IEC 9075-2:2023, see :doc:`sql-standard`), and each one cites the section
+it comes from.
 
 After making changes to grammar file(s) you will need to run:
 

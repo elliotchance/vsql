@@ -10,9 +10,8 @@ For the tables below:
 - ``any`` is any data type.
 
 If any operand is ``NULL`` the result is also ``NULL`` (or ``UNKNOWN`` for
-comparisons, ``LIKE`` and ``SIMILAR TO``). The exceptions are ``IS NULL``,
-``IS NOT NULL``, ``IS DISTINCT FROM``, ``IS NOT DISTINCT FROM`` and the logical
-operators (``AND``, ``OR``, etc).
+comparisons), except for ``IS [ NOT ] NULL``, ``IS [ NOT ] DISTINCT FROM`` and
+the logical operators (see :doc:`null`).
 
 ``IS DISTINCT FROM`` is like ``<>`` and ``IS NOT DISTINCT FROM`` is like ``=``,
 except that two ``NULL`` values are not distinct and a ``NULL`` is distinct from
@@ -125,10 +124,10 @@ and so can ``BOOLEAN`` values.
 
 The *Precedence* dictates the order of operations. For example ``2 + 3 * 5`` is
 evaluated as ``2 + (3 * 5)`` because ``*`` has a lower precedence so it happens
-first. You can control the order of operations with parenthesis, like
+first. You can control the order of operations with parentheses, like
 ``(2 + 3) * 5``.
 
-Dividing by zero will result in ``SQLSTATE 22012`` error.
+Dividing by zero is a ``22012`` error.
 
 Unary Operations
 ----------------
@@ -138,18 +137,18 @@ Unary Operations
 
    * - Operator
      - Name
-  
+
    * - ``+number``
      - Noop
-  
+
    * - ``-number``
      - Unary negate
-  
+
    * - ``NOT boolean``
      - Logical negate
-  
+
    * - ``any IS NULL``
      - NULL check
-  
+
    * - ``any IS NOT NULL``
      - Not NULL check

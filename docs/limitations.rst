@@ -118,7 +118,7 @@ Every type, with its parameters and their defaults, is listed in
     - -3.4e+38 to 3.4e+38
 
   * - The range of a ``DOUBLE PRECISION``
-    - -1.7e+308 to +1.7e+308
+    - -1.7e+308 to 1.7e+308
 
   * - The range of a ``DATE`` or ``TIMESTAMP`` (see :doc:`dates-times`)
     - ``0001-01-01`` to ``9999-12-31``

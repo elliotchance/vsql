@@ -47,14 +47,13 @@ fetched again (see :doc:`fetch`) before another positioned ``DELETE`` or
 ``UPDATE``.
 
 The SQL standard only allows a positioned ``DELETE`` in an SQL-client module
-(such as a C program, see :doc:`language-c`). Running it directly is a vsql
+(see :doc:`sql-client-modules`). Running it directly is a vsql
 extension, flagged by ``V112-01`` (see :doc:`sql-flagging`).
 
-The cursor must be updatable (see "Updatable Cursors" in
-:doc:`declare-cursor`). The rows of a cursor are found when it's opened, so a
-``FETCH`` returns the row as it was then, even if it has been changed since. A
-``WITH HOLD`` cursor must be fetched in the current transaction before its row
-can be deleted.
+The cursor must be updatable (see :ref:`declare-cursor:Updatable Cursors`).
+The rows of a cursor are found when it's opened, so a ``FETCH`` returns the row
+as it was then, even if it has been changed since. A ``WITH HOLD`` cursor must
+be fetched in the current transaction before its row can be deleted.
 
 A positioned ``DELETE`` raises the warning ``01001`` (see :doc:`sqlstate`) if the
 current row has been changed by another statement since the cursor was opened.
@@ -100,7 +99,8 @@ Errors
 
 A row that has been changed or deleted by another transaction that hasn't been
 committed yet can't be deleted. This returns a ``40001`` serialization failure,
-see :doc:`transactions`.
+and the transaction is rolled back so that it can be retried, see
+:doc:`transactions`.
 
 See Also
 --------

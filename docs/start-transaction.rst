@@ -3,13 +3,6 @@ START TRANSACTION
 
 The ``START TRANSACTION`` statement is used to begin a transaction.
 
-All statements within a transaction will not be visible to other transactions
-until all changes are applied with ``COMMIT`` or all changes are discarded with
-``ROLLBACK``.
-
-Nested transactions are not supported. Attempting to run ``START TRANSACTION``
-when already in a transaction will result in an error.
-
 .. contents::
 
 Syntax
@@ -31,25 +24,6 @@ Syntax
     | REPEATABLE READ
     | SERIALIZABLE
 
-Characteristics
----------------
-
-A ``READ ONLY`` transaction can query the database, but any statement that
-changes it fails with ``25006``. Without an access mode, it's ``READ WRITE``
-(except for ``READ UNCOMMITTED``, which is always ``READ ONLY``), even after a
-:doc:`set-transaction`.
-
-The isolation level decides which changes from other transactions it can see
-(see *Isolation Levels* in :doc:`transactions`). Without one, it's
-``SERIALIZABLE``, even after a :doc:`set-transaction`.
-
-``DIAGNOSTICS SIZE`` is the most warnings that are kept for each statement in
-the transaction (see :doc:`set-transaction`). Without it, it's 100, even after
-a ``SET TRANSACTION``.
-
-Without any of them, the transaction has the characteristics of the connection
-(see :doc:`set-session-characteristics`).
-
 ``BEGIN`` can be used instead of ``START TRANSACTION``:
 
 .. code-block:: text
@@ -60,21 +34,47 @@ This is a vsql extension, not standard SQL, and it's flagged by ``V114-01`` (see
 :doc:`sql-flagging`). ``START TRANSACTION`` should be used if the SQL needs to be
 portable.
 
+The changes made in a transaction aren't visible to other transactions until
+they're applied with ``COMMIT``, and ``ROLLBACK`` discards them instead (see
+:doc:`transactions`).
+
+Nested transactions are not supported. ``START TRANSACTION`` when a
+transaction is already active is an error ``25001``.
+
+Characteristics
+---------------
+
+A ``READ ONLY`` transaction can query the database, but any statement that
+changes it fails with ``25006``. Without an access mode, it's ``READ WRITE``
+(except for ``READ UNCOMMITTED``, which is always ``READ ONLY``), even after a
+:doc:`set-transaction`.
+
+The isolation level decides which changes from other transactions it can see
+(see :ref:`transactions:Isolation Levels`). Without one, it's
+``SERIALIZABLE``, even after a :doc:`set-transaction`.
+
+``DIAGNOSTICS SIZE`` is the most warnings that are kept for each statement in
+the transaction (see :doc:`set-transaction`). Without it, it's 100, even after
+a ``SET TRANSACTION``.
+
+Without any of them, the transaction has the characteristics of the connection
+(see :doc:`set-session-characteristics`).
+
 Implicit Transactions
 ---------------------
 
-When a transaction is not explicitly used, each statement will be automatically
-wrapped in an implicit transaction. Internally this is important because any
-statements that may make changes (such as a ``DELETE`` that removes multiple
-rows) should seem atomic to all other readers and writers.
+A statement that isn't in a transaction runs in a transaction of its own, which
+is committed when the statement finishes, so its changes are atomic (see
+:doc:`transactions`).
 
 Catalogs
 --------
 
-A transaction includes every catalog, including one that is attached during the
-transaction. However, transaction isolation is not guaranteed across catalogs
-for all operations. And ``COMMIT`` and ``ROLLBACK`` are applied to each catalog
-in turn, so they may independently succeed or fail.
+A transaction includes every catalog of the connection, including one that is
+attached during the transaction. ``COMMIT`` and ``ROLLBACK`` are applied to each
+catalog in turn (see :ref:`catalogs-and-schemas:Transactions Across Catalogs`).
+A transaction can also be across more than one connection (see
+:doc:`connect`).
 
 Examples
 --------
@@ -104,3 +104,4 @@ See Also
 - :doc:`commit`
 - :doc:`rollback`
 - :doc:`set-transaction`
+- :doc:`transactions`

@@ -22,12 +22,14 @@ Syntax
     | REPEATABLE READ
     | SERIALIZABLE
 
-``SET TRANSACTION`` sets the characteristics of the next transaction, which is
-the next :doc:`start-transaction` (without its own characteristics, that's the
-default), or the next statement that isn't in a transaction. After that
-transaction, the default is used again, which can be changed with
-:doc:`set-session-characteristics`. If ``SET TRANSACTION`` is used more than
-once, the last one wins. Each kind of mode can only be used once (``42601``).
+``SET TRANSACTION`` sets the characteristics of the next transaction that a
+statement starts on its own (a statement that isn't in a transaction). The next
+:doc:`start-transaction` uses it up, but doesn't use its characteristics: it
+has its own, or those of the connection. After that transaction, the
+characteristics of the connection are used again, which can be changed with
+:doc:`set-session-characteristics`. If
+``SET TRANSACTION`` is used more than once, the last one wins. Each kind of mode
+can only be used once (``42601``).
 
 ``SET TRANSACTION`` can't be used in a transaction (``25001``), and doesn't
 start one. ``SET CATALOG``, ``SET SCHEMA`` and ``EXPLAIN`` don't start a
@@ -61,7 +63,7 @@ Isolation Level
 ``SERIALIZABLE`` is the default, which stops other connections from committing
 until the transaction ends. ``REPEATABLE READ`` sees a snapshot from when the
 transaction started instead, and ``READ UNCOMMITTED`` runs the same way as
-``READ COMMITTED``. See *Isolation Levels* in :doc:`transactions`.
+``READ COMMITTED``. See :ref:`transactions:Isolation Levels`.
 
 For a statement that runs on its own, ``READ COMMITTED`` or
 ``REPEATABLE READ`` means it doesn't wait for other connections'
@@ -90,9 +92,13 @@ Examples
   -- warning 01004: string data, right truncation
   -- COL1: abcabc
 
+  CREATE TABLE products (name VARCHAR(50));
+  INSERT INTO products (name) VALUES ('Coffee');
   SET TRANSACTION READ ONLY;
   DELETE FROM products;
   DELETE FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
   -- msg: SET TRANSACTION
   -- error 25006: read-only sql transaction: cannot execute DELETE
   -- msg: DELETE 1
@@ -100,10 +106,12 @@ Examples
   SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
   DELETE FROM products;
   -- msg: SET TRANSACTION
+  -- warning 02000: no data
   -- msg: DELETE 0
 
 See Also
 --------
 
+- :doc:`set-session-characteristics`
 - :doc:`start-transaction`
 - :doc:`transactions`

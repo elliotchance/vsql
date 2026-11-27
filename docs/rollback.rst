@@ -3,22 +3,6 @@ ROLLBACK
 
 The ``ROLLBACK`` statement is used to discard all transaction changes.
 
-All statements within a transaction will not be visible to other transactions
-until all changes are applied with ``COMMIT`` or all changes are discarded with
-``ROLLBACK``.
-
-Nested transactions are not supported. Outside of a transaction, ``COMMIT`` and
-``ROLLBACK`` succeed and do nothing, since every statement is committed when it
-finishes.
-
-``AND CHAIN`` starts a new transaction straight away, with the same access mode,
-isolation level, ``DIAGNOSTICS SIZE`` and constraint modes. ``ROLLBACK AND CHAIN``
-outside of a transaction doesn't start one. ``AND NO CHAIN`` is the same as
-leaving it out.
-
-``TO SAVEPOINT`` only rolls back part of the transaction, see :doc:`savepoint`. It
-can't be used with ``AND CHAIN`` (``42601``).
-
 .. contents::
 
 Syntax
@@ -38,6 +22,26 @@ are flagged by ``V116-01`` and ``V116-02`` (see :doc:`sql-flagging`):
   ROLLBACK TRANSACTION
 
   ABORT [ TRANSACTION | WORK ]
+
+The changes made in a transaction aren't visible to other transactions until
+they're applied with ``COMMIT``, and ``ROLLBACK`` discards them instead (see
+:doc:`transactions`).
+
+Nested transactions are not supported. Outside of a transaction, ``COMMIT`` and
+``ROLLBACK`` succeed and do nothing, since every statement is committed when it
+finishes.
+
+``AND CHAIN`` starts a new transaction straight away, with the same access mode,
+isolation level, ``DIAGNOSTICS SIZE`` and constraint modes. ``ROLLBACK AND CHAIN``
+outside of a transaction doesn't start one. ``AND NO CHAIN`` is the same as
+leaving it out.
+
+``TO SAVEPOINT`` only rolls back part of the transaction, see :doc:`savepoint`. It
+can't be used with ``AND CHAIN`` (``42601``).
+
+A statement that fails doesn't end the transaction, only its own changes are
+discarded. An error of class ``40`` (such as ``40001``) rolls back the whole
+transaction. See :ref:`errors-and-warnings:Errors in a Transaction`.
 
 Examples
 --------
@@ -61,30 +65,10 @@ Examples
   SELECT * FROM products;
   -- empty
 
-Errors
-------
-
-If a statement in a transaction fails, only the changes made by that statement
-are discarded. The transaction stays active, so the statements before it are
-kept, and the transaction can continue or end with ``COMMIT`` or ``ROLLBACK``.
-
-The exception is an error in class ``40`` (transaction rollback), such as
-``40001`` (serialization failure). The whole transaction is rolled back and is
-no longer active.
-
-.. code-block:: sql
-
-  START TRANSACTION;
-  INSERT INTO products (name, price) VALUES ('Kettle', 30);
-  INSERT INTO products (name, price) VALUES ('Toaster', 30 / 0);
-  -- error 22012: division by zero
-  COMMIT;
-
-  SELECT name FROM products;
-  -- NAME: Kettle
-
 See Also
 --------
 
 - :doc:`start-transaction`
 - :doc:`commit`
+- :doc:`savepoint`
+- :doc:`transactions`

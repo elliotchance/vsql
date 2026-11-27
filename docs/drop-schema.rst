@@ -39,4 +39,5 @@ Examples
 See Also
 --------
 
+- :doc:`catalogs-and-schemas`
 - :doc:`create-schema`

@@ -38,8 +38,8 @@ vsql follows the SQL standard:
 
 - Names that aren't quoted are upper case, so ``products`` is ``PRODUCTS``.
 - The standard form of ``LIMIT 10`` is ``FETCH FIRST 10 ROWS ONLY``. Both work.
-- A ``SELECT`` needs a ``FROM``. Use ``VALUES`` to try an expression, such as
-  ``VALUES 1 + 2``.
+- ``VALUES 1 + 2`` is the standard way to try an expression. ``SELECT 1 + 2``
+  (without a ``FROM``) also works.
 
 See the :doc:`faq` for more.
 
@@ -57,11 +57,11 @@ Then connect with any of the :doc:`postgresql-clients`, such as ``psql``:
 
 .. code-block:: text
 
-   $ psql -h 127.0.0.1 -p 3210 -c 'SELECT * FROM products'
-     NAME  | PRICE
+   $ psql -h 127.0.0.1 -p 3210 -c 'SELECT * FROM products ORDER BY name'
+     name  | price
    --------+-------
-    Coffee | 4.50
-    Bagel  | 2.25
+    Bagel  |  2.25
+    Coffee |  4.50
    (2 rows)
 
 The server ignores the user name, password and database name. See

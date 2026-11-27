@@ -29,7 +29,7 @@ More files are attached:
      $ vsql cli main.vsql archive.vsql
 
 - In V, with ``Connection.add_catalog()``, which names the catalog itself (see
-  :doc:`v-client-library-docs`):
+  :ref:`language-v:Catalogs`):
 
   .. code-block:: v
 
@@ -59,9 +59,8 @@ is in the current catalog. So, with ``main.vsql`` opened, ``customers``,
 ``public.customers`` and ``"main".public.customers`` are all the same table.
 
 The names of catalogs are identifiers like any other name, so they're upper case
-unless they're in double quotes (see *Why are my table and column names in upper
-case?* in :doc:`faq`). Since a catalog is usually named after a file with a
-lower case name, it needs double quotes:
+unless they're in double quotes (see :doc:`identifiers`). Since a catalog is
+usually named after a file with a lower case name, it needs double quotes:
 
 .. code-block:: sql
 
@@ -183,10 +182,9 @@ A ``ROLLBACK`` undoes the changes to every catalog:
 ``SET CATALOG`` doesn't start another transaction, so a ``START TRANSACTION``
 after it fails with a ``25001`` if a transaction is already active.
 
-Each file is locked on its own (see :doc:`transactions`), and a ``COMMIT`` is
-written to each file in turn. If the process stops part way through a
-``COMMIT``, the files that it had reached keep the changes and the others
-don't (see *Write-Ahead Log* in :doc:`file-format`).
+Each file is locked on its own (see :doc:`locking`), and a ``COMMIT`` is
+written to each file in turn, so a crash part way through a ``COMMIT`` can
+leave some of the files changed (see :ref:`durability:Crash Recovery`).
 
 See Also
 --------

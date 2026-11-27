@@ -15,26 +15,26 @@ Syntax
     [ WHERE <condition> ]
     [ GROUP BY <column_name> , ... ]
     [ HAVING <condition> ] ]
-  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ ORDER BY <expr> [ ASC | DESC ] [ NULLS { FIRST | LAST } ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
-  <from_item> := <table_reference>
-                 [ [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference>
-                   { ON <condition> | USING ( <column_name> , ... ) }
-                 | CROSS JOIN <table_reference>
-                 | NATURAL [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference> ] ...
+  <from_item> ::= <table_reference>
+                  [ [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference>
+                    { ON <condition> | USING ( <column_name> , ... ) }
+                  | CROSS JOIN <table_reference>
+                  | NATURAL [ INNER | { LEFT | RIGHT | FULL } [ OUTER ] ] JOIN <table_reference> ] ...
 
-  <table_reference> := { <table_name> | ( <query> ) }
-                       [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
+  <table_reference> ::= { <table_name> | ( <query> ) }
+                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
 
   TABLE <table_name>
-  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ ORDER BY <expr> [ ASC | DESC ] [ NULLS { FIRST | LAST } ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
   <query> { UNION | EXCEPT | INTERSECT } [ ALL | DISTINCT ] <query>
-  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ ORDER BY <expr> [ ASC | DESC ] [ NULLS { FIRST | LAST } ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> | <number> PERCENT ] { ROW | ROWS } { ONLY | WITH TIES } ]
 
@@ -42,13 +42,14 @@ Syntax
 
 .. code-block:: text
 
-  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ ORDER BY <expr> [ ASC | DESC ] [ NULLS { FIRST | LAST } ] , ... ]
   { LIMIT <integer> [ OFFSET <integer> [ ROW | ROWS ] ]
   | OFFSET <integer> [ ROW | ROWS ] LIMIT <integer>
   | LIMIT <offset>, <count> }
 
 A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION``, ``EXCEPT`` or
-``INTERSECT``. It can be in parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
+``INTERSECT``. It can be in parentheses, such as
+``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 
 ``AS <name>`` gives the table a *correlation name*. The table must then be
 referred to by that name instead (such as ``p.price``). The optional list of
@@ -97,7 +98,8 @@ For each *expression*, the naming convention follows:
 
 1. If ``name`` is provided, that will be used.
 2. If ``expression`` referred to a column, the column name will be used.
-3. Otherwise, the name ``COL<number>`` will be used where *number* is the position of the column (starting at 1).
+3. Otherwise, the name ``COL<number>`` will be used where *number* is the
+   position of the column (starting at 1).
 
 ``*`` selects every column of every table in the ``FROM`` clause. It must be
 the only item in the list, so use ``<table_name>.*`` to select every column of a
@@ -242,7 +244,7 @@ The ``ORDER BY`` of a grouped query can use a ``GROUP BY`` column that isn't in
 the ``SELECT`` expressions, such as
 ``SELECT AVG(price) FROM products GROUP BY city ORDER BY city``.
 
-See full list of :doc:`functions`.
+See :doc:`functions-aggregate` for the aggregate functions.
 
 DISTINCT
 --------
@@ -331,26 +333,8 @@ are considered the same. For example:
 Both queries must have the same number of columns, and each column must have
 compatible types (such as ``INTEGER`` and ``BIGINT``, or ``CHAR`` and
 ``VARCHAR``). Each column of the result has a type that fits the values of
-both queries, and the name of that column in the left query.
-
-The type that fits is chosen the same way for ``UNION``, ``EXCEPT``,
-``INTERSECT``, ``VALUES`` with more than one row, ``CASE`` and ``COALESCE``:
-
-- Approximate numbers: ``REAL`` if every value is a ``REAL``, otherwise
-  ``DOUBLE PRECISION``.
-- Exact numbers: if they're all integers, the largest of the integer types.
-  Otherwise, a ``NUMERIC`` (or ``DECIMAL``) with enough digits for the largest
-  integer part and the largest scale of them all, up to the maximum precision.
-  For example, a ``NUMERIC(3, 1)`` and a ``NUMERIC(5, 2)`` are a
-  ``NUMERIC(5, 2)``, so ``12.5`` becomes ``12.50``.
-- Strings: a ``CHAR`` of the longest length if they're all ``CHAR``,
-  otherwise a ``VARCHAR`` of the longest length.
-
-.. code-block:: sql
-
-  VALUES CAST(12.5 AS NUMERIC(3, 1)), CAST(123.25 AS NUMERIC(5, 2));
-  -- COL1: 12.50
-  -- COL1: 123.25
+both queries (see :ref:`type-conversion:Combined Types`), and the name of that
+column in the left query.
 
 ``INTERSECT`` is evaluated before ``UNION`` and ``EXCEPT``, so ``a UNION b
 INTERSECT c`` is ``a UNION (b INTERSECT c)``. Otherwise, the operators are
@@ -426,9 +410,9 @@ OFFSET
 ------
 
 If ``OFFSET`` is provided, that number of rows will be skipped. If the
-``OFFSET`` rows is greater than whole result set zero rows will be returned.
+``OFFSET`` is greater than the number of rows, no rows are returned.
 
-The ``OFFSET`` must be an integer that is zero or more, otherwise a 2201X
+The ``OFFSET`` must be an integer that is zero or more, otherwise a ``2201X``
 (invalid row count in result offset clause) error is raised.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
@@ -442,7 +426,7 @@ used in combination with ``OFFSET`` for further control.
 
 If the ``FETCH`` rows is greater than the total set, all rows will be returned.
 
-The ``FETCH`` rows must be an integer that is one or more, otherwise a 2201W
+The ``FETCH`` rows must be an integer that is one or more, otherwise a ``2201W``
 (invalid row count in fetch first clause) error is raised.
 
 When either value is a parameter it may be any numeric value that is a whole
@@ -459,9 +443,9 @@ the rows of the query, before any are skipped by ``OFFSET``:
 
   SELECT * FROM products ORDER BY price DESC FETCH FIRST 10 PERCENT ROWS ONLY;
 
-Like any other count, it must come to at least one row, otherwise a 2201W error
-is raised. That includes a query that has no rows at all, since any percentage
-of no rows is zero rows.
+Like any other count, it must come to at least one row, otherwise a ``2201W``
+error is raised. That includes a query that has no rows at all, since any
+percentage of no rows is zero rows.
 
 ``WITH TIES`` instead of ``ONLY`` also returns any rows after the last one that
 have the same values for every ``ORDER BY`` expression, so a tie for the last
@@ -473,7 +457,7 @@ product that costs the same as the third:
   SELECT * FROM products ORDER BY price DESC FETCH FIRST 3 ROWS WITH TIES;
 
 ``WITH TIES`` needs an ``ORDER BY`` in the same query (or the same
-parentheses), otherwise a 42601 syntax error is raised.
+parentheses), otherwise a ``42601`` syntax error is raised.
 
 ``PERCENT`` and ``WITH TIES`` can be used together. The percentage decides how
 many rows are fetched, and then the rows that tie with the last one are added:
@@ -482,8 +466,7 @@ many rows are fetched, and then the rows that tie with the last one are added:
 
   SELECT * FROM products ORDER BY price DESC FETCH FIRST 10 PERCENT ROWS WITH TIES;
 
-Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
-with any value. Both words are provided solely for grammatical benefit.
+Like ``OFFSET``, ``ROW`` and ``ROWS`` are the same.
 
 LIMIT
 -----
@@ -492,7 +475,8 @@ LIMIT
 vsql extension, not standard SQL, and it's flagged by ``V203-01`` (see
 :doc:`sql-flagging`). ``FETCH FIRST`` should be used if the SQL needs to be
 portable. It's accepted anywhere that ``FETCH FIRST`` is and has the same rules
-for the row count, including the same 2201W error, and it produces the same plan.
+for the row count, including the same ``2201W`` error, and it produces the same
+plan.
 
 An ``OFFSET`` can be before or after the ``LIMIT``:
 
@@ -544,3 +528,10 @@ Examples
   FROM products;
 
   SELECT * FROM products ORDER BY price;
+
+See Also
+--------
+
+- :doc:`expressions`
+- :doc:`explain`
+- :doc:`values`

@@ -19,7 +19,7 @@ folder. ``bin/``, ``include/`` and ``lib/`` are the usual layout of an install
 prefix, so the folder can be copied into one, such as ``/usr/local``.
 
 To build it from C for another platform, or without V, use the amalgamation
-(see :doc:`install`) and run ``make libvsql``.
+(see :ref:`install:Amalgamation`) and run ``make libvsql``.
 
 To build it from the repository instead, run ``make libvsql``. That creates
 ``bin/libvsql.dylib`` (or ``bin/libvsql.so`` or ``bin/libvsql.dll``), and the
@@ -162,7 +162,8 @@ Attribute                              Value
 Example
 -------
 
-``example.c`` is the :doc:`language-v` example, written against libvsql:
+``example.c`` is ``examples/simple.v`` (a V program, see :doc:`language-v`),
+written against libvsql:
 
 .. literalinclude:: ../libvsql/example.c
    :language: c

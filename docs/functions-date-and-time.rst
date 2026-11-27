@@ -8,11 +8,11 @@ Date and Time Functions
 These functions return the current date and time (see :doc:`dates-times` for
 the types), build one from its fields (``MAKE_DATE``, ``MAKE_TIME``,
 ``MAKE_TIMESTAMP`` and ``MAKE_TIMESTAMPTZ``, and ``MAKE_INTERVAL`` for an
-interval), return a part of one
-(``EXTRACT``), round one down to the start of a unit (``DATE_TRUNC``), or find
-the last day of its month (``LAST_DAY``). The current time is taken once for each statement, so every use
-in the same statement has the same value, even if the statement takes a while
-(except ``NOW()``). Each execution of a prepared statement has a new time.
+interval), return a part of one (``EXTRACT``), round one down to the start of
+a unit (``DATE_TRUNC``), or find the last day of its month (``LAST_DAY``). The
+current time is taken once for each statement, so every use in the same
+statement has the same value, even if the statement takes a while (except
+``NOW()``). Each execution of a prepared statement has a new time.
 
 The time zone is the time zone of the session.
 
@@ -354,6 +354,9 @@ Returns the last day of the month of a date or timestamp (with or without a time
 zone), as a ``DATE``. A value ``WITH TIME ZONE`` uses the date in its own time
 zone, the same as a ``CAST`` to ``DATE``. A NULL source is NULL.
 
+``LAST_DAY`` is a vsql extension flagged by ``V402-22`` (see
+:doc:`sql-flagging`).
+
 **Examples**
 
 .. code-block:: sql
@@ -379,7 +382,6 @@ first day of the month, since adding a month to a day that isn't in every month
 **Compatibility**
 
 - **SQL standard:** not standard.
-- **vsql:** ``LAST_DAY`` is ``V402-22`` (see :doc:`sql-flagging`).
 - **Other databases:**
 
   - MySQL, MariaDB, DuckDB and Snowflake: ``LAST_DAY``.
@@ -730,14 +732,14 @@ error). It's also a function, not a datetime value function like
 ``CURRENT_TIMESTAMP``, so it can't be a ``DEFAULT`` (a syntax error). Use
 ``CURRENT_TIMESTAMP`` for both.
 
-``NOW`` isn't a reserved word, so it can still be the name of a table or a
+``NOW`` is a vsql extension flagged by ``V402-01`` (see :doc:`sql-flagging`).
+It isn't a reserved word, so it can still be the name of a table or a
 column. A custom function (see :doc:`custom-functions`) can't be registered as
 ``now()``, because that function already exists.
 
 **Compatibility**
 
-- **SQL standard:** Not standard, it's a vsql extension flagged by
-  ``V402-01`` (see :doc:`sql-flagging`). The standard has no function that
+- **SQL standard:** not standard. The standard has no function that
   reads the clock each time it's called. ``CURRENT_TIMESTAMP`` is portable, but
   it's the time the statement started.
 - **Other databases:**

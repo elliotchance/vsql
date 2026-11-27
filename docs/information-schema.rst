@@ -4,7 +4,8 @@ Information Schema
 .. contents::
 
 Every catalog has an ``INFORMATION_SCHEMA`` schema with tables that describe the
-schemas, tables, columns, constraints, sequences and routines in the catalog. They can be queried like any other table:
+schemas, tables, columns, constraints, sequences and routines in the catalog.
+They can be queried like any other table:
 
 .. code-block:: sql
 
@@ -20,16 +21,15 @@ schemas, tables, columns, constraints, sequences and routines in the catalog. Th
   -- COLUMN_NAME: ID DATA_TYPE: INTEGER CHARACTER_MAXIMUM_LENGTH: NULL IS_NULLABLE: NO
   -- COLUMN_NAME: TITLE DATA_TYPE: CHARACTER VARYING CHARACTER_MAXIMUM_LENGTH: 100 IS_NULLABLE: NO
 
-The tables are defined by the SQL standard as views (ISO/IEC 9075-11). vsql
-doesn't have views, so they're built from the table definitions each time
-they're read. A table that's created in a transaction is only described in that
+The tables are defined by the SQL standard as views (ISO/IEC 9075-11), and
+vsql builds them from the table definitions each time they're read. A table that's created in a transaction is only described in that
 transaction until it's committed.
 
 The ``INFORMATION_SCHEMA`` can't be changed. Creating, changing or dropping
 anything in it (or the schema itself) is a ``42501`` error. It isn't stored in
 the database file, and isn't part of a dump. Virtual tables (see
 :doc:`virtual-tables`) aren't described because they're part of a connection,
-not the catalog.
+not the catalog. Views created with :doc:`create-view` aren't described yet.
 
 ``SCHEMATA``
 ------------
@@ -104,8 +104,9 @@ One row for each table, including the tables of the ``INFORMATION_SCHEMA``
 ``VIEWS``
 ---------
 
-One row for each view in ``TABLES``, in the same order. Views can't be created
-yet, so these are the tables of the ``INFORMATION_SCHEMA``.
+One row for each view in ``TABLES``, in the same order. Views created with
+:doc:`create-view` aren't described yet, so these are only the tables of the
+``INFORMATION_SCHEMA``.
 
 .. code-block:: sql
 
@@ -136,8 +137,8 @@ yet, so these are the tables of the ``INFORMATION_SCHEMA``.
 ----------------------------------------------------------------------
 
 The columns, routines and tables that each view uses. They're always empty,
-because the tables of the ``INFORMATION_SCHEMA`` (the only views) aren't
-described by them. ``VIEW_COLUMN_USAGE`` and ``VIEW_TABLE_USAGE`` have the
+because the tables of the ``INFORMATION_SCHEMA`` (the only views that are
+described) aren't described by them. ``VIEW_COLUMN_USAGE`` and ``VIEW_TABLE_USAGE`` have the
 ``VIEW_CATALOG``, ``VIEW_SCHEMA`` and ``VIEW_NAME`` of the view, then the
 ``TABLE_CATALOG``, ``TABLE_SCHEMA`` and ``TABLE_NAME`` of a table that it uses
 (and ``COLUMN_NAME`` for a column). ``VIEW_ROUTINE_USAGE`` has the
@@ -180,24 +181,30 @@ One row for each column of each table in ``TABLES``.
       ``TIME WITH TIME ZONE``. A ``FLOAT`` is a ``DOUBLE PRECISION``.
 
   * - ``CHARACTER_MAXIMUM_LENGTH``, ``CHARACTER_OCTET_LENGTH``
-    - For ``CHARACTER`` and ``CHARACTER VARYING``, the length in characters,
-      and the most bytes that it can use (4 for each character in UTF-8).
+    - For a character string type, the length in characters, and the most
+      bytes that it can use (4 for each character in UTF-8). For a binary
+      string type, the length in octets (for both).
 
   * - ``NUMERIC_PRECISION``, ``NUMERIC_PRECISION_RADIX``, ``NUMERIC_SCALE``
     - For numbers, the precision in binary digits (``SMALLINT`` is 16,
       ``INTEGER`` is 32, ``BIGINT`` is 64, ``REAL`` is 24 and
       ``DOUBLE PRECISION`` is 53) or decimal digits (``NUMERIC`` and
-      ``DECIMAL``, which have a precision of 1000 if it isn't specified). The
-      scale is ``NULL`` for ``REAL`` and ``DOUBLE PRECISION``.
+      ``DECIMAL``, which have a precision of 1000 if it isn't specified, and
+      ``DECFLOAT``). The scale is ``NULL`` for ``REAL``, ``DOUBLE PRECISION``
+      and ``DECFLOAT``.
 
   * - ``DATETIME_PRECISION``
-    - For ``DATE`` (0), ``TIME`` and ``TIMESTAMP``, the fractional seconds
-      precision.
+    - For ``DATE`` (0), ``TIME``, ``TIMESTAMP`` and an interval, the
+      fractional seconds precision (0 for an interval without ``SECOND``).
+
+  * - ``INTERVAL_TYPE``, ``INTERVAL_PRECISION``
+    - For an interval, its fields (such as ``DAY TO SECOND``) and the
+      precision of its leading field, otherwise ``NULL``.
 
   * - ``CHARACTER_SET_CATALOG``, ``CHARACTER_SET_SCHEMA``,
       ``CHARACTER_SET_NAME``
-    - For ``CHARACTER`` and ``CHARACTER VARYING``, the catalog,
-      ``INFORMATION_SCHEMA`` and ``UTF8``.
+    - For a character string type, the catalog, ``INFORMATION_SCHEMA`` and
+      ``UTF8``.
 
   * - ``DTD_IDENTIFIER``
     - The ordinal position, as text.
@@ -230,13 +237,12 @@ One row for each column of each table in ``TABLES``.
   * - ``IS_UPDATABLE``
     - ``YES``, or ``NO`` for the tables of the ``INFORMATION_SCHEMA``.
 
-  * - ``INTERVAL_TYPE``, ``INTERVAL_PRECISION``, ``COLLATION_CATALOG``,
-      ``COLLATION_SCHEMA``, ``COLLATION_NAME``, ``DOMAIN_CATALOG``,
-      ``DOMAIN_SCHEMA``, ``DOMAIN_NAME``, ``UDT_CATALOG``, ``UDT_SCHEMA``,
-      ``UDT_NAME``, ``SCOPE_CATALOG``, ``SCOPE_SCHEMA``, ``SCOPE_NAME``,
-      ``MAXIMUM_CARDINALITY``
-    - Always ``NULL`` (intervals, collations, domains, user-defined types,
-      reference types and arrays are not supported).
+  * - ``COLLATION_CATALOG``, ``COLLATION_SCHEMA``, ``COLLATION_NAME``,
+      ``DOMAIN_CATALOG``, ``DOMAIN_SCHEMA``, ``DOMAIN_NAME``, ``UDT_CATALOG``,
+      ``UDT_SCHEMA``, ``UDT_NAME``, ``SCOPE_CATALOG``, ``SCOPE_SCHEMA``,
+      ``SCOPE_NAME``, ``MAXIMUM_CARDINALITY``
+    - Always ``NULL`` (collations, domains, user-defined types, reference types
+      and arrays are not supported).
 
 ``CHECK_CONSTRAINTS``
 ---------------------
@@ -267,7 +273,7 @@ the columns, and then the ``CHECK`` constraints in the order they're defined.
 
   * - ``CONSTRAINT_NAME``
     - The name of the constraint. A constraint that wasn't given a name is
-      named after its table (see "Constraint Names" in :doc:`create-table`),
+      named after its table (see :ref:`create-table:Constraint Names`),
       such as ``<table>_NOT_NULL_<n>`` for the ``NOT NULL`` of the nth column,
       or ``<table>_CHECK_<n>`` for a ``CHECK`` constraint.
 
@@ -305,8 +311,7 @@ the same order and with the same names.
   * - ``CONSTRAINT_NAME``
     - The name of the constraint, such as ``<table>_PRIMARY_KEY``,
       ``<table>_UNIQUE_<n>`` or ``<table>_FOREIGN_KEY_<n>`` for a constraint
-      that wasn't given a name (see "Constraint Names" in
-      :doc:`create-table`).
+      that wasn't given a name (see :ref:`create-table:Constraint Names`).
 
   * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
     - The table the constraint is on.
@@ -315,7 +320,7 @@ the same order and with the same names.
     - ``PRIMARY KEY``, ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK``.
 
   * - ``IS_DEFERRABLE``, ``INITIALLY_DEFERRED``
-    - ``YES`` or ``NO`` (see "Deferrable Constraints" in :doc:`create-table`).
+    - ``YES`` or ``NO`` (see :ref:`create-table:Deferrable Constraints`).
 
   * - ``ENFORCED``
     - Always ``YES`` (``NOT ENFORCED`` is not supported).
@@ -548,6 +553,7 @@ vsql has beyond the SQL standard. A function of the SQL standard (such as
   -- SPECIFIC_NAME: SIGN_3 DATA_TYPE: SMALLINT IS_DETERMINISTIC: YES
   -- SPECIFIC_NAME: SIGN_4 DATA_TYPE: INTEGER IS_DETERMINISTIC: YES
   -- SPECIFIC_NAME: SIGN_5 DATA_TYPE: BIGINT IS_DETERMINISTIC: YES
+  -- SPECIFIC_NAME: SIGN_6 DATA_TYPE: DECFLOAT IS_DETERMINISTIC: YES
 
 .. list-table::
   :header-rows: 1
@@ -713,7 +719,7 @@ One row for each character set. ``UTF8`` is the only one.
 -----------------------------------
 
 One row, with the name of the catalog (the database file, or the name it was
-given, see :doc:`set-catalog`).
+given, see :doc:`catalogs-and-schemas`).
 
 .. code-block:: sql
 

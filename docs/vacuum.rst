@@ -92,8 +92,9 @@ doesn't need much memory.
 FULL
 ^^^^
 
-``FULL`` can only be used for ``ALL`` or a ``CATALOG``. It copies every row, index entry and large value into new pages that are
-as full as possible, in order, which replace every page of the file. The file is
+``FULL`` can only be used for ``ALL`` or a ``CATALOG``. It copies every row,
+index entry and large value into new pages that are as full as possible, in
+order, which replace every page of the file. The file is
 as small as it can be, but it's done in one go: the other connections wait for
 it, and it needs about as much memory as the size of the rebuilt file (and as
 much disk space again for the log). The file isn't changed when it wouldn't have
@@ -101,7 +102,7 @@ fewer pages, which can happen when there's nothing to remove, because a large
 value is split into pieces of half a page that can't be packed any closer.
 
 FREE PAGES
-^^^^^^^^^^^^^^^
+^^^^^^^^^^
 
 ``FREE PAGES`` only does the second step of ``COMPACT``: the free pages are
 removed from the file, but the pages that are only partly full aren't packed. It
@@ -321,7 +322,8 @@ COMMITTED`` or ``REPEATABLE READ`` transaction, or a transaction that has only
 read.
 
 ``VACUUM`` itself can't be in a transaction (that's a ``25001`` error, except
-``VACUUM ANALYZE``, which doesn't change anything), because it changes pages, rather than rows, which can't be undone by a ``ROLLBACK``.
+``VACUUM ANALYZE``, which doesn't change anything), because it changes pages,
+rather than rows, which can't be undone by a ``ROLLBACK``.
 Like any other statement, each batch is written through the write-ahead log, so
 if the process stops, the file has every batch that was committed, and none of
 the batch that wasn't.
@@ -342,12 +344,14 @@ Examples
    VACUUM FREE PAGES TIMEOUT 5;
    VACUUM ON TABLE events WITHOUT INDEXES;
    -- msg: CREATE TABLE 1
+   -- warning 02000: no data
    -- msg: DELETE 0
    -- msg: VACUUM 1 0
    -- msg: VACUUM 0 0
-   -- msg: VACUUM 1 0
+   -- msg: VACUUM 0 0
 
 See Also
 --------
 
 - :doc:`file-format`
+- :doc:`vsql-schema`

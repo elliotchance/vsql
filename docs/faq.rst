@@ -23,7 +23,7 @@ It's used the same way (one file, no server), but it behaves like a
 client/server SQL database: types are strict, ``NUMERIC`` is exact, there are
 real ``DATE``, ``TIME`` and ``TIMESTAMP`` types, and the SQL is the standard
 rather than its own dialect. Many connections (including ones in other
-processes) can use a file at the same time (see :doc:`mvcc`).
+processes) can use a file at the same time (see :doc:`locking`).
 :doc:`compatibility-sqlite3` lists each SQLite function and what to use instead.
 
 Is the file format stable? Will new versions open my database?
@@ -69,7 +69,7 @@ Can I use a GUI or a PostgreSQL client?
 Yes. ``vsql server`` lets PostgreSQL clients (such as ``psql``, DBeaver and
 TablePlus) connect to a database file (see :doc:`server` and
 :doc:`postgresql-clients`). ``vsql app`` lets you browse and query a database in
-your browser (see :ref:`cli:app`).
+your browser (see :doc:`app`).
 
 Can I use a database that's only in memory?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -117,12 +117,7 @@ as ``"Foo"``. This applies to every name, including the ``AS`` name of a column:
    SELECT 1 + 2 AS "the Total";
    -- the Total: 3
 
-See :doc:`identifiers`.
-
-A name in double quotes can contain any character except control and format
-characters (such as a tab), unassigned code points, and line and paragraph
-separators. A double quote is written twice, so ``"say ""hi"""`` is the name
-``say "hi"``. It can't be empty (``""``).
+See :doc:`identifiers` for which characters a name can have.
 
 Why does a query that works in PostgreSQL, MySQL or SQLite fail?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -179,13 +174,9 @@ zone of the computer, which :doc:`set-time-zone` changes. See
 Where can I find the SQL standard?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The SQL standard is not free. However, older versions are publicly available
-and are close enough to use as a reference:
-
-1. `SQL 2016 Foundation Grammar (BNF) <https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html>`_
-2. `SQL 1999 <https://sql-99.readthedocs.io/en/latest/>`_
-
-See also :doc:`sql-standard`.
+The SQL standard is not free, but older versions and drafts that are close
+enough to use as a reference are available online. See :doc:`sql-standard`
+for the editions that vsql follows and where to find them.
 
 Transactions and Data
 ---------------------

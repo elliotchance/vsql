@@ -18,8 +18,8 @@ for the ``INFORMATION_SCHEMA``. Each part is pinned to one edition (Part 2 is
 ISO/IEC 9075-2:2023, Part 1 is ISO/IEC 9075-1:2023, Part 3 is the SQL:2003
 working draft and Part 11 is the SQL:2008 committee draft, cited as ISO/IEC
 9075-11:2006), and vsql follows only that edition, even where a newer one is
-available (see the editions in :doc:`standard-index`). The source files are named after the part and section
-of the standard that they implement (such as
+available (see :ref:`standard-index:Editions`). The source files are named
+after the part and section of the standard that they implement (such as
 ``std_2_14_14_update_statement_searched.v`` for Part 2, section 14.14),
 :doc:`sql-compliance` lists which features are supported, and
 :doc:`standard-index` tracks each rule. Most of the features

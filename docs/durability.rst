@@ -29,8 +29,9 @@ open, with the same name followed by another extension:
   `Crash Recovery`_).
 
 - ``.session``, ``.isolation`` and ``.deferred`` (and the ``.queue`` files
-  that go with them) are always empty, and are only used for locking. They can be deleted whenever there are no open
-  connections to the database.
+  that go with them) are always empty, and are only used for locking (see
+  :doc:`locking`). They can be deleted whenever there are no open connections
+  to the database.
 
 The last connection to close puts everything from the log into the database
 file and deletes the log and the lock files (except on Windows, where the lock
@@ -55,10 +56,10 @@ opened by any process (such as ``vsql cli``).
 A transaction that was still active when its process stopped is rolled back by a
 later connection, when it changes the database and there are no other
 connections open to the file (since the transaction might belong to one of
-them). Until then, the rows that it changed stay locked. See *Crashed
-Transactions* in :doc:`mvcc`.
+them). Until then, the rows that it changed stay locked. See
+:ref:`mvcc:Crashed Transactions`.
 
-A ``COMMIT`` that changes more than one database file (see :doc:`set-catalog`)
+A ``COMMIT`` that changes more than one database file (see :doc:`catalogs-and-schemas`)
 is committed to each file in turn. If the process stops part way through, the
 files that it had reached keep the changes and the rest don't.
 
@@ -77,7 +78,7 @@ macOS by default:
   operating system stops, and the database file may even be left corrupt.
 
 The ``full_fsync`` connection option (see ``ConnectionOptions`` in
-:doc:`v-client-library-docs`) syncs with ``fcntl(F_FULLFSYNC)`` instead, which
+:ref:`language-v:Opening a Connection`) syncs with ``fcntl(F_FULLFSYNC)`` instead, which
 also waits for the drive to write its cache:
 
 .. code-block:: v
@@ -97,7 +98,7 @@ Backups
 -------
 
 ``vsql out`` writes the schema and data of a database as SQL, which ``vsql in``
-loads into a new database (see :doc:`cli`):
+loads into a new database (see :ref:`cli:out` and :ref:`cli:in`):
 
 .. code-block:: text
 

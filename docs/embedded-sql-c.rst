@@ -50,15 +50,16 @@ C data type                  SQL data type
 
 ``SQL TYPE IS BINARY(L) name`` is replaced with ``unsigned char name[L]``, and
 ``SQL TYPE IS VARBINARY(L) name`` is replaced with the struct of a ``BINARY
-VARYING(L)`` (see :ref:`sql-client-modules:Modules`), so its length is ``name.name_length`` and its
-octets are ``name.name_data``. ``SQL TYPE IS CLOB(L) name`` and ``SQL TYPE IS
+VARYING(L)`` (see :ref:`sql-client-modules:Modules`), so its length is
+``name.name_length`` and its octets are ``name.name_data``. ``SQL TYPE IS CLOB(L) name`` and ``SQL TYPE IS
 BLOB(L) name`` are replaced with the struct of a ``CHARACTER LARGE OBJECT(L)``
 and a ``BINARY LARGE OBJECT(L)`` in the same way (the data of a CLOB has ``L *
 4`` octets, and its length is in characters).
 
 ``VARCHAR`` is replaced with ``char``, and the length of each array is
 multiplied by 4 (so that it can hold L characters of up to 4 bytes each, see
-:ref:`sql-client-modules:Modules`). One of the host variables must be ``char SQLSTATE[6]``, which is set to the SQLSTATE of each statement.
+:ref:`sql-client-modules:Modules`). One of the host variables must be
+``char SQLSTATE[6]``, which is set to the SQLSTATE of each statement.
 
 A statement can be anything that a procedure of a module can be, and a cursor
 is declared with ``EXEC SQL DECLARE <cursor name> CURSOR FOR ...;`` before the

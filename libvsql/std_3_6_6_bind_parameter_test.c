@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "test.h"
 
 /* 6.6 BindParameter */
@@ -155,6 +157,42 @@ UTEST_F(db, 6_6_bind_parameter_out_of_range) {
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS SMALLINT)"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22003");
+}
+
+/* SQL has no NaN or infinity. */
+UTEST_F(db, 6_6_bind_parameter_not_finite) {
+  SQLDOUBLE d = 0;
+  SQLREAL r = 0;
+  SQLDOUBLE doubles[] = {NAN, INFINITY, -INFINITY};
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE t (d DOUBLE PRECISION NOT NULL, r REAL)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"INSERT INTO t (d, r) VALUES (?, ?)", SQL_NTS),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_DOUBLE, SQL_DOUBLE, 0, 0, &d, sizeof(d), NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_REAL, SQL_REAL, 0, 0, &r, sizeof(r), NULL),
+            SQL_SUCCESS);
+
+  for (int i = 0; i < 3; i++) {
+    d = doubles[i];
+    r = 0;
+    EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22003");
+
+    d = 0;
+    r = (SQLREAL)doubles[i];
+    EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22003");
+  }
+
+  d = 1.5;
+  r = 2.5;
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
 }
 
 /* A number can't be cast to a DATE. */

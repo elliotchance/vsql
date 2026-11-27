@@ -1053,7 +1053,7 @@
 11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_9_6_flagging.sql
 # 11.32, <view definition>
-11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql there's no RECURSIVE (#1284) or WITH CHECK OPTION (#1258), and a view can't be changed (#1448)
+11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql there's no WITH CHECK OPTION (#1258), and a view can't be changed (#1448)
 11.32/SR/1               definition   - -
 11.32/SR/2               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/3               implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_32_view_definition.sql
@@ -1062,12 +1062,12 @@
 11.32/SR/6               n/a          - - declared local temporary tables (F531)
 11.32/SR/7               n/a          - - data change delta tables (T495)
 11.32/SR/8               definition   - -
-11.32/SR/9               missing      - - RECURSIVE (#1284)
-11.32/SR/9.a             missing      - - RECURSIVE (#1284)
-11.32/SR/9.b             missing      - - RECURSIVE (#1284)
-11.32/SR/9.c             missing      - - RECURSIVE (#1284)
-11.32/SR/9.d             missing      - - RECURSIVE (#1284)
-11.32/SR/9.e             missing      - - RECURSIVE (#1284)
+11.32/SR/9               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_7_17_with_recursive.sql
+11.32/SR/9.a             implemented  vsql/std_2_11_32_view_definition.v tests/std_2_7_17_with_recursive.sql
+11.32/SR/9.b             implemented  vsql/std_2_11_32_view_definition.v tests/std_2_7_17_with_recursive.sql
+11.32/SR/9.c             n/a          - - WITH CHECK OPTION (#1258)
+11.32/SR/9.d             n/a          - - referenceable views (S043)
+11.32/SR/9.e             implemented  vsql/std_2_11_32_view_definition.v tests/std_2_7_17_with_recursive.sql
 11.32/SR/10              missing      - - a view can't be changed yet (#1448)
 11.32/SR/11              missing      - - a view can't be changed yet (#1448)
 11.32/SR/12              missing      - - a view can't be changed yet (#1448)
@@ -1239,7 +1239,7 @@
 11.32/GR/10.b            n/a          - - subtables (S081)
 11.32/GR/11              n/a          - - subtables (S081)
 11.32/GR/12              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
-11.32/CR/1               n/a          - - RECURSIVE (#1284)
+11.32/CR/1               implemented  vsql/std_2_11_32_view_definition.v tests/std_1_9_6_flagging.sql
 11.32/CR/2               n/a          - - LOCAL and CASCADED CHECK OPTION (#1262)
 11.32/CR/3               n/a          - - reference types (S043)
 11.32/CR/4               n/a          - - WITH CHECK OPTION (#1258)

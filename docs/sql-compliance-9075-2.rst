@@ -1302,10 +1302,10 @@ Optional Features
    * - ✅ **T122**
      - **WITH (excluding RECURSIVE) in subquery**
 
-   * - ❌ **T131**
+   * - ⭕ **T131**
      - **Recursive query**
 
-   * - ❌ **T132**
+   * - ✅ **T132**
      - **Recursive query in subquery**
 
    * - ❌ **T133**

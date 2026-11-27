@@ -93,6 +93,10 @@ mut:
 	// with_scopes are the <with list>s whose names are in scope where the parser
 	// is (see add_with_list_element), innermost last.
 	with_scopes [][]WithListElement
+	// recursive_table_names are the unqualified table names that have been read
+	// while each WITH RECURSIVE in with_scopes (by its position) is being parsed
+	// (see add_recursive_query_name).
+	recursive_table_names map[int][]string
 }
 
 fn (mut l Lexer) lex(mut lval YYSymType) int {

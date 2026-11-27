@@ -368,3 +368,67 @@ fn (mut f Storage) load_views() ! {
 		return err
 	}
 }
+
+// RecursiveViewHead is a CREATE RECURSIVE VIEW before its query, see
+// recursive_view_definition.
+struct RecursiveViewHead {
+	table_name Identifier
+	columns    []Identifier
+	query      RecursiveQueryReference
+}
+
+// recursive_view_head puts the name of a RECURSIVE view in scope for its query,
+// like the name of a WITH RECURSIVE query. It must have a view column list.
+//
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 9.a
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, Conformance Rules, 1
+fn recursive_view_head(mut yylex YYLexer, table_name Identifier, columns []Identifier) !RecursiveViewHead {
+	if columns.len == 0 {
+		return sqlstate_42601('RECURSIVE view ${table_name} needs a column list')
+	}
+	flag(mut yylex, 'T131')
+	start_recursive_with(mut yylex)!
+
+	return RecursiveViewHead{
+		table_name: table_name
+		columns:    columns
+		query:      RecursiveQueryReference{
+			query: add_recursive_query_name(mut yylex, Identifier{
+				sub_entity_name: table_name.entity_name
+			})!
+		}
+	}
+}
+
+// recursive_view_definition is a CREATE RECURSIVE VIEW, which is the same as a
+// view of a WITH RECURSIVE query with the same name and columns. That's also how
+// it's kept.
+//
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 9, 9.b and 9.e
+fn recursive_view_definition(mut yylex YYLexer, head RecursiveViewHead, query QueryExpression, has_lookahead bool) !ViewDefinition {
+	mut recursive_query := head.query.query
+	element := recursive_with_list_element(mut yylex, mut recursive_query, head.columns,
+		TablePrimary{
+			body: query
+		})!
+
+	name := head.table_name.entity_name
+	table_expression := TableExpression{TableReference(table_or_query_name_primary(mut yylex,
+		Identifier{ entity_name: name }, Correlation{})), none, []Identifier{}, none}
+	with_query := with_query_expression(mut yylex, [element], QueryExpression{
+		body: SimpleTable(QuerySpecification{
+			exprs:            SelectList(AsteriskExpr(true))
+			table_expression: &table_expression
+		})
+	})
+
+	columns := head.columns.map(requote_identifier(it.sub_entity_name)).join(', ')
+	text := written_view_query(mut yylex, has_lookahead)
+
+	return ViewDefinition{
+		table_name: head.table_name
+		columns:    head.columns
+		query:      with_query
+		text:       'WITH RECURSIVE ${requote_identifier(name)} (${columns}) AS (${text}) SELECT * FROM ${requote_identifier(name)}'
+	}
+}

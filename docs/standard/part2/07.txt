@@ -1227,7 +1227,7 @@
 7.16/CR/5                n/a          - - row types (T053)
 7.16/CR/6                implemented  vsql/planner.v tests/std_2_7_3_values.sql
 # 7.17, <query expression>
-7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH RECURSIVE (T131) or CORRESPONDING (F301)
+7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no SEARCH or CYCLE for WITH RECURSIVE (#1786) or CORRESPONDING (F301)
 7.17/SR/1                definition   - -
 7.17/SR/2                n/a          - - data change delta tables (T495)
 7.17/SR/3                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
@@ -1241,55 +1241,55 @@
 7.17/SR/3.d.ii.2         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.17/SR/3.d.iii          n/a          - - there are no collations other than the default (F690)
 7.17/SR/3.d.iv           n/a          - - data change delta tables (T495)
-7.17/SR/3.e              n/a          - - recursive queries (T131)
-7.17/SR/3.f              n/a          - - recursive queries (T131)
-7.17/SR/3.g              n/a          - - recursive queries (T131)
-7.17/SR/3.h              n/a          - - recursive queries (T131)
+7.17/SR/3.e              definition   - -
+7.17/SR/3.f              n/a          - - row pattern recognition (R010)
+7.17/SR/3.g              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.h              n/a          - - data change delta tables (T495)
 7.17/SR/3.i              container    - -
 7.17/SR/3.i.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
-7.17/SR/3.i.ii           n/a          - - recursive queries (T131)
-7.17/SR/3.j              n/a          - - recursive queries (T131)
-7.17/SR/3.j.i            n/a          - - recursive queries (T131)
-7.17/SR/3.j.ii           n/a          - - recursive queries (T131)
-7.17/SR/3.j.ii.1         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ii.2         n/a          - - recursive queries (T131)
-7.17/SR/3.j.iii          n/a          - - recursive queries (T131)
-7.17/SR/3.j.iv           n/a          - - recursive queries (T131)
-7.17/SR/3.j.v            n/a          - - recursive queries (T131)
-7.17/SR/3.j.vi           n/a          - - recursive queries (T131)
-7.17/SR/3.j.vii          n/a          - - recursive queries (T131)
-7.17/SR/3.j.vii.1        n/a          - - recursive queries (T131)
-7.17/SR/3.j.vii.1.A      n/a          - - recursive queries (T131)
-7.17/SR/3.j.vii.1.B      n/a          - - recursive queries (T131)
-7.17/SR/3.j.vii.2        n/a          - - recursive queries (T131)
-7.17/SR/3.j.viii         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix           n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.1         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.2         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.3         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.4         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5         n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.A       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.B       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.C       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.C.I     n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.C.II    n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.D       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.E       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.F       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.F.I     n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.F.II    n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.F.III   n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.G       n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.G.I     n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.G.II    n/a          - - recursive queries (T131)
-7.17/SR/3.j.ix.5.G.III   n/a          - - recursive queries (T131)
-7.17/SR/3.j.x            n/a          - - recursive queries (T131)
-7.17/SR/3.j.xi           n/a          - - recursive queries (T131)
-7.17/SR/3.j.xi.1         n/a          - - recursive queries (T131)
-7.17/SR/3.j.xi.2         n/a          - - recursive queries (T131)
-7.17/SR/3.j.xi.3         n/a          - - recursive queries (T131)
-7.17/SR/3.k              n/a          - - recursive queries (T131)
+7.17/SR/3.i.ii           deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql a name can't be read before its <with list element> (#1784)
+7.17/SR/3.j              container    - -
+7.17/SR/3.j.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ii           definition   - -
+7.17/SR/3.j.ii.1         definition   - -
+7.17/SR/3.j.ii.2         definition   - -
+7.17/SR/3.j.iii          definition   - -
+7.17/SR/3.j.iv           definition   - -
+7.17/SR/3.j.v            definition   - -
+7.17/SR/3.j.vi           definition   - -
+7.17/SR/3.j.vii          implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.vii.1        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.vii.1.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.vii.1.B      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.vii.2        definition   - -
+7.17/SR/3.j.viii         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix           container    - -
+7.17/SR/3.j.ix.1         definition   - -
+7.17/SR/3.j.ix.2         definition   - -
+7.17/SR/3.j.ix.3         implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.4         implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5         container    - -
+7.17/SR/3.j.ix.5.A       implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.B       partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql a subquery in WHERE (or another expression) is only checked when it's run
+7.17/SR/3.j.ix.5.C       implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.C.I     implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.C.II    implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.D       implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.E       implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.F       implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.F.I     implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.F.II    implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.F.III   implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.G       implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.G.I     implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.G.II    implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.ix.5.G.III   implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.x            implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/3.j.xi           definition   - -
+7.17/SR/3.j.xi.1         definition   - -
+7.17/SR/3.j.xi.2         definition   - -
+7.17/SR/3.j.xi.3         definition   - -
+7.17/SR/3.k              n/a          - - SEARCH and CYCLE (#1786)
 7.17/SR/4                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/SR/5                definition   - -
 7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
@@ -1346,14 +1346,14 @@
 7.17/SR/19.b.ii.1.A      implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/19.b.ii.1.B      n/a          - - enhanced nullability determination (T101)
 7.17/SR/19.b.ii.1.C      n/a          - - enhanced nullability determination (T101)
-7.17/SR/19.b.ii.2        n/a          - - recursive queries (T131)
-7.17/SR/19.b.ii.2.A      n/a          - - recursive queries (T131)
-7.17/SR/19.b.ii.2.B      n/a          - - recursive queries (T131)
-7.17/SR/19.b.ii.2.C      n/a          - - recursive queries (T131)
-7.17/SR/19.b.ii.2.C.I    n/a          - - recursive queries (T131)
+7.17/SR/19.b.ii.2        implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/19.b.ii.2.A      definition   - -
+7.17/SR/19.b.ii.2.B      deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql the column has the type of the anchor (#1785)
+7.17/SR/19.b.ii.2.C      container    - -
+7.17/SR/19.b.ii.2.C.I    implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/19.b.ii.2.C.II   container    - -
-7.17/SR/19.b.ii.2.C.II.1 n/a          - - recursive queries (T131)
-7.17/SR/19.b.ii.2.C.II.2 n/a          - - recursive queries (T131)
+7.17/SR/19.b.ii.2.C.II.1 implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/SR/19.b.ii.2.C.II.2 implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/20               definition   - -
 7.17/SR/21               definition   - -
 7.17/SR/22               definition   - -
@@ -1407,21 +1407,21 @@
 7.17/GR/1.a              n/a          - - data change delta tables (T495)
 7.17/GR/1.b              deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql the query is run again each time its name is read, so a nondeterministic function can have a different value each time (#1781)
 7.17/GR/1.c              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
-7.17/GR/2                n/a          - - recursive queries (T131)
-7.17/GR/2.a              n/a          - - recursive queries (T131)
-7.17/GR/2.a.i            n/a          - - recursive queries (T131)
-7.17/GR/2.a.ii           n/a          - - recursive queries (T131)
-7.17/GR/2.b              n/a          - - recursive queries (T131)
-7.17/GR/2.c              n/a          - - recursive queries (T131)
-7.17/GR/2.c.i            n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii           n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.1         n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.2         n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.3         n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.4         n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.4.A       n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.4.B       n/a          - - recursive queries (T131)
-7.17/GR/2.c.ii.5         n/a          - - recursive queries (T131)
+7.17/GR/2                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.a              definition   - -
+7.17/GR/2.a.i            definition   - -
+7.17/GR/2.a.ii           definition   - -
+7.17/GR/2.b              definition   - -
+7.17/GR/2.c              container    - -
+7.17/GR/2.c.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.1         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.2         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.3         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.4         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.4.A       implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.4.B       implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
+7.17/GR/2.c.ii.5         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/GR/3                container    - -
 7.17/GR/3.a              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_12_select_where.sql
 7.17/GR/3.b              container    - -
@@ -1480,8 +1480,8 @@
 7.17/GR/7.d.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/CR/1                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
 7.17/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
-7.17/CR/3                n/a          - - recursive queries (T131)
-7.17/CR/4                n/a          - - recursive queries (T132)
+7.17/CR/3                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
+7.17/CR/4                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
 7.17/CR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_intersect.sql
@@ -1504,33 +1504,33 @@
 7.17/CR/24               implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_fetch_with_ties.sql
 7.17/CR/25               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_7_17_order_by_grouped.sql
 # 7.18, <search or cycle clause>
-7.18                     n/a          - - recursive queries (T131)
-7.18/SR/1                n/a          - - recursive queries (T131)
-7.18/SR/2                n/a          - - recursive queries (T131)
-7.18/SR/3                n/a          - - recursive queries (T131)
-7.18/SR/4                n/a          - - recursive queries (T131)
-7.18/SR/4.a              n/a          - - recursive queries (T131)
-7.18/SR/4.b              n/a          - - recursive queries (T131)
-7.18/SR/5                n/a          - - recursive queries (T131)
-7.18/SR/5.a              n/a          - - recursive queries (T131)
-7.18/SR/5.b              n/a          - - recursive queries (T131)
+7.18                     n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/1                n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/2                n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/3                n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/4                n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/4.a              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/4.b              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/5                n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/5.a              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/5.b              n/a          - - SEARCH and CYCLE (#1786)
 7.18/SR/5.c              container    - -
-7.18/SR/5.c.i            n/a          - - recursive queries (T131)
-7.18/SR/5.c.ii           n/a          - - recursive queries (T131)
-7.18/SR/6                n/a          - - recursive queries (T131)
-7.18/SR/6.a              n/a          - - recursive queries (T131)
-7.18/SR/6.b              n/a          - - recursive queries (T131)
-7.18/SR/6.c              n/a          - - recursive queries (T131)
-7.18/SR/6.d              n/a          - - recursive queries (T131)
+7.18/SR/5.c.i            n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/5.c.ii           n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/6                n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/6.a              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/6.b              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/6.c              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/6.d              n/a          - - SEARCH and CYCLE (#1786)
 7.18/SR/7                container    - -
-7.18/SR/7.a              n/a          - - recursive queries (T131)
-7.18/SR/7.b              n/a          - - recursive queries (T131)
-7.18/SR/7.c              n/a          - - recursive queries (T131)
-7.18/SR/7.c.i            n/a          - - recursive queries (T131)
-7.18/SR/7.c.ii           n/a          - - recursive queries (T131)
-7.18/SR/7.c.iii          n/a          - - recursive queries (T131)
-7.18/SR/8                n/a          - - recursive queries (T131)
-7.18/CR/1                n/a          - - recursive queries (T131)
+7.18/SR/7.a              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/7.b              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/7.c              n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/7.c.i            n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/7.c.ii           n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/7.c.iii          n/a          - - SEARCH and CYCLE (#1786)
+7.18/SR/8                n/a          - - SEARCH and CYCLE (#1786)
+7.18/CR/1                n/a          - - SEARCH and CYCLE (#1786)
 # 7.19, <subquery>
 7.19                     implemented  vsql/std_2_7_19_subquery.v tests/std_2_7_19_scalar_subquery.sql
 7.19/SR/1                n/a          - - data change delta tables (T495)

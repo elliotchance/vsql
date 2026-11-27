@@ -10,6 +10,8 @@ Syntax
 
   CREATE VIEW <view_name> [ ( <column_name> , ... ) ] AS <query>
 
+  CREATE RECURSIVE VIEW <view_name> ( <column_name> , ... ) AS <query>
+
 Create a view, which is a query with a name. A view can be read anywhere that
 a table can, such as in a ``SELECT``, a join or a subquery, and it can be read
 by another view. Its rows aren't stored: the query is run each time the view is
@@ -30,6 +32,20 @@ The names in the query are resolved in the schema of the view, both when the
 view is created and when it's read, so a view means the same thing whatever the
 current schema is. The query is kept exactly as it was written.
 
+A ``RECURSIVE`` view can read itself. It's the same as a view of a
+``WITH RECURSIVE`` query (see :doc:`select`) with the same name and columns, so
+it must have a list of column names, and it's kept as that query:
+
+.. code-block:: sql
+
+  CREATE RECURSIVE VIEW countdown (n) AS
+    VALUES 3 UNION ALL SELECT n - 1 FROM countdown WHERE n > 1;
+
+  -- Is kept as:
+  CREATE VIEW countdown (n) AS
+    WITH RECURSIVE countdown (n) AS (VALUES 3 UNION ALL SELECT n - 1 FROM countdown WHERE n > 1)
+    SELECT * FROM countdown;
+
 The columns of a view are fixed when it's created. If the query reads a table
 with ``*`` and the table has columns added later, the view still only has the
 columns that it was created with.
@@ -48,7 +64,7 @@ Limitations
   doesn't use anything, so they can be dropped. The view is then an error when
   it's read.
 - The query can't have a ``?`` parameter or ``NEXT VALUE FOR``.
-- ``RECURSIVE`` and ``WITH CHECK OPTION`` aren't supported.
+- ``WITH CHECK OPTION`` isn't supported.
 
 Examples
 --------

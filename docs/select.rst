@@ -53,6 +53,8 @@ Any of these can start with a ``WITH`` (see `WITH`_):
 
   WITH <name> [ ( <column_name> , ... ) ] AS ( <query> ) , ...
 
+  WITH RECURSIVE <name> ( <column_name> , ... ) AS ( <query> ) , ...
+
 A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION``, ``EXCEPT`` or
 ``INTERSECT``. It can be in parentheses, such as
 ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
@@ -318,7 +320,46 @@ A ``WITH`` can start the query of a statement, such as a ``SELECT``, a
 subquery. A ``WITH`` in a subquery can read the names of the ``WITH`` around it,
 and its own names hide them. Each query is run again each time its name is read,
 which only matters for a function that has a different value each time, such as
-``RANDOM()``. ``WITH RECURSIVE`` isn't supported yet.
+``RANDOM()``.
+
+WITH RECURSIVE
+--------------
+
+A query of a ``WITH RECURSIVE`` can read itself, such as to follow a hierarchy
+or a graph. It's a ``UNION`` (or ``UNION ALL``) where one side (usually the
+first) doesn't read it, which gives the first rows. The other side reads the
+rows that were added last time to find more rows, until it doesn't add any:
+
+.. code-block:: sql
+
+  CREATE TABLE employees (name VARCHAR(20), manager VARCHAR(20));
+
+  -- Everyone who works for Alice, at any level.
+  WITH RECURSIVE reports (name, level) AS (
+    SELECT name, 1 FROM employees WHERE manager = 'Alice'
+    UNION ALL
+    SELECT e.name, r.level + 1 FROM employees e JOIN reports r ON e.manager = r.name
+  )
+  SELECT * FROM reports;
+
+``UNION`` doesn't add a row that's already there, so it stops even when the
+rows have a cycle. ``UNION ALL`` keeps every row, so a cycle never stops, and
+nor does a query that always adds a row (such as ``SELECT n + 1 FROM n``)
+unless it has a ``WHERE`` to stop it.
+
+Every query of a ``WITH RECURSIVE`` must have a list of column names, which
+have the types of the side of the ``UNION`` that doesn't read it. A name can
+only be read by its own query and the ones after it. In its own query, it can
+only be read once by each ``SELECT``, and only in ``FROM`` (including in a
+subquery in ``FROM``), but not:
+
+- In a ``SELECT`` with an aggregate function, such as ``COUNT(*)``.
+- On the side of a ``LEFT``, ``RIGHT`` or ``FULL`` join that has ``NULL``\ s
+  added for rows that don't match.
+- On the right side of ``EXCEPT``, or in ``INTERSECT ALL`` or ``EXCEPT ALL``.
+- In a query with ``FETCH FIRST``.
+
+``SEARCH`` and ``CYCLE`` aren't supported yet.
 
 TABLE
 -----

@@ -34,6 +34,7 @@ fn (e TableReference) pstr(params map[string]Value) string {
 			mut s := match e.body {
 				Identifier { e.body.str() }
 				QueryExpression { '(${e.body.pstr(params)})' }
+				RecursiveQueryReference { e.body.query.name.str() }
 			}
 
 			if e.correlation.name.sub_entity_name != '' {

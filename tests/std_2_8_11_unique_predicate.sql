@@ -81,7 +81,7 @@ SELECT * FROM t1 AS a WHERE NOT UNIQUE (SELECT x FROM t1 AS b WHERE b.x = a.x);
 SELECT * FROM t2 WHERE UNIQUE (SELECT * FROM t3);
 SELECT * FROM t2 WHERE UNIQUE (SELECT foo FROM t1);
 -- error 42P01: no such table: ":memory:".PUBLIC.T3
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.FOO
+-- error 42703: no such column: ":memory:".PUBLIC.FOO
 
 -- # A subquery can't be used in a CHECK constraint (F671).
 CREATE TABLE t3 (x INT CHECK (UNIQUE (SELECT * FROM t1)));

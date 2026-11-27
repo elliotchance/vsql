@@ -528,14 +528,14 @@ fn test_prepare_resolves_names() ! {
 	create.query({})!
 
 	// The table is empty, so none of these would fail when they're executed.
-	assert prepare_error(mut db, 'SELECT y FROM t') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'SELECT y FROM t') == '42703 no such column: ":memory:".PUBLIC.Y'
 	assert prepare_error(mut db, 'INSERT INTO t (y) VALUES (?)') == '42703 no such column: Y'
-	assert prepare_error(mut db, 'INSERT INTO t (x) SELECT y FROM t') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'INSERT INTO t (x) SELECT y FROM t') == '42703 no such column: ":memory:".PUBLIC.Y'
 	assert prepare_error(mut db, 'UPDATE t SET y = 1') == '42703 no such column: Y'
-	assert prepare_error(mut db, 'UPDATE t SET x = y') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
-	assert prepare_error(mut db, 'UPDATE t AS u SET x = t.x') == '42601 syntax error: unknown column: ":memory:".PUBLIC.T.X'
-	assert prepare_error(mut db, 'DELETE FROM t WHERE y = 1') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
-	assert prepare_error(mut db, 'DECLARE c CURSOR FOR SELECT y FROM t') == '42601 syntax error: unknown column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'UPDATE t SET x = y') == '42703 no such column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'UPDATE t AS u SET x = t.x') == '42703 no such column: ":memory:".PUBLIC.T.X'
+	assert prepare_error(mut db, 'DELETE FROM t WHERE y = 1') == '42703 no such column: ":memory:".PUBLIC.Y'
+	assert prepare_error(mut db, 'DECLARE c CURSOR FOR SELECT y FROM t') == '42703 no such column: ":memory:".PUBLIC.Y'
 	assert prepare_error(mut db, 'SELECT * FROM t AS a, t AS b WHERE x = 1') == '42702 ambiguous column: X'
 	assert prepare_error(mut db, 'UPDATE t SET y = 1 WHERE CURRENT OF c') == '42703 no such column: Y'
 	assert prepare_error(mut db, 'UPDATE t AS u SET x = u.x + ?') == ''
@@ -1078,8 +1078,7 @@ fn test_condition_table() ! {
 	assert table_of_condition(mut db, 'SELECT q.* FROM c') == ':memory:.PUBLIC.Q.'
 	assert table_of_condition(mut db, 'UPDATE c SET y = q.y') == ':memory:.PUBLIC.Q.'
 
-	// No such column (or an unknown column, which is a syntax error) is only
-	// of a table if it was looked for in one table.
+	// No such column is only of a table if it was looked for in one table.
 	assert table_of_condition(mut db, 'INSERT INTO s.p (id, z) VALUES (3, 1)') == ':memory:.S.P.Z'
 	assert table_of_condition(mut db, 'UPDATE c SET z = 1') == ':memory:.PUBLIC.C.Z'
 	assert table_of_condition(mut db, 'SELECT c.z FROM s.p, c') == ':memory:.PUBLIC.C.Z'
@@ -1094,7 +1093,7 @@ fn test_condition_table() ! {
 	assert table_of_condition(mut db, 'CREATE TABLE s.p (x INT)') == ':memory:.S.P.'
 	assert table_of_condition(mut db, 'CREATE TABLE u (a INT, a INT)') == ':memory:.PUBLIC.U.'
 	assert table_of_condition(mut db, 'ALTER TABLE s.p ADD COLUMN x INT') == ':memory:.S.P.'
-	assert table_of_condition(mut db, 'CREATE TABLE u (a INT, PRIMARY KEY (b))') == ':memory:.PUBLIC.U.'
+	assert table_of_condition(mut db, 'CREATE TABLE u (a INT, PRIMARY KEY (b))') == ':memory:.PUBLIC.U.B'
 
 	// Any other condition doesn't identify a table.
 	assert table_of_condition(mut db, 'CREATE UNIQUE INDEX ci ON c (y)') == 'none'

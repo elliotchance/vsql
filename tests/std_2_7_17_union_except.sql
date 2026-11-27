@@ -171,9 +171,9 @@ VALUES 2, 1 UNION VALUES 3 ORDER BY COL1;
 SELECT x AS a FROM t1 UNION SELECT x AS b FROM t2 ORDER BY b;
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY y;
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY t1.x;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
+-- error 42703: no such column: ":memory:".PUBLIC.B
+-- error 42703: no such column: ":memory:".PUBLIC.Y
+-- error 42703: no such column: ":memory:".PUBLIC.T1.X
 
 -- # Each side can have its own ORDER BY, OFFSET and FETCH FIRST (F855, F856,
 -- # F863).
@@ -258,7 +258,7 @@ SELECT NEXT VALUE FOR seq1 FROM t2;
 SELECT x FROM t1 UNION SELECT 1 / 0 FROM t2;
 SELECT x FROM t1 UNION SELECT foo FROM t2;
 -- error 22012: division by zero
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.FOO
+-- error 42703: no such column: ":memory:".PUBLIC.FOO
 
 -- # The combined type has enough precision for both sides.
 VALUES CAST(1 AS NUMERIC(2, 1)) UNION VALUES CAST(123 AS NUMERIC(3, 0));

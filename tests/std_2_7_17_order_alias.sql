@@ -240,7 +240,7 @@ SELECT a AS b, SUM(b) AS s FROM g GROUP BY a ORDER BY SUM(b);
 SELECT y AS a FROM t ORDER BY (SELECT MAX(w) FROM u WHERE u.x = a);
 SELECT -y AS w FROM t ORDER BY (SELECT w FROM u WHERE u.x = t.x);
 SELECT z AS y FROM t ORDER BY (SELECT y FROM (VALUES 1) AS v);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
+-- error 42703: no such column: ":memory:".PUBLIC.A
 -- W: -10
 -- W: -20
 -- W: -30
@@ -266,8 +266,8 @@ SELECT x AS a, y AS a FROM t UNION SELECT y, z FROM t ORDER BY a + 1;
 -- X: 10
 -- X: 20
 -- X: 30
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.Y
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 -- error 42702: ambiguous column: A
 -- error 42702: ambiguous column: A
 -- A: 3

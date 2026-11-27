@@ -7,8 +7,8 @@ SELECT x FROM t WHERE nope.x > 0;
 SELECT t.x FROM t WHERE t.x > 0;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE.X
+-- error 42703: no such column: ":memory:".PUBLIC.NOPE.X
+-- error 42703: no such column: ":memory:".PUBLIC.NOPE.X
 -- X: 1
 
 -- # A derived table is qualified by its correlation name.
@@ -19,4 +19,4 @@ SELECT nope.x FROM (SELECT x FROM t) AS s;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- X: 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE.X
+-- error 42703: no such column: ":memory:".PUBLIC.NOPE.X

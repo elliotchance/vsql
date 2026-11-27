@@ -23,4 +23,4 @@ SELECT a.id, b.id, x, y FROM a JOIN b ON TRUE ORDER BY a.id;
 
 -- # An unknown column in ORDER BY is an error even when there are no rows.
 SELECT x FROM a WHERE x > 100 ORDER BY nope;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE
+-- error 42703: no such column: ":memory:".PUBLIC.NOPE

@@ -84,8 +84,7 @@ pub fn violated_constraint(err IError) ?Identifier {
 // (class 23) or a transaction rollback because of one (40002). It's the table
 // that doesn't exist, for no such table (42P01), the table that already
 // exists, for a duplicate table (42P07), the table (if there's one) and the
-// column, for no such column (42703) or a syntax error (42601) of an unknown
-// column, or the table being defined, for a syntax error in a CREATE TABLE or
+// column, for no such column (42703), or the table being defined, for a syntax error in a CREATE TABLE or
 // ALTER TABLE (such as a column that's defined more than once). It's none for
 // any other error, and its parts are empty if
 // the condition doesn't know them.
@@ -716,8 +715,7 @@ fn sqlstate_3f000(schema_name string) IError {
 	}
 }
 
-// syntax error. table is the table that caused it, and the column of an unknown
-// column (see condition_table).
+// syntax error. table is the table that caused it (see condition_table).
 struct SQLState42601 {
 	SQLState
 	table Identifier
@@ -727,17 +725,6 @@ fn sqlstate_42601(message string) IError {
 	return SQLState42601{
 		code: sqlstate_to_int('42601')
 		msg:  'syntax error: ${message}'
-	}
-}
-
-// sqlstate_42601_column is a syntax error for a column reference that isn't a
-// column of any table in scope. table is the table that the column was
-// qualified with, if there's one.
-fn sqlstate_42601_column(message string, table Identifier, column_name string) IError {
-	return SQLState42601{
-		code:  sqlstate_to_int('42601')
-		msg:   'syntax error: ${message}'
-		table: column_of(table, column_name)
 	}
 }
 
@@ -799,6 +786,18 @@ fn sqlstate_42703(table Identifier, column_name string) IError {
 	return SQLState42703{
 		code:        sqlstate_to_int('42703')
 		msg:         'no such column: ${column_name}'
+		table:       column_of(table, column_name)
+		column_name: column_name
+	}
+}
+
+// sqlstate_42703_reference is a column reference that isn't a column of any
+// table in scope. name is the column reference as it was resolved, and table is
+// the table that it was qualified with, if there's one.
+fn sqlstate_42703_reference(name string, table Identifier, column_name string) IError {
+	return SQLState42703{
+		code:        sqlstate_to_int('42703')
+		msg:         'no such column: ${name}'
 		table:       column_of(table, column_name)
 		column_name: column_name
 	}

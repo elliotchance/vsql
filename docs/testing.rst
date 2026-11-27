@@ -665,7 +665,7 @@ For example the output a failed test output might be:
    X: 123 Y: hello
        Right value:
          at tests/std_2_7_6_subquery.sql:32 (in memory):
-   error 42601: syntax error: unknown column: Y
+   error 42703: no such column: Y
 
 Running the specific test again can be done with:
 

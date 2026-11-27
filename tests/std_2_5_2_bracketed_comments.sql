@@ -60,7 +60,7 @@ VALUES 1 -- a simple comment /* is not a bracketed comment
 -- # the text. So "/*COL*/" is a column name, and there isn't one.
 VALUES ROW('/* not a comment */', "/*COL*/");
 VALUES ROW('/* not a comment */', 2);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC."/*COL*/"
+-- error 42703: no such column: ":memory:".PUBLIC."/*COL*/"
 -- COL1: /* not a comment */ COL2: 2
 
 -- # Adjacent string literals are joined, but only when the separator between

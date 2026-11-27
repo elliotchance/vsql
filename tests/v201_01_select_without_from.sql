@@ -85,16 +85,16 @@ SELECT t.*;
 
 /* extensions V201-01 */
 SELECT x;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X
+-- error 42703: no such column: ":memory:".PUBLIC.X
 
 /* extensions V201-01 */
 SELECT COL1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.COL1
+-- error 42703: no such column: ":memory:".PUBLIC.COL1
 
 /* include t */
 /* extensions V201-01 */
 SELECT t.x;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 
 SELECT 1 WHERE TRUE;
 SELECT 1 GROUP BY x;
@@ -137,7 +137,7 @@ SELECT (SELECT SUM(x) FROM (VALUES 1) AS v) AS s FROM t;
 
 /* extensions V201-01 */
 SELECT COUNT(x);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X
+-- error 42703: no such column: ":memory:".PUBLIC.X
 
 -- # ORDER BY, FETCH and OFFSET apply to the one row, so OFFSET 1 skips it.
 /* extensions V201-01 */
@@ -150,7 +150,7 @@ SELECT 1 ORDER BY 1 + 1;
 
 /* extensions V201-01 */
 SELECT 1 AS a ORDER BY b;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
+-- error 42703: no such column: ":memory:".PUBLIC.B
 
 /* extensions V201-01 */
 SELECT 1 FETCH FIRST 1 ROW ONLY;

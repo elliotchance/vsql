@@ -108,7 +108,7 @@ SELECT * FROM "no""pe";
 -- msg: INSERT 1
 -- x"y: 1 ü"ö: 2
 -- "q": 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE
+-- error 42703: no such column: ":memory:".PUBLIC.NOPE
 -- msg: CREATE TABLE 1
 -- error 42P01: no such table: ":memory:".PUBLIC."no""pe"
 

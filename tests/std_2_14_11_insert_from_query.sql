@@ -141,7 +141,7 @@ INSERT INTO t (x) SELECT nope FROM t;
 -- error 42703: no such column: NOPE
 -- error 42P01: no such table: ":memory:".PUBLIC.NOPE
 -- error 42P01: no such table: ":memory:".PUBLIC.NOPE
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE
+-- error 42703: no such column: ":memory:".PUBLIC.NOPE
 
 -- # The same assignment errors as VALUES. A type that isn't assignable is an
 -- # error even when the query has no rows (9.2, Syntax Rules, 3), but a value

@@ -92,4 +92,4 @@ VALUES (1, no_such_column) IS NULL;
 -- error 42601: syntax error: unexpected NULL
 -- error 42601: syntax error: unexpected NULL
 -- error 42601: syntax error: unexpected DEFAULT
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NO_SUCH_COLUMN
+-- error 42703: no such column: ":memory:".PUBLIC.NO_SUCH_COLUMN

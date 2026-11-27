@@ -304,14 +304,11 @@ pub fn (mut p PreparedStmt) columns(params map[string]Value) ![]Column {
 const name_resolution_errors = ['3D000', '3F000', '42P01', '42702', '42703']
 
 // is_name_resolution_error is true for an error that's raised for a name that
-// can't be resolved. A column reference that can't be resolved is a syntax
-// error, which is also raised for other things (some of which depend on the
-// type of a dynamic parameter).
+// can't be resolved.
 fn is_name_resolution_error(err IError) bool {
 	sqlstate := sqlstate_from_int(err.code())
 
 	return sqlstate in name_resolution_errors
-		|| (sqlstate == '42601' && err.msg().contains('unknown column: '))
 }
 
 // resolve_names raises an error for a table or column that a query, DECLARE

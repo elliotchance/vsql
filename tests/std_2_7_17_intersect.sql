@@ -130,7 +130,7 @@ SELECT x FROM t1 INTERSECT ALL SELECT x FROM t1 ORDER BY x DESC OFFSET 1 ROW FET
 -- X: 2
 
 SELECT x FROM t1 INTERSECT SELECT x FROM t2 ORDER BY z;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
+-- error 42703: no such column: ":memory:".PUBLIC.Z
 
 -- # Each side can have its own ORDER BY, OFFSET and FETCH FIRST.
 (SELECT x FROM t1 ORDER BY x DESC FETCH FIRST 1 ROW ONLY) INTERSECT (SELECT x FROM t2 ORDER BY x OFFSET 1 ROW);

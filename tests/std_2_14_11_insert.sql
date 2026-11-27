@@ -199,4 +199,4 @@ CREATE TABLE t2 (x INT);
 INSERT INTO t2 (x) VALUES (y);
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
+-- error 42703: no such column: ":memory:".PUBLIC.Y

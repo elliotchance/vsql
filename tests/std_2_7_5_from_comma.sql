@@ -79,7 +79,7 @@ SELECT p.c1, q.c3 FROM t1 AS p (c1, c2), t2 AS q (c3, c4) WHERE c2 = c4;
 SELECT t1.a FROM t1 AS p, t2;
 -- A: 1 B: 3
 -- C1: 1 C3: 3
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.A
+-- error 42703: no such column: ":memory:".PUBLIC.T1.A
 
 -- # The same table with different correlation names.
 SELECT p.a AS p, q.a AS q FROM t1 AS p, t1 AS q WHERE p.a < q.a;
@@ -145,15 +145,15 @@ SELECT * FROM t1, t2 JOIN t3 ON t1.a = c;
 SELECT * FROM t1 JOIN t2 ON c = 5, t3;
 SELECT * FROM t1 JOIN t2 ON t3.c = 5, t3;
 SELECT * FROM t3 AS p, t1 JOIN t2 ON p.c = a;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.A
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T3.C
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.P.C
+-- error 42703: no such column: ":memory:".PUBLIC.A
+-- error 42703: no such column: ":memory:".PUBLIC.T1.A
+-- error 42703: no such column: ":memory:".PUBLIC.C
+-- error 42703: no such column: ":memory:".PUBLIC.T3.C
+-- error 42703: no such column: ":memory:".PUBLIC.P.C
 
 -- # Nor can a condition in parentheses see the rest of the join.
 SELECT * FROM t3 JOIN (t1 JOIN t2 ON c = a) ON TRUE;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
+-- error 42703: no such column: ":memory:".PUBLIC.C
 
 -- # In a join condition, a column is only ambiguous between the tables of
 -- # that join (7.6, Syntax Rules, 18.a). Q and R both have X, but D is
@@ -193,9 +193,9 @@ SELECT * FROM (SELECT c FROM t3), t3 AS q;
 SELECT * FROM t3, (SELECT a FROM t1 WHERE a = c) AS d;
 SELECT * FROM t3, (SELECT a FROM t1 WHERE a = t3.c) AS d;
 SELECT * FROM (SELECT a FROM t1 WHERE a = c) AS d, t3;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T3.C
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
+-- error 42703: no such column: ":memory:".PUBLIC.C
+-- error 42703: no such column: ":memory:".PUBLIC.T3.C
+-- error 42703: no such column: ":memory:".PUBLIC.C
 
 -- # Any part of the query can use the tables.
 SELECT a, COUNT(*) AS n FROM t1, t2 GROUP BY a HAVING a > 0 ORDER BY a DESC;

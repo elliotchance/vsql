@@ -87,7 +87,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x AS a FROM t ORDER BY a FOR UPDATE;
 -- msg: START TRANSACTION
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
+-- error 42703: no such column: ":memory:".PUBLIC.A
 
 -- # When an alias is also the name of a column of the table, the sort key uses
 -- # both the column the alias is for (Z) and the column of the table (X).

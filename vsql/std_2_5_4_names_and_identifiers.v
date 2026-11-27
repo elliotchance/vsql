@@ -506,7 +506,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	if e.custom_id != '' {
 		return CompileResult{
 			run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
-				return data.data.get(id) or { return sqlstate_42601('unknown column: ${e}') }
+				return data.data.get(id) or { return sqlstate_42703_reference('${e}', Identifier{}, e.sub_entity_name) }
 			}
 			typ:          e.custom_typ
 			contains_agg: false
@@ -530,7 +530,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// A column must be in one of the tables in the FROM clause.
 	if c.tables.len > 0 && c.context.entity_name == ''
 		&& !e.is_column_of(c.conn, c.tables, c.context) {
-		return sqlstate_42601_column('unknown column: ${c.conn.resolve_identifier(e)}',
+		return sqlstate_42703_reference(c.conn.resolve_identifier(e).str(),
 			e.qualifying_table(c), e.sub_entity_name)
 	}
 
@@ -544,7 +544,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		if column.name.sub_entity_name == e.sub_entity_name {
 			return CompileResult{
 				run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return data.data.get(id) or { return sqlstate_42601('unknown column: ${e}') }
+					return data.data.get(id) or { return sqlstate_42703_reference('${e}', Identifier{}, e.sub_entity_name) }
 				}
 				typ:          column.typ
 				contains_agg: false
@@ -579,7 +579,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 				return CompileResult{
 					run:          fn [column, column_id] (mut conn Connection, data Row, params map[string]Value) !Value {
 						return data.data.get(column_id) or {
-							return sqlstate_42601('unknown column: ${column.name}')
+							return sqlstate_42703_reference('${column.name}', Identifier{}, column.name.sub_entity_name)
 						}
 					}
 					typ:          column.typ
@@ -608,7 +608,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		sub_entity_name: e.sub_entity_name
 	})
 	mut catalog := c.conn.catalogs[ident.catalog_name] or {
-		return sqlstate_42601('unknown column: ${ident}')
+		return sqlstate_42703_reference('${ident}', Identifier{}, ident.sub_entity_name)
 	}
 	// The table is looked up by name, rather than going through every table,
 	// since getting the Table of a virtual table copies all of its columns.
@@ -629,7 +629,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 				return CompileResult{
 					run:          fn [column, column_id] (mut conn Connection, data Row, params map[string]Value) !Value {
 						return data.data.get(column_id) or {
-							return sqlstate_42601('unknown column: ${column.name}')
+							return sqlstate_42703_reference('${column.name}', Identifier{}, column.name.sub_entity_name)
 						}
 					}
 					typ:          column.typ
@@ -652,7 +652,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 			return CompileResult{
 				run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return data.data.get(ident_id) or {
-						return sqlstate_42601('unknown column: ${ident}')
+						return sqlstate_42703_reference('${ident}', Identifier{}, ident.sub_entity_name)
 					}
 				}
 				typ:          column.typ
@@ -687,7 +687,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 			return CompileResult{
 				run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return data.data.get(ident_id) or {
-						return sqlstate_42601('unknown column: ${ident}')
+						return sqlstate_42703_reference('${ident}', Identifier{}, ident.sub_entity_name)
 					}
 				}
 				typ:          column.typ
@@ -696,7 +696,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		}
 	}
 
-	return sqlstate_42601('unknown column: ${ident}')
+	return sqlstate_42703_reference('${ident}', Identifier{}, ident.sub_entity_name)
 }
 
 // qualifying_table is the table in the FROM clause that a qualified column

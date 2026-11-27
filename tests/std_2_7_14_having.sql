@@ -107,7 +107,7 @@ SELECT COUNT(*) FROM e HAVING a > 1;
 SELECT a FROM t GROUP BY a HAVING c > 1;
 SELECT a FROM t GROUP BY a HAVING a;
 SELECT a FROM t GROUP BY a HAVING COUNT(MAX(b)) > 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
+-- error 42703: no such column: ":memory:".PUBLIC.C
 -- error 42804: data type mismatch in HAVING: expected BOOLEAN but got INTEGER
 -- error 42601: syntax error: nested set function: COUNT(MAX(B))
 

@@ -299,4 +299,4 @@ CREATE TABLE pk2 (
     id INT,
     PRIMARY KEY (foo)
 );
--- error 42601: syntax error: unknown column FOO in PRIMARY KEY
+-- error 42703: no such column: FOO

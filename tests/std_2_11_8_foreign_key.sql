@@ -302,7 +302,7 @@ CREATE TABLE child (x INT REFERENCES missing.parent);
 -- error 42830: invalid foreign key: FOREIGN KEY has 2 columns but REFERENCES ":memory:".PUBLIC.PARENT has 1
 -- error 42601: syntax error: column A appears more than once in REFERENCES
 -- error 42601: syntax error: column X appears more than once in FOREIGN KEY
--- error 42601: syntax error: unknown column Z in FOREIGN KEY
+-- error 42703: no such column: Z
 -- error 42804: data type mismatch in FOREIGN KEY: expected INTEGER but got CHARACTER VARYING(10)
 -- error 42804: data type mismatch in FOREIGN KEY: expected CHARACTER VARYING(10) but got INTEGER
 -- error 42804: data type mismatch in FOREIGN KEY: expected DATE but got TIMESTAMP(6) WITHOUT TIME ZONE

@@ -147,7 +147,7 @@ UTEST_F(db, 6_50_prepare_unknown_name) {
   EXPECT_EQ(SQLPrepare(utest_fixture->stmt,
                        (SQLCHAR *)"SELECT x FROM bar WHERE y = ?", SQL_NTS),
             SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42601");
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42703");
   EXPECT_EQ(SQLPrepare(utest_fixture->stmt,
                        (SQLCHAR *)"SELECT x FROM bar WHERE x = ?", SQL_NTS),
             SQL_SUCCESS);

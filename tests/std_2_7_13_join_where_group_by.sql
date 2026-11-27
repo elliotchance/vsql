@@ -52,7 +52,7 @@ SELECT * FROM t1 RIGHT JOIN t2 ON t1.id = t2.t1_id WHERE x IS NULL;
 
 -- # An unknown column in WHERE is an error.
 SELECT * FROM t1 JOIN t2 ON TRUE WHERE z = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
+-- error 42703: no such column: ":memory:".PUBLIC.Z
 
 -- # GROUP BY groups the rows that are left after the join and the WHERE
 -- # (General Rules, 1). An unknown grouping column is an error.

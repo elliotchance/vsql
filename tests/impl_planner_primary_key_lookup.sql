@@ -59,7 +59,7 @@ SELECT * FROM t AS x (name, id) WHERE name = 1;
 
 -- # The table name is not known with a correlation name.
 SELECT * FROM t AS x WHERE t.id = 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
+-- error 42703: no such column: ":memory:".PUBLIC.T.ID
 
 -- # The primary key is only used for a comparison or BETWEEN that's part of an
 -- # AND (see impl_planner_primary_key_range.sql). Other conditions read the

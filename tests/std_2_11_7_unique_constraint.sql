@@ -169,7 +169,7 @@ UPDATE t SET u = 1;
 -- # Each column in a UNIQUE must exist, and only appear once.
 CREATE TABLE t (a INT, UNIQUE (b));
 CREATE TABLE t (a INT, UNIQUE (a, a));
--- error 42601: syntax error: unknown column B in UNIQUE
+-- error 42703: no such column: B
 -- error 42601: syntax error: column A appears more than once in UNIQUE
 
 -- # Each unique constraint must have different columns, in any order.
@@ -183,7 +183,7 @@ CREATE TABLE t (a INT, b INT, UNIQUE (a), UNIQUE (a, b), UNIQUE (b), PRIMARY KEY
 -- error 42601: syntax error: UNIQUE (B, A) has the same columns as another unique constraint
 -- error 42601: syntax error: UNIQUE (A) has the same columns as another unique constraint
 -- error 42601: syntax error: UNIQUE (B, A) has the same columns as another unique constraint
--- error 42601: syntax error: unknown column C in PRIMARY KEY
+-- error 42703: no such column: C
 -- error 42601: syntax error: UNIQUE (A, B) has the same columns as another unique constraint
 
 -- # There can still only be one PRIMARY KEY, even with a UNIQUE.

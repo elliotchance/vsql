@@ -48,32 +48,32 @@ DELETE FROM t AS u WHERE public.t.x = 1;
 DELETE FROM t AS u WHERE t.id = 1;
 UPDATE t AS u SET x = 1 WHERE t.x = 1;
 UPDATE t AS u SET x = t.x + 1;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.ID
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 
 -- # It's the same in a subquery.
 /* include s */
 DELETE FROM t AS u WHERE EXISTS (SELECT * FROM s WHERE s.id = t.id);
 UPDATE t AS u SET x = (SELECT y FROM s WHERE s.id = t.id);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.ID
+-- error 42703: no such column: ":memory:".PUBLIC.T.ID
+-- error 42703: no such column: ":memory:".PUBLIC.T.ID
 
 -- # An unknown column of the correlation name.
 DELETE FROM t AS u WHERE u.nope = 1;
 UPDATE t AS u SET x = u.nope;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
+-- error 42703: no such column: ":memory:".PUBLIC.U.NOPE
+-- error 42703: no such column: ":memory:".PUBLIC.U.NOPE
 
 -- # The set clauses are still checked when no row is found.
 UPDATE t AS u SET x = u.nope WHERE u.id = 99;
 UPDATE t AS u SET x = t.x WHERE u.id = 99;
 UPDATE t AS u SET x = 'a' WHERE u.id = 99;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.NOPE
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.U.NOPE
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 -- error 42846: cannot coerce CHARACTER(1) to INTEGER
 
 UPDATE t AS u SET x = u.x + 1 WHERE u.id = 99;
@@ -97,7 +97,7 @@ SELECT * FROM t;
 
 -- # "t AS t" is only known as T, so it can't be qualified with the schema.
 DELETE FROM t AS t WHERE public.t.x = 10;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 
 -- # A delimited correlation name.
 DELETE FROM t AS "u v" WHERE "u v".x = 10;
@@ -122,7 +122,7 @@ SELECT * FROM t;
 -- ID: 3 X: 30
 
 DELETE FROM t AS "u" WHERE u.x = 10;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.X
+-- error 42703: no such column: ":memory:".PUBLIC.U.X
 
 -- # A target table in another schema.
 CREATE SCHEMA other;
@@ -367,7 +367,7 @@ UPDATE t AS u SET x = t.x + 1 WHERE CURRENT OF c;
 -- msg: DECLARE CURSOR
 -- msg: OPEN
 -- ID: 1 X: 10
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 
 -- # The cursor is matched by the table name, not the correlation name (14.8,
 -- # Syntax Rules, 6, and 14.13, Syntax Rules, 6).

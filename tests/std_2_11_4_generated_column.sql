@@ -90,7 +90,7 @@ CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (y + 1));
 -- # A column that doesn't exist, or a column of another table, can't be used.
 -- # The other table isn't in scope, so it's not found.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (w + 1));
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.W
+-- error 42703: no such column: ":memory:".PUBLIC.W
 
 CREATE TABLE bar (w INT);
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (bar.w + 1));

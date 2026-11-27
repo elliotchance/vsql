@@ -55,14 +55,14 @@ SELECT x.id FROM t1 AS x (a, b, c);
 SELECT * FROM t1 AS x (a, b);
 SELECT * FROM t1 AS x (a, b, a);
 SELECT * FROM (SELECT id, name FROM t1) AS x (a, a);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X.ID
+-- error 42703: no such column: ":memory:".PUBLIC.X.ID
 -- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
 -- error 42601: syntax error: column A is specified more than once
 -- error 42601: syntax error: column A is specified more than once
 
 -- # The correlation name replaces the table name.
 SELECT t1.name FROM t1 AS x;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.NAME
+-- error 42703: no such column: ":memory:".PUBLIC.T1.NAME
 
 -- # Correlation names allow a table to be joined to itself.
 SELECT c.name, p.name FROM t1 AS c JOIN t1 AS p ON c.parent_id = p.id;
@@ -87,7 +87,7 @@ SELECT p.name, COUNT(*) FROM t1 AS c JOIN t1 AS p ON c.parent_id = p.id GROUP BY
 CREATE TABLE t2 (x INT);
 SELECT * FROM t2 AS y WHERE y.z = 1;
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y.Z
+-- error 42703: no such column: ":memory:".PUBLIC.Y.Z
 
 -- # A correlation name can't be the unqualified name of another table
 -- # (7.5, Syntax Rules, 5.c.ii.1).

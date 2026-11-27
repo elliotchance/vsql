@@ -478,7 +478,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					//
 					// ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Syntax Rules, 1 and 6.a
 					if !stmt.has_column(column.sub_entity_name) {
-						return sqlstate_42601_table('unknown column ${column} in ${constraint}', table_name)
+						return sqlstate_42703(table_name, column.sub_entity_name)
 					}
 					check_groupable_column(column.sub_entity_name, stmt.column_type(column.sub_entity_name),
 						constraint)!
@@ -515,7 +515,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						return sqlstate_42601_table('column ${column.sub_entity_name} appears more than once in FOREIGN KEY', table_name)
 					}
 					if !stmt.has_column(column.sub_entity_name) {
-						return sqlstate_42601_table('unknown column ${column} in FOREIGN KEY', table_name)
+						return sqlstate_42703(table_name, column.sub_entity_name)
 					}
 					check_groupable_column(column.sub_entity_name, stmt.column_type(column.sub_entity_name),
 						'FOREIGN KEY')!

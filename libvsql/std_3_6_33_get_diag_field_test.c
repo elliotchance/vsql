@@ -330,7 +330,7 @@ UTEST_F(db, 6_33_get_diag_field_syntax_error_table) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT y FROM qux"), SQL_ERROR);
   EXPECT_STREQ(
       diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SQLSTATE),
-      "42601");
+      "42703");
   EXPECT_STREQ(
       diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_TABLE_NAME),
       "");

@@ -184,8 +184,8 @@ CREATE TABLE t (a INT, CHECK (u.a > 0));
 CREATE TABLE t (a INT, CHECK (public.u.a > 0));
 CREATE TABLE t (a INT, CHECK (x.t.a > 0));
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
+-- error 42703: no such column: ":memory:".PUBLIC.B
+-- error 42703: no such column: ":memory:".PUBLIC.B
 -- error 42P01: no such table: ":memory:".PUBLIC.U
 -- error 42P01: no such table: ":memory:".PUBLIC.U
 -- error 42P01: no such table: ":memory:".PUBLIC.U

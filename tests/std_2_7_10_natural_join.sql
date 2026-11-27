@@ -81,7 +81,7 @@ SELECT x, y, v.c, w.d FROM v NATURAL JOIN w;
 
 /* include v */
 SELECT v.x FROM v NATURAL JOIN w;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.V.X
+-- error 42703: no such column: ":memory:".PUBLIC.V.X
 
 /* include v */
 SELECT v.* FROM v NATURAL JOIN w;

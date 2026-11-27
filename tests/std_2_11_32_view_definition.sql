@@ -33,7 +33,7 @@ SELECT * FROM w;
 CREATE VIEW v (a, b) AS SELECT x, y FROM t;
 SELECT x FROM v;
 -- msg: CREATE VIEW 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X
+-- error 42703: no such column: ":memory:".PUBLIC.X
 
 -- # The number of columns must match (Syntax Rules, 14), and each name can only
 -- # be used once (Syntax Rules, 24.a).
@@ -122,7 +122,7 @@ CREATE VIEW information_schema.tables AS SELECT x FROM t;
 -- # The query must be valid when the view is created, and can't use the view
 -- # itself (Syntax Rules, 5), since it doesn't exist yet.
 CREATE VIEW v AS SELECT z FROM t;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
+-- error 42703: no such column: ":memory:".PUBLIC.Z
 
 CREATE VIEW v AS SELECT x FROM v;
 -- error 42P01: no such table: ":memory:".PUBLIC.V

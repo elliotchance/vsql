@@ -115,7 +115,7 @@ VALUES 1 < ANY (SELECT y FROM t1);
 CREATE TABLE t2 (x INT);
 VALUES 1 < ALL (SELECT foo FROM t2);
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.FOO
+-- error 42703: no such column: ":memory:".PUBLIC.FOO
 
 -- # The subquery isn't optional.
 VALUES 1 = ALL (1, 2);

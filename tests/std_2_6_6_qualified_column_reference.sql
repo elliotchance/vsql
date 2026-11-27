@@ -24,12 +24,12 @@ SELECT ":memory:".public.t1.* FROM t1;
 CREATE TABLE t1 (x INT);
 SELECT other.t1.x FROM t1;
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: ":memory:".OTHER.T1.X
+-- error 42703: no such column: ":memory:".OTHER.T1.X
 
 CREATE TABLE t1 (x INT);
 SELECT other.public.t1.x FROM t1;
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: OTHER.PUBLIC.T1.X
+-- error 42703: no such column: OTHER.PUBLIC.T1.X
 
 CREATE TABLE t1 (x INT);
 SELECT other.t1.* FROM t1;
@@ -55,4 +55,4 @@ SELECT ":memory:".public.bar.baz FROM public.bar;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- A: 123 B: 123 C: 123
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.BAR.BAZ
+-- error 42703: no such column: ":memory:".PUBLIC.BAR.BAZ

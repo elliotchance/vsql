@@ -73,7 +73,7 @@ SELECT * FROM t2 WHERE EXISTS (SELECT * FROM t3);
 SELECT * FROM t2 WHERE EXISTS (SELECT foo FROM t1);
 -- msg: CREATE TABLE 1
 -- error 42P01: no such table: ":memory:".PUBLIC.T3
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.FOO
+-- error 42703: no such column: ":memory:".PUBLIC.FOO
 
 CREATE TABLE t2 (x INT);
 /* extensions V001-01 */

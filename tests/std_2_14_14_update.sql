@@ -38,7 +38,7 @@ SELECT * FROM foo;
 -- msg: UPDATE 1
 -- warning 02000: no data
 -- msg: UPDATE 0
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
+-- error 42703: no such column: ":memory:".PUBLIC.Z
 -- X: 1 Y: 2
 
 -- # WHERE compares numbers of different types by value, so 35 matches 35.0.

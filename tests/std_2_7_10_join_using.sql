@@ -93,10 +93,10 @@ SELECT * FROM t JOIN u USING (x) ORDER BY t.x;
 SELECT t.a, u.b FROM t JOIN u USING (x);
 SELECT t.* FROM t JOIN u USING (x);
 SELECT u.*, x, t.* FROM t JOIN u USING (x);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.U.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.U.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 -- A: 10 B: 100
 -- A: 10
 -- B: 100 X: 1 A: 10
@@ -113,7 +113,7 @@ SELECT * FROM (SELECT x, a FROM t) AS p JOIN u USING (x);
 SELECT * FROM (SELECT * FROM t JOIN u USING (x)) AS p;
 SELECT p.x FROM (SELECT * FROM t JOIN u USING (x)) AS p;
 -- A: 10 B: 100 X: 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.P.X
+-- error 42703: no such column: ":memory:".PUBLIC.P.X
 -- C: 1 D: 10 E: 100
 -- X: 1 A: 10 B: 100
 -- X: 1 A: 10 B: 100
@@ -129,7 +129,7 @@ SELECT b FROM u WHERE EXISTS (SELECT * FROM t AS p JOIN t AS q USING (x, a) WHER
 SELECT x, (SELECT COUNT(*) FROM r WHERE val = x) FROM t JOIN u USING (x);
 SELECT (SELECT COUNT(*) FROM r WHERE val = t.x) FROM t JOIN u USING (x);
 -- X: 1 COL2: 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t JOIN u USING (x);
@@ -224,7 +224,7 @@ SELECT * FROM t JOIN u USING (x) JOIN z ON x = z.x;
 SELECT * FROM t JOIN u USING (x) JOIN z ON t.x = z.x;
 SELECT * FROM t JOIN u ON t.x = u.x JOIN z USING (x);
 -- error 42702: ambiguous column: X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
 -- error 42702: ambiguous column: X
 
 /* include v z */

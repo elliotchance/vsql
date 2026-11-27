@@ -174,13 +174,13 @@ CREATE TABLE t3 (w INT);
 SELECT * FROM t3 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
 SELECT * FROM t3 WHERE EXISTS (SELECT * FROM t2 WHERE y = 'a');
 -- msg: CREATE TABLE 1
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
+-- error 42703: no such column: ":memory:".PUBLIC.T1.X
+-- error 42703: no such column: ":memory:".PUBLIC.Y
 
 SELECT y FROM t2;
 SELECT * FROM t1 AS a WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
+-- error 42703: no such column: ":memory:".PUBLIC.Y
+-- error 42703: no such column: ":memory:".PUBLIC.T1.X
 
 -- # UPDATE and DELETE can use the row being changed.
 UPDATE t1 SET y = (SELECT CAST(MAX(z) AS VARCHAR(10)) FROM t2 WHERE t2.x = t1.x) WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);

@@ -80,7 +80,7 @@ SELECT COUNT(*) FROM t1 JOIN t2 ON TRUE JOIN t3 ON TRUE;
 -- # The ON of a nested join can only see the two tables it joins, so A of T1
 -- # isn't known there.
 SELECT * FROM t1 JOIN t2 JOIN t3 ON a = y ON a = x;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
+-- error 42703: no such column: ":memory:".PUBLIC.A
 
 -- # A table or correlation name can only be used once in the same FROM, even
 -- # further along a chain of joins.

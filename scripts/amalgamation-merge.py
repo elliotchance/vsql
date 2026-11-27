@@ -38,9 +38,17 @@ import subprocess
 import sys
 import tempfile
 
-OSES = ['linux', 'macos', 'windows']
+OSES = ['dragonfly', 'freebsd', 'linux', 'macos', 'netbsd', 'openbsd', 'windows']
 ARCHES = ['amd64', 'arm64']
-OS_MACROS = {'linux': 'VSQL_LINUX', 'macos': 'VSQL_MACOS', 'windows': 'VSQL_WINDOWS'}
+OS_MACROS = {
+    'dragonfly': 'VSQL_DRAGONFLY',
+    'freebsd': 'VSQL_FREEBSD',
+    'linux': 'VSQL_LINUX',
+    'macos': 'VSQL_MACOS',
+    'netbsd': 'VSQL_NETBSD',
+    'openbsd': 'VSQL_OPENBSD',
+    'windows': 'VSQL_WINDOWS',
+}
 ARCH_MACROS = {'amd64': 'VSQL_AMD64', 'arm64': 'VSQL_ARM64'}
 
 # The merged file's own #if and #endif lines end with this, so that they can be
@@ -65,6 +73,14 @@ HEADER = '''\
 #define VSQL_MACOS
 #elif defined(__linux__)
 #define VSQL_LINUX
+#elif defined(__FreeBSD__)
+#define VSQL_FREEBSD
+#elif defined(__OpenBSD__)
+#define VSQL_OPENBSD
+#elif defined(__NetBSD__)
+#define VSQL_NETBSD
+#elif defined(__DragonFly__)
+#define VSQL_DRAGONFLY
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64)

@@ -1,6 +1,7 @@
 # Builds vsql (the command line program) and libvsql (the SQL/CLI shared
-# library, see libvsql.h) from C, so V isn't needed. It works on Linux, macOS
-# and Windows (with MinGW). CC, CFLAGS and LDFLAGS can be set as usual.
+# library, see libvsql.h) from C, so V isn't needed. It works on Linux, macOS,
+# Windows (with MinGW) and the BSDs. CC, CFLAGS and LDFLAGS can be set as
+# usual.
 #
 #   make            Builds bin/vsql and the library (bin/libvsql.so, .dylib or
 #                   .dll).
@@ -16,9 +17,10 @@
 # linker options that V uses on each OS and architecture.
 #
 # In the release (vsql-VERSION-amalgamation.zip) they have the C for every OS
-# and architecture. In vsql's source, "make amalgamation" puts the rest of the
-# files next to this Makefile (in amalgamation/), with the C for just the
-# current one, and vsql's Makefile builds its binaries with it.
+# and architecture that the release is built on (not the BSDs). In vsql's
+# source, "make amalgamation" puts the rest of the files next to this Makefile
+# (in amalgamation/), with the C for just the current one, and vsql's Makefile
+# builds its binaries with it.
 
 ifeq ($(OS),Windows_NT)
 VSQL_OS = windows
@@ -44,7 +46,12 @@ EXAMPLE = bin/example
 LIBVSQL_SHARED = -shared -fPIC -Wl,-install_name,@rpath/libvsql.dylib -Wl,-exported_symbols_list,libvsql.exports
 RPATH = -Wl,-rpath,$(CURDIR)/bin
 else
+# The BSDs have the same options as Linux, with the C generated on each of them.
+ifneq ($(filter FreeBSD OpenBSD NetBSD DragonFly,$(shell uname -s)),)
+VSQL_OS = $(shell uname -s | tr A-Z a-z)
+else
 VSQL_OS = linux
+endif
 VSQL = bin/vsql
 LIBVSQL = bin/libvsql.so
 EXAMPLE = bin/example

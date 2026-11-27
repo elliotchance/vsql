@@ -43,6 +43,10 @@ generate() {
   case "$(uname -s)" in
     Linux) os=linux ;;
     Darwin) os=macos ;;
+    FreeBSD) os=freebsd ;;
+    OpenBSD) os=openbsd ;;
+    NetBSD) os=netbsd ;;
+    DragonFly) os=dragonfly ;;
     MINGW* | MSYS* | CYGWIN*) os=windows ;;
     *) echo "unsupported OS: $(uname -s)" >&2; exit 1 ;;
   esac

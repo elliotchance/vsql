@@ -272,6 +272,7 @@ See Also
 --------
 
 - :doc:`commit`
+- :doc:`locking` (locks between processes, and files that can only be read)
 - :doc:`mvcc`
 - :doc:`rollback`
 - :doc:`set-transaction`

@@ -76,7 +76,7 @@ fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &c
 	// - 15, 17. If the SQL-client cannot establish the SQL-connection, then an
 	// exception condition is raised: connection exception — SQL-client unable
 	// to establish SQL-connection.
-	dbc.conn = db_open(path) or {
+	dbc.conn = db_open(path, dbc.options) or {
 		return cli_error('08001', 'SQL-client unable to establish SQL-connection: ${err.msg()}')
 	}
 	dbc.is_default = is_default

@@ -201,6 +201,33 @@ const type_info = [
 		sql_data_type:  sql_blob
 	},
 	TypeInfo{
+		name:           'DECFLOAT'
+		code:           sql_decfloat
+		column_size:    34
+		create_params:  'PRECISION'
+		unsigned:       0
+		sql_data_type:  sql_decfloat
+		num_prec_radix: 10
+	},
+	TypeInfo{
+		name:           'BINARY'
+		code:           sql_binary
+		column_size:    10485760
+		literal_prefix: "X'"
+		literal_suffix: "'"
+		create_params:  'LENGTH'
+		sql_data_type:  sql_binary
+	},
+	TypeInfo{
+		name:           'BINARY VARYING'
+		code:           sql_varbinary
+		column_size:    10485760
+		literal_prefix: "X'"
+		literal_suffix: "'"
+		create_params:  'LENGTH'
+		sql_data_type:  sql_varbinary
+	},
+	TypeInfo{
 		name:           'DATE'
 		code:           sql_type_date
 		column_size:    10

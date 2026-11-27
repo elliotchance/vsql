@@ -143,6 +143,17 @@ UTEST_F(db, 6_17_end_tran_savepoint_missing) {
                          SQL_SAVEPOINT_NAME_ROLLBACK),
               SQL_ERROR);
     EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "3B001");
+    /* "select" is a valid delimited identifier, so the core engine reports
+     * it, in upper case, as a savepoint that doesn't exist. */
+    if (i == 3) {
+      continue;
+    }
+    char message[64];
+    snprintf(message, sizeof(message),
+             "savepoint exception: invalid specification: %s", names[i]);
+    EXPECT_STREQ(diag_string(SQL_HANDLE_DBC, utest_fixture->dbc,
+                             SQL_DIAG_MESSAGE_TEXT),
+                 message);
   }
 }
 

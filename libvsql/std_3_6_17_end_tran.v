@@ -177,7 +177,7 @@ fn end_savepoint(dh i64, is_rollback bool) !i16 {
 	mut dbc := dbcs[dh] or { return sql_invalid_handle }
 	mut conn := dbc.conn or { return sql_invalid_handle }
 	name := savepoint_identifier(dbc.savepoint_name) or {
-		return cli_error('3B001', 'savepoint exception — invalid specification')
+		return cli_error('3B001', 'savepoint exception: invalid specification: ${dbc.savepoint_name}')
 	}
 	if is_rollback {
 		db_query(mut conn, 'ROLLBACK TO SAVEPOINT ${name}')!

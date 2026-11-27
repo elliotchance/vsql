@@ -54,6 +54,7 @@ Threads
 The routines can be called from any thread, including threads that weren't
 created by libvsql (such as the threads of a Go program). libvsql initializes
 itself when it's loaded, so threads can make their first calls at the same time.
+Any thread can load it, and that thread can exit while the others use it.
 
 Each environment (``SQL_HANDLE_ENV``) is its own SQL-agent. Its routines run one
 at a time, and it has its own current connection. So a connection in one

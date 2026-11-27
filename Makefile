@@ -117,9 +117,13 @@ else
 VSQL_BIN ?= bin/vsql
 endif
 
-# The tests use POSIX threads, except on Windows.
+# The tests use POSIX threads, except on Windows. libvsql/load_thread.c loads
+# the library with dlopen, which older versions of glibc have in libdl.
 ifneq ($(OS),Windows_NT)
 LIBVSQL_PTHREAD = -pthread
+endif
+ifeq ($(shell uname),Linux)
+LIBVSQL_DL = -ldl
 endif
 
 libvsql: $(LIBVSQL)
@@ -504,6 +508,8 @@ libvsql-c-test: $(LIBVSQL)
 	bin/libvsql-test
 	$(LIBVSQL_CC) libvsql/first_call.c $(LIBVSQL_PTHREAD) -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-first-call
 	i=0; while [ $$i -lt 20 ]; do bin/libvsql-first-call || exit 1; i=$$((i+1)); done
+	$(LIBVSQL_CC) libvsql/load_thread.c $(LIBVSQL_PTHREAD) $(LIBVSQL_DL) -o bin/libvsql-load-thread
+	bin/libvsql-load-thread $(LIBVSQL)
 
 examples/%: vsql/y.v
 	v $(V3_OPTIONS) run examples/$*.v

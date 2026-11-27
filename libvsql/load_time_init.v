@@ -16,9 +16,20 @@ module main
 // enabled on Windows), but the init of V's net module does call WSAStartup,
 // which Microsoft advises against in DllMain. The constructor needs GCC or Clang,
 // which is what the Makefile and scripts/amalgamation.sh use on Windows.
+//
+// The GC registers the thread that initializes it, which is the thread that
+// loads the library, and that may be any thread of the program (such as a Java
+// thread). A thread that the GC didn't start isn't unregistered when it exits,
+// so the GC would keep trying to stop and scan it: on macOS the next collection
+// aborts ("thread_suspend failed"), and a new thread that gets the same thread
+// ID would be taken for it (with the old thread's stack), so the memory on the
+// new thread's stack would be freed while it's still in use. So the thread is
+// unregistered once the library is initialized, and like every other thread,
+// it's only registered while it runs a routine (see enter).
 fn C._vinit_caller()
 
 @[_constructor; markused]
 fn load_time_init() {
 	C._vinit_caller()
+	unregister_thread(true)
 }

@@ -953,7 +953,13 @@ SQLRETURN SQLDisconnect(
  * SQL_SAVEPOINT_NAME_ROLLBACK and SQL_SAVEPOINT_NAME_RELEASE use the savepoint in
  * SQL_ATTR_SAVEPOINT_NAME, of a connection (SQL_HANDLE_DBC) only. It's 3B001 if it
  * doesn't exist. A savepoint is made by SQLExecDirect with SAVEPOINT. A rollback
- * closes every cursor of the connection that isn't holdable.
+ * closes every cursor of the connection that isn't holdable. This is the only way
+ * to roll back to a savepoint, since SQLExecDirect can't execute ROLLBACK TO
+ * SAVEPOINT (42000).
+ *
+ *   SQLExecDirect(stmt, (SQLCHAR *)"SAVEPOINT a", SQL_NTS);
+ *   SQLSetConnectAttr(dbc, SQL_ATTR_SAVEPOINT_NAME, (SQLPOINTER) "a", SQL_NTS);
+ *   SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_SAVEPOINT_NAME_ROLLBACK);
  *
  *   SQLExecDirect(stmt, (SQLCHAR *)"INSERT INTO foo (x) VALUES (1.23)",
  *                 SQL_NTS);
@@ -999,7 +1005,10 @@ SQLRETURN SQLError(
  *
  * A transaction is started if there isn't one, and it must be ended with
  * SQLEndTran, so START TRANSACTION, COMMIT and ROLLBACK can't be executed
- * (42000). A "--" comment isn't allowed either (42000). A DELETE, INSERT or
+ * (42000). That includes ROLLBACK TO SAVEPOINT, which is a ROLLBACK as well: it's
+ * SQLEndTran with SQL_SAVEPOINT_NAME_ROLLBACK and the savepoint in
+ * SQL_ATTR_SAVEPOINT_NAME. SAVEPOINT and RELEASE SAVEPOINT can be executed. A
+ * "--" comment isn't allowed either (42000). A DELETE, INSERT or
  * UPDATE that doesn't change any rows returns SQL_NO_DATA (with no status
  * record).
  *

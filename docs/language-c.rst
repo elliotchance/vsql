@@ -95,6 +95,18 @@ then, any connection can be used, ``SQLEndTran`` doesn't end it (none of the
 connections has a transaction to end), and another ``SQLStartTran`` (for the
 environment or one of its connections) replaces it.
 
+``SAVEPOINT`` and ``RELEASE SAVEPOINT`` are executed like any other statement,
+but ``ROLLBACK TO SAVEPOINT`` is a ``ROLLBACK``, so ``SQLExecDirect`` and
+``SQLPrepare`` refuse it (``42000``), as the standard requires. It's
+``SQLEndTran`` with the savepoint in the ``SQL_ATTR_SAVEPOINT_NAME`` connection
+attribute instead (see :doc:`savepoint`):
+
+.. code-block:: c
+
+   SQLExecDirect(stmt, (SQLCHAR *)"SAVEPOINT a", SQL_NTS);
+   SQLSetConnectAttr(dbc, SQL_ATTR_SAVEPOINT_NAME, (SQLPOINTER) "a", SQL_NTS);
+   SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_SAVEPOINT_NAME_ROLLBACK);
+
 Autocommit
 ----------
 

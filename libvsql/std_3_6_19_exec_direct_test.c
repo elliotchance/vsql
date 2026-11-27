@@ -104,6 +104,18 @@ UTEST_F(db, 6_19_exec_direct_transaction_statements) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
 }
 
+/* A ROLLBACK TO SAVEPOINT is a rollback statement too, so it's done with
+ * SQLEndTran, which the error says. */
+UTEST_F(db, 6_19_exec_direct_rollback_to_savepoint) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SAVEPOINT a"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "ROLLBACK TO SAVEPOINT a"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+  EXPECT_TRUE(strstr(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                                 SQL_DIAG_MESSAGE_TEXT),
+                     "rollback to savepoint can only be done with "
+                     "SQLEndTran") != NULL);
+}
+
 /* The cursor statements are done with the CLI routines (such as SQLFetch) and
  * the connection statements with SQLConnect and SQLDisconnect, so they aren't
  * preparable. */

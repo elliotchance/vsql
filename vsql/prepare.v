@@ -273,6 +273,16 @@ pub fn (p PreparedStmt) positioned_cursor() string {
 	}
 }
 
+// rollback_savepoint returns the name of the savepoint of a ROLLBACK TO
+// SAVEPOINT, or an empty string for any other statement (including a ROLLBACK
+// without TO SAVEPOINT).
+pub fn (p PreparedStmt) rollback_savepoint() string {
+	return match p.stmt {
+		RollbackStatement { p.stmt.savepoint }
+		else { '' }
+	}
+}
+
 // columns returns the columns of the result of a query, without executing it,
 // or none for a statement that doesn't return rows. Like query, params must
 // have a value for each parameter, which gives it a data type.

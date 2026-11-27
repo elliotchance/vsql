@@ -115,7 +115,12 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 
 	// - 7. If P is a <start transaction statement>, a <commit statement> or a
 	// <rollback statement>, then an exception condition is raised: syntax
-	// error or access rule violation.
+	// error or access rule violation. A ROLLBACK TO SAVEPOINT is a <rollback
+	// statement> too, it's done by EndTran with SAVEPOINT NAME ROLLBACK and the
+	// savepoint in the SAVEPOINT NAME attribute of the connection.
+	if prepared.rollback_savepoint() != '' {
+		return cli_error('42000', 'syntax error or access rule violation: rollback to savepoint can only be done with SQLEndTran (SQL_SAVEPOINT_NAME_ROLLBACK) and SQL_ATTR_SAVEPOINT_NAME')
+	}
 	if stmt.diag.dynamic_function in ['START TRANSACTION', 'COMMIT WORK', 'ROLLBACK WORK'] {
 		return cli_error('42000', 'syntax error or access rule violation: ${stmt.diag.dynamic_function.to_lower()} can only be done with SQLStartTran or SQLEndTran')
 	}

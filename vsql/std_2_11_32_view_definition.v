@@ -105,13 +105,9 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 	}
 
 	// A top-level ORDER BY, OFFSET and FETCH FIRST (F852, F864 and F859) are
-	// left for later (#1259, #1260 and #1261).
+	// planned like they are in a derived table.
 	//
 	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Conformance Rules, 6 to 8
-	if stmt.query.order.len > 0 || stmt.query.offset != none || stmt.query.fetch != none {
-		return sqlstate_0a000('ORDER BY, OFFSET and FETCH FIRST are not supported in a view')
-	}
-
 	subplan := view_query_plan(mut conn, name, stmt.query)!
 	query_columns := subplan.columns()
 

@@ -132,7 +132,8 @@ UPDATE v SET y = 'd';
 -- # A view isn't updatable if its query has a set operator, DISTINCT, GROUP BY,
 -- # an aggregate function, more than one table, a column that isn't a column of
 -- # the table (or a column more than once), an OFFSET or FETCH FIRST, a table
--- # that isn't a base table or updatable view, or a subquery in the WHERE that
+-- # that isn't a base table, updatable view or simply updatable derived table,
+-- # or a subquery in the WHERE that
 -- # reads the same table (7.16, Syntax Rules, 22 to 25, and 7.17, Syntax Rules,
 -- # 7 and 11).
 CREATE VIEW v1 AS SELECT id FROM t UNION SELECT id FROM t;
@@ -143,7 +144,7 @@ CREATE VIEW v5 AS SELECT a.id FROM t AS a, t AS b;
 CREATE VIEW v6 AS SELECT id, x + 1 AS x FROM t;
 CREATE VIEW v7 AS SELECT id, x, x AS z FROM t;
 CREATE VIEW v8 AS SELECT id FROM t FETCH FIRST 1 ROW ONLY;
-CREATE VIEW v9 AS SELECT * FROM (SELECT id FROM t) AS d;
+CREATE VIEW v9 AS SELECT * FROM (SELECT DISTINCT x FROM t) AS d;
 CREATE VIEW v10 AS SELECT * FROM v1;
 CREATE VIEW v11 AS SELECT id FROM t WHERE x > (SELECT MIN(x) FROM t);
 CREATE VIEW v12 AS SELECT * FROM information_schema.schemata;
@@ -310,3 +311,42 @@ UPDATE w SET x = 2;
 -- msg: CREATE VIEW 1
 -- msg: UPDATE 3
 -- msg: UPDATE 3
+
+-- # A derived table, or a WITH query name, whose query is simply updatable is
+-- # updatable too, and a change to it is a change to the leaf underlying table
+-- # (7.6, Syntax Rules, 21.b and 22.c, and 7.17, Syntax Rules, 10 and 12).
+CREATE VIEW v AS SELECT * FROM (SELECT id, x FROM t WHERE x > 10) AS d WHERE x < 30;
+CREATE VIEW w AS SELECT a, b + 0 AS b FROM (SELECT x, id FROM t) AS d (b, a);
+CREATE VIEW u (k, n) AS WITH q AS (SELECT id, x FROM t) SELECT * FROM q;
+UPDATE v SET x = x + 1;
+INSERT INTO v VALUES (4, 40);
+INSERT INTO u (n, k) VALUES (50, 5);
+DELETE FROM u WHERE k = 1;
+SELECT * FROM t;
+UPDATE w SET a = 9;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: UPDATE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: DELETE 1
+-- ID: 2 X: 21 Y: b
+-- ID: 3 X: 30 Y: c
+-- ID: 4 X: 40 Y: def
+-- ID: 5 X: 50 Y: def
+-- error 42601: syntax error: view ":memory:".PUBLIC.W is not updatable
+
+-- # A derived column list of a derived table renames its columns, and a view of
+-- # it reads the WHERE of both queries, and can have a CHECK OPTION.
+CREATE VIEW v AS SELECT a, b FROM (SELECT id, x FROM t WHERE x > 10) AS d (a, b) WHERE b < 30 WITH CHECK OPTION;
+UPDATE v SET b = b + 5;
+INSERT INTO v VALUES (6, 5);
+INSERT INTO v VALUES (7, 25);
+SELECT * FROM v;
+-- msg: CREATE VIEW 1
+-- msg: UPDATE 1
+-- error 44000: with check option violation: ":memory:".PUBLIC.V
+-- msg: INSERT 1
+-- A: 2 B: 25
+-- A: 7 B: 25

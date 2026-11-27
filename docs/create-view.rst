@@ -66,7 +66,8 @@ A view can be changed by :doc:`insert`, :doc:`update` and :doc:`delete` (and
 through a cursor, see :doc:`cursors`) when it's updatable, which is when
 its query:
 
-- reads one table, which is a base table or another updatable view,
+- reads one table, which is a base table, another updatable view, or a derived
+  table (or ``WITH`` query) whose query is updatable in the same way,
 - has each column of the view as a different column of that table (not an
   expression),
 - doesn't have ``DISTINCT``, ``GROUP BY``, ``HAVING``, an aggregate function,
@@ -169,8 +170,7 @@ views that it reads, except that the view in the ``FROM`` of a view
 Limitations
 -----------
 
-- A view of a derived table or a ``WITH`` query isn't updatable, nor is a view of
-  a join or a ``UNION`` (Feature T111).
+- A view of a join or a ``UNION`` isn't updatable (Feature T111).
 - The tables, views and columns that a view uses can only be dropped with
   ``CASCADE``, which drops the view too, and a column that it uses can't change
   its type. A view that can't be read (such as when a column it uses becomes

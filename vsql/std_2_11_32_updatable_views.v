@@ -43,36 +43,10 @@ struct UpdatableView {
 
 // updatable_view returns the view if it's simply updatable, otherwise it's an
 // error. catalog_name is the catalog of the view.
-//
-// ISO/IEC 9075-2:2023, 7.16, <query specification>, Syntax Rules, 22 to 29
-// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 7, 9 and 11
 fn (mut conn Connection) updatable_view(view View, catalog_name string, params map[string]Value) !UpdatableView {
 	name := Identifier{
 		...view.name
 		catalog_name: catalog_name
-	}
-	not_updatable := sqlstate_42601('view ${name} is not updatable')
-	query := view.query_expression()!
-	body := query.body
-	if body !is QuerySpecification || query.offset != none || query.fetch != none {
-		return not_updatable
-	}
-	spec := body as QuerySpecification
-	from_clause := spec.table_expression.from_clause
-	if from_clause !is TablePrimary || (from_clause as TablePrimary).body !is Identifier {
-		return not_updatable
-	}
-	table_primary := from_clause as TablePrimary
-	if !spec.has_only_distinct_columns() {
-		return not_updatable
-	}
-
-	plan := view_query_plan(mut conn, name, query)!
-	for operation in plan.operations {
-		if operation is GroupOperation || operation is DistinctOperation
-			|| operation is VirtualTableOperation {
-			return not_updatable
-		}
 	}
 
 	// The names in the query are resolved in the schema of the view.
@@ -81,28 +55,89 @@ fn (mut conn Connection) updatable_view(view View, catalog_name string, params m
 		conn.leave_view(scope)
 	}
 
-	// The columns of the table that the view reads, and the column of the base
+	updatable, ok := conn.updatable_query(view.query_expression()!, view.columns, params)!
+	if !ok {
+		return sqlstate_42601('view ${name} is not updatable')
+	}
+	mut checked_views := if view.check_option != '' { [name] } else { []Identifier{} }
+	checked_views << updatable.checked_views
+
+	return UpdatableView{view, updatable.table, updatable.columns, checked_views}
+}
+
+// updatable_query returns the leaf underlying table of query, and the column of
+// that table for each of column_names (the names of the columns of query), when
+// query is simply updatable. Otherwise, it returns false.
+//
+// ISO/IEC 9075-2:2023, 7.16, <query specification>, Syntax Rules, 22 to 29
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 7, 9 and 11
+//
+// The FROM can also be a derived table (or a WITH query name, which is read as
+// a derived table, see Lexer.with_scopes) whose query is simply updatable, and
+// then its leaf underlying table is the leaf underlying table of query.
+//
+// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 21.b and 22.c
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 10 and 12
+fn (mut conn Connection) updatable_query(query QueryExpression, column_names []string, params map[string]Value) !(UpdatableView, bool) {
+	body := query.body
+	if body !is QuerySpecification || query.offset != none || query.fetch != none {
+		return UpdatableView{}, false
+	}
+	spec := body as QuerySpecification
+	from_clause := spec.table_expression.from_clause
+	if from_clause !is TablePrimary {
+		return UpdatableView{}, false
+	}
+	table_primary := from_clause as TablePrimary
+	if table_primary.body is RecursiveQueryReference || !spec.has_only_distinct_columns() {
+		return UpdatableView{}, false
+	}
+
+	plan := create_query_expression_plan(query, params, mut conn, Correlation{})!
+	for operation in plan.operations {
+		if operation is GroupOperation || operation is DistinctOperation
+			|| operation is VirtualTableOperation {
+			return UpdatableView{}, false
+		}
+	}
+
+	// The columns of the table that the query reads, and the column of the base
 	// table that each one is.
 	mut table := Identifier{}
 	mut from_columns := []string{}
 	mut base_columns := map[string]string{}
-	mut checked_views := if view.check_option != '' { [name] } else { []Identifier{} }
-	if inner, inner_catalog := conn.find_view(table_primary.body as Identifier) {
-		updatable := conn.updatable_view(inner, inner_catalog, params) or {
-			return not_updatable
+	mut checked_views := []Identifier{}
+	match table_primary.body {
+		Identifier {
+			if inner, inner_catalog := conn.find_view(table_primary.body) {
+				updatable := conn.updatable_view(inner, inner_catalog, params) or {
+					return UpdatableView{}, false
+				}
+				table = updatable.table
+				from_columns = inner.columns
+				base_columns = updatable.columns.clone()
+				checked_views << updatable.checked_views
+			} else {
+				// The query was planned, so the table exists.
+				table = conn.resolve_table_identifier(table_primary.body, false)!
+				for column in conn.catalog_for(table).storage.table(table.storage_id()).columns {
+					from_columns << column.name.sub_entity_name
+					base_columns[column.name.sub_entity_name] = column.name.sub_entity_name
+				}
+			}
 		}
-		table = updatable.table
-		from_columns = inner.columns
-		base_columns = updatable.columns.clone()
-		checked_views << updatable.checked_views
-	} else {
-		table = conn.resolve_table_identifier(table_primary.body as Identifier, false) or {
-			return not_updatable
+		QueryExpression {
+			derived := table_primary.body
+			from_columns = create_query_expression_plan(derived, params, mut conn, Correlation{})!.columns().map(it.name.sub_entity_name)
+			updatable, ok := conn.updatable_query(derived, from_columns, params)!
+			if !ok {
+				return UpdatableView{}, false
+			}
+			table = updatable.table
+			base_columns = updatable.columns.clone()
+			checked_views << updatable.checked_views
 		}
-		for column in conn.catalog_for(table).storage.table(table.storage_id()).columns {
-			from_columns << column.name.sub_entity_name
-			base_columns[column.name.sub_entity_name] = column.name.sub_entity_name
-		}
+		RecursiveQueryReference {}
 	}
 
 	// A derived column list renames the columns.
@@ -119,24 +154,28 @@ fn (mut conn Connection) updatable_view(view View, catalog_name string, params m
 	// A subquery in the WHERE can't read the base table.
 	if spec.table_expression.where_clause != none
 		&& table.id() in conn.tables_of_subqueries(spec, params)! {
-		return not_updatable
+		return UpdatableView{}, false
 	}
 
-	// Each column of the view is a column of the table, in the order of the
+	// Each column of the query is a column of the table, in the order of the
 	// table for an asterisk.
 	mut columns := map[string]string{}
-	for i, column in view.columns {
+	for i, column in column_names {
 		mut from_column := from_columns[i]
 		if spec.exprs is []SelectSublist {
 			item := spec.exprs[i] or { spec.exprs[0] }
 			if item is DerivedColumn {
-				from_column = (item.column_reference() or { return not_updatable }).sub_entity_name
+				from_column = (item.column_reference() or { return UpdatableView{}, false }).sub_entity_name
 			}
 		}
 		columns[column] = base_columns[from_column]
 	}
 
-	return UpdatableView{view, table, columns, checked_views}
+	return UpdatableView{
+		table:         table
+		columns:       columns
+		checked_views: checked_views
+	}, true
 }
 
 // view_target is the view that an INSERT, UPDATE or DELETE changes, or none

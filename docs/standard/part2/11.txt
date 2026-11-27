@@ -1053,7 +1053,7 @@
 11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_9_6_flagging.sql
 # 11.32, <view definition>
-11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql a view of a derived table can't be changed (#1788)
+11.32                    implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/1               definition   - -
 11.32/SR/2               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/3               implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_32_view_definition.sql

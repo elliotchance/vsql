@@ -11,6 +11,7 @@ The SQL Language
    booleans.rst
    data-types.rst
    dates-times.rst
+   type-conversion.rst
    expressions.rst
    identifiers.rst
    operators.rst

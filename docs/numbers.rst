@@ -428,6 +428,10 @@ Implicit casting goes to the supertype in the same category:
 An exact and an approximate number are both cast to ``DOUBLE PRECISION`` (see
 Arithmetic_).
 
+The conversions between all types, such as when a value is stored in a column
+or the values of a ``UNION`` are combined, are explained in
+:doc:`type-conversion`.
+
 Explicit Casting
 ^^^^^^^^^^^^^^^^
 

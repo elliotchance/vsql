@@ -28,6 +28,21 @@ VALUES 1_000;
 VALUES 0x1_;
 -- error 42601: syntax error: invalid hexadecimal integer: 0x1_
 
+-- # Only a numeric literal can have an underscore, not the fields of a
+-- # datetime or interval literal (Syntax Rules, 44 to 46).
+VALUES DATE '2_026-01-01';
+VALUES TIME '12:30:0_5';
+VALUES TIME '12:30:05.1_5';
+VALUES TIMESTAMP '2026-01-01 1_2:00:00';
+VALUES INTERVAL '1_0' DAY;
+VALUES INTERVAL '5.1_5' SECOND;
+-- error 42601: syntax error: DATE '2_026-01-01' is not valid
+-- error 42601: syntax error: TIME '12:30:0_5' is not valid
+-- error 42601: syntax error: TIME '12:30:05.1_5' is not valid
+-- error 42601: syntax error: TIMESTAMP '2026-01-01 1_2:00:00' is not valid
+-- error 42601: syntax error: INTERVAL '1_0' DAY(2) is not valid
+-- error 42601: syntax error: INTERVAL '5.1_5' SECOND(2, 6) is not valid
+
 -- # A digit or letter that isn't of the radix is an error, but a radix indicator
 -- # without a digit after it is 0 followed by a name.
 VALUES 0b102;

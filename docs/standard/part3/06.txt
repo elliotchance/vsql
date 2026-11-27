@@ -1313,7 +1313,7 @@
 6.33/GR/12.i.iii.1       implemented  libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/api_test.v no such table (42P01), a duplicate table (42P07), no such column (42703), and a syntax error (42601) in the definition of a table identify the table
 6.33/GR/12.i.iii.2       implemented  libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c,vsql/api_test.v the column that doesn't exist, for no such column (42703), since there are no privileges (E081)
 6.33/GR/12.i.iv          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_positioned_cursor_test.c
-6.33/GR/12.i.v           n/a          - - there are no views
+6.33/GR/12.i.v           implemented  libvsql/std_3_6_33_get_diag_field.v,vsql/std_2_24_1_sqlstate.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.i.vi          n/a          - - there are no privileges (#732)
 6.33/GR/12.i.vi.1        n/a          - - there are no privileges (#732)
 6.33/GR/12.i.vi.2        n/a          - - there are no privileges (#732)

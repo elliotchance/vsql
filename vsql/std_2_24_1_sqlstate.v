@@ -91,7 +91,7 @@ pub fn violated_constraint(err IError) ?Identifier {
 // know them.
 //
 // ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A, 4.h.ii and 4.j
-// ISO/IEC 9075-3:2003, 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
+// ISO/IEC 9075-3:2003, 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1, 12.i.iii.2 and 12.i.v
 pub fn condition_table(err IError) ?Identifier {
 	return match err {
 		SQLState23001 { err.table }

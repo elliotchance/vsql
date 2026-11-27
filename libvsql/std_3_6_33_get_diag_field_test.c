@@ -339,6 +339,33 @@ UTEST_F(db, 6_33_get_diag_field_syntax_error_table) {
       "Y");
 }
 
+/* 12.i.v: The view that caused a with check option violation. */
+UTEST_F(db, 6_33_get_diag_field_check_option_view) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE qux (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE VIEW quux AS SELECT x FROM qux WHERE x > 0 "
+                    "WITH CHECK OPTION"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO quux VALUES (0)"),
+            SQL_ERROR);
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SQLSTATE),
+      "44000");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_CATALOG_NAME),
+      ":memory:");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SCHEMA_NAME),
+      "PUBLIC");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_TABLE_NAME),
+      "QUUX");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_COLUMN_NAME),
+      "");
+}
+
 /* 12.i.iii.1: The table that already exists, and the table that has a
  * duplicate column. */
 UTEST_F(db, 6_33_get_diag_field_duplicate_table) {

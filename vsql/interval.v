@@ -308,9 +308,11 @@ fn new_interval_value_from_string(sign string, s string, q IntervalQualifier) !V
 
 // invalid_interval_literal is the error for an <interval string> that doesn't
 // match its <interval qualifier>, or has a field that's too big. It's a syntax
-// error, like an invalid datetime literal.
+// error, like an invalid datetime literal. A field is only digits, so it can't
+// have an underscore between them, which only a numeric literal can (T662).
 //
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 38 and 41
+// ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 44, 45 and 46
 fn invalid_interval_literal(s string, q IntervalQualifier) IError {
 	return sqlstate_42601("INTERVAL '${s}' ${q} is not valid")
 }

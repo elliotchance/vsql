@@ -10,9 +10,10 @@ module main
 // TABLE_NAME and COLUMN_NAME are set for the conditions that identify a table
 // or column (see vsql.condition_table), and are zero-length strings for any
 // other syntax error or access rule violation (General Rules, 12.i.ii.2.A and
-// 12.i.iii). There are no routines, triggers, views, privileges or
-// user-defined exceptions (General Rules, 12.d.i, 12.i.v to 12.i.ix and
-// 12.k.i), so those fields are always zero-length strings. There's no <merge
+// 12.i.iii). The table of a with check option violation is the view (General
+// Rules, 12.i.v). There are no routines, triggers, privileges or user-defined
+// exceptions (General Rules, 12.d.i, 12.i.vi to 12.i.ix and 12.k.i), so those
+// fields are always zero-length strings. There's no <merge
 // statement> (General Rules, 11.e.ii). The NATIVE_CODE is always 0 (zero), the
 // MESSAGE_TEXT is the message of the error, and the CONNECTION_NAME is the SERVER_NAME (General
 // Rules, 12.c, 12.d.ii and 12.j), which are implementation-defined. There are
@@ -205,6 +206,8 @@ fn diag_status_field(handle_type i16, h i64, record DiagnosticRecord, record_num
 		//
 		// - 12.i.iii. The table that caused a syntax error or access rule
 		// violation, and the column that it was for.
+		//
+		// - 12.i.v. The view that caused a with check option violation.
 		sql_diag_catalog_name { record.table.catalog_name }
 		sql_diag_schema_name { record.table.schema_name }
 		sql_diag_table_name { record.table.entity_name }

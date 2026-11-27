@@ -3,7 +3,7 @@
 # 11, Schema definition and manipulation
 11                       container    - -
 # 11.1, <schema definition>
-11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql the only <schema element>s are tables and sequences, and there's no AUTHORIZATION (#289) or <schema character set or path>
+11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/std_2_11_1_create_schema.sql the only <schema element>s are tables, views and sequences, and there's no AUTHORIZATION (#289) or <schema character set or path>
 11.1/SR/1                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2.a              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
@@ -390,7 +390,7 @@
 11.5/GR/3.a              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/3.b              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/3.c              n/a          - - domains (F251)
-11.5/GR/3.d              n/a          - - views (F031-02)
+11.5/GR/3.d              implemented  vsql/std_2_11_32_updatable_views.v tests/std_2_11_32_updatable_views.sql
 11.5/GR/3.e              implemented  vsql/std_2_6_5_contextually_typed_value_specification.v tests/std_2_11_5_column_defaults.sql
 11.5/GR/4                n/a          - - the COLUMN_DEFAULT of the INFORMATION_SCHEMA is long enough for any default
 11.5/CR/1                n/a          - - SQL paths (S071)

@@ -80,3 +80,12 @@ Will new versions of vsql open my database file?
 Yes. Every version of vsql can open a file created by an older version. A file
 that uses a feature from a newer version may only be readable (or not open at
 all) in an older version. See *Compatibility* in :doc:`file-format`.
+
+Is my data safe if the process crashes or the power fails?
+----------------------------------------------------------
+
+Yes. Each statement is committed through a write-ahead log, so a database
+file always has all or none of a statement's changes, and a transaction that
+wasn't committed is rolled back. On macOS a power failure can still lose
+statements unless ``full_fsync`` is on. See :doc:`durability`, which also
+explains how to back up a database.

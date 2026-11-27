@@ -4,6 +4,7 @@ The SQL Language
 .. toctree::
    :maxdepth: 1
 
+   lexical-structure.rst
    numbers.rst
    text.rst
    binary.rst

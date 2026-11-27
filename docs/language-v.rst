@@ -918,22 +918,32 @@ Attributes
 Serial Fields
 ^^^^^^^^^^^^^
 
-vsql does not have identity columns, so each ``@[sql: serial]`` field gets a
-sequence called ``"<table>_<field>_seq"`` when the table is created. A row that
-is inserted with the field set to zero is given the next value of
-the sequence. The sequence is dropped with the table.
+Each ``@[sql: serial]`` field gets a sequence called ``"<table>_<field>_seq"``
+when the table is created. A row that is inserted with the field set to zero is
+given the next value of the sequence. The sequence is dropped with the table.
+The field isn't an identity column (see :ref:`create-table:Identity Columns`),
+because the ORM gets the next value itself, so that it knows the value of each
+row it inserts.
 
 Where
 ^^^^^
 
 A ``where`` can use ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``like``,
-``is none`` and ``!is none``, combined with ``&&``, ``||`` and parentheses:
+``ilike``, ``in``, ``!in``, ``is none`` and ``!is none``, combined with ``&&``,
+``||`` and parentheses:
 
 .. code-block:: v
 
    products := sql db {
      select from Product where (price < 3.0 || name like 'Ice%') && id != 1
    }!
+
+   ids := [1, 3]
+   others := sql db {
+     select from Product where name ilike 'ice%' && id !in ids
+   }!
+
+``ilike`` is ``ILIKE``, which isn't standard SQL (see :ref:`expressions:ILIKE`).
 
 Transactions
 ^^^^^^^^^^^^
@@ -946,15 +956,6 @@ is how nested transactions work.
 Limitations
 ^^^^^^^^^^^
 
-- Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
-
-- A ``PRIMARY KEY`` must be a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` field,
-  so a ``string`` field can't be ``@[primary]``.
-
-- These are not supported:
-
-  - ``ilike``, which isn't part of the SQL standard.
-
-  Each of these returns an error from vsql when the query runs.
+Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 
 .. include:: v-client-library-docs.rst

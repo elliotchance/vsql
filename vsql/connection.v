@@ -115,6 +115,9 @@ mut:
 	// planned while collect_subquery_tables is set (see tables_of_subqueries).
 	collect_subquery_tables bool
 	subquery_tables         []string
+	// view_usage records what the query of a view uses while it's planned (see
+	// Connection.view_usage_of), when it isn't nil.
+	view_usage &ViewUsage = unsafe { nil }
 	// flagging is true while PreparedStmt.features resolves the names of a
 	// statement, see Connection.resolved_features.
 	flagging bool

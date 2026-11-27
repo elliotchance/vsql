@@ -499,18 +499,18 @@
 6.61/DE/9                n/a          - - user-defined types (S023)
 6.61/DE/10               n/a          - - user-defined types (S023)
 # 6.62, VIEW_COLUMN_USAGE base table
-6.62                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty
-6.62/DE/1                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
-6.62/DE/2                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
+6.62                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.62/DE/1                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.62/DE/2                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 # 6.63, VIEW_ROUTINE_USAGE base table
-6.63                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty
-6.63/DE/1                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
-6.63/DE/2                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
-6.63/DE/3                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
+6.63                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.63/DE/1                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.63/DE/2                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.63/DE/3                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 # 6.64, VIEW_TABLE_USAGE base table
-6.64                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty
-6.64/DE/1                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
-6.64/DE/2                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
+6.64                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.64/DE/1                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
+6.64/DE/2                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 # 6.65, VIEWS base table
 6.65                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 6.65/DE/1                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql

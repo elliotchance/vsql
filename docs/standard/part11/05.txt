@@ -279,13 +279,13 @@
 5.72                     n/a          - - user-defined types (S023)
 5.72/CR/1                n/a          - - user-defined types (S023)
 # 5.73, VIEW_COLUMN_USAGE view
-5.73                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty, the only views are the INFORMATION_SCHEMA's own
+5.73                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql every view, there are no owners (#732)
 5.73/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_76_views.sql
 # 5.74, VIEW_ROUTINE_USAGE view
-5.74                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty, the only views are the INFORMATION_SCHEMA's own
+5.74                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql every view, there are no owners (#732)
 5.74/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_76_views.sql
 # 5.75, VIEW_TABLE_USAGE view
-5.75                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty, the only views are the INFORMATION_SCHEMA's own
+5.75                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql every view, there are no owners (#732)
 5.75/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_76_views.sql
 # 5.76, VIEWS view
 5.76                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql

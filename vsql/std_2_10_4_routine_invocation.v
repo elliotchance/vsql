@@ -133,6 +133,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	}
 
 	mut found_func := c.conn.find_function_in(schema_name, func_name, arg_types)!
+	if !isnil(c.conn.view_usage) && found_func.is_vsql_routine() {
+		c.conn.view_usage.add_routine(c.conn.vsql_routine_specific_name(found_func))
+	}
 	if e.using != '' {
 		found_func = using_function(found_func, e.using, arg_types)!
 	}

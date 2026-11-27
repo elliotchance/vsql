@@ -57,6 +57,79 @@ SELECT * FROM information_schema.view_column_usage;
 SELECT * FROM information_schema.view_routine_usage;
 SELECT * FROM information_schema.view_table_usage;
 
+-- # A view uses the tables and views that its query reads, but not the tables
+-- # that those views read.
+CREATE SCHEMA s;
+CREATE TABLE s.t (x INT, y INT, z INT);
+CREATE VIEW s.v1 AS SELECT x, y + 1 AS a FROM t;
+CREATE VIEW v2 AS SELECT * FROM s.v1;
+SELECT * FROM information_schema.view_table_usage;
+SELECT * FROM information_schema.view_column_usage;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- VIEW_CATALOG: :memory: VIEW_SCHEMA: PUBLIC VIEW_NAME: V2 TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: V1
+-- VIEW_CATALOG: :memory: VIEW_SCHEMA: S VIEW_NAME: V1 TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: T
+-- VIEW_CATALOG: :memory: VIEW_SCHEMA: PUBLIC VIEW_NAME: V2 TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: V1 COLUMN_NAME: A
+-- VIEW_CATALOG: :memory: VIEW_SCHEMA: PUBLIC VIEW_NAME: V2 TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: V1 COLUMN_NAME: X
+-- VIEW_CATALOG: :memory: VIEW_SCHEMA: S VIEW_NAME: V1 TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: T COLUMN_NAME: X
+-- VIEW_CATALOG: :memory: VIEW_SCHEMA: S VIEW_NAME: V1 TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: T COLUMN_NAME: Y
+
+-- # A column of a table with a correlation name is the column of the table it
+-- # reads, including in a subquery. A derived table isn't a table that's
+-- # used, but the tables that it reads are.
+CREATE TABLE t (x INT, y INT, z INT);
+CREATE TABLE u (id INT, x INT);
+CREATE VIEW v AS SELECT q.b, d.k FROM u AS q (c, b), (SELECT z AS k FROM t) AS d WHERE q.c IN (SELECT y FROM t AS t2 WHERE t2.x = q.c);
+SELECT table_name, column_name FROM information_schema.view_column_usage;
+SELECT table_name FROM information_schema.view_table_usage;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- TABLE_NAME: T COLUMN_NAME: X
+-- TABLE_NAME: T COLUMN_NAME: Y
+-- TABLE_NAME: T COLUMN_NAME: Z
+-- TABLE_NAME: U COLUMN_NAME: ID
+-- TABLE_NAME: U COLUMN_NAME: X
+-- TABLE_NAME: T
+-- TABLE_NAME: U
+
+-- # A view (or its correlation name) with * or a qualified asterisk uses all
+-- # of its columns.
+CREATE TABLE t (x INT, y INT);
+CREATE VIEW v (w) AS SELECT x FROM t;
+CREATE VIEW w AS SELECT a.*, t.* FROM v AS a, t;
+SELECT table_name, column_name FROM information_schema.view_column_usage WHERE view_name = 'W';
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- TABLE_NAME: T COLUMN_NAME: X
+-- TABLE_NAME: T COLUMN_NAME: Y
+-- TABLE_NAME: V COLUMN_NAME: W
+
+-- # A view can read the INFORMATION_SCHEMA. A routine of the VSQL schema is
+-- # used by its specific name, but a standard function isn't a routine.
+CREATE TABLE t (x INT);
+CREATE VIEW v AS SELECT CBRT(x) AS c, ABS(x) AS a, table_name FROM t, information_schema.tables;
+SELECT * FROM information_schema.view_routine_usage;
+SELECT table_schema, table_name, column_name FROM information_schema.view_column_usage;
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- TABLE_CATALOG: :memory: TABLE_SCHEMA: PUBLIC TABLE_NAME: V SPECIFIC_CATALOG: :memory: SPECIFIC_SCHEMA: VSQL SPECIFIC_NAME: CBRT_1
+-- TABLE_SCHEMA: INFORMATION_SCHEMA TABLE_NAME: TABLES COLUMN_NAME: TABLE_NAME
+-- TABLE_SCHEMA: PUBLIC TABLE_NAME: T COLUMN_NAME: X
+
+-- # A view that can't be read uses nothing.
+CREATE TABLE t (x INT);
+CREATE VIEW v AS SELECT x FROM t;
+DROP TABLE t RESTRICT;
+SELECT * FROM information_schema.view_table_usage;
+SELECT * FROM information_schema.view_column_usage;
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: DROP TABLE 1
+
 -- # VIEWS can be referenced in Core SQL, but the usage views need F341
 -- # (5.73, 5.74 and 5.75, Conformance Rules, 1).
 /* flags */

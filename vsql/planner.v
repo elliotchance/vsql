@@ -619,8 +619,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				conn.in_derived_table = in_derived_table
 			}
 
-			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
-				from_clause.correlation)!
+			mut subplan := create_query_expression_plan(from_clause.body, params, mut
+				conn, from_clause.correlation)!
+			subplan.with_result = conn.with_results[from_clause.with_query] or { unsafe { nil } }
 			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,
 				params, mut conn)!
 
@@ -633,7 +634,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 		}
 		RecursiveQueryReference {
-			subplan := if from_clause.body.working {
+			mut subplan := if from_clause.body.working {
 				working_table_plan(from_clause.body.query, mut conn)!
 			} else {
 				next_value_not_allowed := conn.next_value_not_allowed
@@ -649,6 +650,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 				recursive_query_plan(from_clause.body.query, params, mut conn)!
 			}
+			subplan.with_result = conn.with_results[from_clause.with_query] or { unsafe { nil } }
 			table = add_correlation_plan(mut &plan, from_clause.correlation.name, subplan,
 				from_clause.correlation, params, mut conn)!
 
@@ -973,6 +975,29 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		element.check(params, mut conn)!
 	}
 
+	// Each read of a <query name> shares the result of its query.
+	mut with_results := []&WithResult{}
+	mut hidden := map[voidptr]&WithResult{}
+	for element in stmt.with_list {
+		key := element.key()
+		if previous := conn.with_results[key] {
+			hidden[key] = previous
+		}
+		result := &WithResult{}
+		conn.with_results[key] = result
+		with_results << result
+	}
+	defer {
+		for element in stmt.with_list {
+			key := element.key()
+			if previous := hidden[key] {
+				conn.with_results[key] = previous
+			} else {
+				conn.with_results.delete(key)
+			}
+		}
+	}
+
 	recursive_reads := conn.recursive_reads
 	mut plan, mut tables := if recursive_query != unsafe { nil } {
 		create_recursive_union_plan(recursive_query, stmt.body, params, mut conn)!, map[string]&Table{}
@@ -1116,6 +1141,8 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		plan.operations << operation
 	}
 
+	plan.with_results = with_results
+
 	return plan
 }
 
@@ -1130,6 +1157,11 @@ mut:
 	subplans map[string]Plan
 	// view is set for the query of a view, see view_query_plan.
 	view ?PlanView
+	// with_results are the results of the <with list> of the query, which are
+	// cleared each time it's run. with_result is set when the plan reads a
+	// <query name>, and it's only run the first time. See WithResult.
+	with_results []&WithResult
+	with_result  &WithResult = unsafe { nil }
 }
 
 // PlanView is the view that a plan is the query of. Some expressions are only
@@ -1146,6 +1178,25 @@ mut:
 const scan_batch_size = 1024
 
 fn (mut o Plan) execute(rows []Row) ![]Row {
+	for mut result in o.with_results {
+		result.done = false
+		result.rows = []Row{}
+	}
+
+	if o.with_result != unsafe { nil } {
+		mut result := o.with_result
+		if !result.done {
+			result.rows = o.execute_view(rows)!
+			result.done = true
+		}
+
+		return result.rows
+	}
+
+	return o.execute_view(rows)
+}
+
+fn (mut o Plan) execute_view(rows []Row) ![]Row {
 	if mut view := o.view {
 		scope := view.conn.enter_view(view.name)
 		defer {

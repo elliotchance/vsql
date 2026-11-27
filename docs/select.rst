@@ -318,9 +318,10 @@ columns have the same name.
 A ``WITH`` can start the query of a statement, such as a ``SELECT``, a
 :doc:`create-view` or an :doc:`insert`, and any query in parentheses, such as a
 subquery. A ``WITH`` in a subquery can read the names of the ``WITH`` around it,
-and its own names hide them. Each query is run again each time its name is read,
-which only matters for a function that has a different value each time, such as
-``RANDOM()``.
+and its own names hide them. Each query is only run once, so every read of its
+name has the same rows, even with a function that has a different value each
+time, such as ``RANDOM()``. A ``WITH`` in a subquery is run again each time the
+subquery is.
 
 WITH RECURSIVE
 --------------

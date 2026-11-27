@@ -20,6 +20,11 @@ struct Correlation {
 struct TablePrimary {
 	body        TablePrimaryBody
 	correlation Correlation
+	// with_query is set when the table primary is a <query name> that's read
+	// like a derived table (see table_or_query_name_primary). It identifies its
+	// <with list element>, so that every read of it has the same result (see
+	// WithResult).
+	with_query voidptr
 }
 
 type TableReference = QualifiedJoin | TablePrimary

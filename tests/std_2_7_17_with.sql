@@ -128,3 +128,19 @@ SELECT * FROM t WHERE x = 9;
 -- D: 6
 -- msg: INSERT 1
 -- X: 9 Y: z
+
+-- # A query is run once, so every read of its name has the same rows, even with
+-- # a function that has a different value each time (General Rules, 1.b).
+WITH r AS (SELECT x, RANDOM() AS z FROM t) SELECT COUNT(*) FROM r AS r1 JOIN r AS r2 ON r1.x = r2.x AND r1.z = r2.z;
+WITH r AS (SELECT RANDOM() AS z FROM t FETCH FIRST 1 ROW ONLY) SELECT COUNT(*) FROM t WHERE (SELECT z FROM r) = (SELECT z FROM r);
+WITH r AS (SELECT RANDOM() AS z FROM t FETCH FIRST 1 ROW ONLY) SELECT COUNT(*) FROM r, (SELECT * FROM r) AS d WHERE r.z = d.z;
+-- COL1: 3
+-- COL1: 3
+-- COL1: 1
+
+-- # A WITH in a subquery is run again for each row of the query that contains
+-- # it.
+SELECT x, (WITH a AS (SELECT x * 10 AS m FROM t AS t2 WHERE t2.x = t.x) SELECT m FROM a) AS m FROM t;
+-- X: 1 M: 10
+-- X: 2 M: 20
+-- X: 3 M: 30

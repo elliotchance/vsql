@@ -41,6 +41,41 @@ struct WithListElement {
 	// recursive_query is only set for an element of a WITH RECURSIVE, see
 	// RecursiveQuery.
 	recursive_query &RecursiveQuery = unsafe { nil }
+	// with_key identifies an element that isn't of a WITH RECURSIVE, see key.
+	with_key &WithKey = unsafe { nil }
+}
+
+// WithKey only has an address, which identifies a <with list element> (see
+// WithListElement.key).
+@[heap]
+struct WithKey {
+	// V doesn't allocate an empty struct, so each one needs a field to have its
+	// own address.
+	unused bool
+}
+
+// key identifies the <with list element> in Connection.with_results. All of
+// its copies have the same key.
+fn (e WithListElement) key() voidptr {
+	if e.recursive_query != unsafe { nil } {
+		return voidptr(e.recursive_query)
+	}
+
+	return voidptr(e.with_key)
+}
+
+// WithResult is the result of the query of a <with list element>, which is the
+// same each time its name is read in the <query expression> that has the
+// <with clause>. It's only run the first time its name is read, each time that
+// <query expression> is run (for example, for each row of a query that contains
+// a subquery with a WITH), see Plan.execute.
+//
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, General Rules, 1.b
+@[heap]
+struct WithResult {
+mut:
+	done bool
+	rows []Row
 }
 
 // A RecursiveQuery is a <with list element> of a WITH RECURSIVE. Its name is in
@@ -82,15 +117,23 @@ fn add_with_list_element(mut yylex YYLexer, list []WithListElement, element With
 		}
 	}
 
+	mut new_element := element
+	if new_element.recursive_query == unsafe { nil } {
+		new_element = WithListElement{
+			...element
+			with_key: &WithKey{}
+		}
+	}
+
 	if mut yylex is Lexer {
 		if list.len == 0 {
 			yylex.with_scopes << []WithListElement{}
 		}
-		yylex.with_scopes[yylex.with_scopes.len - 1] << element
+		yylex.with_scopes[yylex.with_scopes.len - 1] << new_element
 	}
 
 	mut new_list := list.clone()
-	new_list << element
+	new_list << new_element
 
 	return new_list
 }
@@ -197,8 +240,7 @@ fn recursive_with_list_element(mut yylex YYLexer, mut query RecursiveQuery, colu
 // query that it names, which is read like a derived table, with the <query
 // name> as its correlation name. Otherwise, it's a table.
 //
-// Each time the name is read, the query is run again, so a nondeterministic
-// function (such as RANDOM) can have a different value each time (#1781).
+// Every read of the name has the same result, see WithResult.
 //
 // ISO/IEC 9075-2:2023, 4.17.4, Transient tables
 // ISO/IEC 9075-2:2023, 5.4, Names and identifiers, General Rules, 3
@@ -222,6 +264,11 @@ fn table_or_query_name_primary(mut yylex YYLexer, name Identifier, correlation C
 							query.recursive = query.recursive || !query.parsed
 							return TablePrimary{
 								body:        RecursiveQueryReference{query, !query.parsed}
+								with_query:  if query.parsed {
+									voidptr(query)
+								} else {
+									unsafe { nil }
+								}
 								correlation: Correlation{
 									name:    if correlation.name.sub_entity_name != '' {
 										correlation.name
@@ -236,6 +283,7 @@ fn table_or_query_name_primary(mut yylex YYLexer, name Identifier, correlation C
 
 					return TablePrimary{
 						body:        element.query
+						with_query:  element.key()
 						correlation: Correlation{
 							name:    if correlation.name.sub_entity_name != '' {
 								correlation.name

@@ -344,7 +344,9 @@ SQL_...`` in ``libvsql/libvsql.h`` has a ``const sql_...`` with the same value
 in ``libvsql/*.v``, and the other way around. Then it compiles
 ``libvsql/test.c`` and the ``libvsql/*_test.c`` files against the library into
 one program, and runs it. ``libvsql/first_call.c`` is its own program, run many
-times, since a process only has one first call.
+times, since a process only has one first call. ``libvsql/load_thread.c`` is
+also its own program, since it loads the library (which a process does once)
+from a thread that then exits.
 
 The tests use `utest.h <https://github.com/sheredom/utest.h>`_
 (``libvsql/utest.h``). Each test checks one case of a CLI routine, and is named

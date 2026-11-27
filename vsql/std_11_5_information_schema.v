@@ -269,7 +269,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 	)',
 		fn [c] (mut t VirtualTable) ! {
 			for item in sql_implementation_info(c.path, c) {
-				t.next_values(implementation_info_view_row(item))
+				t.next_values(implementation_info_view_row(item.for_connection(t.conn)))
 			}
 			t.done()
 		})!

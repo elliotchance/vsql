@@ -218,6 +218,27 @@ fn implementation_info_view_row(item ImplementationInfo) []Value {
 	]
 }
 
+// for_connection is the item for the connection that reads it. DEFAULT
+// TRANSACTION ISOLATION is the isolation level of an SQL-transaction that
+// doesn't choose one (ConnectionOptions.isolation_level, or the one from SET
+// SESSION CHARACTERISTICS), so the SERIALIZABLE of sql_implementation_info is
+// only the default. Its code is 1 to 4 (ISO/IEC 9075-3:2003, 7.1), in the
+// same order as IsolationLevel. SQLGetInfo reads it from the connection
+// itself (see default_isolation_level in libvsql).
+fn (item ImplementationInfo) for_connection(conn &Connection) ImplementationInfo {
+	if item.id != 26 {
+		return item
+	}
+	level := conn.enduring_transaction.isolation_level
+	code := int(level) + 1
+
+	return ImplementationInfo{
+		...item
+		integer_value: code
+		comments:      '${code}: ${level.str()}.'
+	}
+}
+
 // dbms_version is the DBMS VERSION for a version (such as "v1.2.3"): two
 // digits, a period, two digits, a period and four digits (ISO/IEC
 // 9075-3:2003, 7.1, SQL_IMPLEMENTATION_INFO base table). It's "00.00.0000"

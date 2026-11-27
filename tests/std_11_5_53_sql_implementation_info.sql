@@ -15,6 +15,17 @@ SELECT implementation_info_id, implementation_info_name, integer_value, characte
 -- IMPLEMENTATION_INFO_ID: 10003 IMPLEMENTATION_INFO_NAME: CATALOG NAME INTEGER_VALUE: NULL CHARACTER_VALUE: Y
 -- IMPLEMENTATION_INFO_ID: 10004 IMPLEMENTATION_INFO_NAME: COLLATING SEQUENCE INTEGER_VALUE: NULL CHARACTER_VALUE:
 
+-- # DEFAULT TRANSACTION ISOLATION is the isolation level of a transaction that
+-- # doesn't choose one, which SET SESSION CHARACTERISTICS changes.
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SELECT integer_value, comments FROM information_schema.sql_implementation_info WHERE implementation_info_id = '26';
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT integer_value, comments FROM information_schema.sql_implementation_info WHERE implementation_info_id = '26';
+-- msg: SET SESSION CHARACTERISTICS
+-- INTEGER_VALUE: 2 COMMENTS: 2: READ COMMITTED.
+-- msg: SET SESSION CHARACTERISTICS
+-- INTEGER_VALUE: 3 COMMENTS: 3: REPEATABLE READ.
+
 -- # The DATA SOURCE NAME and SERVER NAME are both the name of the SQL-server,
 -- # which is the path of the database file (it's different for each test).
 SELECT COUNT(*) AS items, COUNT(DISTINCT character_value) AS names FROM information_schema.sql_implementation_info WHERE implementation_info_id IN ('2', '13');

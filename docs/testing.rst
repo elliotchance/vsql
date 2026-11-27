@@ -282,7 +282,7 @@ embed-test
 ----------
 
 ``make embed-test`` tests the C that ``vsql precompile`` generates for embedded
-SQL (see :doc:`language-c`). It's run as part of ``make test``, or on its own
+SQL (see :doc:`embedded-sql-c`). It's run as part of ``make test``, or on its own
 with:
 
 .. code-block:: sh
@@ -319,8 +319,9 @@ the path):
 (``examples/all/main.v``, see ``scripts/all-examples.sh``), so vsql is only
 built once for them. Each example has a ``main()`` and an ``example()``, and
 they can't have the same names as each other at the top level otherwise. It
-also runs the C examples in :doc:`language-c`, with ``make libvsql-example``
-and ``make module-example``.
+also runs the C examples in :doc:`language-c`, :doc:`sql-client-modules` and
+:doc:`embedded-sql-c`, with ``make libvsql-example``, ``make module-example``
+and ``make embed-example``.
 
 libvsql-test
 ------------
@@ -380,7 +381,7 @@ module-test
 -----------
 
 ``make module-test`` tests the C that ``vsql module`` generates for an
-SQL-client module (see "SQL-Client Modules" in :doc:`language-c`). It's run as
+SQL-client module (see :doc:`sql-client-modules`). It's run as
 part of ``make test``, or on its own with:
 
 .. code-block:: sh

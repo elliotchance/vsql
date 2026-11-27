@@ -1,0 +1,538 @@
+SQL-Client Modules
+==================
+
+Instead of calling the routines of libvsql yourself (see :doc:`language-c`),
+you can write the SQL in an SQL-client module (ISO/IEC 9075-2, Clause 13,
+Feature B112 "Module language C"). Each ``PROCEDURE`` in the module has one SQL
+statement, and ``vsql module`` compiles the module into a C header and source
+file. Each procedure becomes a C function that executes its statement with
+libvsql.
+
+.. contents::
+
+Example
+-------
+
+Here's ``libvsql/module/example.mod``:
+
+.. literalinclude:: ../libvsql/module/example.mod
+   :language: sql
+
+Compile it with:
+
+.. code-block:: sh
+
+   vsql module example.mod
+
+That creates ``example.h`` and ``example.c`` next to it. The header declares a
+function for each procedure:
+
+.. code-block:: c
+
+   void open_database(char SQLSTATE[6], char file[404]);
+   void create_items(char SQLSTATE[6]);
+   void add_item(char SQLSTATE[6], long *id, char name[84], double *price, short *price_indicator);
+   void change_prices(char SQLSTATE[6], double *factor);
+   void get_item(char SQLSTATE[6], long *id, char name[84], double *price, short *price_indicator);
+   void rows_changed(char SQLSTATE[6], long *rows);
+   void error_message(char SQLSTATE[6], char message[804]);
+   void commit_work(char SQLSTATE[6]);
+   void close_database(char SQLSTATE[6]);
+
+A program includes the header and calls the functions, checking the
+``SQLSTATE`` after each one (``"00000"`` is success, see :doc:`sqlstate`).
+Here's ``libvsql/module/example_main.c``:
+
+.. literalinclude:: ../libvsql/module/example_main.c
+   :language: c
+
+Compile the generated source with the program, and link them with libvsql,
+the same as any other program that uses libvsql (C99, or C++ with ``c++ -x
+c++``):
+
+.. code-block:: sh
+
+   cc example.c example_main.c -Iinclude -Llib -lvsql -Wl,-rpath,"$PWD/lib" -o example
+   ./example
+
+From the root of the repository, ``make module-example`` does all of this.
+
+Modules
+-------
+
+A module starts with:
+
+.. code-block:: text
+
+   MODULE [ <name> ]
+   LANGUAGE C
+   { SCHEMA <schema name> [ AUTHORIZATION <name> ] | AUTHORIZATION <name> }
+
+The schema is the default schema of the statements in the module. Without
+``SCHEMA``, it's the schema with the same name as the ``AUTHORIZATION``. The
+schema must exist when the first SQL-connection is made (it's set with ``SET
+SCHEMA`` at the start of each SQL-connection, see `Multiple Modules`_). For the default schema, use
+``SCHEMA "PUBLIC"``.
+
+Each procedure is:
+
+.. code-block:: text
+
+   PROCEDURE <name> ( <parameter> [, <parameter> ]... ) ;
+     <statement> ;
+
+The procedure name, and the name of each parameter, is also its name in C, so
+it's a regular identifier (not a delimited one), kept as it's written. One of
+the parameters must be ``SQLSTATE``, which is set to the SQLSTATE of the
+statement. The other parameters are ``:name <data type>``, and the statement
+uses them as ``:name``. Each one has this C type:
+
+=============================== =============================
+SQL data type                   C data type
+=============================== =============================
+``CHARACTER(L)``                ``char name[(L + 1) * 4]``
+``CHARACTER VARYING(L)``        ``char name[(L + 1) * 4]``
+``BINARY(L)``                   ``char name[L]``
+``BINARY VARYING(L)``           ``void *name`` (see below)
+``CHARACTER LARGE OBJECT(L)``   ``void *name`` (see below)
+``BINARY LARGE OBJECT(L)``      ``void *name`` (see below)
+``SMALLINT``                    ``short *name``
+``INTEGER``                     ``long *name``
+``BIGINT``                      ``long long *name``
+``REAL``                        ``float *name``
+``DOUBLE PRECISION``            ``double *name``
+``BOOLEAN``                     ``long *name`` (0 is FALSE)
+=============================== =============================
+
+A ``long`` can be wider than an ``INTEGER``, which is always 32 bits. A value
+that's out of range of ``INTEGER`` has the ``SQLSTATE`` ``22003``.
+
+The other data types (such as ``NUMERIC`` and ``DATE``) have no C type. The
+length of a string is in characters, and each character is up to 4 bytes (in
+UTF-8), so a ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` can hold any value of
+L characters, followed by the null character. A value of more than L characters
+is cut to its first L characters. A string must end with a null character within its length, otherwise the
+``SQLSTATE`` is ``22024`` (unterminated C string).
+
+A binary string is a number of octets, without a null character. A
+``BINARY(L)`` is all of its L octets (a value of fewer octets is padded with
+``X'00'``). A ``BINARY VARYING(L)`` is a pointer to a struct that has its
+length in octets and its octets (``name`` is the name of the parameter):
+
+.. code-block:: c
+
+   struct {
+     long name_reserved;
+     unsigned long name_length;
+     char name_data[L];
+   } name;
+
+A value of more than L octets is cut to its first L octets (with the warning
+``01004``, and the indicator parameter is set to its length in octets). A
+binary string can't be assigned to, or from, any other data type.
+
+A ``BINARY LARGE OBJECT(L)`` (or ``BLOB(L)``) is the same as a ``BINARY
+VARYING(L)``. A ``CHARACTER LARGE OBJECT(L)`` (or ``CLOB(L)``) is the same
+kind of struct, but its length is in characters and its data has ``L * 4``
+octets (so it can hold any value of L characters), without a null character.
+A value of more than L characters is cut to its first L characters (with the
+warning ``01004``, and the indicator parameter is set to its length in
+characters). The length of a large object must be a number, without ``K``,
+``M`` or ``G``, and there are no locators.
+
+A parameter can be NULL with an indicator parameter (a ``SMALLINT``,
+``INTEGER`` or ``BIGINT``), which is written after it as ``:name INDICATOR
+:indicator`` (or just ``:name :indicator``). The value is NULL when the
+indicator is negative. If the parameter is the whole value of a column in an
+``INSERT`` or ``UPDATE``, then the indicator must be ``-1`` for NULL, and anything
+less raises ``22010`` (invalid indicator parameter value).
+
+Statements
+----------
+
+A statement can be any statement that vsql supports, except a query (``SELECT``
+or ``VALUES``). Use ``SELECT ... INTO`` to get one row, or a cursor (see
+`Cursors`_) to get each row. It can also be one of the connection statements:
+
+- ``CONNECT TO <server> [ AS <name> ] [ USER <user> ]`` or ``CONNECT TO
+  DEFAULT``. The server is the path to a database file (or ``:memory:``), of at
+  most 128 bytes (use a relative path or a shorter link otherwise). Each
+  value is a string, or a ``CHARACTER`` or ``CHARACTER VARYING`` parameter.
+  Without ``AS``, the name is the server, so it must also be a valid name
+  (otherwise the ``SQLSTATE`` is ``2E000``).
+- ``SET CONNECTION <name>`` or ``SET CONNECTION DEFAULT``.
+- ``DISCONNECT <name>``, ``DISCONNECT DEFAULT``, ``DISCONNECT CURRENT`` or
+  ``DISCONNECT ALL``.
+
+``SELECT ... INTO`` (ISO/IEC 9075-2, 14.7, Feature E111 "Single row SELECT
+statement") is a ``SELECT`` with ``INTO`` and a parameter for each column
+before the ``FROM``:
+
+.. code-block:: text
+
+   SELECT [ DISTINCT | ALL ] <select list>
+   INTO <parameter> [, <parameter> ]...
+   FROM ... [ WHERE ... ] [ GROUP BY ... ] [ HAVING ... ]
+
+Each parameter is ``:name``, with an optional indicator parameter (``:name
+INDICATOR :indicator`` or ``:name :indicator``), and is set to the value of its
+column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
+``OFFSET`` or ``FETCH``. The ``SQLSTATE`` is:
+
+- ``00000`` when there's one row.
+- ``02000`` (no data) when there are no rows. The parameters aren't changed.
+- ``21000`` (cardinality violation) when there's more than one row.
+- ``22002`` (null value, no indicator parameter) for a NULL value without an
+  indicator parameter. With one, the indicator is set to ``-1`` for a NULL
+  value, otherwise ``0``.
+- ``01004`` (string data, right truncation) when a string doesn't fit in its
+  parameter. The string is cut, and its indicator (if there is one) is set to
+  the length in characters of the whole string.
+- ``22022`` (indicator overflow) when that length is too big for the indicator
+  parameter.
+- ``07002`` when the number of columns isn't the number of parameters. Without
+  an asterisk (``*``) in the select list, this is an error when the module is
+  compiled.
+
+A ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` parameter is padded with spaces
+to L characters, so ``'abc'`` in a ``VARCHAR(5)`` parameter is the C string
+``"abc  "``. This is for any string that's passed back to C, such as with
+``FETCH``, ``GET DESCRIPTOR`` or ``GET DIAGNOSTICS``.
+
+Cursors
+-------
+
+A cursor (ISO/IEC 9075-2, 14.1, Feature E121 "Basic cursor support") is
+declared in the module, before the procedures that use it:
+
+.. code-block:: text
+
+   DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <query>
+     [ FOR READ ONLY | FOR UPDATE [ OF <column name> [, <column name> ]... ] ] ;
+
+Exactly one procedure must open the cursor, and the query can use its
+parameters. The procedures use the cursor with these statements (see
+:doc:`cursors`):
+
+.. code-block:: text
+
+   OPEN <cursor name>
+   FETCH [ [ NEXT ] FROM ] <cursor name> INTO <parameter> [, <parameter> ]...
+   CLOSE <cursor name>
+   DELETE FROM <table name> [ [ AS ] <correlation name> ] WHERE CURRENT OF <cursor name>
+   UPDATE <table name> [ [ AS ] <correlation name> ] SET ... WHERE CURRENT OF <cursor name>
+
+``FETCH`` moves to the next row and sets the parameters to its values, the same
+as ``SELECT ... INTO``. After the last row, the ``SQLSTATE`` is ``02000`` (no
+data). A cursor that isn't open (or that's opened when it's already open) is
+``24000`` (invalid cursor state). Each SQL-connection has its own cursors, and
+a ``COMMIT`` closes every cursor that isn't ``WITH HOLD`` (``ROLLBACK`` closes
+all of them). ``FOR READ ONLY`` and ``FOR UPDATE`` decide whether the cursor is
+updatable, and which columns a positioned ``UPDATE`` can set, as they do for any
+cursor.
+
+.. code-block:: sql
+
+   DECLARE expensive CURSOR FOR
+     SELECT name, price FROM products WHERE price > :min;
+
+   PROCEDURE open_expensive (SQLSTATE, :min DOUBLE PRECISION);
+     OPEN expensive;
+
+   PROCEDURE next_expensive (SQLSTATE, :name VARCHAR(50), :price DOUBLE PRECISION);
+     FETCH expensive INTO :name, :price;
+
+   PROCEDURE discount_expensive (SQLSTATE);
+     UPDATE products SET price = price * 0.9 WHERE CURRENT OF expensive;
+
+   PROCEDURE close_expensive (SQLSTATE);
+     CLOSE expensive;
+
+``GET DIAGNOSTICS`` (ISO/IEC 9075-2, 23.1, Feature F120 "Get diagnostics
+statement") gets information about the last statement that was executed (that
+wasn't ``GET DIAGNOSTICS``):
+
+.. code-block:: text
+
+   GET DIAGNOSTICS <parameter> = <item> [, <parameter> = <item> ]...
+   GET DIAGNOSTICS CONDITION <number> <parameter> = <item> [, <parameter> = <item> ]...
+
+The first form gets information about the statement:
+
+============================ ==================================================
+Item                         Value
+============================ ==================================================
+``NUMBER``                   The number of conditions (``0`` for success).
+``MORE``                     ``Y`` if the statement raised more conditions than
+                             the ``DIAGNOSTICS SIZE``, otherwise ``N``.
+``COMMAND_FUNCTION``         The statement, such as ``INSERT`` or
+                             ``UPDATE WHERE``.
+``COMMAND_FUNCTION_CODE``    The code of the statement, such as ``50`` for
+                             ``INSERT``.
+``DYNAMIC_FUNCTION``         The statement that ``EXECUTE`` or ``EXECUTE
+                             IMMEDIATE`` executed (see `Dynamic SQL`_), and
+                             ``DYNAMIC_FUNCTION_CODE`` is its code. Otherwise
+                             it's empty, and the code is ``0``.
+``ROW_COUNT``                The number of rows that were inserted, updated or
+                             deleted.
+``TRANSACTIONS_COMMITTED``   ``1`` if a transaction was committed, otherwise
+                             ``0``.
+``TRANSACTIONS_ROLLED_BACK`` ``1`` if a transaction was rolled back, otherwise
+                             ``0``.
+``TRANSACTION_ACTIVE``       ``1`` if there's a transaction now, otherwise ``0``.
+============================ ==================================================
+
+The second form gets information about a condition (an error or warning). The
+number is from ``1`` to ``NUMBER``, and is an integer or a ``SMALLINT``,
+``INTEGER`` or ``BIGINT`` parameter. Condition ``1`` is the one in the
+``SQLSTATE`` of the statement. Any other number is ``35000`` (invalid condition
+number).
+
+============================ ==================================================
+Item                         Value
+============================ ==================================================
+``RETURNED_SQLSTATE``        The SQLSTATE of the condition.
+``MESSAGE_TEXT``             The message.
+``MESSAGE_LENGTH``           The length of the message in characters.
+``MESSAGE_OCTET_LENGTH``     The length of the message in bytes.
+``CONDITION_NUMBER``         The number of the condition.
+``CLASS_ORIGIN``             ``ISO 9075`` if the first two characters of the
+                             SQLSTATE are defined by the SQL standard,
+                             otherwise ``vsql``.
+``SUBCLASS_ORIGIN``          Likewise for the last three characters.
+``CONNECTION_NAME``          The name of the SQL-connection (``DEFAULT`` for
+                             the default SQL-connection).
+``SERVER_NAME``              The server of the SQL-connection.
+``CONSTRAINT_NAME``          The constraint that was violated (for an SQLSTATE
+                             that starts with ``23``, or ``40002``).
+``CONSTRAINT_SCHEMA``        Its schema.
+``CONSTRAINT_CATALOG``       Its catalog.
+``CURSOR_NAME``              The cursor (for an SQLSTATE of ``01001`` or ``24000``).
+``TABLE_NAME``               The table that contains the constraint that was
+                             violated (for an SQLSTATE that starts with ``23``,
+                             or ``40002``), the table that doesn't exist (for
+                             ``42P01``), or the table that doesn't have the
+                             column (for ``42703``, if the column was looked
+                             for in one table). Otherwise it's empty.
+``SCHEMA_NAME``              Its schema.
+``CATALOG_NAME``             Its catalog.
+``COLUMN_NAME``              The column that doesn't exist (for ``42703``).
+============================ ==================================================
+
+The other condition items (``PARAMETER_MODE``, ``PARAMETER_NAME``,
+``PARAMETER_ORDINAL_POSITION``, ``ROUTINE_CATALOG``, ``ROUTINE_NAME``,
+``ROUTINE_SCHEMA``, ``SPECIFIC_NAME``, ``TRIGGER_CATALOG``, ``TRIGGER_NAME``
+and ``TRIGGER_SCHEMA``) are always empty (or ``0``).
+
+A number must be put in a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` parameter, and
+a string in a ``CHARACTER`` or ``CHARACTER VARYING`` parameter (a string that
+doesn't fit is cut, and the ``SQLSTATE`` is ``01004``). ``GET DIAGNOSTICS ... =
+ALL`` isn't supported.
+
+If the first statement isn't a connection statement, it connects to
+``DEFAULT``, which is a new in-memory database. Each SQL-connection has its own
+transaction, which is started by the first statement (or ``START
+TRANSACTION``) and ended by ``COMMIT`` or ``ROLLBACK``. ``SET TRANSACTION``
+(even in ``EXECUTE IMMEDIATE`` or a prepared statement) doesn't start one. The
+access mode, isolation level and ``DIAGNOSTICS SIZE`` of a ``START
+TRANSACTION`` are used. A transaction can span more than one SQL-connection, in
+the same way as for the SQL/CLI (see :ref:`language-c:Transactions`), so a
+connection statement can be used while there's a transaction, except that a
+connection with a transaction can't be disconnected (``25001``).
+
+When the program exits, every SQL-connection is disconnected, and a transaction
+that wasn't committed is rolled back.
+
+Dynamic SQL
+-----------
+
+Dynamic SQL (ISO/IEC 9075-2, 20, Feature B031 "Basic dynamic SQL") runs a
+statement that isn't known until the program runs. It's a string, or a
+``CHARACTER`` or ``CHARACTER VARYING`` parameter, and uses ``?`` for each value
+that's given when it's executed:
+
+.. code-block:: text
+
+   EXECUTE IMMEDIATE <statement>
+   PREPARE <statement name> FROM <statement>
+   EXECUTE <statement name> [ INTO <targets> ] [ USING <values> ]
+   DEALLOCATE PREPARE <statement name>
+
+``EXECUTE IMMEDIATE`` executes a statement that doesn't have a ``?`` and isn't
+a query (otherwise the ``SQLSTATE`` is ``42000``). ``PREPARE`` checks a
+statement and keeps it with a name (replacing a statement with the same name),
+so it can be executed many times. The name is in the module, which must have a
+``PREPARE`` for each name that it uses. ``<values>`` is a parameter for each
+``?``, and ``<targets>`` is a parameter for each column of a query. A parameter
+can have an indicator parameter, like ``SELECT ... INTO``. Either one can be
+``SQL DESCRIPTOR <descriptor name>`` instead (see below).
+
+A query can only be executed with ``INTO``, when it's a ``SELECT`` that can be
+used in ``SELECT ... INTO`` (otherwise the ``SQLSTATE`` is ``07007`` or
+``07003``), and has the same results. These are the other errors:
+
+- ``26000`` (invalid SQL statement name): The statement hasn't been prepared
+  in this SQL-connection.
+- ``07001``: The number of ``<values>`` isn't the number of ``?``.
+- ``07004``: There isn't a ``USING``, but there is a ``?``.
+- ``07002``: The number of ``<targets>`` isn't the number of columns.
+- ``24000`` (invalid cursor state): ``PREPARE`` or ``DEALLOCATE PREPARE``
+  while a cursor for the statement is open.
+
+A prepared statement can't be ``START TRANSACTION``, ``COMMIT`` or
+``ROLLBACK`` (they're ``42000``). Use those statements in a procedure instead.
+
+.. code-block:: sql
+
+   PROCEDURE prepare_find (SQLSTATE, :sql VARCHAR(200));
+     PREPARE find FROM :sql;
+
+   PROCEDURE find_one (SQLSTATE, :id INTEGER, :name VARCHAR(50));
+     EXECUTE find INTO :name USING :id;
+
+.. code-block:: c
+
+   strcpy(sql, "SELECT name FROM products WHERE id = ?");
+   prepare_find(sqlstate, sql);
+   id = 3;
+   find_one(sqlstate, &id, name);
+
+A cursor can be declared for a prepared query, instead of a query. It's opened
+with the values for each ``?``, and fetched into the targets (``NEXT`` is the
+only direction):
+
+.. code-block:: text
+
+   DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <statement name> ;
+
+   OPEN <cursor name> [ USING <values> ]
+   FETCH [ [ NEXT ] FROM ] <cursor name> INTO <targets>
+
+``CLOSE``, ``DELETE ... WHERE CURRENT OF`` and ``UPDATE ... WHERE CURRENT OF``
+are the same as any other cursor. The statement is prepared again when the
+cursor is opened, so the cursor isn't changed if the statement is prepared
+again (or deallocated) after that. A statement that isn't a query is ``07005``.
+Any number of procedures can open a cursor like this, including none.
+
+An SQL descriptor area describes the values of a statement, or the columns of
+a query. Its name is an identifier, or a string with ``LOCAL`` (the default)
+or ``GLOBAL``. A ``LOCAL`` name is only in the module, and a ``GLOBAL`` one is
+in every module (see `Multiple Modules`_):
+
+.. code-block:: text
+
+   ALLOCATE [ SQL ] DESCRIPTOR <descriptor name> [ WITH MAX <occurrences> ]
+   DEALLOCATE [ SQL ] DESCRIPTOR <descriptor name>
+   DESCRIBE [ OUTPUT ] <statement name> USING [ SQL ] DESCRIPTOR <descriptor name>
+   DESCRIBE INPUT <statement name> USING [ SQL ] DESCRIPTOR <descriptor name>
+   GET [ SQL ] DESCRIPTOR <descriptor name> <parameter> = <header item> [, ...]
+   GET [ SQL ] DESCRIPTOR <descriptor name> VALUE <n> <parameter> = <item> [, ...]
+   SET [ SQL ] DESCRIPTOR <descriptor name> COUNT = <value>
+   SET [ SQL ] DESCRIPTOR <descriptor name> VALUE <n> <item> = <value> [, ...]
+
+It has up to ``<occurrences>`` items (``100`` by default, and at most
+``32767``). ``DESCRIBE`` sets ``COUNT`` to the number of columns of a query
+(``0`` for any other statement) and describes each column in an item: its
+``TYPE`` (a code, such as ``4`` for ``INTEGER``), ``LENGTH``, ``PRECISION``,
+``SCALE``, ``NAME``, ``NULLABLE``, etc. ``DYNAMIC_FUNCTION`` and
+``DYNAMIC_FUNCTION_CODE`` are the statement. ``KEY_TYPE`` is ``1`` when the
+columns include the ``PRIMARY KEY`` of the table, ``2`` when they only include a
+``UNIQUE`` whose columns are ``NOT NULL``, or ``0`` otherwise, and the
+``KEY_MEMBER`` of each column of that key is ``1``. A key is only known for a
+query of one table that isn't grouped (so not for a join, a derived table,
+``GROUP BY``, an aggregate function or ``UNION``). If there are more columns than items, the ``SQLSTATE`` is ``01005``, and only
+``COUNT`` is set.
+
+``DESCRIBE INPUT`` describes the ``?`` of the statement instead, in the order
+they're written: ``COUNT`` is how many there are, and each item has the type
+that the ``?`` was given when the statement was prepared, such as ``INTEGER``
+for the ``?`` of ``x > ?`` when ``x`` is an ``INTEGER``. Every ``?`` is
+``NULLABLE``, has an empty ``NAME`` and has a ``KEY_MEMBER`` of ``0``. It's an
+easy way to set up the items for ``USING SQL DESCRIPTOR``. Like ``DESCRIBE``, if
+there are more ``?`` than items, the ``SQLSTATE`` is ``01005``, and only
+``COUNT`` is set.
+
+``USING SQL DESCRIPTOR`` gives the value of each ``?`` from the ``DATA`` (or
+``NULL`` if ``INDICATOR`` is negative) of the first ``COUNT`` items. ``INTO SQL
+DESCRIPTOR`` sets the ``DATA``, ``INDICATOR``, ``RETURNED_LENGTH`` and
+``RETURNED_OCTET_LENGTH`` of each item from a column, as its ``TYPE``. So the
+items can be set by ``DESCRIBE``, or with ``SET DESCRIPTOR``. Setting ``TYPE``
+resets the other parts of the item, so the parts are always set in the order
+of the standard, whatever order they're written in.
+
+``DATA`` must be the same type as its parameter (otherwise it's ``22005``):
+``SMALLINT``, ``INTEGER``, ``BIGINT``, ``REAL``, ``DOUBLE PRECISION`` (which is
+also a ``FLOAT``), ``BOOLEAN``, ``CHARACTER(L)`` or ``BINARY(L)`` with a
+``LENGTH`` of ``L``, or ``CHARACTER VARYING(L)``, ``CHARACTER LARGE
+OBJECT(L)``, ``BINARY VARYING(L)`` or ``BINARY LARGE OBJECT(L)`` with a
+``LENGTH`` of ``L`` (or less, to get a value). A ``BINARY`` is ``TYPE``
+``60``, a ``BINARY VARYING`` is ``TYPE`` ``61`` and a ``BINARY LARGE OBJECT``
+is ``TYPE`` ``30``, and their ``LENGTH`` is in octets. A ``CHARACTER LARGE
+OBJECT`` is ``TYPE`` ``40``, and its ``LENGTH`` is in characters. Setting
+``TYPE`` sets the ``LENGTH`` of any of them to ``1``.
+A ``NUMERIC``, ``DECIMAL``, ``DECFLOAT``, ``DATE``, ``TIME``, ``TIMESTAMP`` or
+``INTERVAL`` has no C type, so its ``DATA`` is a ``CHARACTER`` or ``CHARACTER
+VARYING`` string. A ``DECFLOAT`` is ``TYPE`` ``26``, and its ``PRECISION`` is
+``16`` or ``34`` (setting ``TYPE`` to ``26`` sets it to ``34``). An
+``INTERVAL`` is ``TYPE`` ``10``, with a ``DATETIME_INTERVAL_CODE`` of ``1``
+(``YEAR``) to ``13`` (``MINUTE TO SECOND``), its leading field precision in
+``DATETIME_INTERVAL_PRECISION`` (``1`` to ``8``) and its fractional seconds
+precision in ``PRECISION`` (setting ``TYPE`` or ``DATETIME_INTERVAL_CODE`` sets
+``DATETIME_INTERVAL_PRECISION`` to ``2``, and ``DATETIME_INTERVAL_CODE`` sets
+``PRECISION`` to ``6`` if it ends with ``SECOND``, otherwise ``0``). Its
+``DATA`` is its literal, such as ``INTERVAL '1-02' YEAR(2) TO MONTH``, and it
+can be set to a literal or a string such as ``'1-2'``. A ``NULL`` value without
+``INDICATOR`` is ``22002``. These are the other errors:
+
+- ``33000`` (invalid SQL descriptor name): The SQL descriptor area doesn't
+  exist in this SQL-connection, or already exists.
+- ``07009`` (invalid descriptor index): ``<n>`` is more than
+  ``<occurrences>``. If it's more than ``COUNT``, ``GET DESCRIPTOR`` is
+  ``02000`` (no data).
+- ``07008`` (invalid descriptor count): ``COUNT`` is more than
+  ``<occurrences>``.
+- ``07001`` or ``07002``: ``COUNT`` isn't the number of ``?`` (or columns), or
+  an item isn't a valid type, or an item of ``USING`` doesn't have ``DATA``.
+- ``0700E`` (invalid LEVEL value): ``LEVEL`` isn't ``0``. vsql doesn't have the
+  types (such as ``ROW``) that have more than one level.
+- ``0700F`` (invalid DATETIME_INTERVAL_CODE): A ``DATETIME_INTERVAL_CODE``
+  that isn't ``1`` to ``5``, or for a ``TYPE`` that isn't ``9`` (datetime).
+
+.. code-block:: sql
+
+   PROCEDURE describe_find (SQLSTATE);
+     DESCRIBE find USING SQL DESCRIPTOR columns;
+
+   PROCEDURE column_type (SQLSTATE, :n INTEGER, :type INTEGER, :name VARCHAR(128));
+     GET DESCRIPTOR columns VALUE :n :type = TYPE, :name = NAME;
+
+Like the prepared statements, each SQL-connection has its own SQL descriptor
+areas. Each dynamic SQL statement starts an SQL-transaction, like any other
+statement. Names that are a parameter aren't supported yet.
+
+Multiple Modules
+----------------
+
+A program can be linked with more than one module (ISO/IEC 9075-2, 13.1,
+Feature F181 "Multiple module support"). Each one is compiled separately, and
+they share the SQL-connections, their transactions and the diagnostics area:
+
+.. code-block:: sh
+
+   vsql module items.mod
+   vsql module orders.mod
+   cc items.c orders.c main.c -Iinclude -Llib -lvsql -Wl,-rpath,"$PWD/lib" -o main
+
+So a ``CONNECT`` in one module is the current SQL-connection of the others, a
+``COMMIT`` in one module commits the changes of all of them, and ``GET
+DIAGNOSTICS`` gets information about the last statement of any module.
+
+The statements of each module use the schema of that module. A ``SET SCHEMA``
+only lasts until a statement of a different module uses the same
+SQL-connection.
+
+Each module has its own cursors, but two cursors that are open in the same
+SQL-connection can't have the same name, even in different modules. The
+procedures of every module are C functions in the same program, so they must
+have different names. The modules must be compiled by the same version of vsql,
+otherwise they don't share anything.

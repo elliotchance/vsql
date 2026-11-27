@@ -196,7 +196,7 @@ keeps all of its rows. Every column of the other side of an outer join can be
 it's ``NOT NULL`` only if the column of the side that keeps its rows is. The
 SQL standard leaves this choice to each database. It's what a client sees as
 the nullability of a result column, such as the ``NULLABLE`` of ``DESCRIBE``
-(see :doc:`language-c`).
+(see :ref:`sql-client-modules:Dynamic SQL`).
 
 The same table name cannot be used more than once in a ``FROM`` clause. Use
 correlation names to join a table to itself:

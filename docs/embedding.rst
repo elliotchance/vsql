@@ -11,3 +11,5 @@ the ``vsql`` module, and C and C++ programs use libvsql, the SQL/CLI library.
    custom-functions.rst
    virtual-tables.rst
    language-c.rst
+   sql-client-modules.rst
+   embedded-sql-c.rst

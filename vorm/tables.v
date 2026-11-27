@@ -9,8 +9,9 @@ import vsql
 // create is used internally by V's ORM for processing table creation queries
 // (DDL). Nothing happens if the table already exists.
 //
-// vsql doesn't have identity columns, so each serial field gets a sequence
-// called "<table>_<field>_seq".
+// Each serial field gets a sequence called "<table>_<field>_seq", rather than
+// being an identity column, because insert gets the next value itself so that
+// last_id knows it.
 pub fn (mut db DB) create(table orm.Table, fields []orm.TableField) ! {
 	if table.name in db.tables()! {
 		return

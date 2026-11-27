@@ -102,6 +102,44 @@ SELECT COUNT(*) FROM u;
 -- K: 2
 -- COL1: 3
 
+-- # A view's query can use UNION and EXCEPT (F081), and INTERSECT. Each column
+-- # has the type of the columns of both sides combined, and the view uses the
+-- # tables of both sides.
+/* types */
+CREATE TABLE f081 (x BIGINT, y VARCHAR(20));
+INSERT INTO f081 (x, y) VALUES (2, 'b'), (5, 'e'), (5, 'e');
+CREATE VIEW v AS SELECT x, y FROM t UNION SELECT x, y FROM f081;
+CREATE VIEW w (k) AS SELECT x FROM f081 EXCEPT ALL SELECT x FROM t;
+CREATE VIEW u AS SELECT x FROM t EXCEPT SELECT x FROM f081 UNION ALL VALUES 9;
+CREATE VIEW s AS SELECT x FROM t INTERSECT SELECT x FROM f081;
+SELECT * FROM v;
+SELECT * FROM w;
+SELECT * FROM u;
+SELECT * FROM s;
+DROP TABLE f081 RESTRICT;
+SELECT view_name, table_name FROM information_schema.view_table_usage WHERE table_name = 'F081';
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- X: 1 (BIGINT) Y: a (CHARACTER VARYING(20))
+-- X: 2 (BIGINT) Y: b (CHARACTER VARYING(20))
+-- X: 3 (BIGINT) Y: NULL (CHARACTER VARYING(20))
+-- X: 5 (BIGINT) Y: e (CHARACTER VARYING(20))
+-- K: 5 (BIGINT)
+-- K: 5 (BIGINT)
+-- X: 1 (BIGINT)
+-- X: 3 (BIGINT)
+-- X: 9 (BIGINT)
+-- X: 2 (BIGINT)
+-- error 2BP01: dependent objects still exist on ":memory:".PUBLIC.F081
+-- VIEW_NAME: S (CHARACTER VARYING(128)) TABLE_NAME: F081 (CHARACTER VARYING(128))
+-- VIEW_NAME: U (CHARACTER VARYING(128)) TABLE_NAME: F081 (CHARACTER VARYING(128))
+-- VIEW_NAME: V (CHARACTER VARYING(128)) TABLE_NAME: F081 (CHARACTER VARYING(128))
+-- VIEW_NAME: W (CHARACTER VARYING(128)) TABLE_NAME: F081 (CHARACTER VARYING(128))
+
 -- # The name can't already be a table or a view (Syntax Rules, 4).
 CREATE VIEW t AS SELECT x FROM t;
 -- error 42P07: duplicate table: ":memory:".PUBLIC.T

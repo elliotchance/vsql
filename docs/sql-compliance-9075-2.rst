@@ -12,7 +12,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 131 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
+**vsql supports 132 of the 163 mandatory features** of ISO/IEC 9075-2:2023.
 
 .. list-table:: Table H.1 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -416,7 +416,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F051-08
      - ``LOCALTIMESTAMP``
 
-   * - ❌ **F081**
+   * - ✅ **F081**
      - **UNION and EXCEPT in views**
 
    * - ❌ **F131**

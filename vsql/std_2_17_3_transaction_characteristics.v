@@ -320,12 +320,14 @@ fn (p PreparedStmt) changes_database_name() string {
 		DropSchemaStatement { 'DROP SCHEMA' }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE' }
 		DropTableStatement { 'DROP TABLE' }
+		DropViewStatement { 'DROP VIEW' }
 		InsertStatement { 'INSERT' }
 		SchemaDefinition { 'CREATE SCHEMA' }
 		SequenceGeneratorDefinition { 'CREATE SEQUENCE' }
 		TableDefinition { 'CREATE TABLE' }
 		UpdateStatementPositioned, UpdateStatementSearched { 'UPDATE' }
 		VacuumStatement { 'VACUUM' }
+		ViewDefinition { 'CREATE VIEW' }
 		else { '' }
 	}
 }

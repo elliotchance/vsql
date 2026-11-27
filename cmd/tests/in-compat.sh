@@ -40,6 +40,7 @@ CREATE INDEX [IFK_AlbumArtistId] ON [Album] ([ArtistId]);
 CREATE UNIQUE INDEX [IFK_Name] ON [Artist] ([Name]);
 CREATE INDEX [IFK_Partial] ON [Artist] ([Name]) WHERE [Name] IS NOT NULL;
 CREATE VIEW [V] AS SELECT [Name] FROM [Artist];
+CREATE VIEW [W] AS SELECT strftime('%Y', [Released]) FROM [Album];
 CREATE TRIGGER [T] AFTER INSERT ON [Artist] BEGIN
     UPDATE [Artist] SET [Name] = 'x';
     DELETE FROM [Artist];
@@ -56,9 +57,10 @@ INSERT INTO [Artist] ([ArtistId], [Name]) VALUES (1, 'Björk');
 COMMIT;
 SQL
 
-# Without -ignore-unsupported they are errors (other than CREATE INDEX and
-# CREATE UNIQUE INDEX, which are supported, but not a partial index). What's in
-# the body of the trigger isn't run by itself.
+# Without -ignore-unsupported they are errors (other than CREATE VIEW, CREATE
+# INDEX and CREATE UNIQUE INDEX, which are supported, but not a partial index or
+# a view that uses a function vsql doesn't have). What's in the body of the
+# trigger isn't run by itself.
 $VSQL in -file sqlite.sql -compat sqlite3 -continue-on-error $VSQL_FILE > out.txt && exit 1
 test "$(grep -c ' ERROR ' out.txt)" = 3
 query 'SELECT name FROM artist;' | grep -x 'Björk'
@@ -71,7 +73,8 @@ grep ' START TRANSACTION$' out.txt
 grep ' COMMIT$' out.txt
 if grep -q ' ERROR ' out.txt; then exit 1; fi
 grep '^23 .* WARNING 01000 CREATE INDEX failed, so it was ignored: syntax error' out.txt
-grep 'CREATE VIEW is not supported' out.txt
+grep -E '^24 [0-9]+/[0-9]+ CREATE VIEW 1$' out.txt
+grep '^25 .* WARNING 01000 CREATE VIEW failed, so it was ignored: ' out.txt
 grep 'CREATE TRIGGER is not supported' out.txt
 
 # The indexes are created at the end (before the FOREIGN KEYs), with their
@@ -91,6 +94,9 @@ if grep -q 'ALBUM_FOREIGN_KEY_1" ON' dump.sql; then exit 1; fi
 query 'SELECT name FROM artist;' | grep -x 'Björk'
 query "SELECT title FROM album WHERE albumid = 1;" | grep -Fx "It's, (a) 'title'"
 query 'SELECT COUNT(*) AS c FROM "ALBUM";' | grep -E '^ *6$'
+
+# The view was created, with its names quoted like the tables.
+query 'SELECT name FROM v;' | grep -x 'Björk'
 
 # The types, and the strings of a DATETIME.
 query "SELECT data_type FROM information_schema.columns WHERE column_name = 'RELEASED';" | grep 'TIMESTAMP'

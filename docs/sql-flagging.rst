@@ -268,6 +268,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V118-01``
      - ``EXECUTE IMMEDIATE`` of a literal, rather than a host parameter.
 
+   * - ``V119``
+     - ``DROP VIEW`` (see :doc:`drop-view`).
+
+   * - ``V119-01``
+     - ``DROP VIEW`` without ``CASCADE`` or ``RESTRICT`` (it's ``RESTRICT``).
+
    * - ``V201``
      - ``FROM``.
 

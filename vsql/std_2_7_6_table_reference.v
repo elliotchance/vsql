@@ -11,6 +11,10 @@ module vsql
 struct Correlation {
 	name    Identifier
 	columns []Identifier
+	// degree is the number of columns of a view, when it's not zero. The query
+	// of the view can have more columns than when the view was created (see
+	// create_view_plan), which are left out.
+	degree int
 }
 
 struct TablePrimary {

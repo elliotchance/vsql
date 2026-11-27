@@ -20,7 +20,7 @@ const header_magic = 'vsql\r\n\x1a\n'.bytes()
 // snapshots of REPEATABLE READ transactions (see snapshot_file_format_version),
 // and version 4 added the binary string, large object, DECFLOAT and INTERVAL
 // types (see data_types_file_format_version).
-const file_format_version = u16(4)
+const file_format_version = u16(5)
 
 // oldest_file_format_version is the oldest version of the file format that
 // can still be opened. A new file starts with this version, see new_header.

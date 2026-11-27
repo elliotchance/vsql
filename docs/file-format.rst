@@ -162,7 +162,7 @@ remaining space is reserved (see `Compatibility`_).
 Compatibility
 -------------
 
-The version of the file format that vsql reads and writes is 4. Every version
+The version of the file format that vsql reads and writes is 5. Every version
 of vsql can open a file created by an older version, and most features don't
 need to change the file format at all. The *Read Version* and *Write Version*
 in the `Header`_ work the same way as the read and write versions of SQLite:
@@ -211,6 +211,12 @@ the feature is no longer used.
       that's stored as a large value, raises the *Read Version* and the
       *Write Version* to 4, because an older version can't read their values
       in a row. Everything added in the same release shares this version.
+
+  * - 5
+    - Views (see `View Object`_). The first ``CREATE VIEW`` raises the
+      *Write Version* to 5, because an older version would ignore the view,
+      and could create a table with the same name. The *Read Version* isn't
+      raised, because older versions ignore the new objects.
 
 `Free Page`_\ s don't need a newer version. An older version of vsql never
 reaches them from the B-tree, and it writes the *First Free Page* back as it
@@ -508,6 +514,9 @@ are ignored, so that new types of objects can be added (see
 
   * - ``V``
     - `Sequence Value Object`_
+
+  * - ``W``
+    - `View Object`_
 
   * - ``X``
     - `Index Entry Object`_
@@ -811,7 +820,7 @@ than one column can be put one after another and still be in order.
 Schema Objects
 --------------
 
-The definition of each schema, sequence and table is stored as the SQL
+The definition of each schema, sequence, table and view is stored as the SQL
 statement that would create it, like SQLite does. When the file is opened, the
 statements are parsed to rebuild the schema in memory.
 
@@ -950,6 +959,22 @@ that only has default names can still be read by older versions of vsql:
 ``ALTER TABLE ... ADD CONSTRAINT`` and ``DROP CONSTRAINT`` replace the
 definition. The rows are only rewritten when the ``PRIMARY KEY`` is added or
 dropped, because it changes the row ID of every row.
+
+View Object
+-----------
+
+A View Object (has the ``W`` prefix, followed by the name of the view, as it's
+written in a key, such as ``PUBLIC.FOO``) contains a view definition, as a
+``CREATE VIEW`` statement:
+
+.. code-block:: sql
+
+  CREATE VIEW "PUBLIC"."FOO" ("ID", "TOTAL") AS SELECT id, SUM(x) FROM bar GROUP BY id
+
+It always has the names of the columns, which are fixed when the view is
+created. The query is kept exactly as it was written (including any comments
+and new lines in it), so its names are resolved again each time the view is
+read, in the schema of the view.
 
 Index Object
 ------------

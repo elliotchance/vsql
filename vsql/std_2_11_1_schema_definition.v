@@ -12,7 +12,7 @@ struct SchemaDefinition {
 	if_not_exists bool // V101-01, a schema that already exists isn't an error
 }
 
-type SchemaElement = SequenceGeneratorDefinition | TableDefinition
+type SchemaElement = SequenceGeneratorDefinition | TableDefinition | ViewDefinition
 
 fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
@@ -89,6 +89,11 @@ fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifie
 					reserved_names << table.foreign_keys.map(it.name)
 					tables << table
 				}
+			}
+			ViewDefinition {
+				// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 3
+				check_schema_element_name(conn, element.table_name)!
+				element.create(mut conn)!
 			}
 		}
 	}

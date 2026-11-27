@@ -22,12 +22,14 @@ sql_schema_definition_statement:
   schema_definition { $$.v = $1.v }
 | table_definition { $$.v = yy_box(Stmt($1.v as TableDefinition)) }
 | sequence_generator_definition { $$.v = yy_box(Stmt($1.v as SequenceGeneratorDefinition)) }
+| view_definition { $$.v = yy_box(Stmt($1.v as ViewDefinition)) }
 | create_index_statement { $$.v = $1.v }
 
 sql_schema_manipulation_statement:
   drop_schema_statement { $$.v = $1.v }
 | alter_table_statement { $$.v = $1.v }
 | drop_table_statement { $$.v = $1.v }
+| drop_view_statement { $$.v = $1.v }
 | alter_sequence_generator_statement { $$.v = yy_box(Stmt($1.v as AlterSequenceGeneratorStatement)) }
 | drop_sequence_generator_statement { $$.v = $1.v }
 | drop_index_statement { $$.v = $1.v }

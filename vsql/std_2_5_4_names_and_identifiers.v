@@ -616,6 +616,29 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		schema_name: ident.schema_name
 		entity_name: ident.entity_name
 	}.storage_id()
+	// A view is only a table in the FROM clause (see create_view_plan), and its
+	// columns don't have the catalog in their names.
+	if table_id in catalog.storage.views {
+		if table := c.tables[Identifier{
+			schema_name: ident.schema_name
+			entity_name: ident.entity_name
+		}.id()]
+		{
+			if column := table.column(ident.sub_entity_name) {
+				column_id := column.name.id()
+				return CompileResult{
+					run:          fn [column, column_id] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data.get(column_id) or {
+							return sqlstate_42601('unknown column: ${column.name}')
+						}
+					}
+					typ:          column.typ
+					contains_agg: false
+				}
+			}
+		}
+	}
+
 	mut found := ?Table(none)
 	if table := catalog.storage.tables[table_id] {
 		found = table

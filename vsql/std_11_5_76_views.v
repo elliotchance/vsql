@@ -4,8 +4,8 @@ module vsql
 //
 // The VIEWS view has a row for each view that's in the TABLES view (where
 // TABLE_TYPE is VIEW), in the same order (Function of ISO/IEC 9075-11:2006,
-// 6.65, VIEWS base table). Until there's CREATE VIEW (#731), those are the
-// views of the INFORMATION_SCHEMA itself.
+// 6.65, VIEWS base table). Views made by CREATE VIEW aren't in it yet (#1263),
+// so those are the views of the INFORMATION_SCHEMA itself.
 //
 // VIEW_DEFINITION is the text of the view's <query expression> (Description,
 // 2). The views of the INFORMATION_SCHEMA are built by vsql when they're read,
@@ -56,8 +56,8 @@ fn (mut catalog CatalogConnection) register_views_view() ! {
 // The only views are the ones of
 // the INFORMATION_SCHEMA, and the standard defines them on the tables of the
 // DEFINITION_SCHEMA, which are in a schema that the current user doesn't own,
-// so each view only ever has rows for views made by CREATE VIEW (#731). Until
-// then, they're empty, and so are the base tables that they're defined on:
+// so each view only ever has rows for views made by CREATE VIEW, which aren't
+// in them yet (#1264). Until then, they're empty, and so are the base tables that they're defined on:
 //
 //   ISO/IEC 9075-11:2006, 6.62, VIEW_COLUMN_USAGE base table
 //   ISO/IEC 9075-11:2006, 6.63, VIEW_ROUTINE_USAGE base table

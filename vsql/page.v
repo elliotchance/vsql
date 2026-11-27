@@ -288,14 +288,14 @@ fn (p Page) has_object_of(transaction_id u64) bool {
 }
 
 // has_schema_object_of is true if the page has an object of the schema (a
-// table, sequence or name, see Storage.load_schema) that was created or expired
-// by the transaction.
+// table, view, index or name, see Storage.load_schema) that was created or
+// expired by the transaction.
 fn (p Page) has_schema_object_of(transaction_id u64) bool {
 	end := int(p.used) - page_header_size
 	mut offset := 0
 	for offset < end {
 		if (p.object_tid(offset) == transaction_id || p.object_xid(offset) == transaction_id)
-			&& p.data[offset + page_object_prefix_length - 1] in [`T`, `S`, `N`] {
+			&& p.data[offset + page_object_prefix_length - 1] in [`T`, `S`, `N`, `W`] {
 			return true
 		}
 		offset += p.object_len(offset)

@@ -154,3 +154,28 @@ CREATE SEQUENCE seq;
 -- 2: error 40001: serialization failure: avoiding concurrent write on sequence "test".PUBLIC.SEQ
 -- 1: msg: COMMIT
 -- 2: error 42P07: duplicate sequence: "test".PUBLIC.SEQ
+
+-- # Views have the same names as tables, so a view and a table can't be created
+-- # with the same name at the same time either. A view that another
+-- # transaction created can be read once it commits.
+/* connection 1 */
+CREATE TABLE u (x INT);
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+CREATE VIEW v AS SELECT x FROM u;
+CREATE TABLE t (x INT);
+/* connection 2 */
+CREATE TABLE v (y INT);
+CREATE VIEW t AS SELECT x FROM u;
+SELECT * FROM v;
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+SELECT * FROM v;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE VIEW 1
+-- 1: msg: CREATE TABLE 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on view "test".PUBLIC.V
+-- 2: error 40001: serialization failure: avoiding concurrent write on table "test".PUBLIC.T
+-- 2: error 42P01: no such table: "test".PUBLIC.V
+-- 1: msg: COMMIT

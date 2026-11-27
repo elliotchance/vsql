@@ -562,8 +562,10 @@ fn flag_datetime_literal(mut yylex YYLexer, value string, is_timestamp bool) {
 }
 
 // QueryContext is where a <query expression> is, which decides the features
-// needed for its ORDER BY, OFFSET and FETCH FIRST.
+// needed for its ORDER BY, OFFSET and FETCH FIRST, and whether its WITH needs
+// T122 (a <query expression> contained in another one).
 //
+// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 2
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 12-22
 enum QueryContext {
 	// A <cursor specification>, such as the query of a statement.
@@ -586,6 +588,7 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 			flag_if(mut yylex, has_fetch, 'F857')
 		}
 		.subquery {
+			flag_if(mut yylex, e.with_list.len > 0, 'T122')
 			flag_if(mut yylex, e.order.len > 0, 'F850')
 			flag_if(mut yylex, e.order.len > 0, 'F851')
 			flag_if(mut yylex, has_offset, 'F861')
@@ -594,6 +597,7 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 			flag_if(mut yylex, has_fetch, 'F858')
 		}
 		.query_primary {
+			flag_if(mut yylex, e.with_list.len > 0, 'T122')
 			flag_if(mut yylex, e.order.len > 0, 'F855')
 			flag_if(mut yylex, has_offset, 'F863')
 			flag_if(mut yylex, has_fetch, 'F856')

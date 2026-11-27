@@ -1227,7 +1227,7 @@
 7.16/CR/5                n/a          - - row types (T053)
 7.16/CR/6                implemented  vsql/planner.v tests/std_2_7_3_values.sql
 # 7.17, <query expression>
-7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH in a subquery (T122), WITH RECURSIVE (T131) or CORRESPONDING (F301)
+7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH RECURSIVE (T131) or CORRESPONDING (F301)
 7.17/SR/1                definition   - -
 7.17/SR/2                n/a          - - data change delta tables (T495)
 7.17/SR/3                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
@@ -1479,7 +1479,7 @@
 7.17/GR/7.d.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_fetch_with_ties.sql
 7.17/GR/7.d.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/CR/1                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
-7.17/CR/2                n/a          - - WITH (T122)
+7.17/CR/2                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_1_9_6_flagging.sql
 7.17/CR/3                n/a          - - recursive queries (T131)
 7.17/CR/4                n/a          - - recursive queries (T132)
 7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql

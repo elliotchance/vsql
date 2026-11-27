@@ -90,7 +90,7 @@ insert_query_expression:
       body: $1.v as SimpleTable
     })
   }
-| with_clause nonparenthesized_query_expression {
+| with_clause query_expression_without_with {
     $$.v = yy_box(with_query_expression(mut yylex, $1.v as []WithListElement,
       $2.v as QueryExpression))
   }

@@ -10,16 +10,6 @@ doesn't exist), or ``jdbc:vsql::memory:`` for a database that only exists for
 the life of the connection. The repository's README describes transactions and
 the Java type of each SQL type.
 
-The jar is on Maven Central:
-
-.. code-block:: xml
-
-   <dependency>
-     <groupId>io.github.elliotchance</groupId>
-     <artifactId>vsql</artifactId>
-     <version>1.2.8</version>
-   </dependency>
-
 .. contents::
 
 Requirements
@@ -34,7 +24,17 @@ or later, and Windows 10 or later.
 Example
 -------
 
-The jar doesn't have any dependencies, so the example doesn't need Maven or
+The jar is on Maven Central. A Maven project adds it with:
+
+.. code-block:: xml
+
+   <dependency>
+     <groupId>io.github.elliotchance</groupId>
+     <artifactId>vsql</artifactId>
+     <version>1.2.8</version>
+   </dependency>
+
+The jar doesn't have any dependencies, so this example doesn't need Maven or
 Gradle. Download the jar from Maven Central:
 
 .. code-block:: sh

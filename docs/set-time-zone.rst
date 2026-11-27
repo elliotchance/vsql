@@ -36,3 +36,9 @@ Examples
 
   SET TIME ZONE LOCAL;
   -- msg: SET TIME ZONE
+
+See Also
+--------
+
+- :doc:`dates-times`
+- :doc:`functions-date-and-time`

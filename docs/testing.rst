@@ -74,7 +74,7 @@ Once it passes, ``amalgamation/`` is what's zipped for the release.
 app-test
 --------
 
-The tests for ``vsql app`` (see :doc:`cli`, the app is the ``app/`` module)
+The tests for ``vsql app`` (see :doc:`app`, the app is the ``app/`` module)
 use the page in a headless Chromium like a user would, with
 `Playwright <https://playwright.dev/python/>`_ and pytest. They are in
 ``app/tests/``, with a file for each feature (such as ``test_tabs.py``), so a
@@ -149,7 +149,8 @@ The ``btree_test.v`` stress tests the B-Tree (on-disk and in-memory)
 implementation by creating a variety of sized trees/files with randomly ordered
 keys. This test suite more specifically verifies:
 
-1. Trees of different sizes (1, 10, 100 and 1000) keys can be created by inserting random order keys (one at a time).
+1. Trees of different sizes (1, 10, 100 and 1000 keys) can be created by
+   inserting keys in a random order (one at a time).
 2. All keys are correctly iterated and in order.
 3. Keys can be expired by a transaction, which is how rows are deleted and
    updated.
@@ -202,14 +203,16 @@ installed, except on CI (when ``CI`` is set) where they fail instead.
 There are some things to consider when writing CLI tests:
 
 1. The file must end with ``.sh`` and contain a
-`shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`_ on the first line.
+   `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`_ on the first line.
 
 2. Remember to put ``set -e`` before any other commands. This will ensure that
-if a command fails, that the script itself will halt and return the exit code.
+   if a command fails, that the script itself will halt and return the exit
+   code.
 
 3. A ``$VSQL`` will be provided for the true location of the ``vsql``
-executable, you should not hardcode the binary location. This also makes it easy
-to test the same scripts against different versions of vsql in the future.
+   executable, you should not hardcode the binary location. This also makes it
+   easy to test the same scripts against different versions of vsql in the
+   future.
 
 Debugging
 ^^^^^^^^^
@@ -414,6 +417,7 @@ The V code of the compiler (``vsql/std_2_13_*.v``) is tested by
 
 sql-test
 --------
+
 The SQL test suite contains most of the functional tests. This is likely the
 only test suite you will use when adding functionality or fixing bugs in vsql.
 
@@ -444,8 +448,8 @@ no tables are carried between blocks). A block is only a way of grouping the
 statements that need the same database, so variations of the same thing can
 share a block, written as the statements followed by their outputs (as above).
 A case that needs its own explanation (a ``-- #`` comment), or a database that
-the statements before it haven't changed, gets its own block. Statements that every block needs go in the setup
-(see `Directive: setup`_), and statements that only some blocks need can be
+the statements before it haven't changed, gets its own block. Statements that every block needs go in the setup (see
+`Directive: setup`_), and statements that only some blocks need can be
 defined once and included (see `Directive: define`_).
 
 Each block is run twice, first with an in-memory database and then with a
@@ -551,7 +555,7 @@ Unicode characters can be placed in tests as regular characters:
 .. code-block:: sql
 
    VALUES '✌️';
-   -- That's a peach sign (or the logo for V) if the character cannot be read.
+   -- That's a peace sign (or the logo for V) if the character cannot be read.
 
 However, due to editors/IDEs sometimes handling whitespace in different ways
 you can add a placeholder for a specific Unicode point using ``<U+####>``:
@@ -886,7 +890,8 @@ by at least one statement in the test:
 
 A test fails if it uses an extension that isn't listed, or lists one that it
 doesn't use. The setup and the statements of a define (see `Directive: setup`_
-and `Directive: define`_) can't use any extensions, so write ``DROP TABLE t RESTRICT`` rather than ``DROP TABLE t``.
+and `Directive: define`_) can't use any extensions, so write
+``DROP TABLE t RESTRICT`` rather than ``DROP TABLE t``.
 
 Directive: fault
 ^^^^^^^^^^^^^^^^
@@ -982,8 +987,8 @@ fail. A feature that a test only happens to use doesn't count.
 Directive: in
 ^^^^^^^^^^^^^
 
-The ``in`` directive replaces the database with a new one, which the last dump (see `Directive: out`_) is loaded into
-like ``vsql in``. Only the errors from loading the dump are in the output. The
+The ``in`` directive replaces the database with a new one, which the last dump
+(see `Directive: out`_) is loaded into like ``vsql in``. Only the errors from loading the dump are in the output. The
 statements after it use the restored database, so they can check that it's the
 same:
 
@@ -1031,7 +1036,7 @@ back the way it was:
 Directive: out
 ^^^^^^^^^^^^^^
 
-The ``out`` directive dumps the database like ``vsql out`` (see :doc:`cli`).
+The ``out`` directive dumps the database like ``vsql out`` (see :ref:`cli:out`).
 Each line of the dump is in the output, after ``out:``. The ``in`` directive
 loads the last dump into a new database (see `Directive: in`_).
 
@@ -1213,21 +1218,18 @@ Continuous Integration
 CI (``.github/workflows/ci.yml``) runs on every pull request and tag, on
 Linux, macOS and Windows, each on x86-64 and ARM64, with V master:
 
-- **Linux and macOS** build the release binary and run a few statements with it
-  (``.github/workflows/hello-test.sh``), then run ``make test``.
-- **Linux x86-64** also runs the checks that don't depend on the OS:
+- **Every job** builds the release binary and runs a few statements with it
+  (``.github/workflows/hello-test.sh``), then runs ``make test`` (``make -k
+  test`` on Windows). If V master doesn't build on a job, it uses an earlier
+  commit that does (see ``.github/workflows/setup-v.sh``).
+- **Linux** also runs the checks that don't depend on the OS:
   ``make fmt-verify`` (the code is formatted with ``make fmt``),
-  ``make check-standard-index``, ``make grammar`` (``vsql/y.v`` must not change,
-  see :doc:`contributing`), ``make clean-docs docs`` (warnings are errors, and
+  ``make check-standard-index``, ``make check-function-index``,
+  ``make grammar`` (``vsql/y.v`` must not change, see :doc:`contributing`),
+  ``make clean-docs docs`` (warnings are errors, and
   ``docs/v-client-library-docs.rst`` must not change) and ``make app-test``.
-- **Windows** doesn't run ``make test`` yet. It runs ``make libvsql-test
-  libvsql-example module-test module-example embed-example embed-test``, then
-  ``.github/workflows/windows-test.sh``, which runs a few statements, a short
-  benchmark and ``cmd/tests/server-concurrent.sh`` with the binary, since the
-  other CLI tests aren't run on Windows. If V master doesn't build on Windows,
-  it uses the newest earlier commit that does
-  (``.github/workflows/earlier-v.sh``). On ARM64, it builds V and everything
-  else with llvm-mingw's native toolchain.
+- **Windows** on ARM64 builds V and everything else with llvm-mingw's native
+  toolchain.
 
 The binaries (``bin/vsql`` and the library) are always built from the
 amalgamation, locally and on CI (``make amalgamation``, see the Makefile and

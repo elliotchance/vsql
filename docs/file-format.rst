@@ -11,7 +11,7 @@ The default extension is ``.vsql``, although that is not required.
 
 A second file, with the same name followed by ``.session``, is created next to
 the database file. It is always empty and is only used for locking (see
-:doc:`mvcc`). It can be deleted whenever there are no open connections to the
+:ref:`mvcc:Crashed Transactions`). It can be deleted whenever there are no open connections to the
 database.
 
 A third file, with the same name followed by ``.wal``, is the `Write-Ahead
@@ -255,7 +255,7 @@ These rules keep changes compatible:
 Page
 ----
 
-All pages types (defined by *Kind*) use the same basic structure: a 16 byte
+All page types (defined by *Kind*) use the same basic structure: a 16 byte
 *Page Header* followed by the *Data*. The format of the data itself depends on
 the *Kind*.
 
@@ -328,7 +328,7 @@ that were the case the page should be removed as part of the garbage collection.
 
 Each `Object`_ may be variable length and can be any number of bytes so long as
 the *Object* size is equal to or less than the (page size - 16). For objects
-that cannot fit into a page, they are stored in as a `Blob Object`_ and
+that cannot fit into a page, they are stored as a `Blob Object`_ and
 referenced from the *Object*.
 
 Objects within a page are kept sorted by key and unused space is always located
@@ -365,7 +365,7 @@ For example, a leaf page of 4096 bytes that contains three objects:
 Non-leaf Page
 -------------
 
-A non-leaf page share a lot of similarities with a `Leaf Page`_. However, the
+A non-leaf page shares a lot of similarities with a `Leaf Page`_. However, the
 Objects are pointers to Leaf pages. That is the *Value* within the *Object* is a
 i32 that references the `Leaf Page`_ number. For example, a non-leaf page of
 4096 bytes that contains three objects:
@@ -397,7 +397,7 @@ i32 that references the `Leaf Page`_ number. For example, a non-leaf page of
     - Unused
     - 3976 bytes
 
-Objects within a non-leaf page are ordered based on the objects *Key*. This is
+Objects within a non-leaf page are ordered based on the object's *Key*. This is
 important for scanning (such as range queries) to improve performance as the
 *Key* itself is the first *Key* in the referenced `Leaf Page`_. Here is an
 example of how a `Non-leaf Page`_ references a `Leaf Page`_ (the keys are
@@ -1140,7 +1140,8 @@ file if the *State* isn't *Checkpointed*, syncs the database file (if the *Tail*
 is past the log header) and deletes the log. If the process stops before the
 log is deleted, the next connection copies it again as above. A connection that
 isn't the last one leaves the log as it is, because the other connections are
-still using it. The lock files are never deleted.
+still using it. The lock files are deleted too, except on Windows (see
+`Overview`_).
 
 Reading the log stops at the first frame that isn't valid, so a statement without
 a valid *Commit* frame is ignored, because it didn't change the database file.
@@ -1165,23 +1166,10 @@ recovered on its own, so if adding a *Commit* frame fails (or the process stops)
 after another file has been committed, that file keeps the changes and the rest
 don't.
 
-On Linux and Windows, syncing a file waits for the drive to write it to
-permanent storage. On macOS, ``fsync`` only hands the data to the drive, which
-may keep it in its cache for a while and write it in a different order. So, on
-macOS by default:
-
-- A statement that has been committed is never lost if the process stops (or
-  crashes), because the operating system still has the changes.
-
-- A statement that has been committed may be lost if the power fails or the
-  operating system stops, and the database file may even be left corrupt,
-  because the steps above may reach the disk in a different order.
-
-The ``full_fsync`` connection option (``vsql bench -full-fsync``) syncs with
-``fcntl(F_FULLFSYNC)`` instead, which also waits for the drive to write its
-cache. It's off by default because it's much slower: ``vsql bench`` on a file
-runs 7 to 15 times fewer TPC-B transactions per second on a Mac. It's accepted
-on other systems, but doesn't change anything.
+On macOS, ``fsync`` doesn't wait for the drive to write its cache, so the steps
+above may reach the disk in a different order if the power fails, unless the
+``full_fsync`` connection option is used (see
+:ref:`durability:Power Failures on macOS`).
 
 The log starts with a 32 byte header:
 

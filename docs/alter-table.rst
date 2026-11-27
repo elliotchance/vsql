@@ -10,7 +10,7 @@ Syntax
 
   ALTER TABLE <table_name> <action>
 
-  <action> :=
+  <action> ::=
       ADD [ COLUMN ] <column_definition>
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
@@ -24,17 +24,17 @@ Syntax
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
     | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
 
-  <column_definition> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
-                         [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
-                       | <column_name> <generated>
-                         [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+  <column_definition> ::= <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
+                          [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+                        | <column_name> <generated>
+                          [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
 
-  <identity_option> := SET GENERATED { ALWAYS | BY DEFAULT }
-                     | RESTART [ WITH <value> ]
-                     | SET INCREMENT BY <value>
-                     | SET MINVALUE <value> | SET NO MINVALUE
-                     | SET MAXVALUE <value> | SET NO MAXVALUE
-                     | SET CYCLE | SET NO CYCLE
+  <identity_option> ::= SET GENERATED { ALWAYS | BY DEFAULT }
+                      | RESTART [ WITH <value> ]
+                      | SET INCREMENT BY <value>
+                      | SET MINVALUE <value> | SET NO MINVALUE
+                      | SET MAXVALUE <value> | SET NO MAXVALUE
+                      | SET CYCLE | SET NO CYCLE
 
 ADD COLUMN
 ----------
@@ -77,6 +77,10 @@ the same way as the ``DEFAULT`` of a column of a :doc:`create-table`, such as
 ``NULL``. It's an error ``42601`` if the column doesn't have a ``DEFAULT``,
 although ``DEFAULT NULL`` can be dropped.
 
+For both, only the definition of the table is changed. The existing rows keep
+their values, and the new default is used by the rows that are inserted after
+it.
+
 The options of an identity column change its sequence, the same way as
 :doc:`alter-sequence`. ``RESTART`` without a value starts again from the
 ``START WITH``. ``SET NO MINVALUE`` and ``SET NO MAXVALUE`` use the defaults of
@@ -96,9 +100,6 @@ row is inserted, unless the ``NOT NULL`` is dropped with ``DROP NOT NULL``.
 assigned to it. The existing rows keep the values that were generated, and the
 column keeps its data type (even when it was inferred from the expression) and
 its constraints. It's an error ``42601`` if the column isn't a generated column.
-
-Only the definition of the table is changed. The existing rows keep their
-values, and the new default is used by the rows that are inserted after it.
 
 ``SET NOT NULL`` adds a ``NOT NULL`` constraint to a column, with a name like
 the ``NOT NULL`` of a :doc:`create-table` (such as ``T_NOT_NULL_2``). Every
@@ -172,7 +173,7 @@ Adds a ``PRIMARY KEY``, ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK`` constraint
 to a table. It's defined the same way as a constraint of a
 :doc:`create-table`, with the same rules (such as a table only having one
 ``PRIMARY KEY``), and gets a name in the same way if it isn't given one
-(see "Constraint Names" in :doc:`create-table`).
+(see :ref:`create-table:Constraint Names`).
 
 Every existing row must satisfy the new constraint, otherwise it isn't added:
 an error ``23514`` for a ``CHECK``, ``23505`` for a ``PRIMARY KEY`` or

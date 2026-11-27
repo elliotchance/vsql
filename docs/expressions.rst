@@ -43,8 +43,7 @@ An ``IN`` expression returns ``TRUE`` if ``X`` is equal to any of the values in
 the list, or any of the rows of the subquery (which must have one column). ``X``
 can also be a row (see `Comparing Rows`_), then each value in the list must be a
 row with the same number of values, and the subquery must have that many
-columns. Or,
-put another way ``X = Y1 OR X = Y2 ...``, which is the same as
+columns. Or, put another way ``X = Y1 OR X = Y2 ...``, which is the same as
 ``X = ANY (...)``. ``X NOT IN (...)`` is the same as ``NOT (X IN (...))``.
 
 This means that if ``X`` is ``NULL``, or none of the values are equal but at
@@ -72,7 +71,8 @@ ALL, SOME and ANY
   X <op> { SOME | ANY } ( <query> )
 
 Compares ``X`` with each row of the subquery (which must have one column, or
-one for each value when ``X`` is a row, see `Comparing Rows`_), where ``<op>`` is ``=``, ``<>``, ``!=``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and
+one for each value when ``X`` is a row, see `Comparing Rows`_), where ``<op>``
+is ``=``, ``<>``, ``!=``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and
 ``ANY`` are the same. ``!=`` is a vsql extension, see :doc:`operators`.
 
 ``ALL`` is ``TRUE`` if the comparison is ``TRUE`` for every row (or there are no
@@ -98,10 +98,10 @@ OVERLAPS
 
   ( START1 , END1 ) OVERLAPS ( START2 , END2 )
 
-Returns ``TRUE`` if two periods of time share any instant. Every value must be a
-``DATE``, ``TIME`` or ``TIMESTAMP`` that can be compared with the others (see
-:doc:`dates-times`). The end of a period can't be an interval, since intervals
-aren't supported.
+Returns ``TRUE`` if two periods of time share any instant. Each start must be
+a ``DATE``, ``TIME`` or ``TIMESTAMP`` that can be compared with the others (see
+:doc:`dates-times`), and so must each end, or it can be an interval, which is
+added to its start, such as ``(DATE '2020-01-01', INTERVAL '3' DAY)``.
 
 A period includes its start, but not its end. So periods that only meet, where
 one ends when the other starts, don't overlap. A period that's a single instant
@@ -231,7 +231,7 @@ CAST
 
   X::type
 
-``CAST`` converts ``X`` to another type, see :doc:`values` for which
+``CAST`` converts ``X`` to another type, see :doc:`type-conversion` for which
 conversions are allowed. ``CAST(NULL AS type)`` is a ``NULL`` of that type.
 
 ``X::type`` is the PostgreSQL shorthand for ``CAST(X AS type)``. It's a vsql
@@ -298,8 +298,8 @@ LIKE
 
   X [ NOT ] LIKE Y [ ESCAPE Z ]
 
-Tests if ``X`` matches the pattern ``Y``. This is very useful for testing the
-prefix or suffix of a string.
+Tests if ``X`` matches the pattern ``Y``, such as to test the prefix or suffix
+of a string.
 
 Matching is always against the entire string (not a partial match) and is
 case-sensitive. You can use the following characters in ``Y``:
@@ -316,9 +316,9 @@ case-sensitive. You can use the following characters in ``Y``:
      - Matches any single character.
 
 ``ESCAPE`` sets an escape character ``Z``, which must be exactly one character
-(otherwise a 22019 invalid escape character error). In ``Y``, the escape
+(otherwise a ``22019`` invalid escape character error). In ``Y``, the escape
 character followed by ``%``, ``_`` or the escape character itself matches that
-character literally. Any other use of the escape character in ``Y`` is a 22025
+character literally. Any other use of the escape character in ``Y`` is a ``22025``
 invalid escape sequence error.
 
 *Examples*
@@ -452,7 +452,7 @@ Scalar Subquery
 A subquery can be used as a value anywhere an expression can, such as in a
 comparison (``x = (SELECT MAX(x) FROM t)``), the select list or the ``SET`` of an
 ``UPDATE``. It must have one column, and it's the value of that column in its
-only row. It's ``NULL`` if there are no rows, and a 21000 cardinality violation
+only row. It's ``NULL`` if there are no rows, and a ``21000`` cardinality violation
 error if there is more than one row.
 
 A subquery can't be used in a ``CHECK`` constraint, or in the argument of an
@@ -470,7 +470,7 @@ rows (``(a, b) = (SELECT x, y FROM t WHERE id = 1)``), as a row compared with
 ``BETWEEN``, ``IN``, ``IS DISTINCT FROM``, ``IS NULL``, ``ALL``, ``SOME`` or
 ``ANY``, as the operand of a ``CASE`` (or a value it's compared with), or as a
 row of a ``VALUES``. It's the values of its only row. If there are no rows,
-every value is ``NULL``, and more than one row is a 21000 cardinality violation
+every value is ``NULL``, and more than one row is a ``21000`` cardinality violation
 error.
 
 *Examples*
@@ -482,7 +482,7 @@ error.
   VALUES (SELECT x, y FROM u WHERE id = 1), (5, 6);
 
 Correlated Subqueries
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 Any subquery (including in ``EXISTS``, ``UNIQUE``, ``IN``, ``ALL`` and
 ``SOME``) can refer to the columns of the queries that contain it, such as ``t1.x`` in:
@@ -574,17 +574,17 @@ space. You can use the following characters in ``Y``:
 
 The characters ``[ ] ( ) | ^ - + * _ % ? {`` always have a special meaning. A
 pattern that uses them in any other way, or that is not complete (such as
-``'(a'``), is an invalid regular expression (SQLSTATE 2201B). The repeat counts
+``'(a'``), is an invalid regular expression (``2201B``). The repeat counts
 for ``{m}`` must be at least 1.
 
 ``ESCAPE`` sets an escape character ``Z``, which must be exactly one character
-(otherwise a 22019 invalid escape character error). In ``Y``, the escape
+(otherwise a ``22019`` invalid escape character error). In ``Y``, the escape
 character followed by one of the special characters above, or by the escape
 character itself, matches that character literally (also inside brackets). Any
-other use of the escape character is an invalid regular expression (2201B),
+other use of the escape character is an invalid regular expression (``2201B``),
 unless the escape character is itself a special character, in which case it's a
-2200C invalid use of escape character error. With ``ESCAPE ':'``, a pattern
-that has a class such as ``[:ALPHA:]`` is a 2200B escape character conflict.
+``2200C`` invalid use of escape character error. With ``ESCAPE ':'``, a pattern
+that has a class such as ``[:ALPHA:]`` is a ``2200B`` escape character conflict.
 
 *Examples*
 

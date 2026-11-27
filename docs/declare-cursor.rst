@@ -15,8 +15,8 @@ Syntax
   DECLARE <cursor_name> [ SCROLL | NO SCROLL ] CURSOR [ WITH HOLD | WITHOUT HOLD ]
     FOR <query> [ FOR READ ONLY | FOR UPDATE [ OF <column_name> , ... ] ]
 
-The SQL standard only allows ``DECLARE CURSOR`` in an SQL-client module (such
-as a C program, see :doc:`language-c`). Running it directly is a vsql extension,
+The SQL standard only allows ``DECLARE CURSOR`` in an SQL-client module (see
+:doc:`sql-client-modules`). Running it directly is a vsql extension,
 flagged by ``V108-01`` (see :doc:`sql-flagging`).
 
 The query isn't run until the cursor is opened (see :doc:`open`), but it's
@@ -39,7 +39,7 @@ SCROLL
 
 A ``SCROLL`` cursor can also be fetched in other directions, such as ``PRIOR``
 or ``ABSOLUTE``. A cursor that isn't ``SCROLL`` (including ``NO SCROLL``) can
-only ``FETCH NEXT``. See "Scrollable Cursors" in :doc:`fetch`.
+only ``FETCH NEXT``. See :ref:`fetch:Scrollable Cursors`.
 
 A ``SCROLL`` cursor is read only unless it's ``FOR UPDATE``. The rows of the
 cursor don't change while it's open, so a row that was deleted through the

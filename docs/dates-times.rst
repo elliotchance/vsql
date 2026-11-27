@@ -402,7 +402,8 @@ Each connection has a time zone, which starts as the time zone of its clock (the
 local time zone of the computer, or the one returned by ``Connection.now``). It's
 the time zone of ``CURRENT_TIME`` and ``CURRENT_TIMESTAMP``, and the time zone
 that a value without a time zone is in when it's compared to or cast to a value
-with a time zone. :doc:`set-time-zone` sets it back to the time zone of the clock.
+with a time zone. :doc:`set-time-zone` changes it, or sets it back to the time
+zone of the clock.
 
 ``<expr> AT LOCAL`` puts a ``TIME`` or ``TIMESTAMP`` into the time zone of the
 connection. A value with a time zone becomes the same instant in the time zone
@@ -411,7 +412,9 @@ time zone. The result is always ``WITH TIME ZONE``, with the same precision:
 
 .. code-block:: sql
 
-  -- The time zone of the connection is +05:00.
+  SET TIME ZONE INTERVAL '+05:00' HOUR TO MINUTE;
+  -- msg: SET TIME ZONE
+
   VALUES TIMESTAMP '2022-07-04 12:00:00-03:30' AT LOCAL;
   -- COL1: 2022-07-04T20:30:00+0500
 
@@ -461,7 +464,7 @@ to a ``TIMESTAMP``:
 
 If the string has a time zone and the target type does not, the time zone is
 dropped (keeping the local time). If the target type has a time zone and the
-string does not, the session time zone is used.
+string does not, the time zone of the connection is used.
 
 Formatting and Parsing
 ----------------------
@@ -633,10 +636,12 @@ a column (or assigned to a host parameter) with a smaller precision:
   VALUES CAST(TIME '12:34:56.789' AS TIME(2));
   -- COL1: 12:34:56.78
 
-  CREATE TABLE events (at TIMESTAMP(2));
-  INSERT INTO events (at) VALUES (TIMESTAMP '2020-01-02 03:04:05.129');
+  CREATE TABLE events (happened TIMESTAMP(2));
+  INSERT INTO events (happened) VALUES (TIMESTAMP '2020-01-02 03:04:05.129');
   SELECT * FROM events;
-  -- AT: 2020-01-02T03:04:05.12
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- HAPPENED: 2020-01-02T03:04:05.12
 
 Truncating means that a value never moves into the next second (or day), which
 rounding ``23:59:59.999`` up would.

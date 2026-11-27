@@ -11,7 +11,7 @@ with:
 
    docker pull elliotchance/vsql:latest
 
-You can also use major (``0``), minor (``0.27``) or patch versions (``0.27.1``).
+You can also use major (``1``), minor (``1.8``) or patch versions (``1.8.5``).
 View all versions on
 `hub.docker.com/repository/docker/elliotchance/vsql/tags <https://hub.docker.com/repository/docker/elliotchance/vsql/tags?page=1&ordering=last_updated>`_.
 

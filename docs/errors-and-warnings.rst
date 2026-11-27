@@ -103,11 +103,9 @@ The ``VALUES`` truncated two strings, but only one warning is kept.
 Handling Errors
 ---------------
 
-The error returned from ``query()`` will always be one of the ``SQLState``
-struct types. Each type describes the error situation, but may also contain
-specific fields appropriate for that error. See
-`std_2_24_1_sqlstate.v <https://github.com/elliotchance/vsql/blob/main/vsql/std_2_24_1_sqlstate.v>`_
-for struct definitions.
+In V, an error is an ``SQLState``, which can be checked by its type (such as
+``vsql.SQLState42P01``) or by its ``code()`` (see
+:ref:`language-v:Errors and Warnings`).
 
 This includes errors that aren't caused by the SQL itself, such as reading a
 file (``58030``) or a file that isn't a vsql database (``XX001``). The only
@@ -115,39 +113,9 @@ exception is an error returned by your own code, such as a custom function (see
 :doc:`custom-functions`) or a virtual table (see :doc:`virtual-tables`), which
 is returned as it is.
 
-You can match on these to inspect the error further:
+An error can also be handled by its class (the first two characters):
 
-.. code-block:: text
-
-   db.query('SELECT * FROM bar') or {
-   	match err {
-   		// 42P01 = table not found
-   		vsql.SQLState42P01 {
-   			println("I knew '${err.entity_name}' did not exist!")
-   		}
-   		else {
-   			panic(err)
-   		}
-   	}
-   }
-
-The ``err.code()`` contains the integer representation of the SQLSTATE:
-
-.. code-block:: text
-
-   db.query('SELECT * FROM bar') or {
-   	sqlstate := vsql.sqlstate_from_int(err.code())
-   	println('${sqlstate}: ${err.msg()}')
-   	// 42P01: no such table: "test".PUBLIC.BAR
-
-   	if err.code() == vsql.sqlstate_to_int('42P01') {
-   		println('table does not exist')
-   	}
-   }
-
-Or handling errors by class (first two letters):
-
-.. code-block:: text
+.. code-block:: v
 
    db.query('SELECT * FROM bar') or {
    	if err.code() >= vsql.sqlstate_to_int('42000')

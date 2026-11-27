@@ -27,3 +27,8 @@ Examples
 
   SET NAMES 'LATIN1';
   -- error 2C000: invalid character set name: LATIN1
+
+See Also
+--------
+
+- :doc:`text`

@@ -89,7 +89,7 @@ See also `LEAST`_.
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T054.
+- **SQL standard:** T054 (GREATEST and LEAST).
 - **Other databases:** ``GREATEST`` in MySQL, PostgreSQL and SQL Server, but
   PostgreSQL ignores ``NULL`` values instead. SQLite uses ``MAX`` with more
   than one argument.
@@ -173,7 +173,7 @@ See also `GREATEST`_.
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T054.
+- **SQL standard:** T054 (GREATEST and LEAST).
 - **Other databases:** ``LEAST`` in MySQL, PostgreSQL and SQL Server, but
   PostgreSQL ignores ``NULL`` values instead. SQLite uses ``MIN`` with more
   than one argument.

@@ -8,4 +8,3 @@ Internals
    file-format.rst
    limitations.rst
    mvcc.rst
-   locking.rst

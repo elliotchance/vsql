@@ -92,7 +92,7 @@ Qualified Names
 ---------------
 
 Every table, view and sequence is in a schema, and every schema is in a
-catalog. A catalog is a database file (see :doc:`set-catalog`). A name can be
+catalog. A catalog is a database file (see :doc:`catalogs-and-schemas`). A name can be
 *qualified* with its schema, or with its catalog and schema, by separating the
 parts with a ``.``:
 

@@ -14,8 +14,8 @@ Syntax
 
   OPEN <cursor_name>
 
-The SQL standard only allows ``OPEN`` in an SQL-client module (such as a C
-program, see :doc:`language-c`). Running it directly is a vsql extension,
+The SQL standard only allows ``OPEN`` in an SQL-client module (see
+:doc:`sql-client-modules`). Running it directly is a vsql extension,
 flagged by ``V109-01`` (see :doc:`sql-flagging`).
 
 ``OPEN`` runs the query, and the cursor is positioned before the first row. The

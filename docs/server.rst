@@ -16,7 +16,7 @@ Start it with a database file (if the file does not exist it will be created):
 
 vsql will ignore any authentication values (such as user, password, database,
 etc). Simply connect using ``127.0.0.1:3210``. Use ``-port`` to listen on a
-different port, see :doc:`cli`.
+different port, see :ref:`cli:server`.
 
 By default, the server only listens on ``127.0.0.1``, so only clients on the
 same machine can connect. Use ``-host`` to listen on another address, such as
@@ -35,14 +35,14 @@ same machine can connect. Use ``-host`` to listen on another address, such as
    with a firewall.
 
 The server is for PostgreSQL clients, so it isn't direct invocation of SQL (see
-:doc:`cli`). Like PostgreSQL, a statement that isn't inside a
+:ref:`cli:cli`). Like PostgreSQL, a statement that isn't inside a
 :doc:`start-transaction` runs in a transaction of its own, which is committed
 when the statement finishes. A client that disconnects in the middle of a
 transaction rolls it back.
 
 Many PostgreSQL clients send a ``SELECT`` without a ``FROM`` (such as
-``SELECT 1``), which isn't valid SQL. ``vsql server`` runs these as if they had
-``FROM singlerow``, a table with a single row.
+``SELECT 1``). ``vsql server`` runs these as if they had ``FROM singlerow``, a
+table with a single row that it creates in the database if it doesn't exist.
 
 PostgreSQL clients also set PostgreSQL's run-time parameters, such as
 ``SET LOCAL search_path TO public``. ``vsql server`` replies ``SET`` to any
@@ -104,40 +104,14 @@ that transaction rolled back.
 Embedding the Server
 --------------------
 
-The server can also be started from your own V application:
-
-.. code-block:: v
-
-   import vsql
-
-   fn main() {
-     mut server := vsql.new_server(
-       // Each client opens its own connection to the database. connect can be
-       // used instead of db_file to configure the connection, or to open a
-       // different database for each database name a client connects with.
-       db_file: 'mydb.vsql'
-
-       // A port of 0 uses any free port. host defaults to 127.0.0.1.
-       port: 0
-     )
-
-     server.listen()!
-     println('ready on ' + server.address()!)
-
-     // serve() accepts clients until stop() is called (from another thread).
-     server.serve()!
-   }
+The server can also be started from your own V application with
+``vsql.new_server()`` (see :ref:`language-v:Running a Server`).
 
 Unlike ``vsql server``, the server doesn't add ``FROM singlerow`` to a ``SELECT``
-without a ``FROM`` (which many PostgreSQL clients send, but isn't valid SQL)
-unless ``select_without_from`` is set, and doesn't ignore PostgreSQL's ``SET``
+without a ``FROM`` unless ``select_without_from`` is set, and doesn't ignore PostgreSQL's ``SET``
 of a run-time parameter unless ``ignore_pg_set`` is set. It doesn't accept the
 PostgreSQL syntax of catalog queries unless ``rewrite_pg_syntax`` is set, and
 doesn't send column names in lower case unless ``lower_case_names`` is set.
 
 See :doc:`install` to get the ``vsql`` command.
 
-.. toctree::
-   :maxdepth: 1
-
-   postgresql-clients.rst

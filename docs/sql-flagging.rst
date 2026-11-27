@@ -355,7 +355,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``IF``.
 
    * - ``V402``
-     - Date and time functions (see :doc:`dates-times`).
+     - Date and time functions (see :doc:`functions-date-and-time`).
 
    * - ``V402-01``
      - ``NOW()`` instead of ``CURRENT_TIMESTAMP``.
@@ -563,7 +563,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``BIT_XOR``.
 
    * - ``V406``
-     - Binary string functions (see :doc:`functions`).
+     - Binary string functions (see :doc:`functions-string`).
 
    * - ``V406-01``
      - ``BINARY_TO_HEX``.
@@ -578,7 +578,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``BASE64_TO_BINARY``.
 
    * - ``V407``
-     - UUID functions (see :doc:`functions`).
+     - UUID functions (see :doc:`functions-uuid`).
 
    * - ``V407-01``
      - ``GENERATE_UUID_V4``.
@@ -593,7 +593,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``BINARY_TO_UUID``.
 
    * - ``V410``
-     - Size functions (see :doc:`functions`).
+     - Size functions (see :doc:`functions-string`).
 
    * - ``V410-01``
      - ``FORMAT_SIZE``.
@@ -602,7 +602,7 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``PARSE_SIZE``.
 
    * - ``V411``
-     - Build functions (see :doc:`functions`).
+     - Build functions (see :doc:`functions-build`).
 
    * - ``V411-01``
      - ``BUILD_VERSION``.

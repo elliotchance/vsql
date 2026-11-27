@@ -29,7 +29,7 @@ because there's no column to get a type from, which is an error ``42601``. Use
 Columns
 -------
 
-For each *expression*, the names ``COL1``, ``COL2``, etc will be used. The
+For each *expression*, the names ``COL1``, ``COL2``, etc. will be used. The
 names of the columns cannot be overridden directly in the ``VALUES`` statement,
 but rather need to be wrapped in a ``SELECT``:
 
@@ -40,7 +40,8 @@ but rather need to be wrapped in a ``SELECT``:
 Every row must have the same number of columns, and the values in each column
 must have compatible types (all character strings, all numbers, all ``BOOLEAN``
 or the same kind of date or time). The column has a type that can hold all of
-them, such as ``INTEGER`` for ``VALUES 1, 200000``.
+them, such as ``INTEGER`` for ``VALUES 1, 200000`` (see
+:ref:`type-conversion:Combined Types`).
 
 EXPLAIN
 -------
@@ -81,3 +82,9 @@ Examples
   SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there'));
   -- COL1: 123 COL2: hi
   -- COL1: 456 COL2: there
+
+See Also
+--------
+
+- :doc:`insert`
+- :doc:`select`

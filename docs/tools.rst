@@ -10,4 +10,5 @@ browse and query databases in a web browser.
 
    cli.rst
    server.rst
+   postgresql-clients.rst
    app.rst

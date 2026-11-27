@@ -27,7 +27,8 @@ Otherwise, download the zip for your OS and architecture (such as
 ``vsql-<version>-macos-arm64.zip`` for Apple silicon, or
 ``vsql-<version>-linux-x86-64.zip``) from the
 `latest release <https://github.com/elliotchance/vsql/releases/latest>`_ and
-unzip it. There are zips for Linux, macOS and Windows on x86-64 and ARM64.
+unzip it. There are zips for Linux, macOS and Windows on x86-64 and ARM64. The
+``vsql`` command is in ``bin/``.
 
 Whether it was installed with the script or by hand, ``vsql up`` updates it to
 the latest release (see :doc:`cli`):
@@ -35,8 +36,6 @@ the latest release (see :doc:`cli`):
 .. code-block:: sh
 
    vsql up
-
-The ``vsql`` command is in ``bin/``.
 
 The binaries aren't signed, so macOS may refuse to open one that was downloaded
 with a web browser. You can remove the quarantine flag with:
@@ -105,7 +104,7 @@ library (see :doc:`language-v`):
    v install elliotchance.vsql
 
 Run the same command to update it. vsql is built and tested with the latest V
-every day, and older versions of V may not be able to compile it, so update V
+(V master), and older versions of V may not be able to compile it, so update V
 first with ``v up``.
 
 Compiling From Source

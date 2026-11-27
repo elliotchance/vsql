@@ -21,8 +21,8 @@ Syntax
     | ABSOLUTE <number>
     | RELATIVE <number>
 
-The SQL standard only allows ``FETCH`` in an SQL-client module (such as a C
-program, see :doc:`language-c`), where it puts the values of the row into
+The SQL standard only allows ``FETCH`` in an SQL-client module (see
+:doc:`sql-client-modules`), where it puts the values of the row into
 variables (with ``INTO``). Running it directly is a vsql extension, so
 ``FETCH`` returns the row instead of putting its values into variables. This is
 flagged by ``V110-01`` (see :doc:`sql-flagging`).

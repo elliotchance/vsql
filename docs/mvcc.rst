@@ -18,10 +18,10 @@ statement on its own, and the transaction doesn't lock the file for writing or
 change it. So a transaction that only reads works on a database that can only
 be read, such as one that needs a newer version of vsql to be changed (see
 :doc:`file-format`). Its isolation level still applies from when it starts (see
-*Isolation Levels* in :doc:`transactions`).
+:ref:`transactions:Isolation Levels`).
 
 A ``REPEATABLE READ`` transaction is given its ID when it starts instead, so
-that it can publish its snapshot (see *Snapshots*). If the database can only be
+that it can publish its snapshot (see `Snapshots`_). If the database can only be
 read, it can't be, so it starts without one. Since a ``COMMIT`` may remove a
 version of a row that it would have seen, each of its statements then fails with
 a ``40001`` if a transaction has ended since it started, until it changes the
@@ -60,7 +60,7 @@ a kept row again until then (it gets a ``40001``).
 Recovering Expired Rows
 -----------------------
 
-By its nature MVCC leaves around copies or rows that have either been deleted or
+By its nature MVCC leaves around copies of rows that have either been deleted or
 rolled back. These row versions need to exist until at least the transaction is
 finished (``COMMIT`` or ``ROLLBACK``). However, in either case, the rows are not
 revisited so they will remain invisible to all other future transactions.
@@ -68,7 +68,7 @@ revisited so they will remain invisible to all other future transactions.
 This makes the ``COMMIT`` basically zero cost but it requires another process
 to clean up expired rows. Since this isn't easily possible or ideal for a
 single-process database, vsql performs cleanup on ``COMMIT`` and ``ROLLBACK``
-which on any pages that were modified during the transaction. The exception is
+on any pages that were modified during the transaction. The exception is
 a version that a ``REPEATABLE READ`` transaction can still see, which is
 removed when that transaction ends (see `Snapshots`_).
 
@@ -98,7 +98,7 @@ also keeps the versions of rows that its snapshot can see until then.
 Wraparound Transaction IDs
 --------------------------
 
-Another challenge with MVCC is that it requires transactions IDs to increment.
+Another challenge with MVCC is that it requires transaction IDs to increment.
 Some databases use 32-bit transaction IDs, which can run out and have to wrap
 around. vsql uses 64-bit transaction IDs, so even at one million transactions
 per second a database would take more than 500,000 years to run out. Transaction

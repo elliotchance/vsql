@@ -9,7 +9,8 @@ The trigonometric functions, including the hyperbolic functions (``SINH``,
 ``COSH`` and ``TANH``), use radians. ``DEGREES`` and ``RADIANS`` convert between
 radians and degrees. They accept any number, which is converted to a
 ``DOUBLE PRECISION`` (so ``SIN(1)`` is the same as ``SIN(1e0)``), and they
-return a ``DOUBLE PRECISION``.
+return a ``DOUBLE PRECISION``. A function that has a ``DECFLOAT`` version
+returns a ``DECFLOAT`` for a ``DECFLOAT`` argument instead.
 
 ACOS
 ^^^^

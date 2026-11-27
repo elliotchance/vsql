@@ -1,6 +1,8 @@
 Prepared Statements
 ===================
 
+.. contents::
+
 A prepared statement is parsed and validated once, but not executed. It can then
 be executed many times with different values for its dynamic parameters (each
 ``?`` in the statement).
@@ -9,8 +11,9 @@ A dynamic parameter is named by its position in the statement: the first ``?``
 is ``?1``, the second is ``?2``, etc. Each execution must provide a value for
 every dynamic parameter.
 
-The ``Connection`` provides a ``prepare()`` function, and the statement it
-returns is executed with ``query()``:
+In V, the ``Connection`` provides a ``prepare()`` function, and the statement
+it returns is executed with ``query()`` (see
+:ref:`language-v:Prepared Statements`):
 
 .. code-block:: v
 
@@ -28,8 +31,8 @@ returns is executed with ``query()``:
 
 A connection also keeps up to 256 of the statements that it has parsed (each up
 to 4096 bytes, and preferring the ones that run again), so ``prepare()`` and
-``query()`` don't parse the same text again. Only the parsing is kept: a statement is still planned each time it's
-executed, so it always uses the current tables and indexes. That's why a
+``query()`` don't parse the same text again. Only the parsing is kept: a
+statement is still planned each time it's executed, so it always uses the current tables and indexes. That's why a
 statement that runs many times is faster with dynamic parameters than with
 literal values, which make each text different.
 
@@ -131,6 +134,6 @@ or both of the dynamic parameters in ``? + ?``. Use a ``CAST`` to give it a
 type, such as ``SELECT CAST(? AS INTEGER)``.
 
 Only a query, ``INSERT``, ``UPDATE``, ``DELETE``, ``SET SCHEMA``,
-``SET CATALOG`` and ``SET NAMES`` are checked like this when they're prepared. A dynamic parameter in any other statement, or in a
-statement that can't be checked yet (such as one from ``parse()`` that uses a
+``SET CATALOG`` and ``SET NAMES`` are checked like this when they're prepared.
+A dynamic parameter in any other statement, or in a statement that can't be checked yet (such as one from ``parse()`` that uses a
 table that doesn't exist yet), has the data type of its value.

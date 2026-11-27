@@ -1,4 +1,4 @@
-In Memory Database
+In-Memory Database
 ==================
 
 Opening a database with the special file name ``:memory:`` will use an entirely
@@ -15,7 +15,7 @@ The CLI accepts it as well:
 
    vsql cli :memory:
 
-The name of the catalog (see :doc:`set-catalog`) is ``:memory:``.
+The name of the catalog (see :doc:`catalogs-and-schemas`) is ``:memory:``.
 
 .. contents::
 
@@ -36,10 +36,10 @@ so it can't be shared with another connection:
 
 So with ``vsql server :memory:``, each client that connects has its own empty
 database, which is gone when it disconnects. ``vsql app`` can't use ``:memory:``
-at all, since it opens the files again for each request (see :doc:`cli`).
+at all, since it opens the files again for each request (see :doc:`app`).
 
 The database is gone when the connection is closed (or the program ends). Use
-``dump()`` (see :doc:`language-v`) to save it as SQL first, if it's needed.
+``dump()`` (see :ref:`language-v:Dumping a Database`) to save it as SQL first, if it's needed.
 
 Transactions
 ------------

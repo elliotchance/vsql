@@ -7,7 +7,8 @@ Exponent and Logarithm Functions
 
 Exponents and logarithms accept any number, which is converted to a
 ``DOUBLE PRECISION`` (so ``LN(10)`` is the same as ``LN(10e0)``), and they
-return a ``DOUBLE PRECISION``. A result that is too large or too small to be a
+return a ``DOUBLE PRECISION``. A function that has a ``DECFLOAT`` version
+returns a ``DECFLOAT`` for a ``DECFLOAT`` argument instead. A result that is too large or too small to be a
 ``DOUBLE PRECISION`` is a ``22003`` error (numeric value out of range).
 
 CBRT

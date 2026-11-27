@@ -3,12 +3,13 @@ Booleans
 
 .. contents::
 
-BOOLEAN type
+BOOLEAN Type
 ------------
 
 The ``BOOLEAN`` type allows for a ``TRUE`` or ``FALSE`` value. If the value
 allows for ``NULL`` it will also allow for ``NULL`` or ``UNKNOWN`` (these are
-aliases that mean the same thing).
+aliases that mean the same thing). See :ref:`null:Three-Valued Logic` for how
+``UNKNOWN`` works in a condition.
 
 A ``BOOLEAN`` is stored as a single byte, even if it permits ``UNKNOWN``.
 

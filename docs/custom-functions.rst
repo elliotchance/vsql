@@ -3,7 +3,7 @@ Custom Functions
 
 You can create custom functions to use in expressions:
 
-.. code-block:: text
+.. code-block:: v
 
    // no_pennies will round to 0.05 denominations.
    db.register_function('no_pennies(float) float', fn (_ vsql.FunctionContext, a []vsql.Value) !vsql.Value {
@@ -74,7 +74,7 @@ the values that a function can know besides its arguments:
 
 For example:
 
-.. code-block:: text
+.. code-block:: v
 
    db.register_function('started() varchar', fn (ctx vsql.FunctionContext, _ []vsql.Value) !vsql.Value {
    	return vsql.new_varchar_value(ctx.current_timestamp()!.str())

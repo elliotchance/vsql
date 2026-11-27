@@ -62,7 +62,7 @@ error, use ``ABS(CAST(-2147483648 AS BIGINT))``.
   VALUES ABS(-1.230);
   -- COL1: 1.230
 
-  VALUES ABS(-32768);
+  VALUES ABS(CAST(-32768 AS SMALLINT));
   -- error 22003: numeric value out of range
 
 **Compatibility**
@@ -328,7 +328,7 @@ after the range.
 
 **Compatibility**
 
-- **SQL standard:** T612 (Advanced OLAP operations).
+- **SQL standard:** T612 (advanced OLAP operations).
 - **Other databases:** PostgreSQL, Oracle and Db2 have ``WIDTH_BUCKET``.
   PostgreSQL also has a version that takes an array of bounds. MySQL, SQLite
   and SQL Server don't have it.

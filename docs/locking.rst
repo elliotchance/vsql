@@ -37,7 +37,7 @@ Files That Need a Newer Version
 -------------------------------
 
 A file that uses a feature of a newer version of vsql may only be readable (see
-*Compatibility* in :doc:`file-format`). Queries work as usual, but any
+:ref:`file-format:Compatibility`). Queries work as usual, but any
 statement that changes the file fails with a ``25006`` error:
 
 .. code-block:: text
@@ -79,7 +79,7 @@ next to the database file (see :doc:`transactions`):
 - A transaction that can't start yet waits for up to the ``lock_timeout`` of
   the connection, and then fails with a ``40001`` serialization failure. It's 5
   seconds by default, and can be changed with ``ConnectionOptions.lock_timeout``
-  in V (see :doc:`v-client-library-docs`). The CLI, ``vsql server`` and the C
+  in V (see :ref:`language-v:Opening a Connection`). The CLI, ``vsql server`` and the C
   library (see :doc:`language-c`) always use the default.
 
 - A ``READ COMMITTED`` or ``REPEATABLE READ`` transaction doesn't wait. If a
@@ -120,4 +120,4 @@ first transaction is still active:
 
 If a process stops while it has a transaction, the operating system releases its
 locks, so other connections don't wait for it. Its transaction is rolled back
-later (see *Crashed Transactions* in :doc:`mvcc`).
+later (see :ref:`mvcc:Crashed Transactions`).

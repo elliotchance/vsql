@@ -45,14 +45,25 @@ index, unless any of them are ``NULL`` (like a ``UNIQUE`` constraint). The
 changed, so ``UPDATE t SET u = u + 1`` works. ``CREATE UNIQUE INDEX`` fails in
 the same way if two rows are already the same.
 
+``CREATE INDEX`` is a vsql extension, not standard SQL. It's flagged as
+``V002-01``, ``UNIQUE`` as ``V002-02`` and ``IF NOT EXISTS`` as ``V002-03`` (see
+:doc:`sql-flagging`).
+
 Constraints
-^^^^^^^^^^^
+-----------
 
 A ``UNIQUE`` constraint (see :doc:`create-table` and :doc:`alter-table`) always
 has its own ``UNIQUE`` index, with the same name as the constraint, on the
 columns of the constraint. It's created and dropped with the constraint, and it
 can't be dropped with ``DROP INDEX``. The constraint is checked with the index,
-rather than by reading every row of the table.
+rather than by reading every row of the table. These indexes are used to find
+rows like any other index.
+
+So a new ``UNIQUE`` constraint can't have the same name as an index in the
+schema (that's a ``42P07`` error), and a constraint without a name gets a name
+that isn't the name of an index. A table from an older version of vsql gets the
+indexes of its constraints the first time they're needed, which raises the
+*Write Version* of the file (see `File Format`_).
 
 A ``FOREIGN KEY`` doesn't have its own index. To find the rows that reference a
 row (when the row is deleted, or its key is updated) it uses any index whose
@@ -70,20 +81,15 @@ An index isn't needed to insert or update a row with a ``FOREIGN KEY``, the
 referenced row is found by its ``PRIMARY KEY``, or the index of its ``UNIQUE``
 constraint.
 
-So a new ``UNIQUE`` constraint can't have the same name as an index in the schema (that's
-a ``42P07`` error), and a constraint without a name gets a name that isn't the
-name of an index. A table from an older version of vsql gets the indexes of its
-constraints the first time they're needed, which raises the *Write Version* of
-the file (see below).
-
-These indexes are used to find rows like any other index.
-
 Limits
-^^^^^^
+------
 
 The values of the columns of each row must fit in half a page (see
 :doc:`limitations`), otherwise the statement that creates the index, or that
 inserts or updates the row, fails with a ``54000`` error.
+
+IF NOT EXISTS
+-------------
 
 With ``IF NOT EXISTS``, an index with the same name in the schema of the table
 isn't an error. Nothing changes, and the result is ``CREATE INDEX 0``. The
@@ -92,9 +98,8 @@ isn't compared with it, or checked. The table must still exist. If the index
 doesn't exist, it's the same as ``CREATE INDEX``, including waiting for other
 transactions, so the result is ``CREATE INDEX 1``.
 
-``CREATE INDEX`` is a vsql extension, not standard SQL. It's flagged as
-``V002-01``, ``UNIQUE`` as ``V002-02`` and ``IF NOT EXISTS`` as ``V002-03`` (see
-:doc:`sql-flagging`).
+File Format
+-----------
 
 The first index in a database file raises the *Write Version* of the file (see
 :doc:`file-format`), so older versions of vsql (that wouldn't update the index)

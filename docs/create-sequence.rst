@@ -16,6 +16,11 @@ sequential numbers.
 A sequence can have a minimum and maximum value, and can be allowed to cycle
 (wrap around) between them.
 
+A value is taken from a sequence with ``NEXT VALUE FOR`` (see
+:ref:`expressions:NEXT VALUE FOR`). It's not part of the transaction, so a
+value is never handed out twice, even if the transaction that used it is rolled
+back.
+
 IF NOT EXISTS
 -------------
 
@@ -134,9 +139,6 @@ However, we can use ``CYCLE`` to allow the sequence to wrap around:
   -- COL1: 10
   -- COL1: 15
   -- COL1: 20
-
-``NEXT VALUE FOR`` is not part of the transaction, so a value is never handed
-out twice, even if the transaction that used it is rolled back.
 
 See Also
 --------

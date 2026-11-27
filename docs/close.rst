@@ -13,8 +13,8 @@ Syntax
 
   CLOSE <cursor_name>
 
-The SQL standard only allows ``CLOSE`` in an SQL-client module (such as a C
-program, see :doc:`language-c`). Running it directly is a vsql extension,
+The SQL standard only allows ``CLOSE`` in an SQL-client module (see
+:doc:`sql-client-modules`). Running it directly is a vsql extension,
 flagged by ``V111-01`` (see :doc:`sql-flagging`).
 
 ``CLOSE`` closes the cursor, which can then be opened again. The cursor stays

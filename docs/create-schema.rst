@@ -27,7 +27,7 @@ the schema isn't created.
 
 The names of objects only need to be unique within a single schema and referring
 to an object in a particular schema is done by prepending the schema name
-followed by a period (see examples).
+followed by a period (see examples, and :doc:`catalogs-and-schemas`).
 
 Every catalog already has an ``INFORMATION_SCHEMA`` schema (see
 :doc:`information-schema`), so it can't be created.
@@ -37,9 +37,10 @@ IF NOT EXISTS
 
 With ``IF NOT EXISTS``, a schema that already exists (including
 ``INFORMATION_SCHEMA``) isn't an error. Nothing changes (including the
-``CREATE TABLE`` and ``CREATE SEQUENCE`` in the statement, which aren't created),
-and the result is ``CREATE SCHEMA 0``. If the schema doesn't exist, it's the same as
-``CREATE SCHEMA``, so the result is ``CREATE SCHEMA 1``.
+``CREATE TABLE``, ``CREATE VIEW`` and ``CREATE SEQUENCE`` in the statement,
+which aren't created), and the result is ``CREATE SCHEMA 0``. If the schema
+doesn't exist, it's the same as ``CREATE SCHEMA``, so the result is
+``CREATE SCHEMA 1``.
 
 ``IF NOT EXISTS`` is a vsql extension, not standard SQL. It's flagged as
 ``V101-01`` (see :doc:`sql-flagging`).
@@ -65,4 +66,6 @@ Examples
 See Also
 --------
 
+- :doc:`catalogs-and-schemas`
 - :doc:`drop-schema`
+- :doc:`set-schema`

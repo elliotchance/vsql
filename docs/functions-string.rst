@@ -164,7 +164,7 @@ start or the end.
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T056.
+- **SQL standard:** T056 (multi-character TRIM functions).
 - **Other databases:** ``BTRIM`` in PostgreSQL.
 
 CHAR_LENGTH
@@ -658,7 +658,7 @@ characters from the end. A ``LENGTH`` of less than 1 is an empty string.
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T055.
+- **SQL standard:** T055 (string padding functions).
 - **Other databases:** ``LPAD`` in PostgreSQL, MySQL and Oracle.
 
 LTRIM
@@ -687,7 +687,7 @@ Works like `BTRIM`_, but only removes the ``CHARACTERS`` from the start of
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T056.
+- **SQL standard:** T056 (multi-character TRIM functions).
 - **Other databases:** ``LTRIM`` in PostgreSQL, SQLite and Oracle. MySQL and
   SQL Server only remove spaces.
 
@@ -1227,7 +1227,7 @@ already longer is still cut by removing characters from the end.
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T055.
+- **SQL standard:** T055 (string padding functions).
 - **Other databases:** ``RPAD`` in PostgreSQL, MySQL and Oracle.
 
 RTRIM
@@ -1256,7 +1256,7 @@ Works like `BTRIM`_, but only removes the ``CHARACTERS`` from the end of
 
 **Compatibility**
 
-- **SQL standard:** Optional feature T056.
+- **SQL standard:** T056 (multi-character TRIM functions).
 - **Other databases:** ``RTRIM`` in PostgreSQL, SQLite and Oracle. MySQL and
   SQL Server only remove spaces.
 

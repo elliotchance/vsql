@@ -9,10 +9,10 @@ Rounding functions round a number to an integer, up (``CEIL``), down
 (``FLOOR``), to the nearest (``ROUND``) or towards zero (``TRUNC``). ``ROUND``
 and ``TRUNC`` can also round to a number of decimal places. ``TRIM_SCALE`` and
 ``MIN_SCALE`` don't change the number, they remove or count the decimal places
-that it needs. They accept any
-number. An exact number (such as an ``INTEGER``
-or ``DECIMAL``) is converted to a ``NUMERIC``, and an approximate number (``REAL``
-or ``DOUBLE PRECISION``) to a ``DOUBLE PRECISION``.
+that it needs. They accept any number. An exact number (such as an ``INTEGER``
+or ``DECIMAL``) is converted to a ``NUMERIC``, an approximate number (``REAL``
+or ``DOUBLE PRECISION``) to a ``DOUBLE PRECISION``, and a ``DECFLOAT`` stays a
+``DECFLOAT`` (see each function).
 
 CEIL
 ^^^^

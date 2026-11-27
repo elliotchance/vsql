@@ -37,9 +37,7 @@ GUI Applications
 ✔ DBeaver
 ^^^^^^^^^
 
-DBeaver (with its PostgreSQL driver) is supported, but only with the simple
-query protocol, because ``vsql server`` doesn't support the extended query
-protocol that JDBC uses by default:
+DBeaver (with its PostgreSQL driver) is supported:
 
 1. Create a new connection with **PostgreSQL**.
 2. On the **Main** tab:
@@ -50,8 +48,7 @@ protocol that JDBC uses by default:
    - Authentication: Database Native, with any username (such as ``vsql``) and
      an empty password.
 
-3. On the **Driver properties** tab, set ``preferQueryMode`` to ``simple``.
-4. Click **Test Connection** or **Finish**.
+3. Click **Test Connection** or **Finish**.
 
 The schemas, tables and columns can be browsed, and the data can be viewed and
 queried. DBeaver shows a few errors for things that vsql doesn't have, such as

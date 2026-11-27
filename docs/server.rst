@@ -56,6 +56,22 @@ Results are sent like PostgreSQL: each column has its PostgreSQL type (or
 ``text`` for a type that PostgreSQL doesn't have), a ``NULL`` is a null value
 (not the text ``NULL``), and a ``BOOLEAN`` is ``t`` or ``f``.
 
+Clients can send their queries with the simple query protocol, or with the
+extended query protocol (which JDBC, and so DBeaver, uses by default), where a
+statement is prepared once and then executed with values for its parameters.
+Each parameter (``$1``, ``$2``, etc) is a dynamic parameter of a prepared
+statement (see :doc:`prepared-statements`), so its data type is determined from
+where it's used. A parameter whose type can't be determined (such as in ``SELECT
+$1``) has the type that the client gave it, if any. A query of either protocol
+is changed in the same ways (such as a ``SELECT`` without a ``FROM``), and a
+statement runs when it's executed, in a transaction of its own unless it's
+inside a :doc:`start-transaction`. A value can be text, or binary for a
+``BOOLEAN``, ``SMALLINT``, ``INTEGER``, ``BIGINT``, ``REAL``, ``DOUBLE
+PRECISION`` or text type. A column of any other type is always sent as text,
+even if the client asks for binary. Like PostgreSQL, a ``BEGIN`` (see
+:doc:`start-transaction`) replies ``BEGIN`` rather than ``START TRANSACTION``,
+which JDBC needs.
+
 Clients also read PostgreSQL's system catalog to list the schemas, tables and
 columns. Each connection of a client (but no other connection) has the parts of
 it that clients use, which are flagged as ``V5XX`` (see :doc:`sql-flagging`):

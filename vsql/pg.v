@@ -4,6 +4,7 @@
 module vsql
 
 import encoding.binary
+import math
 import net
 
 // PGConn is a PostgreSQL connection that can send and receive messages over
@@ -89,11 +90,11 @@ fn (mut c PGConn) write_result(result Result) ! {
 	// A statement (such as CREATE TABLE) only sends its command tag. A query
 	// always describes its columns, even when there are no rows.
 	if result.msg == '' {
-		c.write_row_description(result)!
+		c.write_row_description(result.columns, [])!
 		// Iterating the Result itself (rather than its rows) generates invalid C
 		// with the V3 compiler.
 		for row in result.rows {
-			c.write_data_row(result.columns, row)!
+			c.write_data_row(result.columns, row, [])!
 		}
 	}
 
@@ -240,6 +241,88 @@ fn (mut c PGConn) read_query() !string {
 	return query
 }
 
+// read_message reads the rest of a message of the extended query protocol,
+// after its type.
+fn (mut c PGConn) read_message() !PGMessage {
+	len := c.read_int32()!
+	if len < 4 {
+		return error('invalid message length: ${len}')
+	}
+
+	return PGMessage{
+		body: c.read_bytes(len - 4)!
+	}
+}
+
+// PGMessage is a message that has been received, which is read one field at a
+// time. A field that goes past the end of the message is an error.
+struct PGMessage {
+	body []u8
+mut:
+	at int
+}
+
+fn (mut m PGMessage) read_bytes(n int) ![]u8 {
+	if n < 0 || m.at + n > m.body.len {
+		return error('message is too short')
+	}
+	m.at += n
+
+	return m.body[m.at - n..m.at]
+}
+
+fn (mut m PGMessage) read_byte() !u8 {
+	return m.read_bytes(1)![0]
+}
+
+fn (mut m PGMessage) read_int16() !int {
+	return int(i16(binary.big_endian_u16(m.read_bytes(2)!)))
+}
+
+fn (mut m PGMessage) read_int32() !int {
+	return int(i32(binary.big_endian_u32(m.read_bytes(4)!)))
+}
+
+// read_string reads a string that ends with a zero byte.
+fn (mut m PGMessage) read_string() !string {
+	mut end := m.at
+	for end < m.body.len && m.body[end] != 0 {
+		end++
+	}
+	bytes := m.read_bytes(end + 1 - m.at)!
+
+	return bytes[..bytes.len - 1].bytestr()
+}
+
+// write_empty_message sends a message that only has a type, such as
+// ParseComplete.
+fn (mut c PGConn) write_empty_message(msg_type u8) ! {
+	c.write_byte(msg_type)!
+	c.write_int32(4)!
+}
+
+// write_parameter_description sends the type of each parameter of a prepared
+// statement.
+fn (mut c PGConn) write_parameter_description(oids []int) ! {
+	c.write_byte(`t`)!
+	c.write_int32(6 + 4 * oids.len)!
+	c.write_int16(i16(oids.len))!
+	for oid in oids {
+		c.write_int32(oid)!
+	}
+}
+
+// write_columns sends a RowDescription for a statement that returns rows,
+// otherwise NoData.
+fn (mut c PGConn) write_columns(columns []Column, formats []int) ! {
+	if columns.len == 0 {
+		c.write_empty_message(`n`)!
+		return
+	}
+
+	c.write_row_description(columns, formats)!
+}
+
 fn (mut c PGConn) write_byte(b u8) ! {
 	c.out << b
 }
@@ -248,13 +331,16 @@ fn (mut c PGConn) write_bytes(b []u8) ! {
 	c.out << b
 }
 
-fn (mut c PGConn) write_row_description(result Result) ! {
+// write_row_description describes the columns of a result. formats are the
+// format codes of the columns (see pg_format), which are only known for a
+// portal of the extended query protocol.
+fn (mut c PGConn) write_row_description(columns []Column, formats []int) ! {
 	c.write_byte(`T`)!
 
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
 	mut names := []string{}
-	for column in result.columns {
+	for column in columns {
 		mut name := column.name.sub_entity_name
 		if c.lower_case_names && name == name.to_upper() {
 			name = name.to_lower()
@@ -265,10 +351,10 @@ fn (mut c PGConn) write_row_description(result Result) ! {
 	}
 
 	c.write_int32(msg_len)!
-	c.write_int16(i16(result.columns.len))!
+	c.write_int16(i16(columns.len))!
 
 	for i, name in names {
-		typ := result.columns[i].typ
+		typ := columns[i].typ
 		pg_type := pg_type_of(typ.typ)
 		c.write_string(name)!
 		c.write_int32(0)! // table
@@ -276,19 +362,44 @@ fn (mut c PGConn) write_row_description(result Result) ! {
 		c.write_int32(pg_type.oid)!
 		c.write_int16(i16(pg_type.len))!
 		c.write_int32(pg_typmod(typ))!
-		c.write_int16(0)! // 0 = text
+		c.write_int16(i16(pg_format(formats, i, typ.typ)))!
 	}
 }
 
-fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
-	mut values := []?string{}
+// pg_format is the format code of a column at a position: 0 for text and 1 for
+// binary. formats are the format codes that the client asked for in a Bind
+// message: none means that every column is text, and one code is for every
+// column. Only the types of pg_binary_types are sent in binary, any other is
+// text, which the client knows from the RowDescription.
+fn pg_format(formats []int, i int, typ SQLType) int {
+	format := if formats.len == 1 {
+		formats[0]
+	} else if i < formats.len {
+		formats[i]
+	} else {
+		0
+	}
+
+	return if format == 1 && typ in pg_binary_types { 1 } else { 0 }
+}
+
+// pg_binary_types are the types that can be sent in binary, which is the same
+// as PostgreSQL's binary format of each of them (see pg_binary).
+const pg_binary_types = [SQLType.is_boolean, .is_smallint, .is_integer, .is_bigint, .is_real,
+	.is_double_precision]
+
+// write_data_row sends the values of a row, each in its format (see
+// pg_format).
+fn (mut c PGConn) write_data_row(columns Columns, row Row, formats []int) ! {
+	mut values := []?[]u8{}
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
-	for column in columns {
-		v := pg_text(row.get_column(column) or { new_varchar_value(err.msg()) })
+	for i, column in columns {
+		value := row.get_column(column) or { new_varchar_value(err.msg()) }
+		v := pg_value(value, pg_format(formats, i, column.typ.typ))
 		msg_len += 4
-		if text := v {
-			msg_len += text.len
+		if bytes := v {
+			msg_len += bytes.len
 		}
 		values << v
 	}
@@ -297,9 +408,9 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	c.write_int32(msg_len)!
 	c.write_int16(i16(columns.len))!
 	for v in values {
-		if text := v {
-			c.write_int32(text.len)!
-			c.write_bytes(text.bytes())!
+		if bytes := v {
+			c.write_int32(bytes.len)!
+			c.write_bytes(bytes)!
 		} else {
 			c.write_int32(-1)!
 		}
@@ -317,6 +428,33 @@ fn pg_text(v Value) ?string {
 	}
 
 	return v.str()
+}
+
+// pg_value is a value as it's sent to a client in a format (see pg_format), or
+// none for NULL.
+fn pg_value(v Value, format int) ?[]u8 {
+	text := pg_text(v)?
+	if format == 1 {
+		return pg_binary(v)
+	}
+
+	return text.bytes()
+}
+
+// pg_binary is the binary format of a value of one of the pg_binary_types:
+// big-endian integers and IEEE 754 numbers, and 1 or 0 for a BOOLEAN.
+fn pg_binary(v Value) []u8 {
+	mut b := []u8{len: pg_type_of(v.typ.typ).len}
+	match v.typ.typ {
+		.is_boolean { b[0] = if v.bool_value() == .is_true { 1 } else { 0 } }
+		.is_smallint { binary.big_endian_put_u16(mut b, u16(v.int_value())) }
+		.is_integer { binary.big_endian_put_u32(mut b, u32(v.int_value())) }
+		.is_bigint { binary.big_endian_put_u64(mut b, u64(v.int_value())) }
+		.is_real { binary.big_endian_put_u32(mut b, math.f32_bits(f32(v.f64_value()))) }
+		else { binary.big_endian_put_u64(mut b, math.f64_bits(v.f64_value())) }
+	}
+
+	return b
 }
 
 fn (mut c PGConn) write_authentication_ok() ! {

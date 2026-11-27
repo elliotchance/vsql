@@ -2,6 +2,7 @@ module vsql
 
 // server_test.v tests the PostgreSQL server (see server.v) through its V API.
 
+import encoding.hex
 import net
 import os
 import time
@@ -516,4 +517,235 @@ fn test_pg_objects_only_for_server() ! {
 	}
 	assert client.query('SELECT COUNT(*) FROM pg_class')!.rows.len == 1
 	assert client.query('VALUES version()')!.rows.len == 1
+}
+
+// start_extended_query_test starts a server for a test of the extended query
+// protocol, and connects a client to it with a table t that has 2 rows.
+fn start_extended_query_test() !(&Server, &PGTestClient) {
+	server := start_sql_test_server_with(ServerOptions{
+		connect:             fn (database string) !&Connection {
+			return open(':memory:')
+		}
+		select_without_from: true
+		ignore_pg_set:       true
+	})!
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	client.query('CREATE TABLE t (x INT, y VARCHAR(10))')!
+
+	// Each parameter is text, which is cast to its type, or NULL.
+	client.parse('', 'INSERT INTO t (x, y) VALUES ($1, $2)', [])!
+	client.bind('', '', [], pg_test_text('1', 'a'), [])!
+	client.execute('', 0)!
+	client.bind('', '', [], pg_test_text('2', 'NULL'), [])!
+	client.execute('', 0)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete', 'CommandComplete INSERT 0 1',
+		'BindComplete', 'CommandComplete INSERT 0 1', 'ReadyForQuery']
+
+	return server, client
+}
+
+// A query of the extended query protocol is a Parse, Bind, Describe (which is
+// optional) and Execute, then a Sync.
+fn test_server_extended_query() ! {
+	mut server, mut client := start_extended_query_test()!
+	defer {
+		client.close()
+		server.stop() or {}
+	}
+
+	// The second Bind of the same statement has no rows.
+	client.parse('', 'SELECT x, y FROM t WHERE x >= $1 ORDER BY x', [])!
+	client.bind('', '', [], pg_test_text('1'), [])!
+	client.describe(`P`, '')!
+	client.execute('', 0)!
+	client.bind('', '', [], pg_test_text('3'), [])!
+	client.execute('', 0)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete', 'RowDescription X 23 0, Y 1043 0',
+		'DataRow 1, a', 'DataRow 2, NULL', 'CommandComplete SELECT 2', 'BindComplete',
+		'CommandComplete SELECT 0', 'ReadyForQuery']
+
+	// A named statement is kept after a Sync, and can have many portals. Its
+	// parameters are described with their types.
+	client.parse('s1', 'SELECT y FROM t WHERE x = $1', [])!
+	client.describe(`S`, 's1')!
+	client.bind('p1', 's1', [], pg_test_text('1'), [])!
+	client.bind('p2', 's1', [], pg_test_text('2'), [])!
+	client.execute('p2', 0)!
+	client.execute('p1', 0)!
+	assert client.sync()! == ['ParseComplete', 'ParameterDescription 23', 'RowDescription Y 1043 0',
+		'BindComplete', 'BindComplete', 'DataRow NULL', 'CommandComplete SELECT 1', 'DataRow a',
+		'CommandComplete SELECT 1', 'ReadyForQuery']
+	client.bind('', 's1', [], pg_test_text('1'), [])!
+	client.execute('', 0)!
+	client.send(`C`, [u8(`S`)], pg_test_string('s1'))!
+	client.send(`C`, [u8(`P`)], pg_test_string(''))!
+	client.bind('', 's1', [], pg_test_text('1'), [])!
+	assert client.sync()! == ['BindComplete', 'DataRow a', 'CommandComplete SELECT 1', 'CloseComplete',
+		'CloseComplete', 'ErrorResponse 26000 prepared statement "s1" does not exist', 'ReadyForQuery']
+
+	// A statement that doesn't return rows has no columns. A parameter has the
+	// type that the client gave it, or the type from where it's used, or text
+	// if neither.
+	client.parse('', 'INSERT INTO t (x, y) VALUES ($1, $2)', [0, 25])!
+	client.describe(`S`, '')!
+	client.parse('', 'SELECT x FROM t WHERE x = $2', [])!
+	client.describe(`S`, '')!
+	assert client.sync()! == ['ParseComplete', 'ParameterDescription 23 25', 'NoData', 'ParseComplete',
+		'ParameterDescription 25 23', 'RowDescription X 23 0', 'ReadyForQuery']
+
+	// A parameter whose type can't be determined from where it's used is cast to
+	// the type that the client gave it, otherwise it's an error.
+	client.parse('', 'SELECT $1 AS a, CAST($2 AS INT) AS b', [23])!
+	client.bind('', '', [], pg_test_text('12', '34'), [])!
+	client.execute('', 0)!
+	client.parse('', 'SELECT $1 AS a', [])!
+	assert client.sync()! == ['ParseComplete', 'BindComplete', 'DataRow 12, 34',
+		'CommandComplete SELECT 1',
+		'ErrorResponse 42601 syntax error: the data type of ?1 cannot be determined', 'ReadyForQuery']
+
+	// An Execute with a maximum number of rows is suspended until the next
+	// Execute. A portal is kept after a Sync in a transaction.
+	client.parse('', 'BEGIN', [])!
+	client.bind('', '', [], [], [])!
+	client.execute('', 0)!
+	client.parse('', 'SELECT x FROM t ORDER BY x', [])!
+	client.bind('', '', [], [], [])!
+	client.execute('', 1)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete', 'CommandComplete BEGIN', 'ParseComplete',
+		'BindComplete', 'DataRow 1', 'PortalSuspended', 'ReadyForQuery']
+	client.execute('', 1)!
+	assert client.sync()! == ['DataRow 2', 'CommandComplete SELECT 1', 'ReadyForQuery']
+	client.send(`Q`, pg_test_string('COMMIT'))!
+	assert client.replies(-1)! == ['CommandComplete COMMIT', 'ReadyForQuery']
+
+	// BEGIN is tagged BEGIN, like PostgreSQL, for the simple query protocol too.
+	client.send(`Q`, pg_test_string('BEGIN'))!
+	assert client.replies(-1)! == ['CommandComplete BEGIN', 'ReadyForQuery']
+	assert client.query('ROLLBACK')!.msg == 'ROLLBACK'
+
+	// Flush sends the replies so far, without a Sync.
+	client.parse('', 'VALUES 1', [])!
+	client.send(`H`)!
+	assert client.replies(1)! == ['ParseComplete']
+	assert client.sync()! == ['ReadyForQuery']
+}
+
+// An empty query and a PostgreSQL SET (see ServerOptions.ignore_pg_set) aren't
+// executed, the same as with the simple query protocol.
+fn test_server_extended_query_not_executed() ! {
+	mut server, mut client := start_extended_query_test()!
+	defer {
+		client.close()
+		server.stop() or {}
+	}
+
+	client.parse('', ' ; ', [])!
+	client.bind('', '', [], [], [])!
+	client.describe(`P`, '')!
+	client.execute('', 0)!
+	client.parse('', 'SET search_path TO public', [])!
+	client.describe(`S`, '')!
+	client.bind('', '', [], [], [])!
+	client.execute('', 0)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete', 'NoData', 'EmptyQueryResponse',
+		'ParseComplete', 'ParameterDescription', 'NoData', 'BindComplete', 'CommandComplete SET',
+		'ReadyForQuery']
+}
+
+// After an error, every message is ignored until the Sync, then the client can
+// carry on.
+fn test_server_extended_query_errors() ! {
+	mut server, mut client := start_extended_query_test()!
+	defer {
+		client.close()
+		server.stop() or {}
+	}
+
+	client.parse('', 'SELECT * FROM nope', [])!
+	client.bind('', '', [], [], [])!
+	client.execute('', 0)!
+	assert client.sync()! == [
+		'ErrorResponse 42P01 no such table: ":memory:".PUBLIC.NOPE',
+		'ReadyForQuery',
+	]
+
+	client.parse('s', 'SELECT x FROM t WHERE x = $1', [])!
+	client.bind('', 's', [], pg_test_text('abc'), [])!
+	client.execute('', 0)!
+	client.execute('', 0)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete',
+		'ErrorResponse 22018 invalid character value for cast', 'ReadyForQuery']
+
+	client.parse('s', 'VALUES 1', [])!
+	assert client.sync()! == [
+		'ErrorResponse 42P05 prepared statement "s" already exists',
+		'ReadyForQuery',
+	]
+
+	client.execute('nope', 0)!
+	assert client.sync()! == ['ErrorResponse 34000 portal "nope" does not exist', 'ReadyForQuery']
+
+	client.describe(`P`, 'nope')!
+	assert client.sync()! == ['ErrorResponse 34000 portal "nope" does not exist', 'ReadyForQuery']
+
+	// A message that ends too soon.
+	client.send(`B`, [u8(`x`)])!
+	assert client.sync()! == ['ErrorResponse XX000 message is too short', 'ReadyForQuery']
+
+	client.bind('', 's', [], pg_test_text('1'), [])!
+	client.execute('', 0)!
+	assert client.sync()! == ['BindComplete', 'DataRow 1', 'CommandComplete SELECT 1', 'ReadyForQuery']
+}
+
+// A parameter or column of a BOOLEAN, SMALLINT, INTEGER, BIGINT, REAL or DOUBLE
+// PRECISION can be in PostgreSQL's binary format. A text type is the same in
+// binary, and any other type is always text.
+fn test_server_extended_query_binary() ! {
+	mut server, mut client := start_extended_query_test()!
+	defer {
+		client.close()
+		server.stop() or {}
+	}
+
+	mut params := []?[]u8{}
+	for h in ['01', '0007', '00000008', '0000000000000009', '3f000000', '3fd0000000000000'] {
+		params << hex.decode(h)!
+	}
+	params << 'hi'.bytes()
+	client.parse('', 'VALUES ROW($1, $2, $3, $4, $5, $6, $7, CURRENT_DATE IS NOT NULL)', [
+		16,
+		21,
+		23,
+		20,
+		700,
+		701,
+		25,
+	])!
+	client.bind('', '', [1], params, [1])!
+	client.describe(`P`, '')!
+	client.execute('', 0)!
+	client.bind('', '', [0], pg_test_text('FALSE', '7', '8', '9', '0.5', '0.25', 'hi'), [])!
+	client.execute('', 0)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete',
+		'RowDescription COL1 16 1, COL2 21 1, COL3 23 1, COL4 20 1, COL5 700 1, COL6 701 1, COL7 1043 0, COL8 16 1',
+		'DataRow 01, 0007, 00000008, 0000000000000009, 3f000000, 3fd0000000000000, hi, 01',
+		'CommandComplete SELECT 1', 'BindComplete', 'DataRow f, 7, 8, 9, 0.5e0, 0.25e0, hi, t',
+		'CommandComplete SELECT 1', 'ReadyForQuery']
+
+	// Each column can have its own format.
+	client.parse('', 'SELECT x, x, y FROM t WHERE x = 1', [])!
+	client.bind('', '', [], [], [0, 1])!
+	client.execute('', 0)!
+	assert client.sync()! == ['ParseComplete', 'BindComplete', 'DataRow 1, 00000001, a',
+		'CommandComplete SELECT 1', 'ReadyForQuery']
+
+	// A binary value must be the right size, and only some types can be binary.
+	client.parse('s', 'SELECT x FROM t WHERE x = $1', [23])!
+	client.bind('', 's', [1], [?[]u8([u8(0), 1])], [])!
+	assert client.sync()! == ['ParseComplete',
+		'ErrorResponse 0A000 binary format of parameter type 23 is not supported', 'ReadyForQuery']
+	client.parse('d', 'SELECT x FROM t WHERE CURRENT_DATE = $1', [1082])!
+	client.bind('', 'd', [1], [?[]u8([u8(0), 0, 0, 0])], [])!
+	assert client.sync()! == ['ParseComplete',
+		'ErrorResponse 0A000 binary format of parameter type 1082 is not supported', 'ReadyForQuery']
 }

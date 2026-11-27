@@ -356,6 +356,17 @@ fn test_sql_implementation_info() ! {
 	}
 	assert names == [':memory:', ':memory:']
 
+	// DEFAULT TRANSACTION ISOLATION is the connection's isolation_level.
+	mut options := default_connection_options()
+	options.isolation_level = .read_committed
+	mut rc := open_database(':memory:', options)!
+	defer {
+		rc.close()
+	}
+	row := rc.query("SELECT integer_value, comments FROM information_schema.sql_implementation_info WHERE implementation_info_id = '26'")!.rows[0]
+	assert row.get_int('INTEGER_VALUE')! == 2
+	assert row.get_string('COMMENTS')! == '2: READ COMMITTED.'
+
 	assert dbms_version('') == '00.00.0000'
 	assert dbms_version('v1.2.3') == '01.02.0003'
 	assert dbms_version('v12') == '12.00.0000'

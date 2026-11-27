@@ -11,6 +11,7 @@ The SQL Language
    dates-times.rst
    expressions.rst
    operators.rst
+   null.rst
    functions-index.rst
    transactions.rst
    prepared-statements.rst

@@ -97,7 +97,7 @@
 6.20                     implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.20/DE/1                container    - -
 6.20/DE/1.a              implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
-6.20/DE/1.b              partial      vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql only the views of the INFORMATION_SCHEMA, which describe themselves, views made by CREATE VIEW aren't in it yet (#1263)
+6.20/DE/1.b              implemented  vsql/std_2_11_32_view_definition.v tests/std_11_5_76_views.sql the columns of the view's query, the views of the INFORMATION_SCHEMA describe themselves
 6.20/DE/2                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.20/DE/3                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
 6.20/DE/4                implemented  vsql/std_11_5_information_schema.v tests/std_11_5_21_columns.sql
@@ -512,10 +512,10 @@
 6.64/DE/1                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
 6.64/DE/2                n/a          - - no rows, views made by CREATE VIEW aren't in it yet (#1264)
 # 6.65, VIEWS base table
-6.65                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql the views of the INFORMATION_SCHEMA, views made by CREATE VIEW aren't in it yet (#1263)
+6.65                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 6.65/DE/1                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 6.65/DE/2                container    - -
-6.65/DE/2.a              n/a          - - the views of the INFORMATION_SCHEMA have no query text, views made by CREATE VIEW aren't in it yet (#1263)
+6.65/DE/2.a              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql the text as it was written, the views of the INFORMATION_SCHEMA have none
 6.65/DE/2.b              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NULL for the views of the INFORMATION_SCHEMA
 6.65/DE/3                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NONE, there is no WITH CHECK OPTION (#1258)
 6.65/DE/4                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NO

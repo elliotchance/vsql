@@ -288,9 +288,9 @@
 5.75                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always empty, the only views are the INFORMATION_SCHEMA's own
 5.75/CR/1                implemented  vsql/std_1_9_6_sql_flagger.v tests/std_11_5_76_views.sql
 # 5.76, VIEWS view
-5.76                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql the views of the INFORMATION_SCHEMA, views made by CREATE VIEW aren't in it yet (#1263)
+5.76                     implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 # 5.77, Short name views
-5.77                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_77_short_name_views.sql,tests/std_11_5_2_information_schema_catalog_name.sql,tests/std_11_5_12_character_sets.sql,tests/std_11_5_17_column_column_usage.sql,tests/std_11_5_22_constraint_column_usage.sql,tests/std_11_5_23_constraint_table_usage.sql,tests/std_11_5_50_schemata.sql,tests/std_11_5_51_sequences.sql the short name views of the views that vsql has; the others need their views (#1263, #1264, #733) or are for features vsql does not have
+5.77                     partial      vsql/std_11_5_information_schema.v tests/std_11_5_77_short_name_views.sql,tests/std_11_5_2_information_schema_catalog_name.sql,tests/std_11_5_12_character_sets.sql,tests/std_11_5_17_column_column_usage.sql,tests/std_11_5_22_constraint_column_usage.sql,tests/std_11_5_23_constraint_table_usage.sql,tests/std_11_5_50_schemata.sql,tests/std_11_5_51_sequences.sql the short name views of the views that vsql has; the others need their views (#1264, #733) or are for features vsql does not have
 5.77/CR/1                n/a          - - ROLE_ROUT_GRANTS: roles (T331)
 5.77/CR/2                n/a          - - DOMAINS_S: domains (F251)
 5.77/CR/3                n/a          - - COL_DOMAIN_USAGE (COL_DOMAINS_USAGE in the rule): domains (F251)

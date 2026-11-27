@@ -22,7 +22,7 @@ fn (mut catalog CatalogConnection) register_column_column_usage_view() ! {
 		DEPENDENT_COLUMN ${id} NOT NULL
 	)',
 		fn [c] (mut t VirtualTable) ! {
-			for table in c.information_schema_tables() {
+			for table in c.information_schema_tables(mut t.conn) {
 				for column in table.columns {
 					generated := column.generated or { continue }
 					used := generated.columns(mut t.conn, table, column)!

@@ -170,6 +170,42 @@ fn view_query_plan(mut conn Connection, name Identifier, query QueryExpression) 
 	return create_query_expression_plan(query, map[string]Value{}, mut conn, Correlation{})
 }
 
+// view_table is a view as a virtual table, for the INFORMATION_SCHEMA. The
+// types of its columns are the types of the columns of its query
+// (ISO/IEC 9075-11:2006, 6.20, COLUMNS base table, Description, 1.b), which can
+// change when the tables that it reads are changed. A view that can't be read
+// (such as when a table that it reads was dropped) has no columns.
+fn view_table(mut conn Connection, catalog_name string, view View) Table {
+	name := Identifier{
+		...view.name
+		catalog_name: catalog_name
+	}
+	mut columns := []Column{}
+	// The query was parsed when the view was created, so it always can be.
+	if query := view.query_expression() {
+		if plan := view_query_plan(mut conn, name, query) {
+			query_columns := plan.columns()
+			if query_columns.len >= view.columns.len {
+				for i, column in view.columns {
+					columns << Column{
+						...query_columns[i]
+						name: Identifier{
+							...name
+							sub_entity_name: column
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return Table{
+		name:       name
+		columns:    columns
+		is_virtual: true
+	}
+}
+
 // find_view returns the view that a table name refers to, if it is one, and the
 // name of its catalog.
 fn (mut conn Connection) find_view(identifier Identifier) ?(View, string) {

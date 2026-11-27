@@ -497,18 +497,18 @@ fn register_pg_virtual_tables(mut db Connection, database string) ! {
 			t.next_values([new_integer_value(pg_catalog_namespace_oid),
 				new_varchar_value('pg_catalog'), new_integer_value(pg_user_oid),
 				new_null_value(.is_varchar)])
-			namespaces, _ := pg_oids(c)
+			namespaces, _ := pg_oids(c, mut t.conn)
 			for name, oid in namespaces {
 				t.next_values([new_integer_value(oid), new_varchar_value(name),
 					new_integer_value(pg_user_oid), new_null_value(.is_varchar)])
 			}
 			t.done()
 		}
-		// relkind is 'r' for a table, or 'v' for a view (of the
-		// INFORMATION_SCHEMA). The number of rows isn't known (-1).
+		// relkind is 'r' for a table, or 'v' for a view (including the views
+		// of the INFORMATION_SCHEMA). The number of rows isn't known (-1).
 		'CREATE TABLE pg_class (oid INTEGER, relname VARCHAR(255), relnamespace INTEGER, relkind VARCHAR(1), relowner INTEGER, reltuples BIGINT, reltype INTEGER, reloftype INTEGER, relam INTEGER, relfilenode INTEGER, reltablespace INTEGER, relpages INTEGER, relallvisible INTEGER, reltoastrelid INTEGER, relhasindex BOOLEAN, relisshared BOOLEAN, relpersistence VARCHAR(1), relnatts INTEGER, relchecks INTEGER, relhasoids BOOLEAN, relhaspkey BOOLEAN, relhasrules BOOLEAN, relhastriggers BOOLEAN, relhassubclass BOOLEAN, relrowsecurity BOOLEAN, relforcerowsecurity BOOLEAN, relispopulated BOOLEAN, relreplident VARCHAR(1), relispartition BOOLEAN, relfrozenxid INTEGER, relminmxid INTEGER, relacl VARCHAR(255), reloptions VARCHAR(255), relpartbound VARCHAR(255))': fn [c] (mut t VirtualTable) ! {
-			namespaces, tables := pg_oids(c)
-			for table in c.information_schema_tables() {
+			namespaces, tables := pg_oids(c, mut t.conn)
+			for table in c.information_schema_tables(mut t.conn) {
 				t.next_values([new_integer_value(tables[table.name.storage_id()]),
 					new_varchar_value(table.name.entity_name),
 					new_integer_value(namespaces[table.name.schema_name]),
@@ -531,8 +531,8 @@ fn register_pg_virtual_tables(mut db Connection, database string) ! {
 		}
 		// The columns of each table, numbered from 1.
 		'CREATE TABLE pg_attribute (attrelid INTEGER, attname VARCHAR(255), atttypid INTEGER, attstattarget INTEGER, attlen INTEGER, attnum INTEGER, attndims INTEGER, attcacheoff INTEGER, atttypmod INTEGER, attbyval BOOLEAN, attstorage VARCHAR(1), attalign VARCHAR(1), attnotnull BOOLEAN, atthasdef BOOLEAN, attidentity VARCHAR(1), attgenerated VARCHAR(1), attisdropped BOOLEAN, attislocal BOOLEAN, attinhcount INTEGER, attcollation INTEGER, attacl VARCHAR(255), attoptions VARCHAR(255), attfdwoptions VARCHAR(255))':                                                                                                                                                                                                                                                     fn [c] (mut t VirtualTable) ! {
-			_, tables := pg_oids(c)
-			for table in c.information_schema_tables() {
+			_, tables := pg_oids(c, mut t.conn)
+			for table in c.information_schema_tables(mut t.conn) {
 				for i, column in table.columns {
 					pg_type := pg_type_of(column.typ.typ)
 					t.next_values([new_integer_value(tables[table.name.storage_id()]),
@@ -554,8 +554,8 @@ fn register_pg_virtual_tables(mut db Connection, database string) ! {
 		}
 		// The defaults of the columns. pg_get_expr returns adbin as it is.
 		'CREATE TABLE pg_attrdef (oid INTEGER, adrelid INTEGER, adnum INTEGER, adbin VARCHAR(4000), adsrc VARCHAR(4000))':                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                fn [c] (mut t VirtualTable) ! {
-			_, tables := pg_oids(c)
-			for table in c.information_schema_tables() {
+			_, tables := pg_oids(c, mut t.conn)
+			for table in c.information_schema_tables(mut t.conn) {
 				for i, column in table.columns {
 					if column.default_value != none {
 						t.next_values([new_integer_value(0),
@@ -569,8 +569,8 @@ fn register_pg_virtual_tables(mut db Connection, database string) ! {
 		}
 		// The tables (but not the views) of each schema.
 		'CREATE TABLE pg_statio_user_tables (relid INTEGER, schemaname VARCHAR(255), relname VARCHAR(255))':                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              fn [c] (mut t VirtualTable) ! {
-			_, tables := pg_oids(c)
-			for table in c.information_schema_tables() {
+			_, tables := pg_oids(c, mut t.conn)
+			for table in c.information_schema_tables(mut t.conn) {
 				if !table.is_virtual {
 					t.next_values([new_integer_value(tables[table.name.storage_id()]),
 						new_varchar_value(table.name.schema_name),
@@ -835,7 +835,7 @@ const pg_user_oid = 10
 // storage_id) for the PostgreSQL system catalog. The schemas come first, then
 // the tables, in the order of information_schema_tables, starting at 16384 like
 // the objects that a PostgreSQL user creates.
-fn pg_oids(c &CatalogConnection) (map[string]int, map[string]int) {
+fn pg_oids(c &CatalogConnection, mut conn Connection) (map[string]int, map[string]int) {
 	mut names := c.storage.schemas.keys()
 	// A file from before the VSQL schema could already have a schema with
 	// that name.
@@ -853,7 +853,7 @@ fn pg_oids(c &CatalogConnection) (map[string]int, map[string]int) {
 		oid++
 	}
 	mut tables := map[string]int{}
-	for table in c.information_schema_tables() {
+	for table in c.information_schema_tables(mut conn) {
 		tables[table.name.storage_id()] = oid
 		oid++
 	}

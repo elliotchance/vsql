@@ -34,6 +34,9 @@ mut:
 	// write_pending is true when a statement has released its write connection,
 	// but finish_write hasn't decided whether to keep its changes yet.
 	write_pending bool
+	// cancel_state is Connection.cancel_state, so that waiting for a lock stops
+	// when the statement is canceled (see IsolationLock.acquire_cancelable).
+	cancel_state &stdatomic.AtomicVal[u32] = unsafe { nil }
 }
 
 // A Connection allows querying and other introspection for a database file. Use
@@ -457,6 +460,7 @@ fn (mut conn Connection) add_catalog_now(catalog_name string, path string, optio
 		path:         path
 		storage:      new_storage(btree)
 		options:      options
+		cancel_state: conn.cancel_state
 	}
 	catalog.storage.catalog = catalog
 
@@ -692,11 +696,11 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 	if conn.storage.deferral.state == .unlocked && conn.storage.isolation.state != .exclusive
 		&& (conn.storage.deferral.file.is_opened || os.exists(conn.storage.deferral.path)) {
 		timeout := conn.options.lock_timeout
-		conn.storage.deferral.acquire(.shared, timeout, if timeout > 0 {
+		conn.storage.deferral.acquire_cancelable(.shared, timeout, if timeout > 0 {
 			'timed out after ${timeout} waiting for another connection to finish its transaction'
 		} else {
 			'another connection has a transaction that must finish first'
-		})!
+		}, conn.cancel_state)!
 		conn.storage.statement_deferral = true
 	}
 

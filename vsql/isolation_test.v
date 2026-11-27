@@ -424,6 +424,47 @@ fn isolation_lock_take_turns(path string, id int, shared turns []int) ! {
 	}
 }
 
+// A statement that's waiting for the isolation lock stops waiting as soon as
+// it's canceled (see Connection.cancel), rather than at the end of
+// lock_timeout.
+fn test_cancel_isolation_lock_wait() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-cancel-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+	options := isolation_test_options(30 * time.second)
+
+	mut a := open_database(path, options)!
+	defer {
+		a.close()
+	}
+	a.query('CREATE TABLE t (x INT)')!
+	a.query('START TRANSACTION')!
+	a.query('INSERT INTO t (x) VALUES (1)')!
+
+	mut b := open_database(path, options)!
+	defer {
+		b.close()
+	}
+	started := time.now()
+	t := spawn fn (mut b Connection) string {
+		return query_error(mut b, 'INSERT INTO t (x) VALUES (2)')
+	}(mut b)
+	for !b.cancel() {
+		time.sleep(time.millisecond)
+	}
+	assert t.wait() == '57014 query canceled'
+	assert time.since(started) < 10 * time.second
+
+	// The next statement isn't canceled, and waits for the lock as usual.
+	a.query('COMMIT')!
+	b.query('INSERT INTO t (x) VALUES (3)')!
+	assert b.query('SELECT * FROM t')!.rows.map(it.get_int('X')!) == [1, 3]
+}
+
 fn isolation_test_options(lock_timeout time.Duration) ConnectionOptions {
 	mut options := default_connection_options()
 	options.lock_timeout = lock_timeout

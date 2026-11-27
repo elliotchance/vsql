@@ -63,6 +63,7 @@
 module vsql
 
 import os
+import sync.stdatomic
 import time
 
 enum IsolationLockState {
@@ -95,6 +96,13 @@ fn isolation_queue_path(path string) string {
 // message. A lock that is already held by this connection is kept as it is. A
 // database in memory can only be used by one connection, so it's never locked.
 fn (mut l IsolationLock) acquire(state IsolationLockState, timeout time.Duration, message string) ! {
+	l.acquire_cancelable(state, timeout, message, unsafe { nil })!
+}
+
+// acquire_cancelable is acquire for a statement, where the wait fails with
+// 57014 query canceled as soon as the statement is canceled (see
+// Connection.cancel). cancel_state is the connection's.
+fn (mut l IsolationLock) acquire_cancelable(state IsolationLockState, timeout time.Duration, message string, cancel_state &stdatomic.AtomicVal[u32]) ! {
 	if l.path == '' || l.state != .unlocked {
 		return
 	}
@@ -113,11 +121,11 @@ fn (mut l IsolationLock) acquire(state IsolationLockState, timeout time.Duration
 			path: isolation_queue_path(l.path)
 		}
 	}
-	l.queue.wait(.exclusive, deadline, message)!
+	l.queue.wait(.exclusive, deadline, message, cancel_state)!
 	defer {
 		l.queue.release()
 	}
-	l.wait(state, deadline, message)!
+	l.wait(state, deadline, message, cancel_state)!
 }
 
 // close releases the lock and closes its files, which are otherwise kept open
@@ -131,8 +139,9 @@ fn (mut l IsolationLock) close() {
 	}
 }
 
-// wait polls for the lock until the deadline.
-fn (mut l IsolationLock) wait(state IsolationLockState, deadline time.Time, message string) ! {
+// wait polls for the lock until the deadline, or until the statement is
+// canceled.
+fn (mut l IsolationLock) wait(state IsolationLockState, deadline time.Time, message string, cancel_state &stdatomic.AtomicVal[u32]) ! {
 	if l.try_lock(state)! {
 		return
 	}
@@ -147,6 +156,12 @@ fn (mut l IsolationLock) wait(state IsolationLockState, deadline time.Time, mess
 	for !l.try_lock(state)! {
 		if time.now() >= deadline {
 			return sqlstate_40001(message)
+		}
+		if !isnil(cancel_state) {
+			mut canceled := cancel_state
+			if canceled.load() == statement_canceled {
+				return sqlstate_57014()
+			}
 		}
 		time.sleep(time.millisecond)
 	}
@@ -165,12 +180,12 @@ fn (mut conn Connection) lock_transaction(read_only bool) ! {
 
 fn (mut catalog CatalogConnection) lock_transaction(read_only bool) ! {
 	timeout := catalog.options.lock_timeout
-	catalog.storage.isolation.acquire(if read_only { .shared } else { .exclusive }, timeout,
+	catalog.storage.isolation.acquire_cancelable(if read_only { .shared } else { .exclusive }, timeout,
 		if timeout > 0 {
 			'timed out after ${timeout} waiting for another connection to finish its transaction'
 		} else {
 			'another connection has a transaction that must finish first'
-		})!
+		}, catalog.cancel_state)!
 }
 
 // check_direct_query must be called after each query of an SQL-transaction that

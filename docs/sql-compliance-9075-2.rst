@@ -1749,8 +1749,9 @@ Optional Features
 .. [1] A conforming SQL-implementation is required to support at least one
    embedded language or to support the SQL-client module binding for at least
    one host language. vsql supports the SQL-client module binding for C (see
-   :doc:`language-c`), which also gives E182 (Table 42, "Implied feature
-   relationships of SQL/Foundation"), and embedded SQL in C.
+   :doc:`sql-client-modules`), which also gives E182 (Table 42, "Implied feature
+   relationships of SQL/Foundation"), and embedded SQL in C (see
+   :doc:`embedded-sql-c`).
 
 See Also
 --------

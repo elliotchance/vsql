@@ -371,7 +371,7 @@ module
 ^^^^^^
 
 ``module`` compiles an SQL-client module (with ``LANGUAGE C``) into a C header
-and source file next to it, which call libvsql (see :doc:`language-c`):
+and source file next to it, which call libvsql (see :doc:`sql-client-modules`):
 
 .. code-block:: sh
 
@@ -385,7 +385,7 @@ precompile
 ^^^^^^^^^^
 
 ``precompile`` turns an embedded SQL C program (with ``EXEC SQL`` statements)
-into a C file next to it, which calls libvsql (see :doc:`language-c`):
+into a C file next to it, which calls libvsql (see :doc:`embedded-sql-c`):
 
 .. code-block:: sh
 

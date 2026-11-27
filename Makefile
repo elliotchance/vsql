@@ -448,7 +448,7 @@ libvsql-example: $(LIBVSQL)
 	bin/libvsql-example-cpp
 
 # module-example compiles libvsql/module/example.mod (see
-# docs/language-c.rst) and runs example_main.c with it. The generated C
+# docs/sql-client-modules.rst) and runs example_main.c with it. The generated C
 # must also be C99 and C++11.
 module-example: $(LIBVSQL) $(VSQL_BIN)
 	$(call module_program,example)
@@ -475,8 +475,8 @@ module_program = $(VSQL_BIN) module libvsql/module/$(1).mod \
 	&& $(LIBVSQL_CXX) libvsql/module/$(1).c $(2) libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1)-cpp \
 	&& bin/module-$(1)-cpp
 
-# embed-example precompiles libvsql/embed/example.sqc (see docs/language-c.rst)
-# and runs it. The generated C must also be C99 and C++11.
+# embed-example precompiles libvsql/embed/example.sqc (see
+# docs/embedded-sql-c.rst) and runs it. The generated C must also be C99 and C++11.
 embed-example: $(LIBVSQL) $(VSQL_BIN)
 	$(VSQL_BIN) precompile libvsql/embed/example.sqc
 	$(LIBVSQL_CC) libvsql/embed/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-example

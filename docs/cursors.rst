@@ -35,7 +35,7 @@ Syntax
   WHERE CURRENT OF <cursor_name>
 
 The SQL standard only allows these statements in an SQL-client module (such as
-a C program, see :doc:`language-c`). Running them directly is a vsql extension
+a C program, see :doc:`sql-client-modules`). Running them directly is a vsql extension
 (see :doc:`sql-flagging`), so ``FETCH`` returns the row instead of putting its
 values into variables.
 

@@ -25,6 +25,13 @@ fn sql_set_connect_attr(connection_handle SQLInteger, attribute SQLInteger, valu
 		return sql_success
 	}
 
+	// The options of the connection are also implementation-defined INTEGER
+	// attributes, see connection_options.v.
+	if is_connection_option(attribute) {
+		set_connection_option(mut dbc, attribute, value) or { return dbc.diag.error(err) }
+		return sql_success
+	}
+
 	// ISO/IEC 9075-3:2003, 6.54, SetConnectAttr, General Rules, 2 and 3: the
 	// attribute must be one of the codes in Table 16 that can be set (so not
 	// POPULATE IPD).

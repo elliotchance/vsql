@@ -202,8 +202,8 @@ fn reacquire(released bool) {
 // The database operations that may wait (such as for a lock), which unlock the
 // registry while they run.
 
-fn db_open(path string) !&vsql.Connection {
-	mut options := vsql.default_connection_options()
+fn db_open(path string, connection_options vsql.ConnectionOptions) !&vsql.Connection {
+	mut options := connection_options
 	if path != ':memory:' {
 		// The same file may have different paths, such as through a symbolic
 		// link. The file may not exist yet, but its folder should.

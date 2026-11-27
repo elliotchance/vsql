@@ -316,6 +316,15 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_ATTR_SAVEPOINT_NAME 10027 /* a savepoint for SQLEndTran */
 #define SQL_ATTR_AUTOCOMMIT     102   /* see SQLSetConnectAttr */
 
+/* Connection attributes for vsql's connection options, see SQLSetConnectAttr.
+ * Each is an SQLINTEGER. */
+#define SQL_ATTR_VSQL_LOCK_TIMEOUT         11100 /* milliseconds, 5000 */
+#define SQL_ATTR_VSQL_CREATE_INDEX_TIMEOUT 11101 /* milliseconds, 60000 */
+#define SQL_ATTR_VSQL_ISOLATION_LEVEL      11102 /* SQL_TRANSACTION_SERIALIZABLE */
+#define SQL_ATTR_VSQL_CACHE_SIZE           11103 /* pages, 2000 */
+#define SQL_ATTR_VSQL_PAGE_SIZE            11104 /* octets, 4096 */
+#define SQL_ATTR_VSQL_FULL_FSYNC           11105 /* SQL_FALSE */
+
 /* SQL_ATTR_AUTOCOMMIT values. */
 #define SQL_AUTOCOMMIT_OFF 0 /* the default */
 #define SQL_AUTOCOMMIT_ON  1 /* commit each statement */
@@ -1141,6 +1150,7 @@ SQLRETURN SQLFreeStmt(
  *   SQL_ATTR_AUTO_IPD        SQLINTEGER, always SQL_TRUE
  *   SQL_ATTR_SAVEPOINT_NAME  string, see SQLGetData for SQL_CHAR
  *   SQL_ATTR_AUTOCOMMIT      SQLINTEGER, SQL_AUTOCOMMIT_OFF or _ON
+ *   SQL_ATTR_VSQL_...        SQLINTEGER, see SQLSetConnectAttr
  *
  * BufferLength and StringLength are only used for a string.
  */
@@ -1676,6 +1686,32 @@ SQLRETURN SQLRowCount(
  * statement that fails is rolled back. A transaction started
  * by SQLStartTran isn't committed until SQLEndTran. Turning it on commits the
  * active transaction, if there is one.
+ *
+ * The SQL_ATTR_VSQL_ attributes aren't in the standard either. They're the
+ * options that SQLConnect opens the connection with, so they can only be set
+ * before SQLConnect (or after SQLDisconnect), otherwise it's HY011. Each is an
+ * SQLINTEGER (an invalid value is HY024):
+ *
+ *   SQL_ATTR_VSQL_LOCK_TIMEOUT          how long (in milliseconds) a
+ *       SERIALIZABLE transaction (including a statement outside of a
+ *       transaction) waits for another connection's SERIALIZABLE transaction
+ *       to finish, before it fails with 40001. 0 doesn't wait.
+ *   SQL_ATTR_VSQL_CREATE_INDEX_TIMEOUT  how long (in milliseconds) CREATE
+ *       INDEX waits for transactions that changed the table, before 55P03.
+ *   SQL_ATTR_VSQL_ISOLATION_LEVEL       the isolation level (one of the
+ *       SQLStartTran IsolationLevels) of a transaction that isn't given one by
+ *       SQLStartTran, START TRANSACTION or SET TRANSACTION.
+ *   SQL_ATTR_VSQL_CACHE_SIZE            the number of pages of the file that
+ *       are kept in memory (0 for none).
+ *   SQL_ATTR_VSQL_PAGE_SIZE             the size of a page (17 to 65535
+ *       octets), only for :memory: and a new file.
+ *   SQL_ATTR_VSQL_FULL_FSYNC            SQL_TRUE to sync with F_FULLFSYNC on
+ *       macOS (it does nothing elsewhere), so that commits survive a power
+ *       failure.
+ *
+ *   SQLINTEGER timeout = 0;
+ *   SQLSetConnectAttr(dbc, SQL_ATTR_VSQL_LOCK_TIMEOUT, &timeout, 0);
+ *   SQLConnect(dbc, (SQLCHAR *)"test.vsql", SQL_NTS, NULL, 0, NULL, 0);
  */
 SQLRETURN SQLSetConnectAttr(
     SQLHDBC    ConnectionHandle,

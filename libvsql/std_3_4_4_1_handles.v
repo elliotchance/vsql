@@ -71,6 +71,9 @@ mut:
 	// was on (see autocommit.v).
 	autocommit             bool
 	autocommit_transaction bool
+	// options are the options that SQLConnect opens the connection with (see
+	// connection_options.v).
+	options vsql.ConnectionOptions = vsql.default_connection_options()
 }
 
 // An allocated SQL-statement.

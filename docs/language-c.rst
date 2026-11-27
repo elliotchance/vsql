@@ -118,6 +118,46 @@ connection attribute to ``SQL_AUTOCOMMIT_ON`` commits each statement instead
   was one.
 - Turning it on commits the active transaction, if there is one.
 
+Connection Options
+------------------
+
+The options of a connection (see :doc:`transactions` for the isolation level
+and lock timeout) are ``SQLINTEGER`` connection attributes, which aren't in the
+standard. They're the options that ``SQLConnect`` opens the connection with, so
+they can only be set before ``SQLConnect`` (or after ``SQLDisconnect``),
+otherwise it's ``HY011``. An invalid value is ``HY024``.
+
+.. code-block:: c
+
+   SQLSetConnectAttr(dbc, SQL_ATTR_VSQL_LOCK_TIMEOUT, &(SQLINTEGER){0}, 0);
+   SQLConnect(dbc, (SQLCHAR *)"test.vsql", SQL_NTS, NULL, 0, NULL, 0);
+
+====================================== ======================================================
+Attribute                              Value
+====================================== ======================================================
+``SQL_ATTR_VSQL_LOCK_TIMEOUT``         How long a ``SERIALIZABLE`` transaction (including a
+                                       statement outside of a transaction) waits for another
+                                       connection's ``SERIALIZABLE`` transaction to finish,
+                                       before ``40001``, in milliseconds (``5000``). ``0``
+                                       doesn't wait.
+``SQL_ATTR_VSQL_CREATE_INDEX_TIMEOUT`` How long ``CREATE INDEX`` waits for the transactions
+                                       that changed the table, before ``55P03``, in
+                                       milliseconds (``60000``).
+``SQL_ATTR_VSQL_ISOLATION_LEVEL``      The isolation level of a transaction that isn't given
+                                       one by ``SQLStartTran``, ``START TRANSACTION`` or
+                                       ``SET TRANSACTION``, one of the ``SQLStartTran``
+                                       isolation levels (``SQL_TRANSACTION_SERIALIZABLE``).
+``SQL_ATTR_VSQL_CACHE_SIZE``           The number of pages of the file that are kept in
+                                       memory (``2000``). ``0`` keeps none.
+``SQL_ATTR_VSQL_PAGE_SIZE``            The size of a page, from ``17`` to ``65535`` octets
+                                       (``4096``). It's only used for ``:memory:`` and a new
+                                       file.
+``SQL_ATTR_VSQL_FULL_FSYNC``           ``SQL_TRUE`` to sync the file with ``F_FULLFSYNC`` on
+                                       macOS, so that commits survive a power failure (it
+                                       does nothing on other systems), or ``SQL_FALSE``
+                                       (the default).
+====================================== ======================================================
+
 Example
 -------
 

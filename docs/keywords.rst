@@ -11,3 +11,5 @@ A reserved word can still be used as a name if it is quoted, such as
 
 A name can have up to 128 characters, quoted or not. Longer names are a
 ``42601`` error.
+
+See :doc:`identifiers` for the rules of regular and quoted names.

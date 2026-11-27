@@ -10,6 +10,7 @@ The SQL Language
    booleans.rst
    dates-times.rst
    expressions.rst
+   identifiers.rst
    operators.rst
    functions-index.rst
    transactions.rst

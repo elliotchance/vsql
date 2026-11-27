@@ -12,10 +12,11 @@ Syntax
 
 Delete a view. The tables that it reads aren't changed.
 
-``RESTRICT`` returns an error (and takes no action) if any other object depends
-on the view. ``CASCADE`` also drops the objects that depend on the view. Nothing
-records which views read a view yet, so they are currently the same, and a view
-that reads a dropped view is an error when it's read.
+``RESTRICT`` returns an error ``2BP01`` (and takes no action) if any other
+object depends on the view. ``CASCADE`` also drops the objects that depend on
+the view. The only objects that can depend on a view are the views that read it
+(see ``VIEW_TABLE_USAGE`` in :doc:`information-schema`), so ``CASCADE`` drops
+those, and the views that read them.
 
 The SQL standard requires one of ``CASCADE`` or ``RESTRICT``, but vsql also
 allows neither, which is the same as ``RESTRICT``. That's flagged as

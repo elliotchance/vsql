@@ -7,11 +7,12 @@ import time
 // Destroy a table.
 
 // The behavior is RESTRICT when it's not provided (the standard requires it).
-// With RESTRICT, a table that's referenced by a FOREIGN KEY of another table
-// can't be dropped. CASCADE drops those FOREIGN KEYs instead, which is what
-// revoking the REFERENCES privilege on the table would do.
+// With RESTRICT, a table that's referenced by a FOREIGN KEY of another table,
+// or used by a view, can't be dropped. CASCADE drops those FOREIGN KEYs and
+// views instead (see dependent_views), which is what revoking the privileges
+// on the table would do.
 //
-// ISO/IEC 9075-2:2023, 11.31, <drop table statement>, Syntax Rules, 7.d
+// ISO/IEC 9075-2:2023, 11.31, <drop table statement>, Syntax Rules, 7.a and 7.d
 // ISO/IEC 9075-2:2023, 11.31, <drop table statement>, General Rules, 3
 struct DropTableStatement {
 	table_name Identifier
@@ -43,10 +44,15 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 	}
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
-	if stmt.behavior == 'RESTRICT' && catalog.storage.referencing_tables(table).len > 0 {
+	dependents := conn.dependent_views(catalog, [table_name.storage_id()], [])
+	if stmt.behavior == 'RESTRICT'
+		&& (catalog.storage.referencing_tables(table).len > 0 || dependents.len > 0) {
 		return sqlstate_2bp01(table_name.str())
 	}
 	catalog.storage.drop_foreign_keys_referencing([table_name.storage_id()])!
+	for dependent in dependents {
+		catalog.storage.delete_view(dependent)!
+	}
 
 	// ISO/IEC 9075-2:2023, 11.31, <drop table statement>, General Rules, 6
 	catalog.storage.delete_table(table_name.storage_id(),

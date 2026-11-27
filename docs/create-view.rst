@@ -34,8 +34,12 @@ Limitations
 
 - A view can only be read. ``INSERT``, ``UPDATE`` and ``DELETE`` on a view are
   an error.
-- Nothing records which tables and views a view reads, so they can be dropped or
-  changed while it uses them. The view is then an error when it's read.
+- The tables, views and columns that a view uses can only be dropped with
+  ``CASCADE``, which drops the view too, and a column that it uses can't change
+  its type. A view that can't be read (such as when a column it uses becomes
+  ambiguous because another table it reads has a column with the same name)
+  doesn't use anything, so they can be dropped. The view is then an error when
+  it's read.
 - The query can't have a ``?`` parameter or ``NEXT VALUE FOR``, and it can't
   end with an ``ORDER BY``, ``OFFSET`` or ``FETCH FIRST`` (or ``LIMIT``).
 - ``RECURSIVE`` and ``WITH CHECK OPTION`` aren't supported.

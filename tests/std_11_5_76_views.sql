@@ -33,13 +33,16 @@ SELECT table_schema, table_name, table_type, is_insertable_into FROM information
 -- TABLE_SCHEMA: S TABLE_NAME: lower TABLE_TYPE: VIEW IS_INSERTABLE_INTO: NO
 
 -- # The columns of a view have the types of the columns of its query, which
--- # follow the tables that it reads. A view that can't be read has no columns.
+-- # follow the tables that it reads. A view that can't be read (here, because
+-- # z is now a column of both tables) has no columns.
 CREATE TABLE t (x INT NOT NULL, z VARCHAR(10));
+CREATE TABLE u (y INT);
 CREATE VIEW v (a, b) AS SELECT x, z || 'x' FROM t;
-CREATE VIEW w AS SELECT z FROM t;
-SELECT table_name, column_name, ordinal_position, is_nullable, data_type, character_maximum_length, is_updatable FROM information_schema.columns WHERE table_schema = 'PUBLIC';
-ALTER TABLE t DROP COLUMN z RESTRICT;
+CREATE VIEW w AS SELECT z FROM t, u;
+SELECT table_name, column_name, ordinal_position, is_nullable, data_type, character_maximum_length, is_updatable FROM information_schema.columns WHERE table_schema = 'PUBLIC' AND table_name <> 'U';
+ALTER TABLE u ADD COLUMN z INT;
 SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = 'PUBLIC';
+-- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
 -- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
@@ -50,6 +53,11 @@ SELECT table_name, column_name FROM information_schema.columns WHERE table_schem
 -- TABLE_NAME: W COLUMN_NAME: Z ORDINAL_POSITION: 1 IS_NULLABLE: YES DATA_TYPE: CHARACTER VARYING CHARACTER_MAXIMUM_LENGTH: 10 IS_UPDATABLE: NO
 -- msg: ALTER TABLE 1
 -- TABLE_NAME: T COLUMN_NAME: X
+-- TABLE_NAME: T COLUMN_NAME: Z
+-- TABLE_NAME: U COLUMN_NAME: Y
+-- TABLE_NAME: U COLUMN_NAME: Z
+-- TABLE_NAME: V COLUMN_NAME: A
+-- TABLE_NAME: V COLUMN_NAME: B
 
 -- # A view's usage of columns, routines and tables. The views of the
 -- # INFORMATION_SCHEMA don't have any.
@@ -120,15 +128,18 @@ SELECT table_schema, table_name, column_name FROM information_schema.view_column
 -- TABLE_SCHEMA: INFORMATION_SCHEMA TABLE_NAME: TABLES COLUMN_NAME: TABLE_NAME
 -- TABLE_SCHEMA: PUBLIC TABLE_NAME: T COLUMN_NAME: X
 
--- # A view that can't be read uses nothing.
+-- # A view that can't be read (here, because x is now a column of both
+-- # tables) uses nothing.
 CREATE TABLE t (x INT);
-CREATE VIEW v AS SELECT x FROM t;
-DROP TABLE t RESTRICT;
+CREATE TABLE u (y INT);
+CREATE VIEW v AS SELECT x FROM t, u;
+ALTER TABLE u ADD COLUMN x INT;
 SELECT * FROM information_schema.view_table_usage;
 SELECT * FROM information_schema.view_column_usage;
 -- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
 -- msg: CREATE VIEW 1
--- msg: DROP TABLE 1
+-- msg: ALTER TABLE 1
 
 -- # VIEWS can be referenced in Core SQL, but the usage views need F341
 -- # (5.73, 5.74 and 5.75, Conformance Rules, 1).

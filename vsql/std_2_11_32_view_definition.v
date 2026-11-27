@@ -17,9 +17,9 @@ import time
 // The columns of a view are fixed when it's created. If a table that the query
 // reads with * has columns added later, the view only has the columns that it
 // was created with. A view can't be changed (INSERT, UPDATE and DELETE on a
-// view are an error, see #1448), and nothing records which tables or views it
-// reads yet, so they can be dropped while the view still uses them (see
-// #1264). The view is then an error when it's read.
+// view are an error, see #1448). The tables, views and columns that it uses
+// (see ViewUsage) can only be dropped with CASCADE, which drops the view too
+// (see dependent_views).
 
 const view_file_format_version = u16(5)
 

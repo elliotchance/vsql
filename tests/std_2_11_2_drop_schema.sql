@@ -81,3 +81,25 @@ SELECT NEXT VALUE FOR foo.seq1 FROM (VALUES 1) AS t;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE SEQUENCE 1
 -- COL1: 1
+
+-- # DROP SCHEMA CASCADE drops the views of other schemas that use its tables
+-- # and views (General Rules, 2).
+CREATE SCHEMA s;
+CREATE TABLE s.t (x INT);
+CREATE VIEW s.v AS SELECT x FROM t;
+CREATE TABLE u (y INT);
+CREATE VIEW w1 AS SELECT x FROM s.t;
+CREATE VIEW w2 AS SELECT x FROM s.v;
+CREATE VIEW w3 AS SELECT y FROM u;
+DROP SCHEMA s CASCADE;
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC';
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: DROP SCHEMA 1
+-- TABLE_NAME: U
+-- TABLE_NAME: W3

@@ -187,3 +187,31 @@ SELECT * FROM t;
 -- B: 2
 -- msg: ROLLBACK
 -- A: 1 B: 2
+
+-- # A column that's used by a view (including with *) can only be dropped with
+-- # CASCADE, which drops the view, and the views that use it (Syntax Rules,
+-- # 7.a). A column that no view uses can still be dropped.
+CREATE TABLE t (a INT, b INT, c INT);
+CREATE VIEW v AS SELECT a FROM t;
+CREATE VIEW v2 AS SELECT * FROM v;
+CREATE VIEW w AS SELECT t2.* FROM t AS t2 (x, y, z);
+ALTER TABLE t DROP COLUMN a RESTRICT;
+ALTER TABLE t DROP COLUMN c RESTRICT;
+CREATE TABLE u (y INT);
+DROP VIEW w RESTRICT;
+ALTER TABLE t DROP COLUMN c RESTRICT;
+ALTER TABLE t DROP COLUMN a CASCADE;
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC';
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- error 2BP01: dependent objects still exist on view ":memory:".PUBLIC.V
+-- error 2BP01: dependent objects still exist on view ":memory:".PUBLIC.W
+-- msg: CREATE TABLE 1
+-- msg: DROP VIEW 1
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- TABLE_NAME: T
+-- TABLE_NAME: U

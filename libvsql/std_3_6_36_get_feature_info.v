@@ -60,20 +60,14 @@ fn get_feature_info(mut dbc Dbc, feature_type &char, feature_type_length i16, fe
 	// the connection handle. The view doesn't have the
 	// FEATURE_SUBFEATURE_PACKAGE_CODE column (of the 2003 edition), so the type
 	// is the SUB_FEATURE_ID.
-	sh := new_stmt(dbc.handle)
-	defer {
-		free_stmt(sh)
-	}
-	mut stmt := stmts[sh] or { return cli_error('HY000', 'statement handle not allocated') }
-	exec_direct_text(mut stmt, 'SELECT IS_SUPPORTED FROM INFORMATION_SCHEMA.SQL_FEATURES WHERE FEATURE_ID = ${sql_string(fi)} AND SUB_FEATURE_ID = ${sql_string(sfi)}')!
+	row := implicit_first_row(mut dbc.diag, dbc.handle, 'SELECT IS_SUPPORTED FROM INFORMATION_SCHEMA.SQL_FEATURES WHERE FEATURE_ID = ${sql_string(fi)} AND SUB_FEATURE_ID = ${sql_string(sfi)}')!
 
 	// - 12. If there is no such feature, then an exception condition is
 	// raised: CLI-specific condition — invalid attribute value.
-	cursor := stmt.cursor or { return cli_error('HY000', 'no value') }
-	if stmt.rows.len == 0 {
+	if row.len == 0 {
 		return cli_error('HY024', 'invalid attribute value')
 	}
-	is_supported := stmt.rows[0].get_column(cursor.columns[0])!.string_value() == 'YES'
+	is_supported := row[0].string_value() == 'YES'
 
 	if supported == unsafe { nil } {
 		return cli_error('HY009', 'invalid use of null pointer')

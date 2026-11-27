@@ -64,17 +64,11 @@ fn get_session_info(mut dbc Dbc, h i64, info_type i16, info_value voidptr, buffe
 	// allocated for it (DISTINCT is the same as UNIQUE in the standard's
 	// query). Any exception condition that it raises is returned on the
 	// connection handle.
-	sh := new_stmt(h)
-	defer {
-		free_stmt(sh)
-	}
-	mut stmt := stmts[sh] or { return cli_error('HY000', 'statement handle not allocated') }
-	exec_direct_text(mut stmt, 'SELECT DISTINCT ${gvs} FROM INFORMATION_SCHEMA.TABLES WHERE 1 = 1')!
-	cursor := stmt.cursor or { return cli_error('HY000', 'no value') }
-	if stmt.rows.len == 0 {
+	row := implicit_first_row(mut dbc.diag, h, 'SELECT DISTINCT ${gvs} FROM INFORMATION_SCHEMA.TABLES WHERE 1 = 1')!
+	if row.len == 0 {
 		return cli_error('HY000', 'no value')
 	}
-	value := stmt.rows[0].get_column(cursor.columns[0])!
+	value := row[0]
 
 	// ISO/IEC 9075-3:2003, 4.4.3, Null pointers
 	if info_value == unsafe { nil } {

@@ -1270,7 +1270,7 @@
 7.17/SR/3.j.ix.4         implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/3.j.ix.5         container    - -
 7.17/SR/3.j.ix.5.A       implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
-7.17/SR/3.j.ix.5.B       partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql a subquery in WHERE (or another expression) is only checked when it's run
+7.17/SR/3.j.ix.5.B       implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/3.j.ix.5.C       implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/3.j.ix.5.C.I     implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql
 7.17/SR/3.j.ix.5.C.II    implemented  vsql/planner.v tests/std_2_7_17_with_recursive.sql

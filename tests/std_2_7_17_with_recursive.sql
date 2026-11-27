@@ -127,6 +127,19 @@ WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n FETCH FIRST 3 RO
 -- error 42601: syntax error: a WITH RECURSIVE query cannot be read in its own query on the side of an outer join that has NULLs added
 -- error 42601: syntax error: a query that reads a WITH RECURSIVE query in its own query cannot have FETCH FIRST
 
+-- # A subquery that reads it is rejected when the query is planned, even when
+-- # the subquery would never be run: when it's in a CASE branch that isn't
+-- # taken, in a WHERE of a query that has no rows, or in the ORDER BY of its own
+-- # query, which is planned after the rest of the query (3.j.ix.5.B). A
+-- # sort key with a subquery is a vsql extension (V202-01 to V202-03).
+WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT CASE WHEN x > 5 THEN (SELECT MAX(x) FROM n) ELSE x + 1 END FROM n WHERE x < 3) SELECT * FROM n;
+WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT a FROM edges WHERE a < 0 AND EXISTS (SELECT 1 FROM n)) SELECT * FROM n;
+/* extensions V202-01 V202-02 V202-03 */
+WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n WHERE x < 3 ORDER BY (SELECT COUNT(*) FROM n)) SELECT * FROM n;
+-- error 42601: syntax error: WITH RECURSIVE query N cannot be read in a subquery of its own query, other than in FROM
+-- error 42601: syntax error: WITH RECURSIVE query N cannot be read in a subquery of its own query, other than in FROM
+-- error 42601: syntax error: WITH RECURSIVE query N cannot be read in a subquery of its own query, other than in FROM
+
 -- # Its own query can't contain a WITH RECURSIVE (Syntax Rules, 3.g).
 WITH RECURSIVE n (x) AS (WITH RECURSIVE m (y) AS (VALUES 1) SELECT y FROM m) SELECT * FROM n;
 -- error 42601: syntax error: WITH RECURSIVE query N cannot contain a WITH RECURSIVE

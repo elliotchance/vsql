@@ -164,7 +164,7 @@
 7.6/SR/8.o               n/a          - - UNNEST (S301)
 7.6/SR/9                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/SR/9.a               container    - -
-7.6/SR/9.a.i             n/a          - - WITH (T121)
+7.6/SR/9.a.i             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.6/SR/9.a.ii            n/a          - - triggers (T211)
 7.6/SR/9.a.iii           implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_5_select_from.sql
 7.6/SR/9.b               n/a          - - ONLY (S111)
@@ -296,7 +296,7 @@
 7.6/GR/1.d               n/a          - - row pattern recognition (R010)
 7.6/GR/1.e               n/a          - - row pattern recognition (R010)
 7.6/GR/2                 implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
-7.6/GR/2.a               n/a          - - WITH (T121)
+7.6/GR/2.a               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.6/GR/2.b               n/a          - - triggers (T211)
 7.6/GR/2.c               implemented  vsql/std_2_7_6_table_reference.v tests/std_2_7_6_correlation_name.sql
 7.6/GR/2.c.i             n/a          - - ONLY (S111)
@@ -351,7 +351,7 @@
 7.6/CR/2.a               n/a          - - arrays (S091)
 7.6/CR/2.b               n/a          - - arrays (S091) and multisets (S271)
 7.6/CR/3                 n/a          - - LATERAL (T491)
-7.6/CR/4                 n/a          - - WITH (T121)
+7.6/CR/4                 implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
 7.6/CR/5                 n/a          - - ONLY (S111)
 7.6/CR/6                 implemented  vsql/std_2_7_6_table_reference.y tests/std_1_9_6_flagging.sql
 7.6/CR/7                 n/a          - - table functions (T326)
@@ -1227,69 +1227,69 @@
 7.16/CR/5                n/a          - - row types (T053)
 7.16/CR/6                implemented  vsql/planner.v tests/std_2_7_3_values.sql
 # 7.17, <query expression>
-7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH (T121) or CORRESPONDING (F301)
+7.17                     partial      vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql no WITH in a subquery (T122), WITH RECURSIVE (T131) or CORRESPONDING (F301)
 7.17/SR/1                definition   - -
 7.17/SR/2                n/a          - - data change delta tables (T495)
-7.17/SR/3                n/a          - - WITH (T121)
-7.17/SR/3.a              n/a          - - WITH (T121)
-7.17/SR/3.b              n/a          - - WITH (T121)
-7.17/SR/3.c              n/a          - - WITH (T121)
-7.17/SR/3.d              n/a          - - WITH (T121)
-7.17/SR/3.d.i            n/a          - - WITH (T121)
-7.17/SR/3.d.ii           n/a          - - WITH (T121)
-7.17/SR/3.d.ii.1         n/a          - - WITH (T121)
-7.17/SR/3.d.ii.2         n/a          - - WITH (T121)
-7.17/SR/3.d.iii          n/a          - - WITH (T121)
-7.17/SR/3.d.iv           n/a          - - WITH (T121)
-7.17/SR/3.e              n/a          - - WITH (T121)
-7.17/SR/3.f              n/a          - - WITH (T121)
-7.17/SR/3.g              n/a          - - WITH (T121)
-7.17/SR/3.h              n/a          - - WITH (T121)
+7.17/SR/3                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.a              definition   - -
+7.17/SR/3.b              definition   - -
+7.17/SR/3.c              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.d              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.d.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.d.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.d.ii.1         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.d.ii.2         implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.d.iii          n/a          - - there are no collations other than the default (F690)
+7.17/SR/3.d.iv           n/a          - - data change delta tables (T495)
+7.17/SR/3.e              n/a          - - recursive queries (T131)
+7.17/SR/3.f              n/a          - - recursive queries (T131)
+7.17/SR/3.g              n/a          - - recursive queries (T131)
+7.17/SR/3.h              n/a          - - recursive queries (T131)
 7.17/SR/3.i              container    - -
-7.17/SR/3.i.i            n/a          - - WITH (T121)
-7.17/SR/3.i.ii           n/a          - - WITH (T121)
-7.17/SR/3.j              n/a          - - WITH (T121)
-7.17/SR/3.j.i            n/a          - - WITH (T121)
-7.17/SR/3.j.ii           n/a          - - WITH (T121)
-7.17/SR/3.j.ii.1         n/a          - - WITH (T121)
-7.17/SR/3.j.ii.2         n/a          - - WITH (T121)
-7.17/SR/3.j.iii          n/a          - - WITH (T121)
-7.17/SR/3.j.iv           n/a          - - WITH (T121)
-7.17/SR/3.j.v            n/a          - - WITH (T121)
-7.17/SR/3.j.vi           n/a          - - WITH (T121)
-7.17/SR/3.j.vii          n/a          - - WITH (T121)
-7.17/SR/3.j.vii.1        n/a          - - WITH (T121)
-7.17/SR/3.j.vii.1.A      n/a          - - WITH (T121)
-7.17/SR/3.j.vii.1.B      n/a          - - WITH (T121)
-7.17/SR/3.j.vii.2        n/a          - - WITH (T121)
-7.17/SR/3.j.viii         n/a          - - WITH (T121)
-7.17/SR/3.j.ix           n/a          - - WITH (T121)
-7.17/SR/3.j.ix.1         n/a          - - WITH (T121)
-7.17/SR/3.j.ix.2         n/a          - - WITH (T121)
-7.17/SR/3.j.ix.3         n/a          - - WITH (T121)
-7.17/SR/3.j.ix.4         n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5         n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.A       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.B       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.C       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.C.I     n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.C.II    n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.D       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.E       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.F       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.F.I     n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.F.II    n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.F.III   n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.G       n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.G.I     n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.G.II    n/a          - - WITH (T121)
-7.17/SR/3.j.ix.5.G.III   n/a          - - WITH (T121)
-7.17/SR/3.j.x            n/a          - - WITH (T121)
-7.17/SR/3.j.xi           n/a          - - WITH (T121)
-7.17/SR/3.j.xi.1         n/a          - - WITH (T121)
-7.17/SR/3.j.xi.2         n/a          - - WITH (T121)
-7.17/SR/3.j.xi.3         n/a          - - WITH (T121)
-7.17/SR/3.k              n/a          - - WITH (T121)
+7.17/SR/3.i.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/SR/3.i.ii           n/a          - - recursive queries (T131)
+7.17/SR/3.j              n/a          - - recursive queries (T131)
+7.17/SR/3.j.i            n/a          - - recursive queries (T131)
+7.17/SR/3.j.ii           n/a          - - recursive queries (T131)
+7.17/SR/3.j.ii.1         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ii.2         n/a          - - recursive queries (T131)
+7.17/SR/3.j.iii          n/a          - - recursive queries (T131)
+7.17/SR/3.j.iv           n/a          - - recursive queries (T131)
+7.17/SR/3.j.v            n/a          - - recursive queries (T131)
+7.17/SR/3.j.vi           n/a          - - recursive queries (T131)
+7.17/SR/3.j.vii          n/a          - - recursive queries (T131)
+7.17/SR/3.j.vii.1        n/a          - - recursive queries (T131)
+7.17/SR/3.j.vii.1.A      n/a          - - recursive queries (T131)
+7.17/SR/3.j.vii.1.B      n/a          - - recursive queries (T131)
+7.17/SR/3.j.vii.2        n/a          - - recursive queries (T131)
+7.17/SR/3.j.viii         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix           n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.1         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.2         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.3         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.4         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5         n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.A       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.B       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.C       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.C.I     n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.C.II    n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.D       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.E       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.F       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.F.I     n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.F.II    n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.F.III   n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.G       n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.G.I     n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.G.II    n/a          - - recursive queries (T131)
+7.17/SR/3.j.ix.5.G.III   n/a          - - recursive queries (T131)
+7.17/SR/3.j.x            n/a          - - recursive queries (T131)
+7.17/SR/3.j.xi           n/a          - - recursive queries (T131)
+7.17/SR/3.j.xi.1         n/a          - - recursive queries (T131)
+7.17/SR/3.j.xi.2         n/a          - - recursive queries (T131)
+7.17/SR/3.j.xi.3         n/a          - - recursive queries (T131)
+7.17/SR/3.k              n/a          - - recursive queries (T131)
 7.17/SR/4                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
 7.17/SR/5                definition   - -
 7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_union_except.sql,tests/std_2_7_17_intersect.sql
@@ -1306,12 +1306,12 @@
 7.17/SR/8.d              n/a          - - updatable unions (T111)
 7.17/SR/8.e              n/a          - - updatable unions (T111)
 7.17/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql only simply updatable, there are no updatable unions (T111)
-7.17/SR/10               n/a          - - WITH (T121)
+7.17/SR/10               n/a          - - a derived table can't be changed (#1448)
 7.17/SR/11               n/a          - - INSERT through a cursor or view (#1448)
 7.17/SR/11.a             n/a          - - INSERT through a cursor or view (#1448)
 7.17/SR/11.b             n/a          - - INSERT through a cursor or view (#1448)
 7.17/SR/11.c             n/a          - - INSERT through a cursor or view (#1448)
-7.17/SR/12               n/a          - - WITH (T121)
+7.17/SR/12               n/a          - - INSERT through a cursor or view (#1448)
 7.17/SR/13               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.a             implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_union_except.sql
 7.17/SR/13.b             implemented  vsql/std_2_7_17_query_expression.y tests/std_2_7_17_explicit_table.sql
@@ -1403,10 +1403,10 @@
 7.17/SR/28               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/SR/29               implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_fetch_percent.sql
 7.17/SR/30               implemented  vsql/planner.v tests/std_2_7_17_fetch_with_ties.sql
-7.17/GR/1                n/a          - - WITH (T121)
-7.17/GR/1.a              n/a          - - WITH (T121)
-7.17/GR/1.b              n/a          - - WITH (T121)
-7.17/GR/1.c              n/a          - - WITH (T121)
+7.17/GR/1                implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
+7.17/GR/1.a              n/a          - - data change delta tables (T495)
+7.17/GR/1.b              deviates     vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql the query is run again each time its name is read, so a nondeterministic function can have a different value each time (#1781)
+7.17/GR/1.c              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_with.sql
 7.17/GR/2                n/a          - - recursive queries (T131)
 7.17/GR/2.a              n/a          - - recursive queries (T131)
 7.17/GR/2.a.i            n/a          - - recursive queries (T131)
@@ -1478,7 +1478,7 @@
 7.17/GR/7.d              implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
 7.17/GR/7.d.i            implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_fetch_with_ties.sql
 7.17/GR/7.d.ii           implemented  vsql/std_2_7_17_query_expression.v tests/std_2_7_17_offset_fetch.sql
-7.17/CR/1                n/a          - - WITH (T121)
+7.17/CR/1                implemented  vsql/std_2_7_17_query_expression.y tests/std_1_9_6_flagging.sql
 7.17/CR/2                n/a          - - WITH (T122)
 7.17/CR/3                n/a          - - recursive queries (T131)
 7.17/CR/4                n/a          - - recursive queries (T132)

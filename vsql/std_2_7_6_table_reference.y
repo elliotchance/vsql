@@ -35,16 +35,13 @@ table_factor:
   table_primary { $$.v = $1.v }
 
 table_primary:
-  table_or_query_name { 
-    $$.v = yy_box(TablePrimary{
-      body: $1.v as Identifier
-    })
+  table_or_query_name {
+    $$.v = yy_box(table_or_query_name_primary(mut yylex, $1.v as Identifier,
+      Correlation{}))
   }
 | table_or_query_name correlation_or_recognition {
-    $$.v = yy_box(TablePrimary{
-      body:        $1.v as Identifier
-      correlation: $2.v as Correlation
-    })
+    $$.v = yy_box(table_or_query_name_primary(mut yylex, $1.v as Identifier,
+      $2.v as Correlation))
   }
 | derived_table {
     // ISO/IEC 9075-2:2023, 7.6, <table reference>, Format

@@ -269,6 +269,13 @@ SELECT CAST(x AS BIGINT), CAST(x AS BOOLEAN), CAST(d AS TIMESTAMP(3) WITH TIME Z
 -- flags: F411, F555, T031, T071
 -- error 42846: cannot coerce INTEGER to BOOLEAN
 
+-- # A WITH needs T121 (Part 2, 7.17, Conformance Rules, 1), and its queries are
+-- # subqueries. Reading one isn't a derived table.
+/* flags */
+WITH a AS (SELECT x FROM t ORDER BY x) SELECT * FROM a;
+-- flags: F850, F851, T121
+-- X: 1
+
 -- # A derived table needs F591. ORDER BY, OFFSET and FETCH FIRST need features
 -- # that depend on where the query is: at the top (F861, F857), in a subquery
 -- # (F850, F851, F862, F858 as well) or in parentheses as a query primary

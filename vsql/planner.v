@@ -852,6 +852,10 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		}
 	}
 
+	for element in stmt.with_list {
+		element.check(params, mut conn)!
+	}
+
 	mut plan, mut tables := create_basic_plan(stmt.body, params, mut conn, true,
 		correlation)!
 

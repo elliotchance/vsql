@@ -23,12 +23,12 @@ the other columns, and a column without a default is ``NULL`` (an error
 ``23502`` for a ``NOT NULL`` column).
 
 The rows are either the rows of ``VALUES``, or the result of a query (see
-:doc:`select`). A query can use ``UNION``, ``EXCEPT``, ``INTERSECT``,
-``ORDER BY``, ``OFFSET`` and ``FETCH FIRST``, and it can be in parentheses. Its
-result is known before any row is inserted, so a query that reads from the same
-table doesn't see the new rows. A ``VALUES`` on its own is always the first
-form, ``(VALUES ...)`` or ``VALUES ... UNION ...`` is a query, which can't
-contain ``DEFAULT`` or a ``NULL`` on its own (see :doc:`values`).
+:doc:`select`). A query can use ``WITH``, ``UNION``, ``EXCEPT``,
+``INTERSECT``, ``ORDER BY``, ``OFFSET`` and ``FETCH FIRST``, and it can be in
+parentheses. Its result is known before any row is inserted, so a query that
+reads from the same table doesn't see the new rows. A ``VALUES`` on its own is
+always the first form, ``(VALUES ...)`` or ``VALUES ... UNION ...`` is a query,
+which can't contain ``DEFAULT`` or a ``NULL`` on its own (see :doc:`values`).
 
 Each row must have the same number of values as there are columns, which is an
 error ``42601`` otherwise. Columns that aren't listed get their default (see

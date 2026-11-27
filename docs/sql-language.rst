@@ -19,6 +19,7 @@ The SQL Language
    functions-index.rst
    catalogs-and-schemas.rst
    transactions.rst
+   errors-and-warnings.rst
    prepared-statements.rst
    cursors.rst
    information-schema.rst

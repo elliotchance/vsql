@@ -69,6 +69,11 @@ before a statement that isn't in a transaction.
 
 Part of a transaction can be rolled back with a :doc:`savepoint`.
 
+A statement that fails has no effect, but the transaction stays active, so the
+statements before it can still be committed. Only a ``40001`` (and the other
+errors of class ``40``) rolls back the whole transaction. See
+:doc:`errors-and-warnings`.
+
 Isolation Levels
 ----------------
 
@@ -273,6 +278,7 @@ See Also
 
 - :doc:`commit`
 - :doc:`locking` (locks between processes, and files that can only be read)
+- :doc:`errors-and-warnings`
 - :doc:`mvcc`
 - :doc:`rollback`
 - :doc:`set-transaction`

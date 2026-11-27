@@ -197,37 +197,37 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``DROP SEQUENCE IF EXISTS`` (see :doc:`drop-sequence`).
 
    * - ``V108``
-     - ``DECLARE CURSOR`` (see :doc:`cursors`).
+     - ``DECLARE CURSOR`` (see :doc:`declare-cursor`).
 
    * - ``V108-01``
      - ``DECLARE CURSOR`` outside of an SQL-client module.
 
    * - ``V109``
-     - ``OPEN`` (see :doc:`cursors`).
+     - ``OPEN`` (see :doc:`open`).
 
    * - ``V109-01``
      - ``OPEN`` outside of an SQL-client module.
 
    * - ``V110``
-     - ``FETCH`` (see :doc:`cursors`).
+     - ``FETCH`` (see :doc:`fetch`).
 
    * - ``V110-01``
      - ``FETCH`` without ``INTO`` (the row is returned).
 
    * - ``V111``
-     - ``CLOSE`` (see :doc:`cursors`).
+     - ``CLOSE`` (see :doc:`close`).
 
    * - ``V111-01``
      - ``CLOSE`` outside of an SQL-client module.
 
    * - ``V112``
-     - ``DELETE`` (see :doc:`cursors`).
+     - ``DELETE`` (see :doc:`delete`).
 
    * - ``V112-01``
      - ``DELETE ... WHERE CURRENT OF`` outside of an SQL-client module.
 
    * - ``V113``
-     - ``UPDATE`` (see :doc:`cursors`).
+     - ``UPDATE`` (see :doc:`update`).
 
    * - ``V113-01``
      - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.

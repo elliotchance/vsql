@@ -85,7 +85,8 @@ about. A warning doesn't stop the statement or roll back the transaction.
 
 ``01001`` is a warning (the statement still succeeds) when a positioned
 ``DELETE`` or ``UPDATE`` changes a row that another statement has changed since
-the cursor was opened, or the other way around. See :doc:`cursors`.
+the cursor was opened, or the other way around. See "Positioned DELETE" in
+:doc:`delete` and "Positioned UPDATE" in :doc:`update`.
 
 **Examples**
 
@@ -1228,7 +1229,7 @@ be assigned ``DEFAULT``, see :doc:`create-table`.
 ``42P03`` duplicate cursor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A cursor has already been declared with the name (see :doc:`cursors`).
+A cursor has already been declared with the name (see :doc:`declare-cursor`).
 
 **Examples**
 

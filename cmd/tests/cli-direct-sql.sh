@@ -5,6 +5,11 @@ set -e
 VSQL_FILE="$(mktemp).vsql" || exit 1
 TXT_FILE="$(mktemp)" || exit 1
 
+# Without a file, the database is in memory.
+echo 'VALUES CURRENT_CATALOG;' | $VSQL cli > $TXT_FILE
+cat $TXT_FILE
+grep ':memory:' $TXT_FILE
+
 # A statement ends with a semicolon, so it can be over many lines. One without
 # a semicolon at the end of the input is a syntax error.
 printf "CREATE TABLE t\n  (x INT);\nINSERT INTO t (x) /* ; */\nVALUES (1);\nVALUES 2" | $VSQL cli $VSQL_FILE > $TXT_FILE

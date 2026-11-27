@@ -118,7 +118,8 @@ right-aligned. Type ``exit`` (or press ctrl+c) to leave:
 
    vsql> exit
 
-Use ``:memory:`` as the file name for an in-memory database.
+Without a file (``vsql cli``), or with ``:memory:`` as the file name, the
+database is in memory (see :doc:`in-memory-database`).
 
 The shell is direct invocation of SQL (ISO/IEC 9075-2:2023, Clause 22,
 "Direct invocation of SQL"):

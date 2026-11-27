@@ -52,8 +52,8 @@ BUILD_COMMIT
 
    BUILD_COMMIT() CHARACTER VARYING
 
-The git commit of vsql that was released, or ``NULL`` when vsql wasn't built
-for a release. It's the same as the ``BUILD COMMIT`` item of ``SQL_IMPLEMENTATION_INFO``
+The git commit of vsql that was released or built from (with ``make`` in a git
+checkout), or ``NULL`` for any other build. It's the same as the ``BUILD COMMIT`` item of ``SQL_IMPLEMENTATION_INFO``
 and ``vsql.build_commit()`` in V.
 
 ``BUILD_COMMIT`` is a vsql extension flagged by ``V411-02`` (see
@@ -166,8 +166,11 @@ BUILD_VERSION
 
    BUILD_VERSION() CHARACTER VARYING
 
-The release of vsql, such as ``v1.8.0``, or ``NULL`` when vsql wasn't built
-for a release. It's the same as the ``BUILD VERSION`` item of ``SQL_IMPLEMENTATION_INFO``
+The release of vsql, such as ``v1.8.0``. A build with ``make`` in a git
+checkout has the version from ``git describe``, such as ``v1.8.5-12-g1a2b3c4``
+(12 commits after ``v1.8.5``), which ends in ``-dirty`` when there are changes
+that aren't committed. It's ``NULL`` for any other build, such as one with
+``v install``. It's the same as the ``BUILD VERSION`` item of ``SQL_IMPLEMENTATION_INFO``
 and ``vsql.build_version()`` in V.
 
 ``BUILD_VERSION`` is a vsql extension flagged by ``V411-01`` (see

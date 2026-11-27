@@ -742,7 +742,8 @@ fn test_cast() {
 }
 
 fn test_version() {
-	// Tests don't run on a release build.
+	// Tests don't run on a release build, and aren't given the version from
+	// git.
 	assert build_version() == ''
 	assert build_commit() == ''
 	assert build_v_version().starts_with('0.')
@@ -750,7 +751,8 @@ fn test_version() {
 	assert build_v_commit() != ''
 	assert build_date().len == 10
 	assert build_c_compiler() != ''
-	assert release_value('v0.34.0') == 'v0.34.0'
+	assert release_value('v0.34.0', 'v0.33.0-1-g1a2b3c4') == 'v0.34.0'
+	assert release_value('MISSING_VERSION', 'v0.33.0-1-g1a2b3c4') == 'v0.33.0-1-g1a2b3c4'
 }
 
 // A result column is unnamed when the query didn't name it (it has a name like

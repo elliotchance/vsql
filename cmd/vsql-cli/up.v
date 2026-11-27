@@ -70,7 +70,7 @@ fn latest_release(curl string, tmp string) !(string, string) {
 fn up_command(cmd cli.Command) ! {
 	force := cmd.flags.get_bool('force') or { false }
 	current := vsql.build_version()
-	if current == '' && !force {
+	if !is_release(current) && !force {
 		return error('this vsql was not built for a release, use -force to replace it with the latest release')
 	}
 
@@ -100,6 +100,13 @@ fn up_command(cmd cli.Command) ! {
 	file_name := $if windows { 'vsql.exe' } $else { 'vsql' }
 	replace_executable(exe, os.join_path(tmp, name, 'bin', file_name))!
 	println('Replaced ${exe} with vsql ${version}')
+}
+
+// is_release is true for the version of a release, such as "v1.8.5". A build
+// from git between releases has a version like "v1.8.5-12-g1a2b3c4", or one
+// that ends in "-dirty", and any other build has no version.
+fn is_release(version string) bool {
+	return version != '' && !version.contains('-')
 }
 
 // release_platform is the end of the name of a release zip, such as

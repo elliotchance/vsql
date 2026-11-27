@@ -4,24 +4,24 @@ The SQL Language
 .. toctree::
    :maxdepth: 1
 
-   lexical-structure.rst
-   identifiers.rst
-   data-types.rst
-   numbers.rst
-   text.rst
    binary.rst
    booleans.rst
-   dates-times.rst
-   null.rst
-   type-conversion.rst
-   expressions.rst
-   operators.rst
-   functions-index.rst
    catalogs-and-schemas.rst
-   transactions.rst
-   locking.rst
-   errors-and-warnings.rst
-   prepared-statements.rst
    cursors.rst
+   data-types.rst
+   dates-times.rst
+   errors-and-warnings.rst
+   expressions.rst
+   functions-index.rst
+   identifiers.rst
    information-schema.rst
+   lexical-structure.rst
+   locking.rst
+   null.rst
+   numbers.rst
+   operators.rst
+   prepared-statements.rst
+   text.rst
+   transactions.rst
+   type-conversion.rst
    vsql-schema.rst

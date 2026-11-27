@@ -6,6 +6,6 @@ Development
 
    benchmark.rst
    contributing.rst
-   testing.rst
    sql-standard.rst
    standard-index.rst
+   testing.rst

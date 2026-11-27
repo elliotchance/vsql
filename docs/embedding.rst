@@ -22,15 +22,15 @@ in the C source (see :doc:`embedded-sql-c`).
 .. toctree::
    :maxdepth: 1
 
-   language-v.rst
    custom-functions.rst
+   embedded-sql-c.rst
+   sql-client-modules.rst
    virtual-tables.rst
    language-c.rst
-   sql-client-modules.rst
-   embedded-sql-c.rst
    language-go.rst
-   language-python.rst
    language-java.rst
-   language-rust.rst
    language-node.rst
+   language-python.rst
+   language-rust.rst
    language-swift.rst
+   language-v.rst

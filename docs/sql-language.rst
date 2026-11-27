@@ -17,6 +17,7 @@ The SQL Language
    operators.rst
    null.rst
    functions-index.rst
+   catalogs-and-schemas.rst
    transactions.rst
    prepared-statements.rst
    cursors.rst

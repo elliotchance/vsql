@@ -73,7 +73,7 @@ as ``products``, but ``"products"`` is not:
   -- msg: CREATE TABLE 1
   -- msg: INSERT 1
   -- NAME: Apple
-  -- error 42601: syntax error: unknown column: ":memory:".PUBLIC."name"
+  -- error 42703: no such column: ":memory:".PUBLIC."name"
 
 Names that aren't upper case are shown in double quotes in error messages, such
 as ``"name"`` above.
@@ -166,4 +166,4 @@ around it (see :ref:`expressions:Correlated Subqueries`).
   CREATE TABLE products (name VARCHAR(20));
   SELECT products.name FROM products AS p;
   -- msg: CREATE TABLE 1
-  -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.PRODUCTS.NAME
+  -- error 42703: no such column: ":memory:".PUBLIC.PRODUCTS.NAME

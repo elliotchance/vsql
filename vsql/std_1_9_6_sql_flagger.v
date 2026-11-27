@@ -220,6 +220,14 @@ import arrays
 // V410-01: FORMAT_SIZE.
 // V410-02: PARSE_SIZE.
 //
+// V411: Build functions.
+// V411-01: BUILD_VERSION.
+// V411-02: BUILD_COMMIT.
+// V411-03: BUILD_DATE.
+// V411-04: BUILD_V_VERSION.
+// V411-05: BUILD_V_COMMIT.
+// V411-06: BUILD_C_COMPILER.
+//
 // V501: PostgreSQL functions.
 // V501-01: version().
 // V501-02: current_setting().
@@ -407,6 +415,12 @@ const vsql_uuid_to_binary = 'V407-03'
 const vsql_binary_to_uuid = 'V407-04'
 const vsql_format_size = 'V410-01'
 const vsql_parse_size = 'V410-02'
+const vsql_build_version = 'V411-01'
+const vsql_build_commit = 'V411-02'
+const vsql_build_date = 'V411-03'
+const vsql_build_v_version = 'V411-04'
+const vsql_build_v_commit = 'V411-05'
+const vsql_build_c_compiler = 'V411-06'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

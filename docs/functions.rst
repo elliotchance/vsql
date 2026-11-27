@@ -37,6 +37,7 @@ The functions are in these categories:
 
    functions-aggregate.rst
    functions-arithmetic.rst
+   functions-build.rst
    functions-conditional.rst
    functions-date-and-time.rst
    functions-error-and-gamma.rst

@@ -9,11 +9,13 @@ the connection is closed:
 
    mut db := vsql.open(':memory:')!
 
-The CLI accepts it as well:
+The CLI accepts it as well, and uses an in-memory database when it's given no
+file:
 
 .. code-block:: sh
 
    vsql cli :memory:
+   vsql cli
 
 The name of the catalog (see :doc:`catalogs-and-schemas`) is ``:memory:``.
 

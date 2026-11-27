@@ -7,11 +7,10 @@ import vsql
 
 fn register_cli_command(mut cmd cli.Command) {
 	mut cli_cmd := cli.Command{
-		name:          'cli'
-		usage:         '<file>'
-		required_args: 1
-		description:   'Run SQL in a vsql file'
-		execute:       cli_command
+		name:        'cli'
+		usage:       '[file...]'
+		description: 'Run SQL in a vsql file, or in memory without a file'
+		execute:     cli_command
 	}
 	cli_cmd.add_flag(cli.Flag{
 		flag:          .bool
@@ -28,8 +27,10 @@ fn cli_command(cmd cli.Command) ! {
 
 	// The file is the default SQL-server, and the other files are attached to
 	// the default SQL-connection as more catalogs. CONNECT TO can connect to
-	// other files.
-	mut agent := vsql.new_agent(cmd.args[0], catalogs: cmd.args[1..])
+	// other files. Without a file, the database is in memory.
+	file := if cmd.args.len > 0 { cmd.args[0] } else { ':memory:' }
+	catalogs := if cmd.args.len > 1 { cmd.args[1..] } else { []string{} }
+	mut agent := vsql.new_agent(file, catalogs: catalogs)
 	autocommit := cmd.flags.get_bool('autocommit')!
 
 	// Connecting before the first statement shows a problem with the file

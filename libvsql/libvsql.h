@@ -593,7 +593,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DESC_ALLOC_TYPE             1099 /* SQL_DESC_ALLOC_AUTO or USER */
 
 /* Descriptor record fields. */
-#define SQL_DESC_DATETIME_INTERVAL_PRECISION  26   /* leading field precision */
+#define SQL_DESC_DATETIME_INTERVAL_PRECISION  26   /* SQLINTEGER leading precision */
 #define SQL_DESC_TYPE                         1002 /* the data type */
 #define SQL_DESC_LENGTH                       1003 /* in characters */
 #define SQL_DESC_OCTET_LENGTH_POINTER         1004 /* SQLINTEGER *length */

@@ -27,7 +27,7 @@ app
 ^^^
 
 ``app`` starts a web server to browse and query database files in a browser.
-Open the address it prints in a browser.
+Open the address it prints in a browser. See :doc:`app` for what it can do.
 
 With no file, ``app.vsql`` in the current directory is used (it's created if it
 doesn't exist). More than one file can be given, the other files are attached

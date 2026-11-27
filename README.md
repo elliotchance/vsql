@@ -9,7 +9,7 @@
 database lives in a single file (or in memory), with real transactions, strict
 types and standard SQL. Embed it in your program from [V](https://vsql.readthedocs.io/en/latest/language-v.html),
 [C](https://vsql.readthedocs.io/en/latest/language-c.html), [Go](https://github.com/elliotchance/vsql-go), [Python](https://github.com/elliotchance/vsql-python),
-[Java](https://github.com/elliotchance/vsql-java), [Rust](https://github.com/elliotchance/vsql-rust) or [Node.js](https://github.com/elliotchance/vsql-node),
+[Java](https://github.com/elliotchance/vsql-java), [Rust](https://github.com/elliotchance/vsql-rust), [Node.js](https://github.com/elliotchance/vsql-node) or [Swift](https://github.com/elliotchance/vsql-swift),
 connect to it with any [PostgreSQL client](https://vsql.readthedocs.io/en/latest/server.html), or browse it in
 your browser. It's a single binary written in pure V, with nothing else to install.
 
@@ -207,6 +207,7 @@ includes the whole database, so there's nothing else to install:
 | Java | [elliotchance/vsql-java](https://github.com/elliotchance/vsql-java) | JDBC driver |
 | Rust | [elliotchance/vsql-rust](https://github.com/elliotchance/vsql-rust) | An API like rusqlite |
 | Node.js | [elliotchance/vsql-node](https://github.com/elliotchance/vsql-node) | An API like better-sqlite3 |
+| Swift | [elliotchance/vsql-swift](https://github.com/elliotchance/vsql-swift) | A Swift package, with Codable rows |
 
 Any other language that can connect to PostgreSQL can use
 [`vsql server`](https://vsql.readthedocs.io/en/latest/server.html) instead.

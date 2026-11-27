@@ -101,7 +101,8 @@ mut:
 }
 
 // PGTestClient is a minimal PostgreSQL client for running the tests through the
-// server. It only knows the simple query protocol.
+// server. query uses the simple query protocol, and the tests of the extended
+// query protocol send its messages one at a time (see send).
 struct PGTestClient {
 mut:
 	conn &net.TcpConn
@@ -209,15 +210,12 @@ fn (mut c PGTestClient) query(stmt string) !SQLTestOutput {
 				output.rows << line.trim_space()
 			}
 			// CommandComplete: a query only has a tag for the number of rows. An
-			// INSERT tag also has an OID, like "INSERT 0 3".
+			// INSERT tag also has an OID, like "INSERT 0 3", and BEGIN is tagged
+			// BEGIN rather than START TRANSACTION.
 			`C` {
 				tag := msg[..msg.len - 1].bytestr()
 				if columns.len == 0 {
-					output.msg = if tag.starts_with('INSERT 0 ') {
-						'INSERT ${tag[9..]}'
-					} else {
-						tag
-					}
+					output.msg = pg_test_tag(tag)
 				}
 			}
 			// EmptyQueryResponse: there's no result, see test_server_empty_query.
@@ -243,6 +241,197 @@ fn (mut c PGTestClient) query(stmt string) !SQLTestOutput {
 	}
 
 	return output
+}
+
+// send sends a message of the extended query protocol, such as `P` (Parse).
+// The replies are read by replies.
+fn (mut c PGTestClient) send(msg_type u8, fields ...[]u8) ! {
+	mut body := []u8{}
+	for field in fields {
+		body << field
+	}
+	mut msg := [msg_type]
+	msg << pg_test_int32(body.len + 4)
+	msg << body
+	c.conn.write(msg)!
+}
+
+// parse sends a Parse message, with the type of each parameter (0 if it's
+// unspecified).
+fn (mut c PGTestClient) parse(name string, query string, oids []int) ! {
+	mut types := pg_test_int16(oids.len)
+	for oid in oids {
+		types << pg_test_int32(oid)
+	}
+	c.send(`P`, pg_test_string(name), pg_test_string(query), types)!
+}
+
+// bind sends a Bind message. Each parameter is text, unless parameter_formats
+// says otherwise, and none is NULL.
+fn (mut c PGTestClient) bind(portal string, statement string, parameter_formats []int, params []?[]u8, result_formats []int) ! {
+	mut values := pg_test_int16(params.len)
+	for param in params {
+		if value := param {
+			values << pg_test_int32(value.len)
+			values << value
+		} else {
+			values << pg_test_int32(-1)
+		}
+	}
+	c.send(`B`, pg_test_string(portal), pg_test_string(statement), pg_test_int16s(parameter_formats),
+		values, pg_test_int16s(result_formats))!
+}
+
+// describe sends a Describe of a statement (`S`) or portal (`P`).
+fn (mut c PGTestClient) describe(kind u8, name string) ! {
+	c.send(`D`, [kind], pg_test_string(name))!
+}
+
+// execute sends an Execute of a portal, for up to max_rows rows (0 for all of
+// them).
+fn (mut c PGTestClient) execute(portal string, max_rows int) ! {
+	c.send(`E`, pg_test_string(portal), pg_test_int32(max_rows))!
+}
+
+// sync sends a Sync, and returns the replies to it and to the messages before
+// it (see replies).
+fn (mut c PGTestClient) sync() ![]string {
+	c.send(`S`)!
+
+	return c.replies(-1)
+}
+
+// replies reads n messages (or up to a ReadyForQuery if n is -1), and returns
+// a line for each of them: its name and what it has. A value of a DataRow is
+// its text (or NULL), or its bytes in hex if it's not printable.
+fn (mut c PGTestClient) replies(n int) ![]string {
+	mut replies := []string{}
+	for n < 0 || replies.len < n {
+		msg_type, msg := c.read_message()!
+		replies << match msg_type {
+			`1` {
+				'ParseComplete'
+			}
+			`2` {
+				'BindComplete'
+			}
+			`3` {
+				'CloseComplete'
+			}
+			`n` {
+				'NoData'
+			}
+			`s` {
+				'PortalSuspended'
+			}
+			`I` {
+				'EmptyQueryResponse'
+			}
+			`Z` {
+				'ReadyForQuery'
+			}
+			`C` {
+				'CommandComplete ${msg[..msg.len - 1].bytestr()}'
+			}
+			`E`, `N` {
+				fields := pg_test_fields(msg)
+				'${if msg_type == `E` { 'ErrorResponse' } else { 'NoticeResponse' }} ${fields['C']} ${fields['M']}'
+			}
+			`t` {
+				mut oids := []string{}
+				for i in 0 .. pg_test_read_int16(msg, 0) {
+					oids << pg_test_read_int32(msg, 2 + 4 * i).str()
+				}
+				'ParameterDescription ${oids.join(' ')}'.trim_space()
+			}
+			// The name, type and format of each column.
+			`T` {
+				mut columns := []string{}
+				mut at := 2
+				for _ in 0 .. pg_test_read_int16(msg, 0) {
+					end := pg_test_string_end(msg, at)
+					columns << '${msg[at..end].bytestr()} ${pg_test_read_int32(msg, end + 7)} ${pg_test_read_int16(msg, end + 17)}'
+					at = end + 1 + 18
+				}
+				'RowDescription ${columns.join(', ')}'
+			}
+			`D` {
+				mut values := []string{}
+				mut at := 2
+				for _ in 0 .. pg_test_read_int16(msg, 0) {
+					len := pg_test_read_int32(msg, at)
+					at += 4
+					if len < 0 {
+						values << 'NULL'
+						continue
+					}
+					value := msg[at..at + len]
+					at += len
+					values << if value.all(it >= 32 && it < 127) {
+						value.bytestr()
+					} else {
+						value.hex()
+					}
+				}
+				'DataRow ${values.join(', ')}'
+			}
+			else {
+				'unexpected ${msg_type.ascii_str()}'
+			}
+		}
+		if msg_type == `Z` {
+			break
+		}
+	}
+
+	return replies
+}
+
+// pg_test_text is the parameters of a Bind in text, where "NULL" is a NULL.
+fn pg_test_text(values ...string) []?[]u8 {
+	mut params := []?[]u8{}
+	for value in values {
+		params << if value == 'NULL' { none } else { value.bytes() }
+	}
+
+	return params
+}
+
+fn pg_test_string(s string) []u8 {
+	mut b := s.bytes()
+	b << 0
+
+	return b
+}
+
+fn pg_test_int16(x int) []u8 {
+	mut b := []u8{len: 2}
+	binary.big_endian_put_u16(mut b, u16(x))
+
+	return b
+}
+
+// pg_test_int16s is a count followed by each of the values, such as the format
+// codes of a Bind.
+fn pg_test_int16s(values []int) []u8 {
+	mut b := pg_test_int16(values.len)
+	for value in values {
+		b << pg_test_int16(value)
+	}
+
+	return b
+}
+
+// pg_test_tag is the msg of a Result for the tag of a CommandComplete.
+fn pg_test_tag(tag string) string {
+	if tag.starts_with('INSERT 0 ') {
+		return 'INSERT ${tag[9..]}'
+	}
+	if tag == 'BEGIN' {
+		return 'START TRANSACTION'
+	}
+
+	return tag
 }
 
 fn (mut c PGTestClient) close() {

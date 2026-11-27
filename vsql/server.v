@@ -3,6 +3,8 @@
 
 module vsql
 
+import encoding.binary
+import math
 import net
 import sync
 
@@ -396,6 +398,63 @@ fn pg_type_name(name string) string {
 	}
 }
 
+// PGQueryKind is what the server does with a query from a client, see
+// Server.rewrite_query.
+enum PGQueryKind {
+	// statement is run.
+	statement
+	// empty is a query without a statement, which is replied to with an
+	// EmptyQueryResponse.
+	empty
+	// ignored_set is a PostgreSQL SET (see ServerOptions.ignore_pg_set), which
+	// is replied to with "SET" without being run.
+	ignored_set
+}
+
+// rewrite_query returns what to do with a query from a client, and the
+// statement to run, with the changes that the ServerOptions make. It's the same
+// for the simple and the extended query protocol.
+fn (s &Server) rewrite_query(query string) (PGQueryKind, string) {
+	// Only the reply of the server is different. The standard has no empty
+	// statement, so it's still an error for Connection.query.
+	if is_empty_query(query) {
+		return .empty, query
+	}
+
+	if s.options.ignore_pg_set && is_pg_set(query) {
+		return .ignored_set, query
+	}
+
+	mut rewritten := query
+	if s.options.rewrite_pg_syntax {
+		rewritten = rewrite_pg_syntax(rewritten)
+	}
+
+	// A missing "FROM" clause is valid in PostgreSQL, but it's not valid in the
+	// SQL standard so it's not supported by vsql.
+	query_upper := rewritten.to_upper()
+	if s.options.select_without_from && query_upper.contains('SELECT')
+		&& !query_upper.contains('FROM') {
+		rewritten = rewritten.trim('; ') + ' FROM singlerow;'
+	}
+
+	return .statement, rewritten
+}
+
+// pg_begin is the result of a query, except that a BEGIN (which vsql runs as
+// START TRANSACTION, see V114-01) is tagged BEGIN, like PostgreSQL. JDBC starts
+// a transaction with BEGIN and fails without it.
+fn pg_begin(query string, result Result) Result {
+	if result.msg == 'START TRANSACTION'
+		&& query.trim_left(' \t\r\n').to_upper().starts_with('BEGIN') {
+		return Result{
+			msg: 'BEGIN'
+		}
+	}
+
+	return result
+}
+
 fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
@@ -411,56 +470,44 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) 
 	conn.write_ready()!
 	s.log('connected')
 
+	mut extended := PGExtendedState{}
 	for {
 		msg_type := conn.read_byte()!
 		match msg_type {
 			`Q` { // Query
-				mut query := conn.read_query()!
-
-				// Only the reply of the server is different. The standard has no
-				// empty statement, so it's still an error for Connection.query.
-				if is_empty_query(query) {
-					s.log('query: ${query}')
-					conn.write_empty_query_response()!
-					conn.write_ready_for_query()!
-					continue
-				}
-
-				if s.options.ignore_pg_set && is_pg_set(query) {
-					s.log('ignored: ${query}')
-					conn.write_command_complete('SET')!
-					conn.write_ready_for_query()!
-					continue
-				}
-
-				if s.options.rewrite_pg_syntax {
-					query = rewrite_pg_syntax(query)
-				}
-
-				// A missing "FROM" clause is valid in PostgreSQL, but it's not
-				// valid in the SQL standard so it's not supported by vsql.
-				query_upper := query.to_upper()
-				if s.options.select_without_from && query_upper.contains('SELECT')
-					&& !query_upper.contains('FROM') {
-					query = query.trim('; ') + ' FROM singlerow;'
-				}
-
-				s.log('query: ${query}')
-
-				db.clear_warnings()
-				if result := db.query(query) {
-					for warning in db.warnings {
-						conn.write_notice(warning)!
+				kind, query := s.rewrite_query(conn.read_query()!)
+				match kind {
+					.empty {
+						s.log('query: ${query}')
+						conn.write_empty_query_response()!
 					}
+					.ignored_set {
+						s.log('ignored: ${query}')
+						conn.write_command_complete('SET')!
+					}
+					.statement {
+						s.log('query: ${query}')
 
-					s.log('response: ${result}')
-					conn.write_result(result)!
-				} else {
-					s.log('error: ${err}')
-					conn.write_error_result(err)!
+						db.clear_warnings()
+						if result := db.query(query) {
+							for warning in db.warnings {
+								conn.write_notice(warning)!
+							}
+
+							s.log('response: ${result}')
+							conn.write_result(pg_begin(query, result))!
+						} else {
+							s.log('error: ${err}')
+							conn.write_error_result(err)!
+						}
+					}
 				}
 
 				conn.write_ready_for_query()!
+			}
+			`P`, `B`, `D`, `E`, `C`, `H`, `S` {
+				mut msg := conn.read_message()!
+				s.handle_extended(mut db, mut conn, mut extended, msg_type, mut msg)!
 			}
 			`X` { // Terminate
 				// Don't bother consuming the message since we're going to
@@ -471,5 +518,363 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) 
 				return error('unknown message: ${msg_type.str()}')
 			}
 		}
+	}
+}
+
+// PGExtendedState is the state of a client that uses the extended query
+// protocol, where a query is run with a Parse, Bind, Describe and Execute
+// message each, followed by a Sync.
+struct PGExtendedState {
+mut:
+	// statements are the prepared statements that were made by Parse, by name.
+	// The unnamed statement has an empty name.
+	statements map[string]PGStatement
+	// portals are the prepared statements that have been given values by Bind,
+	// by name. The unnamed portal has an empty name.
+	portals map[string]PGPortal
+	// failed is true after an error, until the next Sync. Like PostgreSQL, every
+	// other message is ignored until then, since they may depend on the one
+	// that failed.
+	failed bool
+}
+
+// PGStatement is a prepared statement of the extended query protocol.
+struct PGStatement {
+	// query is the statement after it's been rewritten, see
+	// Server.rewrite_query.
+	query string
+	kind  PGQueryKind
+	// stmt is only prepared for a kind of statement.
+	stmt ?PreparedStmt
+	// parameter_oids are the types of the parameters that the client gave in
+	// the Parse message, where 0 is unspecified. There may be fewer of them than
+	// there are parameters.
+	parameter_oids []int
+}
+
+// PGPortal is a prepared statement that has been given values for its
+// parameters, and will be (or has been) executed.
+struct PGPortal {
+	statement PGStatement
+	params    map[string]Value
+	// formats are the format codes of the columns of its result, see pg_format.
+	formats []int
+mut:
+	// executed is true once the statement has run, and result is its result.
+	// An Execute with a maximum number of rows sends up to that many, starting
+	// from next, so the rest are sent by the next Execute of the portal.
+	executed bool
+	result   Result
+	next     int
+}
+
+// handle_extended handles a message of the extended query protocol. An error
+// is sent to the client, after which every message is ignored until a Sync.
+fn (s &Server) handle_extended(mut db Connection, mut conn PGConn, mut state PGExtendedState, msg_type u8, mut msg PGMessage) ! {
+	// A Sync ends a transaction that's only for the statements since the last
+	// Sync, so the portals that it had are gone, like PostgreSQL.
+	if msg_type == `S` {
+		s.log('sync')
+		state.failed = false
+		if !db.in_transaction() {
+			state.portals.clear()
+		}
+		conn.write_ready_for_query()!
+		return
+	}
+
+	if state.failed {
+		s.log('ignored: ${msg_type.ascii_str()}')
+		return
+	}
+
+	s.handle_extended_message(mut db, mut conn, mut state, msg_type, mut msg) or {
+		s.log('error: ${err}')
+		conn.write_error_result(err)!
+		state.failed = true
+	}
+}
+
+fn (s &Server) handle_extended_message(mut db Connection, mut conn PGConn, mut state PGExtendedState, msg_type u8, mut msg PGMessage) ! {
+	match msg_type {
+		`P` { // Parse
+			name := msg.read_string()!
+			kind, query := s.rewrite_query(msg.read_string()!)
+			mut oids := []int{}
+			for _ in 0 .. msg.read_int16()! {
+				oids << msg.read_int32()!
+			}
+			if name != '' && name in state.statements {
+				return pg_error('42P05', 'prepared statement "${name}" already exists')
+			}
+
+			s.log('parse ${pg_name(name)}: ${query}')
+			state.statements[name] = PGStatement{
+				query:          query
+				kind:           kind
+				stmt:           if kind == .statement {
+					pg_prepare(mut db, query, oids)!
+				} else {
+					none
+				}
+				parameter_oids: oids
+			}
+			conn.write_empty_message(`1`)! // ParseComplete
+		}
+		`B` { // Bind
+			portal_name := msg.read_string()!
+			statement := state.find_statement(msg.read_string()!)!
+			mut parameter_formats := []int{}
+			for _ in 0 .. msg.read_int16()! {
+				parameter_formats << msg.read_int16()!
+			}
+			mut params := map[string]Value{}
+			for i in 0 .. msg.read_int16()! {
+				len := msg.read_int32()!
+				format := if parameter_formats.len == 1 {
+					parameter_formats[0]
+				} else {
+					parameter_formats[i] or { 0 }
+				}
+				oid := statement.parameter_oids[i] or { 0 }
+				params['?${i + 1}'] = if len < 0 {
+					new_null_value(.is_varchar)
+				} else {
+					pg_parameter(msg.read_bytes(len)!, format, oid)!
+				}
+			}
+			mut formats := []int{}
+			for _ in 0 .. msg.read_int16()! {
+				formats << msg.read_int16()!
+			}
+
+			s.log('bind ${pg_name(portal_name)}: ${params}')
+			state.portals[portal_name] = PGPortal{
+				statement: statement
+				params:    params
+				formats:   formats
+			}
+			conn.write_empty_message(`2`)! // BindComplete
+		}
+		`D` { // Describe
+			if msg.read_byte()! == `S` {
+				statement := state.find_statement(msg.read_string()!)!
+				oids := statement.parameter_types()
+				conn.write_parameter_description(oids)!
+
+				// The values of the parameters aren't known yet, but each one
+				// needs a value to find the columns.
+				mut params := map[string]Value{}
+				for i in 1 .. oids.len + 1 {
+					params['?${i}'] = new_null_value(.is_varchar)
+				}
+				conn.write_columns(statement.columns(params)!, [])!
+			} else {
+				portal := state.find_portal(msg.read_string()!)!
+				conn.write_columns(portal.statement.columns(portal.params)!, portal.formats)!
+			}
+		}
+		`E` { // Execute
+			name := msg.read_string()!
+			max_rows := msg.read_int32()!
+			mut portal := state.find_portal(name)!
+			s.execute_portal(mut db, mut conn, mut portal, max_rows)!
+			state.portals[name] = portal
+		}
+		`C` { // Close
+			if msg.read_byte()! == `S` {
+				state.statements.delete(msg.read_string()!)
+			} else {
+				state.portals.delete(msg.read_string()!)
+			}
+			conn.write_empty_message(`3`)! // CloseComplete
+		}
+		else { // Flush
+			conn.flush()!
+		}
+	}
+}
+
+// pg_name is the name of a prepared statement or portal for the log, where an
+// empty name is the unnamed one.
+fn pg_name(name string) string {
+	return if name == '' { '(unnamed)' } else { '"${name}"' }
+}
+
+// pg_error is an error that vsql itself doesn't raise, but a client of the
+// server can get.
+fn pg_error(code string, msg string) IError {
+	return SQLState{
+		code: sqlstate_to_int(code)
+		msg:  msg
+	}
+}
+
+fn (state PGExtendedState) find_statement(name string) !PGStatement {
+	return state.statements[name] or {
+		return pg_error('26000', 'prepared statement ${pg_name(name)} does not exist')
+	}
+}
+
+fn (state PGExtendedState) find_portal(name string) !PGPortal {
+	return state.portals[name] or { return pg_error('34000', 'portal ${pg_name(name)} does not exist') }
+}
+
+// pg_prepare prepares a statement of a Parse message. A parameter whose type
+// can't be determined from where it's used (such as "SELECT $1") is a syntax
+// error, unless the client gave it a type, which it's then cast to.
+fn pg_prepare(mut db Connection, query string, oids []int) !PreparedStmt {
+	if stmt := db.prepare(query) {
+		return stmt
+	} else {
+		if err !is SQLState42601 || oids.all(it == 0) {
+			return err
+		}
+	}
+
+	return db.prepare(pg_cast_parameters(query, oids)!)
+}
+
+// pg_cast_parameters puts each parameter ("$1", etc) that has a type in oids
+// into a CAST to that type.
+fn pg_cast_parameters(query string, oids []int) !string {
+	runes := query.runes()
+	mut out := ''
+	mut at := 0
+	for token in tokenize(query)! {
+		if token.token != token_operator_question_mark {
+			continue
+		}
+		oid := oids[(token.value as string)[1..].int() - 1] or { 0 }
+		name := if oid in [25, 1042] { 'character varying' } else { pg_format_type(oid, -1) }
+		if name == '???' {
+			continue
+		}
+		out += runes[at..token.start].string()
+		out += 'CAST(${runes[token.start..token.end].string()} AS ${name.to_upper()})'
+		at = token.end
+	}
+
+	return out + runes[at..].string()
+}
+
+// pg_parameter is the value of a parameter of a Bind message, in a format (0
+// for text or 1 for binary). Its type is oid, from the Parse message, or 0 if
+// it wasn't given. Text is a CHARACTER VARYING, which is then cast to the type
+// of the parameter, see PreparedStmt.with_parameters. The binary format is only
+// supported for a text type and the pg_binary_types.
+fn pg_parameter(data []u8, format int, oid int) !Value {
+	if format == 0 || oid in [25, 1042, 1043] {
+		return new_varchar_value(data.bytestr())
+	}
+
+	pg_type := pg_types.filter(it.oid == oid)
+	if pg_type.len == 0 || pg_type[0].len != data.len {
+		return sqlstate_0a000('binary format of parameter type ${oid} is not supported')
+	}
+
+	return match oid {
+		16 { new_boolean_value(data[0] != 0) }
+		20 { new_bigint_value(i64(binary.big_endian_u64(data))) }
+		21 { new_smallint_value(i16(binary.big_endian_u16(data))) }
+		23 { new_integer_value(int(i32(binary.big_endian_u32(data)))) }
+		700 { new_real_value(math.f32_from_bits(binary.big_endian_u32(data))) }
+		701 { new_double_precision_value(math.f64_from_bits(binary.big_endian_u64(data))) }
+		else { sqlstate_0a000('binary format of parameter type ${oid} is not supported') }
+	}
+}
+
+// parameter_types are the type of each parameter: the type the client gave in
+// the Parse message, otherwise the type from where it's used, or text if it
+// doesn't have one.
+fn (s PGStatement) parameter_types() []int {
+	mut oids := s.parameter_oids.clone()
+	if stmt := s.stmt {
+		for oids.len < stmt.dynamic_parameter_count() {
+			oids << 0
+		}
+		for i, oid in oids {
+			if oid == 0 {
+				oids[i] = if typ := stmt.dynamic_parameter_type(i + 1) {
+					pg_type_of(typ.typ).oid
+				} else {
+					25
+				}
+			}
+		}
+	}
+
+	return oids
+}
+
+// columns are the columns of the result of the statement, or none if it doesn't
+// return rows.
+fn (s PGStatement) columns(params map[string]Value) ![]Column {
+	if stmt := s.stmt {
+		mut prepared := stmt
+		return prepared.columns(params)
+	}
+
+	return []Column{}
+}
+
+// execute_portal sends the result of a portal, executing it the first time. If
+// max_rows isn't 0, only up to that many rows are sent, then a PortalSuspended
+// if there are more.
+fn (s &Server) execute_portal(mut db Connection, mut conn PGConn, mut portal PGPortal, max_rows int) ! {
+	if portal.statement.kind == .empty {
+		conn.write_empty_query_response()!
+		return
+	}
+
+	if !portal.executed {
+		portal.result = s.run_portal(mut db, mut conn, portal)!
+		portal.executed = true
+	}
+
+	result := portal.result
+	if result.msg != '' {
+		conn.write_command_complete(pg_command_tag(result))!
+		return
+	}
+
+	start := portal.next
+	mut end := result.rows.len
+	if max_rows > 0 && start + max_rows < end {
+		end = start + max_rows
+	}
+	for portal.next < end {
+		conn.write_data_row(result.columns, result.rows[portal.next], portal.formats)!
+		portal.next++
+	}
+
+	if portal.next < result.rows.len {
+		conn.write_empty_message(`s`)! // PortalSuspended
+		return
+	}
+
+	conn.write_command_complete('SELECT ${end - start}')!
+}
+
+// run_portal executes the statement of a portal with its values.
+fn (s &Server) run_portal(mut db Connection, mut conn PGConn, portal PGPortal) !Result {
+	if stmt := portal.statement.stmt {
+		mut prepared := stmt
+		s.log('execute: ${portal.statement.query}')
+		db.clear_warnings()
+		result := prepared.query(portal.params)!
+		for warning in db.warnings {
+			conn.write_notice(warning)!
+		}
+		s.log('response: ${result}')
+
+		return pg_begin(portal.statement.query, result)
+	}
+
+	// An ignored SET is the only other statement that's executed.
+	s.log('ignored: ${portal.statement.query}')
+
+	return Result{
+		msg: 'SET'
 	}
 }

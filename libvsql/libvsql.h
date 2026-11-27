@@ -720,6 +720,21 @@ SQLRETURN SQLBindCol(
  * ValueType, see SQLGetData) is cast to that type, and then to the type of the
  * dynamic parameter (see SQLPrepare).
  *
+ * For a SQL_INTERVAL_* ParameterType, ColumnSize is the length in characters of
+ * the whole value as it's written: the digits of the leading field, plus the
+ * rest of its fields with their separators (3 for each of "-MM", " HH" and
+ * ":MM", so 9 for " HH:MM:SS"), plus the fractional seconds (DecimalDigits and
+ * 1 for the period), plus 1 if the value starts with a sign. For example,
+ * "1000-02" is 7 for SQL_INTERVAL_YEAR_TO_MONTH, and "-1000-02" is 8. The
+ * leading field precision is what's left of ColumnSize, and it can be at most
+ * 8. So ColumnSize can be anything from the length of the value up to the
+ * length of the largest value of the type: 11 for YEAR(8) TO MONTH or 24 for
+ * DAY(8) TO SECOND(6), and 1 more if the value has a sign. A smaller
+ * ColumnSize is 22006 and a larger one (or 0) is 07001, both from SQLExecute
+ * since SQLBindParameter always succeeds. SQLDescribeCol reports the largest
+ * length with a sign (12 and 25 here), which can be passed to
+ * SQLBindParameter for a value with a sign, or reduced by 1 for one without.
+ *
  * StrLen_or_Ind is the length in octets of a string, which must be greater
  * than zero (or SQL_NTS, which also allows an empty string), and it may be
  * SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC to give the value with
@@ -907,7 +922,8 @@ SQLRETURN SQLDataSources(
  * length of the whole name. DataType is one of the data type codes (such as
  * SQL_DOUBLE, or SQL_TYPE_DATE for a DATE). ColumnSize is the maximum length in
  * octets of a string (4 for each character), the number of decimal digits of a
- * number, or the length of a datetime. DecimalDigits is the scale of a DECIMAL
+ * number, or the length of a datetime or interval (the largest value, with a
+ * sign, see SQLBindParameter). DecimalDigits is the scale of a DECIMAL
  * or NUMERIC, or the fractional seconds of a datetime. Nullable is SQL_NO_NULLS
  * or SQL_NULLABLE. These are from the IRD, see SQLGetDescField.
  *

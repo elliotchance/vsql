@@ -9,6 +9,7 @@ The SQL Language
    binary.rst
    booleans.rst
    dates-times.rst
+   type-conversion.rst
    expressions.rst
    operators.rst
    functions-index.rst

@@ -8,3 +8,4 @@ Getting Started
    install.rst
    docker.rst
    faq.rst
+   in-memory-database.rst

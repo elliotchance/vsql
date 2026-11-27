@@ -8,7 +8,7 @@ browse and query databases in a web browser.
 .. toctree::
    :maxdepth: 2
 
-   cli.rst
-   server.rst
-   postgresql-clients.rst
    app.rst
+   cli.rst
+   postgresql-clients.rst
+   server.rst

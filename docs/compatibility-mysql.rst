@@ -954,7 +954,15 @@ LAST_DAY
 
 Returns the last day of the month of a date.
 
-No equivalent.
+.. code-block:: sql
+
+  -- LAST_DAY(date)
+  VALUES LAST_DAY(/*date*/);
+  -- LAST_DAY('2003-02-05')
+  VALUES LAST_DAY(DATE '2003-02-05');
+  -- COL1: 2003-02-28
+
+A string that isn't a valid date is an error, rather than NULL.
 
 LOCALTIME
 ^^^^^^^^^

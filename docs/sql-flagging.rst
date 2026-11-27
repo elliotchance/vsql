@@ -420,6 +420,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V402-21``
      - ``MAKE_INTERVAL``.
 
+   * - ``V402-22``
+     - ``LAST_DAY``.
+
    * - ``V403``
      - Mathematical functions: the arithmetic, exponent and logarithm, rounding
        and trigonometric functions (see :doc:`functions`).

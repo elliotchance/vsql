@@ -1143,13 +1143,17 @@ Returns the date a number of months before or after a date.
 EOMONTH
 ^^^^^^^
 
-❌ vsql has no equivalent yet.
-
-.. code-block:: text
-
-  =EOMONTH(start_date, months)
+🔧 vsql has no ``EOMONTH`` function, but an expression does the same thing.
 
 Returns the last day of the month a number of months before or after a date.
+
+.. code-block:: sql
+
+  -- =EOMONTH(start_date, months)
+  VALUES LAST_DAY(DATE_TRUNC('month', /*start_date*/) + /*months*/ * INTERVAL '1' MONTH);
+  -- =EOMONTH("2024-01-31", 1)
+  VALUES LAST_DAY(DATE_TRUNC('month', DATE '2024-01-31') + 1 * INTERVAL '1' MONTH);
+  -- COL1: 2024-02-29
 
 EPOCHTODATE
 ^^^^^^^^^^^

@@ -70,6 +70,7 @@ const builtin_arg_names = {
 	'GCD':              ['A', 'B']
 	'HEX_TO_BINARY':    ['STRING']
 	'INITCAP':          ['STRING']
+	'LAST_DAY':         ['SOURCE']
 	'LCM':              ['A', 'B']
 	'LENGTH':           ['STRING']
 	'LGAMMA':           ['X']

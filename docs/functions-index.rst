@@ -216,6 +216,9 @@ Every function, in alphabetical order:
    * - :ref:`INITCAP <functions-string:INITCAP>`
      - Capitalize the first letter of each word
      - String
+   * - :ref:`LAST_DAY <functions-date-and-time:LAST_DAY>`
+     - Last day of the month of a date
+     - Date and Time
    * - :ref:`LCM <functions-arithmetic:LCM>`
      - Least common multiple
      - Arithmetic

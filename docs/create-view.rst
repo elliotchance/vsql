@@ -64,7 +64,16 @@ its query:
   expression),
 - doesn't have ``DISTINCT``, ``GROUP BY``, ``HAVING``, an aggregate function,
   ``UNION``, ``EXCEPT``, ``INTERSECT``, ``OFFSET`` or ``FETCH FIRST``, and
-- doesn't read the same table in a subquery of its ``WHERE``.
+- doesn't read the same table in a subquery of its ``WHERE`` (even through
+  another view). A subquery that reads other tables is fine, for example:
+
+.. code-block:: sql
+
+   CREATE VIEW unpaid_orders AS
+     SELECT * FROM orders
+     WHERE id NOT IN (SELECT order_id FROM payments);
+
+   UPDATE unpaid_orders SET status = 'overdue';
 
 The change is made to the base table that the view reads (through any other
 views). ``INSERT`` adds the rows to the table, and the columns of the table that

@@ -430,7 +430,8 @@ Outputs:
 Errors and Warnings
 ^^^^^^^^^^^^^^^^^^^
 
-An error from vsql is an ``SQLState``, see :doc:`sqlstate`. Its ``code()`` is
+An error from vsql is an ``SQLState`` (see :doc:`errors-and-warnings` and
+:doc:`sqlstate`). Its ``code()`` is
 the SQLSTATE as an ``int``, which ``vsql.sqlstate_from_int`` turns back into the
 five characters. Each SQLSTATE is also its own type, so it can be checked with
 ``is``. A warning doesn't stop the statement, so it's added to the connection's

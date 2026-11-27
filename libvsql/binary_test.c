@@ -153,10 +153,66 @@ UTEST_F(db, binary_bind_parameter) {
   EXPECT_EQ(memcmp(out, "\x00\x01\xff\x00", 4), 0);
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
 
-  /* The length can't be NULL TERMINATED. */
+  /* The length can be NULL TERMINATED, which is the octets before X'00'. */
   in_len = SQL_NTS;
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES (CAST(? AS VARBINARY(10)), CAST(? AS BINARY(4)))"), SQL_ERROR);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES (CAST(? AS VARBINARY(10)), CAST(? AS BINARY(4)))"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_BINARY, out, sizeof(out),
+                       &len),
+            SQL_SUCCESS);
+  EXPECT_EQ(len, 0);
+}
+
+/* The length of a binary string parameter must be greater than 0 (zero) or NULL
+ * TERMINATED, the same as a character string, so an empty string of either kind
+ * has to be null terminated. */
+UTEST_F(db, binary_bind_parameter_empty) {
+  unsigned char in[] = {0x00, 0x01};
+  SQLINTEGER in_len = 0, len = 0;
+  char out[4];
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_BINARY, SQL_VARBINARY, 4, 0, in, 0, &in_len),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARBINARY(4))"),
+            SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 4, 0, (SQLPOINTER) "ab", 0,
+                             &in_len),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARCHAR(4))"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  /* A character large object and a binary large object are the same. */
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CLOB, SQL_CLOB, 4, 0, (SQLPOINTER) "ab", 0,
+                             &in_len),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CHAR_LENGTH(CAST(? AS CLOB(4)))"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_BLOB, SQL_BLOB, 4, 0, in, 0, &in_len),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS BLOB(4))"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  /* A null terminated binary string ends at the first X'00'. */
+  in_len = SQL_NTS;
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_BINARY, SQL_VARBINARY, 4, 0, in, 0, &in_len),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS VARBINARY(4))"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_BINARY, out, sizeof(out),
+                       &len),
+            SQL_SUCCESS);
+  EXPECT_EQ(len, 0);
 }
 
 /* A binary string parameter is inserted into a binary string column, and only

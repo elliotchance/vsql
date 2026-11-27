@@ -744,8 +744,11 @@ SQLRETURN SQLBindCol(
  * length with a sign (12 and 25 here), which can be passed to
  * SQLBindParameter for a value with a sign, or reduced by 1 for one without.
  *
- * StrLen_or_Ind is the length in octets of a string, which must be greater
- * than zero (or SQL_NTS, which also allows an empty string), and it may be
+ * StrLen_or_Ind is the length in octets of a character string or a binary
+ * string, which must be greater than zero or SQL_NTS (null terminated, which
+ * for a binary string is the octets before the first X'00'), otherwise it's
+ * 07001 (ISO/IEC 9075-3:2003, 5.13, Syntax Rules, 12.c.i.3 and 12.c.i.4). So
+ * an empty string is SQL_NTS and an empty value, not a length of 0. It may be
  * SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC to give the value with
  * SQLParamData and SQLPutData. BufferLength is the size of ParameterValue.
  * InputOutputMode must be SQL_PARAM_MODE_IN (or SQL_PARAM_MODE_INOUT, which is

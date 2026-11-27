@@ -20,15 +20,18 @@ import vsql
 // is SQL NULL DATA (whether or not it's shared with the length), and DEFERRED
 // is true if the length is DATA AT EXEC. The length of a character string must
 // be greater than 0 (zero) or NULL TERMINATED (Syntax Rules, 12.c.i.3 and
-// 12.c.i.4), so an empty string has to be null terminated.
+// 12.c.i.4), so an empty string has to be null terminated. The same rule is
+// for a binary string, as it is for BINARY LARGE OBJECT (SQL_BINARY and
+// SQL_VARBINARY aren't in SQL/CLI 2003, so they follow SQL_BLOB): a length of 0
+// (zero) is dynamic SQL error — using clause does not match dynamic parameter
+// specifications (07001), and an empty binary string is NULL TERMINATED with
+// the first octet X'00'.
 //
-// A binary string (SQL_BLOB, or SQL_BINARY or SQL_VARBINARY, which aren't in
-// SQL/CLI 2003) is the octets at DATA_POINTER. A CHARACTER LARGE OBJECT
-// (SQL_CLOB) is a character string. Its length is the value at
-// OCTET_LENGTH_POINTER, or the OCTET_LENGTH (the BufferLength of
-// BindParameter) if that's a null pointer. The length can be 0 (zero), but it
-// can't be NULL TERMINATED or negative (dynamic SQL error — using clause does
-// not match dynamic parameter specifications).
+// A binary string (SQL_BLOB, or SQL_BINARY or SQL_VARBINARY) is the octets at
+// DATA_POINTER, and a CHARACTER LARGE OBJECT (SQL_CLOB) is a character string
+// (see c_type), so the rule for the length is the same for all of them. A
+// binary string's length is the value at OCTET_LENGTH_POINTER, or the
+// OCTET_LENGTH (the BufferLength of BindParameter) if that's a null pointer.
 
 // Codes from Table 10, "Codes associated with <parameter mode> in SQL/CLI".
 const sql_param_mode_in = i16(1)
@@ -108,7 +111,9 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 		} else {
 			sql_nts
 		}
-		if (typ == .is_varchar && q <= 0 && q != sql_nts) || (typ == .is_varbinary && q < 0) {
+		// The length of a character string or a binary string must be greater
+		// than 0 (zero) or NULL TERMINATED (Syntax Rules, 12.c.i.3 and 12.c.i.4).
+		if (typ in [.is_varchar, .is_varbinary]) && q <= 0 && q != sql_nts {
 			return using_clause_error()
 		}
 		mut sv := read_c_value(typ, data, q)!
@@ -254,9 +259,9 @@ fn ipd_type(ipd &Desc, i int) vsql.Type {
 }
 
 // read_c_value is the value of a host variable of a C type. A string has a
-// length in octets, or SQL_NTS. A binary string has a length in octets. A REAL
-// or DOUBLE PRECISION must be finite, since SQL has no NaN or infinity: data
-// exception — numeric value out of range.
+// length in octets, or SQL_NTS. A binary string is the same, where SQL_NTS is
+// the octets before the first X'00'. A REAL or DOUBLE PRECISION must be finite,
+// since SQL has no NaN or infinity: data exception — numeric value out of range.
 fn read_c_value(typ vsql.SQLType, data voidptr, length i64) !vsql.Value {
 	if (typ == .is_real && !is_finite(f64(unsafe { *&f32(data) })))
 		|| (typ == .is_double_precision && !is_finite(unsafe { *&f64(data) })) {
@@ -266,7 +271,8 @@ fn read_c_value(typ vsql.SQLType, data voidptr, length i64) !vsql.Value {
 	return unsafe {
 		match typ {
 			.is_varbinary {
-				vsql.new_binary_value((&u8(data)).vbytes(int(length)))
+				n := if length == sql_nts { vstrlen(&u8(data)) } else { int(length) }
+				vsql.new_binary_value((&u8(data)).vbytes(n))
 			}
 			.is_smallint {
 				vsql.new_smallint_value(*&i16(data))

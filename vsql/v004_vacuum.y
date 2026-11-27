@@ -40,7 +40,7 @@ vacuum_statement:
 vacuum_objects:
   vacuum_object { $$.v = yy_box([$1.v as VacuumObject]) }
 | vacuum_objects vacuum_object {
-    $$.v = yy_box(append_list($1.v as []VacuumObject, $2.v as VacuumObject))
+    $$.v = yy_append($1.v, $2.v as VacuumObject)
   }
 
 vacuum_object:
@@ -65,7 +65,7 @@ vacuum_object:
 vacuum_table_clauses:
   vacuum_table_clause { $$.v = yy_box([$1.v as VacuumTableClause]) }
 | vacuum_table_clauses vacuum_table_clause {
-    $$.v = yy_box(append_list($1.v as []VacuumTableClause, $2.v as VacuumTableClause))
+    $$.v = yy_append($1.v, $2.v as VacuumTableClause)
   }
 
 vacuum_table_clause:
@@ -79,7 +79,7 @@ vacuum_table_clause:
 vacuum_options:
   vacuum_option { $$.v = yy_box([$1.v as VacuumOption]) }
 | vacuum_options vacuum_option {
-    $$.v = yy_box(append_list($1.v as []VacuumOption, $2.v as VacuumOption))
+    $$.v = yy_append($1.v, $2.v as VacuumOption)
   }
 
 vacuum_option:

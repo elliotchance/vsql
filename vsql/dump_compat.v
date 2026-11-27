@@ -587,8 +587,9 @@ fn (o DumpOptions) output_compat_definition(definition string, name Identifier) 
 	}
 
 	mut prefixes := map[string]string{}
-	for schema in [name.schema_name, delimit_identifier(name.schema_name)] {
-		for table in [name.entity_name, delimit_identifier(name.entity_name)] {
+	// The copies work around https://github.com/vlang/v/issues/32947 (-autofree).
+	for schema in [own_string(name.schema_name), delimit_identifier(name.schema_name)] {
+		for table in [own_string(name.entity_name), delimit_identifier(name.entity_name)] {
 			prefixes['${schema}.${table}.'] = '${table}.'
 		}
 	}

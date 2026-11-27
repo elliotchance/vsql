@@ -19,7 +19,7 @@ fn (mut c Compiler) compile_interval_abs(x CompileResult) CompileResult {
 		...x
 	}
 	if c.conn.flagging {
-		c.conn.flagged_features << 'F052'
+		c.conn.flag('F052')
 	}
 
 	return CompileResult{

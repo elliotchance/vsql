@@ -141,7 +141,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 8.6, <similar predicate>, Conformance Rules, 2
 fn (mut c Compiler) flag_lob_pattern(value CompileResult, pattern CompileResult) {
 	if c.conn.flagging && (value.typ.typ == .is_clob || pattern.typ.typ == .is_clob) {
-		c.conn.flagged_features << 'T042'
+		c.conn.flag('T042')
 	}
 }
 
@@ -173,7 +173,7 @@ fn (e CharacterLikePredicate) compile_octet_like(mut c Compiler, compiled_l Comp
 		return sqlstate_42883('operator does not exist: ${compiled_l.typ.typ} LIKE ${compiled_right.typ.typ}')
 	}
 	if c.conn.flagging {
-		c.conn.flagged_features << 'T022'
+		c.conn.flag('T022')
 	}
 
 	return CompileResult{

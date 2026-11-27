@@ -27,7 +27,7 @@ in_predicate_value:
   }
 | left_paren in_value_list right_paren {
     // ISO/IEC 9075-2:2023, 8.4, <in predicate>, Conformance Rules, 1
-    flag_if(mut yylex, ($2.v as []RowValueConstructorPredicand).any(!is_value_specification(it)),
+    flag_if(mut yylex, !all_value_specifications($2.v as []RowValueConstructorPredicand),
       'F561')
     $$.v = yy_box(InPredicate{
       values: $2.v as []RowValueConstructorPredicand
@@ -37,8 +37,7 @@ in_predicate_value:
 in_value_list:
   row_value_predicand { $$.v = yy_box([$1.v as RowValueConstructorPredicand]) }
 | in_value_list comma row_value_predicand {
-    $$.v = yy_box(append_list($1.v as []RowValueConstructorPredicand,
-      $3.v as RowValueConstructorPredicand))
+    $$.v = yy_append($1.v, $3.v as RowValueConstructorPredicand)
   }
 
 %%

@@ -414,7 +414,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	//
 	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 25
 	if c.in_sort_key && e.custom_id == '' && c.grouping_columns != none {
-		c.conn.flagged_features << 'F868'
+		c.conn.flag('F868')
 	}
 
 	// A column of this query, rather than an outer reference (which is added by
@@ -835,8 +835,12 @@ fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
 		tables:  scope.tables
 		context: scope.context
 	}
+	// The scopes are put back on the connection, which outlives the statement
+	// (see arena_pause).
+	h := arena_pause()
 	scopes := c.conn.subquery_scopes.clone()
 	c.conn.subquery_scopes = scopes[..i].clone()
+	arena_resume(h)
 	compiled := e.compile_column(mut outer) or {
 		c.conn.subquery_scopes = scopes
 		return err

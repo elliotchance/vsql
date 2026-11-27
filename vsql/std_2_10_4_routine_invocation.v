@@ -145,7 +145,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		found_func = using_function(found_func, e.using, arg_types)!
 	}
 	if c.conn.flagging {
-		c.conn.flagged_features << found_func.features
+		c.conn.flag(...found_func.features)
 
 		// A DATE argument of a TIMESTAMP parameter needs TIMESTAMP in the type
 		// precedence list of DATE.
@@ -153,7 +153,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		// ISO/IEC 9075-2:2023, 9.7, Type precedence list determination, Conformance Rules, 1
 		for i, t in arg_types {
 			if t.typ == .is_date && found_func.arg_types[i].typ != .is_date {
-				c.conn.flagged_features << 'F054'
+				c.conn.flag('F054')
 			}
 		}
 	}

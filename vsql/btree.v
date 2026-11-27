@@ -77,12 +77,12 @@ fn new_btree(pager Pager, page_size int) &Btree {
 
 fn (mut p Btree) store_page(page_number int, page Page) ! {
 	p.pager.store_page(page_number, page)!
-	p.written_pages[page_number] = true
+	p.mark_written_page(page_number)
 }
 
 fn (mut p Btree) append_page(page Page) !int {
 	page_number := p.pager.append_page(page)!
-	p.written_pages[page_number] = true
+	p.mark_written_page(page_number)
 
 	return page_number
 }
@@ -130,7 +130,7 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 // obj as the new version. The key never changes, because a row that gets a new
 // PRIMARY KEY is deleted and added again (see UpdateStatementSearched).
 fn (mut p Btree) update(obj PageObject) !int {
-	p.written_keys[obj.key.bytestr()] = true
+	p.mark_written_key(obj.key.bytestr())
 	// Find the page that would contain our old object (if it exists).
 	mut path, _ := p.search_page(obj.key)!
 	page_number := path[path.len - 1]
@@ -271,7 +271,7 @@ fn (mut p Btree) remove_dead_version(key []u8, tid u64) ! {
 
 // add returns the page number that the object was added to.
 fn (mut p Btree) add(object PageObject) !int {
-	p.written_keys[object.key.bytestr()] = true
+	p.mark_written_key(object.key.bytestr())
 	mut obj := object
 
 	// If the object is larger than half a page it needs to be moved to blob
@@ -721,7 +721,7 @@ fn (mut p Btree) expire(key []u8, tid u64, xid u64) !int {
 
 	old := page.get(key, tid)
 	if page.expire(key, tid, xid)! {
-		p.written_keys[key.bytestr()] = true
+		p.mark_written_key(key.bytestr())
 		p.store_page(page_number, page)!
 		p.record_undo(.expired, old)
 		return page_number
@@ -820,7 +820,7 @@ fn page_pointer(pointer PageObject) int {
 fn (mut p Btree) free_path(path []int) ! {
 	page_number := path.last()
 	p.pager.free_page(page_number)!
-	p.written_pages[page_number] = true
+	p.mark_written_page(page_number)
 
 	parent_number := path[path.len - 2]
 	mut parent := p.pager.fetch_page(parent_number)!
@@ -844,8 +844,25 @@ fn (mut p Btree) free_path(path []int) ! {
 
 fn (mut p Btree) record_undo(kind UndoKind, obj PageObject) {
 	if p.undo.recording {
-		p.undo.entries << UndoEntry{kind, obj}
+		// The undo log outlives the statement (see arena_pause).
+		h := arena_pause()
+		p.undo.entries << UndoEntry{kind, own_copy(&obj)}
+		arena_resume(h)
 	}
+}
+
+// mark_written_page and mark_written_key remember what the statement wrote,
+// which outlives it (see arena_pause).
+fn (mut p Btree) mark_written_page(page_number int) {
+	h := arena_pause()
+	p.written_pages[page_number] = true
+	arena_resume(h)
+}
+
+fn (mut p Btree) mark_written_key(key string) {
+	h := arena_pause()
+	p.written_keys[key.clone()] = true
+	arena_resume(h)
 }
 
 // undo_to undoes every change in the undo log after position, newest first, and

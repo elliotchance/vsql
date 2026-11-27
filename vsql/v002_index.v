@@ -274,6 +274,11 @@ fn (f Storage) table_indexes(table_id u64) []Index {
 // from the file, once the tables have been loaded. It must be called from inside
 // an isolation block.
 fn (mut f Storage) load_indexes() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// The storage IDs of the tables, rather than copies of the tables, see
 	// Storage.find_table.
 	mut storage_ids := map[u64]string{}
@@ -302,6 +307,11 @@ fn (mut f Storage) load_indexes() ! {
 // then nothing is changed. The index of a UNIQUE constraint isn't checked here,
 // because the constraint is checked instead (and it might be deferred).
 fn (mut f Storage) create_index(definition Index, t Table, check_unique bool) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.isolation_start()!
 	defer {
 		f.end_isolation()

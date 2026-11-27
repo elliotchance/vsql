@@ -37,6 +37,9 @@ mut:
 	// read_large_value). file_locks is how many times the file is locked now.
 	catalog    &CatalogConnection = unsafe { nil }
 	file_locks int
+	// chunk_arena is reused for each chunk of a large value that's written
+	// while a statement arena is running (see Storage.chunk_arena_begin).
+	chunk_arena voidptr
 	// cache_size is the number of pages the pager of each operation keeps in
 	// memory, see ConnectionOptions.cache_size.
 	cache_size int
@@ -144,7 +147,7 @@ mut:
 	statement_deferral bool
 	// wal_prepared is the current statement once it has been added to the
 	// write-ahead log, but not committed yet, see prepare_commit.
-	wal_prepared ?WalPrepared
+	wal_prepared ?&WalPrepared
 	// snapshot_isolation is true while a REPEATABLE READ transaction is active,
 	// which sees transaction_snapshot (see take_snapshot).
 	snapshot_isolation   bool
@@ -206,10 +209,56 @@ mut:
 	undo_entries   []UndoEntry
 }
 
+// free_saved frees what the snapshot owns before it's replaced, since -autofree
+// doesn't free a struct field that's replaced
+// (https://github.com/vlang/v/issues/32943). transaction_snapshot isn't freed,
+// because it shares its arrays with Storage.transaction_snapshot.
+@[manualfree]
+fn (mut s StatementSnapshot) free_saved() {
+	$if autofree {
+		unsafe {
+			s.header.reserved.free()
+			s.transaction_snapshot.active.free()
+			s.added_pages.free()
+			s.added_keys.free()
+			if s.schema_saved {
+				// The tables, schemas and indexes are copies (see save_schema).
+				s.tables.free()
+				s.schemas.free()
+				s.indexes.free()
+			}
+			free_map(&s.tables)
+			free_map(&s.schemas)
+			free_map(&s.indexes)
+			free_map(&s.transaction_pages)
+			free_map(&s.transaction_keys)
+		}
+	}
+}
+
+fn C.map__free(m voidptr)
+
+// free_map frees a map that's about to be replaced. It's used instead of
+// map.free(), because -autofree makes that also create a new empty map, which
+// leaks when the map is replaced. The map can't be used again until it's
+// replaced.
+@[unsafe]
+fn free_map(m voidptr) {
+	$if autofree {
+		C.map__free(m)
+	}
+}
+
 // begin_statement must be called at the start of a statement that changes the
 // database, once the file is locked. The statement must end with either
 // commit_statement or discard_statement.
 fn (mut f Storage) begin_statement() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
+	f.snapshot.free_saved()
 	f.snapshot = StatementSnapshot{
 		header:               Header{
 			...f.header
@@ -224,9 +273,9 @@ fn (mut f Storage) begin_statement() {
 		undo_length:          f.undo.entries.len
 		undo_recording:       f.undo.recording
 	}
-	f.btree.written_pages = map[int]bool{}
-	f.btree.written_keys = map[string]bool{}
-	f.sequence_values = map[string]PageObject{}
+	f.btree.written_pages.clear()
+	f.btree.written_keys.clear()
+	f.sequence_values.clear()
 	if f.file_pager != unsafe { nil } {
 		f.file_pager.begin()
 	}
@@ -235,7 +284,17 @@ fn (mut f Storage) begin_statement() {
 // save_schema must be called before tables, schemas or indexes are changed, so
 // that they can be put back if the statement fails.
 fn (mut f Storage) save_schema() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if f.snapshot.in_statement && !f.snapshot.schema_saved {
+		unsafe {
+			free_map(&f.snapshot.tables)
+			free_map(&f.snapshot.schemas)
+			free_map(&f.snapshot.indexes)
+		}
 		f.snapshot.tables = f.tables.clone()
 		f.snapshot.views = f.views.clone()
 		f.snapshot.schemas = f.schemas.clone()
@@ -248,7 +307,16 @@ fn (mut f Storage) save_schema() {
 // transaction_keys) is replaced, so that it can be put back if the statement
 // fails. Adding to them is add_transaction_pages.
 fn (mut f Storage) save_transaction_pages() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if f.snapshot.in_statement && !f.snapshot.pages_saved {
+		unsafe {
+			free_map(&f.snapshot.transaction_pages)
+			free_map(&f.snapshot.transaction_keys)
+		}
 		f.snapshot.transaction_pages = f.transaction_pages.clone()
 		f.snapshot.transaction_keys = f.transaction_keys.clone()
 		f.snapshot.pages_saved = true
@@ -259,6 +327,11 @@ fn (mut f Storage) save_transaction_pages() {
 // transaction. Only the ones that are new are remembered, so that they can be
 // removed if the statement fails (see discard_statement).
 fn (mut f Storage) add_transaction_pages(keys bool) {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	for page_number, _ in f.btree.written_pages {
 		if page_number !in f.transaction_pages {
 			f.transaction_pages[page_number] = true
@@ -324,12 +397,22 @@ fn (mut f Storage) transaction_leaf_pages() ![]int {
 // keep_undo_log must be called before the current statement removes anything from
 // the undo log, so that it's put back if the statement fails.
 fn (mut f Storage) keep_undo_log() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.snapshot.undo_kept = true
 	f.snapshot.undo_entries = f.undo.entries.clone()
 }
 
 // end_savepoints forgets the undo log at the end of a transaction.
 fn (mut f Storage) end_savepoints() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.keep_undo_log()
 	f.undo.recording = false
 	f.undo.entries = []UndoEntry{}
@@ -346,6 +429,8 @@ fn (mut f Storage) commit_statement(path string) ! {
 // that's likely to fail without committing anything, see wal_prepare. It must
 // be followed by finish_commit, or by discard_statement to give up.
 fn (mut f Storage) prepare_commit(path string) ! {
+	// The log that this writes is only kept until finish_commit, in the same
+	// statement, so it's not paused (see arena_pause), except to lock.
 	if path == ':memory:' {
 		return
 	}
@@ -369,7 +454,7 @@ fn (mut f Storage) prepare_commit(path string) ! {
 		&& f.file_pager.dirty.len > 0
 		&& i64(f.file_pager.dirty.len) * f.header.page_size <= max_kept_pages_size
 		&& f.is_only_transaction()
-		&& f.lock_deferral() {
+		&& f.lock_deferral_paused() {
 		f.deferred = true
 		return
 	}
@@ -396,6 +481,16 @@ fn (mut f Storage) must_undo_pages() {
 // are written to the file, and it starts keeping them again.
 const max_kept_pages_size = i64(64 * 1024 * 1024)
 
+// lock_deferral_paused is lock_deferral for prepare_commit, since the lock
+// outlives the statement (see arena_pause).
+fn (mut f Storage) lock_deferral_paused() bool {
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
+	return f.lock_deferral()
+}
+
 // lock_deferral returns true if the deferral lock is held exclusively, which
 // it tries to get without waiting, see prepare_commit.
 fn (mut f Storage) lock_deferral() bool {
@@ -414,6 +509,11 @@ fn (mut f Storage) lock_deferral() bool {
 // active. The IDs that the transaction used are still used up, so they're
 // never used again (like a ROLLBACK that undoes its changes).
 fn (mut f Storage) drop_kept_pages() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	mut header := read_header(mut f.file)!
 	f.file_pager.drop_dirty(header.root_page, header.free_page)
 	header.row_id = f.header.row_id
@@ -460,6 +560,12 @@ fn (mut f Storage) finish_commit(path string) ! {
 		f.must_undo_pages()
 		return io_error(err)
 	}
+	// What's known about the log, the cache and the locks outlive the
+	// statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.log.finished(prepared)
 
 	// The pages are in the file now, so the cache has them too, and the log
@@ -478,6 +584,11 @@ fn (mut f Storage) finish_commit(path string) ! {
 // current base value of a sequence generator are not controlled by
 // SQL-transactions" (ISO/IEC 9075-2:2023, 4.29.2).
 fn (mut f Storage) discard_statement(path string) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	sequence_values := f.sequence_values.clone()
 
 	// The frames already in the log are ignored without a commit frame, and
@@ -489,7 +600,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 		f.pager_wal = none
 	}
 
-	f.header = f.snapshot.header
+	f.set_header(f.snapshot.header)
 	if f.snapshot.schema_saved {
 		f.tables = f.snapshot.tables.clone()
 		f.views = f.snapshot.views.clone()
@@ -526,9 +637,9 @@ fn (mut f Storage) discard_statement(path string) ! {
 		f.undo.entries.trim(f.snapshot.undo_length)
 	}
 	f.btree.pager.discard()
-	f.btree.written_pages = map[int]bool{}
-	f.btree.written_keys = map[string]bool{}
-	f.sequence_values = map[string]PageObject{}
+	f.btree.written_pages.clear()
+	f.btree.written_keys.clear()
+	f.sequence_values.clear()
 
 	if sequence_values.len > 0 {
 		for _, obj in sequence_values {
@@ -549,6 +660,11 @@ fn new_storage(btree Btree) Storage {
 // open_file must be called before the file is locked, since the lock is placed
 // on the file that is opened. It does nothing if the file is already open.
 fn (mut f Storage) open_file(path string) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	fault_point('open')!
 	if f.file.is_opened {
 		return
@@ -560,9 +676,55 @@ fn (mut f Storage) open_file(path string) ! {
 	f.file_identity = open_file_identity(f.file)
 }
 
+// reset_btree makes the B-tree use the file pager for the statement. The
+// B-tree of the last statement is used again when it can be, rather than
+// allocating a new one for each statement.
+fn (mut f Storage) reset_btree(page_size int) {
+	// The B-tree outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
+	if f.btree.undo != unsafe { nil } && f.btree.undo == f.undo && f.btree.page_size == page_size {
+		f.btree.pager = f.file_pager
+		f.btree.written_pages.clear()
+		f.btree.written_keys.clear()
+		return
+	}
+	f.btree = new_btree(f.file_pager, page_size)
+	f.btree.undo = f.undo
+}
+
+// set_header replaces the header, which outlives the statement (see
+// arena_pause), so it has its own copy of reserved. The one it replaces is
+// freed, since -autofree doesn't free a struct field that's replaced
+// (https://github.com/vlang/v/issues/32943).
+@[manualfree]
+fn (mut f Storage) set_header(header Header) {
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
+	$if autofree {
+		unsafe { f.header.reserved.free() }
+	}
+	f.header = Header{
+		...header
+		reserved: header.reserved.clone()
+	}
+}
+
 // open must be called after open_file and the file being locked. exclusive
 // must only be true if the file is locked exclusively.
 fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
+	// A statement that only reads never calls begin_statement, so the pages it
+	// removed from the cache are freed here (see FilePager.retired).
+	if f.file_pager != unsafe { nil } {
+		f.file_pager.free_retired()
+	}
+
+	// The header is read in the statement's arena, and only what outlives the
+	// statement is paused (see arena_pause).
 	fault_point('read_header')!
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive
@@ -570,8 +732,7 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	// The header and pages in memory are newer than the file, which no other
 	// connection can have changed (see prepare_commit).
 	if f.deferred {
-		f.btree = new_btree(f.file_pager, f.header.page_size)
-		f.btree.undo = f.undo
+		f.reset_btree(f.header.page_size)
 		return
 	}
 
@@ -585,15 +746,24 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 		&& f.file_pager.page_size == header.page_size {
 		f.file_pager.root_page = header.root_page
 	} else {
+		arena_h := arena_pause()
 		f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page,
-			f.cache_size)!
+			f.cache_size) or {
+			arena_resume(arena_h)
+			return err
+		}
+		arena_resume(arena_h)
 	}
 	f.file_pager.free = header.free_page
 	f.pager_wal = wal
-	f.btree = new_btree(f.file_pager, header.page_size)
-	f.btree.undo = f.undo
+	f.reset_btree(header.page_size)
 
 	if exclusive && f.other_transaction_ids(header).len > 0 {
+		// Recovering changes what outlives the statement (see arena_pause).
+		arena_h := arena_pause()
+		defer {
+			arena_resume(arena_h)
+		}
 		if f.session.try_exclusive()! {
 			// The session lock must go back to shared even if recovering fails,
 			// otherwise no other connection can open the database.
@@ -612,10 +782,10 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 
 	// Avoid reloading the schema if it hasn't changed.
 	if header.schema_version == f.header.schema_version {
-		f.header = header
+		f.set_header(header)
 		return
 	}
-	f.header = header
+	f.set_header(header)
 
 	f.load_schema(catalog_name)!
 }
@@ -623,6 +793,11 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 // load_schema reads the tables, schemas and indexes that are visible to the current
 // transaction from the file.
 fn (mut f Storage) load_schema(catalog_name string) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// The schema must be read in an isolation block, which may or may not
 	// belong to an active transaction.
 	f.isolation_start()!
@@ -666,8 +841,16 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 // docs.
 fn parse_definition(data []u8) !Stmt {
 	text := data.bytestr()
+	tokens := tokenize(text)!
+	defer {
+		$if autofree {
+			// -autofree doesn't free the tokens (since the lexer had them). The
+			// syntax tree has its own copies of their values.
+			unsafe { tokens.free() }
+		}
+	}
 
-	return parse_tokens(tokenize(text)!, text)
+	return parse_tokens(tokens, text)
 }
 
 // other_transaction_ids returns the active transaction IDs that do not belong
@@ -751,6 +934,7 @@ fn (mut f Storage) schema_changed() ! {
 // close_files closes the database file and the log, when the connection is
 // closed, or when the file is replaced.
 fn (mut f Storage) close_files() {
+	f.chunk_arena_free()
 	f.file.close()
 	f.log.file.close()
 	f.pager_wal = none
@@ -830,6 +1014,11 @@ const data_types_file_format_version = u16(4)
 // has a column with a type that an older version can't read. They are never
 // lowered, even when the table is dropped.
 fn (mut f Storage) use_data_types(t Table) {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if !t.columns.any(it.typ.uses_new_encoding()) {
 		return
 	}
@@ -843,6 +1032,11 @@ fn (mut f Storage) use_data_types(t Table) {
 }
 
 fn (mut f Storage) create_table(definition Table) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -907,6 +1101,11 @@ fn (f Storage) schema_constraint_names(table_name Identifier) []string {
 // update_table replaces the definition of a table, which has the same id, with
 // a new version (such as from an ALTER TABLE).
 fn (mut f Storage) update_table(definition Table) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -931,6 +1130,11 @@ fn (mut f Storage) update_table(definition Table) ! {
 }
 
 fn (mut f Storage) create_schema(schema_name string) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -1016,6 +1220,11 @@ fn (mut f Storage) sequences() ![]Sequence {
 }
 
 fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// This would be a bug. See PreparedStmt.writes.
 	if f.read_only {
 		return sqlstate_xx000('cannot use NEXT VALUE FOR without a write connection')
@@ -1127,6 +1336,11 @@ fn (mut f Storage) identity_sequence(table Table) !Sequence {
 // identity_next_value returns the next value of the identity column of a table,
 // the same way as NEXT VALUE FOR (see sequence_next_value).
 fn (mut f Storage) identity_next_value(table Table) !i64 {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -1605,6 +1819,11 @@ fn (mut f Storage) take_isolation_error() ! {
 // state of the active or implicit transaction state is expected to be
 // maintained.
 fn (mut f Storage) isolation_end() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// The implicit transaction ends with the outermost isolation block. This
 	// is counted before anything can fail, so that the next statement still
 	// starts its own transaction.
@@ -1619,8 +1838,8 @@ fn (mut f Storage) isolation_end() ! {
 	// the same statement, while the file is locked, so its pages can't be split
 	// by another connection, and it doesn't need the keys.
 	f.add_transaction_pages(f.transaction_state == .active)
-	f.btree.written_pages = map[int]bool{}
-	f.btree.written_keys = map[string]bool{}
+	f.btree.written_pages.clear()
+	f.btree.written_keys.clear()
 
 	match f.transaction_state {
 		.not_active, .reading {
@@ -1642,7 +1861,7 @@ fn (mut f Storage) isolation_end() ! {
 	f.remove_expired(f.transaction_leaf_pages()!, false)!
 
 	f.save_transaction_pages()
-	f.transaction_pages = map[int]bool{}
+	f.transaction_pages.clear()
 
 	f.header.active_transaction_ids.remove(f.transaction_id)
 }

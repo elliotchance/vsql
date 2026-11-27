@@ -117,9 +117,12 @@ fn (mut l IsolationLock) acquire_cancelable(state IsolationLockState, timeout ti
 
 	deadline := time.now().add(timeout)
 	if isnil(l.queue) {
+		// The queue is kept for as long as the connection (see arena_pause).
+		h := arena_pause()
 		l.queue = &IsolationLock{
 			path: isolation_queue_path(l.path)
 		}
+		arena_resume(h)
 	}
 	l.queue.wait(.exclusive, deadline, message, cancel_state)!
 	defer {
@@ -209,7 +212,13 @@ fn (mut conn Connection) check_direct_query() ! {
 		}
 
 		before := map_value(conn.direct_query_headers, name) or {
-			conn.direct_query_headers[name] = catalog.storage.header
+			// The header outlives the statement (see arena_pause).
+			h := arena_pause()
+			conn.direct_query_headers[name] = Header{
+				...catalog.storage.header
+				reserved: catalog.storage.header.reserved.clone()
+			}
+			arena_resume(h)
 			continue
 		}
 		if catalog.storage.header.has_ended_since(before) {
@@ -272,6 +281,11 @@ fn (mut conn Connection) unlock_transactions() {
 // unlock_transactions. It's only called while commit_locked is false, so that a
 // page isn't read to find out if it needs the lock when it's already held.
 fn (mut f Storage) lock_commit() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.commit_locked = true
 
 	if f.isolation.file.is_opened || os.exists(f.isolation.path) {

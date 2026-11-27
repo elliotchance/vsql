@@ -116,6 +116,11 @@ fn constraint_key(t Table, name string) string {
 //
 // ISO/IEC 9075-2:2023, 17.4, <set constraints mode statement>, Syntax Rules, 2
 fn (mut f Storage) set_constraint_mode(t Table, name string, characteristics ConstraintCharacteristics, is_deferred bool) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if !characteristics.is_deferrable() {
 		return sqlstate_42601('constraint ${name} is not DEFERRABLE')
 	}
@@ -155,8 +160,13 @@ fn (mut f Storage) set_all_constraint_modes(is_deferred bool) {
 // ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 13.n
 // ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 6.b.ii.2.C.II
 fn (mut f Storage) end_constraint_modes() {
-	f.constraint_modes = map[string]bool{}
-	f.deferred_checks = map[string]string{}
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
+	f.constraint_modes.clear()
+	f.deferred_checks.clear()
 }
 
 // is_deferred is true if the constraint mode of a constraint of t is deferred.
@@ -176,6 +186,11 @@ fn (f Storage) is_deferred(t Table, name string, characteristics ConstraintChara
 // check it. It's remembered so that it's checked once it's immediate (see
 // check_deferred_constraints).
 fn (mut f Storage) defer_check(t Table, name string, characteristics ConstraintCharacteristics) bool {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if !f.is_deferred(t, name, characteristics) {
 		return false
 	}

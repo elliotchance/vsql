@@ -2,7 +2,7 @@
 
 routine_invocation:
   routine_name sql_argument_list {
-    flag_if(mut yylex, ($2.v as []ValueExpression).any(is_dynamic_parameter(it)), 'B033')
+    flag_if(mut yylex, any_dynamic_parameter($2.v as []ValueExpression), 'B033')
     flag_if(mut yylex, ($1.v as Identifier).entity_name == 'NOW', vsql_now)
     parsed_routine_name(mut yylex, ($1.v as Identifier).entity_name)
     $$.v = yy_box(RoutineInvocation{
@@ -40,7 +40,7 @@ sql_argument_list:
 sql_arguments:
   sql_argument { $$.v = yy_box([$1.v as ValueExpression]) }
 | sql_arguments comma sql_argument {
-    $$.v = yy_box(append_list($1.v as []ValueExpression, $3.v as ValueExpression))
+    $$.v = yy_append($1.v, $3.v as ValueExpression)
   }
 
 sql_argument:

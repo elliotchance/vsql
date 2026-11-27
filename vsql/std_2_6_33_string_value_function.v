@@ -243,9 +243,9 @@ fn binary_value_function_type(source Type) Type {
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5 and 18
 fn (mut c Compiler) flag_binary_value_function(typ Type) {
 	if c.conn.flagging {
-		c.conn.flagged_features << 'T022'
+		c.conn.flag('T022')
 		if typ.typ == .is_blob {
-			c.conn.flagged_features << 'T047'
+			c.conn.flag('T047')
 		}
 	}
 }
@@ -1106,7 +1106,7 @@ fn (e PadFunction) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 17
 fn (mut c Compiler) flag_clob_function(typ Type) {
 	if c.conn.flagging && typ.typ == .is_clob {
-		c.conn.flagged_features << 'T050'
+		c.conn.flag('T050')
 	}
 }
 

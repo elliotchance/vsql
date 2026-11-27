@@ -57,6 +57,11 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 }
 
 fn (mut catalog CatalogConnection) rollback_transaction() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// There's nothing to undo for an SQL-transaction that hasn't changed
 	// anything, so the file isn't locked.
 	if catalog.storage.transaction_state == .reading {
@@ -112,8 +117,8 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 
 	// We can erase these now.
 	catalog.storage.save_transaction_pages()
-	catalog.storage.transaction_pages = map[int]bool{}
-	catalog.storage.transaction_keys = map[string]bool{}
+	catalog.storage.transaction_pages.clear()
+	catalog.storage.transaction_keys.clear()
 	catalog.storage.end_constraint_modes()
 	catalog.storage.end_savepoints()
 

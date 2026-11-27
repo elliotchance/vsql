@@ -219,12 +219,18 @@ fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator
 	// another query is an unknown column rather than an outer reference.
 	// The copy works around https://github.com/vlang/v/issues/32944
 	// (-autofree): the assignment below would free the scopes.
+	// What's put back on the connection outlives the statement (see
+	// arena_pause).
+	h := arena_pause()
 	subquery_scopes := own_array(conn.subquery_scopes)
 	subquery_tables := conn.subquery_tables.clone()
 	conn.subquery_scopes = []
+	arena_resume(h)
 	defer {
+		dh := arena_pause()
 		conn.subquery_scopes = subquery_scopes
 		conn.subquery_tables = subquery_tables
+		arena_resume(dh)
 	}
 
 	// A table with no columns makes any column an unknown column, rather than

@@ -62,6 +62,11 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 // That also unlocks the file, and if the next one can't start then the last one
 // has still ended.
 fn (mut conn Connection) chain_transaction(characteristics TransactionCharacteristics, constraint_modes map[string]map[string]bool) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	conn.take_isolation_error()!
 	conn.finish_write(true)!
 	if !characteristics.isolation_level.locks_transaction() {
@@ -127,6 +132,11 @@ fn (mut catalog CatalogConnection) start_transaction(level IsolationLevel) ! {
 // (see TransactionState) active, so that it can write. It must be called with
 // the write connection open.
 fn (mut f Storage) begin_transaction() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// isolation_start registers the transaction, then transaction_state ensures
 	// that future calls to isolation_start for individual operations use the
 	// same isolation scope (the transaction).
@@ -139,7 +149,7 @@ fn (mut f Storage) begin_transaction() ! {
 	assert f.transaction_pages.len == 0
 	assert f.transaction_keys.len == 0
 
-	f.transaction_pages = map[int]bool{}
+	f.transaction_pages.clear()
 
 	if f.snapshot_pending {
 		f.take_snapshot()!

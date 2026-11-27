@@ -94,6 +94,9 @@ fn commit_error(err IError) IError {
 // commit_transaction must be called with the write connection open, unless the
 // SQL-transaction hasn't changed anything.
 fn (mut catalog CatalogConnection) commit_transaction() ! {
+	// The functions this calls pause the arena (see arena_pause) around what
+	// they change that outlives the statement, so that the pages and objects
+	// it reads are freed with the statement.
 	if catalog.storage.transaction_state == .reading {
 		catalog.storage.transaction_state = .not_active
 		catalog.storage.end_constraint_modes()
@@ -109,9 +112,9 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	// isolation_end doesn't need to visit them (or the pages that were changed
 	// since) again.
 	catalog.storage.save_transaction_pages()
-	catalog.storage.transaction_pages = map[int]bool{}
-	catalog.storage.transaction_keys = map[string]bool{}
-	catalog.storage.btree.written_pages = map[int]bool{}
+	catalog.storage.transaction_pages.clear()
+	catalog.storage.transaction_keys.clear()
+	catalog.storage.btree.written_pages.clear()
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.

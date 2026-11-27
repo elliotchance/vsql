@@ -49,17 +49,19 @@ pub:
 // catalog, which are NULL for ":memory:" (it has no file).
 pub fn sql_implementation_info(server_name string, catalog &CatalogConnection) []ImplementationInfo {
 	in_memory := catalog.path == ':memory:'
+	// The copies work around https://github.com/vlang/v/issues/32932
+	// (-autofree): dropping the list would free server_name (once for each).
 	return [
 		ImplementationInfo{
 			id:              2
 			name:            'DATA SOURCE NAME'
-			character_value: server_name
+			character_value: own_string(server_name)
 			comments:        'The name of the SQL-server that was connected to.'
 		},
 		ImplementationInfo{
 			id:              13
 			name:            'SERVER NAME'
-			character_value: server_name
+			character_value: own_string(server_name)
 			comments:        'The name of the SQL-server that was connected to.'
 		},
 		ImplementationInfo{
@@ -173,7 +175,7 @@ pub fn sql_implementation_info(server_name string, catalog &CatalogConnection) [
 		ImplementationInfo{
 			id:              11007
 			name:            'MACHINE'
-			character_value: os.uname().machine
+			character_value: uname_machine()
 			comments:        'The hardware that vsql is running on.'
 		},
 		ImplementationInfo{
@@ -264,4 +266,15 @@ fn release_info(s string) ?string {
 	}
 
 	return own_string(s)
+}
+
+// uname_machine is the hardware that vsql is running on. os.uname allocates
+// its C struct with V and frees it with C, so it must not be in the statement's
+// arena (see arena_pause).
+fn uname_machine() string {
+	h := arena_pause()
+	defer {
+		arena_resume(h)
+	}
+	return os.uname().machine
 }

@@ -27,6 +27,11 @@ struct SetConstraintsModeStatement {
 // ISO/IEC 9075-2:2023, 4.25.2, Checking of constraints
 // ISO/IEC 9075-2:2023, 17.4, <set constraints mode statement>, General Rules, 2 and 3
 fn (stmt SetConstraintsModeStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	t := start_timer()
 
 	conn.open_write_connection()!

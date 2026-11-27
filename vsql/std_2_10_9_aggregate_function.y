@@ -222,7 +222,7 @@ rank_function_type:
 hypothetical_set_function_value_expression_list:
   value_expression { $$.v = yy_box([$1.v as ValueExpression]) }
 | hypothetical_set_function_value_expression_list comma value_expression {
-    $$.v = yy_box(append_list($1.v as []ValueExpression, $3.v as ValueExpression))
+    $$.v = yy_append($1.v, $3.v as ValueExpression)
   }
 
 inverse_distribution_function_type:
@@ -240,7 +240,7 @@ within_group_sort_specification_list:
     $$.v = yy_box([$1.v as SortSpecification])
   }
 | within_group_sort_specification_list comma within_group_sort_specification {
-    $$.v = yy_box(append_list($1.v as []SortSpecification, $3.v as SortSpecification))
+    $$.v = yy_append($1.v, $3.v as SortSpecification)
   }
 
 within_group_sort_specification:

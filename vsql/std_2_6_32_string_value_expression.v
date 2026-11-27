@@ -68,7 +68,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Conformance Rules, 4
 	if c.conn.flagging && typ.typ == .is_clob {
-		c.conn.flagged_features << 'T040'
+		c.conn.flag('T040')
 	}
 
 	return CompileResult{
@@ -80,6 +80,11 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 				// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 1 and 2.b.i
 				if left.is_null || right.is_null {
 					return new_null_value(.is_varchar).with_type(typ)
+				}
+
+				if !left.is_large && !right.is_large
+					&& left.string_len() + right.string_len() <= character_limit(typ) {
+					return concat_values(left, right, typ)
 				}
 
 				return new_varchar_value(limit_concatenation(left.string_value() +
@@ -185,7 +190,7 @@ fn compile_binary_concatenation(mut c Compiler, compiled_left CompileResult, com
 	}
 	typ := binary_concatenation_type(compiled_left.typ, compiled_right.typ)!
 	if c.conn.flagging {
-		c.conn.flagged_features << if typ.typ == .is_blob { 'T048' } else { 'T021' }
+		c.conn.flag(if typ.typ == .is_blob { 'T048' } else { 'T021' })
 	}
 
 	return CompileResult{

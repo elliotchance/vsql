@@ -92,7 +92,7 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2023, 6.13, <cast specification>, Conformance Rules, 1 and 3
 	if c.conn.flagging && compiled_expr.typ.typ.is_lob() {
-		c.conn.flagged_features << 'T042'
+		c.conn.flag('T042')
 	}
 
 	// A datetime without a time zone gets the time zone of the session, and a

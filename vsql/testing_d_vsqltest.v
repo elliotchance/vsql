@@ -125,7 +125,8 @@ fn new_pg_test_client(port int, database string) !&PGTestClient {
 	// StartupMessage: protocol 3.0, then name/value pairs.
 	mut body := []u8{}
 	body << pg_test_int32(196608)
-	for s in ['user', 'vsql', 'database', database] {
+	// The copies work around https://github.com/vlang/v/issues/32947 (-autofree).
+	for s in ['user', 'vsql', 'database', own_string(database)] {
 		body << s.bytes()
 		body << 0
 	}
@@ -224,7 +225,10 @@ fn (mut c PGTestClient) query(stmt string) !SQLTestOutput {
 			// SQLSTATE, which the library reports as 00000.
 			`E`, `N` {
 				fields := pg_test_fields(msg)
-				code := if fields['C'] == 'XX000' { '00000' } else { fields['C'] }
+				// The local works around https://github.com/vlang/v/issues/32988
+				// (-autofree): the if expression would move the code out of fields.
+				sqlstate := fields['C']
+				code := if sqlstate == 'XX000' { '00000' } else { sqlstate }
 				if msg_type == `E` {
 					output.error = 'error ${code}: ${fields['M']}'
 				} else {

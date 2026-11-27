@@ -41,7 +41,7 @@ schema_name_clause:
 schema_elements:
   schema_element { $$.v = yy_box([$1.v as SchemaElement]) }
 | schema_elements schema_element {
-    $$.v = yy_box(concat_lists($1.v as []SchemaElement, [$2.v as SchemaElement]))
+    $$.v = yy_append($1.v, $2.v as SchemaElement)
   }
 
 // The other elements aren't statements that are supported yet.

@@ -11,6 +11,11 @@ struct ReleaseSavepointStatement {
 }
 
 fn (stmt ReleaseSavepointStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	t := start_timer()
 
 	// ISO/IEC 9075-2:2023, 17.6, <release savepoint statement>, General Rules, 1 and 3

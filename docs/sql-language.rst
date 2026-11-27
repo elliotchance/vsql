@@ -14,6 +14,7 @@ The SQL Language
    expressions.rst
    identifiers.rst
    operators.rst
+   null.rst
    functions-index.rst
    transactions.rst
    prepared-statements.rst

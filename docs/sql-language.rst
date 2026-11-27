@@ -8,6 +8,7 @@ The SQL Language
    text.rst
    binary.rst
    booleans.rst
+   data-types.rst
    dates-times.rst
    expressions.rst
    operators.rst

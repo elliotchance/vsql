@@ -153,9 +153,10 @@ The query of a view with a ``CHECK OPTION`` can't use anything that could give a
 different result for the same rows, so that a row that's seen through the view
 when it's changed is still seen through it later. This includes the current
 date, time, user or schema, a comparison of a datetime with a time zone and one
-without, ``OFFSET`` and ``FETCH FIRST``, and ``SELECT DISTINCT``, ``GROUP BY``,
-``UNION``, ``EXCEPT`` or ``INTERSECT`` of character strings or datetimes with a
-time zone (``UNION ALL`` is fine). This also applies to a subquery and the
+without, ``OFFSET`` and ``FETCH FIRST``, ``SELECT DISTINCT``, ``UNION``,
+``EXCEPT`` or ``INTERSECT`` of character strings or datetimes with a time zone
+(``UNION ALL`` is fine), and a select list or ``HAVING`` that uses a ``GROUP BY``
+column of those types. This also applies to a subquery and the
 views that it reads, except that the view in the ``FROM`` of a view
 ``WITH LOCAL CHECK OPTION`` can use anything.
 

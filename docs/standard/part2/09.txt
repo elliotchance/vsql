@@ -614,7 +614,7 @@
 9.16/SR/1.z              n/a          - - partitioned join tables (F403)
 9.16/SR/1.aa             definition   - -
 9.16/SR/1.ab             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
-9.16/SR/1.ac             deviates     vsql/planner.v tests/std_2_11_32_check_option.sql a grouping column of these types is rejected even when it isn't referenced (#1795)
+9.16/SR/1.ac             implemented  vsql/std_2_5_4_names_and_identifiers.v tests/std_2_11_32_check_option.sql only grouping columns, without functional dependencies (T301)
 9.16/SR/1.ad             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
 9.16/SR/1.ae             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
 9.16/SR/1.af             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql

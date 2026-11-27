@@ -750,6 +750,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			//
 			// ISO/IEC 9075-2:2023, 7.6, <table reference>, Syntax Rules, 12.b.ii.3.B
 			unnamed:        correlation_columns.len == 0 && col.unnamed
+			recursive:      col.recursive
 		}
 		if conn.collect_columns {
 			conn.correlated_columns[columns[i].name.id()] << col.name.id()
@@ -1376,6 +1377,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 						compiled := expr.compile(mut c)!
 						columns << Column{
 							name:           col
+							recursive:      c.recursive_refs > 0
 							typ:            compiled.typ
 							not_null:       if column := item.column_reference() {
 								column_not_null(column, conn, tables)
@@ -1418,13 +1420,14 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				sub_entity_name: expr.as_clause.sub_entity_name
 			}}
 			columns[i] = Column{
-				name:     Identifier{
+				name:      Identifier{
 					...columns[i].name
 					custom_id: key
 				}
-				typ:      columns[i].typ
-				not_null: columns[i].not_null
-				unnamed:  columns[i].unnamed
+				typ:       columns[i].typ
+				not_null:  columns[i].not_null
+				unnamed:   columns[i].unnamed
+				recursive: columns[i].recursive
 			}
 		}
 	}

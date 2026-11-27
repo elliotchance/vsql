@@ -43,6 +43,9 @@ mut:
 	// ISO/IEC 9075-2:2023, 7.16, <query specification>, Conformance Rules, 3
 	grouping_columns ?[]Column
 	in_aggregate     bool
+	// recursive_refs counts the column references that have been compiled to a
+	// recursive column (see Column.recursive).
+	recursive_refs int
 	// aggregated_columns collects the column references in the argument of the
 	// aggregate function being compiled, to find the query that it's an
 	// aggregate of (see aggregation_scope).

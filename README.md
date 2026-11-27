@@ -267,7 +267,7 @@ The full documentation is at [vsql.readthedocs.io](https://vsql.readthedocs.io/)
 - [Installing & updating](https://vsql.readthedocs.io/en/latest/install.html)
 - [CLI](https://vsql.readthedocs.io/en/latest/cli.html) and
   [server](https://vsql.readthedocs.io/en/latest/server.html)
-- [SQL reference](https://vsql.readthedocs.io/en/latest/sql-reference.html),
+- [SQL statements](https://vsql.readthedocs.io/en/latest/sql-reference.html),
   [functions](https://vsql.readthedocs.io/en/latest/functions.html) and
   [SQLSTATE errors](https://vsql.readthedocs.io/en/latest/sqlstate.html)
 - [Transactions](https://vsql.readthedocs.io/en/latest/transactions.html) and

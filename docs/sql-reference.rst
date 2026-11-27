@@ -1,5 +1,7 @@
-SQL Reference
-=============
+SQL Statements
+==============
+
+Each statement has its own page, in alphabetical order.
 
 .. toctree::
    :maxdepth: 1

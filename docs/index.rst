@@ -13,10 +13,10 @@ New to vsql? Start with :doc:`quick-start`.
    :maxdepth: 2
 
    getting-started.rst
-   features.rst
-   sql-reference.rst
    sql-language.rst
-   client-interfaces.rst
+   sql-reference.rst
+   tools.rst
+   embedding.rst
    internals.rst
    development.rst
    appendix.rst

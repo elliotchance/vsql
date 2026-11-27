@@ -6,121 +6,32 @@ the row that it's on.
 
 .. contents::
 
-Syntax
-------
+Statements
+----------
 
-.. code-block:: text
+A cursor is used with these statements, each of which has its own page:
 
-  DECLARE <cursor_name> [ SCROLL | NO SCROLL ] CURSOR [ WITH HOLD | WITHOUT HOLD ]
-    FOR <query> [ FOR READ ONLY | FOR UPDATE [ OF <column_name> , ... ] ]
-
-  OPEN <cursor_name>
-
-  FETCH [ [ <orientation> ] FROM ] <cursor_name>
-
-  <orientation> ::=
-      NEXT
-    | PRIOR
-    | FIRST
-    | LAST
-    | ABSOLUTE <number>
-    | RELATIVE <number>
-
-  CLOSE <cursor_name>
-
-  DELETE FROM <table_name> WHERE CURRENT OF <cursor_name>
-
-  UPDATE <table_name>
-  SET <column_name> = <value> , ...
-  WHERE CURRENT OF <cursor_name>
+- :doc:`declare-cursor` names a query, and decides whether the cursor is
+  ``SCROLL``, ``WITH HOLD`` and updatable.
+- :doc:`open` runs the query, and the cursor is positioned before the first
+  row.
+- :doc:`fetch` moves the cursor to another row and returns it (see
+  "Scrollable Cursors" in :doc:`fetch` for the directions of a ``SCROLL``
+  cursor).
+- :doc:`close` closes the cursor, which can then be opened again.
+- A positioned :doc:`delete` (``DELETE ... WHERE CURRENT OF``) deletes the row
+  that the cursor is on, and a positioned :doc:`update`
+  (``UPDATE ... WHERE CURRENT OF``) changes it.
 
 The SQL standard only allows these statements in an SQL-client module (such as
 a C program, see :doc:`language-c`). Running them directly is a vsql extension
 (see :doc:`sql-flagging`), so ``FETCH`` returns the row instead of putting its
 values into variables.
 
-DECLARE CURSOR
---------------
-
-``DECLARE CURSOR`` names a query. The query isn't run until the cursor is
-opened, but it's checked straight away, so a table that doesn't exist is an
-error. The values of any parameters (``?``) are the ones the ``DECLARE CURSOR``
-was run with.
-
-A cursor belongs to the connection, and the name can't be declared again
-(``42P03``).
-
-OPEN, FETCH and CLOSE
----------------------
-
-``OPEN`` runs the query, and the cursor is positioned before the first row.
-Each ``FETCH`` moves to the next row and returns it. After the last row,
-``FETCH`` returns no rows, with the completion condition ``02000`` (no data).
-
-``CLOSE`` closes the cursor, which can then be opened again. A cursor that's
-already open can't be opened, and a cursor that isn't open can't be fetched or
-closed (``24000``).
-
-A cursor is closed when the transaction ends, and a statement outside of a
-transaction is its own transaction. So a cursor is usually used inside of
-``START TRANSACTION``. A ``WITH HOLD`` cursor stays open after a ``COMMIT``, but
-not after a ``ROLLBACK``.
-
-Scrollable Cursors
-------------------
-
-A ``SCROLL`` cursor can also be fetched in other directions. A cursor that
-isn't ``SCROLL`` (including ``NO SCROLL``) can only ``FETCH NEXT``, any other
-direction is an error (``42601``).
-
-- ``NEXT`` is the row after the cursor (the default).
-- ``PRIOR`` is the row before the cursor.
-- ``FIRST`` and ``LAST`` are the first and last rows.
-- ``ABSOLUTE n`` is the ``n``-th row, starting at 1. A negative ``n`` counts
-  from the end, so ``ABSOLUTE -1`` is the last row.
-- ``RELATIVE n`` moves ``n`` rows forward, or backward if ``n`` is negative.
-  ``RELATIVE 0`` fetches the current row again.
-
-``n`` must be an integer literal (an exact numeric with scale 0, otherwise it's
-a ``42601`` error).
-
-When there's no such row the ``FETCH`` returns no rows (``02000``), and the
-cursor is after the last row if it was moving forward (``NEXT``, ``LAST``, or
-past the end with ``ABSOLUTE`` or ``RELATIVE``), or otherwise before the first
-row. So, for example, a ``PRIOR`` after the cursor has gone past the end
-fetches the last row. ``RELATIVE 0`` doesn't move the cursor.
-
-A ``SCROLL`` cursor is read only unless it's ``FOR UPDATE``. The rows of the
-cursor don't change while it's open, so a row that was deleted through the
-cursor can be fetched again (but not changed), and a row that was updated
-through the cursor is fetched with its old values.
-
-Positioned DELETE and UPDATE
-----------------------------
-
-``DELETE ... WHERE CURRENT OF`` deletes the row that the cursor is on. The cursor
-is then before the next row, so it has to be fetched again before another
-positioned ``DELETE`` or ``UPDATE``. ``UPDATE ... WHERE CURRENT OF`` updates the
-row, and the cursor stays on it.
-
-The cursor must be updatable. A cursor is updatable if it selects from one table
-(without a join, ``GROUP BY``, aggregate function, ``DISTINCT``, ``OFFSET`` or
-``FETCH FIRST``), unless it's ``FOR READ ONLY``. A cursor with an ``ORDER BY``,
-or a ``SCROLL`` cursor, is only updatable with ``FOR UPDATE``. ``FOR UPDATE OF`` limits the columns that
-a positioned ``UPDATE`` can change. A positioned ``UPDATE`` also can't change a
-column that's used by a sort key of the ``ORDER BY`` (``42601``).
-
-The rows of a cursor are found when it's opened, so a ``FETCH`` returns the row
-as it was then, even if it has been changed since. A ``WITH HOLD`` cursor must
-be fetched in the current transaction before its row can be changed.
-
-A positioned ``DELETE`` or ``UPDATE`` raises the warning ``01001`` (see
-:doc:`sqlstate`) if the current row has been changed by another statement since
-the cursor was opened. A row that has been updated is still changed. A row that
-has been deleted can't be, so the statement changes no rows. The warning is also
-raised by a searched ``DELETE`` or ``UPDATE`` (or a referential action) that
-changes a row that a positioned ``UPDATE`` of a cursor that's still open has
-already changed. That's only for the cursors of the same connection.
+A cursor belongs to the connection. It's closed when the transaction ends, and
+a statement outside of a transaction is its own transaction, so a cursor is
+usually used inside of ``START TRANSACTION``. A ``WITH HOLD`` cursor stays open
+after a ``COMMIT``, but not after a ``ROLLBACK``.
 
 SQL/CLI
 -------
@@ -189,34 +100,12 @@ Examples
   -- msg: COMMIT
   -- NAME: Coffee PRICE: 5.00
 
-A ``SCROLL`` cursor:
+See Also
+--------
 
-.. code-block:: sql
-
-  CREATE TABLE t (x INT);
-  INSERT INTO t (x) VALUES (1), (2), (3), (4);
-
-  START TRANSACTION;
-  DECLARE c SCROLL CURSOR FOR SELECT x FROM t ORDER BY x;
-  OPEN c;
-  FETCH LAST FROM c;
-  FETCH PRIOR FROM c;
-  FETCH ABSOLUTE 1 FROM c;
-  FETCH RELATIVE 2 FROM c;
-  FETCH ABSOLUTE -2 FROM c;
-  FETCH ABSOLUTE 5 FROM c;
-  FETCH PRIOR FROM c;
-  COMMIT;
-  -- msg: CREATE TABLE 1
-  -- msg: INSERT 4
-  -- msg: START TRANSACTION
-  -- msg: DECLARE CURSOR
-  -- msg: OPEN
-  -- X: 4
-  -- X: 3
-  -- X: 1
-  -- X: 3
-  -- X: 3
-  -- warning 02000: no data
-  -- X: 4
-  -- msg: COMMIT
+- :doc:`declare-cursor`
+- :doc:`open`
+- :doc:`fetch`
+- :doc:`close`
+- :doc:`delete`
+- :doc:`update`

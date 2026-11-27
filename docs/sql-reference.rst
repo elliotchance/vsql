@@ -8,6 +8,7 @@ Each statement has its own page, in alphabetical order.
 
    alter-sequence.rst
    alter-table.rst
+   close.rst
    commit.rst
    connect.rst
    create-index.rst
@@ -15,7 +16,7 @@ Each statement has its own page, in alphabetical order.
    create-sequence.rst
    create-table.rst
    create-view.rst
-   cursors.rst
+   declare-cursor.rst
    delete.rst
    disconnect.rst
    drop-index.rst
@@ -24,7 +25,9 @@ Each statement has its own page, in alphabetical order.
    drop-table.rst
    drop-view.rst
    explain.rst
+   fetch.rst
    insert.rst
+   open.rst
    rollback.rst
    savepoint.rst
    select.rst

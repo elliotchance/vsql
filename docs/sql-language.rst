@@ -14,5 +14,6 @@ The SQL Language
    functions-index.rst
    transactions.rst
    prepared-statements.rst
+   cursors.rst
    information-schema.rst
    vsql-schema.rst

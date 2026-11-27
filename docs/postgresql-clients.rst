@@ -51,6 +51,7 @@ protocol that JDBC uses by default:
      an empty password.
 
 3. On the **Driver properties** tab, set ``preferQueryMode`` to ``simple``.
+   Without it, DBeaver shows "the extended query protocol is not supported".
 4. Click **Test Connection** or **Finish**.
 
 The schemas, tables and columns can be browsed, and the data can be viewed and

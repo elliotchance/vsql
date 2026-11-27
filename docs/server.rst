@@ -40,6 +40,13 @@ The server is for PostgreSQL clients, so it isn't direct invocation of SQL (see
 when the statement finishes. A client that disconnects in the middle of a
 transaction rolls it back.
 
+Only PostgreSQL's simple query protocol is supported, not the extended query
+protocol (Parse, Bind, Execute and so on). The first message of the extended
+query protocol is answered with a ``0A000`` (feature not supported) error, so a
+client that uses it (such as JDBC, unless ``preferQueryMode`` is ``simple``)
+shows the error, and the rest are ignored until a Sync, after which the client
+can still send queries.
+
 Many PostgreSQL clients send a ``SELECT`` without a ``FROM`` (such as
 ``SELECT 1``), which isn't valid SQL. ``vsql server`` runs these as if they had
 ``FROM singlerow``, a table with a single row.

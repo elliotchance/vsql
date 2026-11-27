@@ -232,6 +232,18 @@ fn (mut c PGConn) read_startup_message() !string {
 	return database
 }
 
+// skip_message reads the rest of a message (its length, then the body) without
+// using it.
+fn (mut c PGConn) skip_message() ! {
+	c.read_bytes(c.read_int32()! - 4)!
+}
+
+// pg_extended_query_error is sent for a message of the extended query protocol,
+// which isn't supported.
+fn pg_extended_query_error() IError {
+	return sqlstate_0a000('the extended query protocol is not supported, use the simple query protocol (such as preferQueryMode=simple for JDBC)')
+}
+
 fn (mut c PGConn) read_query() !string {
 	// Read the length, but ignore since we're reading a NULL terminated string.
 	c.read_int32()!

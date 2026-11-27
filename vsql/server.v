@@ -411,10 +411,14 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) 
 	conn.write_ready()!
 	s.log('connected')
 
+	// failed is true when a message of the extended query protocol has been
+	// answered with an error, so the rest are ignored until a Sync.
+	mut failed := false
 	for {
 		msg_type := conn.read_byte()!
 		match msg_type {
 			`Q` { // Query
+				failed = false
 				mut query := conn.read_query()!
 
 				// Only the reply of the server is different. The standard has no
@@ -466,6 +470,26 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) 
 				// Don't bother consuming the message since we're going to
 				// disconnect anyway.
 				break
+			}
+			// The extended query protocol (Parse, Bind, Describe, Execute, Close,
+			// Flush and Sync) isn't supported. Like PostgreSQL after an error,
+			// the first message is answered with an error, the rest are ignored
+			// until a Sync, then the server is ready for a query. A client (such
+			// as JDBC by default) shows the error instead of a closed connection.
+			`P`, `B`, `D`, `E`, `C`, `H` {
+				conn.skip_message()!
+				if !failed {
+					failed = true
+					err := pg_extended_query_error()
+					s.log('error: ${err}')
+					conn.write_error_result(err)!
+					conn.flush()!
+				}
+			}
+			`S` { // Sync
+				conn.skip_message()!
+				failed = false
+				conn.write_ready_for_query()!
 			}
 			else {
 				return error('unknown message: ${msg_type.str()}')

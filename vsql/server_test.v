@@ -157,6 +157,55 @@ fn test_server_parameter_status() ! {
 	assert client.query('VALUES 1')!.rows == ['COL1: 1']
 }
 
+// The extended query protocol (used by JDBC by default) isn't supported. The
+// first message is answered with an error and the rest are ignored until a Sync,
+// then the client can still send a query.
+fn test_server_extended_query_protocol() ! {
+	mut server := start_sql_test_server_with(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	defer {
+		client.close()
+	}
+
+	// Parse (an unnamed statement, no parameter types), Bind, Describe,
+	// Execute, Flush, then Sync.
+	mut parse := 'VALUES 1'.bytes()
+	parse.prepend(0)
+	parse << 0
+	parse << [u8(0), 0]
+	mut messages := []u8{}
+	for msg_type, body in {
+		'P': parse
+		'B': [u8(0), 0, 0, 0, 0, 0, 0]
+		'D': [u8(`P`), 0]
+		'E': [u8(0), 0, 0, 0, 0]
+		'H': []u8{}
+		'S': []u8{}
+	} {
+		messages << msg_type[0]
+		messages << pg_test_int32(body.len + 4)
+		messages << body
+	}
+	client.conn.write(messages)!
+
+	msg_type, msg := client.read_message()!
+	assert msg_type == `E`
+	fields := pg_test_fields(msg)
+	assert fields['C'] == '0A000'
+	assert fields['M'] == pg_extended_query_error().msg()
+	ready, _ := client.read_message()!
+	assert ready == `Z`
+
+	assert client.query('VALUES 1')!.rows == ['COL1: 1']
+}
+
 // A client that disconnects in the middle of a transaction is rolled back. If
 // the rollback fails, the server only logs it.
 fn test_server_disconnect_rollback_fails() ! {

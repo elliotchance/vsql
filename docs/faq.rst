@@ -6,30 +6,10 @@ FAQ
 Why are my table and column names in upper case?
 -------------------------------------------------
 
-The SQL standard defines two types of identifiers: *regular* and *delimited*. A
-regular identifier is a word (such as ``foo``) whereas a delimited identifier is
-surrounded by double-quotes (such as ``"foo"``).
-
-The SQL standard states that regular identifiers are always converted to
-upper-case. Apart from being a styling choice, this also means that regular
-identifiers are not case-sensitive so ``foo``, ``Foo`` and ``FOO`` are all valid
-and all mean the same thing, but will be represented as ``FOO``.
-
-Conversely, delimited identifiers keep their case. So ``"foo"`` and ``"Foo"``
-are not the same. But it's worth noting that all identifiers still exist in the
-same set, so ``"FOO"`` and ``FOO`` (or, ``foo``, ``Foo``, etc) *are* actually
-the same.
-
-These rules apply to all identifiers (table names, column names, ``AS`` names,
-etc). So, using delimited identifiers also allows you to control the alias, for
-example: ``SELECT 1 + 2 AS "the Total"`` will keep the column name
-``the Total``.
-
-A delimited identifier can contain any character, except for control and
-format characters (such as a tab or a zero width space), unassigned code points,
-and line and paragraph separators (the Unicode General Categories Cc, Cf, Cn,
-Cs, Zl and Zp). A double-quote is written twice, so ``"say ""hi"""`` is the
-name ``say "hi"``. It can't be empty (``""``).
+A name that isn't in double quotes (a *regular identifier*) is converted to
+upper case, as the SQL standard requires, so ``foo``, ``Foo`` and ``FOO`` are
+all the name ``FOO``. Put a name in double quotes (such as ``"foo"``) to keep
+its case. See :doc:`identifiers`.
 
 Where can I find the SQL standard?
 ----------------------------------

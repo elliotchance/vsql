@@ -48,6 +48,16 @@ buffer length that isn't greater than zero ``HY090``, which it still is with
 null termination (the default). A null pointer for the string is still
 ``HY009``, unless ``libvsql.h`` says the routine allows one.
 
+A parameter bound with ``SQLBindParameter`` is cast to its ``ParameterType``,
+and then to the type of the dynamic parameter (see :doc:`prepared-statements`),
+such as the type of the column in ``INSERT INTO t (s) VALUES (?)``. Like any
+``CAST``, a character or binary string that's too long is cut to the length of
+the type with a warning (``SQL_SUCCESS_WITH_INFO`` and ``01004``, string data,
+right truncation). That happens before the value is stored, so it isn't the
+error (``22001``) of a store assignment, which is what the same value as a
+literal would be (ISO/IEC 9075-3:2003, 5.6, General Rules, 4.p and ISO/IEC
+9075-2:2023, 20.11, General Rules, 6.c.ii.2.B).
+
 Threads
 -------
 

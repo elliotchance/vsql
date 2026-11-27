@@ -195,6 +195,47 @@ UTEST_F(db, 6_6_bind_parameter_not_finite) {
   EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
 }
 
+/* A string that's too long for the type of the dynamic parameter (here, the
+ * type of its column) is cut to that length with a warning (01004), because
+ * the value is cast to that type before it's stored. A store assignment of
+ * the same literal would be an error (22001) instead. */
+UTEST_F(db, 6_6_bind_parameter_right_truncation) {
+  const char *columns[] = {"c", "v", "b", "vb"};
+  char sql[50], out[10];
+  SQLINTEGER len = 4, out_len = 0;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE t (c CHAR(3), v VARCHAR(3), b BINARY(3), "
+                    "vb VARBINARY(3))"),
+            SQL_SUCCESS);
+  for (int i = 0; i < 4; i++) {
+    ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                               i < 2 ? SQL_CHAR : SQL_BINARY,
+                               i < 2 ? SQL_VARCHAR : SQL_VARBINARY, 4, 0,
+                               (SQLPOINTER) "abcd", 0, &len),
+              SQL_SUCCESS);
+    snprintf(sql, sizeof(sql), "INSERT INTO t (%s) VALUES (?)", columns[i]);
+    EXPECT_EQ(run_sql(utest_fixture->stmt, sql), SQL_SUCCESS_WITH_INFO);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "01004");
+  }
+
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_UNBIND_PARAMETERS),
+            SQL_SUCCESS);
+  for (int i = 0; i < 4; i++) {
+    snprintf(sql, sizeof(sql), "SELECT %s FROM t WHERE %s IS NOT NULL",
+             columns[i], columns[i]);
+    ASSERT_EQ(run_sql(utest_fixture->stmt, sql), SQL_SUCCESS);
+    ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+    EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1,
+                         i < 2 ? SQL_CHAR : SQL_BINARY, out, sizeof(out),
+                         &out_len),
+              SQL_SUCCESS);
+    EXPECT_EQ(out_len, 3);
+    EXPECT_EQ(memcmp(out, "abc", 3), 0);
+    ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  }
+}
+
 /* A number can't be cast to a DATE. */
 UTEST_F(db, 6_6_bind_parameter_restricted) {
   SQLINTEGER x = 1;

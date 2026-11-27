@@ -45,6 +45,26 @@ SELECT * FROM t WHERE x > 3;
 -- msg: INSERT 1
 -- X: 4 S: four B: UNKNOWN
 
+-- # The value is cast to the type of the column before it's stored, so a
+-- # string that's too long is cut with a warning, rather than being an error
+-- # like the same literal would be.
+/* params 'abcdefghijk' */
+INSERT INTO t (x, s) VALUES (5, ?);
+SELECT s FROM t WHERE x = 5;
+-- sql: INSERT INTO t (x, s) VALUES (5, 'abcdefghijk')
+-- warning 01004: string data, right truncation
+-- msg: INSERT 1
+-- S: abcdefghij
+
+-- # A comparison only uses the start of a value that's too long.
+/* params 'abcdefghijk' */
+INSERT INTO t (s) VALUES ('abcdefghij');
+SELECT s FROM t WHERE s = ?;
+-- msg: INSERT 1
+-- sql: SELECT s FROM t WHERE s = 'abcdefghijk'
+-- warning 01004: string data, right truncation
+-- S: abcdefghij
+
 -- # 1.9 is cast to the INTEGER 1.
 /* params 1.9 */
 DELETE FROM t WHERE x >= ?;

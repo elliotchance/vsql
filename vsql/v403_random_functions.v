@@ -226,3 +226,11 @@ fn func_random_binary(_ FunctionContext, args []Value) !Value {
 
 	return new_binary_string_value(.is_varbinary, bytes.bytestr())
 }
+
+// random_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const random_arg_names = {
+	'RANDOM':        ['MIN', 'MAX']
+	'RANDOM_BINARY': ['N']
+	'RANDOM_NORMAL': ['MEAN', 'STDDEV']
+}

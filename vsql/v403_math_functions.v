@@ -457,3 +457,24 @@ fn func_lgamma(_ FunctionContext, args []Value) !Value {
 	// Only a very large x is too large, such as LGAMMA(1e308).
 	return approximate_value(math.log_gamma(x), .is_double_precision)
 }
+
+// math_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const math_arg_names = {
+	'ATAN2':      ['Y', 'X']
+	'CBRT':       ['X']
+	'DEGREES':    ['X']
+	'ERF':        ['X']
+	'ERFC':       ['X']
+	'FACTORIAL':  ['N']
+	'GAMMA':      ['X']
+	'GCD':        ['A', 'B']
+	'LCM':        ['A', 'B']
+	'LGAMMA':     ['X']
+	'MIN_SCALE':  ['X']
+	'RADIANS':    ['X']
+	'ROUND':      ['X', 'PLACES']
+	'SIGN':       ['X']
+	'TRIM_SCALE': ['X']
+	'TRUNC':      ['X', 'PLACES']
+}

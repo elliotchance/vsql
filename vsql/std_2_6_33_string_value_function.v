@@ -1050,3 +1050,17 @@ fn (mut c Compiler) flag_clob_function(typ Type) {
 		c.conn.flagged_features << 'T050'
 	}
 }
+
+// register_string_value_funcs registers LOWER and UPPER. Of a CHARACTER LARGE
+// OBJECT they're Feature T050.
+//
+// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 17
+fn register_string_value_funcs(mut conn Connection) ! {
+	varchar := Type{SQLType.is_varchar, 0, 0, false, false}
+	clob := Type{SQLType.is_clob, 0, 0, false, false}
+
+	conn.register_func(Func{'LOWER', [clob], false, func_lower, clob, false, true, ['T050'], [], false})!
+	conn.register_func(Func{'UPPER', [clob], false, func_upper, clob, false, true, ['T050'], [], false})!
+	conn.register_func(Func{'LOWER', [varchar], false, func_lower, varchar, false, true, [], [], false})!
+	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false, true, [], [], false})!
+}

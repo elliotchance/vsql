@@ -1109,7 +1109,7 @@ fn (mut conn Connection) register_func(func Func) ! {
 
 	mut f := func
 	if f.arg_names.len == 0 && !f.called_on_null_input {
-		if names := builtin_arg_names[f.name] {
+		if names := builtin_arg_names(f.name) {
 			f = Func{
 				...f
 				arg_names: names[..f.arg_types.len].clone()
@@ -1278,6 +1278,58 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 	}
 
 	return none
+}
+
+// A FunctionContext is passed to every function (including one registered
+// with register_function) when it's called. It gives the function what it can
+// know besides its arguments: the statement that's executing, the session and
+// transaction it's in, and the database itself.
+pub struct FunctionContext {
+	conn &Connection
+}
+
+// current_timestamp is the same value as CURRENT_TIMESTAMP: the time that the
+// statement started, as a TIMESTAMP(6) WITH TIME ZONE in the session's time
+// zone. Every call in the same statement returns the same time.
+pub fn (ctx FunctionContext) current_timestamp() !Value {
+	return new_timestamp_value(local_now(ctx.conn).strftime('%Y-%m-%d ') +
+		time_value(ctx.conn, 6, true))
+}
+
+// clock_timestamp is the time now, read from the wall clock each time it's
+// called, as a TIMESTAMP(6) WITH TIME ZONE in the session's time zone. Unlike
+// current_timestamp, two calls in the same statement can return different
+// times. NOW() returns this.
+pub fn (ctx FunctionContext) clock_timestamp() !Value {
+	now, time_zone := ctx.conn.session_now()
+	return new_timestamp_value(timestamp_with_time_zone_str(now, time_zone, 6))
+}
+
+// statement_timestamp is the time that the statement started (in UTC), and the
+// time zone of the session (in minutes from UTC).
+pub fn (ctx FunctionContext) statement_timestamp() (time.Time, i16) {
+	return ctx.conn.statement_timestamp, ctx.conn.statement_time_zone
+}
+
+// current_catalog is the same as CURRENT_CATALOG.
+pub fn (ctx FunctionContext) current_catalog() string {
+	return ctx.conn.current_catalog
+}
+
+// current_schema is the same as CURRENT_SCHEMA.
+pub fn (ctx FunctionContext) current_schema() string {
+	return ctx.conn.current_schema
+}
+
+// version is the version of vsql, the same as build_version().
+pub fn (ctx FunctionContext) version() string {
+	return build_version()
+}
+
+// in_transaction is true if the statement is in a transaction that was started
+// with START TRANSACTION, rather than being its own transaction.
+pub fn (ctx FunctionContext) in_transaction() bool {
+	return ctx.conn.in_transaction()
 }
 
 // register_function will register a function that can be used in SQL

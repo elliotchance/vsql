@@ -1129,35 +1129,35 @@
 6.31/SR/11               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/12               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql a scale and approximate numbers are also allowed (V403-01, only flagged for a literal)
 6.31/SR/12.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/12.b             implemented  vsql/funcs.v tests/std_2_6_31_numeric_function_types.sql
-6.31/SR/13               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
+6.31/SR/12.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_numeric_function_types.sql
+6.31/SR/13               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/13.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/13.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
-6.31/SR/14               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
+6.31/SR/13.b             impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql DOUBLE PRECISION
+6.31/SR/14               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/14.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/14.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
+6.31/SR/14.b             impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/15               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
-6.31/SR/16               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
+6.31/SR/16               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/16.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/16.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
-6.31/SR/17               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
+6.31/SR/16.b             impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql DOUBLE PRECISION
+6.31/SR/17               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/17.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/17.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
-6.31/SR/18               implemented  vsql/funcs.v tests/std_2_6_31_math.sql
+6.31/SR/17.b             impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql DOUBLE PRECISION
+6.31/SR/18               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/18.a             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/18.b             impl-defined vsql/funcs.v tests/std_2_6_31_math.sql DOUBLE PRECISION
+6.31/SR/18.b             impl-defined vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql DOUBLE PRECISION
 6.31/SR/19               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/SR/20               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql
 6.31/SR/20.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql
-6.31/SR/20.b             implemented  vsql/funcs.v tests/std_2_6_31_math.sql
+6.31/SR/20.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/SR/20.c             impl-defined vsql/decfloat.v tests/std_2_6_31_decfloat_functions.sql the largest precision of the DECFLOAT arguments
-6.31/SR/21               implemented  vsql/std_2_6_31_numeric_value_function.v,vsql/funcs.v,vsql/std_2_10_4_routine_invocation.v tests/std_2_6_31_width_bucket.sql
+6.31/SR/21               implemented  vsql/std_2_6_31_numeric_value_function.v,vsql/std_2_10_4_routine_invocation.v tests/std_2_6_31_width_bucket.sql
 6.31/SR/22               n/a          - - row pattern recognition (R010)
 6.31/SR/22.a             n/a          - - row pattern recognition (R010)
 6.31/SR/22.b             n/a          - - row pattern recognition (R010)
 6.31/GR/1                container    - -
 6.31/GR/1.a              n/a          - - ARRAY_MAX_CARDINALITY (S403)
-6.31/GR/1.b              implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/1.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/2                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
 6.31/GR/2.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
 6.31/GR/2.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_position.sql
@@ -1179,18 +1179,18 @@
 6.31/GR/6                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_length.sql
 6.31/GR/7                n/a          - - arrays (S091) and multisets (S271)
 6.31/GR/8                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
-6.31/GR/8.a              implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/8.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/8.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/GR/8.c              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/GR/9                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql
-6.31/GR/9.a              implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/9.a              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/9.b              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql
 6.31/GR/9.c              implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql
 6.31/GR/9.c.i            implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql
 6.31/GR/9.c.ii           implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql
 6.31/GR/9.c.iii          implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_mod_zero.sql,tests/std_2_6_31_math.sql
 6.31/GR/10               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
-6.31/GR/10.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/10.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/10.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/GR/10.b.i           implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/GR/10.b.i.1         implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_approximate_errors.sql
@@ -1206,19 +1206,19 @@
 6.31/GR/10.b.viii        implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/GR/10.b.ix          implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql
 6.31/GR/11               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
-6.31/GR/11.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/11.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/11.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/11.c             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_approximate_errors.sql
 6.31/GR/11.d             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/12               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
-6.31/GR/12.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/12.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/12.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/12.c             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/13               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
-6.31/GR/13.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/13.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/13.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/14               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
-6.31/GR/14.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/14.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/14.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/14.c             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/14.d             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
@@ -1227,12 +1227,12 @@
 6.31/GR/14.g             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/14.h             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_math.sql,tests/std_2_6_31_approximate_errors.sql
 6.31/GR/15               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
-6.31/GR/15.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/15.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/15.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
 6.31/GR/15.b.i           implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
 6.31/GR/15.b.ii          implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
 6.31/GR/16               implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
-6.31/GR/16.a             implemented  vsql/funcs.v tests/std_2_6_30_numeric_null_operands.sql
+6.31/GR/16.a             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_30_numeric_null_operands.sql
 6.31/GR/16.b             implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
 6.31/GR/16.b.i           implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
 6.31/GR/16.b.ii          implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_floor_ceil_exact.sql,tests/std_2_6_31_math.sql
@@ -1275,9 +1275,9 @@
 6.31/CR/3                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/4                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/5                n/a          - - a national character string type is the same as a character string type (6.1), so no value has a national declared type; F421 is flagged on the type instead (6.1, Conformance Rules, 6)
-6.31/CR/6                implemented  vsql/funcs.v tests/std_2_6_31_binary_position.sql T047 when either is a BINARY LARGE OBJECT, otherwise T021
-6.31/CR/7                implemented  vsql/funcs.v tests/std_2_6_31_clob_length_position.sql
-6.31/CR/8                implemented  vsql/funcs.v tests/std_2_6_31_binary_octet_length.sql,tests/std_2_6_31_clob_length_position.sql
+6.31/CR/6                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_position.sql T047 when either is a BINARY LARGE OBJECT, otherwise T021
+6.31/CR/7                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_clob_length_position.sql
+6.31/CR/8                implemented  vsql/std_2_6_31_numeric_value_function.v tests/std_2_6_31_binary_octet_length.sql,tests/std_2_6_31_clob_length_position.sql
 6.31/CR/9                implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/10               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
 6.31/CR/11               implemented  vsql/std_2_6_31_numeric_value_function.y tests/std_1_9_6_flagging.sql
@@ -1693,7 +1693,7 @@
 6.33/CR/14               n/a          - - TRANSLATE_REGEX (F845)
 6.33/CR/15               n/a          - - regular expressions (F846)
 6.33/CR/16               n/a          - - regular expressions (F847)
-6.33/CR/17               implemented  vsql/std_2_6_33_string_value_function.v,vsql/funcs.v tests/std_2_6_33_clob_functions.sql
+6.33/CR/17               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_clob_functions.sql
 6.33/CR/18               implemented  vsql/std_2_6_33_string_value_function.v tests/std_2_6_33_binary_substring.sql,tests/std_2_6_33_binary_trim.sql
 6.33/CR/19               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql
 6.33/CR/20               implemented  vsql/std_2_6_33_string_value_function.y tests/std_2_6_33_pad_and_multi_character_trim.sql

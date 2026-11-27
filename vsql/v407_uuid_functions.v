@@ -91,3 +91,10 @@ fn uuid_parse(text string) ![]u8 {
 
 	return unhex_digits(text[..8] + text[9..13] + text[14..18] + text[19..23] + text[24..])!.bytes()
 }
+
+// uuid_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const uuid_arg_names = {
+	'BINARY_TO_UUID': ['OCTETS']
+	'UUID_TO_BINARY': ['STRING']
+}

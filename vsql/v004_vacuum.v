@@ -1,4 +1,4 @@
-// vacuum.v contains VACUUM, which isn't part of the standard. It makes the
+// v004_vacuum.v contains VACUUM, which isn't part of the standard. It makes the
 // database file smaller, without taking the database offline.
 
 module vsql

@@ -27,19 +27,19 @@ fn register_size_funcs(mut conn Connection) ! {
 	], [], false})!
 	conn.register_func(Func{'FORMAT_SIZE', [numeric, bigint], false, func_format_size, varchar, true, true, [
 		vsql_format_size,
-	], builtin_arg_names['FORMAT_SIZE'][..2], false})!
+	], size_arg_names['FORMAT_SIZE'][..2], false})!
 	conn.register_func(Func{'FORMAT_SIZE', [numeric, bigint, varchar], false, func_format_size, varchar, true, true, [
 		vsql_format_size,
-	], builtin_arg_names['FORMAT_SIZE'][..3], false})!
+	], size_arg_names['FORMAT_SIZE'][..3], false})!
 	conn.register_func(Func{'FORMAT_SIZE', [numeric, bigint, varchar, bigint], false, func_format_size, varchar, true, true, [
 		vsql_format_size,
-	], builtin_arg_names['FORMAT_SIZE'], false})!
+	], size_arg_names['FORMAT_SIZE'], false})!
 	conn.register_func(Func{'PARSE_SIZE', [varchar], false, func_parse_size, bigint, false, true, [
 		vsql_parse_size,
 	], [], false})!
 	conn.register_func(Func{'PARSE_SIZE', [varchar, bigint], false, func_parse_size, bigint, true, true, [
 		vsql_parse_size,
-	], builtin_arg_names['PARSE_SIZE'], false})!
+	], size_arg_names['PARSE_SIZE'], false})!
 }
 
 // SizeUnit is bytes (exponent 0), or 1024 (binary) or 1000 to the power of
@@ -371,4 +371,11 @@ fn parse_size(text string, base int) !i64 {
 
 	n := big_integer_to_i64(bytes)
 	return if negative { -n } else { n }
+}
+
+// size_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const size_arg_names = {
+	'FORMAT_SIZE': ['BYTES', 'SIGNIFICANT_FIGURES', 'UNIT', 'BASE']
+	'PARSE_SIZE':  ['SIZE', 'BASE']
 }

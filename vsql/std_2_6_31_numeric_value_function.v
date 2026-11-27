@@ -917,3 +917,116 @@ fn extract_interval(x i64, q IntervalQualifier, field IntervalField, return_type
 
 	return with_numeric_type(new_numeric_value(seconds), return_type)
 }
+
+// register_numeric_value_funcs registers the <numeric value function>s that
+// are called like functions.
+fn register_numeric_value_funcs(mut conn Connection) ! {
+	double_precision := Type{SQLType.is_double_precision, 0, 0, false, false}
+	integer := Type{SQLType.is_integer, 0, 0, false, false}
+	varchar := Type{SQLType.is_varchar, 0, 0, false, false}
+	numeric := Type{SQLType.is_numeric, 0, 0, false, false}
+	smallint := Type{SQLType.is_smallint, 0, 0, false, false}
+	bigint := Type{SQLType.is_bigint, 0, 0, false, false}
+	real := Type{SQLType.is_real, 0, 0, false, false}
+	decimal := Type{SQLType.is_decimal, 0, 0, false, false}
+	varbinary := Type{SQLType.is_varbinary, 0, 0, false, false}
+	blob := Type{SQLType.is_blob, 0, 0, false, false}
+	clob := Type{SQLType.is_clob, 0, 0, false, false}
+
+	// Scalar functions. The trigonometric functions, LOG, LN, EXP, POWER and SQRT
+	// return a DOUBLE PRECISION (the approximate numeric type is
+	// implementation-defined), and so do FLOOR and CEIL of an approximate number.
+	// None of them are called with a NULL argument, the result is NULL.
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 13.b, 14.b and 16-18
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 20.b
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 1.b
+	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [numeric], false, func_abs_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [decimal], false, func_abs_decimal, decimal, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [smallint], false, func_abs_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [integer], false, func_abs_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [bigint], false, func_abs_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'ABS', [real], false, func_abs_real, real, false, true, [], [], false})!
+	conn.register_func(Func{'ACOS', [double_precision], false, func_acos, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'ASIN', [double_precision], false, func_asin, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'ATAN', [double_precision], false, func_atan, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [double_precision], false, func_ceil, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [numeric], false, func_ceil_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [smallint], false, func_floor_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [integer], false, func_floor_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'CEIL', [bigint], false, func_floor_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [double_precision], false, func_ceil, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [numeric], false, func_ceil_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [smallint], false, func_floor_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [integer], false, func_floor_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'CEILING', [bigint], false, func_floor_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'CHARACTER_LENGTH', [varchar], false, func_char_length, integer, false, true, [], [], false})!
+	conn.register_func(Func{'CHAR_LENGTH', [varchar], false, func_char_length, integer, false, true, [], [], false})!
+	// POSITION, CHAR_LENGTH, OCTET_LENGTH, LOWER and UPPER of a CHARACTER LARGE
+	// OBJECT are Feature T050, and OCTET_LENGTH is also T047. The length of a
+	// large value is known without reading it.
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 7 and 8
+	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 17
+	conn.register_func(Func{'CHARACTER_LENGTH', [clob], false, func_char_length, integer, false, true, ['T050'], [], false})!
+	conn.register_func(Func{'CHAR_LENGTH', [clob], false, func_char_length, integer, false, true, ['T050'], [], false})!
+	clob_octet_length := ['T047', 'T050']
+	conn.register_func(Func{'OCTET_LENGTH', [clob], false, func_octet_length, integer, false, true, clob_octet_length, [], false})!
+	conn.register_func(Func{'POSITION', [varchar, clob], false, func_position, integer, false, true, ['T050'], [], false})!
+	conn.register_func(Func{'POSITION', [clob, varchar], false, func_position, integer, false, true, ['T050'], [], false})!
+	conn.register_func(Func{'POSITION', [clob, clob], false, func_position, integer, false, true, ['T050'], [], false})!
+	conn.register_func(Func{'COS', [double_precision], false, func_cos, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'COSH', [double_precision], false, func_cosh, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'EXP', [double_precision], false, func_exp, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [double_precision], false, func_floor, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [numeric], false, func_floor_numeric, numeric, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [smallint], false, func_floor_integer, smallint, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [integer], false, func_floor_integer, integer, false, true, [], [], false})!
+	conn.register_func(Func{'FLOOR', [bigint], false, func_floor_integer, bigint, false, true, [], [], false})!
+	conn.register_func(Func{'LN', [double_precision], false, func_ln, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'LOG', [double_precision, double_precision], false, func_log, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'LOG10', [double_precision], false, func_log10, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'MOD', [double_precision, double_precision], false, func_mod, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'MOD', [numeric, numeric], false, func_mod_numeric, numeric, false, true, [], [], false})!
+	// The result of MOD has the type of the divisor, so there is one for each
+	// combination of integer types.
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 12.b
+	for dividend in [smallint, integer, bigint] {
+		for divisor in [smallint, integer, bigint] {
+			conn.register_func(Func{'MOD', [dividend, divisor], false, func_mod_integer, divisor, false, true, [], [], false})!
+		}
+	}
+	conn.register_func(Func{'OCTET_LENGTH', [varchar], false, func_octet_length, integer, false, true, [], [], false})!
+	// A binary string (and a BINARY is a BINARY VARYING, see find_function) has
+	// a length in octets, and a <binary position expression> finds one binary
+	// string in another. A BINARY LARGE OBJECT needs Feature T047 for both, and
+	// otherwise the <binary position expression> is T021 (either one is
+	// enough).
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Conformance Rules, 6 and 8
+	conn.register_func(Func{'OCTET_LENGTH', [varbinary], false, func_octet_length, integer, false, true, [], [], false})!
+	conn.register_func(Func{'OCTET_LENGTH', [blob], false, func_octet_length, integer, false, true, ['T047'], [], false})!
+	conn.register_func(Func{'POSITION', [varchar, varchar], false, func_position, integer, false, true, [], [], false})!
+	conn.register_func(Func{'POSITION', [varbinary, varbinary], false, func_binary_position, integer, false, true, ['T021'], [], false})!
+	conn.register_func(Func{'POSITION', [varbinary, blob], false, func_binary_position, integer, false, true, ['T047'], [], false})!
+	conn.register_func(Func{'POSITION', [blob, varbinary], false, func_binary_position, integer, false, true, ['T047'], [], false})!
+	conn.register_func(Func{'POSITION', [blob, blob], false, func_binary_position, integer, false, true, ['T047'], [], false})!
+	conn.register_func(Func{'POWER', [double_precision, double_precision], false, func_power, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'SIN', [double_precision], false, func_sin, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'SINH', [double_precision], false, func_sinh, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'SQRT', [double_precision], false, func_sqrt, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'TAN', [double_precision], false, func_tan, double_precision, false, true, [], [], false})!
+	conn.register_func(Func{'TANH', [double_precision], false, func_tanh, double_precision, false, true, [], [], false})!
+	// The operand and bounds of WIDTH_BUCKET are exact (NUMERIC) or approximate
+	// (DOUBLE PRECISION). The result has the type of the count, which must be an
+	// exact numeric (see numeric_function_type), so there's one for each.
+	//
+	// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 21
+	for operand in [numeric, double_precision] {
+		for count in [smallint, integer, bigint, numeric] {
+			conn.register_func(Func{'WIDTH_BUCKET', [operand, operand, operand, count], false, func_width_bucket, count, false, true, [], [], false})!
+		}
+	}
+}

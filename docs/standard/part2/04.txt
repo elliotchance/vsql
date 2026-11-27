@@ -255,7 +255,7 @@
 # 4.23.5, Row pattern match number function
 4.23.5                   n/a          - - row pattern recognition (R010)
 # 4.24, Determinism
-4.24                     implemented  vsql/funcs.v tests/std_2_11_9_check_constraint.sql
+4.24                     implemented  vsql/std_2_10_4_routine_invocation.v tests/std_2_11_9_check_constraint.sql
 # 4.25, Integrity constraints
 4.25                     implemented  vsql/std_2_11_9_check_constraint_definition.v tests/std_2_11_9_check_constraint.sql
 # 4.25.1, Overview of integrity constraints
@@ -339,17 +339,17 @@
 # 4.34, Externally-invoked procedures
 4.34                     implemented  vsql/std_2_13_3_externally_invoked_procedure.v libvsql/module/test.mod
 # 4.35, SQL-invoked routines
-4.35                     partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql only built-in functions and ones registered from V, there are no SQL-invoked routines (T321, #733)
+4.35                     partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only built-in functions and ones registered from V, there are no SQL-invoked routines (T321, #733)
 # 4.35.1, Overview of SQL-invoked routines
-4.35.1                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql only built-in functions and ones registered from V (T321, #733)
+4.35.1                   partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only built-in functions and ones registered from V (T321, #733)
 # 4.35.2, Characteristics of SQL-invoked routines
-4.35.2                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql only DETERMINISTIC and CALLED ON NULL INPUT, which can't be declared (T321, #733)
+4.35.2                   partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql only DETERMINISTIC and CALLED ON NULL INPUT, which can't be declared (T321, #733)
 # 4.35.3, Execution of conventional SQL-invoked routines
-4.35.3                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql a function registered from V is called directly, there's no routine execution context (T321, #733)
+4.35.3                   partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql a function registered from V is called directly, there's no routine execution context (T321, #733)
 # 4.35.4, Invocation of polymorphic table functions
 4.35.4                   n/a          - - polymorphic table functions (B200)
 # 4.35.5, Routine descriptors
-4.35.5                   partial      vsql/funcs.v tests/std_2_10_4_routine_invocation.sql a function has a name, argument types and a return type (T321, #733)
+4.35.5                   partial      vsql/std_2_10_4_routine_invocation.v tests/std_2_10_4_routine_invocation.sql a function has a name, argument types and a return type (T321, #733)
 # 4.35.6, Result sets returned by SQL-invoked procedures
 4.35.6                   n/a          - - returned result sets (T471)
 # 4.36, SQL-paths

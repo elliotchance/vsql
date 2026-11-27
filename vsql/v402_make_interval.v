@@ -133,3 +133,9 @@ fn make_interval_value(typ Type, x big.Integer) !Value {
 
 	return new_interval_value(typ, n)
 }
+
+// make_interval_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const make_interval_arg_names = {
+	'MAKE_INTERVAL': make_interval_names
+}

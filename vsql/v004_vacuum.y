@@ -1,6 +1,6 @@
 %%
 
-// VACUUM isn't part of the standard (see vacuum.v).
+// VACUUM isn't part of the standard (see v004_vacuum.v).
 vacuum_statement:
   VACUUM {
     flag(mut yylex, vsql_vacuum)

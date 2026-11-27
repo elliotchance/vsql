@@ -123,3 +123,9 @@ fn func_date_trunc(_ FunctionContext, args []Value) !Value {
 		}
 	}
 }
+
+// date_trunc_arg_names are the names of the parameters of the functions in this
+// file (see builtin_arg_names).
+const date_trunc_arg_names = {
+	'DATE_TRUNC': ['FIELD', 'SOURCE']
+}

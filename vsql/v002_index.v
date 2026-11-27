@@ -1,4 +1,4 @@
-// index.v contains CREATE INDEX and DROP INDEX, which aren't part of the SQL
+// v002_index.v contains CREATE INDEX and DROP INDEX, which aren't part of the SQL
 // standard (V002 and V003, see the SQL Flagger), and how the entries of each
 // index are kept up to date as rows are written.
 

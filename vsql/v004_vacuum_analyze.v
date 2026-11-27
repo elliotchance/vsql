@@ -1,4 +1,4 @@
-// vacuum_analyze.v contains VACUUM ANALYZE, which isn't part of the standard.
+// v004_vacuum_analyze.v contains VACUUM ANALYZE, which isn't part of the standard.
 // It finds out how much of the database files the objects take, and what each
 // mode of VACUUM would make them, without changing anything.
 

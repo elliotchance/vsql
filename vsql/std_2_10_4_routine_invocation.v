@@ -351,3 +351,102 @@ fn using_function(f Func, using string, arg_types []Type) !Func {
 		func: if f.name == 'POSITION' { func_octet_position } else { func_octet_length }
 	}
 }
+
+// A Func is a built-in function, or one registered with register_function.
+// They aren't SQL-invoked routines (there's no CREATE FUNCTION), but they have
+// some of their characteristics (ISO/IEC 9075-2:2023, 4.35, SQL-invoked
+// routines).
+struct Func {
+	name        string
+	arg_types   []Type
+	is_agg      bool
+	func        fn (FunctionContext, []Value) !Value // not used by aggregates, see eval_set_function
+	return_type Type
+	// called_on_null_input means the function is still called when one of the
+	// arguments is NULL. Otherwise, the result will be NULL without calling the
+	// function, this is the case for all builtin functions. Custom functions are
+	// always called because SQL defaults to CALLED ON NULL INPUT.
+	//
+	// ISO/IEC 9075-2:2023, 11.60, <SQL-invoked routine>
+	called_on_null_input bool
+	// is_deterministic is true when the function always returns the same result
+	// for the same arguments, so it can be used in a CHECK constraint. That's
+	// all builtin functions. Custom functions can't be declared DETERMINISTIC,
+	// so they're NOT DETERMINISTIC (the SQL default, see ISO/IEC 9075-2:2023,
+	// 4.24, Determinism).
+	//
+	// ISO/IEC 9075-2:2023, 11.60, <SQL-invoked routine>
+	is_deterministic bool
+	// features are flagged when the function is called (see
+	// register_flagged_function). It's only used by the SQL Flagger.
+	features []string
+	// arg_names are the names of the parameters, in the same order as
+	// arg_types, which are shown by the PARAMETERS view. They're empty when the
+	// parameters don't have names, and the name of a built-in function's
+	// parameter is in builtin_arg_names.
+	arg_names []string
+	// is_variadic means the function takes any number of arguments after the
+	// arg_types, such as CONCAT. They're a parameter named VARIADIC that's an
+	// ARRAY (see PARAMETERS). Only a built-in function can be variadic, and it
+	// has its own compile (see RoutineInvocation.compile).
+	is_variadic bool
+}
+
+// variadic_parameter_name is the name of the parameter that has the arguments
+// of a variadic function (see Func.is_variadic).
+const variadic_parameter_name = 'VARIADIC'
+
+// builtin_arg_names are the names of the parameters of a built-in function
+// that's a routine of the VSQL schema. An overload with fewer parameters has
+// the first names, such as ROUND(X) and ROUND(X, PLACES). They aren't reserved
+// words, so they never need to be quoted, and they match the documentation of
+// each function. Each file of functions has its own names, such as
+// math_arg_names.
+fn builtin_arg_names(name string) ?[]string {
+	if names := datetime_arg_names[name] {
+		return names
+	}
+	if names := date_trunc_arg_names[name] {
+		return names
+	}
+	if names := make_interval_arg_names[name] {
+		return names
+	}
+	if names := random_arg_names[name] {
+		return names
+	}
+	if names := string_arg_names[name] {
+		return names
+	}
+	if names := binary_arg_names[name] {
+		return names
+	}
+	if names := uuid_arg_names[name] {
+		return names
+	}
+	if names := size_arg_names[name] {
+		return names
+	}
+	if names := math_arg_names[name] {
+		return names
+	}
+	return none
+}
+
+// register_builtin_funcs registers every built-in function: the standard ones,
+// then the vsql extensions.
+fn register_builtin_funcs(mut conn Connection) ! {
+	register_numeric_value_funcs(mut conn)!
+	register_string_value_funcs(mut conn)!
+	register_aggregate_funcs(mut conn)!
+	register_datetime_funcs(mut conn)!
+	register_date_trunc_funcs(mut conn)!
+	register_make_interval_funcs(mut conn)!
+	register_math_funcs(mut conn)!
+	register_string_funcs(mut conn)!
+	register_decfloat_funcs(mut conn)!
+	register_binary_funcs(mut conn)!
+	register_uuid_funcs(mut conn)!
+	register_size_funcs(mut conn)!
+	register_build_funcs(mut conn)!
+}

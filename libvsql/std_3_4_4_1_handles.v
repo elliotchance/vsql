@@ -74,6 +74,11 @@ mut:
 	// options are the options that SQLConnect opens the connection with (see
 	// connection_options.v).
 	options vsql.ConnectionOptions = vsql.default_connection_options()
+	// rolled_back is the exception condition (in class 40, transaction
+	// rollback) that rolled back the SQL-transaction of the connection, until
+	// EndTran ends it or another SQL-transaction is started, so that a commit
+	// fails instead of succeeding without committing anything (see EndTran).
+	rolled_back ?CLIError
 }
 
 // An allocated SQL-statement.

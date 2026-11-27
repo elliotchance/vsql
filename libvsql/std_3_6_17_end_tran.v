@@ -102,6 +102,36 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 
 	is_commit := completion_type in [sql_commit, sql_commit_and_chain]
 	is_chain := completion_type in [sql_commit_and_chain, sql_rollback_and_chain]
+
+	// A statement that raised an exception condition in class 40 (transaction
+	// rollback) has already rolled back the SQL-transaction (ISO/IEC
+	// 9075-2:2023, 4.43.5, Implicit rollbacks), so committing it would commit
+	// nothing. Instead of succeeding, a commit raises the same exception
+	// condition, the same as a commit that can't be completed (General Rules,
+	// 12.d), and every other branch is rolled back. Ending it either way means
+	// it's no longer remembered.
+	mut rolled_back := ?CLIError(none)
+	for dh in branches {
+		mut dbc := dbcs[dh] or { continue }
+		if err := dbc.rolled_back {
+			if rolled_back == none {
+				rolled_back = err
+			}
+		}
+		dbc.rolled_back = none
+	}
+	if is_commit {
+		if err := rolled_back {
+			for dh in branches {
+				mut conn := (dbcs[dh] or { continue }).conn or { continue }
+				close_cursors(dh, false)
+				if conn.in_transaction() {
+					end_transaction(mut diag, mut conn, dh, false, false) or {}
+				}
+			}
+			return err
+		}
+	}
 	if is_commit && branches.filter(connection_active(it)).len > 1 {
 		for dh in branches {
 			mut conn := (dbcs[dh] or { continue }).conn or { continue }
@@ -157,12 +187,31 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 }
 
 // rollback_branches rolls back the other branches of the SQL-transaction of the
-// connection dh, after its own branch was rolled back by an error.
-fn rollback_branches(mut diag Diagnostics, dh i64) {
+// connection dh, after its own branch was rolled back by the error err, which
+// a commit of any of them then raises (see mark_rolled_back).
+fn rollback_branches(mut diag Diagnostics, dh i64, err IError) {
 	for h in active_branches(dh) {
 		mut conn := (dbcs[h] or { continue }).conn or { continue }
 		close_cursors(h, false)
 		end_transaction(mut diag, mut conn, h, false, false) or {}
+		mark_rolled_back(h, err)
+	}
+	mark_rolled_back(dh, err)
+}
+
+// mark_rolled_back remembers that the SQL-transaction of the connection dh was
+// rolled back by an exception condition in class 40 (transaction rollback),
+// such as a serialization failure, so that EndTran can't commit it. One that
+// AUTOCOMMIT started isn't ended by EndTran, so it isn't remembered.
+fn mark_rolled_back(dh i64, err IError) {
+	mut dbc := dbcs[dh] or { return }
+	if dbc.autocommit_transaction {
+		return
+	}
+	sqlstate := if err is CLIError { err.sqlstate } else { vsql.sqlstate_from_int(err.code()) }
+	dbc.rolled_back = CLIError{
+		sqlstate: sqlstate
+		message:  '${err.msg()} (the SQL-transaction was rolled back)'
 	}
 }
 

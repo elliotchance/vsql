@@ -231,6 +231,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		db_query(mut conn, 'START TRANSACTION ${characteristics}')!
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
 		dbc.autocommit_transaction = dbc.autocommit && !is_branch
+		dbc.rolled_back = none
 	}
 	// ISO/IEC 9075-3:2003, 5.4, Implicit cursor, General Rules, 2 and 7:
 	// the cursor of a query is also a cursor of the connection, with the
@@ -258,7 +259,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		if !conn.in_transaction() {
 			stmt.diag.transactions_rolled_back++
 			if was_active {
-				rollback_branches(mut stmt.diag, stmt.dbc)
+				rollback_branches(mut stmt.diag, stmt.dbc, err)
 			}
 		}
 		autocommit(mut stmt.diag, stmt.dbc, false) or {}

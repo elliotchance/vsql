@@ -153,6 +153,14 @@ mut:
 	// checked, so the WHERE of each view that it reads is left out, see
 	// check_view_option.
 	without_view_where bool
+	// nondeterministic_not_allowed is set to what's being created (a view with
+	// CHECK OPTION) while its query is planned, when it can't contain a
+	// potential source of non-determinism, see check_deterministic.
+	nondeterministic_not_allowed string
+	// nondeterministic_leaf_allowed is set for a view with LOCAL CHECK OPTION,
+	// whose leaf underlying table (the view in its FROM) can be
+	// non-deterministic, see check_view_deterministic.
+	nondeterministic_leaf_allowed bool
 	// in_derived_table is set while a derived table is being planned, but not a
 	// subquery in one, see values_aggregation_query.
 	in_derived_table bool

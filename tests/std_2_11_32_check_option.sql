@@ -1,6 +1,8 @@
 /* setup */
 CREATE TABLE t (id INT PRIMARY KEY, x INT);
 CREATE TABLE n (x INT);
+CREATE TABLE d (id INT PRIMARY KEY, ts TIMESTAMP, s VARCHAR(10), tz TIMESTAMP WITH TIME ZONE);
+CREATE TABLE e (id INT, ts TIMESTAMP, s VARCHAR(10), tz TIMESTAMP WITH TIME ZONE);
 INSERT INTO t (id, x) VALUES (1, 10), (2, 20), (3, 30);
 INSERT INTO n (x) VALUES (10), (20), (30);
 
@@ -268,4 +270,52 @@ CREATE VIEW v AS SELECT * FROM t WHERE x IN (SELECT x FROM n) WITH CHECK OPTION;
 /* flags */
 CREATE VIEW v AS SELECT * FROM t WHERE x IN (SELECT x FROM n);
 -- flags:
+-- msg: CREATE VIEW 1
+
+-- # The query of a view with CHECK OPTION can't contain a potential source of
+-- # non-determinism (Syntax Rules, 20, and 9.16), including in a subquery or a
+-- # view that it reads.
+CREATE VIEW v AS SELECT * FROM d WHERE ts < CURRENT_TIMESTAMP WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE ts < LOCALTIMESTAMP WITH LOCAL CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE s = CURRENT_SCHEMA WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE ts = tz WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT id FROM t WHERE x < EXTRACT(YEAR FROM CURRENT_DATE)) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT DISTINCT s FROM e) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT s FROM e GROUP BY s) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT id FROM t FETCH FIRST 1 ROW ONLY) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE id IN (SELECT id FROM t OFFSET 1 ROW) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT s FROM e UNION SELECT s FROM e) WITH CHECK OPTION;
+CREATE VIEW v AS SELECT * FROM d WHERE tz IN (SELECT ts FROM e UNION ALL SELECT tz FROM e) WITH CHECK OPTION;
+-- error 42601: syntax error: CURRENT_TIMESTAMP(6) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: LOCALTIMESTAMP(6) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: CURRENT_SCHEMA cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: comparing TIMESTAMP(6) WITHOUT TIME ZONE with TIMESTAMP(6) WITH TIME ZONE cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: SELECT DISTINCT of CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: GROUP BY of CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: FETCH FIRST cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: OFFSET cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: UNION of CHARACTER VARYING(10) and CHARACTER VARYING(10) cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: UNION of TIMESTAMP(6) WITHOUT TIME ZONE and TIMESTAMP(6) WITH TIME ZONE cannot be used in a view with CHECK OPTION
+
+-- # A deterministic query is fine, and so is UNION ALL of strings, DISTINCT of
+-- # numbers and a comparison with a time zone on both sides.
+CREATE VIEW v AS SELECT * FROM d WHERE s IN (SELECT s FROM e UNION ALL SELECT s FROM e) AND id IN (SELECT DISTINCT x FROM t) AND tz < TIMESTAMP '2020-01-01 00:00:00+00:00' WITH CHECK OPTION;
+-- msg: CREATE VIEW 1
+
+-- # A view that it reads can't be non-deterministic either, except for the view
+-- # in the FROM of a view with LOCAL CHECK OPTION (its leaf underlying table).
+CREATE VIEW n1 AS SELECT * FROM d WHERE ts < CURRENT_TIMESTAMP;
+CREATE VIEW n2 AS SELECT id FROM t WHERE x < EXTRACT(YEAR FROM CURRENT_DATE);
+CREATE VIEW v1 AS SELECT * FROM n1 WITH CHECK OPTION;
+CREATE VIEW v2 AS SELECT * FROM n1 WHERE id > 0 WITH LOCAL CHECK OPTION;
+CREATE VIEW v3 AS SELECT * FROM d WHERE id IN (SELECT id FROM n2) WITH LOCAL CHECK OPTION;
+CREATE VIEW v4 AS SELECT * FROM n1 WHERE id IN (SELECT id FROM n2) WITH CASCADED CHECK OPTION;
+CREATE VIEW v5 AS SELECT * FROM n1;
+-- msg: CREATE VIEW 1
+-- msg: CREATE VIEW 1
+-- error 42601: syntax error: CURRENT_TIMESTAMP(6) cannot be used in a view with CHECK OPTION
+-- msg: CREATE VIEW 1
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a view with CHECK OPTION
+-- error 42601: syntax error: CURRENT_TIMESTAMP(6) cannot be used in a view with CHECK OPTION
 -- msg: CREATE VIEW 1

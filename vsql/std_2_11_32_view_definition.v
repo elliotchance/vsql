@@ -187,6 +187,7 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 17 and 18
 	if stmt.check_option != '' {
 		conn.updatable_view(view, name.catalog_name, map[string]Value{})!
+		conn.check_view_deterministic(view, name)!
 	}
 
 	// ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 1
@@ -195,6 +196,38 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 
 fn (stmt ViewDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE VIEW')
+}
+
+// check_view_deterministic returns an error if the query of a view with CHECK
+// OPTION contains a potential source of non-determinism, including in a view
+// that it reads, so that a row that's seen through the view when it's checked
+// is still seen through it later. With LOCAL, the view in its FROM (its leaf
+// underlying table) can be non-deterministic, but not a view in a subquery. A
+// subquery is planned (and its expressions are compiled) when the tables that
+// it reads are collected.
+//
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 20
+// ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.p
+fn (mut conn Connection) check_view_deterministic(view View, name Identifier) ! {
+	nondeterministic_not_allowed := conn.nondeterministic_not_allowed
+	nondeterministic_leaf_allowed := conn.nondeterministic_leaf_allowed
+	conn.nondeterministic_not_allowed = 'a view with CHECK OPTION'
+	conn.nondeterministic_leaf_allowed = view.check_option == 'LOCAL'
+	defer {
+		conn.nondeterministic_not_allowed = nondeterministic_not_allowed
+		conn.nondeterministic_leaf_allowed = nondeterministic_leaf_allowed
+	}
+
+	query := view.query_expression()!
+	view_query_plan(mut conn, name, query)!
+
+	scope := conn.enter_view(name)
+	defer {
+		conn.leave_view(scope)
+	}
+	if query.body is QuerySpecification {
+		conn.tables_of_subqueries(query.body, map[string]Value{})!
+	}
 }
 
 // view_query_plan plans the query of the view called name. Its names are
@@ -301,6 +334,15 @@ fn (mut conn Connection) find_view(identifier Identifier) ?(View, string) {
 //
 // ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 2.b.iii
 fn create_view_plan(body QuerySpecification, from_clause TablePrimary, view View, params map[string]Value, mut conn Connection, catalog_name string, filter bool) !(Plan, Table) {
+	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 20
+	nondeterministic_not_allowed := conn.nondeterministic_not_allowed
+	if conn.nondeterministic_leaf_allowed && conn.subquery_scopes.len == 0 {
+		conn.nondeterministic_not_allowed = ''
+	}
+	defer {
+		conn.nondeterministic_not_allowed = nondeterministic_not_allowed
+	}
+
 	mut query := view.query_expression()!
 	if conn.without_view_where && query.body is QuerySpecification {
 		spec := query.body as QuerySpecification

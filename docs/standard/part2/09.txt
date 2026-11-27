@@ -601,7 +601,7 @@
 9.16/SR/1.m              n/a          - - multisets (S271)
 9.16/SR/1.n              n/a          - - multisets (S271)
 9.16/SR/1.o              n/a          - - multisets (S271)
-9.16/SR/1.p              n/a          - - only needed for WITH CHECK OPTION (#1258), a CHECK constraint can't read a view
+9.16/SR/1.p              implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_check_option.sql
 9.16/SR/1.q              definition   - -
 9.16/SR/1.r              n/a          - - data change delta tables (T495)
 9.16/SR/1.s              n/a          - - system-versioned tables (T180)
@@ -613,17 +613,17 @@
 9.16/SR/1.y              definition   - -
 9.16/SR/1.z              n/a          - - partitioned join tables (F403)
 9.16/SR/1.aa             definition   - -
-9.16/SR/1.ab             definition   - -
-9.16/SR/1.ac             definition   - -
-9.16/SR/1.ad             definition   - -
-9.16/SR/1.ae             definition   - -
-9.16/SR/1.af             definition   - -
-9.16/SR/1.ag             definition   - -
-9.16/SR/1.ag.i           definition   - -
-9.16/SR/1.ag.ii          definition   - -
-9.16/SR/1.ag.ii.1        definition   - -
-9.16/SR/1.ag.ii.2        definition   - -
-9.16/SR/1.ag.ii.3        definition   - -
+9.16/SR/1.ab             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ac             deviates     vsql/planner.v tests/std_2_11_32_check_option.sql a grouping column of these types is rejected even when it isn't referenced (#1795)
+9.16/SR/1.ad             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ae             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.af             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ag             implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ag.i           implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ag.ii          implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ag.ii.1        implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ag.ii.2        implemented  vsql/planner.v tests/std_2_11_32_check_option.sql
+9.16/SR/1.ag.ii.3        n/a          - - user-defined types (S023)
 9.16/SR/1.ah             implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 9.16/SR/1.ai             implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 9.16/SR/1.aj             n/a          - - multisets (S271)

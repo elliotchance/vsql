@@ -133,6 +133,9 @@ mut:
 	// The FOREIGN KEY constraints of the table, in the order they were defined.
 	// A REFERENCES on a column is the same as a FOREIGN KEY on the table.
 	foreign_keys []ForeignKey
+	// updatable is true for a view (see view_table) that can be changed, see
+	// updatable_view.
+	updatable bool
 pub mut:
 	// The name of the table including the schema.
 	name Identifier

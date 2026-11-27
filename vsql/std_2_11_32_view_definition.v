@@ -16,8 +16,8 @@ import time
 //
 // The columns of a view are fixed when it's created. If a table that the query
 // reads with * has columns added later, the view only has the columns that it
-// was created with. A view can't be changed (INSERT, UPDATE and DELETE on a
-// view are an error, see #1448). The tables, views and columns that it uses
+// was created with. A view that's simply updatable can be changed (see
+// updatable_view). The tables, views and columns that it uses
 // (see ViewUsage) can only be dropped with CASCADE, which drops the view too
 // (see dependent_views).
 
@@ -148,22 +148,40 @@ fn (stmt ViewDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Du
 // view_query_plan plans the query of the view called name. Its names are
 // resolved in the schema of the view.
 fn view_query_plan(mut conn Connection, name Identifier, query QueryExpression) !Plan {
-	current_catalog := conn.current_catalog
-	current_schema := conn.current_schema
-	next_value_not_allowed := conn.next_value_not_allowed
-	in_derived_table := conn.in_derived_table
-	conn.current_catalog = if name.catalog_name != '' { name.catalog_name } else { current_catalog }
-	conn.current_schema = name.schema_name
-	conn.next_value_not_allowed = 'a view'
-	conn.in_derived_table = true
+	scope := conn.enter_view(name)
 	defer {
-		conn.current_catalog = current_catalog
-		conn.current_schema = current_schema
-		conn.next_value_not_allowed = next_value_not_allowed
-		conn.in_derived_table = in_derived_table
+		conn.leave_view(scope)
 	}
 
 	return create_query_expression_plan(query, map[string]Value{}, mut conn, Correlation{})
+}
+
+// ViewScope is how the connection resolved names before it started on the query
+// of a view (see enter_view).
+struct ViewScope {
+	catalog                string
+	schema                 string
+	next_value_not_allowed string
+	in_derived_table       bool
+}
+
+// enter_view resolves the names that follow in the schema of the view called
+// name, until leave_view.
+fn (mut conn Connection) enter_view(name Identifier) ViewScope {
+	scope := ViewScope{conn.current_catalog, conn.current_schema, conn.next_value_not_allowed, conn.in_derived_table}
+	conn.current_catalog = if name.catalog_name != '' { name.catalog_name } else { scope.catalog }
+	conn.current_schema = name.schema_name
+	conn.next_value_not_allowed = 'a view'
+	conn.in_derived_table = true
+
+	return scope
+}
+
+fn (mut conn Connection) leave_view(scope ViewScope) {
+	conn.current_catalog = scope.catalog
+	conn.current_schema = scope.schema
+	conn.next_value_not_allowed = scope.next_value_not_allowed
+	conn.in_derived_table = scope.in_derived_table
 }
 
 // view_table is a view as a virtual table, for the INFORMATION_SCHEMA. The
@@ -195,10 +213,19 @@ fn view_table(mut conn Connection, catalog_name string, view View) Table {
 		}
 	}
 
+	_ := conn.updatable_view(view, catalog_name, map[string]Value{}) or {
+		return Table{
+			name:       name
+			columns:    columns
+			is_virtual: true
+		}
+	}
+
 	return Table{
 		name:       name
 		columns:    columns
 		is_virtual: true
+		updatable:  true
 	}
 }
 

@@ -536,8 +536,9 @@ fn (catalog &CatalogConnection) information_schema_tables(mut conn Connection) [
 
 // tables_view_row is a row of the TABLES view (ISO/IEC 9075-11:2006, 6.50,
 // TABLES base table). Every table is a persistent base table, except for the
-// views (made by CREATE VIEW, or of the INFORMATION_SCHEMA), which can't be
-// inserted into yet (#1448) (Description, 2). There are no temporary tables (F531) or typed tables (S081), so the
+// views (made by CREATE VIEW, or of the INFORMATION_SCHEMA). A view is
+// insertable-into if it's simply updatable (see updatable_view), which the views
+// of the INFORMATION_SCHEMA aren't (Description, 2). There are no temporary tables (F531) or typed tables (S081), so the
 // COMMIT_ACTION, the self-referencing column and the structured type are NULL,
 // and IS_TYPED is NO (Description, 3-6 and 8). Without Feature T111, a table is
 // insertable-into if it's also simply updatable (Description, 7.b).
@@ -556,7 +557,7 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 		new_null_value(.is_varchar), // USER_DEFINED_TYPE_CATALOG
 		new_null_value(.is_varchar), // USER_DEFINED_TYPE_SCHEMA
 		new_null_value(.is_varchar), // USER_DEFINED_TYPE_NAME
-		yes_or_no(!table.is_virtual), // IS_INSERTABLE_INTO
+		yes_or_no(!table.is_virtual || table.updatable), // IS_INSERTABLE_INTO
 		yes_or_no(false), // IS_TYPED
 		new_null_value(.is_varchar), // COMMIT_ACTION
 	]
@@ -571,7 +572,8 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 // part of the PRIMARY KEY or has a CHECK that's exactly "c IS NOT NULL"
 // (Description, 8, see is_known_not_nullable). The identity columns are
 // described by Description, 10-16, generated columns by Description, 17 and 18,
-// and IS_UPDATABLE is NO for views, which can't be updated yet (#1448)
+// and IS_UPDATABLE is YES for a column of a view that's simply updatable (see
+// updatable_view), which the views of the INFORMATION_SCHEMA aren't
 // (Description, 19).
 //
 // Every column is accessible, because there are no privileges (#732), so the
@@ -633,7 +635,7 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 	row << [
 		new_varchar_value(if column.generated != none { 'ALWAYS' } else { 'NEVER' }), // IS_GENERATED
 		generation_expression(column), // GENERATION_EXPRESSION
-		yes_or_no(!table.is_virtual), // IS_UPDATABLE
+		yes_or_no(!table.is_virtual || table.updatable), // IS_UPDATABLE
 	]
 
 	return row

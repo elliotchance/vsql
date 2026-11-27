@@ -35,10 +35,22 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 		conn.release_write_connection()
 	}
 
-	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	// The rows of a view are deleted from its base table.
+	//
+	// ISO/IEC 9075-2:2023, 14.9, <delete statement: searched>, General Rules, 8.b
+	// ISO/IEC 9075-2:2023, 15.10, Effect of deleting some rows from a viewed table
+	target, is_view := conn.view_target(stmt.table_name, params)!
+	mut table_name := if is_view {
+		target.table
+	} else {
+		conn.resolve_table_identifier(stmt.table_name, false)!
+	}
 	mut catalog := conn.catalog_for(table_name)
 	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)
+	if is_view {
+		rows = conn.base_rows(target, rows)!
+	}
 
 	// The rows where the search condition is true are deleted. A positioned
 	// DELETE only deletes the current row of its cursor.

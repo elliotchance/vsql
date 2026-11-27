@@ -275,16 +275,11 @@ SELECT * FROM v;
 -- msg: ALTER TABLE 1
 -- error 42601: syntax error: view ":memory:".PUBLIC.V has 3 columns, but its query has 2
 
--- # A view can't be changed yet (#1448).
+-- # A view isn't a table. It can be changed if it's updatable (see
+-- # std_2_11_32_updatable_views.sql).
 CREATE VIEW v AS SELECT x FROM t;
-INSERT INTO v (x) VALUES (1);
-UPDATE v SET x = 1;
-DELETE FROM v;
 DROP TABLE v RESTRICT;
 -- msg: CREATE VIEW 1
--- error 42601: syntax error: ":memory:".PUBLIC.V is a view, not a table
--- error 42601: syntax error: ":memory:".PUBLIC.V is a view, not a table
--- error 42601: syntax error: ":memory:".PUBLIC.V is a view, not a table
 -- error 42601: syntax error: ":memory:".PUBLIC.V is a view, not a table
 
 -- # A view is kept in the file, and a ROLLBACK undoes it.

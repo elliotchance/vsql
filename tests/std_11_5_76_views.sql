@@ -16,6 +16,7 @@ SELECT COUNT(*) FROM information_schema.tables t JOIN information_schema.views v
 -- COL1: 40
 
 -- # A view made by CREATE VIEW has the text of its query, as it was written.
+-- # It can be updated and inserted into if it's simply updatable.
 CREATE TABLE t (x INT);
 CREATE SCHEMA s;
 CREATE VIEW v (y) AS SELECT x /* the x */ FROM t;
@@ -26,10 +27,10 @@ SELECT table_schema, table_name, table_type, is_insertable_into FROM information
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE VIEW 1
 -- msg: CREATE VIEW 1
--- TABLE_CATALOG: :memory: TABLE_SCHEMA: PUBLIC TABLE_NAME: V VIEW_DEFINITION: SELECT x /* the x */ FROM t CHECK_OPTION: NONE IS_UPDATABLE: NO INSERTABLE_INTO: NO
+-- TABLE_CATALOG: :memory: TABLE_SCHEMA: PUBLIC TABLE_NAME: V VIEW_DEFINITION: SELECT x /* the x */ FROM t CHECK_OPTION: NONE IS_UPDATABLE: YES INSERTABLE_INTO: YES
 -- TABLE_CATALOG: :memory: TABLE_SCHEMA: S TABLE_NAME: lower VIEW_DEFINITION: VALUES 1 CHECK_OPTION: NONE IS_UPDATABLE: NO INSERTABLE_INTO: NO
 -- TABLE_SCHEMA: PUBLIC TABLE_NAME: T TABLE_TYPE: BASE TABLE IS_INSERTABLE_INTO: YES
--- TABLE_SCHEMA: PUBLIC TABLE_NAME: V TABLE_TYPE: VIEW IS_INSERTABLE_INTO: NO
+-- TABLE_SCHEMA: PUBLIC TABLE_NAME: V TABLE_TYPE: VIEW IS_INSERTABLE_INTO: YES
 -- TABLE_SCHEMA: S TABLE_NAME: lower TABLE_TYPE: VIEW IS_INSERTABLE_INTO: NO
 
 -- # The columns of a view have the types of the columns of its query, which

@@ -88,6 +88,10 @@ struct Cursor {
 	table          ?Identifier
 	update_columns []string
 	sort_columns   []string
+	// base_table is the table that a positioned DELETE or UPDATE changes in the
+	// end, which is the base table of table when it's a view (see
+	// updatable_view).
+	base_table Identifier
 mut:
 	// While the cursor is open, rows are all of the rows of the result (they
 	// are found when it's opened) and position is the current row, which is -1
@@ -153,6 +157,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	//
 	// ISO/IEC 9075-2:2023, 14.3, <cursor specification>, Syntax Rules, 4 to 9
 	mut table := ?Identifier(none)
+	mut base_table := Identifier{}
 	mut update_columns := []string{}
 	if updatability := stmt.updatability {
 		if updatability.for_update {
@@ -160,16 +165,19 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 				return sqlstate_42601('cursor ${stmt.name} is not updatable')
 			}
 			table_name := stmt.table_name(mut conn)!
-			// create_plan has already found the table.
-			target := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+			column_names := stmt.column_names(table_name, mut conn)
 			for column in updatability.columns {
-				target.column(column.sub_entity_name)!
+				if column.sub_entity_name !in column_names {
+					return sqlstate_42703(table_name, column.sub_entity_name) // column does not exist
+				}
 				update_columns << column.sub_entity_name
 			}
 			table = table_name
+			base_table = stmt.base_table(params, mut conn)!
 		}
 	} else if simply_updatable && !stmt.scroll && stmt.query.order.len == 0 {
 		table = stmt.table_name(mut conn)!
+		base_table = stmt.base_table(params, mut conn)!
 	}
 
 	mut sort_columns := []string{}
@@ -187,6 +195,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 		table:          table
 		update_columns: update_columns
 		sort_columns:   sort_columns
+		base_table:     base_table
 	}
 
 	return new_result_msg('DECLARE CURSOR', elapsed_parse, t.elapsed())
@@ -212,6 +221,11 @@ fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut
 		return false
 	}
 
+	// A view must be simply updatable too.
+	if view, catalog_name := conn.find_view((from_clause as TablePrimary).body as Identifier) {
+		conn.updatable_view(view, catalog_name, params) or { return false }
+	}
+
 	for operation in plan.operations {
 		if operation is GroupOperation || operation is DistinctOperation
 			|| operation is VirtualTableOperation || operation is SingleRowOperation {
@@ -224,7 +238,8 @@ fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut
 	}
 
 	if query.table_expression.where_clause != none {
-		return stmt.table_name(mut conn)!.id() !in conn.tables_of_subqueries(query, params)!
+		return stmt.base_table(params, mut conn)!.id() !in conn.tables_of_subqueries(query,
+			params)!
 	}
 
 	return true
@@ -283,12 +298,38 @@ fn (mut conn Connection) tables_of_subqueries(query QuerySpecification, params m
 	return conn.subquery_tables.clone()
 }
 
-// table_name is the table of a simply updatable query.
+// table_name is the table (or view) of a simply updatable query.
 fn (stmt DeclareCursor) table_name(mut conn Connection) !Identifier {
+	return conn.resolve_target_identifier(stmt.from_name())
+}
+
+// from_name is the name of the table (or view) of a simply updatable query.
+fn (stmt DeclareCursor) from_name() Identifier {
 	body := stmt.query.body as QuerySpecification
 	from_clause := body.table_expression.from_clause as TablePrimary
 
-	return conn.resolve_table_identifier(from_clause.body as Identifier, false)
+	return from_clause.body as Identifier
+}
+
+// base_table is the base table of a simply updatable query, which a view
+// changes (see updatable_view).
+fn (stmt DeclareCursor) base_table(params map[string]Value, mut conn Connection) !Identifier {
+	if view, catalog_name := conn.find_view(stmt.from_name()) {
+		return conn.updatable_view(view, catalog_name, params)!.table
+	}
+
+	return conn.resolve_table_identifier(stmt.from_name(), false)
+}
+
+// column_names are the names of the columns of the table (or view) of a simply
+// updatable query.
+fn (stmt DeclareCursor) column_names(table_name Identifier, mut conn Connection) []string {
+	if view, _ := conn.find_view(table_name) {
+		return view.columns
+	}
+
+	// create_plan has already found the table.
+	return unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }.column_names()
 }
 
 // sort_columns returns the columns of the table of an updatable cursor that are
@@ -332,6 +373,16 @@ fn (stmt DeclareCursor) sort_columns(table_name Identifier, params map[string]Va
 	for spec in stmt.query.order {
 		spec.expr.compile(mut c)!
 		stmt.compile_result_column(spec, mut c)!
+	}
+
+	// The columns of a view are named like the columns of a table (see
+	// add_correlation_plan).
+	if view, _ := conn.find_view(table_name) {
+		return view.columns.filter(Identifier{
+			schema_name:     table_name.schema_name
+			entity_name:     table_name.entity_name
+			sub_entity_name: it
+		}.id() in conn.collected_columns)
 	}
 
 	// create_plan has already found the table.
@@ -530,7 +581,7 @@ fn (mut cursor Cursor) close() {
 fn (mut conn Connection) current_row(name string, table_name Identifier) !&Cursor {
 	mut cursor := conn.cursor(name)!
 	table := cursor.table or { return sqlstate_34000('cursor ${name} is not updatable') }
-	if conn.resolve_table_identifier(table_name, false)!.id() != table.id() {
+	if conn.resolve_target_identifier(table_name)!.id() != table.id() {
 		return sqlstate_42601('table ${table_name} is not the table of cursor ${name}')
 	}
 
@@ -636,8 +687,7 @@ fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []Row
 	tid := conn.catalog_for(table.name).storage.transaction_id
 
 	for _, mut cursor in conn.cursors {
-		cursor_table := cursor.table or { continue }
-		if !cursor.is_open || cursor_table.id() != table.name.id() {
+		if cursor.table == none || !cursor.is_open || cursor.base_table.id() != table.name.id() {
 			continue
 		}
 

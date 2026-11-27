@@ -58,3 +58,31 @@ html_static_path = ['_static']
 
 # use index.rst instead of contents.rst:
 master_doc = 'index'
+
+# Pygments has no lexer for V ("v" is Verilog, which fails on "$" and stops the
+# build), so V is highlighted as Go, with V's single quoted strings (which can
+# have ${...} in them), keywords and other operators.
+from pygments.lexer import inherit, words
+from pygments.lexers.go import GoLexer
+from pygments.token import Keyword, Operator, String
+
+
+class VLexer(GoLexer):
+    name = 'V'
+    aliases = ['v']
+    filenames = ['*.v']
+
+    tokens = {
+        'root': [
+            (r"'(\\\\|\\'|[^'])*'", String),
+            (words(('as', 'assert', 'const', 'defer', 'enum', 'fn', 'in', 'is',
+                    'module', 'mut', 'none', 'or', 'pub', 'spawn', 'unsafe'),
+                   suffix=r'\b'), Keyword),
+            (r'[?@$]', Operator),
+            inherit,
+        ],
+    }
+
+
+def setup(app):
+    app.add_lexer('v', VLexer)

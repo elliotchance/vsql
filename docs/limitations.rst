@@ -76,6 +76,9 @@ A declared type that's larger than its limit, such as ``VARCHAR(10485761)`` in
 ``CREATE TABLE`` or ``CAST``, is a ``42601`` error. A value that doesn't fit in
 its type is a ``22001`` (for text) or ``22003`` (for numbers) error.
 
+Every type, with its parameters and their defaults, is listed in
+:doc:`data-types`.
+
 .. list-table::
   :header-rows: 1
 

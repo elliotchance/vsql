@@ -152,6 +152,14 @@ PROCEDURE select_all (SQLSTATE, :s SMALLINT);
 PROCEDURE select_too_big (SQLSTATE, :s SMALLINT);
   SELECT 100000 INTO :s FROM t WHERE i = 2;
 
+PROCEDURE create_grouped_view (SQLSTATE);
+  CREATE VIEW grouped (x, n) AS
+  SELECT x, COUNT(*) FROM (VALUES 1, 1, 2) AS g (x) GROUP BY x;
+
+PROCEDURE select_grouped_view (SQLSTATE, :x INTEGER, :n BIGINT);
+  SELECT x, SUM(n) INTO :x, :n FROM grouped
+  WHERE x > 0 GROUP BY x HAVING SUM(n) > 1;
+
 PROCEDURE create_sequence (SQLSTATE);
   CREATE SEQUENCE seq;
 

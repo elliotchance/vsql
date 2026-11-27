@@ -12,6 +12,7 @@ The SQL Language
    expressions.rst
    operators.rst
    functions-index.rst
+   catalogs-and-schemas.rst
    transactions.rst
    prepared-statements.rst
    information-schema.rst

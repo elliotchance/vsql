@@ -12,15 +12,9 @@ Syntax
 
 ``SET CATALOG`` changes the currently selected catalog.
 
-A catalog is a database file. A connection starts with the catalog of the file
-that it opened, and more files can be attached as other catalogs, with
-``Connection.add_catalog()`` in V or by passing more files to ``vsql cli`` (see
-:doc:`cli`).
-
-The name of a catalog is based on the file path using the path's base name up to
-the first ``.``. So, if the complete file path is ``/tmp/mydb.cool.vsql`` the
-catalog would be ``mydb``. The catalog of an in-memory database is
-``:memory:``.
+A catalog is a database file, named after the file up to the first ``.``. See
+:doc:`catalogs-and-schemas` for how more files are attached as catalogs, and
+used together.
 
 ``CURRENT_CATALOG`` can be used in expressions to get the currently selected
 catalog.
@@ -65,5 +59,6 @@ With ``mydb.vsql`` opened, and ``foo.vsql`` attached:
 See Also
 --------
 
+- :doc:`catalogs-and-schemas`
 - :doc:`set-schema`
 - :doc:`start-transaction` (for transactions across catalogs)

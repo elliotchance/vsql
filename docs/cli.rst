@@ -157,13 +157,13 @@ The shell is direct invocation of SQL (ISO/IEC 9075-2:2023, Clause 22,
    COMMIT (0 ms)
 
 Any other files after the first one are attached as more catalogs (see
-:doc:`set-catalog`). Each catalog is named after its file, up to the first
-``.``:
+:doc:`catalogs-and-schemas`). Each catalog is named after its file, up to the
+first ``.``, and the name needs double quotes if it isn't upper case:
 
 .. code-block:: text
 
    $ vsql cli main.vsql archive.vsql
-   vsql> SELECT * FROM archive.public.orders;
+   vsql> SELECT * FROM "archive".public.orders;
 
 in
 ^^

@@ -30,7 +30,14 @@ struct ViewDefinition {
 	columns      []Identifier
 	query        QueryExpression
 	text         string
-	check_option bool
+	check_option string
+}
+
+// ViewCheckOption is the <levels clause> of a WITH CHECK OPTION ("CASCADED" or
+// "LOCAL"), and the number of tokens it has.
+struct ViewCheckOption {
+	level  string
+	tokens int
 }
 
 // View is a view that has been created.
@@ -39,11 +46,11 @@ struct View {
 	columns []string
 	// query is the text of the <query expression>, as it was written.
 	query string
-	// check_option is true for WITH CHECK OPTION, which is always CASCADED (see
-	// check_view_option).
+	// check_option is "CASCADED" or "LOCAL" for WITH CHECK OPTION, or empty
+	// when it's omitted (see check_view_option).
 	//
 	// ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 1.g
-	check_option bool
+	check_option string
 	tid          u64
 }
 
@@ -55,6 +62,31 @@ struct View {
 // the view or of a column.
 fn written_view_query(mut yylex YYLexer, has_lookahead bool, trailing int) string {
 	l := yylex as Lexer
+	first, last := view_query_tokens(l, has_lookahead, trailing)
+
+	return l.written_text(first, last)
+}
+
+// flag_view_check_option flags a view WITH CHECK OPTION whose query contains
+// another query, such as a subquery (a SELECT, VALUES or TABLE after the first
+// one).
+//
+// ISO/IEC 9075-2:2023, 11.32, <view definition>, Conformance Rules, 4
+fn flag_view_check_option(mut yylex YYLexer, has_lookahead bool, trailing int) {
+	l := yylex as Lexer
+	first, last := view_query_tokens(l, has_lookahead, trailing)
+	mut queries := 0
+	for token in l.tokens[first..last] {
+		if token.token in [token_select, token_values, token_table] {
+			queries++
+		}
+	}
+	flag_if(mut yylex, queries > 1, 'F751')
+}
+
+// view_query_tokens is the range of tokens of the query, see
+// written_view_query.
+fn view_query_tokens(l Lexer, has_lookahead bool, trailing int) (int, int) {
 	last := l.last_token(has_lookahead) - trailing
 	mut first := last
 	for l.tokens[first].token != token_create {
@@ -74,7 +106,7 @@ fn written_view_query(mut yylex YYLexer, has_lookahead bool, trailing int) strin
 		}
 	}
 
-	return l.written_text(first + 1, last)
+	return first + 1, last
 }
 
 fn (stmt ViewDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -148,10 +180,12 @@ fn (stmt ViewDefinition) create(mut conn Connection) ! {
 	}
 
 	// A view with CHECK OPTION must be updatable, since the check is made when
-	// it's changed.
+	// it's changed. Only a simply updatable view can be changed (without T111),
+	// which is what LOCAL needs, and it's also effectively updatable, which is
+	// what CASCADED needs.
 	//
-	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 16 and 17
-	if stmt.check_option {
+	// ISO/IEC 9075-2:2023, 11.32, <view definition>, Syntax Rules, 17 and 18
+	if stmt.check_option != '' {
 		conn.updatable_view(view, name.catalog_name, map[string]Value{})!
 	}
 
@@ -267,7 +301,20 @@ fn (mut conn Connection) find_view(identifier Identifier) ?(View, string) {
 //
 // ISO/IEC 9075-2:2023, 11.32, <view definition>, General Rules, 2.b.iii
 fn create_view_plan(body QuerySpecification, from_clause TablePrimary, view View, params map[string]Value, mut conn Connection, catalog_name string, filter bool) !(Plan, Table) {
-	query := view.query_expression()!
+	mut query := view.query_expression()!
+	if conn.without_view_where && query.body is QuerySpecification {
+		spec := query.body as QuerySpecification
+		query = QueryExpression{
+			...query
+			body: QuerySpecification{
+				...spec
+				table_expression: &TableExpression{
+					...spec.table_expression
+					where_clause: none
+				}
+			}
+		}
+	}
 	name := Identifier{
 		...view.name
 		catalog_name: catalog_name
@@ -332,7 +379,11 @@ fn create_view_plan(body QuerySpecification, from_clause TablePrimary, view View
 fn (v View) bytes() []u8 {
 	columns := v.columns.map(delimit_identifier(it)).join(', ')
 
-	check_option := if v.check_option { ' WITH CHECK OPTION' } else { '' }
+	check_option := match v.check_option {
+		'' { '' }
+		'CASCADED' { ' WITH CHECK OPTION' }
+		else { ' WITH ${v.check_option} CHECK OPTION' }
+	}
 
 	return 'CREATE VIEW ${v.name.storage_sql()} (${columns}) AS ${v.query}${check_option}'.bytes()
 }

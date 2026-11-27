@@ -517,5 +517,5 @@
 6.65/DE/2                container    - -
 6.65/DE/2.a              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql the text as it was written, the views of the INFORMATION_SCHEMA have none
 6.65/DE/2.b              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NULL for the views of the INFORMATION_SCHEMA
-6.65/DE/3                implemented  vsql/std_11_5_76_views.v tests/std_2_11_32_check_option.sql CASCADED or NONE, there is no LOCAL (#1262)
+6.65/DE/3                implemented  vsql/std_11_5_76_views.v tests/std_2_11_32_check_option.sql
 6.65/DE/4                implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql always NO

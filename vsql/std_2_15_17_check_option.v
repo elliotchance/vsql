@@ -10,12 +10,13 @@ module vsql
 // ISO/IEC 9075-2:2023, 15.13, Effect of inserting a table into a viewed table, General Rules, 3.b.i
 // ISO/IEC 9075-2:2023, 15.16, Effect of replacing some rows in a viewed table, General Rules, 3.b.i
 //
-// A CHECK OPTION is always CASCADED (there's no LOCAL, #1262), so the query of
-// the view is checked with the WHERE of every view that it reads, none of them
-// are removed (General Rules, 4.b.iii.5 is only for LOCAL). The rows of a view
-// with CHECK OPTION are some of the rows of each view that it reads, so only
-// the outermost view with CHECK OPTION needs to be checked. There are no
-// subviews (S081).
+// A view with CASCADED CHECK OPTION is checked with the WHERE of every view
+// that it reads, so it covers every view with CHECK OPTION that it reads too.
+// A view with LOCAL CHECK OPTION is checked without the WHERE of the views that
+// it reads (including in a subquery), so the next view with CHECK OPTION that
+// it reads is checked in its own right. There are no subviews (S081).
+//
+// ISO/IEC 9075-2:2023, 15.17, Checking of views that specify CHECK OPTION, General Rules, 4.b.iii.5
 //
 // The rows are checked by reading the view, and finding each new row by its
 // id, which a row read through the view keeps (see ExprOperation.execute). This
@@ -37,12 +38,13 @@ fn (mut conn Connection) check_view_option(target UpdatableView, rows []Row) ! {
 		return
 	}
 
-	name := target.checked_views[0]
-	view, _ := conn.find_view(name) or { return }
-	mut plan := view_query_plan(mut conn, name, view.query_expression()!)!
-	mut seen := map[string]bool{}
-	for row in plan.execute([]Row{})! {
-		seen[row.id.hex()] = true
+	mut seen := []map[string]bool{}
+	for name in target.checked_views {
+		view, _ := conn.find_view(name) or { break }
+		seen << conn.view_row_ids(name, view)!
+		if view.check_option == 'CASCADED' {
+			break
+		}
 	}
 
 	table := conn.catalog_for(target.table).storage.table(target.table.storage_id())
@@ -51,8 +53,28 @@ fn (mut conn Connection) check_view_option(target UpdatableView, rows []Row) ! {
 		// have been changed.
 		mut new_row := row
 		new_row.object_key(table)!
-		if new_row.id.hex() !in seen {
-			return sqlstate_44000(name)
+		for i, ids in seen {
+			if new_row.id.hex() !in ids {
+				return sqlstate_44000(target.checked_views[i])
+			}
 		}
 	}
+}
+
+// view_row_ids are the ids of the rows of the view called name, see
+// check_view_option.
+fn (mut conn Connection) view_row_ids(name Identifier, view View) !map[string]bool {
+	without_view_where := conn.without_view_where
+	conn.without_view_where = view.check_option == 'LOCAL'
+	defer {
+		conn.without_view_where = without_view_where
+	}
+
+	mut plan := view_query_plan(mut conn, name, view.query_expression()!)!
+	mut ids := map[string]bool{}
+	for row in plan.execute([]Row{})! {
+		ids[row.id.hex()] = true
+	}
+
+	return ids
 }

@@ -128,7 +128,8 @@ One row for each view in ``TABLES``, in the same order: the views made by
       ``INFORMATION_SCHEMA``, which are built by vsql rather than by a query.
 
   * - ``CHECK_OPTION``
-    - ``CASCADED`` for a view ``WITH CHECK OPTION``, otherwise ``NONE``.
+    - ``CASCADED`` or ``LOCAL`` for a view with a ``CHECK OPTION``, otherwise
+      ``NONE``.
 
   * - ``IS_UPDATABLE``, ``INSERTABLE_INTO``
     - ``YES`` for a view that's updatable (see :doc:`create-view`), otherwise

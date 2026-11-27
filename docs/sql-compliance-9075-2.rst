@@ -944,7 +944,7 @@ Optional Features
    * - ✅ **F741**
      - **Referential MATCH types**
 
-   * - ❌ **F751**
+   * - ✅ **F751**
      - **View CHECK enhancements**
 
    * - ✅ **F761**

@@ -976,7 +976,8 @@ created. The query is kept exactly as it was written (including any comments
 and new lines in it), so its names are resolved again each time the view is
 read, in the schema of the view.
 
-A view with a CHECK OPTION ends with ``WITH CHECK OPTION``, after the query.
+A view with a CHECK OPTION ends with ``WITH CHECK OPTION`` (when it's
+``CASCADED``) or ``WITH LOCAL CHECK OPTION``, after the query.
 
 Index Object
 ------------

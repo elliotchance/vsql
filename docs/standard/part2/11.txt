@@ -1053,7 +1053,7 @@
 11.31/GR/6               implemented  vsql/std_2_11_31_drop_table_statement.v tests/std_2_11_31_drop_table.sql
 11.31/CR/1               implemented  vsql/std_2_11_31_drop_table_statement.y tests/std_1_9_6_flagging.sql
 # 11.32, <view definition>
-11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql there's no LOCAL CHECK OPTION (#1262), and a view of a derived table can't be changed (#1788)
+11.32                    partial      vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql a view of a derived table can't be changed (#1788), and a view with CHECK OPTION can be non-deterministic (#1793)
 11.32/SR/1               definition   - -
 11.32/SR/2               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/SR/3               implemented  vsql/std_2_11_1_schema_definition.v tests/std_2_11_32_view_definition.sql
@@ -1076,9 +1076,9 @@
 11.32/SR/15              n/a          - - there are no collations other than the default (F690)
 11.32/SR/16              implemented  vsql/std_2_11_32_view_definition.y tests/std_2_11_32_check_option.sql
 11.32/SR/17              implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_check_option.sql
-11.32/SR/18              n/a          - - LOCAL CHECK OPTION (#1262)
+11.32/SR/18              implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_check_option.sql
 11.32/SR/19              n/a          - - triggers (T211)
-11.32/SR/20              missing      - - LOCAL CHECK OPTION (#1262)
+11.32/SR/20              missing      - - non-determinism in a view with CHECK OPTION (#1793)
 11.32/SR/21              definition   - -
 11.32/SR/22              n/a          - - subtables (S081)
 11.32/SR/22.a            n/a          - - subtables (S081)
@@ -1240,9 +1240,9 @@
 11.32/GR/11              n/a          - - subtables (S081)
 11.32/GR/12              implemented  vsql/std_11_5_76_views.v tests/std_11_5_76_views.sql
 11.32/CR/1               implemented  vsql/std_2_11_32_view_definition.v tests/std_1_9_6_flagging.sql
-11.32/CR/2               n/a          - - LOCAL and CASCADED CHECK OPTION (#1262)
+11.32/CR/2               implemented  vsql/std_2_11_32_view_definition.y tests/std_2_11_32_check_option.sql
 11.32/CR/3               n/a          - - reference types (S043)
-11.32/CR/4               missing      - - LOCAL and CASCADED CHECK OPTION (#1262)
+11.32/CR/4               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_check_option.sql
 11.32/CR/5               n/a          - - only simply updatable views can have a CHECK OPTION
 11.32/CR/6               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql
 11.32/CR/7               implemented  vsql/std_2_11_32_view_definition.v tests/std_2_11_32_view_definition.sql

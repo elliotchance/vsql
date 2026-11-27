@@ -145,7 +145,9 @@ for up to the ``lock_timeout`` of the connection (5 seconds by default, see
 failure. It waits before it reads anything, so it sees all of the changes that
 the other transaction committed. Connections that are waiting take turns, in no
 particular order, and a connection that has just finished a transaction has to
-wait with them.
+wait with them. A statement that's waiting stops straight away when it's
+canceled from another thread (with ``Connection.cancel()``, or ``SQLCancel`` in
+libvsql).
 
 That means a program that uses two connections to the same file in one thread
 can't start a transaction on one while the other has one, since the other

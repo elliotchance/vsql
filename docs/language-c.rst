@@ -64,7 +64,8 @@ connection) that's used at the same time as the others.
 
 ``SQLCancel`` is the exception: it doesn't wait for the routine that's running
 on the statement. If that routine is executing a statement (such as with
-``SQLExecDirect``), the statement stops soon after, and the routine returns
+``SQLExecDirect``), the statement stops soon after, even when it's waiting for
+another connection's transaction to finish, and the routine returns
 ``SQL_ERROR`` with ``HY008`` (operation canceled). The statement has no effect,
 and the transaction it's in continues.
 

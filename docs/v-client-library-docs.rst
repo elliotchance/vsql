@@ -698,6 +698,9 @@ struct CatalogConnection
    	// write_pending is true when a statement has released its write connection,
    	// but finish_write hasn't decided whether to keep its changes yet.
    	write_pending bool
+   	// cancel_state is Connection.cancel_state, so that waiting for a lock stops
+   	// when the statement is canceled (see IsolationLock.acquire_cancelable).
+   	cancel_state &stdatomic.AtomicVal[u32] = unsafe { nil }
    }
 
 A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.

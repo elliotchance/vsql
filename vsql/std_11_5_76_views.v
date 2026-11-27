@@ -18,7 +18,8 @@ module vsql
 // would also hide it, since the INFORMATION_SCHEMA is its own owner (ISO/IEC
 // 9075-11:2006, 5.1, INFORMATION_SCHEMA Schema).
 //
-// None of them have a CHECK OPTION. A view made by CREATE VIEW can be updated
+// CHECK_OPTION is CASCADED for a view with CHECK OPTION (there's no LOCAL,
+// #1262), otherwise it's NONE. A view made by CREATE VIEW can be updated
 // and inserted into if it's simply updatable (see updatable_view), but the views
 // of the INFORMATION_SCHEMA can't be (Description, 3 and 4). INSERTABLE_INTO is
 // the same as the IS_INSERTABLE_INTO of the TABLES view.
@@ -44,7 +45,7 @@ fn (mut catalog CatalogConnection) register_views_view() ! {
 						new_varchar_value(table.name.schema_name), // TABLE_SCHEMA
 						new_varchar_value(table.name.entity_name), // TABLE_NAME
 						view_definition(c, table), // VIEW_DEFINITION
-						new_varchar_value('NONE'), // CHECK_OPTION
+						view_check_option(c, table), // CHECK_OPTION
 						yes_or_no(table.updatable), // IS_UPDATABLE
 						yes_or_no(table.updatable), // INSERTABLE_INTO
 					])
@@ -52,6 +53,13 @@ fn (mut catalog CatalogConnection) register_views_view() ! {
 			}
 			t.done()
 		})!
+}
+
+// view_check_option is the CHECK_OPTION of the VIEWS view.
+fn view_check_option(c &CatalogConnection, table Table) Value {
+	view := c.storage.views[table.name.storage_id()] or { return new_varchar_value('NONE') }
+
+	return new_varchar_value(if view.check_option { 'CASCADED' } else { 'NONE' })
 }
 
 // view_definition is the VIEW_DEFINITION of the VIEWS view, which is NULL for

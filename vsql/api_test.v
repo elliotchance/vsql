@@ -1095,6 +1095,10 @@ fn test_condition_table() ! {
 	assert table_of_condition(mut db, 'ALTER TABLE s.p ADD COLUMN x INT') == ':memory:.S.P.'
 	assert table_of_condition(mut db, 'CREATE TABLE u (a INT, PRIMARY KEY (b))') == ':memory:.PUBLIC.U.B'
 
+	// A with check option violation is of the view.
+	db.query('CREATE VIEW s.v AS SELECT * FROM p WHERE x > 5 WITH CHECK OPTION')!
+	assert table_of_condition(mut db, 'INSERT INTO s.v (id, x) VALUES (5, 1)') == ':memory:.S.V.'
+
 	// Any other condition doesn't identify a table.
 	assert table_of_condition(mut db, 'CREATE UNIQUE INDEX ci ON c (y)') == 'none'
 	assert table_of_condition(mut db, 'SELECT NEXT VALUE FOR q FROM c') == '...'

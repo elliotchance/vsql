@@ -9,6 +9,7 @@ Syntax
 .. code-block:: text
 
   CREATE VIEW <view_name> [ ( <column_name> , ... ) ] AS <query>
+    [ WITH CHECK OPTION ]
 
   CREATE RECURSIVE VIEW <view_name> ( <column_name> , ... ) AS <query>
 
@@ -97,8 +98,36 @@ rows that are seen through the view:
   -- NAME: Bread PRICE: 5.00 STOCK: 0
   -- NAME: Caviar PRICE: 99.00 STOCK: 0
 
-A new row doesn't have to be seen through the view (``Caviar`` above), because
-``WITH CHECK OPTION`` isn't supported yet.
+A new row doesn't have to be seen through the view (``Caviar`` above), unless
+the view has a ``WITH CHECK OPTION``.
+
+WITH CHECK OPTION
+^^^^^^^^^^^^^^^^^
+
+A view ``WITH CHECK OPTION`` only lets ``INSERT`` and ``UPDATE`` make rows that
+can be seen through the view. Otherwise, the statement fails with a with check
+option violation (``44000``) and nothing is changed. ``DELETE`` isn't checked,
+and neither are the changes made to the table directly.
+
+.. code-block:: sql
+
+  CREATE TABLE products (name VARCHAR(20), price DECIMAL(10, 2));
+  CREATE VIEW cheap AS SELECT * FROM products WHERE price < 5 WITH CHECK OPTION;
+  INSERT INTO cheap VALUES ('Bread', 2.50);
+  INSERT INTO cheap VALUES ('Caviar', 99.00);
+  UPDATE cheap SET price = price * 10;
+  SELECT * FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE VIEW 1
+  -- msg: INSERT 1
+  -- error 44000: with check option violation: ":memory:".PUBLIC.CHEAP
+  -- error 44000: with check option violation: ":memory:".PUBLIC.CHEAP
+  -- NAME: Bread PRICE: 2.50
+
+The view must be updatable. The check is always ``CASCADED``: the rows must also
+be seen through every view that the view reads, even the views that don't have a
+``WITH CHECK OPTION``. A change through a view that reads a view with
+``WITH CHECK OPTION`` is checked by that view too.
 
 Limitations
 -----------
@@ -112,7 +141,8 @@ Limitations
   doesn't use anything, so they can be dropped. The view is then an error when
   it's read.
 - The query can't have a ``?`` parameter or ``NEXT VALUE FOR``.
-- ``WITH CHECK OPTION`` isn't supported.
+- ``WITH LOCAL CHECK OPTION`` and ``WITH CASCADED CHECK OPTION`` aren't
+  supported, but ``WITH CHECK OPTION`` is the same as ``CASCADED``.
 
 Examples
 --------

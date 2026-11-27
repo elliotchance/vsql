@@ -84,12 +84,13 @@ pub fn violated_constraint(err IError) ?Identifier {
 // (class 23) or a transaction rollback because of one (40002). It's the table
 // that doesn't exist, for no such table (42P01), the table that already
 // exists, for a duplicate table (42P07), the table (if there's one) and the
-// column, for no such column (42703), or the table being defined, for a syntax error in a CREATE TABLE or
-// ALTER TABLE (such as a column that's defined more than once). It's none for
-// any other error, and its parts are empty if
-// the condition doesn't know them.
+// column, for no such column (42703), or the table being defined, for a syntax
+// error in a CREATE TABLE or ALTER TABLE (such as a column that's defined more
+// than once). It's the view, for a with check option violation (44000). It's
+// none for any other error, and its parts are empty if the condition doesn't
+// know them.
 //
-// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A and 4.h.ii
+// ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, General Rules, 4.f.ii.1.B, 4.h.i.1.A, 4.h.ii and 4.j
 // ISO/IEC 9075-3:2003, 6.33, GetDiagField, General Rules, 12.i.ii.2.A, 12.i.iii.1 and 12.i.iii.2
 pub fn condition_table(err IError) ?Identifier {
 	return match err {
@@ -99,6 +100,7 @@ pub fn condition_table(err IError) ?Identifier {
 		SQLState23505 { err.table }
 		SQLState23514 { err.table }
 		SQLState40002 { err.table }
+		SQLState44000 { err.table }
 		SQLState42601 {
 			if err.table.entity_name == '' && err.table.sub_entity_name == '' {
 				none
@@ -1403,6 +1405,21 @@ fn sqlstate_55p03(msg string) IError {
 	return SQLState55P03{
 		code: sqlstate_to_int('55P03')
 		msg:  msg
+	}
+}
+
+// with check option violation: a row that was inserted or changed through a
+// view with CHECK OPTION can't be seen through the view. table is the view.
+struct SQLState44000 {
+	SQLState
+	table Identifier
+}
+
+fn sqlstate_44000(view Identifier) IError {
+	return SQLState44000{
+		code:  sqlstate_to_int('44000')
+		msg:   'with check option violation: ${view}'
+		table: view
 	}
 }
 

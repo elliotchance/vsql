@@ -20,7 +20,7 @@ SELECT * FROM t;
 -- ID: 5 X: 50 Y: def
 
 -- # A new row doesn't have to be seen through the view, because there's no
--- # WITH CHECK OPTION (#1258).
+-- # WITH CHECK OPTION.
 CREATE VIEW v AS SELECT id, x FROM t WHERE x > 10;
 INSERT INTO v VALUES (4, 5);
 SELECT * FROM v;

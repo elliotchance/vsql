@@ -52,6 +52,12 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 // insert inserts the rows and returns how many there are. The caller must have
 // the write connection open.
 fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !int {
+	return stmt.insert_rows(mut conn, params)!.len
+}
+
+// insert_rows inserts the rows and returns them, as they were written to the
+// base table.
+fn (stmt InsertStatement) insert_rows(mut conn Connection, params map[string]Value) ![]Row {
 	// The rows of a view are inserted into its base table. Each column of the
 	// view is a column of the table, and the other columns of the table get
 	// their default.
@@ -73,11 +79,16 @@ fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !
 			}
 		}
 
-		return InsertStatement{
+		rows := InsertStatement{
 			...stmt
 			table_name: target.table
 			columns:    columns
-		}.insert(mut conn, params)
+		}.insert_rows(mut conn, params)!
+
+		// ISO/IEC 9075-2:2023, 14.11, <insert statement>, General Rules, 8.b.ii
+		conn.check_view_option(target, rows)!
+
+		return rows
 	}
 
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
@@ -135,7 +146,7 @@ fn (stmt InsertStatement) insert(mut conn Connection, params map[string]Value) !
 		conn.add_warning(sqlstate_02000())
 	}
 
-	return rows.len
+	return rows
 }
 
 // row_elements returns each value of one row of the VALUES. A row with more than

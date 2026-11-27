@@ -250,6 +250,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	})
 	apply_referential_actions(mut conn, mut catalog.storage, table, row_changes)!
 
+	// ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, General Rules, 14.b.ii
+	// ISO/IEC 9075-2:2023, 15.7, Effect of a positioned update, General Rules, 17.b.ii
+	if is_view {
+		conn.check_view_option(target, changes.map(it[1]))!
+	}
+
 	// There is a case where no records were updated. The potential problem is
 	// that the field assignments might be wrong, but we never knew they were
 	// wrong (because we never actually evaluated them for any rows). So if

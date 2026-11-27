@@ -24,18 +24,21 @@ module vsql
 //
 // INSERT puts the new rows in the base table, and its other columns get their
 // default (see InsertStatement.insert). A new row doesn't have to satisfy the
-// WHERE of the view, so it may not be seen through the view (there's no WITH
-// CHECK OPTION yet, see #1258). UPDATE and DELETE only change the rows that are
-// seen through the view. Each row that's read through the view keeps the id of
-// its row in the base table (see ExprOperation.execute), which is how the row of
-// the base table is found (see base_rows).
+// WHERE of the view, so it may not be seen through the view, unless the view
+// has a CHECK OPTION (see check_view_option). UPDATE and DELETE only change
+// the rows that are seen through the view. Each row that's read through the
+// view keeps the id of its row in the base table (see ExprOperation.execute),
+// which is how the row of the base table is found (see base_rows).
 
 // UpdatableView is a view that can be changed. table is its leaf underlying
 // table, and columns is the column of table for each column of the view.
+// checked_views are the full names of the view and the views it reads that
+// have a CHECK OPTION, outermost first (see check_view_option).
 struct UpdatableView {
-	view    View
-	table   Identifier
-	columns map[string]string
+	view          View
+	table         Identifier
+	columns       map[string]string
+	checked_views []Identifier
 }
 
 // updatable_view returns the view if it's simply updatable, otherwise it's an
@@ -83,6 +86,7 @@ fn (mut conn Connection) updatable_view(view View, catalog_name string, params m
 	mut table := Identifier{}
 	mut from_columns := []string{}
 	mut base_columns := map[string]string{}
+	mut checked_views := if view.check_option { [name] } else { []Identifier{} }
 	if inner, inner_catalog := conn.find_view(table_primary.body as Identifier) {
 		updatable := conn.updatable_view(inner, inner_catalog, params) or {
 			return not_updatable
@@ -90,6 +94,7 @@ fn (mut conn Connection) updatable_view(view View, catalog_name string, params m
 		table = updatable.table
 		from_columns = inner.columns
 		base_columns = updatable.columns.clone()
+		checked_views << updatable.checked_views
 	} else {
 		table = conn.resolve_table_identifier(table_primary.body as Identifier, false) or {
 			return not_updatable
@@ -131,7 +136,7 @@ fn (mut conn Connection) updatable_view(view View, catalog_name string, params m
 		columns[column] = base_columns[from_column]
 	}
 
-	return UpdatableView{view, table, columns}
+	return UpdatableView{view, table, columns, checked_views}
 }
 
 // view_target is the view that an INSERT, UPDATE or DELETE changes, or none

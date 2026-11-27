@@ -1,6 +1,7 @@
 module main
 
 import encoding.utf8
+import math
 import vsql
 
 // ISO/IEC 9075-3:2003, 5.6, Implicit EXECUTE USING and OPEN USING clauses
@@ -253,8 +254,15 @@ fn ipd_type(ipd &Desc, i int) vsql.Type {
 }
 
 // read_c_value is the value of a host variable of a C type. A string has a
-// length in octets, or SQL_NTS. A binary string has a length in octets.
+// length in octets, or SQL_NTS. A binary string has a length in octets. A REAL
+// or DOUBLE PRECISION must be finite, since SQL has no NaN or infinity: data
+// exception — numeric value out of range.
 fn read_c_value(typ vsql.SQLType, data voidptr, length i64) !vsql.Value {
+	if (typ == .is_real && !is_finite(f64(unsafe { *&f32(data) })))
+		|| (typ == .is_double_precision && !is_finite(unsafe { *&f64(data) })) {
+		return cli_error('22003', 'numeric value out of range')
+	}
+
 	return unsafe {
 		match typ {
 			.is_varbinary {
@@ -280,6 +288,10 @@ fn read_c_value(typ vsql.SQLType, data voidptr, length i64) !vsql.Value {
 			}
 		}
 	}
+}
+
+fn is_finite(f f64) bool {
+	return !math.is_nan(f) && !math.is_inf(f, 0)
 }
 
 // character_value is a character string value without the part of a character

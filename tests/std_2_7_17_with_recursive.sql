@@ -127,12 +127,53 @@ WITH RECURSIVE n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n FETCH FIRST 3 RO
 -- error 42601: syntax error: a WITH RECURSIVE query cannot be read in its own query on the side of an outer join that has NULLs added
 -- error 42601: syntax error: a query that reads a WITH RECURSIVE query in its own query cannot have FETCH FIRST
 
--- # Its own query can't contain a WITH RECURSIVE (Syntax Rules, 3.g), and a
--- # name can't be read before its query (#1784).
+-- # Its own query can't contain a WITH RECURSIVE (Syntax Rules, 3.g).
 WITH RECURSIVE n (x) AS (WITH RECURSIVE m (y) AS (VALUES 1) SELECT y FROM m) SELECT * FROM n;
-WITH RECURSIVE a (x) AS (SELECT * FROM b), b (y) AS (VALUES 1) SELECT * FROM a;
 -- error 42601: syntax error: WITH RECURSIVE query N cannot contain a WITH RECURSIVE
--- error 42601: syntax error: WITH RECURSIVE query B cannot be read before it's defined
+
+-- # Every name is in scope in all of the queries, so a query can read a query
+-- # after it, which hides a table with the same name (Syntax Rules, 3.i.ii).
+WITH RECURSIVE a (x) AS (SELECT y FROM b), b (y) AS (VALUES 1) SELECT * FROM a;
+WITH RECURSIVE a (x) AS (SELECT y * 2 FROM edges), edges (y) AS (VALUES 7) SELECT * FROM a;
+WITH RECURSIVE c (z) AS (SELECT x FROM n UNION ALL SELECT z + 10 FROM c WHERE z < 20), n (x) AS (VALUES 1 UNION ALL SELECT x + 1 FROM n WHERE x < 2) SELECT * FROM c;
+-- X: 1
+-- X: 14
+-- Z: 1
+-- Z: 2
+-- Z: 11
+-- Z: 12
+-- Z: 21
+-- Z: 22
+
+-- # Queries can read each other (mutual recursion). They're run together, and
+-- # each iteration of each one reads the rows that were added last time to the
+-- # others (General Rules, 2.c.ii). Only one query of each cycle has to be a
+-- # UNION of a query that doesn't read them (Syntax Rules, 3.j.vii and
+-- # 3.j.viii).
+WITH RECURSIVE even (n) AS (VALUES 0 UNION ALL SELECT n + 1 FROM odd WHERE n < 5), odd (n) AS (SELECT n + 1 FROM even) SELECT * FROM (SELECT 'even' AS k, n FROM even UNION ALL SELECT 'odd', n FROM odd) AS d ORDER BY n;
+WITH RECURSIVE a (x) AS (VALUES 1 UNION SELECT y + 1 FROM b WHERE y < 6), b (y) AS (VALUES 10 UNION SELECT x * 2 FROM a WHERE x < 4) SELECT * FROM a;
+WITH RECURSIVE a (x) AS (VALUES 1 UNION SELECT y + 1 FROM b WHERE y < 6), b (y) AS (VALUES 10 UNION SELECT x * 2 FROM a WHERE x < 4) SELECT * FROM b;
+-- K: even N: 0
+-- K: odd  N: 1
+-- K: even N: 2
+-- K: odd  N: 3
+-- K: even N: 4
+-- K: odd  N: 5
+-- X: 1
+-- X: 3
+-- Y: 10
+-- Y: 2
+-- Y: 6
+
+-- # A cycle without a UNION that has a query that doesn't read the others is an
+-- # error, and a query can only read one of them once (it's linearly recursive,
+-- # Syntax Rules, 3.j.x).
+WITH RECURSIVE a (x) AS (SELECT y FROM b), b (y) AS (SELECT x FROM a) SELECT * FROM a;
+WITH RECURSIVE a (x) AS (VALUES 1 UNION SELECT y FROM b), b (y) AS (SELECT x FROM a UNION SELECT z FROM c), c (z) AS (SELECT y FROM b) SELECT * FROM a;
+WITH RECURSIVE a (x) AS (VALUES 1 UNION ALL SELECT x + y FROM a, b WHERE x < 5), b (y) AS (SELECT x FROM a) SELECT * FROM a;
+-- error 42601: syntax error: WITH RECURSIVE queries A, B read each other, so one of them must be a UNION of a query that does not read them and one that does
+-- error 42601: syntax error: WITH RECURSIVE queries A, B, C read each other, so one of them must be a UNION of a query that does not read them and one that does
+-- error 42601: syntax error: a query can only read a WITH RECURSIVE query once in its own query
 
 -- # A RECURSIVE view is a view of a WITH RECURSIVE query with the same name and
 -- # columns (Part 2, 11.32, Syntax Rules, 9.e), which is how it's kept. It needs
@@ -175,3 +216,29 @@ WITH RECURSIVE r (n) AS (VALUES 1 UNION ALL (WITH s AS (SELECT n + 1 AS m FROM r
 -- N: 1
 -- N: 2
 -- N: 3
+
+-- # A column of a query that reads each other that isn't recursively derived
+-- # has the type of both sides combined, and so does the query that reads it.
+WITH RECURSIVE even (n, s) AS (VALUES (0, 'a') UNION ALL SELECT n + 1, 'abc' FROM odd WHERE n < 2), odd (n, s) AS (SELECT n + 1, s FROM even) SELECT * FROM odd;
+-- N: 1 S: a
+-- N: 3 S: abc
+
+-- # Queries that aren't a UNION can read each other, as long as each cycle has
+-- # one that is.
+WITH RECURSIVE a (x) AS (VALUES 1 UNION ALL SELECT x FROM b), b (x) AS (SELECT x FROM d UNION ALL SELECT x FROM c), c (x) AS (SELECT x FROM d), d (x) AS (SELECT x + 1 FROM a WHERE x < 3) SELECT COUNT(*) FROM a;
+-- COL1: 7
+
+-- # The names of a WITH RECURSIVE are found before its queries are parsed, but
+-- # a syntax error is still an error.
+WITH RECURSIVE 1 (x) AS (VALUES 1) SELECT 1 FROM edges;
+WITH RECURSIVE a (x) (VALUES 1) SELECT * FROM a;
+WITH RECURSIVE a (x) AS VALUES 1 SELECT * FROM a;
+WITH RECURSIVE "a"."b"."c"."d"."e" (x) AS (VALUES 1) SELECT * FROM a;
+WITH RECURSIVE 'a' (x) AS (VALUES 1) SELECT 1 FROM edges;
+WITH RECURSIVE "" (x) AS (VALUES 1) SELECT 1 FROM edges;
+-- error 42601: syntax error: unexpected number at line 1, column 16 near "WITH RECURSIVE 1 ("
+-- error 42601: syntax error: unexpected "(" at line 1, column 22 near "(x) (VALUES", expecting AS
+-- error 42601: syntax error: unexpected VALUES at line 1, column 25 near "x) AS VALUES 1", expecting "("
+-- error 42601: syntax error: unexpected "." at line 1, column 19 near "WITH RECURSIVE "a"."b"", expecting AS or "("
+-- error 42601: syntax error: unexpected string at line 1, column 16 near "WITH RECURSIVE 'a' ("
+-- error 42601: syntax error: a delimited identifier cannot be empty

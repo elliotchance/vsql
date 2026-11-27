@@ -23,8 +23,8 @@ query_expression:
 // The names of a with_list are in scope as each with_list_element is parsed
 // (see add_with_list_element), until the end of the query_expression that
 // contains it (see with_query_expression). The names of a WITH RECURSIVE are
-// in scope from each query_name, so that its own query can read it (see
-// add_recursive_query_name).
+// in scope in all of its queries, so a query can read itself and the queries
+// after it (see start_recursive_with and finish_recursive_with).
 //
 // ISO/IEC 9075-2:2023, 7.17, <query expression>, Syntax Rules, 3.i.i and 3.i.ii
 with_clause:
@@ -41,11 +41,12 @@ with_clause:
     // ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 3
     flag(mut yylex, 'T121')
     flag(mut yylex, 'T131')
+    finish_recursive_with($2.v as []WithListElement)
     $$.v = $2.v
   }
 
 with_recursive:
-  WITH RECURSIVE { start_recursive_with(mut yylex)! }
+  WITH RECURSIVE { start_recursive_with(mut yylex, true)! }
 
 recursive_with_list:
   recursive_with_list_element {

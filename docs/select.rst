@@ -349,9 +349,26 @@ nor does a query that always adds a row (such as ``SELECT n + 1 FROM n``)
 unless it has a ``WHERE`` to stop it.
 
 Every query of a ``WITH RECURSIVE`` must have a list of column names, which
-have the types of the side of the ``UNION`` that doesn't read it. A name can
-only be read by its own query and the ones after it. In its own query, it can
-only be read once by each ``SELECT``, and only in ``FROM`` (including in a
+have the types of the side of the ``UNION`` that doesn't read it. Every name can
+be read by all of its queries, including the ones before it, so queries can
+also read each other. They're run together, and each one reads the rows that
+were added last time to the others. Only one query of each cycle needs to be a
+``UNION`` with a side that doesn't read any of them:
+
+.. code-block:: sql
+
+  WITH RECURSIVE even (n) AS (
+    VALUES 0
+    UNION ALL
+    SELECT n + 1 FROM odd WHERE n < 5
+  ), odd (n) AS (
+    SELECT n + 1 FROM even
+  )
+  SELECT * FROM odd;  -- 1, 3 and 5
+
+In the queries that it reads itself through (its own query, or one that reads
+each other with it), a name can only be read once by each ``SELECT`` (even
+reading a different one of them), and only in ``FROM`` (including in a
 subquery in ``FROM``), but not:
 
 - In a ``SELECT`` with an aggregate function, such as ``COUNT(*)``.

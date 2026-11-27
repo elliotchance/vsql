@@ -160,8 +160,26 @@ fn cancel_running(statement_handle i64) bool {
 // already, and returns true if it did. GC_register_my_thread returns
 // GC_SUCCESS (0) if it registered the thread, or GC_DUPLICATE if the thread was
 // already registered.
+//
+// On Windows, the GC stops the world by suspending the other registered threads
+// wherever they are, and then it marks with a temporary SIGSEGV handler that it
+// sets with signal(). The first signal() for SIGSEGV on a thread allocates the
+// thread's copy of the C runtime's table of handlers. So if the collecting
+// thread hasn't called it before, it waits for the heap lock, and if a
+// suspended thread holds that lock (such as in malloc), the process hangs. So
+// each routine calls signal() first, before the thread registers and can be
+// suspended. A thread that's already registered (such as the one that loaded
+// the library) also needs it, since it may not have called it yet.
 fn register_thread() bool {
 	$if gcboehm ? {
+		$if windows {
+			unsafe {
+				handler := C.signal(C.SIGSEGV, C.SIG_DFL)
+				if handler != C.SIG_ERR {
+					C.signal(C.SIGSEGV, handler)
+				}
+			}
+		}
 		sb := C.GC_stack_base{}
 		if C.GC_get_stack_base(&sb) == 0 {
 			return C.GC_register_my_thread(&sb) == 0

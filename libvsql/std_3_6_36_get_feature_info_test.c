@@ -21,6 +21,28 @@ UTEST_F(db, 6_36_get_feature_info) {
   EXPECT_EQ(supported, 1);
 }
 
+/* The cursor of the query of the SQL_FEATURES view is closed when GetFeatureInfo
+ * returns, so it isn't held after a commit, which would stop the next
+ * transaction from having another isolation level (#1851). */
+UTEST_F(db, 6_36_get_feature_info_after_commit) {
+  SQLSMALLINT supported = -1;
+
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", SQL_NTS,
+                              (SQLCHAR *)"E011", SQL_NTS, NULL, 0, &supported),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  supported = -1;
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", SQL_NTS,
+                              (SQLCHAR *)"E011", SQL_NTS, NULL, 0, &supported),
+            SQL_SUCCESS);
+  EXPECT_EQ(supported, 1);
+}
+
 UTEST_F(db, 6_36_get_feature_info_subfeature) {
   SQLSMALLINT supported = -1;
 

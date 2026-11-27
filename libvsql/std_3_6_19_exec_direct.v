@@ -57,6 +57,39 @@ fn exec_direct_text(mut stmt Stmt, text string) !i16 {
 	return exec_direct(mut stmt, &char(text.str), SQLInteger(text.len))
 }
 
+// implicit_first_row is the first row of a query that's executed by an implicit
+// ExecDirect for a CLI routine of the connection dh (as the values of its
+// columns), or no values if it has no rows. The statement handle that's
+// allocated for it is freed with its cursor, and an SQL-transaction that was
+// started for it is committed if AUTOCOMMIT is on, the same as FreeHandle.
+// Otherwise the cursor would still be open after the routine returns, and as a
+// holdable cursor it would stop the next SQL-transaction from having another
+// isolation level (#1851).
+fn implicit_first_row(mut diag Diagnostics, dh i64, text string) ![]vsql.Value {
+	sh := new_stmt(dh)
+	mut stmt := stmts[sh] or { return cli_error('HY000', 'statement handle not allocated') }
+	values := implicit_values(mut stmt, text) or {
+		stmt.destroy_cursor()
+		free_stmt(sh)
+		return err
+	}
+	stmt.destroy_cursor()
+	free_stmt(sh)
+	autocommit(mut diag, dh, true)!
+
+	return values
+}
+
+fn implicit_values(mut stmt Stmt, text string) ![]vsql.Value {
+	exec_direct_text(mut stmt, text)!
+	cursor := stmt.cursor or { return cli_error('HY000', 'no value') }
+	if stmt.rows.len == 0 {
+		return []
+	}
+
+	return cursor.columns.map(stmt.rows[0].get_column(it)!)
+}
+
 // preparable_statement is the text of a statement for ExecDirect or Prepare
 // (see 6.19, "ExecDirect", General Rules 2 to 5 and 7).
 fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInteger) !string {

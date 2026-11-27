@@ -866,13 +866,15 @@ fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn 
 		// A column of "SELECT *" is named by the column it refers to, such as
 		// T.A, but the result only has the column name (and the key of a
 		// duplicate name, see new_expr_operation), which is what each row of the
-		// result is read with (#716).
+		// result is read with (#716). The name is always the name of the left
+		// column, so it's unnamed when that is.
 		columns << Column{
-			name: Identifier{
+			name:    Identifier{
 				custom_id:       column.name.custom_id
 				sub_entity_name: column.name.sub_entity_name
 			}
-			typ:  typ
+			typ:     typ
+			unnamed: column.unnamed
 		}
 	}
 

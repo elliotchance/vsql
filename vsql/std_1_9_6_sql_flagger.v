@@ -174,6 +174,10 @@ import arrays
 // V403-15: ERFC.
 // V403-16: GAMMA.
 // V403-17: LGAMMA.
+// V403-18: INTEGER_TO_BASE.
+// V403-19: BASE_TO_INTEGER.
+// V403-20: INTEGER_TO_HEX.
+// V403-21: HEX_TO_INTEGER.
 // V403-22: TRIM_SCALE.
 // V403-23: MIN_SCALE.
 // V403-24: RANDOM with a minimum and maximum.
@@ -381,6 +385,10 @@ const vsql_erf = 'V403-14'
 const vsql_erfc = 'V403-15'
 const vsql_gamma = 'V403-16'
 const vsql_lgamma = 'V403-17'
+const vsql_integer_to_base = 'V403-18'
+const vsql_base_to_integer = 'V403-19'
+const vsql_integer_to_hex = 'V403-20'
+const vsql_hex_to_integer = 'V403-21'
 const vsql_trim_scale = 'V403-22'
 const vsql_min_scale = 'V403-23'
 const vsql_random_range = 'V403-24'

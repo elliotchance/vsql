@@ -68,6 +68,7 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 8
 	db_close(mut conn)
 	dbc.conn = none
+	dbc.rolled_back = none
 	dbc.is_default = false
 
 	// ISO/IEC 9075-3:2003, 6.16, Disconnect, General Rules, 7 and 10: if it

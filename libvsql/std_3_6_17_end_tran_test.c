@@ -326,3 +326,63 @@ UTEST_F(env, 6_17_end_tran_commit_and_rollback_fail) {
   remove("libvsql_end_tran_fail.vsql.wal");
   remove("libvsql_end_tran_fail.vsql.session");
 }
+
+/* A statement that fails with a transaction rollback (40001) has already rolled
+ * back its transaction, so a commit after it fails with the same SQLSTATE,
+ * instead of succeeding without committing anything. A rollback succeeds, and
+ * the next transaction can be committed. The second connection is in its own
+ * environment, so it isn't part of the same transaction. */
+UTEST_F(env, 6_17_end_tran_commit_after_rollback) {
+  SQLHENV env2;
+  SQLHDBC dbc2;
+  SQLHSTMT stmt, stmt2;
+
+  remove("libvsql_end_tran_test.vsql");
+  ASSERT_EQ(SQLConnect(utest_fixture->dbc,
+                       (SQLCHAR *)"libvsql_end_tran_test.vsql", SQL_NTS, NULL,
+                       0, NULL, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_STMT, utest_fixture->dbc, &stmt),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "CREATE TABLE t (x INT)"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "INSERT INTO t (x) VALUES (1)"), SQL_SUCCESS);
+  ASSERT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+
+  ASSERT_EQ(SQLAllocEnv(&env2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocConnect(env2, &dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLConnect(dbc2, (SQLCHAR *)"libvsql_end_tran_test.vsql", SQL_NTS,
+                       NULL, 0, NULL, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(dbc2, &stmt2), SQL_SUCCESS);
+
+  ASSERT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "UPDATE t SET x = 2"), SQL_SUCCESS);
+  ASSERT_EQ(SQLStartTran(SQL_HANDLE_DBC, dbc2, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(stmt2, "UPDATE t SET x = 3"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "40001");
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_COMMIT), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "40001");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_COMMIT), SQL_SUCCESS);
+
+  EXPECT_EQ(run_sql(stmt2, "UPDATE t SET x = 3"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "40001");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_ROLLBACK), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_COMMIT), SQL_SUCCESS);
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(stmt2, "UPDATE t SET x = 3"), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_COMMIT), SQL_SUCCESS);
+
+  free_handles(env2, dbc2, stmt2);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_STMT, stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
+  remove("libvsql_end_tran_test.vsql");
+}

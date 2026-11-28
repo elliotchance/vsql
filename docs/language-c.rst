@@ -87,6 +87,12 @@ atomic, though: if committing one of them fails after that (such as because of
 a disk error), the ones before it stay committed. ``SQLStartTran`` with a
 connection while the transaction is active on another one is ``25001``.
 
+A statement that fails with a transaction rollback (class ``40``, such as a
+``40001`` serialization failure) rolls back the whole transaction straight
+away. ``SQLEndTran`` with ``SQL_COMMIT`` (or ``SQL_COMMIT_AND_CHAIN``) after it
+fails with the same SQLSTATE, rather than succeeding without committing
+anything. ``SQL_ROLLBACK`` succeeds, and so does starting another transaction.
+
 ``SQLStartTran`` with a connection (``SQL_HANDLE_DBC``) starts its transaction
 straight away. With an environment (``SQL_HANDLE_ENV``), it starts a transaction
 that isn't in any connection yet (it's ``25001`` if one of them already has a

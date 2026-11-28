@@ -123,6 +123,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	db_query(mut conn, 'START TRANSACTION ${access}, ISOLATION LEVEL ${level}${diagnostics_size(conn)}')!
 	e.start_tran = ''
 	dbc.autocommit_transaction = false
+	dbc.rolled_back = none
 
 	return sql_success
 }
@@ -146,6 +147,7 @@ fn join_start_tran(mut conn vsql.Connection, dh i64) ! {
 	db_query(mut conn, 'START TRANSACTION ${e.start_tran}${diagnostics_size(conn)}')!
 	e.start_tran = ''
 	dbc.autocommit_transaction = false
+	dbc.rolled_back = none
 }
 
 // diagnostics_size is the DIAGNOSTICS SIZE that a SET TRANSACTION before

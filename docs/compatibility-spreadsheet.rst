@@ -7918,22 +7918,22 @@ Joins values with a delimiter between them. Only in Google Sheets.
 LEFT
 ^^^^
 
-🔧 vsql has no ``LEFT`` function, but an expression does the same thing.
+✅ vsql has the same function: ``LEFT``.
 
 Returns the first characters of text.
 
 .. code-block:: sql
 
   -- =LEFT(text, num_chars)
-  VALUES SUBSTRING(/*text*/ FROM 1 FOR /*num_chars*/);
+  VALUES LEFT(/*text*/, /*num_chars*/);
   -- =LEFT("Apple", 3)
-  VALUES SUBSTRING('Apple' FROM 1 FOR 3);
+  VALUES LEFT('Apple', 3);
   -- COL1: App
 
   -- =LEFT(text)
-  VALUES SUBSTRING(/*text*/ FROM 1 FOR 1);
+  VALUES LEFT(/*text*/, 1);
   -- =LEFT("Apple")
-  VALUES SUBSTRING('Apple' FROM 1 FOR 1);
+  VALUES LEFT('Apple', 1);
   -- COL1: A
 
 LEFTB
@@ -8190,22 +8190,22 @@ A negative number of times gives empty text rather than ``#VALUE!``.
 RIGHT
 ^^^^^
 
-🔧 vsql has no ``RIGHT`` function, but an expression does the same thing.
+✅ vsql has the same function: ``RIGHT``.
 
 Returns the last characters of text.
 
 .. code-block:: sql
 
   -- =RIGHT(text, num_chars)
-  VALUES SUBSTRING(/*text*/ FROM CHAR_LENGTH(/*text*/) - /*num_chars*/ + 1);
+  VALUES RIGHT(/*text*/, /*num_chars*/);
   -- =RIGHT("Apple", 2)
-  VALUES SUBSTRING('Apple' FROM CHAR_LENGTH('Apple') - 2 + 1);
+  VALUES RIGHT('Apple', 2);
   -- COL1: le
 
   -- =RIGHT(text)
-  VALUES SUBSTRING(/*text*/ FROM CHAR_LENGTH(/*text*/));
+  VALUES RIGHT(/*text*/, 1);
   -- =RIGHT("Apple")
-  VALUES SUBSTRING('Apple' FROM CHAR_LENGTH('Apple'));
+  VALUES RIGHT('Apple', 1);
   -- COL1: e
 
 RIGHTB

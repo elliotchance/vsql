@@ -1744,10 +1744,12 @@ Returns a number of characters from the start of a string.
 .. code-block:: sql
 
   -- LEFT(str, len)
-  VALUES SUBSTRING(/*str*/ FROM 1 FOR /*len*/);
+  VALUES LEFT(/*str*/, /*len*/);
   -- LEFT('foobarbar', 5)
-  VALUES SUBSTRING('foobarbar' FROM 1 FOR 5);
+  VALUES LEFT('foobarbar', 5);
   -- COL1: fooba
+
+A negative len is all but the last -len characters, rather than an empty string.
 
 LENGTH
 ^^^^^^
@@ -2039,10 +2041,12 @@ Returns a number of characters from the end of a string.
 .. code-block:: sql
 
   -- RIGHT(str, len)
-  VALUES SUBSTRING(/*str*/ FROM CHAR_LENGTH(/*str*/) - /*len*/ + 1);
+  VALUES RIGHT(/*str*/, /*len*/);
   -- RIGHT('foobarbar', 4)
-  VALUES SUBSTRING('foobarbar' FROM CHAR_LENGTH('foobarbar') - 4 + 1);
+  VALUES RIGHT('foobarbar', 4);
   -- COL1: rbar
+
+A negative len is all but the first -len characters, rather than an empty string.
 
 RPAD
 ^^^^

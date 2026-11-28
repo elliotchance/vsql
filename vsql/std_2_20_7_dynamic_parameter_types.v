@@ -427,7 +427,7 @@ fn (mut c Compiler) with_similar_substring_types(value CompileResult, pattern Co
 }
 
 // with_argument_types gives the dynamic parameters that are arguments of a
-// function their types. CHAR_LENGTH, LENGTH, OCTET_LENGTH, REVERSE, POSITION,
+// function their types. CHAR_LENGTH, LENGTH, OCTET_LENGTH, REVERSE, LEFT, RIGHT, POSITION,
 // STARTS_WITH, ENDS_WITH and MOD have their own rules. Any other function is treated as an SQL-invoked
 // routine, where an argument has the type of its parameter, as long as there's
 // only one function with that name and number of arguments (otherwise it's
@@ -441,6 +441,16 @@ fn (mut c Compiler) with_argument_types(function_name string, args []CompileResu
 		// parameter is a CHARACTER VARYING, like any other character string.
 		'CHAR_LENGTH', 'LENGTH', 'OCTET_LENGTH', 'REVERSE', 'UPPER', 'LOWER' {
 			args.map(c.with_type(it, character_type(untyped_parameter_type)))
+		}
+		// LEFT and RIGHT (V404-16 and V404-17) also take a binary string, so the
+		// string is a CHARACTER VARYING, and n is a BIGINT.
+		'LEFT', 'RIGHT' {
+			if args.len == 2 {
+				[c.with_type(args[0], character_type(untyped_parameter_type)),
+					c.with_type(args[1], Type{.is_bigint, 0, 0, false, false})]
+			} else {
+				args
+			}
 		}
 		'POSITION', 'STARTS_WITH', 'ENDS_WITH' {
 			c.with_types(args, character_type)

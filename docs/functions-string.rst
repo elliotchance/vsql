@@ -549,6 +549,56 @@ case mappings, so it can also be truncated with a ``01004`` warning.
   - PostgreSQL and Oracle: ``INITCAP``.
   - MySQL, SQLite and SQL Server: no equivalent.
 
+LEFT
+^^^^
+
+.. code-block:: sql
+
+   LEFT(string CHARACTER VARYING, n BIGINT) CHARACTER VARYING
+   LEFT(string CHARACTER LARGE OBJECT, n BIGINT) CHARACTER LARGE OBJECT
+   LEFT(string BINARY VARYING, n BIGINT) BINARY VARYING
+   LEFT(string BINARY LARGE OBJECT, n BIGINT) BINARY LARGE OBJECT
+
+Returns the first ``n`` characters of a string, or the whole string if it's
+shorter. A negative ``n`` returns all but the last ``-n`` characters, which is
+an empty string when the string isn't longer than ``-n``. A binary string (see
+:doc:`binary`) is counted in octets.
+
+The result is a varying string with the length of the argument, like
+``SUBSTRING``, so a ``CHARACTER(5)`` is a ``CHARACTER VARYING(5)``. Its padding
+is kept. A large object stays a large object. See also ``RIGHT``.
+
+``LEFT`` is a vsql extension flagged by ``V404-16`` (see :doc:`sql-flagging`).
+``LEFT`` is still a join (as in ``LEFT JOIN``), since a join is never followed
+by ``(``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LEFT('hello', 2);
+  -- COL1: he
+
+  VALUES LEFT('hello', -2);
+  -- COL1: hel
+
+  VALUES LEFT('😊£ab', 10);
+  -- COL1: 😊£ab
+
+  VALUES LEFT(X'010203', 1);
+  -- COL1: 01
+
+**Compatibility**
+
+- **SQL standard:** not standard. Use ``SUBSTRING``.
+- **Other databases:**
+
+  - PostgreSQL and DuckDB: ``LEFT`` and ``RIGHT``, with the same negative
+    ``n``.
+  - MySQL, MariaDB, SQL Server and Snowflake: ``LEFT`` and ``RIGHT``, where a
+    negative ``n`` is an empty string (or an error in SQL Server).
+  - SQLite and Oracle: no equivalent, use ``SUBSTR``.
+
 LENGTH
 ^^^^^^
 
@@ -1200,6 +1250,47 @@ joined (with U+200D) or flags (two regional indicators) are split up.
     of a character string, by code point.
   - BigQuery and ClickHouse: also for a binary string, by byte.
   - SQLite and Db2: no equivalent.
+
+RIGHT
+^^^^^
+
+.. code-block:: sql
+
+   RIGHT(string CHARACTER VARYING, n BIGINT) CHARACTER VARYING
+   RIGHT(string CHARACTER LARGE OBJECT, n BIGINT) CHARACTER LARGE OBJECT
+   RIGHT(string BINARY VARYING, n BIGINT) BINARY VARYING
+   RIGHT(string BINARY LARGE OBJECT, n BIGINT) BINARY LARGE OBJECT
+
+Returns the last ``n`` characters of a string, or the whole string if it's
+shorter. A negative ``n`` returns all but the first ``-n`` characters. It has
+the same types as ``LEFT``.
+
+``RIGHT`` is a vsql extension flagged by ``V404-17`` (see
+:doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES RIGHT('hello', 3);
+  -- COL1: llo
+
+  VALUES RIGHT('hello', -2);
+  -- COL1: llo
+
+  VALUES RIGHT(X'010203', 1);
+  -- COL1: 03
+
+**Compatibility**
+
+- **SQL standard:** not standard. Use ``SUBSTRING``.
+- **Other databases:**
+
+  - PostgreSQL and DuckDB: ``LEFT`` and ``RIGHT``, with the same negative
+    ``n``.
+  - MySQL, MariaDB, SQL Server and Snowflake: ``LEFT`` and ``RIGHT``, where a
+    negative ``n`` is an empty string (or an error in SQL Server).
+  - SQLite and Oracle: no equivalent, use ``SUBSTR``.
 
 RPAD
 ^^^^

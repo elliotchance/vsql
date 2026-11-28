@@ -26,11 +26,11 @@ follows with its result:
 
 .. code-block:: sql
 
-  -- left(string text, n integer) → text
-  VALUES SUBSTRING(/*string*/ FROM 1 FOR /*n*/);
-  -- left('abcde', 2)
-  VALUES SUBSTRING('abcde' FROM 1 FOR 2);
-  -- COL1: ab
+  -- substr(string text, start integer [, count integer]) → text
+  VALUES SUBSTRING(/*string*/ FROM /*start*/ FOR /*count*/);
+  -- substr('alphabet', 3, 2)
+  VALUES SUBSTRING('alphabet' FROM 3 FOR 2);
+  -- COL1: ph
 
 When an optional argument changes the statement, each form has its own
 statement and example. These are the other differences to watch for:
@@ -1047,12 +1047,12 @@ Returns the first n characters of a string.
 .. code-block:: sql
 
   -- left(string text, n integer) → text
-  VALUES SUBSTRING(/*string*/ FROM 1 FOR /*n*/);
+  VALUES LEFT(/*string*/, /*n*/);
   -- left('abcde', 2)
-  VALUES SUBSTRING('abcde' FROM 1 FOR 2);
+  VALUES LEFT('abcde', 2);
   -- COL1: ab
 
-When n is negative, PostgreSQL returns all but the last -n characters, which is ``SUBSTRING(string FROM 1 FOR CHAR_LENGTH(string) + n)``.
+A negative n is all but the last -n characters, the same as PostgreSQL.
 
 length
 ^^^^^^
@@ -1296,12 +1296,12 @@ Returns the last n characters of a string.
 .. code-block:: sql
 
   -- right(string text, n integer) → text
-  VALUES SUBSTRING(/*string*/ FROM CHAR_LENGTH(/*string*/) - /*n*/ + 1);
+  VALUES RIGHT(/*string*/, /*n*/);
   -- right('abcde', 2)
-  VALUES SUBSTRING('abcde' FROM CHAR_LENGTH('abcde') - 2 + 1);
+  VALUES RIGHT('abcde', 2);
   -- COL1: de
 
-When n is negative, PostgreSQL returns all but the first -n characters, which is ``SUBSTRING(string FROM 1 - n)``.
+A negative n is all but the first -n characters, the same as PostgreSQL.
 
 rpad
 ^^^^

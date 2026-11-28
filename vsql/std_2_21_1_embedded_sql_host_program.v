@@ -204,16 +204,8 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 				//
 				// ISO/IEC 9075-2:2023, 21.1, <embedded SQL host program>, Syntax Rules, 14 and 15
 				// ISO/IEC 9075-2:2023, 21.1, <embedded SQL host program>, Syntax Rules, 22.l.ii
-				name := t.identifier('a cursor name') or { return embedded_error(line, err) }
-				call = cursors[name] or {
-					return embedded_error(line, sqlstate_42601('cursor ${name} must be declared before it is opened'))
-				}
+				call = embedded_open_call(mut t, cursors, line)!
 				if call != '' {
-					// The arguments are the host variables of the cursor, so
-					// the statement can't have any.
-					if t.peek() != none {
-						return embedded_error(line, sqlstate_42601('unexpected${t.near()}'))
-					}
 					uncalled = uncalled.filter(it != call.all_before('('))
 				}
 			}
@@ -250,11 +242,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 
 	// An error in a procedure of the module is reported at its line.
 	m := parse_sql_client_module(implied) or {
-		mut message := err.msg()
-		for j := procedure_lines.len - 1; j >= 0; j-- {
-			message = message.replace('procedure vsql_e${j + 1}:', 'line ${procedure_lines[j]}:')
-		}
-		return error_with_code(message, err.code())
+		return embedded_procedure_error(procedure_lines, err)
 	}
 
 	// A <C numeric variable> that contains long long, even if it's not used.
@@ -353,6 +341,32 @@ fn embedded_variable_names(text string) ![]string {
 	}
 
 	return names
+}
+
+// embedded_open_call is the call of the procedure that opens the cursor of
+// an OPEN statement at line, or empty if the cursor has no procedure.
+fn embedded_open_call(mut t ModuleTokens, cursors map[string]string, line int) !string {
+	name := t.identifier('a cursor name') or { return embedded_error(line, err) }
+	call := cursors[name] or {
+		return embedded_error(line, sqlstate_42601('cursor ${name} must be declared before it is opened'))
+	}
+	// The arguments are the host variables of the cursor, so the statement
+	// can't have any.
+	if call != '' && t.peek() != none {
+		return embedded_error(line, sqlstate_42601('unexpected${t.near()}'))
+	}
+
+	return call
+}
+
+// embedded_procedure_error reports an error in a procedure of the module at
+// the line of the program it came from.
+fn embedded_procedure_error(procedure_lines []int, err IError) IError {
+	mut message := err.msg()
+	for j := procedure_lines.len - 1; j >= 0; j-- {
+		message = message.replace('procedure vsql_e${j + 1}:', 'line ${procedure_lines[j]}:')
+	}
+	return error_with_code(message, err.code())
 }
 
 // embedded_error is an error at a line of the program.

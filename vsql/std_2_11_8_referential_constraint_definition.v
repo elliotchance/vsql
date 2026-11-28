@@ -872,12 +872,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						column := referencing.column(column_name)!
 						new_value := match rule {
 							'CASCADE' {
-								v := cast(mut conn, 'for column ${column_name}', m.referenced.new.data.value(key.referenced_columns[i]),
-									column.typ)!
-								if column.not_null && v.is_null {
-									return sqlstate_23502(referencing, column_name)
-								}
-								v
+								cascaded_value(mut conn, referencing, column, m.referenced.new.data.value(key.referenced_columns[i]))!
 							}
 							'SET NULL' {
 								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(NullSpecification{}))!
@@ -1260,4 +1255,15 @@ fn foreign_key_types(referencing Table, columns []string, referenced Table, refe
 	}
 
 	return types
+}
+
+// cascaded_value is the new value of a referencing column for an ON UPDATE
+// CASCADE: the new value of the referenced column.
+fn cascaded_value(mut conn Connection, referencing Table, column Column, value Value) !Value {
+	v := cast(mut conn, 'for column ${column.name.sub_entity_name}', value, column.typ)!
+	if column.not_null && v.is_null {
+		return sqlstate_23502(referencing, column.name.sub_entity_name)
+	}
+
+	return v
 }

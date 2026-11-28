@@ -123,11 +123,11 @@ fn possibly_nullable_columns(columns Columns) Columns {
 fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	outer, inner := if o.join_type == .right { '\$2', '\$1' } else { '\$1', '\$2' }
 	inner_columns := if o.join_type == .right { o.left_columns } else { o.right_columns }
-	mut outer_plan := o.plan.subplans[outer] or { Plan{} }
+	mut outer_plan := o.plan.subplans[outer] or { &Plan{} }
 	outer_rows := outer_plan.execute([]Row{})!
 	mut all_inner_rows := []Row{}
 	if o.lookup == none {
-		mut inner_plan := o.plan.subplans[inner] or { Plan{} }
+		mut inner_plan := o.plan.subplans[inner] or { &Plan{} }
 		all_inner_rows = inner_plan.execute([]Row{})!
 	}
 

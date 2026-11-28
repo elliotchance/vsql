@@ -64,13 +64,15 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			}
 
 			mut plan := Plan{}
-			plan.subplans['\$1'] = create_query_expression_plan(*body.left, params, mut
-				conn, Correlation{})!
-			plan.subplans['\$2'] = create_query_expression_plan(*body.right, params, mut
-				conn, Correlation{})!
-
-			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'] or { Plan{} },
-				plan.subplans['\$2'] or { Plan{} }, mut conn)!
+			left := create_query_expression_plan(*body.left, params, mut conn, Correlation{})!
+			right := create_query_expression_plan(*body.right, params, mut conn, Correlation{})!
+			plan.operations << new_set_operation_operation(body, left, right, mut conn)!
+			plan.subplans['\$1'] = &Plan{
+				...left
+			}
+			plan.subplans['\$2'] = &Plan{
+				...right
+			}
 
 			return plan, map[string]&Table{}
 		}
@@ -182,19 +184,25 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	mut plan := Plan{}
 	before_left := tables.keys()
 	first_table := tables.len
-	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
+	left := create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
 			.right,
 			.full,
 		])!
 	before_right := tables.keys()
-	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
+	right := create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables, preserved && join.join_type !in [
 			.left,
 			.full,
 		])!
-	left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
-	right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
+	left_columns := left.columns()
+	right_columns := right.columns()
+	plan.subplans['\$1'] = &Plan{
+		...left
+	}
+	plan.subplans['\$2'] = &Plan{
+		...right
+	}
 
 	range_variable := '\$USING${tables.len}'
 	mut common_columns := []CommonColumn{}
@@ -250,11 +258,11 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	if l := lookup {
 		// EXPLAIN shows the lookup instead of reading the whole table.
 		inner := if join.join_type == .right { '\$1' } else { '\$2' }
-		mut inner_plan := plan.subplans[inner] or { Plan{} }
+		mut inner_plan := plan.subplans[inner] or { &Plan{} }
 		if l.table.name.id() == l.base_table.name.id() {
 			inner_plan.operations[0] = l.operation
 		} else {
-			inner_plan.subplans[l.table.name.id()] = Plan{
+			inner_plan.subplans[l.table.name.id()] = &Plan{
 				operations: [l.operation]
 			}
 		}
@@ -573,7 +581,9 @@ fn unqualified_range_variable(name Identifier) string {
 // add_correlation_plan reads the rows of subplan as the table table_name. A
 // derived column list in the correlation renames the columns.
 fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, mut conn Connection) !Table {
-	plan.subplans[table_name.id()] = subplan
+	plan.subplans[table_name.id()] = &Plan{
+		...subplan
+	}
 
 	// A derived column list must have a name for each column, and each name only
 	// once.
@@ -700,8 +710,8 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 			compiled_condition = [condition.compile(mut c)!]
 		}
 
-		last_operation := plan.operations[plan.operations.len - 1]
-		plan.operations << new_where_operation(condition, params, conn, last_operation.columns(),
+		last_columns := plan.operations[plan.operations.len - 1].columns()
+		plan.operations << new_where_operation(condition, params, conn, last_columns,
 			tables, compiled_condition)
 	}
 }
@@ -977,7 +987,7 @@ mut:
 	params     map[string]Value
 	// subplans represent the subqueries. These are indexed by name and may be
 	// referenced by expressions.
-	subplans map[string]Plan
+	subplans map[string]&Plan
 }
 
 // scan_batch_size is how many rows of a table are read at a time when the
@@ -995,7 +1005,7 @@ fn (mut o Plan) execute(_ []Row) ![]Row {
 	// change the table while it's being read (NEXT VALUE FOR, which does
 	// write, is a separate SequenceValuesOperation).
 	if o.operations.len > 1 {
-		mut first := o.operations[0]
+		mut first := &o.operations[0]
 		if mut first is TableOperation {
 			mut end := 1
 			for end < o.operations.len
@@ -1041,7 +1051,7 @@ fn (mut o Plan) needed_columns(mut table TableOperation, end int) ![]bool {
 	}
 
 	for i in 1 .. end {
-		operation := o.operations[i]
+		operation := &o.operations[i]
 		if operation is WhereOperation {
 			mut c := Compiler{
 				conn:   conn

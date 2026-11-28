@@ -74,9 +74,8 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 					map[string]Value{})!).as_int()
 			}
 			SequenceGeneratorMinvalueOption {
-				if v := option.min_value {
-					sequence.min_value =
-						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+				if option.min_value != none {
+					sequence.min_value = sequence_option_value(mut c, mut conn, option.min_value or { Value{} })!
 					sequence.has_min_value = true
 				} else {
 					sequence.has_min_value = false
@@ -84,9 +83,8 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 				new_min_value = true
 			}
 			SequenceGeneratorMaxvalueOption {
-				if v := option.max_value {
-					sequence.max_value =
-						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+				if option.max_value != none {
+					sequence.max_value = sequence_option_value(mut c, mut conn, option.max_value or { Value{} })!
 					sequence.has_max_value = true
 				} else {
 					sequence.has_max_value = false
@@ -154,4 +152,10 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 	}
 
 	return sequence
+}
+
+// sequence_option_value is the integer of an option of ALTER SEQUENCE that has
+// a value, such as RESTART WITH.
+fn sequence_option_value(mut c Compiler, mut conn Connection, value Value) !i64 {
+	return (value.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 }

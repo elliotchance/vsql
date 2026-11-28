@@ -47,5 +47,6 @@ The functions are in these categories:
    functions-session.rst
    functions-statistical.rst
    functions-string.rst
+   functions-table.rst
    functions-trigonometric.rst
    functions-uuid.rst

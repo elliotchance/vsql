@@ -1,0 +1,172 @@
+-- # GENERATE_SERIES is a vsql extension (V412-01): a table in FROM with a row
+-- # for each value from start to stop, by step (1 by default). Without a
+-- # correlation name, the table and its column are both GENERATE_SERIES.
+
+/* types */
+SELECT * FROM GENERATE_SERIES(1, 3);
+-- GENERATE_SERIES: 1 (INTEGER)
+-- GENERATE_SERIES: 2 (INTEGER)
+-- GENERATE_SERIES: 3 (INTEGER)
+
+SELECT GENERATE_SERIES.GENERATE_SERIES FROM GENERATE_SERIES(-1, 1);
+-- GENERATE_SERIES: -1
+-- GENERATE_SERIES: 0
+-- GENERATE_SERIES: 1
+
+-- # stop is only included when a step reaches it, and a negative step counts
+-- # down.
+SELECT * FROM GENERATE_SERIES(0, 10, 4);
+SELECT * FROM GENERATE_SERIES(10, 0, -5);
+-- GENERATE_SERIES: 0
+-- GENERATE_SERIES: 4
+-- GENERATE_SERIES: 8
+-- GENERATE_SERIES: 10
+-- GENERATE_SERIES: 5
+-- GENERATE_SERIES: 0
+
+-- # A step that goes away from stop, or a NULL argument, gives no rows.
+SELECT * FROM GENERATE_SERIES(5, 1);
+SELECT * FROM GENERATE_SERIES(1, 5, -1);
+SELECT * FROM GENERATE_SERIES(1, CAST(NULL AS INTEGER));
+SELECT * FROM GENERATE_SERIES(1, 5, CAST(NULL AS INTEGER));
+SELECT * FROM GENERATE_SERIES(3, 3);
+-- GENERATE_SERIES: 3
+
+-- # A step of zero would never end.
+SELECT * FROM GENERATE_SERIES(1, 5, 0);
+SELECT * FROM GENERATE_SERIES(DATE '2024-01-01', DATE '2024-01-02', INTERVAL '0' DAY);
+-- error 22023: invalid parameter value: GENERATE_SERIES step cannot be zero
+-- error 22023: invalid parameter value: GENERATE_SERIES step cannot be zero
+
+-- # The column has the combined type of the numbers, which must be exact.
+/* types */
+SELECT * FROM GENERATE_SERIES(CAST(1 AS SMALLINT), CAST(2 AS SMALLINT));
+SELECT * FROM GENERATE_SERIES(CAST(1 AS SMALLINT), 9223372036854775807, 9223372036854775806);
+SELECT * FROM GENERATE_SERIES(1, 2, 0.5);
+-- GENERATE_SERIES: 1 (SMALLINT)
+-- GENERATE_SERIES: 2 (SMALLINT)
+-- GENERATE_SERIES: 1 (BIGINT)
+-- GENERATE_SERIES: 9223372036854775807 (BIGINT)
+-- GENERATE_SERIES: 1.0 (NUMERIC(11, 1))
+-- GENERATE_SERIES: 1.5 (NUMERIC(11, 1))
+-- GENERATE_SERIES: 2.0 (NUMERIC(11, 1))
+
+-- # Going past the largest value of the type ends the series, since stop fits.
+SELECT * FROM GENERATE_SERIES(2147483646, 2147483647);
+SELECT * FROM GENERATE_SERIES(-2147483647, -2147483648, -1);
+-- GENERATE_SERIES: 2147483646
+-- GENERATE_SERIES: 2147483647
+-- GENERATE_SERIES: -2147483647
+-- GENERATE_SERIES: -2147483648
+
+SELECT * FROM GENERATE_SERIES(1e0, 3e0);
+SELECT * FROM GENERATE_SERIES(1, 'a');
+SELECT * FROM GENERATE_SERIES(1, 2, 'a');
+SELECT * FROM GENERATE_SERIES('a', 'b');
+SELECT * FROM GENERATE_SERIES(1);
+SELECT * FROM GENERATE_SERIES(1, 2, 3, 4);
+SELECT * FROM GENERATE_SERIES(DATE '2024-01-01', DATE '2024-01-03');
+SELECT * FROM GENERATE_SERIES(DATE '2024-01-01', DATE '2024-01-03', 1);
+SELECT * FROM GENERATE_SERIES(DATE '2024-01-01', DATE '2024-01-03', INTERVAL '1' HOUR);
+-- error 42883: function does not exist: GENERATE_SERIES(DOUBLE PRECISION, DOUBLE PRECISION)
+-- error 42883: function does not exist: GENERATE_SERIES(INTEGER, CHARACTER(1))
+-- error 42883: function does not exist: GENERATE_SERIES(INTEGER, INTEGER, CHARACTER(1))
+-- error 42883: function does not exist: GENERATE_SERIES(CHARACTER(1), CHARACTER(1))
+-- error 42883: function does not exist: GENERATE_SERIES(INTEGER)
+-- error 42883: function does not exist: GENERATE_SERIES(INTEGER, INTEGER, INTEGER, INTEGER)
+-- error 42883: function does not exist: GENERATE_SERIES(DATE, DATE)
+-- error 42883: function does not exist: GENERATE_SERIES(DATE, DATE, INTEGER)
+-- error 42883: function does not exist: GENERATE_SERIES(DATE, DATE, INTERVAL HOUR(2))
+
+-- # A DATE or TIMESTAMP needs an interval step. Adding months keeps the day of
+-- # start, so a day that isn't in every month is an error, like adding the
+-- # interval to start.
+/* types */
+SELECT * FROM GENERATE_SERIES(DATE '2024-02-27', DATE '2024-03-01', INTERVAL '1' DAY);
+-- GENERATE_SERIES: 2024-02-27 (DATE)
+-- GENERATE_SERIES: 2024-02-28 (DATE)
+-- GENERATE_SERIES: 2024-02-29 (DATE)
+-- GENERATE_SERIES: 2024-03-01 (DATE)
+
+SELECT * FROM GENERATE_SERIES(TIMESTAMP '2024-01-01 22:00:00', TIMESTAMP '2024-01-02 01:30:00', INTERVAL '90' MINUTE);
+SELECT * FROM GENERATE_SERIES(DATE '2024-01-15', DATE '2024-05-01', INTERVAL '1' MONTH);
+SELECT * FROM GENERATE_SERIES(DATE '2024-03-01', DATE '2024-01-01', INTERVAL '-1' MONTH);
+-- GENERATE_SERIES: 2024-01-01T22:00:00
+-- GENERATE_SERIES: 2024-01-01T23:30:00
+-- GENERATE_SERIES: 2024-01-02T01:00:00
+-- GENERATE_SERIES: 2024-01-15
+-- GENERATE_SERIES: 2024-02-15
+-- GENERATE_SERIES: 2024-03-15
+-- GENERATE_SERIES: 2024-04-15
+-- GENERATE_SERIES: 2024-03-01
+-- GENERATE_SERIES: 2024-02-01
+-- GENERATE_SERIES: 2024-01-01
+
+SELECT * FROM GENERATE_SERIES(DATE '2024-01-31', DATE '2024-05-01', INTERVAL '1' MONTH);
+-- error 22008: datetime field overflow
+
+-- # A correlation name and column list, joins, WHERE, aggregates and ORDER BY.
+SELECT t.n * 10 AS x FROM GENERATE_SERIES(1, 3) AS t (n) WHERE n <> 2;
+SELECT COUNT(*), SUM(GENERATE_SERIES) FROM GENERATE_SERIES(1, 100);
+SELECT a.x, b.y FROM GENERATE_SERIES(1, 2) AS a (x) JOIN GENERATE_SERIES(1, 3) AS b (y) ON b.y > a.x ORDER BY a.x DESC, b.y;
+SELECT * FROM GENERATE_SERIES(1, 3) AS t (a, b);
+SELECT * FROM GENERATE_SERIES(1, 2), GENERATE_SERIES(3, 4);
+-- X: 10
+-- X: 30
+-- COL1: 100 COL2: 5050
+-- X: 2 Y: 3
+-- X: 1 Y: 2
+-- X: 1 Y: 3
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- error 42601: syntax error: table name GENERATE_SERIES specified more than once
+
+-- # The arguments can be any expression, a parameter or a subquery, and can
+-- # reference an outer query, but not another table of the same FROM.
+CREATE TABLE t (x INTEGER);
+INSERT INTO t VALUES (2), (3);
+SELECT * FROM GENERATE_SERIES((SELECT MIN(x) FROM t), (SELECT MAX(x) FROM t) * 2);
+SELECT x, (SELECT SUM(n) FROM GENERATE_SERIES(1, t.x) AS s (n)) FROM t;
+SELECT * FROM t, GENERATE_SERIES(1, t.x);
+SELECT * FROM GENERATE_SERIES(1, COUNT(*));
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- GENERATE_SERIES: 2
+-- GENERATE_SERIES: 3
+-- GENERATE_SERIES: 4
+-- GENERATE_SERIES: 5
+-- GENERATE_SERIES: 6
+-- X: 2 COL2: 3
+-- X: 3 COL2: 6
+-- error 42703: no such column: ":memory:".PUBLIC.T.X
+-- error 42601: syntax error: an aggregate function cannot be used in GENERATE_SERIES
+
+-- # Any other function in FROM is an error.
+SELECT * FROM FORMAT_SIZE(1);
+SELECT * FROM NOSUCH(1);
+-- error 42883: table function does not exist: FORMAT_SIZE
+-- error 42883: table function does not exist: NOSUCH
+
+-- # NEXT VALUE FOR can't be an argument.
+CREATE SEQUENCE seq1;
+SELECT * FROM GENERATE_SERIES(1, NEXT VALUE FOR seq1);
+-- msg: CREATE SEQUENCE 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in GENERATE_SERIES
+
+-- # EXPLAIN shows the arguments.
+/* extensions V001-01 */
+CREATE TABLE t2 (x INTEGER);
+EXPLAIN SELECT * FROM GENERATE_SERIES(1, 3) AS s (n);
+EXPLAIN SELECT * FROM t2 WHERE x IN (SELECT * FROM GENERATE_SERIES(1, 3));
+-- msg: CREATE TABLE 1
+-- EXPLAIN: S:
+-- EXPLAIN:   GENERATE SERIES (GENERATE_SERIES INTEGER) = 1, 3
+-- EXPLAIN: TABLE S (N INTEGER)
+-- EXPLAIN: EXPR (S.N INTEGER)
+-- EXPLAIN: TABLE ":memory:".PUBLIC.T2 (X INTEGER)
+-- EXPLAIN: WHERE X IN (SELECT * FROM GENERATE_SERIES(1, 3))
+-- EXPLAIN: EXPR (":memory:".PUBLIC.T2.X INTEGER)
+
+/* flags */
+SELECT * FROM GENERATE_SERIES(1, 1);
+-- flags: V412-01
+-- GENERATE_SERIES: 1

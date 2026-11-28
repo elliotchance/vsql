@@ -198,6 +198,9 @@ Every function, in alphabetical order:
    * - :ref:`GCD <functions-arithmetic:GCD>`
      - Greatest common divisor
      - Arithmetic
+   * - :ref:`GENERATE_SERIES <functions-table:GENERATE_SERIES>`
+     - Rows from a start to a stop, by a step
+     - Table
    * - :ref:`GENERATE_UUID_V4 <functions-uuid:GENERATE_UUID_V4>`
      - Generate a random (version 4) UUID
      - UUID

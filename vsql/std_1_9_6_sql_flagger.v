@@ -228,6 +228,8 @@ import arrays
 // V411-04: BUILD_V_VERSION.
 // V411-05: BUILD_V_COMMIT.
 // V411-06: BUILD_C_COMPILER.
+// V412: Table functions.
+// V412-01: GENERATE_SERIES.
 //
 // V501: PostgreSQL functions.
 // V501-01: version().
@@ -423,6 +425,7 @@ const vsql_build_date = 'V411-03'
 const vsql_build_v_version = 'V411-04'
 const vsql_build_v_commit = 'V411-05'
 const vsql_build_c_compiler = 'V411-06'
+const vsql_generate_series = 'V412-01'
 const vsql_pg_version = 'V501-01'
 const vsql_pg_current_setting = 'V501-02'
 const vsql_pg_get_userbyid = 'V501-03'

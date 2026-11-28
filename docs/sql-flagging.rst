@@ -622,6 +622,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V411-06``
      - ``BUILD_C_COMPILER``.
 
+   * - ``V412``
+     - Table functions (see :doc:`functions-table`).
+
+   * - ``V412-01``
+     - ``GENERATE_SERIES``.
+
    * - ``V501``
      - PostgreSQL functions (see :doc:`server`).
 

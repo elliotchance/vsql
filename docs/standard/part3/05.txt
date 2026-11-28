@@ -525,8 +525,8 @@
 5.13/SR/12.c.i           container    - -
 5.13/SR/12.c.i.1         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
 5.13/SR/12.c.i.2         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
-5.13/SR/12.c.i.3         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs; a length that's less than a whole character is still valid (a zero-length string)
-5.13/SR/12.c.i.4         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
+5.13/SR/12.c.i.3         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c libvsql/binary_test.c a length of 0 (zero) is 07001 for a character string, a binary string, SQL_CLOB and SQL_BLOB alike; a length that's less than a whole character is still valid (a zero-length string)
+5.13/SR/12.c.i.4         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c libvsql/binary_test.c SQL_NTS is accepted for a character string, a binary string (the octets before the first X'00'), SQL_CLOB and SQL_BLOB
 5.13/SR/12.c.i.5         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
 5.13/SR/12.c.i.6         n/a          - - a parameter with a mode of OUT can't be used (5.6, General Rules, 4.e)
 5.13/SR/12.c.ii          n/a          - - there are no locators or reference types

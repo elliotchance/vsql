@@ -48,6 +48,15 @@ buffer length that isn't greater than zero ``HY090``, which it still is with
 null termination (the default). A null pointer for the string is still
 ``HY009``, unless ``libvsql.h`` says the routine allows one.
 
+The length of a bound parameter (``StrLen_or_Ind`` of ``SQLBindParameter``) of a
+character string or a binary string must be greater than zero or ``SQL_NTS``,
+otherwise it's ``07001`` (ISO/IEC 9075-3:2003, 5.13, Description of CLI item
+descriptor areas, Syntax Rules, 12.c.i.3 and 12.c.i.4). So a length of ``0``
+isn't an empty string: an empty character string is ``SQL_NTS`` with a value of
+``""``, and an empty binary string is ``SQL_NTS`` with a first octet of
+``0x00`` (``SQL_NTS`` for a binary string is the octets before the first
+``0x00``).
+
 Threads
 -------
 

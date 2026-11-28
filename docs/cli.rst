@@ -708,8 +708,8 @@ renamed to ``vsql.exe.old``, which the next ``vsql up`` deletes.
 Options are:
 
 - ``-force`` or ``-f``: Replace it even if it's already the latest release, or
-  if it wasn't built for a release (such as one compiled from source), which is
-  otherwise an error.
+  if it wasn't built for a release (such as one compiled from source, which has
+  no version or one like ``v1.8.5-12-g1a2b3c4``), which is otherwise an error.
 
 version
 ^^^^^^^
@@ -735,7 +735,8 @@ Options are:
    VSQL_BUILD_V_VERSION='0.5.2'
 
 The variable is empty when the item has no value, such as
-``VSQL_BUILD_COMMIT`` for a build that isn't a release. The output can be run
+``VSQL_BUILD_COMMIT`` for a build that isn't a release or from a git checkout
+(see :doc:`functions-build`). The output can be run
 by a shell:
 
 .. code-block:: sh

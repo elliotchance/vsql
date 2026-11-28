@@ -59,7 +59,9 @@ fn shell_variable(name string, value ?string) string {
 
 fn print_version() {
 	version := vsql.build_version()
-	if version == '' {
+	if version == '' && vsql.build_commit() != '' {
+		println('vsql ${vsql.build_commit()} ${vsql.build_date()}')
+	} else if version == '' {
 		println('no version information available')
 	} else {
 		println('vsql ${version} ${vsql.build_date()}')

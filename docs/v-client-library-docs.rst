@@ -31,7 +31,7 @@ fn build_commit
 
    pub fn build_commit() string
 
-build_commit returns the git commit of vsql that was released (such as "6b3d76f0a1..."), or an empty string if it wasn't built for a release.
+build_commit returns the git commit of vsql that was released or built from (such as "6b3d76f0a1..."), or an empty string if it wasn't built for a release or from a git checkout.
 
 fn build_date
 -------------
@@ -71,7 +71,7 @@ fn build_version
 
    pub fn build_version() string
 
-build_version returns the version of vsql (such as "v0.34.0"), or an empty string if it wasn't built for a release.
+build_version returns the version of vsql, such as "v0.34.0" for a release. A build from a git checkout (with make) has the version from "git describe", such as "v1.8.5-12-g1a2b3c4" (12 commits after v1.8.5), with "-dirty" when it has changes that aren't committed. It's an empty string for any other build.
 
 fn catalog_name_from_path
 -------------------------

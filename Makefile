@@ -79,8 +79,24 @@ AMALGAMATION_SOURCES = $(SOURCES) $(wildcard libvsql/*.v) libvsql/libvsql.h libv
 
 amalgamation: amalgamation/stamp
 
-amalgamation/stamp: $(AMALGAMATION_SOURCES)
-	V_OPTIONS="$(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD)" scripts/amalgamation.sh generate amalgamation/generated
+# A build from a git checkout has the version from "git describe" (such as
+# v1.8.5-12-g1a2b3c4) and the commit (see build_version in vsql/version.v). The
+# tests aren't given them. amalgamation/version has them, and only changes when
+# they do, so that the amalgamation is generated again for another commit. With
+# no AMALGAMATION_SOURCES (where there's no V, see ci.yml), amalgamation/ is
+# taken as it is, so the version doesn't matter either.
+GIT_VERSION := $(shell git describe --tags --dirty 2>/dev/null)
+GIT_COMMIT := $(shell git rev-parse HEAD 2>/dev/null)
+VERSION_OPTIONS = $(if $(GIT_VERSION),-d vsql_build_version=$(GIT_VERSION)) $(if $(GIT_COMMIT),-d vsql_build_commit=$(GIT_COMMIT))
+
+amalgamation/version: FORCE
+	@mkdir -p amalgamation
+	@echo '$(VERSION_OPTIONS)' | cmp -s - $@ || echo '$(VERSION_OPTIONS)' > $@
+
+FORCE:
+
+amalgamation/stamp: $(AMALGAMATION_SOURCES) $(if $(AMALGAMATION_SOURCES),amalgamation/version)
+	V_OPTIONS="$(V3_OPTIONS) $(BUILD_OPTIONS) $(VERSION_OPTIONS) $(PROD)" scripts/amalgamation.sh generate amalgamation/generated
 	scripts/amalgamation.sh assemble amalgamation amalgamation/generated
 	touch $@
 

@@ -19,9 +19,14 @@ mkdir "$DIR/bin"
 cp "$VSQL" "$DIR/bin/$EXE"
 
 # A build that isn't for a release is only replaced with -force. The build of
-# a tag is a release (see set_version.sh), so it isn't refused.
+# a tag is a release (see set_version.sh), so it isn't refused. A build from git
+# between releases has a version like v1.8.5-12-g1a2b3c4 (see build_version).
 eval "$("$DIR/bin/$EXE" version -verbose)"
-if [ -z "$VSQL_BUILD_VERSION" ]; then
+case "$VSQL_BUILD_VERSION" in
+'' | *-*) NOT_RELEASE=1 ;;
+*) NOT_RELEASE= ;;
+esac
+if [ -n "$NOT_RELEASE" ]; then
 	if "$DIR/bin/$EXE" up > "$DIR/out.txt" 2>&1; then
 		exit 1
 	fi

@@ -14,8 +14,7 @@ table_value_constructor:
 row_value_expression_list:
   table_row_value_expression { $$.v = yy_box([$1.v as RowValueConstructor]) }
 | row_value_expression_list comma table_row_value_expression {
-    $$.v = yy_box(append_list($1.v as []RowValueConstructor,
-      $3.v as RowValueConstructor))
+    $$.v = yy_append($1.v, $3.v as RowValueConstructor)
   }
 
 contextually_typed_table_value_constructor:
@@ -31,8 +30,7 @@ contextually_typed_row_value_expression_list:
   contextually_typed_row_value_expression {
     // ISO/IEC 9075-2:2023, 7.3, <table value constructor>, Conformance Rules, 1
     flag(mut yylex, 'F641')
-    $$.v = yy_box(append_list($1.v as []ContextuallyTypedRowValueConstructor,
-      $3.v as ContextuallyTypedRowValueConstructor))
+    $$.v = yy_append($1.v, $3.v as ContextuallyTypedRowValueConstructor)
   }
 
 %%

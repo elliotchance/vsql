@@ -118,7 +118,7 @@ like_clause:
 like_options:
   like_option { $$.v = yy_box([$1.v as LikeOption]) }
 | like_options like_option {
-    $$.v = yy_box(append_list($1.v as []LikeOption, $2.v as LikeOption))
+    $$.v = yy_append($1.v, $2.v as LikeOption)
   }
 
 like_option:
@@ -132,7 +132,7 @@ like_option:
 table_elements:
   table_element { $$.v = $1.v }
 | table_elements comma table_element {
-    $$.v = yy_box(concat_lists($1.v as []TableElement, $3.v as []TableElement))
+    $$.v = yy_concat($1.v, $3.v as []TableElement)
   }
 
 %%

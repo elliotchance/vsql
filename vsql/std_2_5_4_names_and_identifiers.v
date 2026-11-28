@@ -411,7 +411,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	//
 	// ISO/IEC 9075-2:2023, 7.17, <query expression>, Conformance Rules, 25
 	if c.in_sort_key && e.custom_id == '' && c.grouping_columns != none {
-		c.conn.flagged_features << 'F868'
+		c.conn.flag('F868')
 	}
 
 	// A column of this query, rather than an outer reference (which is added by

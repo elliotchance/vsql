@@ -59,7 +59,7 @@ fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y Co
 		right = c.with_type(y, datetime_parameter_type(op, x.typ, false))
 	}
 	if c.conn.flagging {
-		c.conn.flagged_features << 'F052'
+		c.conn.flag('F052')
 	}
 
 	l := left.typ
@@ -79,7 +79,7 @@ fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y Co
 				// interval qualifier, such as (a - b) DAY TO SECOND.
 				typ, code := implied_difference_type(l, r)
 				if c.conn.flagging {
-					c.conn.flagged_features << code
+					c.conn.flag(code)
 				}
 				return c.compile_datetime_difference(left, right, typ)!, true
 			} else {

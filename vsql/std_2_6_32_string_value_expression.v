@@ -68,7 +68,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 
 	// ISO/IEC 9075-2:2023, 6.32, <string value expression>, Conformance Rules, 4
 	if c.conn.flagging && typ.typ == .is_clob {
-		c.conn.flagged_features << 'T040'
+		c.conn.flag('T040')
 	}
 
 	return CompileResult{
@@ -177,7 +177,7 @@ fn limit_concatenation(s string, typ Type) !string {
 fn compile_binary_concatenation(mut c Compiler, compiled_left CompileResult, compiled_right CompileResult) !CompileResult {
 	typ := binary_concatenation_type(compiled_left.typ, compiled_right.typ)!
 	if c.conn.flagging {
-		c.conn.flagged_features << if typ.typ == .is_blob { 'T048' } else { 'T021' }
+		c.conn.flag(if typ.typ == .is_blob { 'T048' } else { 'T021' })
 	}
 
 	return CompileResult{

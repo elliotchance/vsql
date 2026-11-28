@@ -63,7 +63,7 @@ fn compile_concat(mut c Compiler, e RoutineInvocation) !CompileResult {
 	}
 
 	if c.conn.flagging {
-		c.conn.flagged_features << if is_ws { vsql_concat_ws } else { vsql_concat }
+		c.conn.flag(if is_ws { vsql_concat_ws } else { vsql_concat })
 	}
 
 	typ := concat_type(args, is_ws)

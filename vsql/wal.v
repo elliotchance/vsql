@@ -172,7 +172,7 @@ fn (mut l WalLog) finished(prepared WalPrepared) {
 		for page_number, _ in l.unsynced_pages {
 			l.synced_pages[page_number] = true
 		}
-		l.unsynced_pages = map[int]bool{}
+		l.unsynced_pages.clear()
 		l.synced_total_pages = prepared.total_pages
 		l.known = true
 	}
@@ -302,12 +302,13 @@ fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []in
 	log.write([wal_state_committed])!
 
 	log.seek(tail, .start)!
+	// One frame is reused for every page, rather than a new one for each.
+	mut frame := []u8{cap: wal_frame_header_size + prepared.page_size}
 	for page_number in page_numbers {
 		crash_point()
-		frame, frame_checksum := wal_frame(wal_frame_page, page_number, prepared.pages[page_number],
+		checksum = wal_put_frame(mut frame, wal_frame_page, page_number, prepared.pages[page_number],
 			checksum)
 		log.write(frame)!
-		checksum = frame_checksum
 	}
 
 	crash_point()
@@ -611,7 +612,19 @@ fn wal_header_is_valid(data []u8) bool {
 // wal_frame returns the bytes of a frame and its checksum, which continues the
 // chain from the previous frame (or the salt for the first frame).
 fn wal_frame(kind u8, number int, data []u8, previous_checksum u32) ([]u8, u32) {
-	mut frame := []u8{len: wal_frame_header_size}
+	mut frame := []u8{cap: wal_frame_header_size + data.len}
+	checksum := wal_put_frame(mut frame, kind, number, data, previous_checksum)
+
+	return frame, checksum
+}
+
+// wal_put_frame replaces what's in frame with a frame (see wal_frame), and
+// returns its checksum.
+fn wal_put_frame(mut frame []u8, kind u8, number int, data []u8, previous_checksum u32) u32 {
+	frame.clear()
+	for _ in 0 .. wal_frame_header_size {
+		frame << 0
+	}
 	frame[0] = kind
 	binary.big_endian_put_u32_at(mut frame, u32(number), 4)
 	binary.big_endian_put_u32_at(mut frame, u32(data.len), 8)
@@ -619,7 +632,7 @@ fn wal_frame(kind u8, number int, data []u8, previous_checksum u32) ([]u8, u32) 
 	binary.big_endian_put_u32_at(mut frame, checksum, 12)
 	frame << data
 
-	return frame, checksum
+	return checksum
 }
 
 // wal_checksum is the CRC-32 of the previous checksum, the frame header and the

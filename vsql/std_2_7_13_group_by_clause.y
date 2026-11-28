@@ -14,7 +14,7 @@ group_by_clause:
 grouping_element_list:
   grouping_element { $$.v = yy_box([$1.v as Identifier]) }
 | grouping_element_list comma grouping_element {
-    $$.v = yy_box(append_list($1.v as []Identifier, $3.v as Identifier))
+    $$.v = yy_append($1.v, $3.v as Identifier)
   }
 
 grouping_element:

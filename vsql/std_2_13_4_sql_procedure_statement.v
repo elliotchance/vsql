@@ -403,12 +403,9 @@ fn host_parameter_of(e ValueExpression) ?string {
 		return host_parameter_of(ValueExpression(predicand as BooleanValueExpression))
 	}
 
-	primary := value_primary_of(e)?
+	primary := value_primary_of(e) or { return none }
 	if primary is CastSpecification {
-		operand := *primary.expr
-		if operand is ValueExpression {
-			return dynamic_parameter_of(ValueExpression(operand))?.name
-		}
+		return cast_host_parameter_of(*primary.expr)
 	}
 
 	return none
@@ -620,4 +617,14 @@ fn (mut t ModuleTokens) connection_value(p ExternallyInvokedProcedure, mut a Con
 	}
 
 	return sqlstate_42601('procedure ${p.name}: expected a string or a host parameter${t.near()}')
+}
+
+// cast_host_parameter_of is the name of the host parameter that's the operand
+// of a CAST, such as "CAST(:x AS INTEGER)".
+fn cast_host_parameter_of(operand CastOperand) ?string {
+	if operand is ValueExpression {
+		return dynamic_parameter_of(ValueExpression(operand))?.name
+	}
+
+	return none
 }

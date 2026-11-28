@@ -245,10 +245,7 @@ const routines_result_cast_columns = ['RESULT_CAST_FROM_DATA_TYPE', 'RESULT_CAST
 fn routine_data_type(catalog_name string, t Type) []Value {
 	mut typ := t
 	if typ.typ.is_string() && typ.size == 0 {
-		typ = Type{
-			...typ
-			size: max_character_length
-		}
+		typ.size = max_character_length
 	}
 	d := data_type_descriptor(catalog_name, typ)
 	// DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_OCTET_LENGTH, then the

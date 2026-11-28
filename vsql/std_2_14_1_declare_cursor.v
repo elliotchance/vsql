@@ -161,7 +161,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 			}
 			table_name := stmt.table_name(mut conn)!
 			// create_plan has already found the table.
-			target := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+			target := conn.catalog_for(table_name).storage.table(table_name.storage_id())
 			for column in updatability.columns {
 				target.column(column.sub_entity_name)!
 				update_columns << column.sub_entity_name
@@ -335,7 +335,7 @@ fn (stmt DeclareCursor) sort_columns(table_name Identifier, params map[string]Va
 	}
 
 	// create_plan has already found the table.
-	table := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+	table := conn.catalog_for(table_name).storage.table(table_name.storage_id())
 
 	return table.columns.filter(it.name.id() in conn.collected_columns).map(it.name.sub_entity_name)
 }

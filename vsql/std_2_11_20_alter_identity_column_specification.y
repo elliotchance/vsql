@@ -28,8 +28,7 @@ set_identity_column_generation_clause:
 alter_identity_column_options:
   alter_identity_column_option { $$.v = yy_box([$1.v as SequenceGeneratorOption]) }
 | alter_identity_column_options alter_identity_column_option {
-    $$.v = yy_box(append_list($1.v as []SequenceGeneratorOption,
-      $2.v as SequenceGeneratorOption))
+    $$.v = yy_append($1.v, $2.v as SequenceGeneratorOption)
   }
 
 alter_identity_column_option:

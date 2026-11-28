@@ -15,10 +15,10 @@ set_session_characteristics_statement:
 session_characteristic_list:
   TRANSACTION transaction_mode { $$.v = yy_box([$2.v as TransactionMode]) }
 | session_characteristic_list comma transaction_mode {
-    $$.v = yy_box(append_list($1.v as []TransactionMode, $3.v as TransactionMode))
+    $$.v = yy_append($1.v, $3.v as TransactionMode)
   }
 | session_characteristic_list comma TRANSACTION transaction_mode {
-    $$.v = yy_box(append_list($1.v as []TransactionMode, $4.v as TransactionMode))
+    $$.v = yy_append($1.v, $4.v as TransactionMode)
   }
 
 %%

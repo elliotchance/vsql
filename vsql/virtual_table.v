@@ -19,30 +19,33 @@ mut:
 	// wrong_values is the number of values of a row that doesn't have one for
 	// each column, or -1.
 	wrong_values int = -1
+	// column_names are the names of the columns, in order. They're found once
+	// for each scan (see reset), rather than for each row.
+	column_names []string
 }
 
 fn (mut v VirtualTable) reset() {
 	v.is_done = false
 	v.rows = []Row{}
 	v.wrong_values = -1
+	v.column_names = v.create_table_stmt.columns().map(it.name.sub_entity_name)
 }
 
 // next_values adds a row, with a value for each column, in order. Each value
 // is converted to the type of its column (like an INSERT), see
 // VirtualTableOperation.
 pub fn (mut v VirtualTable) next_values(values []Value) {
-	columns := v.create_table_stmt.columns()
 	// The rows can't be used, so the table is finished. See
 	// VirtualTableOperation.
-	if values.len != columns.len {
+	if values.len != v.column_names.len {
 		v.wrong_values = values.len
 		v.is_done = true
 		return
 	}
 
 	mut row := map[string]Value{}
-	for i, column in columns {
-		row[column.name.sub_entity_name] = values[i]
+	for i, name in v.column_names {
+		row[name] = values[i]
 	}
 	v.rows << new_row(row)
 }

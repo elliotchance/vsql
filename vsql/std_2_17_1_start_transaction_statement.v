@@ -139,7 +139,7 @@ fn (mut f Storage) begin_transaction() ! {
 	assert f.transaction_pages.len == 0
 	assert f.transaction_keys.len == 0
 
-	f.transaction_pages = map[int]bool{}
+	f.transaction_pages.clear()
 
 	if f.snapshot_pending {
 		f.take_snapshot()!

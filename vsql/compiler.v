@@ -243,7 +243,7 @@ fn (mut c Compiler) check_comparison(left Type, right Type, null_parameter bool)
 	}
 
 	if c.conn.flagging && (left.typ.is_lob() || right.typ.is_lob()) {
-		c.conn.flagged_features << 'T042'
+		c.conn.flag('T042')
 	}
 
 	c.check_time_zone_comparison(left, right)!

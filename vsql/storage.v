@@ -224,9 +224,9 @@ fn (mut f Storage) begin_statement() {
 		undo_length:          f.undo.entries.len
 		undo_recording:       f.undo.recording
 	}
-	f.btree.written_pages = map[int]bool{}
-	f.btree.written_keys = map[string]bool{}
-	f.sequence_values = map[string]PageObject{}
+	f.btree.written_pages.clear()
+	f.btree.written_keys.clear()
+	f.sequence_values.clear()
 	if f.file_pager != unsafe { nil } {
 		f.file_pager.begin()
 	}
@@ -530,9 +530,9 @@ fn (mut f Storage) discard_statement(path string) ! {
 		f.undo.entries.trim(f.snapshot.undo_length)
 	}
 	f.btree.pager.discard()
-	f.btree.written_pages = map[int]bool{}
-	f.btree.written_keys = map[string]bool{}
-	f.sequence_values = map[string]PageObject{}
+	f.btree.written_pages.clear()
+	f.btree.written_keys.clear()
+	f.sequence_values.clear()
 
 	if sequence_values.len > 0 {
 		for _, obj in sequence_values {
@@ -1597,8 +1597,8 @@ fn (mut f Storage) isolation_end() ! {
 	// the same statement, while the file is locked, so its pages can't be split
 	// by another connection, and it doesn't need the keys.
 	f.add_transaction_pages(f.transaction_state == .active)
-	f.btree.written_pages = map[int]bool{}
-	f.btree.written_keys = map[string]bool{}
+	f.btree.written_pages.clear()
+	f.btree.written_keys.clear()
 
 	match f.transaction_state {
 		.not_active, .reading {
@@ -1620,7 +1620,7 @@ fn (mut f Storage) isolation_end() ! {
 	f.remove_expired(f.transaction_leaf_pages()!, false)!
 
 	f.save_transaction_pages()
-	f.transaction_pages = map[int]bool{}
+	f.transaction_pages.clear()
 
 	f.header.active_transaction_ids.remove(f.transaction_id)
 }

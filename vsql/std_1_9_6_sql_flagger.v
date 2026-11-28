@@ -1446,7 +1446,7 @@ fn information_schema_column_features(table_name Identifier, column_name string)
 // read (see information_schema_features).
 fn (mut conn Connection) flag_information_schema_view(table_name Identifier) {
 	if conn.flagging && table_name.schema_name == information_schema_name {
-		conn.flagged_features << information_schema_features[table_name.entity_name] or { [] }
+		conn.flag(...information_schema_features[table_name.entity_name] or { [] })
 	}
 }
 
@@ -1455,7 +1455,7 @@ fn (mut conn Connection) flag_information_schema_view(table_name Identifier) {
 fn (mut conn Connection) flag_asterisk(table Table) {
 	if conn.flagging {
 		for column in table.columns {
-			conn.flagged_features << column.features
+			conn.flag(...column.features)
 		}
 	}
 }
@@ -1472,7 +1472,7 @@ fn (mut conn Connection) flag_asterisk(table Table) {
 // ISO/IEC 9075-2:2023, 14.15, <set clause list>, Conformance Rules, 1.a
 fn (mut conn Connection) flag_self_reference(table_name Identifier) {
 	if conn.resolve_identifier(table_name).id() in conn.flagged_tables {
-		conn.flagged_features << 'F781'
+		conn.flag('F781')
 	}
 }
 
@@ -1523,7 +1523,7 @@ fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_nam
 			a := (referenced.column(name) or { Column{} }).typ
 			b := (table.column(key.columns[i]) or { Column{} }).typ
 			if a.typ != b.typ || a.size != b.size || a.scale != b.scale {
-				conn.flagged_features << 'T201'
+				conn.flag('T201')
 			}
 		}
 	}
@@ -1549,7 +1549,7 @@ fn (mut c Compiler) flag_set_function(e RoutineInvocation, arg_columns [][]Aggre
 	}
 
 	if e.function_name in binary_set_functions && arg_columns.all(it.len == 0) {
-		c.conn.flagged_features << 'F441'
+		c.conn.flag('F441')
 	}
 
 	for i, columns in arg_columns {
@@ -1558,7 +1558,7 @@ fn (mut c Compiler) flag_set_function(e RoutineInvocation, arg_columns [][]Aggre
 		}
 
 		if !is_column_argument(e.args[i]) {
-			c.conn.flagged_features << 'F441'
+			c.conn.flag('F441')
 		}
 
 		c.flag_mixed_references(columns)
@@ -1632,7 +1632,7 @@ fn (mut c Compiler) flag_mixed_references(columns []AggregatedColumn) {
 		names['${column.scope} ${column.name}'] = true
 	}
 	if names.len > 1 {
-		c.conn.flagged_features << 'F442'
+		c.conn.flag('F442')
 	}
 }
 
@@ -1665,9 +1665,9 @@ fn (mut c Compiler) flag_column_reference(e Identifier) {
 		if e.is_column_of_table(c.conn, table) {
 			column := table.column(e.sub_entity_name) or { Column{} }
 			if column.from_aggregate && in_where_or_aggregate {
-				c.conn.flagged_features << 'F441'
+				c.conn.flag('F441')
 			}
-			c.conn.flagged_features << column.features
+			c.conn.flag(...column.features)
 		}
 	}
 }

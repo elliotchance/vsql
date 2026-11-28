@@ -109,9 +109,9 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	// isolation_end doesn't need to visit them (or the pages that were changed
 	// since) again.
 	catalog.storage.save_transaction_pages()
-	catalog.storage.transaction_pages = map[int]bool{}
-	catalog.storage.transaction_keys = map[string]bool{}
-	catalog.storage.btree.written_pages = map[int]bool{}
+	catalog.storage.transaction_pages.clear()
+	catalog.storage.transaction_keys.clear()
+	catalog.storage.btree.written_pages.clear()
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.

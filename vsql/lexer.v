@@ -27,6 +27,37 @@ fn yy_as[T](sym YYSym) T {
 	panic('expected ${T.name}')
 }
 
+// yy_append adds v to the end of the list in the box of sym (the $1 of a rule
+// that builds a list) and returns that box, for $$. The list grows in place,
+// rather than being copied for each item, which made a list of n items take
+// O(n^2) time.
+fn yy_append[T](sym YYSym, v T) YYBox {
+	if sym is YYBox {
+		if sym.typ == typeof[[]T]().idx {
+			mut list := unsafe { &[]T(sym.ptr) }
+			list << v
+			return sym
+		}
+	}
+
+	panic('expected []${T.name}')
+}
+
+// yy_concat is yy_append for each item of values.
+fn yy_concat[T](sym YYSym, values []T) YYBox {
+	if sym is YYBox {
+		if sym.typ == typeof[[]T]().idx {
+			mut list := unsafe { &[]T(sym.ptr) }
+			for v in values {
+				list << v
+			}
+			return sym
+		}
+	}
+
+	panic('expected []${T.name}')
+}
+
 // YYBox holds a node of the syntax tree on the heap. A sum type is as big as
 // its biggest type, and the parser copies a YYSymType for every token and every
 // rule it reduces, so every node (even a small one, so that no one has to decide

@@ -1580,6 +1580,9 @@ struct VirtualTable
    	// wrong_values is the number of values of a row that doesn't have one for
    	// each column, or -1.
    	wrong_values int = -1
+   	// column_names are the names of the columns, in order. They're found once
+   	// for each scan (see reset), rather than for each row.
+   	column_names []string
    }
 
 

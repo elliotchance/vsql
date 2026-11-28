@@ -290,7 +290,7 @@ fn (e Subquery) compile_fields(mut c Compiler) ![]CompileResult {
 
 	// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 4
 	if c.conn.flagging {
-		c.conn.flagged_features << 'F641'
+		c.conn.flag('F641')
 	}
 
 	// The fields are always evaluated in order (see run_fields), so the

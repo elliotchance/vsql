@@ -1100,9 +1100,9 @@ fn (mut conn Connection) rollback_after_error() ! {
 // routine>, Syntax Rules, 20). CHARACTER arguments are CHARACTER VARYING, see
 // find_function.
 fn (mut conn Connection) register_func(func Func) ! {
-	for f in conn.funcs {
-		if f.name == func.name && f.arg_types.len == func.arg_types.len
-			&& f.arg_types.map(function_arg_type(it)) == func.arg_types.map(function_arg_type(it)) {
+	for i in 0 .. conn.funcs.len {
+		if conn.funcs[i].name == func.name
+			&& same_function_arg_types(conn.funcs[i].arg_types, func.arg_types) {
 			return sqlstate_42723('${func.name}(${func.arg_types.map(it.str()).join(', ')})')
 		}
 	}
@@ -1118,6 +1118,23 @@ fn (mut conn Connection) register_func(func Func) ! {
 	}
 
 	conn.funcs << f
+}
+
+// same_function_arg_types is true if a function with the arguments a is found
+// by the same arguments as one with b, see function_arg_type. It doesn't make
+// any arrays, since it's called for each function that's registered, with each
+// function that's already registered.
+fn same_function_arg_types(a []Type, b []Type) bool {
+	if a.len != b.len {
+		return false
+	}
+	for i in 0 .. a.len {
+		if function_arg_type(a[i]) != function_arg_type(b[i]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // function_arg_type is the type of an argument that's used to find a function:
@@ -1767,4 +1784,9 @@ fn (mut conn Connection) add_warning(warning IError) {
 		conn.warnings = conn.warnings[conn.warnings.len - conn.condition_area_limit..]
 		conn.more_conditions = true
 	}
+}
+
+// flag adds features that a statement uses to flagged_features.
+fn (mut conn Connection) flag(features ...string) {
+	conn.flagged_features << features
 }

@@ -39,8 +39,7 @@ sequence_generator_definition:
 sequence_generator_options:
   sequence_generator_option { $$.v = yy_box([$1.v as SequenceGeneratorOption]) }
 | sequence_generator_options sequence_generator_option {
-    $$.v = yy_box(append_list($1.v as []SequenceGeneratorOption,
-      $2.v as SequenceGeneratorOption))
+    $$.v = yy_append($1.v, $2.v as SequenceGeneratorOption)
   }
 
 sequence_generator_option:
@@ -58,8 +57,7 @@ sequence_generator_data_type_option:
 common_sequence_generator_options:
   common_sequence_generator_option { $$.v = yy_box([$1.v as SequenceGeneratorOption]) }
 | common_sequence_generator_options common_sequence_generator_option {
-    $$.v = yy_box(append_list($1.v as []SequenceGeneratorOption,
-      $2.v as SequenceGeneratorOption))
+    $$.v = yy_append($1.v, $2.v as SequenceGeneratorOption)
   }
 
 common_sequence_generator_option:

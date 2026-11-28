@@ -52,7 +52,7 @@ create_index_statement:
 index_column_list:
   index_column { $$.v = yy_box([$1.v as IndexColumn]) }
 | index_column_list comma index_column {
-    $$.v = yy_box(append_list($1.v as []IndexColumn, $3.v as IndexColumn))
+    $$.v = yy_append($1.v, $3.v as IndexColumn)
   }
 
 index_column:

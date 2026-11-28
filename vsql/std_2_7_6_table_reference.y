@@ -106,7 +106,7 @@ derived_column_list:
 column_name_list:
   column_name { $$.v = yy_box([$1.v as Identifier]) }
 | column_name_list comma column_name {
-    $$.v = yy_box(append_list($1.v as []Identifier, $3.v as Identifier))
+    $$.v = yy_append($1.v, $3.v as Identifier)
   }
 
 parenthesized_derived_column_list:

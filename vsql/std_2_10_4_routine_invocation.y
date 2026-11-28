@@ -40,7 +40,7 @@ sql_argument_list:
 sql_arguments:
   sql_argument { $$.v = yy_box([$1.v as ValueExpression]) }
 | sql_arguments comma sql_argument {
-    $$.v = yy_box(append_list($1.v as []ValueExpression, $3.v as ValueExpression))
+    $$.v = yy_append($1.v, $3.v as ValueExpression)
   }
 
 sql_argument:

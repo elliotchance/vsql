@@ -207,7 +207,7 @@ const desc_fields = {
 		kind: .smallint
 	}
 	sql_desc_datetime_interval_precision:  DescField{
-		kind: .smallint
+		kind: .integer
 	}
 	sql_desc_degree:                       DescField{
 		kind:        .integer

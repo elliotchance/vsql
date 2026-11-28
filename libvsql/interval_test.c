@@ -43,11 +43,11 @@ UTEST_F(db, interval_describe_col) {
   EXPECT_EQ(desc_short(ird, 1, SQL_DESC_TYPE), SQL_INTERVAL);
   EXPECT_EQ(desc_short(ird, 1, SQL_DESC_DATETIME_INTERVAL_CODE),
             SQL_CODE_YEAR_TO_MONTH);
-  EXPECT_EQ(desc_short(ird, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
+  EXPECT_EQ(desc_int(ird, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
   EXPECT_EQ(desc_int(ird, 1, SQL_DESC_LENGTH), 6);
   EXPECT_EQ(desc_short(ird, 2, SQL_DESC_DATETIME_INTERVAL_CODE),
             SQL_CODE_DAY_TO_SECOND);
-  EXPECT_EQ(desc_short(ird, 2, SQL_DESC_DATETIME_INTERVAL_PRECISION), 3);
+  EXPECT_EQ(desc_int(ird, 2, SQL_DESC_DATETIME_INTERVAL_PRECISION), 3);
   EXPECT_EQ(desc_short(ird, 2, SQL_DESC_PRECISION), 2);
 }
 
@@ -91,12 +91,12 @@ UTEST_F(db, interval_bind_parameter) {
             SQL_CODE_DAY_TO_SECOND);
   EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_LENGTH), 15);
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 2);
-  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 3);
+  EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 3);
   ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
                              SQL_CHAR, SQL_INTERVAL_YEAR, 3, 0,
                              (SQLPOINTER) "-12", 50, NULL),
             SQL_SUCCESS);
-  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
+  EXPECT_EQ(desc_int(ipd, 2, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
   EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_PRECISION), 0);
 
   ASSERT_EQ(run_sql(utest_fixture->stmt,
@@ -132,17 +132,17 @@ UTEST_F(db, interval_set_desc_field) {
   ASSERT_EQ(
       SQLSetDescField(ipd, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTERVAL), 0),
       SQL_SUCCESS);
-  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
+  EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
 
   /* Setting the DATETIME_INTERVAL_CODE sets the PRECISION to 6 if it has
    * seconds, otherwise 0 (zero). */
   ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION,
-                            SMALLINT_VALUE(5), 0),
+                            INTEGER_VALUE(5), 0),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE,
                             SMALLINT_VALUE(SQL_CODE_HOUR_TO_SECOND), 0),
             SQL_SUCCESS);
-  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
+  EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 2);
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 6);
   ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE,
                             SMALLINT_VALUE(SQL_CODE_MONTH), 0),
@@ -152,7 +152,7 @@ UTEST_F(db, interval_set_desc_field) {
   /* The leading field precision must be 1 to 8 when the DATA_POINTER is
    * set. */
   ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION,
-                            SMALLINT_VALUE(9), 0),
+                            INTEGER_VALUE(9), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATA_POINTER, (SQLPOINTER) "1", 0),
             SQL_ERROR);
@@ -238,6 +238,6 @@ UTEST_F(db, interval_prepare) {
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_INTERVAL);
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE),
             SQL_CODE_HOUR_TO_MINUTE);
-  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 4);
+  EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_DATETIME_INTERVAL_PRECISION), 4);
   EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_LENGTH), 8);
 }

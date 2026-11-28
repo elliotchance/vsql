@@ -35,6 +35,11 @@ extensions = [
 # :ref:`functions-arithmetic:ABS`, without a label of its own.
 autosectionlabel_prefix_document = True
 
+# Pygments' V lexer can't lex some valid V, such as a $ in string
+# interpolation ('${x}'). Sphinx warns and highlights the block in relaxed
+# mode, which is fine, but the warning would fail the build (-W).
+suppress_warnings = ['misc.highlighting_failure']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

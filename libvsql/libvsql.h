@@ -744,6 +744,15 @@ SQLRETURN SQLBindCol(
  * length with a sign (12 and 25 here), which can be passed to
  * SQLBindParameter for a value with a sign, or reduced by 1 for one without.
  *
+ * Like any CAST, a character or binary string that's too long for either type
+ * is cut to its length with a warning (SQL_SUCCESS_WITH_INFO and 01004, string
+ * data, right truncation). The type of a dynamic parameter in "INSERT INTO t
+ * (s) VALUES (?)" is the type of the column s, so a value that's too long for
+ * s is cut before it's stored, rather than being the error (22001) of a store
+ * assignment, which is what the same value as a literal would be (ISO/IEC
+ * 9075-3:2003, 5.6, General Rules, 4.p; ISO/IEC 9075-2:2023, 20.11, General
+ * Rules, 6.c.ii.2.B; ISO/IEC 9075-2:2023, 6.13, General Rules, 11 to 13).
+ *
  * StrLen_or_Ind is the length in octets of a string, which must be greater
  * than zero (or SQL_NTS, which also allows an empty string), and it may be
  * SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC to give the value with

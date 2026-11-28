@@ -120,8 +120,17 @@ when the statement is prepared, and the value it's given is cast to that type
 So ``'42'`` can be the value for ``x = ?`` when ``x`` is an ``INTEGER``, and a
 value that can't be cast (such as ``'abc'``) is an error. A value of a type
 that can never be cast to that type (such as a ``DOUBLE PRECISION`` for a
-``DATE``) is a restricted data type attribute violation (``07006``). The type of a
-dynamic parameter is returned by ``dynamic_parameter_type()``:
+``DATE``) is a restricted data type attribute violation (``07006``).
+
+Like any ``CAST``, a character or binary string that's too long for the type is
+cut to its length with a warning (``01004``, string data, right truncation). So
+a value for ``INSERT INTO t (x) VALUES (?)`` that's too long for ``x`` is cut
+before it's stored, rather than being the error (``22001``) of a store
+assignment, which is what the same value as a literal would be, and ``x = ?``
+only compares the start of a value that's too long (ISO/IEC 9075-2:2023, 20.11,
+General Rules, 6.c.ii.2.B and 6.13, General Rules, 11 to 13).
+
+The type of a dynamic parameter is returned by ``dynamic_parameter_type()``:
 
 .. code-block:: v
 

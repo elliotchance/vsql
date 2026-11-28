@@ -379,7 +379,10 @@ fn (mut conn Connection) collect_column(e Identifier, tables map[string]&Table) 
 // there can be more than one, and they can refer to each other.
 fn (mut conn Connection) collect_column_id(id string) {
 	if id !in conn.collected_columns {
+		// The map outlives the statement (see arena_pause).
+		h := arena_pause()
 		conn.collected_columns[id] = true
+		arena_resume(h)
 		for source in conn.correlated_columns[id] {
 			conn.collect_column_id(source)
 		}
@@ -612,6 +615,11 @@ fn (conn &Connection) has_open_cursor() bool {
 // ISO/IEC 9075-2:2023, 15.7, Effect of a positioned update, General Rules, 9
 // ISO/IEC 9075-2:2023, 15.18, Execution of referential actions, General Rules, 14
 fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []RowChange, current_of ?&Cursor) ! {
+	// The cursors outlive the statement (see arena_pause).
+	h := arena_pause()
+	defer {
+		arena_resume(h)
+	}
 	mut own_cursor := ''
 	if cursor := opt_copy(current_of) {
 		own_cursor = cursor.name

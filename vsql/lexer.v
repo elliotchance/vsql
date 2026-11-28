@@ -41,17 +41,15 @@ struct YYBox {
 fn yy_box[T](v T) YYBox {
 	// The memory is zeroed because -autofree frees the old value when v is
 	// assigned to it, and freeing a zeroed value does nothing.
+	//
+	// The value isn't copied, and yy_unbox doesn't copy it either: the actions
+	// are @[manualfree], so nothing frees a value between the stack and the
+	// syntax tree, and the constructors of the syntax tree copy what they keep
+	// (with -autofree). A copy at each step was never freed. Only the values of
+	// tokens are copied, see Token.sym.
 	mut ptr := unsafe { &T(voidptr(vcalloc(int(sizeof(T))))) }
-	$if autofree {
-		// The caller frees v (often a temporary), so the box needs its own
-		// copy (https://github.com/vlang/v/issues/32943).
-		unsafe {
-			*ptr = own_copy(&v)
-		}
-	} $else {
-		unsafe {
-			*ptr = v
-		}
+	unsafe {
+		*ptr = v
 	}
 	return YYBox{typeof[T]().idx, voidptr(ptr)}
 }
@@ -59,16 +57,44 @@ fn yy_box[T](v T) YYBox {
 fn yy_unbox[T](sym YYSym) T {
 	if sym is YYBox {
 		if sym.typ == typeof[T]().idx {
-			$if autofree {
-				// -autofree frees what's returned, which would free the boxed
-				// value that the action can use again.
-				return own_copy(unsafe { &T(sym.ptr) })
-			}
 			return unsafe { *(&T(sym.ptr)) }
 		}
 	}
 
 	panic('expected ${T.name}')
+}
+
+// yy_append adds v to the end of the list in the box of sym (the $1 of a rule
+// that builds a list) and returns that box, for $$. The list grows in place,
+// rather than being copied for each item, since nothing frees the copies (the
+// actions are @[manualfree]), so a list of n items leaked n copies of it.
+@[manualfree]
+fn yy_append[T](sym YYSym, v T) YYBox {
+	if sym is YYBox {
+		if sym.typ == typeof[[]T]().idx {
+			mut list := unsafe { &[]T(sym.ptr) }
+			list << v
+			return sym
+		}
+	}
+
+	panic('expected []${T.name}')
+}
+
+// yy_concat is yy_append for each item of values.
+@[manualfree]
+fn yy_concat[T](sym YYSym, values []T) YYBox {
+	if sym is YYBox {
+		if sym.typ == typeof[[]T]().idx {
+			mut list := unsafe { &[]T(sym.ptr) }
+			for v in values {
+				list << v
+			}
+			return sym
+		}
+	}
+
+	panic('expected []${T.name}')
 }
 
 // own_copy is a deep copy of *v for -autofree. A struct or sum type is copied
@@ -227,10 +253,16 @@ fn (t Token) sym() YYSymType {
 			IdentifierChain {
 				YYSym(yy_box[IdentifierChain](IdentifierChain{t.value.identifier.clone()}))
 			}
-			Value { YYSym(yy_box[Value](t.value)) }
-			string { YYSym(t.value) }
+			Value { YYSym(yy_box[Value](token_value_copy(t.value))) }
+			string { YYSym(own_string(t.value)) }
 		}
 	}
+}
+
+// token_value_copy is a copy of a value of a token for the syntax tree (with
+// -autofree), since the token still owns its value. yy_box doesn't copy.
+fn token_value_copy(v Value) Value {
+	return own_copy(&v)
 }
 
 fn tokenize(sql_stmt string) ![]Token {
@@ -273,6 +305,7 @@ fn count_dynamic_parameters(tokens []Token) int {
 
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
+	free_when_grown(mut tokens)
 	mut features := []string{}
 	text := sql_stmt.trim(';')
 	cs := statement_runes(text)
@@ -556,7 +589,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		if length > 0 {
 			start := tokens[tokens.len - length].start
 			end := tokens[tokens.len - 1].end
-			tokens = tokens[..tokens.len - length].clone()
+			// The array is shortened in place, rather than replaced by a copy
+			// (the old one isn't freed with -autofree).
+			tokens.trim(tokens.len - length)
 			tokens << Token{new_token, '', start, end}
 		}
 	}
@@ -657,6 +692,33 @@ fn starts_value(token Token, reserved []string) bool {
 		'RPAD', 'RTRIM', 'SUBSTRING', 'TRIM', 'UPPER']
 }
 
+// token_is_word is true if t is an identifier that's word (in upper case) in
+// any case. It reads the identifier through t without copying the value or
+// making it upper case, since it's called for every token, and a copy of a
+// value in an array (to work around https://github.com/vlang/v/issues/32949)
+// isn't freed.
+fn token_is_word(t &Token, word string) bool {
+	if t.token != token_literal_identifier {
+		return false
+	}
+	if t.value is IdentifierChain {
+		if t.value.identifier.len != word.len {
+			return false
+		}
+		for j in 0 .. word.len {
+			c := t.value.identifier[j]
+			upper := if c >= `a` && c <= `z` { c - 32 } else { c }
+			if upper != word[j] {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return false
+}
+
 // is_limit_clause returns true if tokens[i] is the regular identifier LIMIT and
 // it starts a limit_clause rather than being a name, such as a column or an
 // alias (with or without AS). The parser can't tell them apart because it only
@@ -670,9 +732,7 @@ fn starts_value(token Token, reserved []string) bool {
 // is one that an expression can directly follow in the grammar, or a period for
 // "t.limit - 1".
 fn is_limit_clause(tokens []Token, i int) bool {
-	sym := own_copy(&tokens[i].value)
-	if tokens[i].token != token_literal_identifier || sym !is IdentifierChain
-		|| (sym as IdentifierChain).identifier.to_upper() != 'LIMIT' || i + 1 >= tokens.len {
+	if i + 1 >= tokens.len || !token_is_word(&tokens[i], 'LIMIT') {
 		return false
 	}
 

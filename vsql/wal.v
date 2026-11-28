@@ -135,7 +135,7 @@ fn (mut l WalLog) position(page_size int) ?WalPosition {
 // its number of pages). So every page must already have a frame that has been
 // synced in this log, or be past the number of pages at the last sync. (The
 // file never gets smaller, so a page past that can only be a new one.)
-fn (l WalLog) can_skip_sync(prepared WalPrepared) bool {
+fn (l WalLog) can_skip_sync(prepared &WalPrepared) bool {
 	if !l.knows(prepared) {
 		return false
 	}
@@ -151,16 +151,16 @@ fn (l WalLog) can_skip_sync(prepared WalPrepared) bool {
 
 // knows returns true if what this connection knows about the log is still for
 // the log that the statement was added to.
-fn (l WalLog) knows(prepared WalPrepared) bool {
+fn (l WalLog) knows(prepared &WalPrepared) bool {
 	return l.known && !prepared.new_log && prepared.salt == l.salt && prepared.tail >= l.tail
 }
 
 // finished records a statement that wal_finish added to the log.
-fn (mut l WalLog) finished(prepared WalPrepared) {
+fn (mut l WalLog) finished(prepared &WalPrepared) {
 	if !l.knows(prepared) {
 		l.known = false
-		l.synced_pages = map[int]bool{}
-		l.unsynced_pages = map[int]bool{}
+		l.synced_pages.clear()
+		l.unsynced_pages.clear()
 		l.synced_total_pages = 0
 	}
 
@@ -172,7 +172,7 @@ fn (mut l WalLog) finished(prepared WalPrepared) {
 		for page_number, _ in l.unsynced_pages {
 			l.synced_pages[page_number] = true
 		}
-		l.unsynced_pages = map[int]bool{}
+		l.unsynced_pages.clear()
 		l.synced_total_pages = prepared.total_pages
 		l.known = true
 	}
@@ -230,11 +230,13 @@ mut:
 //
 // It must be followed by wal_finish, or the WalPrepared can be dropped to give
 // up. Frames without a commit frame are ignored by wal_read.
-fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pager &FilePager, in_transaction bool) !WalPrepared {
+fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pager &FilePager, in_transaction bool) !&WalPrepared {
 	mut page_numbers := pager.dirty.keys().filter(it < pager.total_pages)
 	page_numbers.sort()
 
-	mut prepared := WalPrepared{
+	// It's a reference, so that it isn't copied (with every page) by -autofree
+	// when it's kept in Storage.wal_prepared.
+	mut prepared := &WalPrepared{
 		log_path:     wal.path
 		page_size:    pager.page_size
 		header_bytes: header.bytes()
@@ -244,16 +246,23 @@ fn wal_prepare(mut file os.File, path string, mut wal WalLog, header Header, pag
 
 	prepared.size = wal_frame_header_size + prepared.header_bytes.len
 	for page_number in page_numbers {
-		prepared.pages[page_number] = pager.dirty[page_number]
-		prepared.size += wal_frame_header_size + prepared.pages[page_number].len
+		share_page(mut prepared.pages, page_number, pager.dirty[page_number])
+		prepared.size += wal_frame_header_size + pager.dirty[page_number].len
 	}
 
-	log_path := prepared.log_path
 	is_new := !wal.file.is_opened
 	// A log is reused because replacing it takes longer. Frames left over from
 	// the previous log are never valid, because each log has a new salt.
 	if is_new {
-		wal.create() or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
+		// prepared.log_path isn't copied to a local, since -autofree would free
+		// it when this returns (https://github.com/vlang/v/issues/32932).
+		// The log stays open after the statement (see arena_pause).
+		h := arena_pause()
+		wal.create() or {
+			arena_resume(h)
+			return sqlstate_58030('unable to create ${prepared.log_path}: ${err}')
+		}
+		arena_resume(h)
 	}
 	prepared.log = wal.file
 
@@ -302,12 +311,13 @@ fn wal_write_pages(mut file os.File, path string, is_new bool, page_numbers []in
 	log.write([wal_state_committed])!
 
 	log.seek(tail, .start)!
+	// One frame is reused for every page, rather than a new one for each.
+	mut frame := []u8{cap: wal_frame_header_size + prepared.page_size}
 	for page_number in page_numbers {
 		crash_point()
-		frame, frame_checksum := wal_frame(wal_frame_page, page_number, prepared.pages[page_number],
+		checksum = wal_put_frame(mut frame, wal_frame_page, page_number, prepared.pages[page_number],
 			checksum)
 		log.write(frame)!
-		checksum = frame_checksum
 	}
 
 	crash_point()
@@ -417,10 +427,12 @@ fn wal_corrupt_fault(mut log os.File, header []u8, salt u32) ! {
 fn wal_checkpoint(mut file os.File, path string, page_size int, pages map[int][]u8, header_bytes []u8, total_pages int) ! {
 	fault_point('checkpoint')!
 
-	for page_number, data in pages {
+	// The pages are read by key, because -autofree copies each value of a
+	// "for k, v in" loop over a map.
+	for page_number in pages.keys() {
 		crash_point()
 		file.seek(i64(header_size) + i64(page_size) * page_number, .start)!
-		file.write(data)!
+		file.write(pages[page_number])!
 	}
 
 	crash_point()
@@ -611,7 +623,19 @@ fn wal_header_is_valid(data []u8) bool {
 // wal_frame returns the bytes of a frame and its checksum, which continues the
 // chain from the previous frame (or the salt for the first frame).
 fn wal_frame(kind u8, number int, data []u8, previous_checksum u32) ([]u8, u32) {
-	mut frame := []u8{len: wal_frame_header_size}
+	mut frame := []u8{cap: wal_frame_header_size + data.len}
+	checksum := wal_put_frame(mut frame, kind, number, data, previous_checksum)
+
+	return frame, checksum
+}
+
+// wal_put_frame replaces what's in frame with a frame (see wal_frame), and
+// returns its checksum.
+fn wal_put_frame(mut frame []u8, kind u8, number int, data []u8, previous_checksum u32) u32 {
+	frame.clear()
+	for _ in 0 .. wal_frame_header_size {
+		frame << 0
+	}
 	frame[0] = kind
 	binary.big_endian_put_u32_at(mut frame, u32(number), 4)
 	binary.big_endian_put_u32_at(mut frame, u32(data.len), 8)
@@ -619,7 +643,15 @@ fn wal_frame(kind u8, number int, data []u8, previous_checksum u32) ([]u8, u32) 
 	binary.big_endian_put_u32_at(mut frame, checksum, 12)
 	frame << data
 
-	return frame, checksum
+	return checksum
+}
+
+// share_page puts data in pages without copying it, which -autofree does when
+// a value of one map is assigned to another. The pages of a WalPrepared are
+// the dirty pages of the pager, which are only released after wal_finish (see
+// FilePager.committed), and are only read until then.
+fn share_page(mut pages map[int][]u8, page_number int, data []u8) {
+	pages[page_number] = data
 }
 
 // wal_checksum is the CRC-32 of the previous checksum, the frame header and the

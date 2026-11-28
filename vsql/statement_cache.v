@@ -32,6 +32,9 @@ struct ParsedStmt {
 struct StatementSlot {
 	sql_stmt string
 	parsed   ParsedStmt
+	// arena is the arena the statement was parsed in, if any (see
+	// cache_arena_begin), which is freed when the slot is replaced.
+	arena voidptr
 mut:
 	used bool
 }
@@ -62,15 +65,20 @@ fn (mut c StatementCache) find(sql_stmt string) ?ParsedStmt {
 }
 
 @[manualfree]
-fn (mut c StatementCache) add(sql_stmt string, parsed ParsedStmt) {
+fn (mut c StatementCache) add(sql_stmt string, parsed &ParsedStmt, arena voidptr) {
 	if sql_stmt.len > statement_cache_max_length {
 		return
 	}
 
+	// The copies are made in the statement's own arena, if it has one, so
+	// they're freed with it (see cache_arena_begin).
+	arena_resume(arena)
 	slot := StatementSlot{
 		sql_stmt: own_string(sql_stmt)
-		parsed:   own_copy(&parsed)
+		parsed:   own_copy(parsed)
+		arena:    arena
 	}
+	cache_arena_end(arena)
 	if c.slots.len < statement_cache_size {
 		c.slot_of[sql_stmt] = c.slots.len
 		c.slots << slot
@@ -82,7 +90,23 @@ fn (mut c StatementCache) add(sql_stmt string, parsed ParsedStmt) {
 		c.hand = (c.hand + 1) % c.slots.len
 	}
 	c.slot_of.delete(c.slots[c.hand].sql_stmt)
+	arena_free_handle(c.slots[c.hand].arena)
 	c.slot_of[sql_stmt] = c.hand
-	c.slots[c.hand] = slot
+	// The slot is moved, since -autofree would clone it.
+	unsafe { vmemcpy(&c.slots[c.hand], &slot, int(sizeof(StatementSlot))) }
 	c.hand = (c.hand + 1) % c.slots.len
+}
+
+// free_arenas empties the cache and frees the arena of each statement in it,
+// when the connection is closed. The slots are forgotten rather than freed,
+// because what they have is in those arenas.
+fn (mut c StatementCache) free_arenas() {
+	for slot in c.slots {
+		arena_free_handle(slot.arena)
+	}
+	unsafe {
+		c.slots.len = 0
+	}
+	c.slot_of.clear()
+	c.hand = 0
 }

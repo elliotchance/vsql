@@ -176,7 +176,9 @@ fn lock_path_file(mut file os.File, path string, operation int) !bool {
 fn (mut conn CatalogConnection) remove_lock_files() {
 	isolation := isolation_path(conn.path)
 	deferral := deferral_path(conn.path)
-	for path in [isolation, isolation_queue_path(isolation), deferral, isolation_queue_path(deferral)] {
+	// The copies work around https://github.com/vlang/v/issues/32947 (-autofree).
+	for path in [own_string(isolation), isolation_queue_path(isolation), own_string(deferral),
+		isolation_queue_path(deferral)] {
 		remove_lock_file(path)
 	}
 	conn.storage.session.remove()

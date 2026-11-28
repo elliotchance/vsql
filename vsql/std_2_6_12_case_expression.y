@@ -93,7 +93,7 @@ when_operand_list:
   when_operand { $$.v = yy_box([$1.v as CaseWhenOperand]) }
 | when_operand_list comma when_operand {
     flag(mut yylex, 'F263')
-    $$.v = yy_box(append_list($1.v as []CaseWhenOperand, $3.v as CaseWhenOperand))
+    $$.v = yy_append($1.v, $3.v as CaseWhenOperand)
   }
 
 // Each <when operand> is a predicate with the <case operand> on the left (see
@@ -211,21 +211,19 @@ result_expression:
 value_expression_list:
   value_expression { $$.v = yy_box([$1.v as ValueExpression]) }
 | value_expression_list comma value_expression {
-    $$.v = yy_box(append_list($1.v as []ValueExpression, $3.v as ValueExpression))
+    $$.v = yy_append($1.v, $3.v as ValueExpression)
   }
 
 simple_when_clause_list:
   simple_when_clause { $$.v = yy_box([$1.v as CaseExpressionSimpleWhen]) }
 | simple_when_clause_list simple_when_clause {
-    $$.v = yy_box(append_list($1.v as []CaseExpressionSimpleWhen,
-      $2.v as CaseExpressionSimpleWhen))
+    $$.v = yy_append($1.v, $2.v as CaseExpressionSimpleWhen)
   }
 
 searched_when_clause_list:
   searched_when_clause { $$.v = yy_box([$1.v as CaseExpressionSearchedWhen]) }
 | searched_when_clause_list searched_when_clause {
-    $$.v = yy_box(append_list($1.v as []CaseExpressionSearchedWhen,
-      $2.v as CaseExpressionSearchedWhen))
+    $$.v = yy_append($1.v, $2.v as CaseExpressionSearchedWhen)
   }
 
 %%

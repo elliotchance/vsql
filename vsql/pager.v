@@ -79,19 +79,57 @@ fn (mut p MemoryPager) read_page(page_number int) !Page {
 		unsafe { &p.pages[page_number] }
 	}
 
-	// -autofree frees the page that's returned, so it must be a copy
+	// The page is a view of the pager's page (like FilePager's page_view), so
+	// it isn't copied. Its data is a slice, which V never frees, so -autofree
+	// can't free the pager's page through it
 	// (https://github.com/vlang/v/issues/32937).
-	$if autofree {
-		return page.clone()
+	return Page{
+		kind: page.kind
+		used: page.used
+		data: unsafe { page.data[0..page.data.len] }
 	}
-	return *page
 }
 
 // The pages that MemoryPager keeps are copies (see own_copy), because
 // -autofree frees the page that's given, and the old pages when they're
 // replaced (https://github.com/vlang/v/issues/32943).
 fn (mut p MemoryPager) store_page(page_number int, page Page) ! {
-	p.dirty[page_number] = own_copy(&page)
+	h := arena_pause()
+	// page may be a view of the page it replaces (see read_page), so it's
+	// copied before that one is freed.
+	copy := page.clone()
+	free_dirty_page(mut p.dirty, page_number)
+	p.dirty[page_number] = copy
+	arena_resume(h)
+}
+
+// free_dirty_page frees the page that the current statement already changed
+// (it's the pager's own copy) before it's replaced or removed, since -autofree
+// doesn't free a map value that's replaced
+// (https://github.com/vlang/v/issues/32943).
+@[manualfree]
+fn free_dirty_page(mut dirty map[int]Page, page_number int) {
+	$if autofree {
+		if page_number in dirty {
+			mut page := unsafe { &dirty[page_number] }
+			unsafe { page.data.free() }
+		}
+	}
+}
+
+// free_dirty_pages frees every page the current statement changed (see
+// free_dirty_page) and empties dirty.
+@[manualfree]
+fn free_dirty_pages(mut dirty map[int]Page) {
+	$if autofree {
+		for page_number, _ in dirty {
+			free_dirty_page(mut dirty, page_number)
+		}
+		// -autofree also makes free() create a new empty map (see free_map).
+		unsafe { dirty.free() }
+	} $else {
+		dirty = map[int]Page{}
+	}
 }
 
 fn (mut p MemoryPager) total_pages() int {
@@ -102,11 +140,15 @@ fn (mut p MemoryPager) append_page(page Page) !int {
 	if p.free >= 0 {
 		page_number := p.free
 		p.free = next_free_page(p.read_page(page_number)!)
-		p.dirty[page_number] = own_copy(&page)
+		h := arena_pause()
+		p.dirty[page_number] = page.clone()
+		arena_resume(h)
 		return page_number
 	}
 
-	p.dirty[p.total] = own_copy(&page)
+	h := arena_pause()
+	p.dirty[p.total] = page.clone()
+	arena_resume(h)
 	p.total++
 
 	return p.total - 1
@@ -136,6 +178,7 @@ fn (mut p MemoryPager) set_first_free_page(page_number int) {
 fn (mut p MemoryPager) truncate(total_pages int) {
 	for page_number, _ in p.dirty {
 		if page_number >= total_pages {
+			free_dirty_page(mut p.dirty, page_number)
 			p.dirty.delete(page_number)
 		}
 	}
@@ -143,34 +186,65 @@ fn (mut p MemoryPager) truncate(total_pages int) {
 }
 
 fn (mut p MemoryPager) replace_pages(pages []Page, root int) ! {
-	p.dirty = map[int]Page{}
+	// The pager outlives the statement (see arena_pause).
+	h := arena_pause()
+	defer {
+		arena_resume(h)
+	}
+	free_dirty_pages(mut p.dirty)
 	for i, page in pages {
-		p.dirty[i] = own_copy(&page)
+		p.dirty[i] = page.clone()
 	}
 	p.total = pages.len
 	p.root_page = root
 	p.free = -1
 }
 
-// commit keeps the pages changed by the current statement.
+// commit keeps the pages changed by the current statement. They're moved
+// rather than copied, and the pages they replace are freed (-autofree doesn't
+// free an array element that's replaced).
+@[manualfree]
 fn (mut p MemoryPager) commit() {
+	// The pager outlives the statement (see arena_pause).
+	h := arena_pause()
+	defer {
+		arena_resume(h)
+	}
 	// Only the changed pages are replaced, rather than copying all of them,
 	// since a page that's stored is never changed in place.
 	for p.pages.len < p.total {
 		p.pages << Page{}
 	}
 	p.pages.trim(p.total)
-	for i, page in p.dirty {
-		p.pages[i] = own_copy(&page)
+	for i, _ in p.dirty {
+		$if autofree {
+			unsafe { p.pages[i].data.free() }
+		}
+		// The page is moved with vmemcpy, since -autofree clones a page that's
+		// assigned (with Page.clone), even from a pointer.
+		mut page := unsafe { &p.dirty[i] }
+		unsafe { vmemcpy(&p.pages[i], page, int(sizeof(Page))) }
+		// The page was moved, so freeing the map below mustn't free it.
+		page.data.flags |= .nofree
 	}
 
-	p.dirty = map[int]Page{}
+	$if autofree {
+		// -autofree also makes free() create a new empty map (see free_map).
+		unsafe { p.dirty.free() }
+	} $else {
+		p.dirty = map[int]Page{}
+	}
 	p.saved_root_page = p.root_page
 	p.saved_free = p.free
 }
 
 fn (mut p MemoryPager) discard() {
-	p.dirty = map[int]Page{}
+	// The pager outlives the statement (see arena_pause).
+	h := arena_pause()
+	defer {
+		arena_resume(h)
+	}
+	free_dirty_pages(mut p.dirty)
 	p.total = p.pages.len
 	p.root_page = p.saved_root_page
 	p.free = p.saved_free
@@ -197,6 +271,11 @@ mut:
 	cache       map[int][]u8
 	cache_order []int
 	cache_next  int
+	// retired is the data of the pages removed from the cache by this
+	// statement (with -autofree). They're freed by the next statement (see
+	// begin), because a page that was read is a view of the cached data (see
+	// page_view) that the statement may still use.
+	retired []voidptr
 	// undo has each page that the current statement changed as it was before
 	// the statement (or is in undo_new if it wasn't dirty), and the total
 	// pages and root page before it, so that discard can put back what was
@@ -257,9 +336,16 @@ fn (mut p FilePager) read_page(page_number int) !Page {
 		return sqlstate_58030('unable to seek: ${err}')
 	}
 
+	// The page is kept in the cache, which outlives the statement (see
+	// arena_pause).
+	h := arena_pause()
 	mut buf := []u8{len: p.page_size}
-	p.file.read(mut buf) or { return sqlstate_58030('unable to read from file: ${err}') }
+	p.file.read(mut buf) or {
+		arena_resume(h)
+		return sqlstate_58030('unable to read from file: ${err}')
+	}
 	p.cache_page(page_number, buf)
+	arena_resume(h)
 
 	return page_view(buf)
 }
@@ -274,6 +360,9 @@ fn (mut p FilePager) cache_page(page_number int, data []u8) {
 	if p.cache_order.len < p.cache_size {
 		p.cache_order << page_number
 	} else {
+		$if autofree {
+			p.retire_cached(p.cache_order[p.cache_next])
+		}
 		p.cache.delete(p.cache_order[p.cache_next])
 		p.cache_order[p.cache_next] = page_number
 		p.cache_next = (p.cache_next + 1) % p.cache_size
@@ -281,7 +370,38 @@ fn (mut p FilePager) cache_page(page_number int, data []u8) {
 	p.cache[page_number] = data
 }
 
-fn (page Page) clone() Page {
+// retire_cached keeps the data of a cached page until the next statement (see
+// FilePager.retired), so removing it from the cache doesn't free it.
+@[manualfree]
+fn (mut p FilePager) retire_cached(page_number int) {
+	if page_number in p.cache {
+		// The array is moved into a header of its own (an array's data can't be
+		// freed directly, see array.free), and the one in the map doesn't free
+		// it when it's deleted.
+		mut data := unsafe { &p.cache[page_number] }
+		retired := unsafe { &[]u8(C.malloc(sizeof([]u8))) }
+		unsafe { vmemcpy(retired, data, int(sizeof([]u8))) }
+		data.flags.set(.nofree)
+		p.retired << voidptr(retired)
+	}
+}
+
+// free_retired frees the pages that were removed from the cache (see
+// FilePager.retired).
+@[manualfree]
+fn (mut p FilePager) free_retired() {
+	for ptr in p.retired {
+		unsafe {
+			mut retired := &[]u8(ptr)
+			retired.free()
+			C.free(ptr)
+		}
+	}
+	p.retired.clear()
+}
+
+// The receiver is a pointer, so that it isn't copied to the heap (and leaked).
+fn (page &Page) clone() Page {
 	return Page{
 		kind: page.kind
 		used: page.used
@@ -313,9 +433,20 @@ fn (page Page) bytes() []u8 {
 }
 
 fn (mut p FilePager) store_page(page_number int, page Page) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if page_number !in p.undo && page_number !in p.undo_new {
 		if data := p.dirty[page_number] {
-			p.undo[page_number] = data
+			// -autofree frees the page in dirty when it's replaced below, so
+			// undo needs its own copy.
+			$if autofree {
+				p.undo[page_number] = data.clone()
+			} $else {
+				p.undo[page_number] = data
+			}
 		} else {
 			p.undo_new[page_number] = true
 		}
@@ -326,8 +457,14 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 // begin must be called at the start of each statement that changes the
 // database, so that discard knows what to put back.
 fn (mut p FilePager) begin() {
-	p.undo = map[int][]u8{}
-	p.undo_new = map[int]bool{}
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
+	p.undo.clear()
+	p.undo_new.clear()
+	p.free_retired()
 	p.undo_total_pages = p.total_pages
 	p.undo_root_page = p.root_page
 	p.undo_free_page = p.free
@@ -336,6 +473,11 @@ fn (mut p FilePager) begin() {
 // discard forgets the changes of the current statement. The pages that earlier
 // statements of the transaction changed are kept, see begin.
 fn (mut p FilePager) discard() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	for page_number, _ in p.undo_new {
 		p.dirty.delete(page_number)
 	}
@@ -349,14 +491,25 @@ fn (mut p FilePager) discard() {
 
 	// A page that was committed before (see wal_prepare) may be different to the
 	// cached one, which was read before it was changed.
-	p.cache = map[int][]u8{}
-	p.cache_order = []int{}
+	// -autofree also makes free() create a new empty map (see free_map).
+	$if autofree {
+		unsafe { p.cache.free() }
+		p.cache_order.clear()
+	} $else {
+		p.cache = map[int][]u8{}
+		p.cache_order = []int{}
+	}
 	p.cache_next = 0
 }
 
 // committed is called once the dirty pages are in the file, so they're cached
 // as they are now.
 fn (mut p FilePager) committed() {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	for page_number, data in p.dirty {
 		if page_number in p.cache {
 			p.cache[page_number] = data
@@ -364,7 +517,8 @@ fn (mut p FilePager) committed() {
 			p.cache_page(page_number, data)
 		}
 	}
-	p.dirty = map[int][]u8{}
+	// The cache has its own copies (with -autofree, clear frees the pages).
+	p.dirty.clear()
 	p.file_total_pages = p.total_pages
 }
 
@@ -372,6 +526,11 @@ fn (mut p FilePager) committed() {
 // read from the file again, see Storage.drop_kept_pages. They're put back if
 // the statement fails, like any other change (see discard).
 fn (mut p FilePager) drop_dirty(root_page int, free_page int) {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	for page_number, data in p.dirty {
 		if page_number !in p.undo && page_number !in p.undo_new {
 			p.undo[page_number] = data
@@ -388,6 +547,11 @@ fn (mut p FilePager) total_pages() int {
 }
 
 fn (mut p FilePager) append_page(page Page) !int {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	if p.free >= 0 {
 		page_number := p.free
 		p.free = next_free_page(p.read_page(page_number)!)
@@ -412,6 +576,11 @@ fn (mut p FilePager) set_root_page(page_number int) ! {
 }
 
 fn (mut p FilePager) free_page(page_number int) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	p.store_page(page_number, new_free_page(p.free, p.page_size))!
 	p.free = page_number
 }
@@ -423,6 +592,11 @@ fn (mut p FilePager) first_free_page() int {
 // replace_pages only changes the pages in memory. The file is made shorter when
 // they're written, see wal_checkpoint.
 fn (mut p FilePager) set_first_free_page(page_number int) {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	p.free = page_number
 }
 
@@ -430,6 +604,11 @@ fn (mut p FilePager) set_first_free_page(page_number int) {
 // (see wal_prepare), and the file is cut to it by wal_checkpoint. A page that's
 // cached past the end is forgotten, so a page added there later is read again.
 fn (mut p FilePager) truncate(total_pages int) {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	for page_number, _ in p.cache {
 		if page_number >= total_pages {
 			p.cache.delete(page_number)
@@ -439,6 +618,11 @@ fn (mut p FilePager) truncate(total_pages int) {
 }
 
 fn (mut p FilePager) replace_pages(pages []Page, root int) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	for i, page in pages {
 		p.store_page(i, page)!
 	}

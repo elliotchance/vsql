@@ -156,6 +156,8 @@ fn (mut f Storage) read_large_value(table_id u64, value_id u64, first int, last 
 // with the next value ID (the same counter as row IDs). The first one raises
 // the Read Version and the Write Version, since older versions can't read it.
 fn (mut f Storage) write_large_value(table_id u64, s string, characters int) !&LargeValue {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
 	f.header.row_id++
 	if f.header.read_version < data_types_file_format_version {
 		f.header.read_version = data_types_file_format_version
@@ -175,11 +177,21 @@ fn (mut f Storage) write_large_value(table_id u64, s string, characters int) !&L
 		loaded:     true
 		data:       s
 	}
+	arena_resume(arena_h)
+
+	// What Btree.add keeps is allocated with the arena paused, so the rest
+	// can be released after each chunk, rather than with the statement (a
+	// value can have hundreds of thousands of chunks).
 	for chunk in 0 .. lv.chunks() {
 		start := chunk * chunk_size
 		end := math.min(s.len, start + chunk_size)
+		ch := f.chunk_arena_begin()
 		f.btree.add(new_page_object(large_value_key(table_id, lv.value_id, chunk),
-			f.transaction_id, 0, s[start..end].bytes()))!
+			f.transaction_id, 0, s[start..end].bytes())) or {
+			f.chunk_arena_end(ch, false)
+			return err
+		}
+		f.chunk_arena_end(ch, true)
 	}
 
 	return lv

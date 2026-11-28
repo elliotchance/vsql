@@ -504,7 +504,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				table = virtual_table.table()
 				conn.flag_information_schema_view(table_name)
 				if conn.flagging {
-					conn.flagged_features << virtual_table.features
+					conn.flag(...virtual_table.features)
 				}
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
@@ -674,7 +674,10 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			features:       own_array(col.features)
 		}
 		if conn.collect_columns {
+			// The map outlives the statement (see arena_pause).
+			ch := arena_pause()
 			conn.correlated_columns[columns[i].name.id()] << col.name.id()
+			arena_resume(ch)
 		}
 	}
 
@@ -1083,15 +1086,21 @@ fn (mut o Plan) needed_columns(mut table TableOperation, end int) ![]bool {
 	}
 
 	mut conn := table.conn
+	// What's put back on the connection outlives the statement (see
+	// arena_pause).
+	h := arena_pause()
 	warnings := conn.warnings.clone()
 	conn.collect_columns = true
 	conn.collected_columns = map[string]bool{}
+	arena_resume(h)
 	conn.collected_subquery = false
 	defer {
+		dh := arena_pause()
 		conn.collect_columns = false
 		conn.collected_columns = map[string]bool{}
 		conn.collected_subquery = false
 		conn.warnings = warnings
+		arena_resume(dh)
 	}
 
 	for i in 1 .. end {

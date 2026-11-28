@@ -126,15 +126,23 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 	// An aggregate function of a query that contains this subquery is a value of
 	// that query's row (or group), see Compiler.aggregation_scope.
 	outer_aggregates := c.conn.subquery_scopes.map(it.aggregates.len)
+	// The stack outlives the statement, even though each scope is popped (see
+	// arena_pause). A pop can also shrink it.
+	h := arena_pause()
 	c.conn.subquery_scopes << scope
+	arena_resume(h)
 	plan := create_query_expression_plan(*e.query, c.params, mut c.conn, Correlation{}) or {
+		eh := arena_pause()
 		c.conn.subquery_scopes.pop()
+		arena_resume(eh)
 		return err
 	}
 
 	// The aggregate functions of this query are calculated with its other
 	// aggregate functions (see GroupOperation).
+	ph := arena_pause()
 	planned := c.conn.subquery_scopes.pop()
+	arena_resume(ph)
 	aggregates := planned.aggregates
 	c.aggregates << aggregates
 
@@ -198,12 +206,17 @@ fn run_subquery(mut conn Connection, plan SubqueryPlan, data Row) ![]Row {
 		}
 	}
 
+	// The stack outlives the statement (see arena_pause).
+	h := arena_pause()
 	conn.subquery_scopes << SubqueryScope{
 		...plan.scope
 		row: data
 	}
+	arena_resume(h)
 	defer {
+		dh := arena_pause()
 		conn.subquery_scopes.pop()
+		arena_resume(dh)
 	}
 
 	mut p := plan.plan
@@ -309,7 +322,7 @@ fn (e Subquery) compile_fields(mut c Compiler) ![]CompileResult {
 
 	// ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 4
 	if c.conn.flagging {
-		c.conn.flagged_features << 'F641'
+		c.conn.flag('F641')
 	}
 
 	// The fields are always evaluated in order (see run_fields), so the

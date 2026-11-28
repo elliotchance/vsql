@@ -81,3 +81,17 @@ fn push_list[T](element T, list []T) []T {
 
 	return new_list
 }
+
+// free_when_grown lets a (with -autofree) free its old memory each time it
+// grows, which works around https://github.com/vlang/v/issues/32977: without a
+// GC, an array that grows leaks each buffer that it outgrows. It's only for an
+// array that's never sliced while it grows, since a slice would then point to
+// freed memory.
+@[inline]
+fn free_when_grown[T](mut a []T) {
+	$if autofree {
+		unsafe {
+			a.flags |= .noslices
+		}
+	}
+}

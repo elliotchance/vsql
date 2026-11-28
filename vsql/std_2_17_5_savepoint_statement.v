@@ -118,6 +118,11 @@ fn (mut conn Connection) rollback_to_savepoint(name string) ! {
 }
 
 fn (mut catalog CatalogConnection) rollback_to(state SavepointState) ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	// A table (T), schema (S) or index (N) that's changed means the schema must be
 	// loaded again.
 	schema_changed := catalog.storage.undo.entries[state.undo_length..].any(it.obj.key[0] in [

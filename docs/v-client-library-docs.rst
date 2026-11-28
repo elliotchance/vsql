@@ -851,6 +851,21 @@ struct Connection
    	frame_err      ?Condition
    	// parser_stack is kept between statements, see parse_statement.
    	parser_stack []YYSymType
+   	// arena is the arena of the statement that's running, and arena_kept the
+   	// one that's reused for each statement (-d vsql_arena, see arena_begin).
+   	arena      voidptr
+   	arena_kept voidptr
+   	// scratch_arenas are reused while a statement arena is running, one for
+   	// each level of nesting, and scratch_depth is how many are in use (see
+   	// scratch_arena_begin).
+   	scratch_arenas []voidptr
+   	scratch_depth  int
+   	// scratch_closures is how many closures the lifetime had when each scratch
+   	// arena in use started, and deferred_arenas the scratch arenas that are
+   	// kept until the statement ends, because closures were made while they were
+   	// pushed (see scratch_arena_release).
+   	scratch_closures []int
+   	deferred_arenas  []voidptr
    	// statement_cache has the statements that have been parsed, by their text,
    	// see prepare.
    	statement_cache StatementCache
@@ -1690,6 +1705,9 @@ struct VirtualTable
    	// wrong_values is the number of values of a row that doesn't have one for
    	// each column, or -1.
    	wrong_values int = -1
+   	// column_names are the names of the columns, in order. They're found once
+   	// for each scan (see reset), rather than for each row.
+   	column_names []string
    }
 
 

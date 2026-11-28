@@ -140,20 +140,34 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	mut inner_matched := []bool{len: all_inner_rows.len}
 	for outer_row in outer_rows {
 		inner_rows := o.inner_rows(outer_row, all_inner_rows)!
-		mut matched := false
-		for i, inner_row in inner_rows {
-			mut row := new_row(map[string]Value{})
-			row.data = row.data.merged(outer_row.data)
-			row.data = row.data.merged(inner_row.data)
 
-			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables, mut condition)! {
-				rows << row
-				matched = true
-				if o.join_type == .full {
-					inner_matched[i] = true
-				}
+		// The condition is compiled for the first row that's compared (as
+		// eval_as_bool would), but outside of the arena of a row (see below).
+		if condition.len == 0 && inner_rows.len > 0 {
+			mut compiler := Compiler{
+				conn:   o.conn
+				params: o.params
+				tables: o.tables
 			}
+			condition << o.specification.compile(mut compiler)!
 		}
+
+		// Each row of the outer side has an arena of its own (see
+		// scratch_arena_begin), so that the rows that don't match (and the
+		// copies made to compare them) aren't kept until the statement ends.
+		// Only the rows that match are copied out of it.
+		sh := o.conn.scratch_arena_begin()
+		matches := o.match_inner_rows(outer_row, inner_rows, mut inner_matched, mut
+			condition) or {
+			o.conn.scratch_arena_pop(sh)
+			cond := condition_of(err)
+			o.conn.scratch_arena_release(sh)
+			return cond.ierror()
+		}
+		o.conn.scratch_arena_pop(sh)
+		matched := matches.len > 0
+		rows << detached_rows(sh, matches)
+		o.conn.scratch_arena_release(sh)
 
 		if !matched && o.join_type != .inner {
 			mut row := new_row(map[string]Value{})
@@ -189,6 +203,27 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 		compiled := common.value().compile(mut c)!
 		for mut row in rows {
 			row.data.set(common.column.name.id(), compiled.run(mut o.conn, row, o.params)!)
+		}
+	}
+
+	return rows
+}
+
+// match_inner_rows joins outer_row with each of inner_rows, and returns the
+// rows that match the join condition. inner_matched is set for each one that
+// matches (for a FULL join).
+fn (mut o JoinOperation) match_inner_rows(outer_row Row, inner_rows []Row, mut inner_matched []bool, mut condition []CompileResult) ![]Row {
+	mut rows := []Row{}
+	for i, inner_row in inner_rows {
+		mut row := new_row(map[string]Value{})
+		row.data = row.data.merged(outer_row.data)
+		row.data = row.data.merged(inner_row.data)
+
+		if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables, mut condition)! {
+			rows << row
+			if o.join_type == .full {
+				inner_matched[i] = true
+			}
 		}
 	}
 

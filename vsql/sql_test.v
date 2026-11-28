@@ -968,9 +968,12 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	disarm_faults()
 	mut checked := []&Connection{}
 	if mode == .on_disk {
-		for path in [main_path, file_name] {
+		// The copies work around https://github.com/vlang/v/issues/32947 (-autofree).
+		for path in [own_string(main_path), own_string(file_name)] {
 			if os.exists(path) {
-				checked << open_database(path, options) or { continue }
+				// The copy works around https://github.com/vlang/v/issues/32930
+				// (-autofree): the connection keeps its path.
+				checked << open_database(own_string(path), options) or { continue }
 			}
 		}
 	} else if db.db != unsafe { nil } {

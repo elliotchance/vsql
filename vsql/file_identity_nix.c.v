@@ -5,6 +5,8 @@ module vsql
 
 import os
 
+fn C.stat(&char, &C.stat) i32
+
 // FileIdentity tells files apart, so that a file that is kept open between
 // statements can be opened again if another process replaced or deleted it in
 // the meantime (such as by restoring a backup).
@@ -13,20 +15,34 @@ struct FileIdentity {
 	inode  u64
 }
 
-// open_file_identity returns the identity of a file that is open.
+// open_file_identity returns the identity of a file that is open. The stat
+// buffer is allocated and freed with libc (so it's never in an arena, see
+// arena_pause), since -autofree never frees a local whose address is taken
+// (https://github.com/vlang/v/issues/32980).
+@[manualfree]
 fn open_file_identity(file os.File) FileIdentity {
-	mut st := C.stat{}
-	C.fstat(file.fd, &st)
+	st := unsafe { &C.stat(C.calloc(1, sizeof(C.stat))) }
+	defer {
+		unsafe { C.free(st) }
+	}
+	C.fstat(file.fd, st)
 
 	return FileIdentity{u64(st.st_dev), u64(st.st_ino)}
 }
 
 // path_file_identity returns the identity of the file at path, or none if it
-// doesn't exist.
+// doesn't exist. It doesn't use os.stat, which leaks with -autofree (see open_file_identity).
+@[manualfree]
 fn path_file_identity(path string) ?FileIdentity {
-	st := os.stat(path) or { return none }
+	st := unsafe { &C.stat(C.calloc(1, sizeof(C.stat))) }
+	defer {
+		unsafe { C.free(st) }
+	}
+	if unsafe { C.stat(&char(path.str), st) } != 0 {
+		return none
+	}
 
-	return FileIdentity{st.dev, st.inode}
+	return FileIdentity{u64(st.st_dev), u64(st.st_ino)}
 }
 
 // file_replaced returns true if the open file is no longer the file at path.

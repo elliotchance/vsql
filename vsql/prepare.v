@@ -360,7 +360,11 @@ pub fn (mut p PreparedStmt) resolve_names() ! {
 
 	mut c := p.c
 	c.open_read_connection()!
+	// The warnings are put back on the connection, which outlives the
+	// statement (see arena_pause).
+	h := arena_pause()
 	warnings := c.warnings.clone()
+	arena_resume(h)
 	defer {
 		c.release_read_connection()
 		c.warnings = warnings

@@ -105,6 +105,13 @@ struct StringBox {
 // collector doesn't need the copy.
 fn own_string(s string) string {
 	$if autofree {
+		// A copy of a string that's already in the current arena would be in
+		// the same arena, so it would live exactly as long, and free() leaves
+		// arena memory alone. Only long strings are checked, since short ones
+		// are quicker to copy.
+		if s.len >= 1024 && in_current_arena(s.str) {
+			return s
+		}
 		return s.clone()
 	}
 	return s
@@ -703,6 +710,45 @@ pub fn (v Value) string_value() string {
 	// The copy works around https://github.com/vlang/v/issues/32932
 	// (-autofree): the caller would free the value's string.
 	return own_string(unsafe { (&StringBox(p)).s })
+}
+
+// string_len is the number of bytes in a string value that isn't a large
+// value, without copying it like string_value does.
+fn (v Value) string_len() int {
+	p := unsafe { &StringBox(v.v.string_value) }
+	if isnil(p) {
+		return 0
+	}
+	return p.s.len
+}
+
+// concat_values is left || right, as a new value of type typ, for two string
+// values that aren't large values. The strings are read in place, rather than
+// with string_value (which copies them to work around
+// https://github.com/vlang/v/issues/32932), so the result is the only copy. A
+// chain of concatenations would otherwise copy each operand several times.
+fn concat_values(left Value, right Value, typ Type) Value {
+	l := unsafe { &StringBox(left.v.string_value) }
+	r := unsafe { &StringBox(right.v.string_value) }
+	llen := left.string_len()
+	rlen := right.string_len()
+	n := llen + rlen
+	buf := unsafe { malloc_noscan(n + 1) }
+	unsafe {
+		if llen > 0 {
+			vmemcpy(buf, l.s.str, llen)
+		}
+		if rlen > 0 {
+			vmemcpy(buf + llen, r.s.str, rlen)
+		}
+		buf[n] = 0
+	}
+	return Value{
+		typ: typ
+		v:   InternalValue{
+			string_value: voidptr(&StringBox{unsafe { tos(buf, n) }})
+		}
+	}
 }
 
 pub fn (v Value) time_value() Time {

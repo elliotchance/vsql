@@ -78,8 +78,7 @@ contextually_typed_row_value_constructor_element_list:
   }
 | contextually_typed_row_value_constructor_element_list comma
   contextually_typed_row_value_constructor_element {
-    $$.v = yy_box(append_list($1.v as []ContextuallyTypedRowValueConstructorElement,
-      $3.v as ContextuallyTypedRowValueConstructorElement))
+    $$.v = yy_append($1.v, $3.v as ContextuallyTypedRowValueConstructorElement)
   }
 
 contextually_typed_row_value_constructor_element:

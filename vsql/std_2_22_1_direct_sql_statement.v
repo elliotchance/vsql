@@ -34,11 +34,54 @@ pub:
 //
 // ISO/IEC 9075-2:2023, 22.1, <direct SQL statement>, General Rules, 2, 6.b.i and 8.a; ISO/IEC 9075-2:2023, 9.17, Executing an <SQL procedure statement>, General Rules, 13.a and 22
 pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Result {
+	if !conn.arena_begin() {
+		mut prepared := direct_prepare(mut conn, sql_stmt)!
+		return conn.direct_prepared(mut prepared, options)
+	}
+
+	// Like query_in_arena, the statement runs in the statement arena, and its
+	// result (or error) is copied out of it.
+	mut prepared := direct_prepare(mut conn, sql_stmt) or {
+		conn.arena_pop()
+		cond := condition_of(err)
+		conn.arena_release()
+		return cond.ierror()
+	}
+	in_arena := runs_in_arena(prepared.stmt)
+	if !in_arena {
+		conn.arena_pop()
+	}
+	result := conn.direct_prepared(mut prepared, options) or {
+		if in_arena {
+			conn.arena_pop()
+		}
+		cond := condition_of(err)
+		conn.arena_release()
+		return cond.ierror()
+	}
+	if in_arena {
+		conn.arena_pop()
+	}
+	copy := result.detached()
+	conn.arena_release()
+
+	return copy
+}
+
+// direct_prepare parses a <direct SQL statement> for Connection.direct.
+fn direct_prepare(mut conn Connection, sql_stmt string) !PreparedStmt {
 	text := direct_statement_text(sql_stmt)!
 	tokens := tokenize(text)!
-	mut prepared := conn.parse(text)!
+	prepared := conn.parse(text)!
 	check_direct_parameters(tokens)!
 	check_direct_query(prepared.stmt)!
+
+	return prepared
+}
+
+// direct_prepared runs a <direct SQL statement> for Connection.direct, once
+// it's parsed.
+fn (mut conn Connection) direct_prepared(mut prepared PreparedStmt, options DirectOptions) !Result {
 
 	// The SQL-transaction has the characteristics of a SET TRANSACTION. Each
 	// constraint has its initial constraint mode, rather than immediate.
@@ -55,7 +98,10 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			// than a lock.
 			if !conn.direct_query_transaction {
 				conn.initiate_transaction(conn.next_transaction or { conn.branch_of or { conn.enduring_characteristics() } })
+				// The headers outlive the statement (see arena_pause).
+				h := arena_pause()
 				conn.direct_query_headers = map[string]Header{}
+				arena_resume(h)
 			}
 			conn.direct_query_transaction = true
 		} else if conn.direct_query_transaction

@@ -14,8 +14,7 @@ alter_sequence_generator_statement:
 alter_sequence_generator_options:
   alter_sequence_generator_option { $$.v = yy_box([$1.v as SequenceGeneratorOption]) }
 | alter_sequence_generator_options alter_sequence_generator_option {
-    $$.v = yy_box(append_list($1.v as []SequenceGeneratorOption,
-      $2.v as SequenceGeneratorOption))
+    $$.v = yy_append($1.v, $2.v as SequenceGeneratorOption)
   }
 
 // ISO/IEC 9075-2:2023, 11.73, <alter sequence generator statement>, Conformance Rules, 2

@@ -25,7 +25,7 @@ constraint_name_list:
 constraint_names:
   constraint_name { $$.v = yy_box([$1.v as Identifier]) }
 | constraint_names comma constraint_name {
-    $$.v = yy_box(append_list($1.v as []Identifier, $3.v as Identifier))
+    $$.v = yy_append($1.v, $3.v as Identifier)
   }
 
 %%

@@ -7,7 +7,7 @@
 set_clause_list:
   set_clause { $$.v = yy_box([$1.v as SetClause]) }
 | set_clause_list comma set_clause {
-    $$.v = yy_box(append_list($1.v as []SetClause, $3.v as SetClause))
+    $$.v = yy_append($1.v, $3.v as SetClause)
   }
 
 set_clause:

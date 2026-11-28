@@ -276,9 +276,13 @@ fn test_isolation_lock() ! {
 	// Another thread releases it while it's waiting. The waiter only gets it
 	// after the release (a thread can start late, so how long it waited isn't
 	// checked).
-	waiter := spawn fn [path] () !time.Time {
+	// The thread gets its own copy of the path, because -autofree frees what a
+	// closure captures when it's destroyed, while the test still has it
+	// (https://github.com/vlang/v/issues/32934).
+	spawned_path1 := path.clone()
+	waiter := spawn fn [spawned_path1] () !time.Time {
 		mut l := IsolationLock{
-			path: path
+			path: spawned_path1
 		}
 		l.acquire(.exclusive, 5 * time.second, 'busy')!
 		got := time.now()
@@ -293,9 +297,13 @@ fn test_isolation_lock() ! {
 	// A connection that releases the lock and needs it again has to wait for
 	// the connection that was already waiting.
 	a.acquire(.exclusive, 0, 'busy')!
-	next := spawn fn [path] () !time.Time {
+	// The thread gets its own copy of the path, because -autofree frees what a
+	// closure captures when it's destroyed, while the test still has it
+	// (https://github.com/vlang/v/issues/32934).
+	spawned_path2 := path.clone()
+	next := spawn fn [spawned_path2] () !time.Time {
 		mut l := IsolationLock{
-			path: path
+			path: spawned_path2
 		}
 		l.acquire(.exclusive, 5 * time.second, 'busy')!
 		got := time.now()
@@ -746,8 +754,12 @@ fn test_isolation_waits() ! {
 
 	// The other transaction starts once this one commits, so it sees its
 	// changes. So does a statement on its own.
-	other := spawn fn [path, options] () !(int, int) {
-		mut db := open_database(path, options)!
+	// The thread gets its own copy of the path, because -autofree frees what a
+	// closure captures when it's destroyed, while the test still has it
+	// (https://github.com/vlang/v/issues/32934).
+	spawned_path3 := path.clone()
+	other := spawn fn [spawned_path3, options] () !(int, int) {
+		mut db := open_database(spawned_path3, options)!
 		defer {
 			db.close()
 		}
@@ -757,8 +769,12 @@ fn test_isolation_waits() ! {
 		db.query('INSERT INTO t (x) VALUES (2)')!
 		return count, db.query('SELECT * FROM t')!.rows.len
 	}()
-	statement := spawn fn [path, options] () !int {
-		mut db := open_database(path, options)!
+	// The thread gets its own copy of the path, because -autofree frees what a
+	// closure captures when it's destroyed, while the test still has it
+	// (https://github.com/vlang/v/issues/32934).
+	spawned_path4 := path.clone()
+	statement := spawn fn [spawned_path4, options] () !int {
+		mut db := open_database(spawned_path4, options)!
 		defer {
 			db.close()
 		}
@@ -775,8 +791,12 @@ fn test_isolation_waits() ! {
 
 	// READ ONLY transactions don't wait for each other.
 	db.query('START TRANSACTION READ ONLY')!
-	reader := spawn fn [path] () !int {
-		mut db := open_database(path, isolation_test_options(0))!
+	// The thread gets its own copy of the path, because -autofree frees what a
+	// closure captures when it's destroyed, while the test still has it
+	// (https://github.com/vlang/v/issues/32934).
+	spawned_path5 := path.clone()
+	reader := spawn fn [spawned_path5] () !int {
+		mut db := open_database(spawned_path5, isolation_test_options(0))!
 		defer {
 			db.close()
 		}

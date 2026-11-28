@@ -72,7 +72,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 
 			// ISO/IEC 9075-2:2023, 9.11, Equality operations, Conformance Rules, 2
 			if c.conn.flagging && (compiled_a.typ.typ.is_lob() || compiled_b.typ.typ.is_lob()) {
-				c.conn.flagged_features << 'T042'
+				c.conn.flag('T042')
 			}
 			c.check_time_zone_comparison(compiled_a.typ, compiled_b.typ)!
 
@@ -157,7 +157,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			//
 			// ISO/IEC 9075-2:2023, 6.12, <case expression>, Conformance Rules, 1 and 2
 			if c.conn.flagging && compiled_operand.len > 1 {
-				c.conn.flagged_features << 'F262'
+				c.conn.flag('F262')
 			}
 
 			mut operand := &CaseOperandValues{}

@@ -67,6 +67,21 @@ mut:
 	frame_err      ?Condition
 	// parser_stack is kept between statements, see parse_statement.
 	parser_stack []YYSymType
+	// arena is the arena of the statement that's running, and arena_kept the
+	// one that's reused for each statement (-d vsql_arena, see arena_begin).
+	arena      voidptr
+	arena_kept voidptr
+	// scratch_arenas are reused while a statement arena is running, one for
+	// each level of nesting, and scratch_depth is how many are in use (see
+	// scratch_arena_begin).
+	scratch_arenas []voidptr
+	scratch_depth  int
+	// scratch_closures is how many closures the lifetime had when each scratch
+	// arena in use started, and deferred_arenas the scratch arenas that are
+	// kept until the statement ends, because closures were made while they were
+	// pushed (see scratch_arena_release).
+	scratch_closures []int
+	deferred_arenas  []voidptr
 	// statement_cache has the statements that have been parsed, by their text,
 	// see prepare.
 	statement_cache StatementCache
@@ -428,6 +443,7 @@ pub fn (mut conn Connection) close() {
 			catalog.storage.session.close()
 		}
 	}
+	conn.arena_close()
 }
 
 pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {
@@ -948,7 +964,24 @@ fn (mut conn Connection) parse_cached(sql_stmt string) !ParsedStmt {
 		return parsed
 	}
 
-	stmt, explain, tokens, features := parse_sql(sql_stmt, mut conn.parser_stack)!
+	// The parser's stack grows, so a statement in an arena has its own (see
+	// arena_begin).
+	mut arena_stack := []YYSymType{}
+	mut stack := if isnil(conn.arena) { &conn.parser_stack } else { &arena_stack }
+	// A statement that will be cached is parsed in an arena of its own (see
+	// cache_arena_begin).
+	cache_arena := if sql_stmt.len <= statement_cache_max_length {
+		cache_arena_begin(conn.arena)
+	} else {
+		unsafe { nil }
+	}
+	stmt, explain, tokens, features := parse_sql(sql_stmt, mut stack) or {
+		cache_arena_end(cache_arena)
+		cond := condition_of(err)
+		arena_free_handle(cache_arena)
+		return cond.ierror()
+	}
+	cache_arena_end(cache_arena)
 	parsed := ParsedStmt{
 		stmt:               stmt
 		explain:            explain
@@ -956,7 +989,9 @@ fn (mut conn Connection) parse_cached(sql_stmt string) !ParsedStmt {
 		dynamic_parameters: count_dynamic_parameters(tokens)
 		features:           features
 	}
-	conn.statement_cache.add(sql_stmt, parsed)
+	h := arena_pause()
+	conn.statement_cache.add(sql_stmt, &parsed, cache_arena)
+	arena_resume(h)
 
 	return parsed
 }
@@ -1010,6 +1045,9 @@ fn parse_tokens(tokens []Token, text string) !Stmt {
 // stack is the stack of the parser, which is kept by a connection so that it's
 // only made once.
 fn parse_statement(tokens []Token, text string, source string, mut stack []YYSymType) !(Stmt, []string) {
+	$if autofree {
+		return parse_statement_autofree(tokens, text, source)
+	}
 	mut lexer := Lexer{
 		tokens: tokens
 		source: source
@@ -1027,11 +1065,88 @@ fn parse_statement(tokens []Token, text string, source string, mut stack []YYSym
 	return yy_stmt(parser.lval.v), lexer.features
 }
 
+// parse_statement_autofree is parse_statement with -autofree, which frees what
+// the parser uses. -autofree doesn't free any of it: the lexer is copied to the
+// heap (since the parser takes it as an interface), and the stack that a
+// connection keeps is copied for the parser (and the old one is never freed),
+// so it has its own stack instead. The tokens belong to the caller.
+@[manualfree]
+fn parse_statement_autofree(tokens []Token, text string, source string) !(Stmt, []string) {
+	mut lexer := Lexer{
+		tokens: tokens
+		source: source
+		text:   text
+	}
+	mut parser := YYParserImpl{}
+	defer {
+		unsafe {
+			parser.stack.free()
+			lexer.sort_key_parts.free()
+			lexer.sort_key_starts.free()
+			free(&lexer)
+		}
+	}
+	parser.parse(mut lexer)!
+	features := token_features(tokens)
+	mut all_features := lexer.features.clone()
+	for feature in features {
+		all_features << feature
+	}
+
+	return yy_stmt(parser.lval.v), all_features
+}
+
 // query executes a statement. If there is a result set it will be returned.
 pub fn (mut conn Connection) query(sql_stmt string) !Result {
+	if conn.arena_begin() {
+		return conn.query_in_arena(sql_stmt)
+	}
 	mut prepared := conn.parse(sql_stmt)!
 
 	return prepared.query(map[string]Value{})
+}
+
+// query_in_arena runs a statement in the statement arena (see arena_begin),
+// and copies its result (or error) out of it.
+fn (mut conn Connection) query_in_arena(sql_stmt string) !Result {
+	mut prepared := conn.parse(sql_stmt) or {
+		conn.arena_pop()
+		cond := condition_of(err)
+		conn.arena_release()
+		return cond.ierror()
+	}
+	in_arena := runs_in_arena(prepared.stmt)
+	if !in_arena {
+		conn.arena_pop()
+	}
+	result := prepared.query(map[string]Value{}) or {
+		if in_arena {
+			conn.arena_pop()
+		}
+		cond := condition_of(err)
+		conn.arena_release()
+		return cond.ierror()
+	}
+	if in_arena {
+		conn.arena_pop()
+	}
+	// Even a statement that doesn't run in the arena has a result with the
+	// names of the statement that was parsed in it.
+	copy := result.detached()
+	conn.arena_release()
+
+	return copy
+}
+
+// runs_in_arena is true for a statement that runs in the statement arena once
+// it's parsed: only queries, data changes and transaction statements do. Any
+// other statement (such as one that changes the schema) runs on the heap,
+// because it changes what outlives it.
+fn runs_in_arena(stmt Stmt) bool {
+	return stmt is QueryExpression || stmt is InsertStatement
+		|| stmt is UpdateStatementSearched || stmt is DeleteStatementSearched
+		|| stmt is StartTransactionStatement || stmt is CommitStatement
+		|| stmt is RollbackStatement
 }
 
 // The values of Connection.cancel_state.
@@ -1100,9 +1215,9 @@ fn (mut conn Connection) rollback_after_error() ! {
 // routine>, Syntax Rules, 20). CHARACTER arguments are CHARACTER VARYING, see
 // find_function.
 fn (mut conn Connection) register_func(func Func) ! {
-	for f in conn.funcs {
-		if f.name == func.name && f.arg_types.len == func.arg_types.len
-			&& f.arg_types.map(function_arg_type(it)) == func.arg_types.map(function_arg_type(it)) {
+	for i in 0 .. conn.funcs.len {
+		if conn.funcs[i].name == func.name
+			&& same_function_arg_types(conn.funcs[i].arg_types, func.arg_types) {
 			return sqlstate_42723('${func.name}(${func.arg_types.map(it.str()).join(', ')})')
 		}
 	}
@@ -1129,6 +1244,23 @@ fn (mut conn Connection) register_func(func Func) ! {
 		arg_names:            arg_names
 		is_variadic:          func.is_variadic
 	}
+}
+
+// same_function_arg_types is true if a function with the arguments a is found
+// by the same arguments as one with b, see function_arg_type. It doesn't make
+// any arrays, since it's called for each function that's registered, with each
+// function that's already registered.
+fn same_function_arg_types(a []Type, b []Type) bool {
+	if a.len != b.len {
+		return false
+	}
+	for i in 0 .. a.len {
+		if function_arg_type(a[i]) != function_arg_type(b[i]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // function_arg_type is the type of an argument that's used to find a function:
@@ -1775,14 +1907,30 @@ pub fn (mut conn Connection) clear_warnings() {
 // be used in a subquery.
 fn (mut conn Connection) begin_row() {
 	if conn.subquery_scopes.len == 0 {
+		// The map outlives the statement (see arena_pause).
+		h := arena_pause()
 		conn.row_sequence_values = map[string]i64{}
+		arena_resume(h)
 	}
 }
 
 fn (mut conn Connection) add_warning(warning IError) {
+	// The warnings are read after the statement (see arena_pause).
+	h := arena_pause()
+	defer {
+		arena_resume(h)
+	}
 	conn.warnings << condition_of(warning)
 	if conn.warnings.len > conn.condition_area_limit {
 		conn.warnings = conn.warnings[conn.warnings.len - conn.condition_area_limit..].clone()
 		conn.more_conditions = true
 	}
+}
+
+// flag adds features that a statement uses to flagged_features, which outlives
+// the statement (see arena_pause).
+fn (mut conn Connection) flag(features ...string) {
+	h := arena_pause()
+	conn.flagged_features << features
+	arena_resume(h)
 }

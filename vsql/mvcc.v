@@ -221,6 +221,11 @@ fn retained_key(xid u64, key []u8) []u8 {
 // remove_expired. It's created by the transaction, so it's removed if the
 // process stops (see recover), as well as by end_snapshot.
 fn (mut f Storage) take_snapshot() ! {
+	// What this changes outlives the statement (see arena_pause).
+	arena_h := arena_pause()
+	defer {
+		arena_resume(arena_h)
+	}
 	f.transaction_snapshot = new_transaction_snapshot(f.transaction_id, f.other_transaction_ids(f.header),
 		f.header.schema_version)
 	f.snapshot_isolation = true

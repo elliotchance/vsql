@@ -130,7 +130,7 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 		}
 		seen[name] = true
 
-		if v := value {
+		if v := opt_copy(value) {
 			if !v.typ.uses_int() {
 				f := v.as_f64()!
 				if f != math.floor(f) {
@@ -189,13 +189,13 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 				increment_by = option.increment_by.as_int()
 			}
 			SequenceGeneratorMinvalueOption {
-				if v := option.min_value {
+				if v := opt_copy(option.min_value) {
 					min_value = v.as_int()
 					has_min_value = true
 				}
 			}
 			SequenceGeneratorMaxvalueOption {
-				if v := option.max_value {
+				if v := opt_copy(option.max_value) {
 					max_value = v.as_int()
 					has_max_value = true
 				}

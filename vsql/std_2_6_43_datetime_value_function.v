@@ -47,9 +47,10 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
+			prec := e.prec
 			return CompileResult{
-				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_time_value(time_value(conn, e.prec, true))!
+				run:          fn [prec] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_time_value(time_value(conn, prec, true))!
 				}
 				typ:          new_type('TIME WITH TIME ZONE', e.prec, 0)
 				contains_agg: false
@@ -60,9 +61,10 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
+			prec := e.prec
 			return CompileResult{
-				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return timestamp_value(local_now(conn), e.prec, conn.statement_time_zone)
+				run:          fn [prec] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return timestamp_value(local_now(conn), prec, conn.statement_time_zone)
 				}
 				typ:          new_type('TIMESTAMP WITH TIME ZONE', e.prec, 0)
 				contains_agg: false
@@ -73,9 +75,10 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
+			prec := e.prec
 			return CompileResult{
-				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_time_value(time_value(conn, e.prec, false))!
+				run:          fn [prec] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_time_value(time_value(conn, prec, false))!
 				}
 				typ:          new_type('TIME WITHOUT TIME ZONE', e.prec, 0)
 				contains_agg: false
@@ -86,9 +89,10 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
+			prec := e.prec
 			return CompileResult{
-				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return timestamp_value(local_now(conn), e.prec, none)
+				run:          fn [prec] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return timestamp_value(local_now(conn), prec, none)
 				}
 				typ:          new_type('TIMESTAMP WITHOUT TIME ZONE', e.prec, 0)
 				contains_agg: false

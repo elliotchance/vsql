@@ -109,7 +109,8 @@ fn (o &GroupOperation) str() string {
 }
 
 fn (o &GroupOperation) columns() Columns {
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 fn (mut o GroupOperation) execute(rows []Row) ![]Row {
@@ -194,7 +195,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	for expr in o.select_exprs {
 		expr.expr.compile(mut agg_c)!
 	}
-	if having := o.having {
+	if having := opt_copy(o.having) {
 		having.compile(mut agg_c)!
 	}
 	agg_c.result_columns = o.result_columns.clone()

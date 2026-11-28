@@ -285,7 +285,7 @@ fn (mut f Storage) raw_objects(start []u8, end []u8) ![]PageObject {
 			value: object.value.clone()
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 

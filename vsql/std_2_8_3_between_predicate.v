@@ -31,6 +31,11 @@ fn (e BetweenPredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Syntax Rules, 7.c.iv
 fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &BetweenPredicate{
+		...e
+	}
 	untyped_expr := e.expr.compile_fields(mut c)!
 	untyped_left := e.left.compile_fields(mut c)!
 	untyped_right := if retrospective && !e.not && !e.symmetric
@@ -41,22 +46,26 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 	}
 
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxi
-	typed := c.with_row_types([untyped_expr, untyped_left, untyped_right])
-	compiled_expr, compiled_left, compiled_right := typed[0], typed[1], typed[2]
+	// The copies work around https://github.com/vlang/v/issues/32947 and
+	// https://github.com/vlang/v/issues/32949 (-autofree).
+	typed := c.with_row_types([own_array(untyped_expr), own_array(untyped_left),
+		own_array(untyped_right)])
+	compiled_expr, compiled_left, compiled_right := own_elem(typed, 0), own_elem(typed, 1), own_elem(typed,
+		2)
 	c.check_row_comparison(compiled_expr.map(it.typ), compiled_left.map(it.typ), null_parameters(compiled_expr,
 		compiled_left))!
 	c.check_row_comparison(compiled_expr.map(it.typ), compiled_right.map(it.typ), null_parameters(compiled_expr,
 		compiled_right))!
 
 	// ISO/IEC 9075-2:2023, 9.14, Ordering operations, Syntax Rules, 1.c
-	for field in [compiled_expr, compiled_left, compiled_right] {
+	for field in [own_array(compiled_expr), own_array(compiled_left), own_array(compiled_right)] {
 		for f in field {
 			check_ordering_operand(f.typ, 'operand of BETWEEN')!
 		}
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := run_fields(mut conn, compiled_expr, data, params)!
 			left := run_fields(mut conn, compiled_left, data, params)!
 			right := run_fields(mut conn, compiled_right, data, params)!
@@ -72,14 +81,14 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 			// UNKNOWN. For example, 5 BETWEEN NULL AND 2 is FALSE.
 			mut result := between_asymmetric(compare_rows(conn, expr, left)!, compare_rows(conn,
 				expr, right)!)
-			if e.symmetric {
+			if e_ref.symmetric {
 				result = truth_or(result, between_asymmetric(compare_rows(conn, expr,
 					right)!, compare_rows(conn, expr, left)!))
 			}
 
 			// ISO/IEC 9075-2:2023, 8.3, <between predicate>, Syntax Rules, 3
 			// and 5: X NOT BETWEEN ... is NOT (X BETWEEN ...).
-			if e.not {
+			if e_ref.not {
 				result = truth_not(result)
 			}
 

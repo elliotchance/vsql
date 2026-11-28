@@ -67,7 +67,7 @@ fn sql_sizing_view_row(item SizingItem) []Value {
 	return [
 		new_integer_value(item.id), // SIZING_ID
 		new_varchar_value(item.name), // SIZING_NAME
-		if v := item.supported_value {
+		if v := opt_copy(item.supported_value) {
 			new_integer_value(v)
 		} else {
 			new_null_value(.is_integer)

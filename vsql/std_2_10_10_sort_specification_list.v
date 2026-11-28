@@ -18,7 +18,7 @@ struct SortSpecification {
 //
 // ISO/IEC 9075-2:2023, 10.10, <sort specification list>, Syntax Rules, 3
 fn new_sort_specification(expr ValueExpression, is_asc bool, nulls_first ?bool) SortSpecification {
-	return SortSpecification{expr, is_asc, nulls_first or { is_asc }}
+	return SortSpecification{own_copy(&expr), is_asc, nulls_first or { is_asc }}
 }
 
 // pstr only has the <null ordering> when it isn't the default, so the text of

@@ -44,7 +44,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 	// COALESCE), since whether it's evaluated depends on the other values.
 	//
 	// ISO/IEC 9075-2:2023, 6.14, <next value expression>, Syntax Rules, 2
-	next_value_not_allowed := c.next_value_not_allowed
+	next_value_not_allowed := own_string(c.next_value_not_allowed)
 	if next_value_not_allowed == '' {
 		c.next_value_not_allowed = match e {
 			CaseExpressionNullIf { 'NULLIF' }
@@ -245,6 +245,10 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 // are all converted to the combined type of the results that are not NULL.
 //
 // ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 3 and 5
+//
+// -autofree pushes else_result into results without a copy and then frees it
+// with results, which frees the parsed statement (no small repro yet).
+@[manualfree]
 fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResult) !([]CompileResult, bool) {
 	mut results := thens.clone()
 	results << else_result
@@ -264,7 +268,7 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 	for compiled_result in compiled {
 		contains_agg = contains_agg || compiled_result.contains_agg
 
-		if t := typ {
+		if t := opt_copy(typ) {
 			typ = combine_types(t, compiled_result.typ) or {
 				return sqlstate_42804('in CASE', t.str(), compiled_result.typ.str())
 			}
@@ -291,7 +295,7 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 			continue
 		}
 
-		compiled_result := compiled[i]
+		compiled_result := own_elem(compiled, i)
 		i++
 		converted << CompileResult{
 			run:          fn [compiled_result, combined_type] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -318,7 +322,7 @@ struct CaseExpressionNullIf {
 }
 
 fn new_case_expression_null_if(a ValueExpression, b ValueExpression) CaseExpressionNullIf {
-	return CaseExpressionNullIf{&a, &b}
+	return CaseExpressionNullIf{heap_copy(&a), heap_copy(&b)}
 }
 
 struct CaseExpressionCoalesce {
@@ -376,7 +380,7 @@ fn (e CaseWhenOperand) compile_typed(mut c Compiler) ![][]CompileResult {
 		}
 		// D and E
 		InPredicate {
-			if subquery := predicate.subquery {
+			if subquery := opt_copy(predicate.subquery) {
 				[subquery_row_type(mut c, subquery)!]
 			} else {
 				predicate.values.map(it.compile_fields(mut c)!)
@@ -486,7 +490,7 @@ fn (operand &CaseOperandValues) field(compiled_field CompileResult, index int) C
 }
 
 fn new_case_expression_simple(operand RowValueConstructorPredicand, whens []CaseExpressionSimpleWhen, else_result CaseResult) CaseExpressionSimple {
-	return CaseExpressionSimple{&operand, whens, &else_result}
+	return CaseExpressionSimple{heap_copy(&operand), own_copy(&whens), heap_copy(&else_result)}
 }
 
 // CaseExpressionSearched is "CASE WHEN condition THEN result ... END". When
@@ -502,7 +506,7 @@ struct CaseExpressionSearchedWhen {
 }
 
 fn new_case_expression_searched(whens []CaseExpressionSearchedWhen, else_result CaseResult) CaseExpressionSearched {
-	return CaseExpressionSearched{whens, &else_result}
+	return CaseExpressionSearched{own_copy(&whens), heap_copy(&else_result)}
 }
 
 // comparable_types is true when values of the types can be compared, such as

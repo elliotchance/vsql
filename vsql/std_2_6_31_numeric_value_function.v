@@ -137,7 +137,7 @@ fn replace_case_mappings(s string, mappings []CaseMapping) string {
 			continue
 		}
 
-		m := mappings[i]
+		m := own_elem(mappings, i)
 		result << m.to1
 		if m.to2 != 0 {
 			result << m.to2
@@ -564,7 +564,7 @@ fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
 			// The declared type is that of the count, which must have a scale of 0.
 			//
 			// ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 21
-			count := arg_types[3]
+			count := own_elem(arg_types, 3)
 			return Type{count.typ, count.exact_precision(), 0, false, false}
 		}
 		else {
@@ -690,6 +690,11 @@ fn (e ExtractExpression) pstr(params map[string]Value) string {
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 6.a, 6.b, 7.a and 7.b
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 4.a, 4.b.i and 4.b.ii
 fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &ExtractExpression{
+		...e
+	}
 	compiled := e.source.compile(mut c)!
 	typ := compiled.typ
 	mut expected := 'TIME WITH TIME ZONE or TIMESTAMP WITH TIME ZONE'
@@ -733,7 +738,7 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled.run(mut conn, data, params)!
 			if value.is_null {
 				return Value{
@@ -743,7 +748,7 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 			}
 
 			t := value.time_value()
-			return match e.field {
+			return match e_ref.field {
 				'YEAR' {
 					new_integer_value(t.t.year)
 				}
@@ -852,6 +857,11 @@ fn (e ExtractExpression) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 6.a, 7.a and 7.b
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, General Rules, 4.a
 fn (e ExtractExpression) compile_interval(compiled CompileResult) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	compiled_ref := &CompileResult{
+		...compiled
+	}
 	q := compiled.typ.interval_qualifier()
 	field := interval_field_from_string(e.field)
 	if int(field) < int(q.start) || int(field) > int(q.end) {
@@ -867,8 +877,8 @@ fn (e ExtractExpression) compile_interval(compiled CompileResult) !CompileResult
 	}
 
 	return CompileResult{
-		run:          fn [compiled, q, field, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
-			value := compiled.run(mut conn, data, params)!
+		run:          fn [compiled_ref, q, field, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_ref.run(mut conn, data, params)!
 			if value.is_null {
 				return Value{
 					typ:     return_type

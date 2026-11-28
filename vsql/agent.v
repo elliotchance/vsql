@@ -46,7 +46,7 @@ mut:
 	connected bool
 pub mut:
 	// warnings are the warnings of the last statement.
-	warnings []IError
+	warnings []Condition
 }
 
 // new_agent creates an SQL-agent that doesn't have any SQL-connections yet.
@@ -63,7 +63,7 @@ pub fn new_agent(default_server string, options AgentOptions) Agent {
 // direct executes a <direct SQL statement> (see Connection.direct) on the
 // current SQL-connection, or a connection statement.
 pub fn (mut a Agent) direct(sql_stmt string, options DirectOptions) !Result {
-	a.warnings = []IError{}
+	a.warnings = []Condition{}
 
 	// A connection statement isn't run on an SQL-connection. Anything else
 	// (including a syntax error) is passed to Connection.direct. The warnings

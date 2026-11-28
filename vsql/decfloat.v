@@ -49,8 +49,10 @@ struct DecFloat {
 
 // box_decfloat is d on the heap, for InternalValue.decfloat_value.
 fn box_decfloat(d DecFloat) voidptr {
+	// The coefficient is copied with -autofree, see own_integer.
 	return voidptr(&DecFloat{
-		...d
+		coefficient: own_integer(d.coefficient)
+		exponent:    d.exponent
 	})
 }
 
@@ -145,7 +147,8 @@ fn (d DecFloat) str() string {
 		return '${sign}0.${'0'.repeat(places - digits.len)}${digits}'
 	}
 
-	mantissa := if digits.len > 1 { '${digits[..1]}.${digits[1..]}' } else { digits }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	mantissa := if digits.len > 1 { '${digits[..1]}.${digits[1..]}' } else { digits.clone() }
 	exponent_sign := if adjusted >= 0 { '+' } else { '' }
 
 	return '${sign}${mantissa}E${exponent_sign}${adjusted}'
@@ -524,6 +527,25 @@ fn func_sqrt_decfloat(_ FunctionContext, args []Value) !Value {
 	return new_decfloat_value(args[0].typ, args[0].decfloat_value().sqrt(args[0].typ.size)!)
 }
 
+// power_decfloat_integer is base raised to exponent, which is n or -n, with p
+// digits. It's a separate function to work around
+// https://github.com/vlang/v/issues/32973 (-autofree).
+fn power_decfloat_integer(base DecFloat, exponent DecFloat, n u32, p int) !DecFloat {
+	mut result := round_decfloat(base.coefficient.pow(n), base.exponent * int(n), false,
+		p) or {
+		// A result that's out of range may still have a reciprocal that isn't.
+		if exponent.coefficient.signum >= 0 {
+			return err
+		}
+		DecFloat{base.coefficient.pow(n), base.exponent * int(n)}
+	}
+	if exponent.coefficient.signum < 0 {
+		result = DecFloat{big.one_int, 0}.divide(result, p)!
+	}
+
+	return result
+}
+
 // POWER(DECFLOAT, DECFLOAT) DECFLOAT
 //
 // A whole number exponent is calculated exactly (a negative one is the
@@ -551,21 +573,8 @@ fn func_power_decfloat(ctx FunctionContext, args []Value) !Value {
 		// A result with more digits than this is out of range anyway, unless
 		// the base is a power of 10, so it's left to the DOUBLE PRECISION.
 		if k.len < 6 && base.coefficient.abs().str().len * k.int() <= 20000 {
-			n := u32(k.int())
-			mut result := round_decfloat(base.coefficient.pow(n), base.exponent * int(n),
-				false, p) or {
-				// A result that's out of range may still have a reciprocal that
-				// isn't.
-				if exponent.coefficient.signum >= 0 {
-					return err
-				}
-				DecFloat{base.coefficient.pow(n), base.exponent * int(n)}
-			}
-			if exponent.coefficient.signum < 0 {
-				result = DecFloat{big.one_int, 0}.divide(result, p)!
-			}
-
-			return new_decfloat_value(args[0].typ, result)
+			return new_decfloat_value(args[0].typ, power_decfloat_integer(base, exponent,
+				u32(k.int()), p)!)
 		}
 	}
 

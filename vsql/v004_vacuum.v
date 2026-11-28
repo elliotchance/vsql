@@ -80,7 +80,7 @@ fn new_vacuum_table(name Identifier, clauses []VacuumTableClause) !VacuumObject 
 
 	return VacuumObject{
 		kind:          .table
-		name:          name
+		name:          own_copy(&name)
 		indexes:       indexes
 		large_objects: large_objects
 	}
@@ -160,7 +160,7 @@ fn new_vacuum_statement(objects []VacuumObject, options []VacuumOption) !VacuumS
 	}
 
 	return VacuumStatement{
-		objects:     objects
+		objects:     own_copy(&objects)
 		mode:        mode
 		has_timeout: has_timeout
 		timeout:     timeout
@@ -241,25 +241,29 @@ mut:
 // count_read counts a leaf page that was read for the object that's being
 // packed (owner), or otherwise the object of its first key.
 fn (mut objects map[string]VacuumObjectCounts) count_read(owner string, key []u8) {
-	id := if owner != '' { owner } else { vacuum_object(key) }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	id := if owner != '' { owner.clone() } else { vacuum_object(key) }
 	if id == '' {
 		return
 	}
-	mut object := objects[id] or { VacuumObjectCounts{} }
+	mut object := map_value(objects, id) or { VacuumObjectCounts{} }
 	object.pages_read++
 	object.last_key = key.clone()
-	objects[id] = object
+	// The copy works around https://github.com/vlang/v/issues/32943 (-autofree).
+	objects[id] = own_copy(&object)
 }
 
 // count_freed counts a leaf page that was freed, like count_read.
 fn (mut objects map[string]VacuumObjectCounts) count_freed(owner string, key []u8) {
-	id := if owner != '' { owner } else { vacuum_object(key) }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	id := if owner != '' { owner.clone() } else { vacuum_object(key) }
 	if id == '' {
 		return
 	}
-	mut object := objects[id] or { VacuumObjectCounts{} }
+	mut object := map_value(objects, id) or { VacuumObjectCounts{} }
 	object.pages_freed++
-	objects[id] = object
+	// The copy works around https://github.com/vlang/v/issues/32943 (-autofree).
+	objects[id] = own_copy(&object)
 }
 
 // observe keeps the number of pages of the file, once the write connection is
@@ -316,7 +320,8 @@ fn (stmt VacuumStatement) targets(mut conn Connection) ![]&VacuumTarget {
 	}
 
 	mut targets := map[string]&VacuumTarget{}
-	objects := if stmt.objects.len > 0 { stmt.objects } else { [VacuumObject{}] }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	objects := if stmt.objects.len > 0 { stmt.objects.clone() } else { [VacuumObject{}] }
 	for object in objects {
 		match object.kind {
 			.all {
@@ -348,7 +353,7 @@ fn (stmt VacuumStatement) targets(mut conn Connection) ![]&VacuumTarget {
 			.index {
 				name := conn.resolve_schema_identifier(object.name)!
 				catalog := conn.catalog_for(name)
-				index := catalog.storage.indexes[name.storage_id()] or {
+				index := catalog.storage.find_index(name.storage_id()) or {
 					return sqlstate_42704('index', name.str())
 				}
 				vacuum_target(mut targets, name.catalog_name).add_range(`X`, index.id,
@@ -361,7 +366,7 @@ fn (stmt VacuumStatement) targets(mut conn Connection) ![]&VacuumTarget {
 	names.sort()
 	mut sorted := []&VacuumTarget{}
 	for name in names {
-		mut target := targets[name] or { continue }
+		mut target := map_value(targets, name) or { continue }
 		target.ranges.sort_with_compare(fn (a &VacuumRange, b &VacuumRange) int {
 			return compare_bytes(a.start, b.start)
 		})
@@ -378,7 +383,7 @@ fn vacuum_target(mut targets map[string]&VacuumTarget, catalog string) &VacuumTa
 		}
 	}
 
-	return targets[catalog] or { panic(catalog) }
+	return map_value(targets, catalog) or { panic(catalog) }
 }
 
 // VacuumRun is a VACUUM that's running.
@@ -544,7 +549,7 @@ fn (run VacuumRun) has_keys(mut conn Connection, target VacuumTarget, range Vacu
 	if _ := iter.next() {
 		return true
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -648,7 +653,7 @@ fn (mut f Storage) vacuum(run VacuumRun) !(int, bool) {
 			value: object.value.clone()
 		})!
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -965,7 +970,7 @@ fn (target VacuumTarget) rows(names map[string][]string) [][]Value {
 	}
 	mut sorted := []string{}
 	for id in ids {
-		name := names[id] or { continue }
+		name := map_value(names, id) or { continue }
 		sorted << '${name[0]}\x00${name[2]}\x00${name[3]}\x00${name[1]}\x01${id}'
 	}
 	sorted.sort()
@@ -973,7 +978,7 @@ fn (target VacuumTarget) rows(names map[string][]string) [][]Value {
 	mut rows := [][]Value{}
 	for key in sorted {
 		id := key.all_after('\x01')
-		name := names[id] or { continue }
+		name := map_value(names, id) or { continue }
 		object := target.objects[id] or { VacuumObjectCounts{} }
 		finished := if target.whole {
 			target.packed || compare_bytes(object.last_key, target.pack_stop) < 0

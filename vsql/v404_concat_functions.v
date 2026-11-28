@@ -101,7 +101,8 @@ fn concat_type(args []CompileResult, is_ws bool) Type {
 		return Type{.is_clob, 0, 0, false, false}
 	}
 
-	values := if is_ws { args[1..] } else { args }
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	values := if is_ws { args[1..] } else { own_array(args) }
 	mut size := 0
 	for arg in values {
 		if arg.typ.size == 0 {

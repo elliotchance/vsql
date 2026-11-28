@@ -56,6 +56,11 @@ mut:
 	varies bool
 }
 
+// free stops -autofree from freeing a scope, which is a copy (sharing its tables
+// and context) of the scope of a SubqueryPlan. Scopes leak with -autofree for
+// now.
+fn (mut s SubqueryScope) free() {}
+
 // SubqueryResult is the rows of a subquery that has been evaluated in the
 // statement, or varies is set if it must be evaluated each time.
 struct SubqueryResult {
@@ -177,12 +182,18 @@ fn (e Subquery) plan_row(mut c Compiler, degree int) !SubqueryPlan {
 // A subquery that doesn't refer to the queries that contain it (and doesn't
 // have a non-deterministic function) has the same result every time, so it's
 // only executed the first time it's evaluated in each statement.
+//
+// It's manualfree because -autofree would free the plan's operations with the
+// copy of the plan (no small repro yet). The rows that are returned are a copy
+// of the cached rows, because the caller frees them
+// (https://github.com/vlang/v/issues/32937).
+@[manualfree]
 fn run_subquery(mut conn Connection, plan SubqueryPlan, data Row) ![]Row {
 	cache := plan.query != unsafe { nil }
 	if cache {
 		if result := conn.subquery_results[plan.query] {
 			if !result.varies {
-				return result.rows
+				return own_array(result.rows)
 			}
 		}
 	}
@@ -205,9 +216,12 @@ fn run_subquery(mut conn Connection, plan SubqueryPlan, data Row) ![]Row {
 	// compiled again. If nothing marked it, the result didn't depend on anything
 	// that can change, so it's the same every time.
 	if cache {
-		previous := conn.subquery_results[plan.query] or { SubqueryResult{} }
-		conn.subquery_results[plan.query] = SubqueryResult{rows, previous.varies
+		// The previous result isn't kept in a variable, because -autofree frees
+		// the variable before it's declared when there isn't one.
+		previous_varies := (conn.subquery_results[plan.query] or { SubqueryResult{} }).varies
+		conn.subquery_results[plan.query] = SubqueryResult{rows, previous_varies
 			|| conn.subquery_scopes.last().varies}
+		return own_array(rows)
 	}
 
 	return rows
@@ -250,11 +264,16 @@ fn (e Subquery) compile(mut c Compiler) !CompileResult {
 }
 
 fn compile_scalar_subquery(plan SubqueryPlan) CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	plan_ref := &SubqueryPlan{
+		...plan
+	}
 	typ := plan.plan.columns()[0].typ
 
 	return CompileResult{
-		run:          fn [plan, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
-			values := subquery_values(mut conn, plan, data)!
+		run:          fn [plan_ref, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			values := subquery_values(mut conn, *plan_ref, data)!
 			if values.len > 1 {
 				return sqlstate_21000()
 			}

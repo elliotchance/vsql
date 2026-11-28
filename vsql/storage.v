@@ -324,11 +324,8 @@ fn (mut f Storage) transaction_leaf_pages() ![]int {
 // keep_undo_log must be called before the current statement removes anything from
 // the undo log, so that it's put back if the statement fails.
 fn (mut f Storage) keep_undo_log() {
-	f.snapshot = StatementSnapshot{
-		...f.snapshot
-		undo_kept:    true
-		undo_entries: f.undo.entries.clone()
-	}
+	f.snapshot.undo_kept = true
+	f.snapshot.undo_entries = f.undo.entries.clone()
 }
 
 // end_savepoints forgets the undo log at the end of a transaction.
@@ -446,9 +443,8 @@ fn (f Storage) is_only_transaction() bool {
 fn (mut f Storage) finish_commit(path string) ! {
 	f.snapshot.in_statement = false
 	if path == ':memory:' {
-		mut pager := f.btree.pager
-		if mut pager is MemoryPager {
-			pager.commit()
+		if mut f.btree.pager is MemoryPager {
+			f.btree.pager.commit()
 		}
 
 		return
@@ -644,7 +640,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 			f.tables[table.name.storage_id()] = table
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -657,7 +653,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 			f.schemas[schema.name] = schema
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -765,9 +761,35 @@ fn (mut f Storage) close_files() {
 // (in the search condition of a CHECK constraint), so V would otherwise need an
 // "or" block that's never used.
 fn (f Storage) table(storage_id string) Table {
-	// With "or", an empty Table is only made when there's no table, rather
-	// than for every lookup.
-	return f.tables[storage_id] or { Table{} }
+	return f.find_table(storage_id) or { Table{} }
+}
+
+// find_table returns a copy of the table with storage_id (see
+// Identifier.storage_id), or none.
+//
+// Tables and indexes are read from the maps with these functions, because
+// reading a map value into a local or returning it with "or" doesn't copy it
+// with -autofree, so the map's value is freed:
+// https://github.com/vlang/v/issues/32937. The copy is a clone, because the
+// caller may free it.
+fn (f Storage) find_table(storage_id string) ?Table {
+	if storage_id in f.tables {
+		table := unsafe { &f.tables[storage_id] }
+		return table.clone()
+	}
+
+	return none
+}
+
+// find_index returns a copy of the index with storage_id, or none. See
+// find_table.
+fn (f Storage) find_index(storage_id string) ?Index {
+	if storage_id in f.indexes {
+		index := unsafe { &f.indexes[storage_id] }
+		return index.clone()
+	}
+
+	return none
 }
 
 // is_referenced is true if a foreign key of any table (including the table
@@ -788,7 +810,7 @@ fn (f &Storage) is_referenced(referenced_id string) bool {
 // table with referenced_id (see Identifier.storage_id). It doesn't copy the
 // table, so it's cheaper than looking at the foreign keys of table().
 fn (f &Storage) references(storage_id string, referenced_id string) bool {
-	foreign_keys := (f.tables[storage_id] or { return false }).foreign_keys
+	foreign_keys := (f.find_table(storage_id) or { return false }).foreign_keys
 	for key in foreign_keys {
 		if key.referenced_table.storage_id() == referenced_id {
 			return true
@@ -1305,7 +1327,7 @@ fn (mut f Storage) check_concurrent_rows(t Table) ! {
 fn (mut f Storage) check_concurrent_referenced_tables(definition Table, old_keys []ForeignKey) ! {
 	old := old_keys.map(it.str())
 	for key in definition.foreign_keys {
-		referenced := f.tables[key.referenced_table.storage_id()] or { continue }
+		referenced := f.find_table(key.referenced_table.storage_id()) or { continue }
 		if key.str() !in old {
 			f.check_concurrent_definition(referenced)!
 			f.check_concurrent_rows(referenced)!
@@ -1339,7 +1361,7 @@ fn (mut f Storage) check_concurrent_references(t Table) ! {
 			}
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 }
@@ -1386,7 +1408,7 @@ fn (mut f Storage) check_concurrent_name(kind u8, name Identifier) ! {
 			return sqlstate_40001('avoiding concurrent write on ${kind_name} ${name}')
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 }
@@ -1413,7 +1435,7 @@ fn (mut f Storage) has_concurrent_objects(start []u8, end []u8) !bool {
 			return true
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -1467,7 +1489,7 @@ fn (mut s RowScanner) next_rows(limit int) ![]Row {
 			rows << s.storage.resolve_row(mut row)!
 		}
 	}
-	if err := s.iter.err {
+	if err := opt_copy(s.iter.err) {
 		return err
 	}
 
@@ -1510,7 +1532,7 @@ fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 			objs << object
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -1572,7 +1594,7 @@ fn (mut f Storage) end_isolation() {
 // take_isolation_error returns (and forgets) the error from end_isolation, if
 // there was one.
 fn (mut f Storage) take_isolation_error() ! {
-	if err := f.isolation_error {
+	if err := opt_copy(f.isolation_error) {
 		f.isolation_error = none
 		return err
 	}

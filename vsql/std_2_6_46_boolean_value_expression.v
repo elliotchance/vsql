@@ -64,7 +64,7 @@ struct BooleanValueExpression {
 }
 
 fn (e BooleanValueExpression) pstr(params map[string]Value) string {
-	if expr := e.expr {
+	if expr := opt_copy(e.expr) {
 		return '${expr.pstr(params)} OR ${e.term.pstr(params)}'
 	}
 
@@ -82,7 +82,7 @@ fn check_boolean_operand(op string, operand CompileResult) ! {
 }
 
 fn (e BooleanValueExpression) compile(mut c Compiler) !CompileResult {
-	if expr := e.expr {
+	if expr := opt_copy(e.expr) {
 		compiled_a := c.with_boolean_type(expr.compile(mut c)!)
 		compiled_b := c.with_boolean_type(e.term.compile(mut c)!)
 		check_boolean_operand('OR', compiled_a)!
@@ -125,7 +125,7 @@ struct BooleanTerm {
 }
 
 fn (e BooleanTerm) pstr(params map[string]Value) string {
-	if term := e.term {
+	if term := opt_copy(e.term) {
 		return '${term.pstr(params)} AND ${e.factor.pstr(params)}'
 	}
 
@@ -133,7 +133,7 @@ fn (e BooleanTerm) pstr(params map[string]Value) string {
 }
 
 fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
-	if term := e.term {
+	if term := opt_copy(e.term) {
 		compiled_a := c.with_boolean_type(term.compile(mut c)!)
 		compiled_b := c.with_boolean_type(e.factor.compile(mut c)!)
 		check_boolean_operand('AND', compiled_a)!
@@ -183,12 +183,12 @@ struct BooleanTest {
 }
 
 fn new_boolean_test(expr BooleanPrimary, not bool, value ?Value, inverse bool) BooleanTest {
-	return BooleanTest{&expr, not, value, inverse}
+	return BooleanTest{heap_copy(&expr), not, value, inverse}
 }
 
 fn (e BooleanTest) pstr(params map[string]Value) string {
 	prefix := if e.inverse { 'NOT ' } else { '' }
-	if v := e.value {
+	if v := opt_copy(e.value) {
 		if e.not {
 			return '${prefix}${e.expr.pstr(params)} IS NOT ${v.str()}'
 		}
@@ -219,7 +219,7 @@ fn (e BooleanTest) unary_not(v Value) !Value {
 //
 // ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Syntax Rules, 7.e.i
 fn (e BooleanTest) is_negative() bool {
-	if v := e.value {
+	if v := opt_copy(e.value) {
 		return !v.is_null && ((v.bool_value() == .is_false) != e.not) != e.inverse
 	}
 
@@ -227,6 +227,11 @@ fn (e BooleanTest) is_negative() bool {
 }
 
 fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &BooleanTest{
+		...e
+	}
 	// A negative boolean factor can't contain anything that's possibly
 	// non-deterministic.
 	//
@@ -239,10 +244,10 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 		compiled = c.with_boolean_type(compiled)
 	}
 
-	if v := e.value {
+	if v := opt_copy(e.value) {
 		check_boolean_operand('IS', compiled)!
 		return CompileResult{
-			run:          fn [e, v, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e_ref, v, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 				// The truth table for IS (Table 15).
 				//
 				// ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, General Rules, 3
@@ -258,14 +263,14 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 					result = new_boolean_value(v.bool_value() == .is_false)
 				}
 
-				if e.not {
+				if e_ref.not {
 					result = match result.bool_value() {
 						.is_true { new_boolean_value(false) }
 						.is_false { new_boolean_value(true) }
 					}
 				}
 
-				return e.unary_not(result)!
+				return e_ref.unary_not(result)!
 			}
 			typ:          new_type('BOOLEAN', 0, 0)
 			contains_agg: compiled.contains_agg
@@ -275,8 +280,8 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 	if e.inverse {
 		check_boolean_operand('NOT', compiled)!
 		return CompileResult{
-			run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
-				return e.unary_not(compiled.run(mut conn, data, params)!)!
+			run:          fn [e_ref, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return e_ref.unary_not(compiled.run(mut conn, data, params)!)!
 			}
 			typ:          compiled.typ
 			contains_agg: compiled.contains_agg

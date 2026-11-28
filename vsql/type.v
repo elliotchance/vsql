@@ -334,10 +334,11 @@ fn new_type(name string, size int, scale i16) Type {
 fn type_from_name(name string, size int, scale i16) !Type {
 	// The size may appear in the middle of the name, such as
 	// "TIME(6) WITH TIME ZONE".
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
 	name_without_size := if name.contains('(') {
 		name.all_before('(') + name.all_after(')')
 	} else {
-		name
+		name.clone()
 	}
 
 	return match name_without_size {
@@ -563,7 +564,7 @@ fn (t Type) uses_time() bool {
 
 fn numeric_type_str(typ string, size int, scale i16) string {
 	if size == 0 {
-		return typ
+		return own_string(typ)
 	}
 
 	if scale == 0 {
@@ -577,7 +578,7 @@ fn numeric_type_str(typ string, size int, scale i16) string {
 // with its length unless it has the maximum length (a size of 0).
 fn large_object_type_str(typ string, size int) string {
 	if size == 0 {
-		return typ
+		return own_string(typ)
 	}
 
 	return '${typ}(${size})'

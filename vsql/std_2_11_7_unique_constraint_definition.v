@@ -79,7 +79,7 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 				t.name)
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 }

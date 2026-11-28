@@ -5,7 +5,7 @@ module vsql
 // The concept is described by ISO/IEC 9075-1:2023, 4.5, Tables.
 
 // A column definition.
-struct Column {
+struct Column implements IClone {
 pub:
 	// name resolves to the actual canonical location. If you only need the column
 	// name itself, you can use name.sub_entity_name.
@@ -59,7 +59,7 @@ pub:
 // ISO/IEC 9075-2:2023, 14.11, <insert statement>, Syntax Rules, 11.b.ii and 13.d
 // ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, Syntax Rules, 5
 fn (c Column) is_generated_always() bool {
-	if identity := c.identity {
+	if identity := opt_copy(c.identity) {
 		return identity.always
 	}
 
@@ -104,7 +104,7 @@ fn (c Columns) str() string {
 }
 
 // Represents the structure of a table.
-pub struct Table {
+pub struct Table implements IClone {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid u64
@@ -145,6 +145,18 @@ pub mut:
 	is_virtual bool
 }
 
+// free stops -autofree from freeing a table, which is copied (sharing its
+// columns and constraints) by plans, closures and the schema. Tables leak with
+// -autofree for now.
+pub fn (mut t Table) free() {}
+
+// copy is a clone of t for a struct update ("Table{ ...t.copy() }"), which
+// can't use the clone() from IClone directly with -autofree:
+// https://github.com/vlang/v/issues/32939
+fn (t Table) copy() Table {
+	return t.clone()
+}
+
 // Convenience method for returning the ordered list of column names.
 pub fn (t Table) column_names() []string {
 	mut names := []string{}
@@ -159,7 +171,7 @@ pub fn (t Table) column_names() []string {
 // table can have at most one (ISO/IEC 9075-2:2023, 11.3, Syntax Rules, 15).
 fn (t Table) identity_column() ?Column {
 	for col in t.columns {
-		if _ := col.identity {
+		if _ := opt_copy(col.identity) {
 			return col
 		}
 	}
@@ -170,10 +182,11 @@ fn (t Table) identity_column() ?Column {
 // Find a column by name, or return a SQLSTATE 42703 error.
 pub fn (t Table) column(name string) !Column {
 	// The columns are looked at by index so that only the one returned is
-	// copied.
+	// copied. It's a clone, because -autofree frees the column that's returned
+	// (no small repro yet).
 	for i in 0 .. t.columns.len {
 		if name == t.columns[i].name.sub_entity_name {
-			return t.columns[i]
+			return t.columns[i].clone()
 		}
 	}
 
@@ -201,10 +214,10 @@ fn (t Table) bytes() []u8 {
 		if col.default_value != none {
 			element += ' DEFAULT ${col.default_text}'
 		}
-		if identity := col.identity {
+		if identity := opt_copy(col.identity) {
 			element += ' ${*identity}'
 		}
-		if generated := col.generated {
+		if generated := opt_copy(col.generated) {
 			element += ' ${*generated}'
 		}
 		if t.has_not_null(col) {
@@ -324,24 +337,27 @@ fn (t Table) constraint_identifier(name string) Identifier {
 // NULL constraints (in the order of the columns), the PRIMARY KEY, then each
 // UNIQUE, FOREIGN KEY and CHECK. A constraint of a new definition that hasn't
 // been named yet (see name_constraints) has an empty name.
+//
+// The names are copies to work around https://github.com/vlang/v/issues/32943
+// (-autofree).
 fn (t Table) constraint_names() []string {
 	mut names := []string{}
 	for column in t.columns {
 		if t.has_not_null(column) {
-			names << t.not_null_names[column.name.sub_entity_name]
+			names << own_string(t.not_null_names[column.name.sub_entity_name])
 		}
 	}
 	if t.primary_key.len > 0 {
-		names << t.primary_key_name
+		names << own_string(t.primary_key_name)
 	}
 	for constraint in t.unique_constraints {
-		names << constraint.name
+		names << own_string(constraint.name)
 	}
 	for key in t.foreign_keys {
-		names << key.name
+		names << own_string(key.name)
 	}
 	for constraint in t.check_constraints {
-		names << constraint.name.entity_name
+		names << own_string(constraint.name.entity_name)
 	}
 
 	return names
@@ -535,27 +551,38 @@ fn (t Table) has_not_null(column Column) bool {
 // row ID like a table without a PRIMARY KEY, and it's checked like a UNIQUE
 // (see unique_constraints_to_check).
 fn (t Table) key_columns() []string {
-	return if t.primary_key_characteristics.is_deferrable() { []string{} } else { t.primary_key }
+	// The caller frees it with -autofree, so it's a copy (see own_array).
+	return if t.primary_key_characteristics.is_deferrable() {
+		[]string{}
+	} else {
+		own_array(t.primary_key)
+	}
 }
 
 // unique_constraints_to_check are the UNIQUE constraints of the table, after a
 // DEFERRABLE PRIMARY KEY (see key_columns), which has an index with its name
 // like a UNIQUE (see build_constraint_indexes).
+//
+// The constraints are copies of the table's, and it's manualfree, to work
+// around https://github.com/vlang/v/issues/32932 (-autofree).
+@[manualfree]
 fn (t Table) unique_constraints_to_check() []UniqueConstraint {
 	// The characteristics are kept when a DROP COLUMN drops the PRIMARY KEY.
 	if t.primary_key.len == 0 || !t.primary_key_characteristics.is_deferrable() {
-		return t.unique_constraints
+		return own_array(t.unique_constraints)
 	}
 
 	mut constraints := [
 		UniqueConstraint{
-			name:            t.primary_key_name
-			columns:         t.primary_key
-			characteristics: t.primary_key_characteristics
+			name:            own_string(t.primary_key_name)
+			columns:         own_array(t.primary_key)
+			characteristics: own_copy(&t.primary_key_characteristics)
 			is_primary_key:  true
 		},
 	]
-	constraints << t.unique_constraints
+	// The local works around https://github.com/vlang/v/issues/32946.
+	unique_constraints := own_array(t.unique_constraints)
+	constraints << unique_constraints
 
 	return constraints
 }
@@ -625,7 +652,7 @@ struct TableOperation {
 	params           map[string]Value
 mut:
 	conn     &Connection
-	subplans map[string]Plan
+	subplans map[string]&Plan
 }
 
 fn (o TableOperation) str() string {
@@ -671,11 +698,14 @@ fn (t Table) result_columns() []Column {
 	return columns
 }
 
+// It's manualfree because the rows share keys (see RowData), which -autofree
+// would free when keys is replaced.
+@[manualfree]
 fn (mut o TableOperation) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		mut subplan := o.subplans[o.table_name.id()] or { Plan{} }
+		mut subplan := o.subplans[o.table_name.id()] or { &Plan{} }
 
 		// The columns may have been renamed by a derived column list, such as
 		// "(SELECT a FROM t) AS x (b)". A row of a table (such as "t AS x (b)")
@@ -687,6 +717,8 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		// A view leaves out the columns of its query that it wasn't created with
 		// (see Correlation.degree). Their key is empty, and they're removed.
 		mut names := map[string]string{}
+		// The local stops -autofree from freeing each column twice (no small
+		// repro yet).
 		subplan_columns := subplan.columns()
 		for i, column in subplan_columns {
 			key := if i < o.table.columns.len { o.table.columns[i].name.id() } else { '' }
@@ -703,7 +735,7 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		for row in subplan.execute([]Row{})! {
 			if keys.len == 0 || row.data.keys != from_keys {
 				from_keys = row.data.keys
-				keys = row.data.keys.map(names[it] or { '${o.table_name.id()}.${it}' })
+				keys = row.data.keys.map(map_value(names, it) or { '${o.table_name.id()}.${it}' })
 			}
 
 			// The id is kept for a cursor, see ExprOperation.execute.

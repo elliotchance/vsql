@@ -25,9 +25,21 @@ struct Numeric {
 fn new_numeric(typ Type, numerator big.Integer, denominator big.Integer) Numeric {
 	return Numeric{
 		typ:         typ
-		numerator:   numerator
-		denominator: denominator
+		numerator:   own_integer(numerator)
+		denominator: own_integer(denominator)
 	}
+}
+
+// own_integer is a copy of x with -autofree, and x without it. -autofree frees
+// a big.Integer that's passed to a function that keeps it, because it has a
+// free() method: https://github.com/vlang/v/issues/32938. It's also used for a
+// variable that's reassigned (https://github.com/vlang/v/issues/32944).
+fn own_integer(x big.Integer) big.Integer {
+	$if autofree {
+		// Adding zero returns a clone (clone() isn't public).
+		return x + big.zero_int
+	}
+	return x
 }
 
 // new_numeric_from_f64 is the exact value of the shortest decimal that is x,
@@ -50,7 +62,7 @@ fn shift_exponent(x string) string {
 
 	sign := if x[0] == `-` { '-' } else { '' }
 	mantissa := x[sign.len..at].split('.')
-	mut digits := mantissa[0]
+	mut digits := own_elem(mantissa, 0)
 	if mantissa.len == 2 {
 		digits += mantissa[1]
 	}
@@ -75,7 +87,8 @@ fn new_numeric_from_string(x string) Numeric {
 	// period, and its type must hold the value exactly (ISO/IEC 9075-2:2023,
 	// 5.3, <literal>, Syntax Rules, 29).
 
-	mut n := if x.contains('e') || x.contains('E') { shift_exponent(x) } else { x }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	mut n := if x.contains('e') || x.contains('E') { shift_exponent(x) } else { x.clone() }
 
 	is_negative := n[0] == `-`
 	if is_negative {
@@ -94,7 +107,7 @@ fn new_numeric_from_string(x string) Numeric {
 	}
 
 	mut numerator := big.integer_from_string(parts[0]) or { big.zero_int }
-	mut denominator := big.one_int
+	mut denominator := own_integer(big.one_int)
 
 	if parts.len == 2 {
 		denominator = big.integer_from_int(10).pow(u32(parts[1].len))

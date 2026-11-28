@@ -52,7 +52,7 @@ fn (e RoutineInvocation) pstr(params map[string]Value) string {
 // qualified_name is the name of the function, with the schema and catalog
 // that it was qualified by, if any.
 fn (e RoutineInvocation) qualified_name() string {
-	mut name := e.function_name
+	mut name := own_string(e.function_name)
 	if e.schema_name != '' {
 		name = '${requote_identifier(e.schema_name)}.${name}'
 	}
@@ -63,6 +63,9 @@ fn (e RoutineInvocation) qualified_name() string {
 	return name
 }
 
+// It's manualfree because -autofree frees the compiled arguments while the
+// closure still uses them (no small repro yet).
+@[manualfree]
 fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// A qualified name must be of a schema that exists, and only finds the
 	// routines of that schema.
@@ -88,7 +91,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	in_aggregate := c.in_aggregate
 	is_agg := c.conn.funcs.any(it.name == e.function_name && it.is_agg)
 	c.in_aggregate = in_aggregate || is_agg
-	aggregated_columns := c.aggregated_columns
+	aggregated_columns := own_array(c.aggregated_columns)
 	if is_agg {
 		c.aggregated_columns = []
 	}
@@ -107,7 +110,10 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		args << arg.compile(mut c)!
 		arg_columns << c.aggregated_columns[columns..].clone()
 	}
-	arg_types := c.with_argument_types(e.function_name, args).map(it.typ)
+	// The local works around https://github.com/vlang/v/issues/32932 (-autofree):
+	// the result can be args, which would be freed with a temporary.
+	typed_args := c.with_argument_types(e.function_name, args)
+	arg_types := typed_args.map(it.typ)
 	if is_agg {
 		c.flag_set_function(e, arg_columns)
 		if arg_types.len > 0 {
@@ -125,7 +131,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	func_name := e.function_name
+	// The copy works around https://github.com/vlang/v/issues/32934 (-autofree):
+	// the closure below frees it.
+	func_name := own_string(e.function_name)
 
 	// ABS of an interval is an <interval absolute value function>.
 	if func_name == 'ABS' && arg_types.len == 1 && arg_types[0].typ.is_interval() {
@@ -255,7 +263,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 				// the value isn't truncated (see implicit_cast_type).
 				arg := compiled_args[i].run(mut conn, data, params)!
 				mut target := typ
-				param_typ := found_func.arg_types[i]
+				param_typ := own_elem(found_func.arg_types, i)
 				if param_typ.typ == .is_decfloat && return_type.typ == .is_decfloat {
 					// Every argument of a DECFLOAT function has the precision of the
 					// result (see register_decfloat_funcs).
@@ -391,6 +399,11 @@ struct Func {
 	// has its own compile (see RoutineInvocation.compile).
 	is_variadic bool
 }
+
+// free stops -autofree from freeing a function, which is copied from the
+// connection's functions (see Connection.find_function_in) and kept by
+// closures. The functions live as long as the connection.
+fn (mut f Func) free() {}
 
 // variadic_parameter_name is the name of the parameter that has the arguments
 // of a variadic function (see Func.is_variadic).

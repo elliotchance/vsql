@@ -52,7 +52,7 @@ fn (stmt ConnectStatement) execute(mut a Agent, elapsed_parse time.Duration) !Re
 	// There aren't any other restrictions on the user name.
 	//
 	// ISO/IEC 9075-2:2023, 18.1, <connect statement>, General Rules, 2 to 5
-	if user_name := target.connection_user_name {
+	if user_name := opt_copy(target.connection_user_name) {
 		v := connection_string(user_name)!.trim(' ')
 		normalize_identifier(v) or { return sqlstate_28000(v) }
 	}
@@ -104,7 +104,7 @@ fn normalize_identifier(s string) !string {
 		return error('not an identifier')
 	}
 
-	sym := tokens[0].value
+	sym := own_copy(&tokens[0].value)
 	if sym is IdentifierChain {
 		if sym.identifier.starts_with('"') {
 			return sym.identifier[1..sym.identifier.len - 1].replace('""', '"')

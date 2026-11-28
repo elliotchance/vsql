@@ -87,7 +87,7 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 	}
 
 	mut new_table := Table{
-		...table
+		...table.copy()
 		columns: table.columns.map(if it.name.sub_entity_name == column.name.sub_entity_name {
 			new_column
 		} else {
@@ -110,7 +110,7 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 	} else {
 		catalog.storage.update_table(new_table)!
 	}
-	if s := sequence {
+	if s := opt_copy(sequence) {
 		catalog.storage.update_identity(table.id, s)!
 	}
 

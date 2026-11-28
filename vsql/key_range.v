@@ -82,13 +82,13 @@ fn best_key_operation(factors []BooleanTest, base_table Table, table Table, valu
 // and_factors are the parts of a condition when it's one or more conditions
 // joined by AND. Otherwise, there are none, since any row can be true for an OR.
 fn and_factors(condition BooleanValueExpression) []BooleanTest {
-	if _ := condition.expr {
+	if _ := opt_copy(condition.expr) {
 		return []
 	}
 
 	// The last part of an AND is first.
 	mut factors := []BooleanTest{}
-	mut term := condition.term
+	mut term := own_copy(&condition.term)
 	for {
 		factors.prepend(term.factor)
 		next := term.term or { break }
@@ -134,15 +134,19 @@ fn key_score(conditions []KeyCondition) int {
 
 // key_conditions are the conditions of one part of an AND. BETWEEN is the same
 // as two conditions.
+//
+// It's manualfree, and the predicate is a copy, because -autofree would free
+// the predicate of the statement (no small repro yet).
+@[manualfree]
 fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]&Table, params map[string]Value, mut conn Connection) []KeyCondition {
-	if _ := test.value {
+	if _ := opt_copy(test.value) {
 		return []
 	}
 	if test.inverse {
 		return []
 	}
 
-	primary := *test.expr
+	primary := own_copy(test.expr)
 	predicate := match primary {
 		Predicate { primary }
 		else { return [] }
@@ -213,7 +217,9 @@ fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator
 
 	// Without the scopes of the queries that contain this one, a column of
 	// another query is an unknown column rather than an outer reference.
-	subquery_scopes := conn.subquery_scopes
+	// The copy works around https://github.com/vlang/v/issues/32944
+	// (-autofree): the assignment below would free the scopes.
+	subquery_scopes := own_array(conn.subquery_scopes)
 	subquery_tables := conn.subquery_tables.clone()
 	conn.subquery_scopes = []
 	defer {
@@ -315,7 +321,7 @@ fn new_index_operation(table Table, index Index, conditions []KeyCondition, para
 }
 
 fn (o &KeyOperation) str() string {
-	key := if index := o.index { 'INDEX ${index.name} ON' } else { 'PRIMARY KEY' }
+	key := if index := opt_copy(o.index) { 'INDEX ${index.name} ON' } else { 'PRIMARY KEY' }
 
 	columns := '${key} ${o.table.name} (${key_operation_columns(o.table, true)})'
 	if o.conditions.len == 0 {
@@ -335,7 +341,7 @@ fn (o &KeyOperation) str() string {
 // condition with > or < can't be covered, because the bound is part of the
 // range.
 fn (o &KeyOperation) covered_factors(factors []BooleanTest) []bool {
-	key_len := if index := o.index { index.columns.len } else { o.table.primary_key.len }
+	key_len := if index := opt_copy(o.index) { index.columns.len } else { o.table.primary_key.len }
 	mut used := []bool{len: o.conditions.len}
 	for column in 0 .. key_len {
 		mut equal := -1
@@ -378,6 +384,8 @@ fn (o &KeyOperation) covered_factors(factors []BooleanTest) []bool {
 
 // key_conditions_len is how many conditions key_conditions has for a factor when
 // all of it is a condition of the key: two for BETWEEN, otherwise one.
+// It's manualfree for the same reason as key_conditions.
+@[manualfree]
 fn key_conditions_len(test BooleanTest) int {
 	primary := *test.expr
 	predicate := match primary {
@@ -406,7 +414,7 @@ fn (mut o KeyOperation) execute(_ []Row) ![]Row {
 fn (mut o KeyOperation) read(row Row) ![]Row {
 	mut key_columns := []KeyColumn{}
 	mut prefix := row_key_prefix(o.table.id)
-	if index := o.index {
+	if index := opt_copy(o.index) {
 		prefix = index_entry_prefix(index.id)
 		for column in index.columns {
 			key_columns << KeyColumn{
@@ -441,7 +449,7 @@ fn (mut o KeyOperation) read(row Row) ![]Row {
 		key << index.entry_row_id(o.table, entry.key)!
 		rows << o.read_rows(mut catalog, key, key, true)!
 	}
-	if err := entries.err {
+	if err := opt_copy(entries.err) {
 		return err
 	}
 
@@ -464,7 +472,7 @@ fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8
 			rows << catalog.storage.resolve_row(mut row)!
 		}
 	}
-	if err := iter.err {
+	if err := opt_copy(iter.err) {
 		return err
 	}
 
@@ -477,12 +485,14 @@ fn key_operation_columns(table Table, pretty bool) Columns {
 	mut columns := []Column{}
 	for column in table.result_columns() {
 		columns << Column{
+			// The copies work around https://github.com/vlang/v/issues/32932
+			// (-autofree).
 			name:     if pretty {
 				Identifier{
-					sub_entity_name: column.name.sub_entity_name
+					sub_entity_name: own_string(column.name.sub_entity_name)
 				}
 			} else {
-				column.name
+				column.name.clone()
 			}
 			typ:      column.typ
 			not_null: column.not_null

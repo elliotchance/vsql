@@ -36,8 +36,11 @@ struct QuerySpecification {
 }
 
 fn new_query_specification_without_from(exprs []SelectSublist, distinct bool) QuerySpecification {
+	// The copy works around https://github.com/vlang/v/issues/32943 (-autofree).
+	// It's a local to work around https://github.com/vlang/v/issues/32952.
+	sublists := own_copy(&exprs)
 	return QuerySpecification{
-		exprs:            SelectList(exprs)
+		exprs:            SelectList(sublists)
 		table_expression: &TableExpression{
 			from_clause: TablePrimary{
 				body: Identifier{}
@@ -140,6 +143,9 @@ mut:
 	exprs []DerivedColumn
 }
 
+// It's manualfree because -autofree frees the select list twice (no small repro
+// yet). The plan leaks with -autofree, like the rest of the planner.
+@[manualfree]
 fn new_distinct_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]&Table, columns Columns) !&DistinctOperation {
 	expr_operation := new_expr_operation(mut conn, params, select_list, tables)!
 
@@ -166,7 +172,8 @@ fn (o &DistinctOperation) str() string {
 }
 
 fn (o &DistinctOperation) columns() Columns {
-	return o.columns
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	return own_array(o.columns)
 }
 
 fn (mut o DistinctOperation) execute(rows []Row) ![]Row {
@@ -212,14 +219,16 @@ mut:
 fn (mut s RowSet) add(values []Value) {
 	key := duplicate_key(values)
 	s.buckets[key] << s.rows.len
-	s.rows << values
+	// The copy works around https://github.com/vlang/v/issues/32943 (-autofree).
+	row := own_array(values)
+	s.rows << row
 }
 
 // candidates returns the positions of the rows (in the order they were added)
 // that could be duplicates of values. Each one must still be checked with
 // is_duplicate_row.
 fn (s &RowSet) candidates(values []Value) []int {
-	return s.buckets[duplicate_key(values)] or { []int{} }
+	return map_value(s.buckets, duplicate_key(values)) or { []int{} }
 }
 
 // find returns the position of the first row that's a duplicate of values, or
@@ -256,7 +265,7 @@ fn duplicate_key(values []Value) string {
 		} else if value.typ.typ.is_string() {
 			key << value.string_value().trim_right(' ')
 		} else if value.typ.typ == .is_boolean {
-			key << unsafe { value.v.bool_value }.str()
+			key << value.bool_value().str()
 		} else {
 			key << ''
 		}

@@ -22,7 +22,7 @@ fn describe_syntax_error(msg string, source string, tokens []Token, index int) s
 	// A statement without any tokens (only white space and comments) doesn't have
 	// a position.
 	if tokens.len == 0 {
-		return msg
+		return own_string(msg)
 	}
 
 	cs := source.runes()
@@ -101,7 +101,7 @@ fn syntax_error_shorten(text string) string {
 		return text.runes()[..syntax_error_context_length - 3].string() + '...'
 	}
 
-	return text
+	return own_string(text)
 }
 
 // syntax_error_text is the text from start to end, with each run of white
@@ -132,7 +132,7 @@ fn syntax_error_hint(cs []rune, tokens []Token, index int) string {
 		return ''
 	}
 
-	token := tokens[index]
+	token := own_elem(tokens, index)
 	text := syntax_error_shorten(syntax_error_text(cs, token.start, token.end))
 	before_previous := if index > 1 { tokens[index - 2].token } else { 0 }
 
@@ -155,7 +155,7 @@ fn syntax_error_hint(cs []rune, tokens []Token, index int) string {
 	// likely to be in the wrong place than meant as a name.
 	// The word must also be in the statement (it's not CURRENT_TIMESTAMP for
 	// NOW()).
-	name := yy_toknames[token.token - 57343]
+	name := own_elem(yy_toknames, token.token - 57343)
 	if name in reserved_words() && text.to_upper() == name
 		&& name !in ['ALL', 'DEFAULT', 'DISTINCT', 'FALSE', 'NULL', 'TRUE', 'UNKNOWN'] {
 		mut quoted := tokens.clone()

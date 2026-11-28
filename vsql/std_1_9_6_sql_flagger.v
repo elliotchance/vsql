@@ -1,5 +1,9 @@
 module vsql
 
+// Every function in this file is manualfree, because the flagger only looks at
+// the statement, and -autofree frees the parts of it that are copied into
+// variables (no small repro yet). It only runs when flagging is turned on.
+
 import arrays
 
 // ISO/IEC 9075-1:2023, 9.6, SQL flagger
@@ -477,6 +481,7 @@ const vsql_pg_proc = 'V502-07'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.
+@[manualfree]
 fn flag(mut yylex YYLexer, feature string) {
 	if mut yylex is Lexer {
 		yylex.features << feature
@@ -484,6 +489,7 @@ fn flag(mut yylex YYLexer, feature string) {
 }
 
 // flag_if records a feature if cond is true.
+@[manualfree]
 fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 	if cond {
 		flag(mut yylex, feature)
@@ -497,6 +503,7 @@ fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 //
 // ISO/IEC 9075-2:2023, 6.12, <case expression>, Syntax Rules, 2.k and
 // Conformance Rules, 1
+@[manualfree]
 fn flag_simple_case(mut yylex YYLexer, operand RowValueConstructorPredicand, whens []CaseExpressionSimpleWhen) {
 	flag_if(mut yylex, operand is ExplicitRowValueConstructor, 'F262')
 	if !is_column_reference(operand) {
@@ -513,6 +520,7 @@ fn flag_simple_case(mut yylex YYLexer, operand RowValueConstructorPredicand, whe
 // and 2). "INFORMATION_SCHEMA" has 18 characters, so it isn't flagged, but the
 // views that need F391 are flagged by what they are (see
 // information_schema_features).
+@[manualfree]
 fn flag_identifier(mut yylex YYLexer, identifier string) {
 	flag_if(mut yylex, is_long_identifier(identifier), 'F391')
 }
@@ -522,11 +530,13 @@ fn flag_identifier(mut yylex YYLexer, identifier string) {
 // characters: the body of a <regular identifier> is an <identifier start>
 // followed by fewer than 18 <identifier part>s, and a doubled quote in a
 // <delimited identifier> is one <delimited identifier part>.
+@[manualfree]
 fn is_long_identifier(identifier string) bool {
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
 	body := if identifier.starts_with('"') {
 		identifier[1..identifier.len - 1].replace('""', '"')
 	} else {
-		identifier
+		identifier.clone()
 	}
 
 	return body.runes().len > 18
@@ -542,6 +552,7 @@ fn is_long_identifier(identifier string) bool {
 // name) isn't flagged, since it's not a token of the SQL language.
 //
 // ISO/IEC 9075-2:2023, 5.2, <token> and <separator>, Conformance Rules, 1 and 2
+@[manualfree]
 fn name_features(names []string) []string {
 	return if names.any(is_long_identifier(it)) { ['F391'] } else { []string{} }
 }
@@ -550,6 +561,7 @@ fn name_features(names []string) []string {
 // literal> if is_timestamp) that has a <seconds fraction> or <time zone
 // interval> that Core SQL doesn't allow (ISO/IEC 9075-2:2023, 5.3,
 // <literal>, Conformance Rules, 2, 3 and 7).
+@[manualfree]
 fn flag_datetime_literal(mut yylex YYLexer, value string, is_timestamp bool) {
 	time_part := value.trim_space().all_after_last(' ')
 	time_zone := time_part.index_any('+-')
@@ -577,6 +589,7 @@ enum QueryContext {
 	from_subquery
 }
 
+@[manualfree]
 fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryContext) {
 	has_offset := e.offset != none
 	has_fetch := e.fetch != none
@@ -614,6 +627,7 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 // ISO/IEC 9075-2:2023, 14.1, <declare cursor>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 14.3, <cursor specification>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 14.13, <update statement: positioned>, Conformance Rules, 1
+@[manualfree]
 fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, properties CursorProperties, updatability UpdatabilityClause) {
 	flag_if(mut yylex, updatability.for_update && properties.scrollability, 'F832')
 	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F833')
@@ -630,15 +644,17 @@ enum SortKeyPart {
 
 // parsed_sort_key_part records a part that has been parsed, wherever it is,
 // since the actions for it don't know if they're in a sort key.
+@[manualfree]
 fn parsed_sort_key_part(mut yylex YYLexer, part SortKeyPart) {
 	if mut yylex is Lexer {
-		yylex.sort_key_parts << part
+		yylex.sort_key_parts << own_copy(&part)
 	}
 }
 
 // parsed_routine_name is called for each function that's named by an
 // identifier, so that a sort key that contains an aggregate function that isn't
 // a reserved word, such as PRODUCT(x), is flagged like one that contains SUM(x).
+@[manualfree]
 fn parsed_routine_name(mut yylex YYLexer, name string) {
 	if name in named_aggregate_functions {
 		parsed_sort_key_part(mut yylex, .set_function)
@@ -647,6 +663,7 @@ fn parsed_routine_name(mut yylex YYLexer, name string) {
 
 // start_sort_key is called before a <sort key> is parsed. It can contain a
 // subquery that has its own sort keys, so they're a stack.
+@[manualfree]
 fn start_sort_key(mut yylex YYLexer) {
 	if mut yylex is Lexer {
 		yylex.sort_key_starts << yylex.sort_key_parts.len
@@ -655,6 +672,7 @@ fn start_sort_key(mut yylex YYLexer) {
 
 // flag_sort_key flags a <sort key> that has just been parsed from the parts
 // since it started.
+@[manualfree]
 fn flag_sort_key(mut yylex YYLexer) {
 	if mut yylex is Lexer {
 		parts := yylex.sort_key_parts[yylex.sort_key_starts.pop()..]
@@ -669,12 +687,14 @@ fn flag_sort_key(mut yylex YYLexer) {
 // argument of a type like that for any other reason (such as a column) isn't.
 //
 // ISO/IEC 9075-2:2023, 6.31, <numeric value function>, Syntax Rules, 12
+@[manualfree]
 fn flag_mod_argument(mut yylex YYLexer, e NumericValueExpression) {
 	flag_if(mut yylex, numeric_has_non_integer_literal(e), vsql_mod_not_integer)
 }
 
+@[manualfree]
 fn numeric_has_non_integer_literal(e NumericValueExpression) bool {
-	if n := e.n {
+	if n := opt_copy(e.n) {
 		if numeric_has_non_integer_literal(n) {
 			return true
 		}
@@ -683,8 +703,9 @@ fn numeric_has_non_integer_literal(e NumericValueExpression) bool {
 	return term_has_non_integer_literal(e.term)
 }
 
+@[manualfree]
 fn term_has_non_integer_literal(e Term) bool {
-	if term := e.term {
+	if term := opt_copy(e.term) {
 		if term_has_non_integer_literal(term) {
 			return true
 		}
@@ -693,6 +714,7 @@ fn term_has_non_integer_literal(e Term) bool {
 	return primary_has_non_integer_literal(e.factor)
 }
 
+@[manualfree]
 fn primary_has_non_integer_literal(e NumericPrimary) bool {
 	if e is SignedValueExpressionPrimary {
 		return primary_has_non_integer_literal(*e.e)
@@ -712,12 +734,14 @@ fn primary_has_non_integer_literal(e NumericPrimary) bool {
 	return is_non_integer_literal(value)
 }
 
+@[manualfree]
 fn is_non_integer_literal(v Value) bool {
 	return v.typ.typ in [.is_real, .is_double_precision] || v.typ.scale > 0
 }
 
 // flag_row_count flags a <fetch first row count> (F860) or <offset row count>
 // (F865) that isn't an <unsigned integer>.
+@[manualfree]
 fn flag_row_count(mut yylex YYLexer, count ValueSpecification, feature string) {
 	if count is Value {
 		if count.typ.typ in [.is_smallint, .is_integer, .is_bigint] && count.int_value() >= 0 {
@@ -730,6 +754,7 @@ fn flag_row_count(mut yylex YYLexer, count ValueSpecification, feature string) {
 // primary_of returns the <nonparenthesized value expression primary> that is
 // an entire expression (such as a column reference or a literal), or none if
 // it's anything else.
+@[manualfree]
 fn primary_of(e RowValueConstructorPredicand) ?NonparenthesizedValueExpressionPrimary {
 	return match e {
 		BooleanPredicand {
@@ -747,6 +772,7 @@ fn primary_of(e RowValueConstructorPredicand) ?NonparenthesizedValueExpressionPr
 
 // common_primary_of returns the <value expression primary> that is an entire
 // expression, or none if it's anything else.
+@[manualfree]
 fn common_primary_of(e CommonValueExpression) ?ValueExpressionPrimary {
 	match e {
 		CharacterValueExpression {
@@ -775,6 +801,7 @@ fn common_primary_of(e CommonValueExpression) ?ValueExpressionPrimary {
 }
 
 // is_parenthesized is true if an expression is in parentheses, such as "(1)".
+@[manualfree]
 fn is_parenthesized(e CommonValueExpression) bool {
 	primary := common_primary_of(e) or { return false }
 
@@ -783,6 +810,7 @@ fn is_parenthesized(e CommonValueExpression) bool {
 
 // is_value_specification is true if an expression is a <value specification>,
 // such as a literal or a parameter.
+@[manualfree]
 fn is_value_specification(e RowValueConstructorPredicand) bool {
 	primary := primary_of(e) or { return false }
 
@@ -791,11 +819,13 @@ fn is_value_specification(e RowValueConstructorPredicand) bool {
 
 // is_character_value_specification is true if a <character value expression>
 // is a <value specification>, such as a literal or a parameter.
+@[manualfree]
 fn is_character_value_specification(e CharacterValueExpression) bool {
 	return is_value_specification(RowValueConstructorPredicand(CommonValueExpression(e)))
 }
 
 // is_column_reference is true if an expression is a <column reference>.
+@[manualfree]
 fn is_column_reference(e RowValueConstructorPredicand) bool {
 	primary := primary_of(e) or { return false }
 
@@ -806,6 +836,7 @@ fn is_column_reference(e RowValueConstructorPredicand) bool {
 // or a single column.
 //
 // ISO/IEC 9075-2:2023, 8.10, <exists predicate>, Conformance Rules, 1
+@[manualfree]
 fn flag_exists(mut yylex YYLexer, e QueryExpression) {
 	if e.body is QuerySpecification {
 		exprs := e.body.exprs
@@ -817,11 +848,14 @@ fn flag_exists(mut yylex YYLexer, e QueryExpression) {
 // a column of the table definition that isn't NOT NULL.
 //
 // ISO/IEC 9075-2:2023, 11.7, <unique constraint definition>, Conformance Rules, 2
+@[manualfree]
 fn flag_unique_columns(mut yylex YYLexer, elements []TableElement) {
 	mut not_null := []string{}
 	for element in elements {
 		if element is Column && element.not_null {
-			not_null << element.name.sub_entity_name
+			// The copy works around https://github.com/vlang/v/issues/32943
+			// (-autofree).
+			not_null << own_string(element.name.sub_entity_name)
 		}
 	}
 	for element in elements {
@@ -837,6 +871,7 @@ fn flag_unique_columns(mut yylex YYLexer, elements []TableElement) {
 // that is an entire <value expression>, or none if it's anything else. A value
 // on its own (such as a column reference) may be parsed as a <boolean value
 // expression>.
+@[manualfree]
 fn value_primary_of(e ValueExpression) ?NonparenthesizedValueExpressionPrimary {
 	match e {
 		BooleanValueExpression {
@@ -860,6 +895,7 @@ fn value_primary_of(e ValueExpression) ?NonparenthesizedValueExpressionPrimary {
 
 // is_dynamic_parameter is true if an expression is a <dynamic parameter
 // specification> ("?").
+@[manualfree]
 fn is_dynamic_parameter(e ValueExpression) bool {
 	dynamic_parameter_of(e) or { return false }
 
@@ -868,6 +904,7 @@ fn is_dynamic_parameter(e ValueExpression) bool {
 
 // dynamic_parameter_of returns the <dynamic parameter specification> that is an
 // entire expression, or none if it's anything else.
+@[manualfree]
 fn dynamic_parameter_of(e ValueExpression) ?DynamicParameterSpecification {
 	primary := value_primary_of(e)?
 	if primary is ValueSpecification {
@@ -890,6 +927,7 @@ fn dynamic_parameter_of(e ValueExpression) ?DynamicParameterSpecification {
 // boolean predicand is only flagged with T031 when it contains an operation.
 //
 // ISO/IEC 9075-2:2023, 7.1, <row value constructor>, Conformance Rules, 5
+@[manualfree]
 fn is_boolean_operation(e BooleanValueExpression) bool {
 	if e.expr != none || e.term.term != none {
 		return true
@@ -914,12 +952,14 @@ fn is_boolean_operation(e BooleanValueExpression) bool {
 // <boolean value expression> in parentheses that's an operation (see
 // is_boolean_operation), such as the "(x = 1)" of "(x = 1) = b". A comparison
 // (or other predicate) of one needs T031.
+@[manualfree]
 fn is_boolean_operation_predicand(p BooleanPredicand) bool {
 	return p is BooleanValueExpression && is_boolean_operation(p)
 }
 
 // is_parenthesized_boolean is true if a <boolean value expression> is in
 // parentheses, such as "(x = 1)" or "(1)".
+@[manualfree]
 fn is_parenthesized_boolean(e BooleanValueExpression) bool {
 	predicand := boolean_predicand_of(e) or { return false }
 
@@ -929,6 +969,7 @@ fn is_parenthesized_boolean(e BooleanValueExpression) bool {
 // boolean_predicand_of returns the <boolean predicand> that is an entire
 // <boolean value expression> (without AND, OR, NOT or IS), or none if it's
 // anything else.
+@[manualfree]
 fn boolean_predicand_of(e BooleanValueExpression) ?BooleanPredicand {
 	if e.expr != none || e.term.term != none {
 		return none
@@ -950,6 +991,7 @@ fn boolean_predicand_of(e BooleanValueExpression) ?BooleanPredicand {
 // reference needs F561.
 //
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 4 and 5
+@[manualfree]
 fn flag_set_quantifier(mut yylex YYLexer, function string, distinct bool, e ValueExpression) {
 	if !distinct {
 		flag_if(mut yylex, function == 'COUNT', 'F441')
@@ -974,6 +1016,7 @@ fn flag_set_quantifier(mut yylex YYLexer, function string, distinct bool, e Valu
 //
 // ISO/IEC 9075-2:2023, 11.9, <check constraint definition>, Conformance Rules, 1 and 2
 // ISO/IEC 9075-2:2023, 7.16, <query specification>, Conformance Rules, 1
+@[manualfree]
 fn token_features(tokens []Token) []string {
 	mut features := []string{}
 	for i, token in tokens {
@@ -998,6 +1041,7 @@ fn token_features(tokens []Token) []string {
 
 // closing_paren returns the position of the ")" that closes the "(" at
 // tokens[start]. The statement has been parsed, so there is one.
+@[manualfree]
 fn closing_paren(tokens []Token, start int) int {
 	mut depth := 0
 	mut i := start
@@ -1017,6 +1061,7 @@ fn closing_paren(tokens []Token, start int) int {
 // distinct_count returns the number of DISTINCTs in the <query specification>
 // that starts at tokens[start] (after its SELECT), not counting the queries
 // that it contains.
+@[manualfree]
 fn distinct_count(tokens []Token, start int) int {
 	mut count := 0
 	mut depth := 0
@@ -1056,6 +1101,7 @@ fn distinct_count(tokens []Token, start int) int {
 // parameters have been replaced by a "?", and returns the features that it
 // uses. A module can't contain a "?" of its own, so that's not a <dynamic
 // parameter specification> (B031), and a cursor is meant to be in a module.
+@[manualfree]
 fn parse_module_sql(text_sql string) !(Stmt, []string) {
 	mut stack := []YYSymType{}
 	stmt, _, _, features := parse_sql(text_sql, mut stack)!
@@ -1093,6 +1139,7 @@ fn parse_module_sql(text_sql string) !(Stmt, []string) {
 // ISO/IEC 9075-2:2023, 20.22, <dynamic close statement>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 20.23, <dynamic delete statement: positioned>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 20.24, <dynamic update statement: positioned>, Conformance Rules, 1
+@[manualfree]
 fn module_statement_features(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor) ![]string {
 	mut t := new_module_tokens(text)!
 	mut features := t.dynamic_features()
@@ -1186,6 +1233,7 @@ fn module_statement_features(text string, p ExternallyInvokedProcedure, cursors 
 
 // dynamic_cursor_features returns B031 for a positioned DELETE or UPDATE of a
 // dynamic cursor.
+@[manualfree]
 fn dynamic_cursor_features(name string, p ExternallyInvokedProcedure, cursors []ModuleCursor) ![]string {
 	return if find_module_cursor(cursors, name, p)!.statement == '' {
 		[]string{}
@@ -1195,6 +1243,7 @@ fn dynamic_cursor_features(name string, p ExternallyInvokedProcedure, cursors []
 }
 
 // is_colon is true for the ":" of a host parameter, not a literal of ":".
+@[manualfree]
 fn (t ModuleToken) is_colon() bool {
 	return t.kind == .other && t.text == ':'
 }
@@ -1205,13 +1254,14 @@ fn (t ModuleToken) is_colon() bool {
 // statement, where it isn't a name itself).
 //
 // ISO/IEC 9075-2:2023, 5.4, Names and identifiers, Conformance Rules, 24
+@[manualfree]
 fn (t ModuleTokens) dynamic_features() []string {
 	mut features := ['B031']
 	for i in 1 .. t.tokens.len - 1 {
 		if t.tokens[i].text.to_upper() == 'DESCRIPTOR'
 			&& t.tokens[i - 1].text.to_upper() in ['ALLOCATE', 'DEALLOCATE', 'GET', 'SET', 'SQL',
 				'USING', 'INTO'] {
-			name := t.tokens[i + 1]
+			name := own_elem(t.tokens, i + 1)
 			if name.kind == .delimited
 				|| (name.kind == .word && name.text.to_upper() !in ['GLOBAL', 'LOCAL']) {
 				features << 'B035'
@@ -1228,6 +1278,7 @@ fn (t ModuleTokens) dynamic_features() []string {
 // standard doesn't say which, so that's every target that's allowed for one.
 //
 // ISO/IEC 9075-2:2023, 23.1, <get diagnostics statement>, Conformance Rules, 1 to 3
+@[manualfree]
 fn (t ModuleTokens) diagnostics_features(p ExternallyInvokedProcedure) ![]string {
 	mut features := ['F120']
 	for i, tok in t.tokens {
@@ -1249,6 +1300,7 @@ fn (t ModuleTokens) diagnostics_features(p ExternallyInvokedProcedure) ![]string
 // indicator_types returns the data type of each <indicator parameter> in a
 // statement of the procedure, which is a host parameter straight after another
 // one (with an optional INDICATOR between them).
+@[manualfree]
 fn indicator_types(text string, p ExternallyInvokedProcedure) ![]string {
 	t := new_module_tokens(text)!
 	mut types := []string{}
@@ -1265,10 +1317,11 @@ fn indicator_types(text string, p ExternallyInvokedProcedure) ![]string {
 
 // parameter_features returns the features of the data type of each host
 // parameter of a procedure, even if the statement doesn't use it.
+@[manualfree]
 fn (p ExternallyInvokedProcedure) parameter_features() ![]string {
 	mut features := []string{}
 	for parameter in p.parameters {
-		if typ := parameter.typ {
+		if typ := opt_copy(parameter.typ) {
 			_, type_features := parse_module_sql('SELECT CAST(NULL AS ${typ.sql()}) FROM t')!
 			features << type_features
 		}
@@ -1279,6 +1332,7 @@ fn (p ExternallyInvokedProcedure) parameter_features() ![]string {
 
 // unique_features returns the features (and the other ones) sorted and without
 // duplicates.
+@[manualfree]
 fn unique_features(all []string, others ...string) []string {
 	mut features := []string{}
 	for feature in arrays.append(all, others) {
@@ -1297,6 +1351,7 @@ fn unique_features(all []string, others ...string) []string {
 // executed. A statement that can't be planned (such as for a table that doesn't
 // exist, or a dynamic parameter that doesn't have a value) only has the features
 // that were found up to that point.
+@[manualfree]
 fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) []string {
 	conn.open_read_connection() or { return [] }
 	defer {
@@ -1324,7 +1379,7 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 		InsertStatement {
 			// Only a <from subquery> can't read the table, not a subquery in
 			// the VALUES of a <from constructor>.
-			if query := stmt.query {
+			if query := opt_copy(stmt.query) {
 				conn.flag_query_tables = true
 				create_plan(query, params, mut conn) or {}
 				conn.flag_query_tables = false
@@ -1335,7 +1390,7 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 			create_plan(stmt, params, mut conn) or {}
 		}
 		TableDefinition {
-			if as_subquery := stmt.as_subquery {
+			if as_subquery := opt_copy(stmt.as_subquery) {
 				create_plan(as_subquery.query, params, mut conn) or {}
 			}
 			conn.flag_foreign_keys(stmt, conn.resolve_identifier(stmt.table_name), 0)
@@ -1355,6 +1410,7 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 
 // flag_subquery_table records a base table that's read by a subquery (or by
 // the query of an INSERT).
+@[manualfree]
 fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
 	if conn.flagging && (conn.subquery_scopes.len > 0 || conn.flag_query_tables) {
 		conn.flagged_tables << table_name.id()
@@ -1434,24 +1490,29 @@ const information_schema_features = {
 // information_schema_column_features are the features that a reference to a
 // column of a table needs, if it's a view of the INFORMATION_SCHEMA (see
 // information_schema_features).
+@[manualfree]
 fn information_schema_column_features(table_name Identifier, column_name string) []string {
 	if table_name.schema_name != information_schema_name {
 		return []
 	}
 
-	return information_schema_features['${table_name.entity_name}.${column_name}'] or { [] }
+	return map_value(information_schema_features, '${table_name.entity_name}.${column_name}') or { [] }
 }
 
 // flag_information_schema_view flags a view of the INFORMATION_SCHEMA that's
 // read (see information_schema_features).
+@[manualfree]
 fn (mut conn Connection) flag_information_schema_view(table_name Identifier) {
 	if conn.flagging && table_name.schema_name == information_schema_name {
-		conn.flagged_features << information_schema_features[table_name.entity_name] or { [] }
+		// The local works around https://github.com/vlang/v/issues/32946.
+		features := map_value(information_schema_features, table_name.entity_name) or { [] }
+		conn.flagged_features << features
 	}
 }
 
 // flag_asterisk flags the columns of a table that an asterisk (such as "SELECT
 // *" or "SELECT t.*") expands to, since each of them is referenced.
+@[manualfree]
 fn (mut conn Connection) flag_asterisk(table Table) {
 	if conn.flagging {
 		for column in table.columns {
@@ -1470,6 +1531,7 @@ fn (mut conn Connection) flag_asterisk(table Table) {
 // ISO/IEC 9075-2:2023, 14.11, <insert statement>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2023, 14.14, <update statement: searched>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2023, 14.15, <set clause list>, Conformance Rules, 1.a
+@[manualfree]
 fn (mut conn Connection) flag_self_reference(table_name Identifier) {
 	if conn.resolve_identifier(table_name).id() in conn.flagged_tables {
 		conn.flagged_features << 'F781'
@@ -1478,6 +1540,7 @@ fn (mut conn Connection) flag_self_reference(table_name Identifier) {
 
 // flag_set_clauses compiles the value of each <set clause>, which isn't part of
 // the plan of an UPDATE.
+@[manualfree]
 fn (mut conn Connection) flag_set_clauses(table_name Identifier, set []SetClause, params map[string]Value) {
 	mut c := Compiler{
 		conn:    conn
@@ -1492,6 +1555,7 @@ fn (mut conn Connection) flag_set_clauses(table_name Identifier, set []SetClause
 
 // flag_alter_table flags a FOREIGN KEY that an ALTER TABLE adds, either as a
 // constraint or on a new column. The existing ones aren't part of the statement.
+@[manualfree]
 fn (mut conn Connection) flag_alter_table(stmt AlterTableStatement) {
 	table_name := conn.resolve_table_identifier(stmt.table_name, false) or { return }
 	table := conn.catalog_for(table_name).storage.table(table_name.storage_id())
@@ -1510,12 +1574,14 @@ fn (mut conn Connection) flag_alter_table(stmt AlterTableStatement) {
 // exist to be checked.
 //
 // ISO/IEC 9075-2:2023, 11.8, <referential constraint definition>, Conformance Rules, 5
+@[manualfree]
 fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_name Identifier, existing int) {
 	mut table := definition.table(table_name, 0) or { return }
 	resolve_foreign_keys(mut conn, mut table) or { return }
 	for key in table.foreign_keys[existing..] {
+		// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
 		referenced := if key.referenced_table.storage_id() == table_name.storage_id() {
-			table
+			table.copy()
 		} else {
 			conn.catalog_for(key.referenced_table).storage.table(key.referenced_table.storage_id())
 		}
@@ -1543,6 +1609,7 @@ fn (mut conn Connection) flag_foreign_keys(definition TableDefinition, table_nam
 //
 // ISO/IEC 9075-2:2023, 6.9, <set function specification>, Syntax Rules, 6
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 6-9, 19 and 20
+@[manualfree]
 fn (mut c Compiler) flag_set_function(e RoutineInvocation, arg_columns [][]AggregatedColumn) {
 	if !c.conn.flagging {
 		return
@@ -1569,6 +1636,7 @@ fn (mut c Compiler) flag_set_function(e RoutineInvocation, arg_columns [][]Aggre
 // column reference. An argument of a binary set function is a <numeric value
 // expression>, which is only a column reference when it's a single <numeric
 // primary>.
+@[manualfree]
 fn is_column_argument(e ValueExpression) bool {
 	if e is CommonValueExpression {
 		common := CommonValueExpression(e)
@@ -1596,13 +1664,14 @@ fn is_column_argument(e ValueExpression) bool {
 // found by compiling it again as one.
 //
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 17, 18 and 21
+@[manualfree]
 fn (mut c Compiler) flag_ordered_set_function(e OrderedSetFunction) {
 	if !c.conn.flagging {
 		return
 	}
 
 	in_aggregate := c.in_aggregate
-	aggregated_columns := c.aggregated_columns
+	aggregated_columns := own_array(c.aggregated_columns)
 	c.in_aggregate = true
 	defer {
 		c.in_aggregate = in_aggregate
@@ -1622,6 +1691,7 @@ fn (mut c Compiler) flag_ordered_set_function(e OrderedSetFunction) {
 // the column references columns, when there's more than one and one of them is
 // an outer reference. An expression may be compiled more than once, so the same
 // column is only counted once.
+@[manualfree]
 fn (mut c Compiler) flag_mixed_references(columns []AggregatedColumn) {
 	if !columns.any(it.scope >= 0) {
 		return
@@ -1643,6 +1713,7 @@ fn (mut c Compiler) flag_mixed_references(columns []AggregatedColumn) {
 //
 // ISO/IEC 9075-2:2023, 7.12, <where clause>, Conformance Rules, 1
 // ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Conformance Rules, 10
+@[manualfree]
 fn (mut c Compiler) flag_column_reference(e Identifier) {
 	if !c.conn.flagging || e.custom_id != '' {
 		return
@@ -1652,7 +1723,7 @@ fn (mut c Compiler) flag_column_reference(e Identifier) {
 	mut tables := c.tables.clone()
 	if !e.is_column_of(c.conn, tables, c.context) {
 		for i := c.conn.subquery_scopes.len - 1; i >= 0; i-- {
-			scope := c.conn.subquery_scopes[i]
+			scope := own_elem(c.conn.subquery_scopes, i)
 			if e.is_column_of(c.conn, scope.tables, scope.context) {
 				tables = scope.tables.clone()
 				break
@@ -1681,6 +1752,7 @@ fn (mut c Compiler) flag_column_reference(e Identifier) {
 //
 // IDs that start with "V" are features that only vsql has, such as "V001-01"
 // for EXPLAIN.
+@[manualfree]
 pub fn (p PreparedStmt) features() []string {
 	mut conn := unsafe { p.c }
 

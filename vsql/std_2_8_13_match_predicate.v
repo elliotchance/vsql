@@ -33,15 +33,20 @@ fn (e MatchPredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2023, 8.13, <match predicate>, Syntax Rules, 1 and 2
 fn (e MatchPredicate) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &MatchPredicate{
+		...e
+	}
 	mut compiled_expr := e.expr.compile_fields(mut c)!
 	plan := plan_compared_subquery(mut c, e.subquery, mut compiled_expr)!
 
 	return CompileResult{
-		run:          fn [e, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := run_fields(mut conn, compiled_expr, data, params)!
 			rows := subquery_rows(mut conn, plan, data)!
 
-			return new_boolean_value(is_match(conn, expr, e.unique, e.match_type, rows)!)
+			return new_boolean_value(is_match(conn, expr, e_ref.unique, e_ref.match_type, rows)!)
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_expr.any(it.contains_agg) || plan.contains_agg

@@ -50,7 +50,9 @@ const default_timestamp_precision = 6
 //
 // ISO/IEC 9075-2:2023, 5.3, <literal>, Syntax Rules, 39
 fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
-	timestamp := if with_time_zone { s[..s.len - 6] } else { s }
+	// It's always a slice, because -autofree frees s if it's the value of the if
+	// expression: https://github.com/vlang/v/issues/32932
+	timestamp := s[..if with_time_zone { s.len - 6 } else { s.len }]
 
 	if timestamp.len < 19 || !matches_datetime_pattern(timestamp[..19], '0000-00-00 00:00:00') {
 		return false
@@ -139,7 +141,7 @@ fn new_timestamp_from_string(s string) !Time {
 	}
 
 	mut time_zone := i16(0)
-	mut to_parse := s
+	mut to_parse := own_string(s)
 	if expects_time_zone {
 		// A <time zone interval> of a literal must be a valid time zone
 		// displacement, so it's a syntax error rather than 22009.

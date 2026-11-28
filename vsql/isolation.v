@@ -208,7 +208,7 @@ fn (mut conn Connection) check_direct_query() ! {
 			continue
 		}
 
-		before := conn.direct_query_headers[name] or {
+		before := map_value(conn.direct_query_headers, name) or {
 			conn.direct_query_headers[name] = catalog.storage.header
 			continue
 		}

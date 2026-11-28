@@ -43,7 +43,16 @@ fn is_datetime_operand(t Type) bool {
 // ISO/IEC 9075-2:2023, 6.42, <datetime value expression>, Syntax Rules, 5.a and 5.b
 // ISO/IEC 9075-2:2023, 6.44, <interval value expression>, Syntax Rules, 1, 2.b, 2.c, 3.a and 3.b
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.x.1, 5.a.x.2.A, 5.a.xi.1, 5.a.xi.2.A and 5.a.xi.2.B
+//
+// It's manualfree because -autofree frees x or y, which can be returned
+// (https://github.com/vlang/v/issues/32932).
+@[manualfree]
 fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y CompileResult) !(CompileResult, bool) {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	op_ref := &string{
+		...op
+	}
 	x_untyped := c.is_untyped(x)
 	y_untyped := c.is_untyped(y)
 	if !((!x_untyped && is_datetime_operand(x.typ)) || (!y_untyped && is_datetime_operand(y.typ))) {
@@ -102,7 +111,7 @@ fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y Co
 	// can't happen (the other operand is always an interval), so the result
 	// only depends on the operands.
 	return CompileResult{
-		run:          fn [left, op, right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [left, op_ref, right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			a := left.run(mut conn, data, params)!
 			b := right.run(mut conn, data, params)!
 
@@ -115,7 +124,7 @@ fn (mut c Compiler) compile_datetime_arithmetic(x CompileResult, op string, y Co
 				}
 			}
 
-			return eval_datetime_arithmetic(a, op, b, typ)!
+			return eval_datetime_arithmetic(a, *op_ref, b, typ)!
 		}
 		typ:          typ
 		contains_agg: left.contains_agg || right.contains_agg
@@ -342,7 +351,7 @@ struct IntervalQualifiedPrimary {
 }
 
 fn new_interval_qualified_primary(expr ValueExpressionPrimary, qualifier IntervalQualifier) IntervalQualifiedPrimary {
-	return IntervalQualifiedPrimary{&expr, qualifier}
+	return IntervalQualifiedPrimary{heap_copy(&expr), qualifier}
 }
 
 fn (e IntervalQualifiedPrimary) pstr(params map[string]Value) string {
@@ -373,7 +382,7 @@ fn (e IntervalQualifiedPrimary) compile(mut c Compiler) !CompileResult {
 		inner := *expr.e
 		if inner is CommonValueExpression {
 			if inner is NumericValueExpression {
-				if n := inner.n {
+				if n := opt_copy(inner.n) {
 					if inner.op == '-' {
 						return c.compile_datetime_difference(n.compile(mut c)!, inner.term.compile(mut c)!,
 							typ)!
@@ -395,6 +404,11 @@ fn (e IntervalQualifiedPrimary) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 9.16, Potential sources of non-determinism, Syntax Rules, 1.k
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xi.1
 fn (mut c Compiler) compile_datetime_difference(x CompileResult, y CompileResult, typ Type) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	typ_ref := &Type{
+		...typ
+	}
 	mut left := x
 	mut right := y
 	if c.is_untyped(left) && !c.is_untyped(right) {
@@ -412,17 +426,17 @@ fn (mut c Compiler) compile_datetime_difference(x CompileResult, y CompileResult
 	}
 
 	return CompileResult{
-		run:          fn [left, right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [left, right, typ_ref] (mut conn Connection, data Row, params map[string]Value) !Value {
 			a := left.run(mut conn, data, params)!
 			b := right.run(mut conn, data, params)!
 			if a.is_null || b.is_null {
 				return Value{
-					typ:     typ
+					typ:     *typ_ref
 					is_null: true
 				}
 			}
 
-			return datetime_difference(conn, a, b, typ)!
+			return datetime_difference(conn, a, b, *typ_ref)!
 		}
 		typ:          typ
 		contains_agg: left.contains_agg || right.contains_agg

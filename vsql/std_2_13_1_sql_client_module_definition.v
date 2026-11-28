@@ -51,7 +51,7 @@ fn require(mut sections []string, section string) {
 		return
 	}
 	sections << section
-	for other in c_runtime_requires[section] or { []string{} } {
+	for other in map_value(c_runtime_requires, section) or { []string{} } {
 		require(mut sections, other)
 	}
 }
@@ -504,7 +504,7 @@ fn (mut t ModuleTokens) next_word() string {
 		return ''
 	}
 
-	tok := t.tokens[t.pos - 1]
+	tok := own_elem(t.tokens, t.pos - 1)
 	return match tok.kind {
 		.word { tok.text.to_upper() }
 		.other { tok.text }

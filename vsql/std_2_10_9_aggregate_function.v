@@ -31,7 +31,7 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 		AggregateFunctionCount {
 			// COUNT(*) has no argument, so its filter doesn't change the query that
 			// it's an aggregate of (this one).
-			aggregated_columns := c.aggregated_columns
+			aggregated_columns := own_array(c.aggregated_columns)
 			c.aggregated_columns = []
 			compile_filter(mut c, e.filter, e.pstr(c.params))!
 			c.aggregated_columns = aggregated_columns
@@ -111,9 +111,11 @@ fn with_filter(e AggregateFunction, filter BooleanValueExpression) AggregateFunc
 	}
 
 	f := e as RoutineInvocation
+	// The copies work around https://github.com/vlang/v/issues/32453
+	// (-autofree): the parser frees e.
 	return RoutineInvocation{
-		function_name: f.function_name
-		args:          f.args
+		function_name: own_string(f.function_name)
+		args:          own_array(f.args)
 		distinct:      f.distinct
 		filter:        &BooleanValueExpression{
 			...filter
@@ -161,7 +163,7 @@ fn aggregate_result(mut c Compiler, e AggregateFunction, typ Type, in_aggregate 
 }
 
 fn filter_pstr(filter ?&BooleanValueExpression, params map[string]Value) string {
-	if f := filter {
+	if f := opt_copy(filter) {
 		return ' FILTER (WHERE ${f.pstr(params)})'
 	}
 
@@ -393,7 +395,7 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	if name in ['MAX', 'MIN'] {
 		// The comparison rules are the same as the comparison predicate (GR 7.d.iv).
 		want := if name == 'MAX' { CompareResult.is_greater } else { CompareResult.is_less }
-		mut result := values[0]
+		mut result := own_elem(values, 0)
 		for value in values[1..] {
 			if compare(conn, value, result)! == want {
 				result = value
@@ -417,7 +419,7 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	//
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, General Rules, 3.a
 	if typ.typ.is_interval() {
-		mut sum := big.zero_int
+		mut sum := own_integer(big.zero_int)
 		for value in values {
 			sum += big.integer_from_i64(value.int_value())
 		}
@@ -810,13 +812,13 @@ fn eval_decfloat_binary_set_function(mut conn Connection, name string, ys []Valu
 
 	cy, ey := decfloat_coefficients(mut conn, name, ys)!
 	cx, ex := decfloat_coefficients(mut conn, name, xs)!
-	mut sx := big.zero_int
-	mut sy := big.zero_int
-	mut sxx := big.zero_int
-	mut syy := big.zero_int
-	mut sxy := big.zero_int
+	mut sx := own_integer(big.zero_int)
+	mut sy := own_integer(big.zero_int)
+	mut sxx := own_integer(big.zero_int)
+	mut syy := own_integer(big.zero_int)
+	mut sxy := own_integer(big.zero_int)
 	for i, x in cx {
-		y := cy[i]
+		y := own_elem(cy, i)
 		sx += x
 		sy += y
 		sxx += x * x
@@ -865,7 +867,9 @@ fn eval_decfloat_binary_set_function(mut conn Connection, name string, ys []Valu
 		// the covariance.
 		'CORR' {
 			r := DecFloat{dxy * dxy, 0}.divide(DecFloat{dxx * dyy, 0}, p + 5)!.sqrt(p)!
-			if dxy.signum < 0 { r.neg() } else { r }
+			// The copy works around https://github.com/vlang/v/issues/32932
+			// (-autofree).
+			if dxy.signum < 0 { r.neg() } else { DecFloat{own_integer(r.coefficient), r.exponent} }
 		}
 		// REGR_R2 is 1 when every y is the same (GR 8.c.xi.2).
 		'REGR_R2' {
@@ -933,10 +937,10 @@ struct ListaggOverflow {
 fn new_listagg_set_function(distinct bool, value CharacterValueExpression, separator Value, overflow ListaggOverflow, order []SortSpecification) ListaggSetFunction {
 	return ListaggSetFunction{
 		distinct:  distinct
-		value:     &value
+		value:     heap_copy(&value)
 		separator: separator
 		overflow:  overflow
-		order:     order
+		order:     own_copy(&order)
 	}
 }
 
@@ -969,7 +973,7 @@ fn (e ListaggSetFunction) compile(mut c Compiler) !CompileResult {
 	//
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 11.a
 	in_aggregate := c.in_aggregate
-	aggregated_columns := c.aggregated_columns
+	aggregated_columns := own_array(c.aggregated_columns)
 	c.in_aggregate = true
 	c.aggregated_columns = []
 	defer {
@@ -1161,7 +1165,7 @@ fn new_named_ordered_set_function(mut yylex YYLexer, e RoutineInvocation, order 
 	return OrderedSetFunction{
 		name:  e.function_name
 		args:  e.args
-		order: order
+		order: own_copy(&order)
 	}
 }
 
@@ -1211,7 +1215,7 @@ fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
 	//
 	// ISO/IEC 9075-2:2023, 10.9, <aggregate function>, Syntax Rules, 10.a and 12.b
 	in_aggregate := c.in_aggregate
-	aggregated_columns := c.aggregated_columns
+	aggregated_columns := own_array(c.aggregated_columns)
 	c.in_aggregate = true
 	c.aggregated_columns = []
 	defer {
@@ -1325,7 +1329,7 @@ fn mode_function(conn &Connection, all_values []Value, typ Type) !(Value, bool) 
 	}
 
 	// Equal values are next to each other, so each run of them is counted.
-	mut result := values[0]
+	mut result := own_elem(values, 0)
 	mut result_count := 0
 	mut start := 0
 	for i in 1 .. values.len + 1 {
@@ -1554,7 +1558,7 @@ fn register_aggregate_funcs(mut conn Connection) ! {
 					arg_types:   [arg]
 					is_agg:      true
 					return_type: set_function_type(name, arg)
-					features:    named_aggregate_features[name] or { []string{} }
+					features:    map_value(named_aggregate_features, name) or { []string{} }
 				})!
 			}
 		}

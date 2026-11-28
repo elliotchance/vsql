@@ -77,9 +77,13 @@ fn (l LikeClause) included(name string) !bool {
 	return included
 }
 
+//
+// Each column is a copy, because -autofree frees the loop variable that's pushed
+// (https://github.com/vlang/v/issues/32943).
 fn (s TableDefinition) columns() Columns {
 	mut columns := []Column{}
-	for c in s.table_elements {
+	for i in 0 .. s.table_elements.len {
+		c := own_elem(s.table_elements, i)
 		if c is Column {
 			columns << c
 		}
@@ -161,14 +165,14 @@ fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys b
 	check_new_check_constraints(mut conn, table, 0)!
 
 	catalog.storage.create_table(Table{
-		...table
+		...table.copy()
 		foreign_keys: if defer_foreign_keys { []ForeignKey{} } else { table.foreign_keys }
 	})!
 
 	// WITH DATA inserts the rows of the query into the new table.
 	//
 	// ISO/IEC 9075-2:2023, 11.3, <table definition>, General Rules, 10
-	if as_subquery := stmt.as_subquery {
+	if as_subquery := opt_copy(stmt.as_subquery) {
 		if as_subquery.with_data {
 			InsertStatement{
 				table_name: table_name
@@ -214,12 +218,14 @@ fn (stmt TableDefinition) as_table_elements(mut conn Connection) !TableDefinitio
 	// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 10.b, 10.d and 10.f.i
 	mut elements := []TableElement{}
 	for i, column in query_columns {
+		// The copies work around https://github.com/vlang/v/issues/32932
+		// (-autofree).
 		name := if as_subquery.columns.len > 0 {
-			as_subquery.columns[i].sub_entity_name
+			own_string(as_subquery.columns[i].sub_entity_name)
 		} else if column.unnamed {
 			return sqlstate_42601('column ${i + 1} of the query needs a name, or a column name list is needed')
 		} else {
-			column.name.sub_entity_name
+			own_string(column.name.sub_entity_name)
 		}
 		// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 10.f.ii, 10.f.iii, 10.f.iv and 10.g
 		elements << Column{
@@ -244,9 +250,14 @@ fn (stmt TableDefinition) as_table_elements(mut conn Connection) !TableDefinitio
 // the table aren't copied, other than NOT NULL.
 //
 // ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b
+//
+// It's manualfree because the new definition keeps parts of the elements, which
+// -autofree would free with the loop variables, and it returns a copy of stmt
+// (https://github.com/vlang/v/issues/32932).
+@[manualfree]
 fn (stmt TableDefinition) with_like_columns(mut conn Connection, table_name Identifier) !TableDefinition {
 	if !stmt.table_elements.any(it is LikeClause) {
-		return stmt
+		return own_copy(&stmt)
 	}
 
 	mut elements := []TableElement{}
@@ -275,9 +286,10 @@ fn (stmt TableDefinition) with_like_columns(mut conn Connection, table_name Iden
 				}
 
 				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.5
-				if identity := column.identity {
+				if identity := opt_copy(column.identity) {
 					if include_identity {
-						new_column = Column{
+						// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+						updated_column := Column{
 							...new_column
 							identity: &IdentityColumn{
 								always:  identity.always
@@ -290,27 +302,32 @@ fn (stmt TableDefinition) with_like_columns(mut conn Connection, table_name Iden
 								]
 							}
 						}
+						new_column = updated_column
 					}
 				}
 
 				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.6
-				if generated := column.generated {
+				if generated := opt_copy(column.generated) {
 					if include_generated {
-						new_column = Column{
+						// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+						updated_column := Column{
 							...new_column
 							generated: like_generated_column(table_name, generated.text)!.generated
 						}
+						new_column = updated_column
 					}
 				}
 
 				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 9.b.iv.7
-				if default_value := column.default_value {
+				if default_value := opt_copy(column.default_value) {
 					if include_defaults {
-						new_column = Column{
+						// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+						updated_column := Column{
 							...new_column
 							default_value: default_value
 							default_text:  column.default_text
 						}
+						new_column = updated_column
 					}
 				}
 
@@ -363,7 +380,7 @@ fn (mut conn Connection) like_table(name Identifier) !Table {
 	table_name := conn.resolve_table_identifier(name, true)!
 	catalog := conn.catalog_for(table_name)
 	id := table_name.storage_id()
-	if table := catalog.storage.tables[id] {
+	if table := catalog.storage.find_table(id) {
 		return table
 	}
 
@@ -377,6 +394,11 @@ fn (mut conn Connection) like_table(name Identifier) !Table {
 // also used when reading a table definition from the file. A constraint that
 // doesn't have a <constraint name definition> has an empty name, see
 // Table.name_constraints.
+//
+// It's manualfree, and each element is a copy, because the table keeps parts of
+// the elements, which -autofree would free with the loop variable (no small
+// repro yet).
+@[manualfree]
 fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	// The table elements need at least one column, table constraints aren't
 	// enough.
@@ -396,7 +418,8 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut unique_constraints := []UniqueConstraint{}
 	mut foreign_keys := []ForeignKey{}
 	mut column_names := map[string]bool{}
-	for table_element in stmt.table_elements {
+	for i in 0 .. stmt.table_elements.len {
+		table_element := own_elem(stmt.table_elements, i)
 		match table_element {
 			Column {
 				if table_element.name.sub_entity_name in column_names {
@@ -420,14 +443,15 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				// ISO/IEC 9075-2:2023, 11.3, <table definition>, Syntax Rules, 15
 				// ISO/IEC 9075-2:2023, 11.11, <add column definition>, Syntax Rules, 3
 				// ISO/IEC 9075-2:2023, 11.4, <column definition>, Syntax Rules, 16
-				if identity := column.identity {
+				if identity := opt_copy(column.identity) {
 					if _ := Table{
 						columns: columns
 					}.identity_column()
 					{
 						return sqlstate_42601_table('table ${table_name} has more than one identity column', table_name)
 					}
-					column = Column{
+					// A new variable works around https://github.com/vlang/v/issues/32929 (-autofree).
+					new_column := Column{
 						...column
 						not_null: true
 						identity: &IdentityColumn{
@@ -435,6 +459,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 							sequence: new_identity_sequence(column, identity.options)!
 						}
 					}
+					column = new_column
 				}
 				columns << column
 			}

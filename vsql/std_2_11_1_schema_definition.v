@@ -61,7 +61,7 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 // ISO/IEC 9075-2:2023, 5.4, Names and identifiers, Syntax Rules, 4.b, 13.d.ii and 14.c
 // ISO/IEC 9075-2:2023, 11.1, <schema definition>, General Rules, 1.e
 fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifier) ! {
-	current_catalog := conn.current_catalog
+	current_catalog := own_string(conn.current_catalog)
 	current_schema := conn.current_schema
 	conn.current_catalog = schema.catalog_name
 	conn.current_schema = schema.schema_name

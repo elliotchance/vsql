@@ -188,6 +188,11 @@ fn compare_rows(conn &Connection, x []Value, y []Value) ![]CompareResult {
 //
 // ISO/IEC 9075-2:2023, 6.46, <boolean value expression>, Syntax Rules, 7.c.ii
 fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &ComparisonPredicate{
+		...e
+	}
 	// The case operand of a simple CASE (see CaseOperand) and a subquery (see
 	// Subquery.compile_fields) can be a row.
 	if e.left is ExplicitRowValueConstructor || e.right is ExplicitRowValueConstructor
@@ -214,11 +219,11 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 		|| compiled_right.null_parameter)!
 
 	return CompileResult{
-		run:          fn [e, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
-			return e.op.truth(compare(conn, left, right)!).value()
+			return e_ref.op.truth(compare(conn, left, right)!).value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
@@ -227,6 +232,11 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 
 // compile_row_comparison compiles a comparison where either side is a row.
 fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &ComparisonPredicate{
+		...e
+	}
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.xxi
 	typed := c.with_row_types([e.left.compile_fields(mut c)!, e.right.compile_fields(mut c)!])
 	left, right := typed[0], typed[1]
@@ -236,11 +246,11 @@ fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult
 	c.check_row_comparison(left.map(it.typ), right.map(it.typ), null_parameters(left, right))!
 
 	return CompileResult{
-		run:          fn [e, left, right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, left, right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			x := run_fields(mut conn, left, data, params)!
 			y := run_fields(mut conn, right, data, params)!
 
-			return e.op.row_truth(compare_rows(conn, x, y)!).value()
+			return e_ref.op.row_truth(compare_rows(conn, x, y)!).value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: left.any(it.contains_agg) || right.any(it.contains_agg)
@@ -507,8 +517,8 @@ fn compare_binary_strings(x string, y string) CompareResult {
 fn compare_booleans(xv Value, yv Value) CompareResult {
 	// compare_booleans is only invoked when both sides are known to use
 	// bool_value.
-	x := unsafe { xv.v.bool_value }
-	y := unsafe { yv.v.bool_value }
+	x := xv.bool_value()
+	y := yv.bool_value()
 
 	if x == .is_true && y == .is_false {
 		return .is_greater

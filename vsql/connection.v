@@ -64,7 +64,7 @@ mut:
 	frame_describe ?Stmt
 	frame_params   map[string]Value
 	frame_result   Result
-	frame_err      IError = none
+	frame_err      ?Condition
 	// parser_stack is kept between statements, see parse_statement.
 	parser_stack []YYSymType
 	// statement_cache has the statements that have been parsed, by their text,
@@ -205,7 +205,7 @@ pub mut:
 	// (or the DIAGNOSTICS SIZE of the SQL-transaction) are retained. This is to be able to collect all warnings during some
 	// arbitrary process defined by the application. Instead, you should call
 	// clear_warnings() before starting a block of work.
-	warnings []IError
+	warnings []Condition
 	// more_conditions is true if a warning has been dropped from warnings since
 	// the last clear_warnings(), because there were more than the limit.
 	//
@@ -330,7 +330,7 @@ struct KeptWork {
 mut:
 	conn &Connection = unsafe { nil }
 	ran  bool
-	err  IError = none
+	err  ?Condition
 }
 
 // keep runs work in a frame of kept, so that the closures it makes are released
@@ -342,7 +342,7 @@ fn (mut conn Connection) keep(mut work KeptWork) ! {
 	work.conn = conn
 	run := fn [mut work] () {
 		work.ran = true
-		work.run() or { work.err = err }
+		work.run() or { work.err = condition_of(err) }
 	}
 	conn.kept.frame(run) or {
 		if !work.ran {
@@ -353,8 +353,8 @@ fn (mut conn Connection) keep(mut work KeptWork) ! {
 	err := work.err
 	work.conn = unsafe { nil }
 	work.err = none
-	if err !is none {
-		return err
+	if e := opt_copy(err) {
+		return e.ierror()
 	}
 }
 
@@ -391,13 +391,13 @@ fn (mut conn Connection) register_postgresql(database string) ! {
 fn (mut conn Connection) make_frame_work() {
 	conn.frame_work = fn [mut conn] () {
 		conn.frame_ran = true
-		if stmt := conn.frame_describe {
-			conn.describe_statement(stmt, conn.frame_params) or { conn.frame_err = err }
+		if stmt := opt_copy(conn.frame_describe) {
+			conn.describe_statement(stmt, conn.frame_params) or { conn.frame_err = condition_of(err) }
 			return
 		}
 		mut p := conn.frame_stmt
 		conn.frame_result = p.query_statement(conn.frame_params) or {
-			conn.frame_err = err
+			conn.frame_err = condition_of(err)
 			Result{}
 		}
 	}
@@ -795,7 +795,7 @@ fn (mut conn Connection) finish_write(success bool) ! {
 		catalog.unlock_write()
 	}
 
-	if err := first_err {
+	if err := opt_copy(first_err) {
 		return err
 	}
 }
@@ -846,7 +846,7 @@ fn commit_catalogs(mut catalogs []&CatalogConnection) ! {
 		}
 	}
 
-	if err := commit_err {
+	if err := opt_copy(commit_err) {
 		for mut catalog in catalogs[committed..] {
 			catalog.storage.discard_statement(catalog.path) or {}
 		}
@@ -867,7 +867,7 @@ fn (mut conn Connection) take_isolation_error() ! {
 		}
 	}
 
-	if err := first_err {
+	if err := opt_copy(first_err) {
 		return err
 	}
 }
@@ -1107,17 +1107,28 @@ fn (mut conn Connection) register_func(func Func) ! {
 		}
 	}
 
-	mut f := func
-	if f.arg_names.len == 0 && !f.called_on_null_input {
-		if names := builtin_arg_names(f.name) {
-			f = Func{
-				...f
-				arg_names: names[..f.arg_types.len].clone()
-			}
+	mut arg_names := func.arg_names.clone()
+	if arg_names.len == 0 && !func.called_on_null_input {
+		if names := builtin_arg_names(func.name) {
+			arg_names = names[..func.arg_types.len].clone()
 		}
 	}
 
-	conn.funcs << f
+	// The function is a copy, so that the caller still owns func. Otherwise,
+	// -autofree frees the name (or features) of a function that's registered
+	// in a loop: https://github.com/vlang/v/issues/32930
+	conn.funcs << Func{
+		name:                 func.name.clone()
+		arg_types:            func.arg_types.clone()
+		is_agg:               func.is_agg
+		func:                 func.func
+		return_type:          func.return_type
+		called_on_null_input: func.called_on_null_input
+		is_deterministic:     func.is_deterministic
+		features:             func.features.clone()
+		arg_names:            arg_names
+		is_variadic:          func.is_variadic
+	}
 }
 
 // function_arg_type is the type of an argument that's used to find a function:
@@ -1169,7 +1180,8 @@ fn (conn Connection) find_function_in(schema_name string, func_name string, arg_
 		}
 	}
 
-	name := if schema_name == '' { func_name } else { '${schema_name}.${func_name}' }
+	// The clone works around https://github.com/vlang/v/issues/32932 (-autofree).
+	name := if schema_name == '' { func_name.clone() } else { '${schema_name}.${func_name}' }
 	return sqlstate_42883('function does not exist: ${name}(${arg_types.map(it.str()).join(', ')})')
 }
 
@@ -1413,6 +1425,9 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 // register_flagged_virtual_table is register_virtual_table for a table that the
 // SQL Flagger flags with features when it's read, such as the PostgreSQL system
 // catalog (see pg.v).
+// It's manualfree, and the table keeps copies, because -autofree frees
+// create_table and the parsed statement (https://github.com/vlang/v/issues/32943).
+@[manualfree]
 fn (mut conn Connection) register_flagged_virtual_table(create_table string, data VirtualTableProviderFn, features []string) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)!
@@ -1449,11 +1464,11 @@ fn (mut conn Connection) register_flagged_virtual_table(create_table string, dat
 		}
 
 		catalog.virtual_tables[id] = VirtualTable{
-			create_table_sql:  create_table
-			create_table_stmt: TableDefinition{
+			create_table_sql:  own_string(create_table)
+			create_table_stmt: own_copy(&TableDefinition{
 				...stmt
 				table_name: table_name
-			}
+			})
 			data:              data
 			features:          features
 		}
@@ -1581,22 +1596,25 @@ pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 // resolve_identifier returns a new identifier that would represent the
 // canonical (fully qualified) form.
 fn (conn Connection) resolve_identifier(identifier Identifier) Identifier {
+	// Each string is copied with -autofree, because the caller frees the
+	// result (see own_string).
 	return Identifier{
-		custom_id:       identifier.custom_id
+		custom_id:       own_string(identifier.custom_id)
 		custom_typ:      identifier.custom_typ
-		catalog_name:    if identifier.catalog_name == ''
+		catalog_name:    own_string(if identifier.catalog_name == ''
 			&& !identifier.entity_name.starts_with('$') {
 			conn.current_catalog
 		} else {
 			identifier.catalog_name
-		}
-		schema_name:     if identifier.schema_name == '' && !identifier.entity_name.starts_with('$') {
+		})
+		schema_name:     own_string(if identifier.schema_name == ''
+			&& !identifier.entity_name.starts_with('$') {
 			conn.current_schema
 		} else {
 			identifier.schema_name
-		}
-		entity_name:     identifier.entity_name
-		sub_entity_name: identifier.sub_entity_name
+		})
+		entity_name:     own_string(identifier.entity_name)
+		sub_entity_name: own_string(identifier.sub_entity_name)
 	}
 }
 
@@ -1743,7 +1761,7 @@ pub fn default_connection_options() ConnectionOptions {
 // defined by the application. Instead, you should call clear_warnings() before
 // starting a block of work.
 pub fn (mut conn Connection) clear_warnings() {
-	conn.warnings = []IError{}
+	conn.warnings = []Condition{}
 	conn.more_conditions = false
 }
 
@@ -1762,9 +1780,9 @@ fn (mut conn Connection) begin_row() {
 }
 
 fn (mut conn Connection) add_warning(warning IError) {
-	conn.warnings << warning
+	conn.warnings << condition_of(warning)
 	if conn.warnings.len > conn.condition_area_limit {
-		conn.warnings = conn.warnings[conn.warnings.len - conn.condition_area_limit..]
+		conn.warnings = conn.warnings[conn.warnings.len - conn.condition_area_limit..].clone()
 		conn.more_conditions = true
 	}
 }

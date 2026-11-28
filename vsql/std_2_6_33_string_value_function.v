@@ -55,17 +55,17 @@ fn new_character_substring_function(value CharacterValueExpression, from Numeric
 	if f := @for {
 		for_ref = ref_numeric_value_expression(f)
 	}
-	return CharacterSubstringFunction{&value, &from, for_ref, using}
+	return CharacterSubstringFunction{heap_copy(&value), heap_copy(&from), for_ref, using}
 }
 
 fn ref_numeric_value_expression(e NumericValueExpression) &NumericValueExpression {
-	return &e
+	return heap_copy(&e)
 }
 
 fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 	mut s := 'SUBSTRING(${e.value.pstr(params)}'
 
-	if from := e.from {
+	if from := opt_copy(e.from) {
 		s += ' FROM ${from.pstr(params)}'
 	}
 
@@ -85,8 +85,13 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.vi
 fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &CharacterSubstringFunction{
+		...e
+	}
 	compiled_value := e.value.compile(mut c)!
-	compiled_from := if f := e.from {
+	compiled_from := if f := opt_copy(e.from) {
 		check_substring_argument('SUBSTRING', 'start position', f, c.with_type(f.compile(mut c)!,
 			position_parameter_type).typ)!
 		f.compile(mut c)!
@@ -97,7 +102,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 			contains_agg: false
 		}
 	}
-	compiled_for := if f := e.@for {
+	compiled_for := if f := opt_copy(e.@for) {
 		check_substring_argument('SUBSTRING', 'string length', f, c.with_type(f.compile(mut c)!,
 			position_parameter_type).typ)!
 		f.compile(mut c)!
@@ -118,14 +123,14 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	c.flag_clob_function(typ)
 
 	return CompileResult{
-		run:          fn [e, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_value.run(mut conn, data, params)!
-			from_value := if e.from != none {
+			from_value := if e_ref.from != none {
 				compiled_from.run(mut conn, data, params)!
 			} else {
 				new_integer_value(1)
 			}
-			for_value := if e.@for != none {
+			for_value := if e_ref.@for != none {
 				compiled_for.run(mut conn, data, params)!
 			} else {
 				new_integer_value(0)
@@ -138,9 +143,9 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 			// A large value where each character is one octet is counted in
 			// octets, so that only the part that's in the result is read.
-			if e.using == 'OCTETS' || value.is_large_single_octet() {
+			if e_ref.using == 'OCTETS' || value.is_large_single_octet() {
 				start, end := substring_range(value.octet_length(), substring_position('SUBSTRING',
-					'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
+					'start position', from_value)!, e_ref.@for != none, substring_position('SUBSTRING',
 					'string length', for_value)!)!
 
 				return new_varchar_value(value.octets(start, end)!).with_type(typ)
@@ -148,7 +153,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 			characters := value.string_value().runes()
 			start, end := substring_range(characters.len, substring_position('SUBSTRING',
-				'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
+				'start position', from_value)!, e_ref.@for != none, substring_position('SUBSTRING',
 				'string length', for_value)!)!
 
 			return new_varchar_value(characters[start..end].string()).with_type(typ)
@@ -168,6 +173,20 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 4.4.3.1, Operators that operate on binary strings and return binary strings
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5 and 18
 fn (e CharacterSubstringFunction) compile_binary(mut c Compiler, compiled_value CompileResult, compiled_from CompileResult, compiled_for CompileResult) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	compiled_for_ref := &CompileResult{
+		...compiled_for
+	}
+	compiled_from_ref := &CompileResult{
+		...compiled_from
+	}
+	compiled_value_ref := &CompileResult{
+		...compiled_value
+	}
+	e_ref := &CharacterSubstringFunction{
+		...e
+	}
 	if e.using != '' {
 		return sqlstate_42601('SUBSTRING of ${compiled_value.typ} cannot have USING ${e.using}')
 	}
@@ -177,11 +196,11 @@ fn (e CharacterSubstringFunction) compile_binary(mut c Compiler, compiled_value 
 	c.flag_binary_value_function(typ)
 
 	return CompileResult{
-		run:          fn [e, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
-			value := compiled_value.run(mut conn, data, params)!
-			from_value := compiled_from.run(mut conn, data, params)!
-			for_value := if e.@for != none {
-				compiled_for.run(mut conn, data, params)!
+		run:          fn [e_ref, compiled_value_ref, compiled_from_ref, compiled_for_ref, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value_ref.run(mut conn, data, params)!
+			from_value := compiled_from_ref.run(mut conn, data, params)!
+			for_value := if e_ref.@for != none {
+				compiled_for_ref.run(mut conn, data, params)!
 			} else {
 				new_integer_value(0)
 			}
@@ -193,7 +212,7 @@ fn (e CharacterSubstringFunction) compile_binary(mut c Compiler, compiled_value 
 
 			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 17.a, 17.b, 17.d and 17.e
 			start, end := substring_range(value.octet_length(), substring_position('SUBSTRING',
-				'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
+				'start position', from_value)!, e_ref.@for != none, substring_position('SUBSTRING',
 				'string length', for_value)!)!
 
 			return new_binary_string_value(typ.typ, value.octets(start, end)!).with_type(typ)
@@ -340,7 +359,7 @@ fn new_overlay_function(value CharacterValueExpression, placing CharacterValueEx
 	if f := @for {
 		for_ref = ref_numeric_value_expression(f)
 	}
-	return OverlayFunction{&value, &placing, &from, for_ref, using}
+	return OverlayFunction{heap_copy(&value), heap_copy(&placing), heap_copy(&from), for_ref, using}
 }
 
 fn (e OverlayFunction) pstr(params map[string]Value) string {
@@ -357,12 +376,17 @@ fn (e OverlayFunction) pstr(params map[string]Value) string {
 }
 
 fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &OverlayFunction{
+		...e
+	}
 	// ISO/IEC 9075-2:2023, 20.7, <prepare statement>, General Rules, 5.a.viii
 	compiled_value, compiled_placing := c.with_pair_types(e.value.compile(mut c)!, e.placing.compile(mut c)!,
 		character_type)
 	compiled_from := c.with_type(e.from.compile(mut c)!, position_parameter_type)
 	check_substring_argument('OVERLAY', 'start position', e.from, compiled_from.typ)!
-	compiled_for := if f := e.@for {
+	compiled_for := if f := opt_copy(e.@for) {
 		check_substring_argument('OVERLAY', 'string length', f, c.with_type(f.compile(mut c)!,
 			position_parameter_type).typ)!
 		f.compile(mut c)!
@@ -395,11 +419,11 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 		substring_type)!
 
 	return CompileResult{
-		run:          fn [e, compiled_value, compiled_placing, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_value, compiled_placing, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_value.run(mut conn, data, params)!
 			placing := compiled_placing.run(mut conn, data, params)!
 			from_value := compiled_from.run(mut conn, data, params)!
-			for_value := if e.@for != none {
+			for_value := if e_ref.@for != none {
 				compiled_for.run(mut conn, data, params)!
 			} else {
 				new_integer_value(0)
@@ -412,13 +436,13 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 			}
 
 			from := substring_position('OVERLAY', 'start position', from_value)!
-			if e.using != 'OCTETS' {
+			if e_ref.using != 'OCTETS' {
 				characters := value.string_value().runes()
 				placing_characters := placing.string_value().runes()
 				// Without FOR, the string length is CHAR_LENGTH(RS).
 				//
 				// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 17.b
-				length := if e.@for != none {
+				length := if e_ref.@for != none {
 					substring_position('OVERLAY', 'string length', for_value)!
 				} else {
 					i64(placing_characters.len)
@@ -433,7 +457,7 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 			}
 
 			str := value.string_value()
-			length := if e.@for != none {
+			length := if e_ref.@for != none {
 				substring_position('OVERLAY', 'string length', for_value)!
 			} else {
 				i64(placing.string_value().len)
@@ -459,6 +483,23 @@ fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 23
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5
 fn (e OverlayFunction) compile_binary(mut c Compiler, compiled_value CompileResult, compiled_placing CompileResult, compiled_from CompileResult, compiled_for CompileResult) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	compiled_for_ref := &CompileResult{
+		...compiled_for
+	}
+	compiled_from_ref := &CompileResult{
+		...compiled_from
+	}
+	compiled_placing_ref := &CompileResult{
+		...compiled_placing
+	}
+	compiled_value_ref := &CompileResult{
+		...compiled_value
+	}
+	e_ref := &OverlayFunction{
+		...e
+	}
 	if e.using != '' {
 		return sqlstate_42601('OVERLAY of ${compiled_value.typ} cannot have USING ${e.using}')
 	}
@@ -470,12 +511,12 @@ fn (e OverlayFunction) compile_binary(mut c Compiler, compiled_value CompileResu
 	c.flag_binary_value_function(typ)
 
 	return CompileResult{
-		run:          fn [e, compiled_value, compiled_placing, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
-			value := compiled_value.run(mut conn, data, params)!
-			placing := compiled_placing.run(mut conn, data, params)!
-			from_value := compiled_from.run(mut conn, data, params)!
-			for_value := if e.@for != none {
-				compiled_for.run(mut conn, data, params)!
+		run:          fn [e_ref, compiled_value_ref, compiled_placing_ref, compiled_from_ref, compiled_for_ref, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value_ref.run(mut conn, data, params)!
+			placing := compiled_placing_ref.run(mut conn, data, params)!
+			from_value := compiled_from_ref.run(mut conn, data, params)!
+			for_value := if e_ref.@for != none {
+				compiled_for_ref.run(mut conn, data, params)!
 			} else {
 				new_integer_value(0)
 			}
@@ -490,7 +531,7 @@ fn (e OverlayFunction) compile_binary(mut c Compiler, compiled_value CompileResu
 			//
 			// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 23.b
 			from := substring_position('OVERLAY', 'start position', from_value)!
-			length := if e.@for != none {
+			length := if e_ref.@for != none {
 				substring_position('OVERLAY', 'string length', for_value)!
 			} else {
 				i64(placing.octet_length())
@@ -546,7 +587,7 @@ struct RegularExpressionSubstringFunction {
 }
 
 fn new_regular_expression_substring_function(value CharacterValueExpression, pattern CharacterValueExpression, escape CharacterValueExpression) RegularExpressionSubstringFunction {
-	return RegularExpressionSubstringFunction{&value, &pattern, &escape}
+	return RegularExpressionSubstringFunction{heap_copy(&value), heap_copy(&pattern), heap_copy(&escape)}
 }
 
 fn (e RegularExpressionSubstringFunction) pstr(params map[string]Value) string {
@@ -673,15 +714,15 @@ struct TrimFunction {
 
 fn new_trim_function(specification string, character ?CharacterValueExpression, source CharacterValueExpression) TrimFunction {
 	mut character_ref := ?&CharacterValueExpression(none)
-	if ch := character {
+	if ch := opt_copy(character) {
 		character_ref = ref_character_value_expression(ch)
 	}
 
-	return TrimFunction{specification, character_ref, &source}
+	return TrimFunction{specification, character_ref, heap_copy(&source)}
 }
 
 fn (e TrimFunction) pstr(params map[string]Value) string {
-	if character := e.character {
+	if character := opt_copy(e.character) {
 		return 'TRIM(${e.specification} ${character.pstr(params)} FROM ${e.source.pstr(params)})'
 	}
 
@@ -689,9 +730,14 @@ fn (e TrimFunction) pstr(params map[string]Value) string {
 }
 
 fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &TrimFunction{
+		...e
+	}
 	compiled_source := e.source.compile(mut c)!
 	is_binary := compiled_source.typ.typ.is_binary_string()
-	compiled_character := if character := e.character {
+	compiled_character := if character := opt_copy(e.character) {
 		character.compile(mut c)!
 	} else if is_binary {
 		ValueSpecification(new_binary_value([u8(0)])).compile(mut c)!
@@ -713,7 +759,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	}
 
 	return CompileResult{
-		run:          fn [e, compiled_source, compiled_character, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e_ref, compiled_source, compiled_character, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			source := compiled_source.run(mut conn, data, params)!
 			character := compiled_character.run(mut conn, data, params)!
 
@@ -733,12 +779,12 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 			chars := source.string_value().runes()
 			mut start := 0
 			mut end := chars.len
-			if e.specification != 'TRAILING' {
+			if e_ref.specification != 'TRAILING' {
 				for start < end && chars[start] == trim_character[0] {
 					start++
 				}
 			}
-			if e.specification != 'LEADING' {
+			if e_ref.specification != 'LEADING' {
 				for end > start && chars[end - 1] == trim_character[0] {
 					end--
 				}
@@ -757,6 +803,17 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 //
 // ISO/IEC 9075-2:2023, 6.33, <string value function>, Conformance Rules, 5 and 18
 fn (e TrimFunction) compile_binary(mut c Compiler, compiled_source CompileResult, compiled_octet CompileResult) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	compiled_octet_ref := &CompileResult{
+		...compiled_octet
+	}
+	compiled_source_ref := &CompileResult{
+		...compiled_source
+	}
+	e_ref := &TrimFunction{
+		...e
+	}
 	// The <trim octet> is a <binary value expression>.
 	//
 	// ISO/IEC 9075-2:2023, 6.33, <string value function>, Format
@@ -769,9 +826,9 @@ fn (e TrimFunction) compile_binary(mut c Compiler, compiled_source CompileResult
 	c.flag_binary_value_function(typ)
 
 	return CompileResult{
-		run:          fn [e, compiled_source, compiled_octet, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
-			source := compiled_source.run(mut conn, data, params)!
-			octet := compiled_octet.run(mut conn, data, params)!
+		run:          fn [e_ref, compiled_source_ref, compiled_octet_ref, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			source := compiled_source_ref.run(mut conn, data, params)!
+			octet := compiled_octet_ref.run(mut conn, data, params)!
 
 			// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 18.c
 			if source.is_null || octet.is_null {
@@ -788,12 +845,12 @@ fn (e TrimFunction) compile_binary(mut c Compiler, compiled_source CompileResult
 			s := source.string_value()
 			mut start := 0
 			mut end := s.len
-			if e.specification != 'TRAILING' {
+			if e_ref.specification != 'TRAILING' {
 				for start < end && s[start] == trim_octet[0] {
 					start++
 				}
 			}
-			if e.specification != 'LEADING' {
+			if e_ref.specification != 'LEADING' {
 				for end > start && s[end - 1] == trim_octet[0] {
 					end--
 				}
@@ -835,15 +892,15 @@ struct MultiCharacterTrimFunction {
 }
 
 fn new_multi_character_trim_function(name string, source CharacterValueExpression, character ?CharacterValueExpression) MultiCharacterTrimFunction {
-	return MultiCharacterTrimFunction{name.to_upper(), &source, if c := character {
-		&c
+	return MultiCharacterTrimFunction{name.to_upper(), heap_copy(&source), if c := opt_copy(character) {
+		heap_copy(&c)
 	} else {
 		none
 	}}
 }
 
 fn (e MultiCharacterTrimFunction) pstr(params map[string]Value) string {
-	if character := e.character {
+	if character := opt_copy(e.character) {
 		return '${e.name}(${e.source.pstr(params)}, ${character.pstr(params)})'
 	}
 
@@ -860,7 +917,7 @@ fn (e MultiCharacterTrimFunction) compile(mut c Compiler) !CompileResult {
 	compiled_source := e.source.compile(mut c)!
 	typ := varying_string_type(e.name, compiled_source.typ)!
 	mut compiled_character := ?CompileResult(none)
-	if character := e.character {
+	if character := opt_copy(e.character) {
 		compiled := character.compile(mut c)!
 		// ISO/IEC 9075-2:2023, 6.33, <string value function>, Syntax Rules, 15.b.i.1
 		if !compiled.typ.typ.is_string() {
@@ -868,18 +925,20 @@ fn (e MultiCharacterTrimFunction) compile(mut c Compiler) !CompileResult {
 		}
 		compiled_character = compiled
 	}
-	contains_agg := compiled_source.contains_agg || if compiled := compiled_character {
+	contains_agg := compiled_source.contains_agg || if compiled := opt_copy(compiled_character) {
 		compiled.contains_agg
 	} else {
 		false
 	}
 
-	name := e.name
+	// The copy works around https://github.com/vlang/v/issues/32934 (-autofree):
+	// the closure below frees it.
+	name := own_string(e.name)
 	return CompileResult{
 		run:          fn [name, compiled_source, compiled_character, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			source := compiled_source.run(mut conn, data, params)!
 			mut set := [` `]
-			if compiled := compiled_character {
+			if compiled := opt_copy(compiled_character) {
 				character := compiled.run(mut conn, data, params)!
 				// ISO/IEC 9075-2:2023, 6.33, <string value function>, General Rules, 13.c
 				if character.is_null {
@@ -929,15 +988,15 @@ struct PadFunction {
 }
 
 fn new_pad_function(name string, source CharacterValueExpression, length NumericValueExpression, padding ?CharacterValueExpression) PadFunction {
-	return PadFunction{name.to_upper(), &source, &length, if p := padding {
-		&p
+	return PadFunction{name.to_upper(), heap_copy(&source), heap_copy(&length), if p := opt_copy(padding) {
+		heap_copy(&p)
 	} else {
 		none
 	}}
 }
 
 fn (e PadFunction) pstr(params map[string]Value) string {
-	if padding := e.padding {
+	if padding := opt_copy(e.padding) {
 		return '${e.name}(${e.source.pstr(params)}, ${e.length.pstr(params)}, ${padding.pstr(params)})'
 	}
 
@@ -957,18 +1016,18 @@ fn (e PadFunction) compile(mut c Compiler) !CompileResult {
 	compiled_source := e.source.compile(mut c)!
 	compiled_length := e.length.compile(mut c)!
 	mut compiled_padding := ?CompileResult(none)
-	if padding := e.padding {
+	if padding := opt_copy(e.padding) {
 		compiled_padding = padding.compile(mut c)!
 	}
 
 	mut signature := '${compiled_source.typ}, ${compiled_length.typ}'
-	if compiled := compiled_padding {
+	if compiled := opt_copy(compiled_padding) {
 		signature += ', ${compiled.typ}'
 	}
 	if !compiled_source.typ.typ.is_string()
 		|| compiled_length.typ.typ !in [.is_smallint, .is_integer, .is_bigint, .is_decimal,
 			.is_numeric]
-		|| compiled_length.typ.scale != 0 || if compiled := compiled_padding {
+		|| compiled_length.typ.scale != 0 || if compiled := opt_copy(compiled_padding) {
 		!compiled.typ.typ.is_string()
 	} else {
 		false
@@ -977,7 +1036,7 @@ fn (e PadFunction) compile(mut c Compiler) !CompileResult {
 	}
 
 	typ := new_type('CHARACTER VARYING', max_character_length, 0)
-	contains_agg := compiled_source.contains_agg || compiled_length.contains_agg || if compiled := compiled_padding {
+	contains_agg := compiled_source.contains_agg || compiled_length.contains_agg || if compiled := opt_copy(compiled_padding) {
 		compiled.contains_agg
 	} else {
 		false
@@ -990,7 +1049,7 @@ fn (e PadFunction) compile(mut c Compiler) !CompileResult {
 			length := compiled_length.run(mut conn, data, params)!
 			mut padding := [` `]
 			mut padding_is_null := false
-			if compiled := compiled_padding {
+			if compiled := opt_copy(compiled_padding) {
 				value := compiled.run(mut conn, data, params)!
 				padding_is_null = value.is_null
 				padding = value.string_value().runes()

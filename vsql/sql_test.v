@@ -80,7 +80,9 @@ fn get_tests() ![]SQLTest {
 					if define_name != '' {
 						panic('${test_file_path}:${line_number}: define ${define_name} can only have statements')
 					}
-					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size, postgresql}
+					// The clones work around https://github.com/vlang/v/issues/32936
+					// (-autofree): stmts and extensions are reassigned below.
+					tests << SQLTest{setup.clone(), test_file_path, line_number, stmts.clone(), expected.join('\n'), show_types, show_flags, extensions.clone(), page_size, postgresql}
 					file_tests++
 				}
 				stmts = []
@@ -109,9 +111,12 @@ fn get_tests() ![]SQLTest {
 					defines[define_name] = []string{}
 				} else if contents.starts_with('include ') {
 					for name in contents[8..].fields() {
-						included_stmts := defines[name] or {
+						if name !in defines {
 							panic('${test_file_path}:${line_number + 1}: define ${name} must be before it is included')
 						}
+						// The copy works around https://github.com/vlang/v/issues/32937
+						// (-autofree): "or" would move the statements out of defines.
+						included_stmts := unsafe { &defines[name] }.clone()
 						if name == define_name {
 							panic('${test_file_path}:${line_number + 1}: define ${name} includes itself')
 						}
@@ -188,7 +193,7 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions, page_size, postgresql}
+			tests << SQLTest{setup.clone(), test_file_path, line_number, stmts.clone(), expected.join('\n'), show_types, show_flags, extensions.clone(), page_size, postgresql}
 		}
 
 		for name, _ in defines {
@@ -1072,19 +1077,28 @@ fn open_sql_test_database(path string, options ConnectionOptions) !&Connection {
 // test server opens, for the page size of a "page_size" directive.
 const sql_test_page_size_suffix = '?page_size='
 
+// new_sql_test_client connects to the test server, for a test that runs
+// through it. It's a separate function to work around
+// https://github.com/vlang/v/issues/32973 (-autofree).
+fn new_sql_test_client(path string, options ConnectionOptions, port int) !&SQLTestConn {
+	// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
+	database := if options.page_size == sql_test_options().page_size {
+		own_string(path)
+	} else {
+		'${path}${sql_test_page_size_suffix}${options.page_size}'
+	}
+
+	return &SQLTestConn{
+		client: new_pg_test_client(port, database)!
+	}
+}
+
 // new_sql_test_conn opens a connection for a test. postgresql registers the
 // functions and tables that the server registers for its clients (see the
 // "postgresql" directive), so that a test has them in every mode.
 fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions, port int, postgresql bool) !&SQLTestConn {
 	if through_server {
-		database := if options.page_size == sql_test_options().page_size {
-			path
-		} else {
-			'${path}${sql_test_page_size_suffix}${options.page_size}'
-		}
-		return &SQLTestConn{
-			client: new_pg_test_client(port, database)!
-		}
+		return new_sql_test_client(path, options, port)!
 	}
 
 	mut db := open_sql_test_database(path, options)!

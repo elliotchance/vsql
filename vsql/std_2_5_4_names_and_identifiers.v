@@ -191,43 +191,46 @@ fn split_identifier_parts(s string) ![]string {
 		return sqlstate_42602('cannot use empty string for identifier')
 	}
 
+	// start is where the next part begins. It's an offset into s, rather than
+	// a copy of the rest of s, because -autofree frees a copy of a parameter:
+	// https://github.com/vlang/v/issues/32453
 	mut parts := []string{}
-	mut s2 := s
-	for s2 != '' {
-		if s2[0] == `"` {
+	mut start := 0
+	for start < s.len {
+		if s[start] == `"` {
 			// A doubled quote ("") is one quote character of the name.
 			mut part := []u8{}
-			mut i := 1
+			mut i := start + 1
 			for {
-				if i >= s2.len {
+				if i >= s.len {
 					return sqlstate_42602('invalid identifier chain: ${s}')
 				}
-				if s2[i] == `"` {
-					if i + 1 < s2.len && s2[i + 1] == `"` {
+				if s[i] == `"` {
+					if i + 1 < s.len && s[i + 1] == `"` {
 						part << `"`
 						i += 2
 						continue
 					}
 					break
 				}
-				part << s2[i]
+				part << s[i]
 				i++
 			}
 			parts << part.bytestr()
-			s2 = s2[i + 1..]
+			start = i + 1
 		} else {
 			// A regular identifier is its case-normal form, which is the same as
 			// a delimited identifier in upper case (ISO/IEC 9075-2:2023, 5.2,
 			// <token> and <separator>, Syntax Rules, 25 to 29).
-			mut index := s2.index('.') or { -1 }
+			index := s.index_after('.', start) or { -1 }
 			if index < 0 {
-				parts << s2.to_upper()
+				parts << s[start..].to_upper()
 				break
 			}
-			if index > 0 {
-				parts << s2[..index].to_upper()
+			if index > start {
+				parts << s[start..index].to_upper()
 			}
-			s2 = s2[index + 1..]
+			start = index + 1
 		}
 	}
 
@@ -261,7 +264,7 @@ fn delimit_identifier(s string) string {
 fn requote_identifier(s string) string {
 	// The names of subqueries (such as $1) aren't parsed, so they aren't quoted.
 	if s.starts_with('$') || (s.to_upper() == s && is_regular_identifier(s)) {
-		return s
+		return own_string(s)
 	}
 
 	return delimit_identifier(s)
@@ -430,13 +433,13 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	// A column of a derived table with a duplicated name (see
 	// add_correlation_plan) is still a column reference, from "SELECT *".
 	is_column_reference := e.custom_id == '' || e.is_position_key()
-	if grouping_columns := c.grouping_columns {
+	if grouping_columns := opt_copy(c.grouping_columns) {
 		if is_column_reference && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
 			return sqlstate_42803(e.column_str())
 		}
 	}
 
-	if distinct_columns := c.distinct_columns {
+	if distinct_columns := opt_copy(c.distinct_columns) {
 		if is_column_reference && !e.is_grouping_column(distinct_columns) {
 			return sqlstate_42p10(e.column_str())
 		}
@@ -454,7 +457,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	if c.generation_column != '' && e.custom_id == '' {
 		table := c.tables[c.context.id()] or { &Table{} }
 		column := table.column(e.sub_entity_name) or { Column{} }
-		if _ := column.generated {
+		if _ := opt_copy(column.generated) {
 			return sqlstate_42601('generation expression of ${c.generation_column} cannot use generated column ${e.sub_entity_name}')
 		}
 	}
@@ -496,6 +499,11 @@ fn (e Identifier) is_grouping_column(grouping_columns []Column) bool {
 }
 
 fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	e_ref := &Identifier{
+		...e
+	}
 	// There are lots of ways to reoslve an identifer...
 	//
 	// The id is only made once, rather than for each row.
@@ -505,8 +513,8 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// removed in the future.
 	if e.custom_id != '' {
 		return CompileResult{
-			run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
-				return data.data.get(id) or { return sqlstate_42703_reference('${e}', Identifier{}, e.sub_entity_name) }
+			run:          fn [e_ref, id] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return data.data.get(id) or { return sqlstate_42703_reference('${*e_ref}', Identifier{}, e_ref.sub_entity_name) }
 			}
 			typ:          e.custom_typ
 			contains_agg: false
@@ -517,7 +525,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// unless it's a column of this query.
 	if c.conn.subquery_scopes.len > 0 && !e.is_column_of(c.conn, c.tables, c.context) {
 		for i := c.conn.subquery_scopes.len - 1; i >= 0; i-- {
-			scope := c.conn.subquery_scopes[i]
+			scope := own_elem(c.conn.subquery_scopes, i)
 			if e.is_column_of(c.conn, scope.tables, scope.context) {
 				if e.is_ambiguous_in(c.conn, scope.tables) {
 					return sqlstate_42702(e.sub_entity_name)
@@ -543,8 +551,8 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		column := table.column(e.sub_entity_name) or { Column{} }
 		if column.name.sub_entity_name == e.sub_entity_name {
 			return CompileResult{
-				run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return data.data.get(id) or { return sqlstate_42703_reference('${e}', Identifier{}, e.sub_entity_name) }
+				run:          fn [e_ref, id] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return data.data.get(id) or { return sqlstate_42703_reference('${*e_ref}', Identifier{}, e_ref.sub_entity_name) }
 				}
 				typ:          column.typ
 				contains_agg: false
@@ -556,8 +564,9 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// table is in scope, so a column qualified with another table isn't a column
 	// of it.
 	if c.context.entity_name != '' && e.entity_name != '' {
+		// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
 		qualifier := if c.stored_definition {
-			c.context
+			c.context.clone()
 		} else {
 			c.conn.resolve_identifier(Identifier{
 				catalog_name: e.catalog_name
@@ -640,12 +649,12 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	}
 
 	mut found := ?Table(none)
-	if table := catalog.storage.tables[table_id] {
+	if table := catalog.storage.find_table(table_id) {
 		found = table
 	} else if virtual_table := catalog.virtual_tables[table_id] {
 		found = virtual_table.table()
 	}
-	if table := found {
+	if table := opt_copy(found) {
 		column := table.column(ident.sub_entity_name) or { Column{} }
 		if column.name.sub_entity_name == ident.sub_entity_name {
 			ident_id := ident.id()
@@ -681,7 +690,8 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	for _, table in c.tables {
 		column := table.column(e.sub_entity_name) or { Column{} }
 		if e.entity_name == '' && column.name.sub_entity_name == e.sub_entity_name {
-			ident = column.name
+			// column is freed at the end of the loop with -autofree.
+			ident = column.name.clone()
 
 			ident_id := ident.id()
 			return CompileResult{
@@ -733,7 +743,7 @@ fn (e Identifier) is_column_of(conn &Connection, tables map[string]&Table, conte
 	if context.entity_name != '' {
 		table_name := conn.resolve_identifier(context)
 		if catalog := conn.catalogs[table_name.catalog_name] {
-			if table := catalog.storage.tables[table_name.storage_id()] {
+			if table := catalog.storage.find_table(table_name.storage_id()) {
 				return e.is_column_of_table(conn, table)
 			}
 		}
@@ -799,12 +809,12 @@ fn (e Identifier) is_column_of_table(conn &Connection, table Table) bool {
 //
 // ISO/IEC 9075-2:2023, 6.6, <identifier chain>, Syntax Rules, 8
 fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
-	scope := c.conn.subquery_scopes[i]
+	scope := own_elem(c.conn.subquery_scopes, i)
 
 	// ISO/IEC 9075-2:2023, 7.16, <query specification>, Syntax Rules, 15
 	// ISO/IEC 9075-2:2023, 7.14, <having clause>, Syntax Rules, 4
 	mut ungrouped := false
-	if grouping_columns := scope.grouping_columns {
+	if grouping_columns := opt_copy(scope.grouping_columns) {
 		ungrouped = !e.is_grouping_column(grouping_columns)
 	}
 
@@ -847,7 +857,9 @@ fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
 // processing. As opposed to str() which is the human readable form.
 fn (e Identifier) id() string {
 	if e.custom_id != '' {
-		return e.custom_id
+		// The copy works around https://github.com/vlang/v/issues/32932
+		// (-autofree).
+		return own_string(e.custom_id)
 	}
 
 	// This is called for every name that's compiled, so it doesn't build an
@@ -857,13 +869,15 @@ fn (e Identifier) id() string {
 }
 
 // join_name_part puts part after name with a '.', unless either is empty.
+//
+// The copies work around https://github.com/vlang/v/issues/32932 (-autofree).
 fn join_name_part(name string, part string) string {
 	if part == '' {
-		return name
+		return own_string(name)
 	}
 
 	if name == '' {
-		return part
+		return own_string(part)
 	}
 
 	return '${name}.${part}'
@@ -886,7 +900,7 @@ fn storage_id_part(part string) string {
 		return delimit_identifier(part)
 	}
 
-	return part
+	return own_string(part)
 }
 
 // storage_sql is the name as it's written in the definition of an object in the
@@ -938,4 +952,16 @@ pub fn (e Identifier) str() string {
 	}
 
 	return parts.join('.')
+}
+
+// clone is a copy of the identifier that owns its own strings (for -autofree).
+pub fn (i Identifier) clone() Identifier {
+	return Identifier{
+		catalog_name:    i.catalog_name.clone()
+		schema_name:     i.schema_name.clone()
+		entity_name:     i.entity_name.clone()
+		sub_entity_name: i.sub_entity_name.clone()
+		custom_id:       i.custom_id.clone()
+		custom_typ:      i.custom_typ
+	}
 }

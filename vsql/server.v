@@ -491,7 +491,7 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn, database string) 
 						db.clear_warnings()
 						if result := db.query(query) {
 							for warning in db.warnings {
-								conn.write_notice(warning)!
+								conn.write_notice(warning.ierror())!
 							}
 
 							s.log('response: ${result}')
@@ -864,7 +864,7 @@ fn (s &Server) run_portal(mut db Connection, mut conn PGConn, portal PGPortal) !
 		db.clear_warnings()
 		result := prepared.query(portal.params)!
 		for warning in db.warnings {
-			conn.write_notice(warning)!
+			conn.write_notice(warning.ierror())!
 		}
 		s.log('response: ${result}')
 

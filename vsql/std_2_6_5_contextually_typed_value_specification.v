@@ -28,7 +28,7 @@ fn (e NullSpecification) pstr(_ map[string]Value) string {
 }
 
 fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
-	if null_type := c.null_type {
+	if null_type := opt_copy(c.null_type) {
 		return CompileResult{
 			run:          fn [null_type] (mut conn Connection, data Row, params map[string]Value) !Value {
 				return new_null_value(null_type.typ)
@@ -50,7 +50,7 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 struct DefaultSpecification {}
 
 fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
-	if table := c.identity {
+	if table := opt_copy(c.identity) {
 		mut catalog := c.conn.catalog_for(table.name)
 		start_value := ((table.identity_column() or { Column{} }).identity or { &IdentityColumn{} }).sequence.start_value
 
@@ -69,7 +69,7 @@ fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	if default_value := c.default_value {
+	if default_value := opt_copy(c.default_value) {
 		return default_value.compile(mut c)!
 	}
 
@@ -79,7 +79,7 @@ fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
 // identity_of returns the table when the column is its identity column, for
 // Compiler.identity.
 fn identity_of(table Table, column Column) ?Table {
-	if _ := column.identity {
+	if _ := opt_copy(column.identity) {
 		return table
 	}
 

@@ -36,7 +36,7 @@ fn compare_bytes(a []u8, b []u8) int {
 }
 
 fn left_pad(s string, c string, len int) string {
-	mut new_s := s
+	mut new_s := own_string(s)
 	for new_s.len < len {
 		new_s = c + new_s
 	}
@@ -44,28 +44,39 @@ fn left_pad(s string, c string, len int) string {
 	return new_s
 }
 
+// The copies in the list functions (append_list, concat_lists, prepend_list and
+// push_list) work around
+// https://github.com/vlang/v/issues/32943 (-autofree): the caller frees what's
+// pushed. The local in concat_lists works around
+// https://github.com/vlang/v/issues/32946.
 fn append_list[T](list []T, element T) []T {
 	mut new_list := list.clone()
+	$if autofree {
+		new_list << own_copy(&element)
+		return new_list
+	}
 	new_list << element
 	return new_list
 }
 
 fn concat_lists[T](a []T, b []T) []T {
 	mut new_list := a.clone()
-	new_list << b
+	others := own_array(b)
+	new_list << others
 	return new_list
 }
 
 fn prepend_list[T](element T, list []T) []T {
-	mut new_list := [element]
-	new_list << list
+	mut new_list := [own_copy(&element)]
+	others := own_array(list)
+	new_list << others
 	return new_list
 }
 
 fn push_list[T](element T, list []T) []T {
-	mut new_list := [element]
-	for e in list {
-		new_list << e
+	mut new_list := [own_copy(&element)]
+	for i in 0 .. list.len {
+		new_list << own_elem(list, i)
 	}
 
 	return new_list

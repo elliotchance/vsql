@@ -28,11 +28,11 @@ fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog Ca
 	kind, i := table.find_constraint(d.name)!
 
 	mut new_table := Table{
-		...table
+		...table.copy()
 	}
 	match kind {
 		.not_null {
-			column := table.columns[i]
+			column := own_elem(table.columns, i)
 			if column.name.sub_entity_name in table.primary_key {
 				return sqlstate_42601('column ${column.name.sub_entity_name} is in the PRIMARY KEY, so its NOT NULL cannot be dropped')
 			}
@@ -50,7 +50,7 @@ fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog Ca
 			mut deferrable_not_nulls := table.deferrable_not_nulls.clone()
 			deferrable_not_nulls.delete(column.name.sub_entity_name)
 			new_table = Table{
-				...table
+				...table.copy()
 				columns:              columns
 				not_null_names:       not_null_names
 				deferrable_not_nulls: deferrable_not_nulls
@@ -58,7 +58,7 @@ fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog Ca
 		}
 		.primary_key {
 			new_table = Table{
-				...table
+				...table.copy()
 				primary_key:                 []string{}
 				primary_key_name:            ''
 				primary_key_characteristics: ConstraintCharacteristics{}
@@ -66,29 +66,30 @@ fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog Ca
 		}
 		.unique {
 			new_table = Table{
-				...table
+				...table.copy()
 				unique_constraints: table.unique_constraints.filter(it.name != table.unique_constraints[i].name)
 			}
 		}
 		.foreign_key {
 			new_table = Table{
-				...table
+				...table.copy()
 				foreign_keys: table.foreign_keys.filter(it.name != table.foreign_keys[i].name)
 			}
 		}
 		.check {
 			new_table = Table{
-				...table
+				...table.copy()
 				check_constraints: table.check_constraints.filter(it.name.entity_name != table.check_constraints[i].name.entity_name)
 			}
 		}
 	}
 
 	if kind in [.primary_key, .unique] {
+		// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
 		unique_columns := if kind == .primary_key {
-			table.primary_key
+			own_array(table.primary_key)
 		} else {
-			table.unique_constraints[i].columns
+			own_array(table.unique_constraints[i].columns)
 		}
 		new_table = catalog.storage.drop_dependent_foreign_keys(table, new_table, unique_columns,
 			d.behavior, d.name.entity_name)!
@@ -106,12 +107,17 @@ fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog Ca
 // and returns new_table without them (a FOREIGN KEY of the table itself can be
 // dependent). With RESTRICT, it's an error if there are any.
 fn (mut f Storage) drop_dependent_foreign_keys(table Table, new_table Table, unique_columns []string, behavior string, name string) !Table {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	table_ref := &Table{
+		...table
+	}
 	mut sorted := unique_columns.clone()
 	sorted.sort()
-	is_dependent := fn [table, sorted] (key ForeignKey) bool {
+	is_dependent := fn [table_ref, sorted] (key ForeignKey) bool {
 		mut columns := key.referenced_columns.clone()
 		columns.sort()
-		return key.referenced_table.storage_id() == table.name.storage_id() && columns == sorted
+		return key.referenced_table.storage_id() == table_ref.name.storage_id() && columns == sorted
 	}
 
 	// The tables are sorted so that they're always changed in the same order.
@@ -119,8 +125,9 @@ fn (mut f Storage) drop_dependent_foreign_keys(table Table, new_table Table, uni
 	mut names := f.tables.keys()
 	names.sort()
 	for table_name in names {
+		// The copy works around https://github.com/vlang/v/issues/32932 (-autofree).
 		mut referencing := if table_name == table.name.storage_id() {
-			new_table
+			new_table.copy()
 		} else {
 			f.table(table_name)
 		}

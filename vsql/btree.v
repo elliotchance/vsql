@@ -40,6 +40,10 @@ mut:
 	undo &UndoLog = unsafe { nil }
 }
 
+// free stops -autofree from freeing what a Btree has, since it's copied (for
+// example, by each PageIterator) and every copy shares the pager and maps.
+fn (mut p Btree) free() {}
+
 // UndoLog has every change to an object in the B-tree since the first savepoint
 // of the transaction, in order, so that they can be undone (see Btree.undo_to).
 // It's at the level of objects, so a blob is just the objects that it's made of.

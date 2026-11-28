@@ -81,6 +81,13 @@ EXPLAIN INSERT INTO t1 (x) VALUES (0);
 -- error 42601: syntax error: Cannot EXPLAIN DROP TABLE
 -- error 42601: syntax error: Cannot EXPLAIN INSERT
 
+-- # The statement is a syntax error before its names are resolved, so it's the
+-- # same when it's prepared (as dynamic parameters make it) and the table
+-- # doesn't exist.
+/* params */
+EXPLAIN INSERT INTO t1 (x) VALUES (0);
+-- error 42601: syntax error: Cannot EXPLAIN INSERT
+
 -- # EXPLAIN DELETE (V001-02) and EXPLAIN UPDATE (V001-03) show how the rows
 -- # are found. There's no EXPR because they don't return any columns.
 /* extensions V001-02 */

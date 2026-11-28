@@ -63,12 +63,17 @@ fn (o DumpOptions) output_foreign_key(key ForeignKey) ForeignKey {
 // or generated column can be qualified with the schema, which is removed (see
 // without_qualifiers).
 fn (o DumpOptions) output_definition(definition string, name Identifier) !string {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	name_ref := &Identifier{
+		...name
+	}
 	if !o.no_schema {
-		return definition
+		return own_string(definition)
 	}
 
-	return without_qualifiers(definition, fn [name] (parts []string) int {
-		return if parts.len >= 3 && parts[0] == name.schema_name && parts[1] == name.entity_name {
+	return without_qualifiers(definition, fn [name_ref] (parts []string) int {
+		return if parts.len >= 3 && parts[0] == name_ref.schema_name && parts[1] == name_ref.entity_name {
 			1
 		} else {
 			0
@@ -165,7 +170,9 @@ fn dump_order(tables []Table) []Table {
 				break
 			}
 		}
-		ordered << remaining[next]
+		// The clone works around https://github.com/vlang/v/issues/32943
+		// (-autofree).
+		ordered << remaining[next].clone()
 		remaining.delete(next)
 	}
 
@@ -383,7 +390,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 					write_line(mut w, 'SET SCHEMA ${new_varchar_value(delimited).literal()};')!
 				}
 				write_line(mut w, options.output_definition(without_catalog_qualifiers(Table{
-					...table
+					...table.copy()
 					name:         options.output_name(table.name)
 					foreign_keys: dump_table.foreign_keys.map(options.output_foreign_key(it))
 				}.str())!, table.name)! + '\n')!
@@ -413,7 +420,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			// inserted with OVERRIDING SYSTEM VALUE.
 			identity_column := table.identity_column()
 			mut overriding := ''
-			if column := identity_column {
+			if column := opt_copy(identity_column) {
 				if (column.identity or { &IdentityColumn{} }).always {
 					overriding = ' OVERRIDING SYSTEM VALUE'
 				}
@@ -445,7 +452,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			// get. A sequence that has reached its limit (without CYCLE) can't
 			// be restored, so it's restarted at its last value instead, which
 			// is the closest it can be.
-			if column := identity_column {
+			if column := opt_copy(identity_column) {
 				sequence := catalog.identity_sequence(table)!
 				next_value := (sequence.next() or { sequence }).current_value
 				if !sequence.unused || next_value != sequence.start_value {

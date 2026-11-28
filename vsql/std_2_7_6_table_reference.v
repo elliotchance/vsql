@@ -99,7 +99,7 @@ fn (e JoinSpecification) pstr(params map[string]Value) string {
 }
 
 fn new_qualified_join(left_table TableReference, join_type JoinType, right_table TableReference, specification JoinSpecification) QualifiedJoin {
-	return QualifiedJoin{&left_table, join_type, &right_table, specification}
+	return QualifiedJoin{heap_copy(&left_table), join_type, heap_copy(&right_table), own_copy(&specification)}
 }
 
 // new_cross_join is a comma in FROM: the same as an inner join with a condition
@@ -107,7 +107,7 @@ fn new_qualified_join(left_table TableReference, join_type JoinType, right_table
 //
 // ISO/IEC 9075-2:2023, 7.5, <from clause>, General Rules, 1.b
 fn new_cross_join(left_table TableReference, right_table TableReference) QualifiedJoin {
-	return new_qualified_join(left_table, .inner, right_table, true_condition())
+	return new_qualified_join(own_copy(&left_table), .inner, own_copy(&right_table), true_condition())
 }
 
 // true_condition is a search condition that's always TRUE.

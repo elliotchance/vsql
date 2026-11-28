@@ -121,7 +121,7 @@ fn make_datetime(typ Type, year_value Value, month_value Value, day_value Value,
 	}
 
 	mut hour, mut minute, mut micros := i64(0), i64(0), i64(0)
-	if fields := time_fields {
+	if fields := opt_copy(time_fields) {
 		hour, minute = fields[0].int_value(), fields[1].int_value()
 		micros = make_datetime_microseconds(fields[2])!
 		if hour < 0 || hour > 23 || minute < 0 || minute > 59 {

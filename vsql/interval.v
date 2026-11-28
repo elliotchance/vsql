@@ -226,7 +226,9 @@ fn new_interval_value_from_string(sign string, s string, q IntervalQualifier) !V
 
 	mut values := []i64{}
 	mut fraction := ''
-	mut rest := str
+	// The copies work around https://github.com/vlang/v/issues/32944
+	// (-autofree): reassigning a copy of a string frees the original.
+	mut rest := own_string(str)
 	for i, f in fields {
 		separator := if i + 1 == fields.len {
 			''
@@ -238,7 +240,7 @@ fn new_interval_value_from_string(sign string, s string, q IntervalQualifier) !V
 			':'
 		}
 
-		mut part := rest
+		mut part := own_string(rest)
 		if separator != '' {
 			if !rest.contains(separator) {
 				return invalid_interval_literal(s, q)
@@ -333,7 +335,8 @@ fn interval_string(typ Type, x i64) string {
 		return '${sign}${rest / 12}-${rest % 12:02}'
 	}
 
-	mut s := sign
+	// The copy works around https://github.com/vlang/v/issues/32944 (-autofree).
+	mut s := own_string(sign)
 	for f := int(q.start); f <= int(q.end); f++ {
 		field := unsafe { IntervalField(f) }
 		n := rest / field.micros()

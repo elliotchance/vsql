@@ -46174,7 +46174,11 @@ fn yylex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	return ch, int(yy_tok2[ch - yy_private])
 }
 
-@[direct_array_access]
+// The parser copies values between the lookahead, the stack and yy_val, and
+// the copies share their memory, so -autofree must not free any of them (or
+// in the actions, which are also @[manualfree]). The values end up in the AST,
+// which is freed by its owner.
+@[direct_array_access; manualfree]
 fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 	mut yyn := 0
 	mut yy_val := YYSymType{}
@@ -50049,6 +50053,7 @@ fn gocopy[T](mut dst []T, src []T) int {
 	return src.len
 }
 
+@[manualfree]
 fn yy_action_1(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:736
 	{
@@ -50056,6 +50061,7 @@ fn yy_action_1(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_2(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:737
 	{
@@ -50063,6 +50069,7 @@ fn yy_action_2(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_3(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:738
 	{
@@ -50070,6 +50077,7 @@ fn yy_action_3(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_4(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:739
 	{
@@ -50077,6 +50085,7 @@ fn yy_action_4(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_5(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:744
 	{
@@ -50084,6 +50093,7 @@ fn yy_action_5(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_6(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:745
 	{
@@ -50091,6 +50101,7 @@ fn yy_action_6(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_7(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:750
 	{
@@ -50098,6 +50109,7 @@ fn yy_action_7(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_8(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:751
 	{
@@ -50105,6 +50117,7 @@ fn yy_action_8(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_9(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:754
 	{
@@ -50112,6 +50125,7 @@ fn yy_action_9(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType
 	}
 }
 
+@[manualfree]
 fn yy_action_10(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:757
 	{
@@ -50119,6 +50133,7 @@ fn yy_action_10(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_11(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:762
 	{
@@ -50127,6 +50142,7 @@ fn yy_action_11(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_12(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:768
 	{
@@ -50134,6 +50150,7 @@ fn yy_action_12(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_13(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:771
 	{
@@ -50141,6 +50158,7 @@ fn yy_action_13(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_14(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:772
 	{
@@ -50148,6 +50166,7 @@ fn yy_action_14(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_15(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:778
 	{
@@ -50156,6 +50175,7 @@ fn yy_action_15(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_16(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:782
 	{
@@ -50164,6 +50184,7 @@ fn yy_action_16(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_17(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:790
 	{
@@ -50173,6 +50194,7 @@ fn yy_action_17(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_18(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:795
 	{
@@ -50180,6 +50202,7 @@ fn yy_action_18(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_19(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:798
 	{
@@ -50187,6 +50210,7 @@ fn yy_action_19(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_20(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:802
 	{
@@ -50194,6 +50218,7 @@ fn yy_action_20(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_21(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:807
 	{
@@ -50201,6 +50226,7 @@ fn yy_action_21(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_22(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:810
 	{
@@ -50208,6 +50234,7 @@ fn yy_action_22(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_23(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:811
 	{
@@ -50215,6 +50242,7 @@ fn yy_action_23(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_24(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:816
 	{
@@ -50223,6 +50251,7 @@ fn yy_action_24(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_25(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:821
 	{
@@ -50231,6 +50260,7 @@ fn yy_action_25(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_26(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:825
 	{
@@ -50238,6 +50268,7 @@ fn yy_action_26(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_27(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:826
 	{
@@ -50245,6 +50276,7 @@ fn yy_action_27(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_28(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:830
 	{
@@ -50253,6 +50285,7 @@ fn yy_action_28(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_29(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:836
 	{
@@ -50260,6 +50293,7 @@ fn yy_action_29(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_30(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:837
 	{
@@ -50267,6 +50301,7 @@ fn yy_action_30(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_31(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:840
 	{
@@ -50274,6 +50309,7 @@ fn yy_action_31(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_32(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:841
 	{
@@ -50281,6 +50317,7 @@ fn yy_action_32(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_33(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:842
 	{
@@ -50288,6 +50325,7 @@ fn yy_action_33(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_34(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:843
 	{
@@ -50295,6 +50333,7 @@ fn yy_action_34(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_35(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:844
 	{
@@ -50302,6 +50341,7 @@ fn yy_action_35(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_36(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:847
 	{
@@ -50309,6 +50349,7 @@ fn yy_action_36(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_37(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:850
 	{
@@ -50316,6 +50357,7 @@ fn yy_action_37(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_38(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:855
 	{
@@ -50331,6 +50373,7 @@ fn yy_action_38(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_39(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:868
 	{
@@ -50345,6 +50388,7 @@ fn yy_action_39(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_40(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:883
 	{
@@ -50352,6 +50396,7 @@ fn yy_action_40(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_41(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:888
 	{
@@ -50359,6 +50404,7 @@ fn yy_action_41(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_42(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:889
 	{
@@ -50366,6 +50412,7 @@ fn yy_action_42(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_43(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:892
 	{
@@ -50373,6 +50420,7 @@ fn yy_action_43(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_44(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:893
 	{
@@ -50380,6 +50428,7 @@ fn yy_action_44(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_45(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:898
 	{
@@ -50387,6 +50436,7 @@ fn yy_action_45(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_46(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:908
 	{
@@ -50394,6 +50444,7 @@ fn yy_action_46(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_47(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:919
 	{
@@ -50402,6 +50453,7 @@ fn yy_action_47(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_48(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:923
 	{
@@ -50410,6 +50462,7 @@ fn yy_action_48(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_49(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:927
 	{
@@ -50418,6 +50471,7 @@ fn yy_action_49(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_50(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:931
 	{
@@ -50426,6 +50480,7 @@ fn yy_action_50(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_51(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:940
 	{
@@ -50434,6 +50489,7 @@ fn yy_action_51(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_52(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:944
 	{
@@ -50446,6 +50502,7 @@ fn yy_action_52(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_53(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:952
 	{
@@ -50454,6 +50511,7 @@ fn yy_action_53(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_54(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:956
 	{
@@ -50462,6 +50520,7 @@ fn yy_action_54(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_55(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:960
 	{
@@ -50470,6 +50529,7 @@ fn yy_action_55(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_56(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:964
 	{
@@ -50478,6 +50538,7 @@ fn yy_action_56(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_57(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:968
 	{
@@ -50487,6 +50548,7 @@ fn yy_action_57(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_58(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:973
 	{
@@ -50495,6 +50557,7 @@ fn yy_action_58(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_59(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:977
 	{
@@ -50504,6 +50567,7 @@ fn yy_action_59(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_60(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:987
 	{
@@ -50513,6 +50577,7 @@ fn yy_action_60(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_61(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:992
 	{
@@ -50522,6 +50587,7 @@ fn yy_action_61(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_62(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:997
 	{
@@ -50531,6 +50597,7 @@ fn yy_action_62(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_63(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1005
 	{
@@ -50539,6 +50606,7 @@ fn yy_action_63(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_64(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1019
 	{
@@ -50550,6 +50618,7 @@ fn yy_action_64(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_65(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1026
 	{
@@ -50562,6 +50631,7 @@ fn yy_action_65(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_66(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1034
 	{
@@ -50573,6 +50643,7 @@ fn yy_action_66(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_67(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1041
 	{
@@ -50586,6 +50657,7 @@ fn yy_action_67(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_68(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1050
 	{
@@ -50597,6 +50669,7 @@ fn yy_action_68(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_69(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1057
 	{
@@ -50610,6 +50683,7 @@ fn yy_action_69(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_70(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1066
 	{
@@ -50621,6 +50695,7 @@ fn yy_action_70(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_71(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1081
 	{
@@ -50628,6 +50703,7 @@ fn yy_action_71(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_72(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1082
 	{
@@ -50635,6 +50711,7 @@ fn yy_action_72(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_73(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1083
 	{
@@ -50642,6 +50719,7 @@ fn yy_action_73(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_74(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1084
 	{
@@ -50649,6 +50727,7 @@ fn yy_action_74(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_75(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1088
 	{
@@ -50656,6 +50735,7 @@ fn yy_action_75(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_76(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1089
 	{
@@ -50663,6 +50743,7 @@ fn yy_action_76(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_77(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1092
 	{
@@ -50670,6 +50751,7 @@ fn yy_action_77(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_78(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1100
 	{
@@ -50679,6 +50761,7 @@ fn yy_action_78(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_79(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1106
 	{
@@ -50688,6 +50771,7 @@ fn yy_action_79(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_80(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1112
 	{
@@ -50697,6 +50781,7 @@ fn yy_action_80(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_81(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1119
 	{
@@ -50706,6 +50791,7 @@ fn yy_action_81(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_82(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1133
 	{
@@ -50718,6 +50804,7 @@ fn yy_action_82(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_83(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1142
 	{
@@ -50730,6 +50817,7 @@ fn yy_action_83(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_84(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1152
 	{
@@ -50737,6 +50825,7 @@ fn yy_action_84(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_85(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1153
 	{
@@ -50744,6 +50833,7 @@ fn yy_action_85(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_86(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1154
 	{
@@ -50751,6 +50841,7 @@ fn yy_action_86(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_87(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1155
 	{
@@ -50758,6 +50849,7 @@ fn yy_action_87(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_88(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1158
 	{
@@ -50765,6 +50857,7 @@ fn yy_action_88(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_89(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1159
 	{
@@ -50772,6 +50865,7 @@ fn yy_action_89(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_90(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1164
 	{
@@ -50779,6 +50873,7 @@ fn yy_action_90(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_91(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1165
 	{
@@ -50786,6 +50881,7 @@ fn yy_action_91(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_92(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1171
 	{
@@ -50793,6 +50889,7 @@ fn yy_action_92(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_93(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1174
 	{
@@ -50800,6 +50897,7 @@ fn yy_action_93(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_94(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1177
 	{
@@ -50807,6 +50905,7 @@ fn yy_action_94(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_95(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1182
 	{
@@ -50814,6 +50913,7 @@ fn yy_action_95(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_96(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1185
 	{
@@ -50821,6 +50921,7 @@ fn yy_action_96(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_97(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1188
 	{
@@ -50828,6 +50929,7 @@ fn yy_action_97(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_98(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1191
 	{
@@ -50835,6 +50937,7 @@ fn yy_action_98(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_99(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1196
 	{
@@ -50842,6 +50945,7 @@ fn yy_action_99(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTyp
 	}
 }
 
+@[manualfree]
 fn yy_action_100(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1200
 	{
@@ -50849,6 +50953,7 @@ fn yy_action_100(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_101(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1201
 	{
@@ -50860,6 +50965,7 @@ fn yy_action_101(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_102(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1208
 	{
@@ -50871,6 +50977,7 @@ fn yy_action_102(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_103(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1217
 	{
@@ -50878,6 +50985,7 @@ fn yy_action_103(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_104(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1221
 	{
@@ -50885,6 +50993,7 @@ fn yy_action_104(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_105(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1222
 	{
@@ -50892,6 +51001,7 @@ fn yy_action_105(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_106(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1225
 	{
@@ -50899,6 +51009,7 @@ fn yy_action_106(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_107(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1226
 	{
@@ -50906,6 +51017,7 @@ fn yy_action_107(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1227
 	{
@@ -50913,6 +51025,7 @@ fn yy_action_108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_109(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1228
 	{
@@ -50920,6 +51033,7 @@ fn yy_action_109(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1229
 	{
@@ -50927,6 +51041,7 @@ fn yy_action_110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_111(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1230
 	{
@@ -50935,6 +51050,7 @@ fn yy_action_111(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_112(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1235
 	{
@@ -50943,6 +51059,7 @@ fn yy_action_112(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_113(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1242
 	{
@@ -50957,6 +51074,7 @@ fn yy_action_113(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_114(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1251
 	{
@@ -50964,6 +51082,7 @@ fn yy_action_114(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1252
 	{
@@ -50971,6 +51090,7 @@ fn yy_action_115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_116(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1253
 	{
@@ -50978,6 +51098,7 @@ fn yy_action_116(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_117(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1254
 	{
@@ -50985,6 +51106,7 @@ fn yy_action_117(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_118(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1255
 	{
@@ -50992,6 +51114,7 @@ fn yy_action_118(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_119(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1256
 	{
@@ -50999,6 +51122,7 @@ fn yy_action_119(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_120(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1257
 	{
@@ -51006,6 +51130,7 @@ fn yy_action_120(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_121(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1258
 	{
@@ -51013,6 +51138,7 @@ fn yy_action_121(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_122(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1259
 	{
@@ -51020,6 +51146,7 @@ fn yy_action_122(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_123(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1260
 	{
@@ -51027,6 +51154,7 @@ fn yy_action_123(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_124(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1261
 	{
@@ -51034,6 +51162,7 @@ fn yy_action_124(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1262
 	{
@@ -51041,6 +51170,7 @@ fn yy_action_125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1265
 	{
@@ -51048,6 +51178,7 @@ fn yy_action_126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1268
 	{
@@ -51055,6 +51186,7 @@ fn yy_action_127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1273
 	{
@@ -51062,6 +51194,7 @@ fn yy_action_128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_129(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1278
 	{
@@ -51069,6 +51202,7 @@ fn yy_action_129(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_130(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1281
 	{
@@ -51076,6 +51210,7 @@ fn yy_action_130(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1284
 	{
@@ -51083,6 +51218,7 @@ fn yy_action_131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_132(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1287
 	{
@@ -51090,6 +51226,7 @@ fn yy_action_132(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_133(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1290
 	{
@@ -51097,6 +51234,7 @@ fn yy_action_133(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_134(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1297
 	{
@@ -51104,6 +51242,7 @@ fn yy_action_134(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_135(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1300
 	{
@@ -51111,6 +51250,7 @@ fn yy_action_135(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_136(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1308
 	{
@@ -51119,6 +51259,7 @@ fn yy_action_136(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1312
 	{
@@ -51127,6 +51268,7 @@ fn yy_action_137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_138(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1318
 	{
@@ -51134,6 +51276,7 @@ fn yy_action_138(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_139(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1321
 	{
@@ -51141,6 +51284,7 @@ fn yy_action_139(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_140(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1324
 	{
@@ -51148,6 +51292,7 @@ fn yy_action_140(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_141(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1327
 	{
@@ -51155,6 +51300,7 @@ fn yy_action_141(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_142(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1330
 	{
@@ -51162,6 +51308,7 @@ fn yy_action_142(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_143(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1333
 	{
@@ -51169,6 +51316,7 @@ fn yy_action_143(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_144(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1336
 	{
@@ -51176,6 +51324,7 @@ fn yy_action_144(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_145(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1339
 	{
@@ -51183,6 +51332,7 @@ fn yy_action_145(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_146(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1347
 	{
@@ -51191,6 +51341,7 @@ fn yy_action_146(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_147(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1356
 	{
@@ -51199,6 +51350,7 @@ fn yy_action_147(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1365
 	{
@@ -51207,6 +51359,7 @@ fn yy_action_148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_149(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1374
 	{
@@ -51215,6 +51368,7 @@ fn yy_action_149(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_150(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1383
 	{
@@ -51223,6 +51377,7 @@ fn yy_action_150(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_151(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1394
 	{
@@ -51233,6 +51388,7 @@ fn yy_action_151(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_152(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1400
 	{
@@ -51244,6 +51400,7 @@ fn yy_action_152(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_153(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1407
 	{
@@ -51256,6 +51413,7 @@ fn yy_action_153(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1415
 	{
@@ -51269,6 +51427,7 @@ fn yy_action_154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1426
 	{
@@ -51276,6 +51435,7 @@ fn yy_action_155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1429
 	{
@@ -51283,6 +51443,7 @@ fn yy_action_156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1430
 	{
@@ -51290,6 +51451,7 @@ fn yy_action_157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1436
 	{
@@ -51297,6 +51459,7 @@ fn yy_action_158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1437
 	{
@@ -51304,6 +51467,7 @@ fn yy_action_159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1438
 	{
@@ -51311,6 +51475,7 @@ fn yy_action_160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1446
 	{
@@ -51319,6 +51484,7 @@ fn yy_action_161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1450
 	{
@@ -51328,6 +51494,7 @@ fn yy_action_162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_163(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1455
 	{
@@ -51340,6 +51507,7 @@ fn yy_action_163(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_164(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1466
 	{
@@ -51347,6 +51515,7 @@ fn yy_action_164(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_165(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1467
 	{
@@ -51354,6 +51523,7 @@ fn yy_action_165(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1470
 	{
@@ -51361,6 +51531,7 @@ fn yy_action_166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1471
 	{
@@ -51369,6 +51540,7 @@ fn yy_action_167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1477
 	{
@@ -51378,6 +51550,7 @@ fn yy_action_168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1482
 	{
@@ -51385,6 +51558,7 @@ fn yy_action_169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1490
 	{
@@ -51393,6 +51567,7 @@ fn yy_action_170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_171(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1499
 	{
@@ -51401,6 +51576,7 @@ fn yy_action_171(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1514
 	{
@@ -51410,6 +51586,7 @@ fn yy_action_172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_173(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1519
 	{
@@ -51418,6 +51595,7 @@ fn yy_action_173(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_174(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1523
 	{
@@ -51427,6 +51605,7 @@ fn yy_action_174(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_175(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1528
 	{
@@ -51435,6 +51614,7 @@ fn yy_action_175(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_176(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1540
 	{
@@ -51443,6 +51623,7 @@ fn yy_action_176(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_177(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1555
 	{
@@ -51452,6 +51633,7 @@ fn yy_action_177(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_178(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1560
 	{
@@ -51460,6 +51642,7 @@ fn yy_action_178(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_179(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1569
 	{
@@ -51472,6 +51655,7 @@ fn yy_action_179(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1577
 	{
@@ -51486,6 +51670,7 @@ fn yy_action_180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_181(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1589
 	{
@@ -51493,6 +51678,7 @@ fn yy_action_181(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_182(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1590
 	{
@@ -51500,6 +51686,7 @@ fn yy_action_182(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1598
 	{
@@ -51511,6 +51698,7 @@ fn yy_action_183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_184(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1605
 	{
@@ -51522,6 +51710,7 @@ fn yy_action_184(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1612
 	{
@@ -51535,6 +51724,7 @@ fn yy_action_185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_186(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1621
 	{
@@ -51548,6 +51738,7 @@ fn yy_action_186(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_188(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1645
 	{
@@ -51559,6 +51750,7 @@ fn yy_action_188(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1653
 	{
@@ -51571,6 +51763,7 @@ fn yy_action_189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1663
 	{
@@ -51578,6 +51771,7 @@ fn yy_action_190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1671
 	{
@@ -51589,6 +51783,7 @@ fn yy_action_191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1678
 	{
@@ -51600,6 +51795,7 @@ fn yy_action_192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1695
 	{
@@ -51610,6 +51806,7 @@ fn yy_action_193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1701
 	{
@@ -51622,6 +51819,7 @@ fn yy_action_194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1720
 	{
@@ -51632,6 +51830,7 @@ fn yy_action_196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_197(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1726
 	{
@@ -51642,6 +51841,7 @@ fn yy_action_197(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1738
 	{
@@ -51653,6 +51853,7 @@ fn yy_action_198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_199(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1745
 	{
@@ -51663,6 +51864,7 @@ fn yy_action_199(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1751
 	{
@@ -51675,6 +51877,7 @@ fn yy_action_200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_201(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1759
 	{
@@ -51686,6 +51889,7 @@ fn yy_action_201(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_202(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1768
 	{
@@ -51694,6 +51898,7 @@ fn yy_action_202(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_203(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1772
 	{
@@ -51703,6 +51908,7 @@ fn yy_action_203(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_204(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1779
 	{
@@ -51710,6 +51916,7 @@ fn yy_action_204(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_205(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1780
 	{
@@ -51717,6 +51924,7 @@ fn yy_action_205(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_206(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1783
 	{
@@ -51724,6 +51932,7 @@ fn yy_action_206(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_207(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1786
 	{
@@ -51731,6 +51940,7 @@ fn yy_action_207(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_208(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1787
 	{
@@ -51738,6 +51948,7 @@ fn yy_action_208(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_209(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1788
 	{
@@ -51746,6 +51957,7 @@ fn yy_action_209(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_210(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1794
 	{
@@ -51753,6 +51965,7 @@ fn yy_action_210(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1795
 	{
@@ -51764,6 +51977,7 @@ fn yy_action_211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1804
 	{
@@ -51771,6 +51985,7 @@ fn yy_action_212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_213(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1805
 	{
@@ -51778,6 +51993,7 @@ fn yy_action_213(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_214(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1810
 	{
@@ -51785,6 +52001,7 @@ fn yy_action_214(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1811
 	{
@@ -51792,6 +52009,7 @@ fn yy_action_215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1812
 	{
@@ -51799,6 +52017,7 @@ fn yy_action_216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1813
 	{
@@ -51806,6 +52025,7 @@ fn yy_action_217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_218(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1814
 	{
@@ -51813,6 +52033,7 @@ fn yy_action_218(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_219(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1815
 	{
@@ -51820,6 +52041,7 @@ fn yy_action_219(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_220(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1818
 	{
@@ -51827,6 +52049,7 @@ fn yy_action_220(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1819
 	{
@@ -51834,6 +52057,7 @@ fn yy_action_221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_222(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1833
 	{
@@ -51841,6 +52065,7 @@ fn yy_action_222(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_223(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1836
 	{
@@ -51855,6 +52080,7 @@ fn yy_action_223(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_224(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1846
 	{
@@ -51869,6 +52095,7 @@ fn yy_action_224(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_225(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1856
 	{
@@ -51883,6 +52110,7 @@ fn yy_action_225(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_226(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1866
 	{
@@ -51899,6 +52127,7 @@ fn yy_action_226(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_227(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1878
 	{
@@ -51906,6 +52135,7 @@ fn yy_action_227(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1881
 	{
@@ -51913,6 +52143,7 @@ fn yy_action_228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_229(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1886
 	{
@@ -51920,6 +52151,7 @@ fn yy_action_229(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_230(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1889
 	{
@@ -51927,6 +52159,7 @@ fn yy_action_230(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_231(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1890
 	{
@@ -51934,6 +52167,7 @@ fn yy_action_231(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_232(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1893
 	{
@@ -51944,6 +52178,7 @@ fn yy_action_232(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_233(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1899
 	{
@@ -51954,6 +52189,7 @@ fn yy_action_233(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_234(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1905
 	{
@@ -51964,6 +52200,7 @@ fn yy_action_234(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_235(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1913
 	{
@@ -51971,6 +52208,7 @@ fn yy_action_235(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1914
 	{
@@ -51978,6 +52216,7 @@ fn yy_action_236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1917
 	{
@@ -51985,6 +52224,7 @@ fn yy_action_237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1920
 	{
@@ -51992,6 +52232,7 @@ fn yy_action_238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1925
 	{
@@ -51999,6 +52240,7 @@ fn yy_action_239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_240(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1927
 	{
@@ -52009,6 +52251,7 @@ fn yy_action_240(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_241(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1933
 	{
@@ -52016,6 +52259,7 @@ fn yy_action_241(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_242(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1935
 	{
@@ -52025,6 +52269,7 @@ fn yy_action_242(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1944
 	{
@@ -52035,6 +52280,7 @@ fn yy_action_243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1952
 	{
@@ -52042,6 +52288,7 @@ fn yy_action_244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_245(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1957
 	{
@@ -52052,6 +52299,7 @@ fn yy_action_245(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_246(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1969
 	{
@@ -52059,6 +52307,7 @@ fn yy_action_246(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_247(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1970
 	{
@@ -52066,6 +52315,7 @@ fn yy_action_247(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_248(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1973
 	{
@@ -52074,6 +52324,7 @@ fn yy_action_248(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_249(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1977
 	{
@@ -52082,6 +52333,7 @@ fn yy_action_249(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_250(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1981
 	{
@@ -52089,6 +52341,7 @@ fn yy_action_250(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_251(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1992
 	{
@@ -52096,6 +52349,7 @@ fn yy_action_251(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_252(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1993
 	{
@@ -52106,6 +52360,7 @@ fn yy_action_252(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:1999
 	{
@@ -52116,6 +52371,7 @@ fn yy_action_253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_254(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2005
 	{
@@ -52126,6 +52382,7 @@ fn yy_action_254(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_255(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2011
 	{
@@ -52134,6 +52391,7 @@ fn yy_action_255(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_256(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2017
 	{
@@ -52141,6 +52399,7 @@ fn yy_action_256(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_257(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2020
 	{
@@ -52148,6 +52407,7 @@ fn yy_action_257(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_258(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2023
 	{
@@ -52155,6 +52415,7 @@ fn yy_action_258(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_259(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2031
 	{
@@ -52165,6 +52426,7 @@ fn yy_action_259(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_260(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2037
 	{
@@ -52176,6 +52438,7 @@ fn yy_action_260(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_261(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2044
 	{
@@ -52188,6 +52451,7 @@ fn yy_action_261(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_262(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2052
 	{
@@ -52201,6 +52465,7 @@ fn yy_action_262(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2066
 	{
@@ -52208,6 +52473,7 @@ fn yy_action_263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2067
 	{
@@ -52216,6 +52482,7 @@ fn yy_action_264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_265(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2073
 	{
@@ -52223,6 +52490,7 @@ fn yy_action_265(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_266(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2074
 	{
@@ -52230,6 +52498,7 @@ fn yy_action_266(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_267(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2077
 	{
@@ -52239,6 +52508,7 @@ fn yy_action_267(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_268(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2085
 	{
@@ -52246,6 +52516,7 @@ fn yy_action_268(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_269(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2086
 	{
@@ -52254,6 +52525,7 @@ fn yy_action_269(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_270(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2092
 	{
@@ -52261,6 +52533,7 @@ fn yy_action_270(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_271(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2095
 	{
@@ -52268,6 +52541,7 @@ fn yy_action_271(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2098
 	{
@@ -52275,6 +52549,7 @@ fn yy_action_272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2101
 	{
@@ -52282,6 +52557,7 @@ fn yy_action_273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2104
 	{
@@ -52289,6 +52565,7 @@ fn yy_action_274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_275(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2107
 	{
@@ -52296,6 +52573,7 @@ fn yy_action_275(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_276(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2112
 	{
@@ -52305,6 +52583,7 @@ fn yy_action_276(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_277(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2119
 	{
@@ -52312,6 +52591,7 @@ fn yy_action_277(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_278(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2122
 	{
@@ -52321,6 +52601,7 @@ fn yy_action_278(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_279(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2129
 	{
@@ -52328,6 +52609,7 @@ fn yy_action_279(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_280(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2132
 	{
@@ -52337,6 +52619,7 @@ fn yy_action_280(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2137
 	{
@@ -52344,6 +52627,7 @@ fn yy_action_281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2140
 	{
@@ -52351,6 +52635,7 @@ fn yy_action_282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_283(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2143
 	{
@@ -52360,6 +52645,7 @@ fn yy_action_283(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_284(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2148
 	{
@@ -52367,6 +52653,7 @@ fn yy_action_284(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_285(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2151
 	{
@@ -52374,6 +52661,7 @@ fn yy_action_285(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_286(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2154
 	{
@@ -52381,6 +52669,7 @@ fn yy_action_286(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2155
 	{
@@ -52388,6 +52677,7 @@ fn yy_action_287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2161
 	{
@@ -52399,6 +52689,7 @@ fn yy_action_288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_289(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2171
 	{
@@ -52406,6 +52697,7 @@ fn yy_action_289(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_290(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2172
 	{
@@ -52414,6 +52706,7 @@ fn yy_action_290(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_291(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2179
 	{
@@ -52423,6 +52716,7 @@ fn yy_action_291(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_292(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2184
 	{
@@ -52430,6 +52724,7 @@ fn yy_action_292(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_293(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2187
 	{
@@ -52437,6 +52732,7 @@ fn yy_action_293(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_294(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2188
 	{
@@ -52446,6 +52742,7 @@ fn yy_action_294(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_295(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2195
 	{
@@ -52453,6 +52750,7 @@ fn yy_action_295(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_296(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2201
 	{
@@ -52465,6 +52763,7 @@ fn yy_action_296(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2209
 	{
@@ -52476,6 +52775,7 @@ fn yy_action_297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2216
 	{
@@ -52490,6 +52790,7 @@ fn yy_action_298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2226
 	{
@@ -52503,6 +52804,7 @@ fn yy_action_299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_300(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2239
 	{
@@ -52513,6 +52815,7 @@ fn yy_action_300(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_301(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2250
 	{
@@ -52524,6 +52827,7 @@ fn yy_action_301(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2259
 	{
@@ -52531,6 +52835,7 @@ fn yy_action_302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_303(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2260
 	{
@@ -52538,6 +52843,7 @@ fn yy_action_303(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2263
 	{
@@ -52545,6 +52851,7 @@ fn yy_action_304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_305(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2273
 	{
@@ -52553,6 +52860,7 @@ fn yy_action_305(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2279
 	{
@@ -52560,6 +52868,7 @@ fn yy_action_306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2282
 	{
@@ -52571,6 +52880,7 @@ fn yy_action_307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2289
 	{
@@ -52583,6 +52893,7 @@ fn yy_action_308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_309(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2298
 	{
@@ -52596,6 +52907,7 @@ fn yy_action_309(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_310(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2309
 	{
@@ -52603,6 +52915,7 @@ fn yy_action_310(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_311(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2310
 	{
@@ -52610,6 +52923,7 @@ fn yy_action_311(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2311
 	{
@@ -52617,6 +52931,7 @@ fn yy_action_312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2314
 	{
@@ -52624,6 +52939,7 @@ fn yy_action_313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2317
 	{
@@ -52633,6 +52949,7 @@ fn yy_action_314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2322
 	{
@@ -52643,6 +52960,7 @@ fn yy_action_315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2330
 	{
@@ -52650,6 +52968,7 @@ fn yy_action_316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_317(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2334
 	{
@@ -52660,6 +52979,7 @@ fn yy_action_317(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2340
 	{
@@ -52672,6 +52992,7 @@ fn yy_action_318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2348
 	{
@@ -52682,6 +53003,7 @@ fn yy_action_319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_320(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2354
 	{
@@ -52694,6 +53016,7 @@ fn yy_action_320(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2364
 	{
@@ -52701,6 +53024,7 @@ fn yy_action_321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_322(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2367
 	{
@@ -52708,6 +53032,7 @@ fn yy_action_322(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_323(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2370
 	{
@@ -52715,6 +53040,7 @@ fn yy_action_323(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_324(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2371
 	{
@@ -52722,6 +53048,7 @@ fn yy_action_324(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_325(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2372
 	{
@@ -52729,6 +53056,7 @@ fn yy_action_325(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_326(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2373
 	{
@@ -52738,6 +53066,7 @@ fn yy_action_326(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_327(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2378
 	{
@@ -52745,6 +53074,7 @@ fn yy_action_327(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_328(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2387
 	{
@@ -52754,6 +53084,7 @@ fn yy_action_328(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_329(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2403
 	{
@@ -52761,6 +53092,7 @@ fn yy_action_329(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2404
 	{
@@ -52768,6 +53100,7 @@ fn yy_action_330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2405
 	{
@@ -52775,6 +53108,7 @@ fn yy_action_331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2406
 	{
@@ -52782,6 +53116,7 @@ fn yy_action_332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_333(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2407
 	{
@@ -52789,6 +53124,7 @@ fn yy_action_333(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_334(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2410
 	{
@@ -52796,6 +53132,7 @@ fn yy_action_334(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_335(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2411
 	{
@@ -52803,6 +53140,7 @@ fn yy_action_335(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_336(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2414
 	{
@@ -52810,6 +53148,7 @@ fn yy_action_336(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_337(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2415
 	{
@@ -52817,6 +53156,7 @@ fn yy_action_337(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_338(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2416
 	{
@@ -52824,6 +53164,7 @@ fn yy_action_338(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_339(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2417
 	{
@@ -52831,6 +53172,7 @@ fn yy_action_339(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_340(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2418
 	{
@@ -52838,6 +53180,7 @@ fn yy_action_340(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_341(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2421
 	{
@@ -52845,6 +53188,7 @@ fn yy_action_341(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_342(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2422
 	{
@@ -52852,6 +53196,7 @@ fn yy_action_342(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_343(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2423
 	{
@@ -52859,6 +53204,7 @@ fn yy_action_343(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_344(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2424
 	{
@@ -52866,6 +53212,7 @@ fn yy_action_344(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_345(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2425
 	{
@@ -52873,6 +53220,7 @@ fn yy_action_345(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_346(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2426
 	{
@@ -52880,6 +53228,7 @@ fn yy_action_346(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_347(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2427
 	{
@@ -52887,6 +53236,7 @@ fn yy_action_347(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_348(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2428
 	{
@@ -52894,6 +53244,7 @@ fn yy_action_348(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_349(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2431
 	{
@@ -52901,6 +53252,7 @@ fn yy_action_349(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_350(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2432
 	{
@@ -52908,6 +53260,7 @@ fn yy_action_350(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_351(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2433
 	{
@@ -52915,6 +53268,7 @@ fn yy_action_351(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_352(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2434
 	{
@@ -52922,6 +53276,7 @@ fn yy_action_352(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_353(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2435
 	{
@@ -52929,6 +53284,7 @@ fn yy_action_353(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_354(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2436
 	{
@@ -52936,6 +53292,7 @@ fn yy_action_354(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_355(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2437
 	{
@@ -52943,6 +53300,7 @@ fn yy_action_355(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_356(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2446
 	{
@@ -52951,6 +53309,7 @@ fn yy_action_356(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_357(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2450
 	{
@@ -52959,6 +53318,7 @@ fn yy_action_357(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_358(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2454
 	{
@@ -52967,6 +53327,7 @@ fn yy_action_358(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_359(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2460
 	{
@@ -52974,6 +53335,7 @@ fn yy_action_359(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_360(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2461
 	{
@@ -52981,6 +53343,7 @@ fn yy_action_360(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_361(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2462
 	{
@@ -52988,6 +53351,7 @@ fn yy_action_361(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_362(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2463
 	{
@@ -52995,6 +53359,7 @@ fn yy_action_362(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_363(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2464
 	{
@@ -53002,6 +53367,7 @@ fn yy_action_363(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_364(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2473
 	{
@@ -53012,6 +53378,7 @@ fn yy_action_364(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_365(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2481
 	{
@@ -53019,6 +53386,7 @@ fn yy_action_365(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_366(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2484
 	{
@@ -53026,6 +53394,7 @@ fn yy_action_366(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_367(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2485
 	{
@@ -53033,6 +53402,7 @@ fn yy_action_367(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_368(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2486
 	{
@@ -53040,6 +53410,7 @@ fn yy_action_368(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_369(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2489
 	{
@@ -53049,6 +53420,7 @@ fn yy_action_369(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_370(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2494
 	{
@@ -53059,6 +53431,7 @@ fn yy_action_370(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_371(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2500
 	{
@@ -53069,6 +53442,7 @@ fn yy_action_371(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_372(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2506
 	{
@@ -53080,6 +53454,7 @@ fn yy_action_372(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_373(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2523
 	{
@@ -53088,6 +53463,7 @@ fn yy_action_373(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_374(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2529
 	{
@@ -53097,6 +53473,7 @@ fn yy_action_374(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_375(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2534
 	{
@@ -53108,6 +53485,7 @@ fn yy_action_375(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_376(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2541
 	{
@@ -53115,6 +53493,7 @@ fn yy_action_376(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_377(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2542
 	{
@@ -53124,6 +53503,7 @@ fn yy_action_377(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_378(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2547
 	{
@@ -53133,6 +53513,7 @@ fn yy_action_378(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_379(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2552
 	{
@@ -53143,6 +53524,7 @@ fn yy_action_379(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_380(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2560
 	{
@@ -53150,6 +53532,7 @@ fn yy_action_380(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_381(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2561
 	{
@@ -53157,6 +53540,7 @@ fn yy_action_381(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_382(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2564
 	{
@@ -53166,6 +53550,7 @@ fn yy_action_382(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_383(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2571
 	{
@@ -53173,6 +53558,7 @@ fn yy_action_383(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_384(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2572
 	{
@@ -53180,6 +53566,7 @@ fn yy_action_384(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_385(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2575
 	{
@@ -53189,6 +53576,7 @@ fn yy_action_385(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_386(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2582
 	{
@@ -53196,6 +53584,7 @@ fn yy_action_386(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_387(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2583
 	{
@@ -53204,6 +53593,7 @@ fn yy_action_387(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_388(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2587
 	{
@@ -53213,6 +53603,7 @@ fn yy_action_388(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_389(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2592
 	{
@@ -53222,6 +53613,7 @@ fn yy_action_389(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_390(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2599
 	{
@@ -53231,6 +53623,7 @@ fn yy_action_390(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_391(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2604
 	{
@@ -53241,6 +53634,7 @@ fn yy_action_391(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_392(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2611
 	{
@@ -53251,6 +53645,7 @@ fn yy_action_392(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_393(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2618
 	{
@@ -53262,6 +53657,7 @@ fn yy_action_393(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_394(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2628
 	{
@@ -53273,6 +53669,7 @@ fn yy_action_394(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_395(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2637
 	{
@@ -53281,6 +53678,7 @@ fn yy_action_395(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_396(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2641
 	{
@@ -53289,6 +53687,7 @@ fn yy_action_396(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_397(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2647
 	{
@@ -53296,6 +53695,7 @@ fn yy_action_397(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_398(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2656
 	{
@@ -53304,6 +53704,7 @@ fn yy_action_398(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_399(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2675
 	{
@@ -53311,6 +53712,7 @@ fn yy_action_399(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_400(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2679
 	{
@@ -53318,6 +53720,7 @@ fn yy_action_400(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_401(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2691
 	{
@@ -53325,6 +53728,7 @@ fn yy_action_401(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_402(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2692
 	{
@@ -53332,6 +53736,7 @@ fn yy_action_402(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_403(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2697
 	{
@@ -53339,6 +53744,7 @@ fn yy_action_403(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_404(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2702
 	{
@@ -53346,6 +53752,7 @@ fn yy_action_404(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_405(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2705
 	{
@@ -53353,6 +53760,7 @@ fn yy_action_405(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_406(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2708
 	{
@@ -53360,6 +53768,7 @@ fn yy_action_406(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_407(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2709
 	{
@@ -53367,6 +53776,7 @@ fn yy_action_407(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_408(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2714
 	{
@@ -53374,6 +53784,7 @@ fn yy_action_408(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_409(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2723
 	{
@@ -53384,6 +53795,7 @@ fn yy_action_409(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_410(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2730
 	{
@@ -53397,6 +53809,7 @@ fn yy_action_410(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_411(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2748
 	{
@@ -53404,6 +53817,7 @@ fn yy_action_411(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_412(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2749
 	{
@@ -53411,6 +53825,7 @@ fn yy_action_412(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_413(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2750
 	{
@@ -53418,6 +53833,7 @@ fn yy_action_413(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_414(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2753
 	{
@@ -53429,6 +53845,7 @@ fn yy_action_414(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_415(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2760
 	{
@@ -53437,6 +53854,7 @@ fn yy_action_415(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_416(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2764
 	{
@@ -53445,6 +53863,7 @@ fn yy_action_416(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_417(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2770
 	{
@@ -53452,6 +53871,7 @@ fn yy_action_417(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_418(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2771
 	{
@@ -53460,6 +53880,7 @@ fn yy_action_418(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_419(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2783
 	{
@@ -53468,6 +53889,7 @@ fn yy_action_419(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_420(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2787
 	{
@@ -53479,6 +53901,7 @@ fn yy_action_420(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_421(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2800
 	{
@@ -53486,6 +53909,7 @@ fn yy_action_421(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_422(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2801
 	{
@@ -53493,6 +53917,7 @@ fn yy_action_422(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_423(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2802
 	{
@@ -53500,6 +53925,7 @@ fn yy_action_423(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_424(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2813
 	{
@@ -53508,6 +53934,7 @@ fn yy_action_424(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_425(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2828
 	{
@@ -53516,6 +53943,7 @@ fn yy_action_425(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_426(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2832
 	{
@@ -53524,6 +53952,7 @@ fn yy_action_426(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_427(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2836
 	{
@@ -53532,6 +53961,7 @@ fn yy_action_427(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_428(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2843
 	{
@@ -53540,6 +53970,7 @@ fn yy_action_428(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_429(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2847
 	{
@@ -53548,6 +53979,7 @@ fn yy_action_429(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_430(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2851
 	{
@@ -53556,6 +53988,7 @@ fn yy_action_430(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_431(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2855
 	{
@@ -53564,6 +53997,7 @@ fn yy_action_431(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_432(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2859
 	{
@@ -53575,6 +54009,7 @@ fn yy_action_432(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_433(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2866
 	{
@@ -53586,6 +54021,7 @@ fn yy_action_433(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_434(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2881
 	{
@@ -53594,6 +54030,7 @@ fn yy_action_434(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_435(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2893
 	{
@@ -53602,6 +54039,7 @@ fn yy_action_435(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_436(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2900
 	{
@@ -53609,6 +54047,7 @@ fn yy_action_436(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_437(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2911
 	{
@@ -53616,6 +54055,7 @@ fn yy_action_437(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_438(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2912
 	{
@@ -53623,6 +54063,7 @@ fn yy_action_438(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_439(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2913
 	{
@@ -53630,6 +54071,7 @@ fn yy_action_439(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_440(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2928
 	{
@@ -53637,6 +54079,7 @@ fn yy_action_440(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_441(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2932
 	{
@@ -53644,6 +54087,7 @@ fn yy_action_441(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_442(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2946
 	{
@@ -53652,6 +54096,7 @@ fn yy_action_442(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_443(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2950
 	{
@@ -53660,6 +54105,7 @@ fn yy_action_443(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_444(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2954
 	{
@@ -53669,6 +54115,7 @@ fn yy_action_444(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_445(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2959
 	{
@@ -53678,6 +54125,7 @@ fn yy_action_445(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_449(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2974
 	{
@@ -53685,6 +54133,7 @@ fn yy_action_449(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_450(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2975
 	{
@@ -53692,6 +54141,7 @@ fn yy_action_450(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_451(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2979
 	{
@@ -53700,6 +54150,7 @@ fn yy_action_451(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_452(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2983
 	{
@@ -53711,6 +54162,7 @@ fn yy_action_452(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_453(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2994
 	{
@@ -53718,6 +54170,7 @@ fn yy_action_453(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_454(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2995
 	{
@@ -53725,6 +54178,7 @@ fn yy_action_454(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_455(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3000
 	{
@@ -53732,6 +54186,7 @@ fn yy_action_455(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_456(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3001
 	{
@@ -53739,6 +54194,7 @@ fn yy_action_456(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_457(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3002
 	{
@@ -53746,6 +54202,7 @@ fn yy_action_457(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_458(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3007
 	{
@@ -53753,6 +54210,7 @@ fn yy_action_458(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_459(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3008
 	{
@@ -53760,6 +54218,7 @@ fn yy_action_459(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_460(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3011
 	{
@@ -53767,6 +54226,7 @@ fn yy_action_460(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_461(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3016
 	{
@@ -53776,6 +54236,7 @@ fn yy_action_461(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_462(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3021
 	{
@@ -53785,6 +54246,7 @@ fn yy_action_462(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_463(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3026
 	{
@@ -53794,6 +54256,7 @@ fn yy_action_463(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_464(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3031
 	{
@@ -53801,6 +54264,7 @@ fn yy_action_464(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_465(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3035
 	{
@@ -53809,6 +54273,7 @@ fn yy_action_465(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_466(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3041
 	{
@@ -53816,6 +54281,7 @@ fn yy_action_466(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_467(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3053
 	{
@@ -53824,6 +54290,7 @@ fn yy_action_467(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_468(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3057
 	{
@@ -53832,6 +54299,7 @@ fn yy_action_468(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_469(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3064
 	{
@@ -53839,6 +54307,7 @@ fn yy_action_469(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_470(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3065
 	{
@@ -53846,6 +54315,7 @@ fn yy_action_470(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_471(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3068
 	{
@@ -53853,6 +54323,7 @@ fn yy_action_471(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_472(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3069
 	{
@@ -53860,6 +54331,7 @@ fn yy_action_472(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_473(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3078
 	{
@@ -53868,6 +54340,7 @@ fn yy_action_473(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_474(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3086
 	{
@@ -53875,6 +54348,7 @@ fn yy_action_474(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_475(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3095
 	{
@@ -53883,6 +54357,7 @@ fn yy_action_475(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_476(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3103
 	{
@@ -53890,6 +54365,7 @@ fn yy_action_476(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_477(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3104
 	{
@@ -53897,6 +54373,7 @@ fn yy_action_477(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_478(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3105
 	{
@@ -53904,6 +54381,7 @@ fn yy_action_478(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_479(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3106
 	{
@@ -53911,6 +54389,7 @@ fn yy_action_479(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_480(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3108
 	{
@@ -53919,6 +54398,7 @@ fn yy_action_480(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_481(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3112
 	{
@@ -53927,6 +54407,7 @@ fn yy_action_481(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_482(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3116
 	{
@@ -53935,6 +54416,7 @@ fn yy_action_482(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_483(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3120
 	{
@@ -53943,6 +54425,7 @@ fn yy_action_483(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_484(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3129
 	{
@@ -53951,6 +54434,7 @@ fn yy_action_484(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_485(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3133
 	{
@@ -53959,6 +54443,7 @@ fn yy_action_485(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_486(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3141
 	{
@@ -53966,6 +54451,7 @@ fn yy_action_486(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_487(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3142
 	{
@@ -53973,6 +54459,7 @@ fn yy_action_487(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_488(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3143
 	{
@@ -53980,6 +54467,7 @@ fn yy_action_488(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_489(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3144
 	{
@@ -53987,6 +54475,7 @@ fn yy_action_489(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_490(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3145
 	{
@@ -53994,6 +54483,7 @@ fn yy_action_490(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_491(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3148
 	{
@@ -54001,6 +54491,7 @@ fn yy_action_491(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_492(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3151
 	{
@@ -54008,6 +54499,7 @@ fn yy_action_492(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_493(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3154
 	{
@@ -54015,6 +54507,7 @@ fn yy_action_493(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_494(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3158
 	{
@@ -54023,6 +54516,7 @@ fn yy_action_494(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_495(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3162
 	{
@@ -54031,6 +54525,7 @@ fn yy_action_495(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_496(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3166
 	{
@@ -54039,6 +54534,7 @@ fn yy_action_496(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_497(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3170
 	{
@@ -54047,6 +54543,7 @@ fn yy_action_497(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_498(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3178
 	{
@@ -54055,6 +54552,7 @@ fn yy_action_498(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_499(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3186
 	{
@@ -54062,6 +54560,7 @@ fn yy_action_499(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_500(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3189
 	{
@@ -54069,6 +54568,7 @@ fn yy_action_500(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_501(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3192
 	{
@@ -54079,6 +54579,7 @@ fn yy_action_501(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_502(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3198
 	{
@@ -54089,6 +54590,7 @@ fn yy_action_502(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_503(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3204
 	{
@@ -54100,6 +54602,7 @@ fn yy_action_503(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_504(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3211
 	{
@@ -54107,6 +54610,7 @@ fn yy_action_504(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_505(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3216
 	{
@@ -54114,6 +54618,7 @@ fn yy_action_505(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_506(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3217
 	{
@@ -54121,6 +54626,7 @@ fn yy_action_506(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_507(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3224
 	{
@@ -54128,6 +54634,7 @@ fn yy_action_507(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_508(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3225
 	{
@@ -54135,6 +54642,7 @@ fn yy_action_508(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_509(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3228
 	{
@@ -54142,6 +54650,7 @@ fn yy_action_509(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_510(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3229
 	{
@@ -54149,6 +54658,7 @@ fn yy_action_510(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_511(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3236
 	{
@@ -54157,6 +54667,7 @@ fn yy_action_511(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_512(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3246
 	{
@@ -54164,6 +54675,7 @@ fn yy_action_512(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_513(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3247
 	{
@@ -54171,6 +54683,7 @@ fn yy_action_513(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_514(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3250
 	{
@@ -54178,6 +54691,7 @@ fn yy_action_514(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_515(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3264
 	{
@@ -54186,6 +54700,7 @@ fn yy_action_515(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_516(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3268
 	{
@@ -54194,6 +54709,7 @@ fn yy_action_516(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_517(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3278
 	{
@@ -54203,6 +54719,7 @@ fn yy_action_517(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_518(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3285
 	{
@@ -54210,6 +54727,7 @@ fn yy_action_518(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_519(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3292
 	{
@@ -54218,6 +54736,7 @@ fn yy_action_519(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_520(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3298
 	{
@@ -54225,6 +54744,7 @@ fn yy_action_520(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_521(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3305
 	{
@@ -54234,6 +54754,7 @@ fn yy_action_521(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_522(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3318
 	{
@@ -54241,6 +54762,7 @@ fn yy_action_522(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_523(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3319
 	{
@@ -54248,6 +54770,7 @@ fn yy_action_523(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_524(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3320
 	{
@@ -54255,6 +54778,7 @@ fn yy_action_524(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_525(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3321
 	{
@@ -54262,6 +54786,7 @@ fn yy_action_525(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_526(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3324
 	{
@@ -54269,6 +54794,7 @@ fn yy_action_526(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_527(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3325
 	{
@@ -54276,6 +54802,7 @@ fn yy_action_527(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_528(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3326
 	{
@@ -54283,6 +54810,7 @@ fn yy_action_528(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_529(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3327
 	{
@@ -54290,6 +54818,7 @@ fn yy_action_529(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_530(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3330
 	{
@@ -54297,6 +54826,7 @@ fn yy_action_530(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_531(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3333
 	{
@@ -54304,6 +54834,7 @@ fn yy_action_531(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_532(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3336
 	{
@@ -54311,6 +54842,7 @@ fn yy_action_532(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_533(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3339
 	{
@@ -54318,6 +54850,7 @@ fn yy_action_533(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_536(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3351
 	{
@@ -54325,6 +54858,7 @@ fn yy_action_536(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_537(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3353
 	{
@@ -54332,6 +54866,7 @@ fn yy_action_537(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_539(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3357
 	{
@@ -54339,6 +54874,7 @@ fn yy_action_539(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_541(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3361
 	{
@@ -54346,6 +54882,7 @@ fn yy_action_541(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_545(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3369
 	{
@@ -54353,6 +54890,7 @@ fn yy_action_545(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_547(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3377
 	{
@@ -54360,6 +54898,7 @@ fn yy_action_547(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_548(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3378
 	{
@@ -54367,6 +54906,7 @@ fn yy_action_548(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_549(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3381
 	{
@@ -54374,6 +54914,7 @@ fn yy_action_549(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_550(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3384
 	{
@@ -54382,6 +54923,7 @@ fn yy_action_550(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_552(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3391
 	{
@@ -54389,6 +54931,7 @@ fn yy_action_552(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_845(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3692
 	{
@@ -54396,6 +54939,7 @@ fn yy_action_845(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_846(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3693
 	{
@@ -54403,6 +54947,7 @@ fn yy_action_846(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_847(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3696
 	{
@@ -54410,6 +54955,7 @@ fn yy_action_847(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_848(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3697
 	{
@@ -54417,6 +54963,7 @@ fn yy_action_848(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_849(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3700
 	{
@@ -54424,6 +54971,7 @@ fn yy_action_849(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_850(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3701
 	{
@@ -54431,6 +54979,7 @@ fn yy_action_850(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_851(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3702
 	{
@@ -54438,6 +54987,7 @@ fn yy_action_851(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_852(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3703
 	{
@@ -54445,6 +54995,7 @@ fn yy_action_852(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_853(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3704
 	{
@@ -54452,6 +55003,7 @@ fn yy_action_853(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_854(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3707
 	{
@@ -54459,6 +55011,7 @@ fn yy_action_854(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_855(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3710
 	{
@@ -54467,6 +55020,7 @@ fn yy_action_855(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_856(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3716
 	{
@@ -54474,6 +55028,7 @@ fn yy_action_856(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_857(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3717
 	{
@@ -54481,6 +55036,7 @@ fn yy_action_857(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_858(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3722
 	{
@@ -54488,6 +55044,7 @@ fn yy_action_858(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_859(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3723
 	{
@@ -54495,6 +55052,7 @@ fn yy_action_859(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_860(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3726
 	{
@@ -54502,6 +55060,7 @@ fn yy_action_860(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_861(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3727
 	{
@@ -54509,6 +55068,7 @@ fn yy_action_861(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_862(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3728
 	{
@@ -54516,6 +55076,7 @@ fn yy_action_862(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_863(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3731
 	{
@@ -54523,6 +55084,7 @@ fn yy_action_863(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_864(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3734
 	{
@@ -54530,6 +55092,7 @@ fn yy_action_864(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_865(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3735
 	{
@@ -54537,6 +55100,7 @@ fn yy_action_865(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_866(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3738
 	{
@@ -54545,6 +55109,7 @@ fn yy_action_866(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_867(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3744
 	{
@@ -54552,6 +55117,7 @@ fn yy_action_867(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_868(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3747
 	{
@@ -54559,6 +55125,7 @@ fn yy_action_868(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_869(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3750
 	{
@@ -54566,6 +55133,7 @@ fn yy_action_869(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_870(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3751
 	{
@@ -54577,6 +55145,7 @@ fn yy_action_870(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_871(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3760
 	{
@@ -54584,6 +55153,7 @@ fn yy_action_871(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_872(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3763
 	{
@@ -54591,6 +55161,7 @@ fn yy_action_872(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_873(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3764
 	{
@@ -54598,6 +55169,7 @@ fn yy_action_873(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_874(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3765
 	{
@@ -54605,6 +55177,7 @@ fn yy_action_874(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_875(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3768
 	{
@@ -54612,6 +55185,7 @@ fn yy_action_875(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_876(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3771
 	{
@@ -54620,6 +55194,7 @@ fn yy_action_876(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_877(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3777
 	{
@@ -54628,6 +55203,7 @@ fn yy_action_877(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_878(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3783
 	{
@@ -54635,6 +55211,7 @@ fn yy_action_878(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_879(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3786
 	{
@@ -54642,6 +55219,7 @@ fn yy_action_879(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_880(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3789
 	{
@@ -54649,6 +55227,7 @@ fn yy_action_880(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_881(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3792
 	{
@@ -54658,6 +55237,7 @@ fn yy_action_881(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_882(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3797
 	{
@@ -54667,6 +55247,7 @@ fn yy_action_882(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_883(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3804
 	{
@@ -54674,6 +55255,7 @@ fn yy_action_883(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_884(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3807
 	{
@@ -54682,6 +55264,7 @@ fn yy_action_884(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_885(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3811
 	{
@@ -54690,6 +55273,7 @@ fn yy_action_885(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_886(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3815
 	{
@@ -54698,6 +55282,7 @@ fn yy_action_886(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_887(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3823
 	{
@@ -54705,6 +55290,7 @@ fn yy_action_887(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_888(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3826
 	{
@@ -54712,6 +55298,7 @@ fn yy_action_888(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_889(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3829
 	{
@@ -54719,6 +55306,7 @@ fn yy_action_889(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_890(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3839
 	{
@@ -54726,6 +55314,7 @@ fn yy_action_890(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_891(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3842
 	{
@@ -54735,6 +55324,7 @@ fn yy_action_891(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_892(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3850
 	{
@@ -54742,6 +55332,7 @@ fn yy_action_892(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_893(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3854
 	{
@@ -54749,6 +55340,7 @@ fn yy_action_893(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_894(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3855
 	{
@@ -54757,6 +55349,7 @@ fn yy_action_894(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_895(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3859
 	{
@@ -54766,6 +55359,7 @@ fn yy_action_895(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_896(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3866
 	{
@@ -54773,6 +55367,7 @@ fn yy_action_896(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_897(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3869
 	{
@@ -54780,6 +55375,7 @@ fn yy_action_897(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_898(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3874
 	{
@@ -54787,6 +55383,7 @@ fn yy_action_898(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_899(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3883
 	{
@@ -54795,6 +55392,7 @@ fn yy_action_899(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_900(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3889
 	{
@@ -54802,6 +55400,7 @@ fn yy_action_900(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_901(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3894
 	{
@@ -54809,6 +55408,7 @@ fn yy_action_901(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_902(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3897
 	{
@@ -54816,6 +55416,7 @@ fn yy_action_902(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_903(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3900
 	{
@@ -54823,6 +55424,7 @@ fn yy_action_903(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_904(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3904
 	{
@@ -54830,6 +55432,7 @@ fn yy_action_904(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_905(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3915
 	{
@@ -54837,6 +55440,7 @@ fn yy_action_905(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_906(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3916
 	{
@@ -54844,6 +55448,7 @@ fn yy_action_906(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_907(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3919
 	{
@@ -54852,6 +55457,7 @@ fn yy_action_907(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_908(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3923
 	{
@@ -54859,6 +55465,7 @@ fn yy_action_908(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_909(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3930
 	{
@@ -54866,6 +55473,7 @@ fn yy_action_909(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_910(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3931
 	{
@@ -54873,6 +55481,7 @@ fn yy_action_910(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_911(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3932
 	{
@@ -54880,6 +55489,7 @@ fn yy_action_911(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_912(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3939
 	{
@@ -54890,6 +55500,7 @@ fn yy_action_912(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_913(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3945
 	{
@@ -54900,6 +55511,7 @@ fn yy_action_913(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_914(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3953
 	{
@@ -54908,6 +55520,7 @@ fn yy_action_914(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_915(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3957
 	{
@@ -54916,6 +55529,7 @@ fn yy_action_915(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_916(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3967
 	{
@@ -54926,6 +55540,7 @@ fn yy_action_916(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_917(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3975
 	{
@@ -54933,6 +55548,7 @@ fn yy_action_917(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_918(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3983
 	{
@@ -54940,6 +55556,7 @@ fn yy_action_918(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_919(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3991
 	{
@@ -54947,6 +55564,7 @@ fn yy_action_919(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_920(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:3996
 	{
@@ -54954,6 +55572,7 @@ fn yy_action_920(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_921(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4000
 	{
@@ -54961,6 +55580,7 @@ fn yy_action_921(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_922(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4001
 	{
@@ -54969,6 +55589,7 @@ fn yy_action_922(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_923(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4016
 	{
@@ -54981,6 +55602,7 @@ fn yy_action_923(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_924(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4024
 	{
@@ -54992,6 +55614,7 @@ fn yy_action_924(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_925(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4031
 	{
@@ -55005,6 +55628,7 @@ fn yy_action_925(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_926(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4040
 	{
@@ -55018,6 +55642,7 @@ fn yy_action_926(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_927(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4049
 	{
@@ -55029,6 +55654,7 @@ fn yy_action_927(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_928(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4057
 	{
@@ -55041,6 +55667,7 @@ fn yy_action_928(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_929(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4065
 	{
@@ -55051,6 +55678,7 @@ fn yy_action_929(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_930(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4071
 	{
@@ -55064,6 +55692,7 @@ fn yy_action_930(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_931(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4080
 	{
@@ -55078,6 +55707,7 @@ fn yy_action_931(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_932(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4091
 	{
@@ -55093,6 +55723,7 @@ fn yy_action_932(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_933(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4102
 	{
@@ -55103,6 +55734,7 @@ fn yy_action_933(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_934(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4110
 	{
@@ -55110,6 +55742,7 @@ fn yy_action_934(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_935(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4111
 	{
@@ -55117,6 +55750,7 @@ fn yy_action_935(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_936(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4114
 	{
@@ -55124,6 +55758,7 @@ fn yy_action_936(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_937(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4119
 	{
@@ -55131,6 +55766,7 @@ fn yy_action_937(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_938(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4120
 	{
@@ -55138,6 +55774,7 @@ fn yy_action_938(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_939(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4125
 	{
@@ -55145,6 +55782,7 @@ fn yy_action_939(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_940(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4126
 	{
@@ -55153,6 +55791,7 @@ fn yy_action_940(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_941(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4132
 	{
@@ -55160,6 +55799,7 @@ fn yy_action_941(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_942(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4133
 	{
@@ -55168,6 +55808,7 @@ fn yy_action_942(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_943(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4141
 	{
@@ -55175,6 +55816,7 @@ fn yy_action_943(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_944(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4147
 	{
@@ -55190,6 +55832,7 @@ fn yy_action_944(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_945(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4160
 	{
@@ -55197,6 +55840,7 @@ fn yy_action_945(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_946(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4161
 	{
@@ -55204,6 +55848,7 @@ fn yy_action_946(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_947(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4166
 	{
@@ -55211,6 +55856,7 @@ fn yy_action_947(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_948(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4169
 	{
@@ -55218,6 +55864,7 @@ fn yy_action_948(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_949(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4176
 	{
@@ -55227,6 +55874,7 @@ fn yy_action_949(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_950(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4181
 	{
@@ -55235,6 +55883,7 @@ fn yy_action_950(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_951(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4193
 	{
@@ -55246,6 +55895,7 @@ fn yy_action_951(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_952(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4211
 	{
@@ -55257,6 +55907,7 @@ fn yy_action_952(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_953(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4220
 	{
@@ -55264,6 +55915,7 @@ fn yy_action_953(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_954(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4221
 	{
@@ -55271,6 +55923,7 @@ fn yy_action_954(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_955(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4226
 	{
@@ -55278,6 +55931,7 @@ fn yy_action_955(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_956(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4229
 	{
@@ -55285,6 +55939,7 @@ fn yy_action_956(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_957(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4230
 	{
@@ -55292,6 +55947,7 @@ fn yy_action_957(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_958(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4231
 	{
@@ -55299,6 +55955,7 @@ fn yy_action_958(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_959(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4232
 	{
@@ -55306,6 +55963,7 @@ fn yy_action_959(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_960(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4233
 	{
@@ -55313,6 +55971,7 @@ fn yy_action_960(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_961(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4234
 	{
@@ -55320,6 +55979,7 @@ fn yy_action_961(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_962(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4235
 	{
@@ -55327,6 +55987,7 @@ fn yy_action_962(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_963(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4238
 	{
@@ -55334,6 +55995,7 @@ fn yy_action_963(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_964(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4239
 	{
@@ -55341,6 +56003,7 @@ fn yy_action_964(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_965(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4242
 	{
@@ -55348,6 +56011,7 @@ fn yy_action_965(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_966(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4243
 	{
@@ -55355,6 +56019,7 @@ fn yy_action_966(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_967(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4246
 	{
@@ -55362,6 +56027,7 @@ fn yy_action_967(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_968(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4249
 	{
@@ -55369,6 +56035,7 @@ fn yy_action_968(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_969(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4252
 	{
@@ -55376,6 +56043,7 @@ fn yy_action_969(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_970(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4259
 	{
@@ -55384,6 +56052,7 @@ fn yy_action_970(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_971(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4263
 	{
@@ -55392,6 +56061,7 @@ fn yy_action_971(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_972(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4267
 	{
@@ -55400,6 +56070,7 @@ fn yy_action_972(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_973(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4271
 	{
@@ -55408,6 +56079,7 @@ fn yy_action_973(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_974(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4275
 	{
@@ -55416,6 +56088,7 @@ fn yy_action_974(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_975(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4279
 	{
@@ -55424,6 +56097,7 @@ fn yy_action_975(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_976(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4283
 	{
@@ -55432,6 +56106,7 @@ fn yy_action_976(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_977(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4287
 	{
@@ -55440,6 +56115,7 @@ fn yy_action_977(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_978(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4291
 	{
@@ -55448,6 +56124,7 @@ fn yy_action_978(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_979(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4300
 	{
@@ -55456,6 +56133,7 @@ fn yy_action_979(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_980(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4304
 	{
@@ -55464,6 +56142,7 @@ fn yy_action_980(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_981(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4308
 	{
@@ -55472,6 +56151,7 @@ fn yy_action_981(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_982(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4312
 	{
@@ -55480,6 +56160,7 @@ fn yy_action_982(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_983(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4316
 	{
@@ -55488,6 +56169,7 @@ fn yy_action_983(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_984(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4320
 	{
@@ -55496,6 +56178,7 @@ fn yy_action_984(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_985(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4324
 	{
@@ -55504,6 +56187,7 @@ fn yy_action_985(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_986(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4328
 	{
@@ -55512,6 +56196,7 @@ fn yy_action_986(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_987(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4332
 	{
@@ -55520,6 +56205,7 @@ fn yy_action_987(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_988(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4336
 	{
@@ -55529,6 +56215,7 @@ fn yy_action_988(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_989(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4342
 	{
@@ -55538,6 +56225,7 @@ fn yy_action_989(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_990(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4347
 	{
@@ -55547,6 +56235,7 @@ fn yy_action_990(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_991(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4352
 	{
@@ -55556,6 +56245,7 @@ fn yy_action_991(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_992(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4357
 	{
@@ -55565,6 +56255,7 @@ fn yy_action_992(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_993(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4362
 	{
@@ -55574,6 +56265,7 @@ fn yy_action_993(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_994(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4373
 	{
@@ -55582,6 +56274,7 @@ fn yy_action_994(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_995(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4377
 	{
@@ -55590,6 +56283,7 @@ fn yy_action_995(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_996(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4381
 	{
@@ -55598,6 +56292,7 @@ fn yy_action_996(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_997(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4385
 	{
@@ -55606,6 +56301,7 @@ fn yy_action_997(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_998(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4389
 	{
@@ -55614,6 +56310,7 @@ fn yy_action_998(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_999(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4393
 	{
@@ -55622,6 +56319,7 @@ fn yy_action_999(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 	}
 }
 
+@[manualfree]
 fn yy_action_1000(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4397
 	{
@@ -55630,6 +56328,7 @@ fn yy_action_1000(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1001(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4401
 	{
@@ -55638,6 +56337,7 @@ fn yy_action_1001(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1002(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4407
 	{
@@ -55645,6 +56345,7 @@ fn yy_action_1002(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1003(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4408
 	{
@@ -55652,6 +56353,7 @@ fn yy_action_1003(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1004(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4409
 	{
@@ -55659,6 +56361,7 @@ fn yy_action_1004(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1005(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4412
 	{
@@ -55666,6 +56369,7 @@ fn yy_action_1005(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1006(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4413
 	{
@@ -55673,6 +56377,7 @@ fn yy_action_1006(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1007(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4416
 	{
@@ -55680,6 +56385,7 @@ fn yy_action_1007(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1008(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4419
 	{
@@ -55687,6 +56393,7 @@ fn yy_action_1008(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1009(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4420
 	{
@@ -55694,6 +56401,7 @@ fn yy_action_1009(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1010(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4423
 	{
@@ -55701,6 +56409,7 @@ fn yy_action_1010(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1011(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4426
 	{
@@ -55708,6 +56417,7 @@ fn yy_action_1011(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1012(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4427
 	{
@@ -55715,6 +56425,7 @@ fn yy_action_1012(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1013(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4430
 	{
@@ -55722,6 +56433,7 @@ fn yy_action_1013(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1014(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4433
 	{
@@ -55729,6 +56441,7 @@ fn yy_action_1014(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1015(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4434
 	{
@@ -55736,6 +56449,7 @@ fn yy_action_1015(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1016(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4435
 	{
@@ -55743,6 +56457,7 @@ fn yy_action_1016(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1017(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4436
 	{
@@ -55751,6 +56466,7 @@ fn yy_action_1017(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1018(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4442
 	{
@@ -55758,6 +56474,7 @@ fn yy_action_1018(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1019(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4443
 	{
@@ -55765,6 +56482,7 @@ fn yy_action_1019(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1020(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4446
 	{
@@ -55772,6 +56490,7 @@ fn yy_action_1020(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1021(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4447
 	{
@@ -55779,6 +56498,7 @@ fn yy_action_1021(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1022(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4450
 	{
@@ -55787,6 +56507,7 @@ fn yy_action_1022(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1023(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4454
 	{
@@ -55795,6 +56516,7 @@ fn yy_action_1023(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1024(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4460
 	{
@@ -55802,6 +56524,7 @@ fn yy_action_1024(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1025(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4467
 	{
@@ -55809,6 +56532,7 @@ fn yy_action_1025(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1026(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4468
 	{
@@ -55816,6 +56540,7 @@ fn yy_action_1026(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1027(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4477
 	{
@@ -55823,6 +56548,7 @@ fn yy_action_1027(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1028(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4478
 	{
@@ -55830,6 +56556,7 @@ fn yy_action_1028(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1029(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4479
 	{
@@ -55837,6 +56564,7 @@ fn yy_action_1029(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1030(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4480
 	{
@@ -55844,6 +56572,7 @@ fn yy_action_1030(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1031(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4481
 	{
@@ -55851,6 +56580,7 @@ fn yy_action_1031(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1032(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4489
 	{
@@ -55858,6 +56588,7 @@ fn yy_action_1032(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1033(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4490
 	{
@@ -55866,6 +56597,7 @@ fn yy_action_1033(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1034(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4494
 	{
@@ -55875,6 +56607,7 @@ fn yy_action_1034(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1035(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4506
 	{
@@ -55882,6 +56615,7 @@ fn yy_action_1035(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1036(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4507
 	{
@@ -55890,6 +56624,7 @@ fn yy_action_1036(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1037(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4511
 	{
@@ -55899,6 +56634,7 @@ fn yy_action_1037(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1038(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4518
 	{
@@ -55907,6 +56643,7 @@ fn yy_action_1038(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1039(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4522
 	{
@@ -55915,6 +56652,7 @@ fn yy_action_1039(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1040(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4528
 	{
@@ -55922,6 +56660,7 @@ fn yy_action_1040(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1041(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4531
 	{
@@ -55929,6 +56668,7 @@ fn yy_action_1041(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1042(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4534
 	{
@@ -55937,6 +56677,7 @@ fn yy_action_1042(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1043(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4540
 	{
@@ -55944,6 +56685,7 @@ fn yy_action_1043(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1044(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4541
 	{
@@ -55951,6 +56693,7 @@ fn yy_action_1044(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1045(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4542
 	{
@@ -55959,6 +56702,7 @@ fn yy_action_1045(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1046(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4546
 	{
@@ -55966,6 +56710,7 @@ fn yy_action_1046(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1047(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4549
 	{
@@ -55974,6 +56719,7 @@ fn yy_action_1047(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1048(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4553
 	{
@@ -55983,6 +56729,7 @@ fn yy_action_1048(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1049(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4558
 	{
@@ -55991,6 +56738,7 @@ fn yy_action_1049(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1050(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4562
 	{
@@ -55998,6 +56746,7 @@ fn yy_action_1050(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1051(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4566
 	{
@@ -56006,6 +56755,7 @@ fn yy_action_1051(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1052(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4572
 	{
@@ -56014,6 +56764,7 @@ fn yy_action_1052(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1053(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4576
 	{
@@ -56022,6 +56773,7 @@ fn yy_action_1053(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1054(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4582
 	{
@@ -56029,6 +56781,7 @@ fn yy_action_1054(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1055(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4585
 	{
@@ -56036,6 +56789,7 @@ fn yy_action_1055(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1056(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4588
 	{
@@ -56043,6 +56797,7 @@ fn yy_action_1056(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1057(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4591
 	{
@@ -56051,6 +56806,7 @@ fn yy_action_1057(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1058(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4603
 	{
@@ -56058,6 +56814,7 @@ fn yy_action_1058(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1059(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4606
 	{
@@ -56068,6 +56825,7 @@ fn yy_action_1059(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1060(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4621
 	{
@@ -56075,6 +56833,7 @@ fn yy_action_1060(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1061(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4624
 	{
@@ -56082,6 +56841,7 @@ fn yy_action_1061(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1062(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4627
 	{
@@ -56089,6 +56849,7 @@ fn yy_action_1062(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1063(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4630
 	{
@@ -56096,6 +56857,7 @@ fn yy_action_1063(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1064(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4633
 	{
@@ -56103,6 +56865,7 @@ fn yy_action_1064(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1065(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4642
 	{
@@ -56110,6 +56873,7 @@ fn yy_action_1065(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1066(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4643
 	{
@@ -56118,6 +56882,7 @@ fn yy_action_1066(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1067(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4647
 	{
@@ -56126,6 +56891,7 @@ fn yy_action_1067(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1068(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4653
 	{
@@ -56133,6 +56899,7 @@ fn yy_action_1068(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1069(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4654
 	{
@@ -56141,6 +56908,7 @@ fn yy_action_1069(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1070(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4658
 	{
@@ -56149,6 +56917,7 @@ fn yy_action_1070(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1071(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4664
 	{
@@ -56156,6 +56925,7 @@ fn yy_action_1071(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1072(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4667
 	{
@@ -56163,6 +56933,7 @@ fn yy_action_1072(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1073(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4668
 	{
@@ -56170,6 +56941,7 @@ fn yy_action_1073(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1074(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4671
 	{
@@ -56177,6 +56949,7 @@ fn yy_action_1074(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1075(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4672
 	{
@@ -56185,6 +56958,7 @@ fn yy_action_1075(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1076(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4676
 	{
@@ -56193,6 +56967,7 @@ fn yy_action_1076(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1077(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4682
 	{
@@ -56200,6 +56975,7 @@ fn yy_action_1077(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1078(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4683
 	{
@@ -56208,6 +56984,7 @@ fn yy_action_1078(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1079(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4687
 	{
@@ -56216,6 +56993,7 @@ fn yy_action_1079(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1080(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4693
 	{
@@ -56223,6 +57001,7 @@ fn yy_action_1080(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1081(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4694
 	{
@@ -56230,6 +57009,7 @@ fn yy_action_1081(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1082(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4699
 	{
@@ -56237,6 +57017,7 @@ fn yy_action_1082(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1083(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4702
 	{
@@ -56244,6 +57025,7 @@ fn yy_action_1083(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1084(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4703
 	{
@@ -56251,6 +57033,7 @@ fn yy_action_1084(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1085(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4711
 	{
@@ -56258,6 +57041,7 @@ fn yy_action_1085(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1086(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4729
 	{
@@ -56265,6 +57049,7 @@ fn yy_action_1086(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1087(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4730
 	{
@@ -56272,6 +57057,7 @@ fn yy_action_1087(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1088(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4731
 	{
@@ -56280,6 +57066,7 @@ fn yy_action_1088(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1089(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4735
 	{
@@ -56288,6 +57075,7 @@ fn yy_action_1089(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1090(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4739
 	{
@@ -56296,6 +57084,7 @@ fn yy_action_1090(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1091(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4743
 	{
@@ -56304,6 +57093,7 @@ fn yy_action_1091(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1092(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4747
 	{
@@ -56312,6 +57102,7 @@ fn yy_action_1092(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1093(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4751
 	{
@@ -56320,6 +57111,7 @@ fn yy_action_1093(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1094(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4755
 	{
@@ -56328,6 +57120,7 @@ fn yy_action_1094(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1095(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4759
 	{
@@ -56336,6 +57129,7 @@ fn yy_action_1095(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1096(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4763
 	{
@@ -56344,6 +57138,7 @@ fn yy_action_1096(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1097(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4767
 	{
@@ -56352,6 +57147,7 @@ fn yy_action_1097(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1098(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4771
 	{
@@ -56360,6 +57156,7 @@ fn yy_action_1098(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1099(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4775
 	{
@@ -56368,6 +57165,7 @@ fn yy_action_1099(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1100(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4779
 	{
@@ -56381,6 +57179,7 @@ fn yy_action_1100(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1101(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4793
 	{
@@ -56389,6 +57188,7 @@ fn yy_action_1101(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1102(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4799
 	{
@@ -56396,6 +57196,7 @@ fn yy_action_1102(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1103(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4800
 	{
@@ -56403,6 +57204,7 @@ fn yy_action_1103(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1104(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4805
 	{
@@ -56411,6 +57213,7 @@ fn yy_action_1104(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1105(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4811
 	{
@@ -56418,6 +57221,7 @@ fn yy_action_1105(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1106(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4812
 	{
@@ -56425,6 +57229,7 @@ fn yy_action_1106(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1107(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4815
 	{
@@ -56432,6 +57237,7 @@ fn yy_action_1107(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4822
 	{
@@ -56440,6 +57246,7 @@ fn yy_action_1108(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1109(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4827
 	{
@@ -56448,6 +57255,7 @@ fn yy_action_1109(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4833
 	{
@@ -56455,6 +57263,7 @@ fn yy_action_1110(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1111(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4836
 	{
@@ -56462,6 +57271,7 @@ fn yy_action_1111(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1112(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4839
 	{
@@ -56469,6 +57279,7 @@ fn yy_action_1112(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1113(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4840
 	{
@@ -56476,6 +57287,7 @@ fn yy_action_1113(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1114(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4847
 	{
@@ -56484,6 +57296,7 @@ fn yy_action_1114(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4852
 	{
@@ -56492,6 +57305,7 @@ fn yy_action_1115(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1116(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4858
 	{
@@ -56499,6 +57313,7 @@ fn yy_action_1116(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1117(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4859
 	{
@@ -56506,6 +57321,7 @@ fn yy_action_1117(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1118(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4865
 	{
@@ -56513,6 +57329,7 @@ fn yy_action_1118(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1119(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4866
 	{
@@ -56520,6 +57337,7 @@ fn yy_action_1119(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1120(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4869
 	{
@@ -56532,6 +57350,7 @@ fn yy_action_1120(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1121(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4876
 	{
@@ -56544,6 +57363,7 @@ fn yy_action_1121(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1122(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4884
 	{
@@ -56559,6 +57379,7 @@ fn yy_action_1122(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1123(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4894
 	{
@@ -56566,6 +57387,7 @@ fn yy_action_1123(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1124(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4897
 	{
@@ -56573,6 +57395,7 @@ fn yy_action_1124(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4900
 	{
@@ -56585,6 +57408,7 @@ fn yy_action_1125(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4907
 	{
@@ -56592,6 +57416,7 @@ fn yy_action_1126(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4908
 	{
@@ -56599,6 +57424,7 @@ fn yy_action_1127(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4909
 	{
@@ -56606,6 +57432,7 @@ fn yy_action_1128(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1129(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4910
 	{
@@ -56613,6 +57440,7 @@ fn yy_action_1129(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1130(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4911
 	{
@@ -56620,6 +57448,7 @@ fn yy_action_1130(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4912
 	{
@@ -56627,6 +57456,7 @@ fn yy_action_1131(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1132(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4913
 	{
@@ -56634,6 +57464,7 @@ fn yy_action_1132(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1133(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4914
 	{
@@ -56641,6 +57472,7 @@ fn yy_action_1133(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1134(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4915
 	{
@@ -56648,6 +57480,7 @@ fn yy_action_1134(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1135(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4919
 	{
@@ -56661,6 +57494,7 @@ fn yy_action_1135(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1136(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4927
 	{
@@ -56668,6 +57502,7 @@ fn yy_action_1136(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4930
 	{
@@ -56675,6 +57510,7 @@ fn yy_action_1137(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1138(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4933
 	{
@@ -56687,6 +57523,7 @@ fn yy_action_1138(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1139(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4940
 	{
@@ -56699,6 +57536,7 @@ fn yy_action_1139(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1140(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4947
 	{
@@ -56711,6 +57549,7 @@ fn yy_action_1140(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1141(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4955
 	{
@@ -56724,6 +57563,7 @@ fn yy_action_1141(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1142(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4963
 	{
@@ -56731,6 +57571,7 @@ fn yy_action_1142(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1143(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4966
 	{
@@ -56738,6 +57579,7 @@ fn yy_action_1143(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1144(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4969
 	{
@@ -56750,6 +57592,7 @@ fn yy_action_1144(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1145(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4976
 	{
@@ -56762,6 +57605,7 @@ fn yy_action_1145(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1146(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4983
 	{
@@ -56774,6 +57618,7 @@ fn yy_action_1146(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1147(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4988
 	{
@@ -56786,6 +57631,7 @@ fn yy_action_1147(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:4997
 	{
@@ -56801,6 +57647,7 @@ fn yy_action_1148(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1149(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5009
 	{
@@ -56808,6 +57655,7 @@ fn yy_action_1149(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1150(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5012
 	{
@@ -56815,6 +57663,7 @@ fn yy_action_1150(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1151(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5013
 	{
@@ -56822,6 +57671,7 @@ fn yy_action_1151(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1152(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5016
 	{
@@ -56830,6 +57680,7 @@ fn yy_action_1152(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1153(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5022
 	{
@@ -56837,6 +57688,7 @@ fn yy_action_1153(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5025
 	{
@@ -56844,6 +57696,7 @@ fn yy_action_1154(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5028
 	{
@@ -56851,6 +57704,7 @@ fn yy_action_1155(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5040
 	{
@@ -56858,6 +57712,7 @@ fn yy_action_1156(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5043
 	{
@@ -56865,6 +57720,7 @@ fn yy_action_1157(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5046
 	{
@@ -56872,6 +57728,7 @@ fn yy_action_1158(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5049
 	{
@@ -56879,6 +57736,7 @@ fn yy_action_1159(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5050
 	{
@@ -56888,6 +57746,7 @@ fn yy_action_1160(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5055
 	{
@@ -56895,6 +57754,7 @@ fn yy_action_1161(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5056
 	{
@@ -56902,6 +57762,7 @@ fn yy_action_1162(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1163(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5059
 	{
@@ -56909,6 +57770,7 @@ fn yy_action_1163(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1164(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5068
 	{
@@ -56917,6 +57779,7 @@ fn yy_action_1164(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1165(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5073
 	{
@@ -56925,6 +57788,7 @@ fn yy_action_1165(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5078
 	{
@@ -56933,6 +57797,7 @@ fn yy_action_1166(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5083
 	{
@@ -56942,6 +57807,7 @@ fn yy_action_1167(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5092
 	{
@@ -56951,6 +57817,7 @@ fn yy_action_1168(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5100
 	{
@@ -56963,6 +57830,7 @@ fn yy_action_1169(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5104
 	{
@@ -56975,6 +57843,7 @@ fn yy_action_1170(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1171(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5116
 	{
@@ -56984,6 +57853,7 @@ fn yy_action_1171(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5123
 	{
@@ -56993,6 +57863,7 @@ fn yy_action_1172(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1173(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5130
 	{
@@ -57002,6 +57873,7 @@ fn yy_action_1173(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1174(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5137
 	{
@@ -57011,6 +57883,7 @@ fn yy_action_1174(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1175(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5144
 	{
@@ -57018,6 +57891,7 @@ fn yy_action_1175(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1176(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5153
 	{
@@ -57025,6 +57899,7 @@ fn yy_action_1176(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1177(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5156
 	{
@@ -57033,6 +57908,7 @@ fn yy_action_1177(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1178(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5160
 	{
@@ -57040,6 +57916,7 @@ fn yy_action_1178(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1179(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5163
 	{
@@ -57047,6 +57924,7 @@ fn yy_action_1179(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5166
 	{
@@ -57054,6 +57932,7 @@ fn yy_action_1180(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1181(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5171
 	{
@@ -57061,6 +57940,7 @@ fn yy_action_1181(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1182(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5178
 	{
@@ -57070,6 +57950,7 @@ fn yy_action_1182(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5183
 	{
@@ -57079,6 +57960,7 @@ fn yy_action_1183(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1184(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5190
 	{
@@ -57086,6 +57968,7 @@ fn yy_action_1184(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5191
 	{
@@ -57093,6 +57976,7 @@ fn yy_action_1185(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1186(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5192
 	{
@@ -57100,6 +57984,7 @@ fn yy_action_1186(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1187(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5200
 	{
@@ -57109,6 +57994,7 @@ fn yy_action_1187(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1188(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5206
 	{
@@ -57118,6 +58004,7 @@ fn yy_action_1188(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5213
 	{
@@ -57125,6 +58012,7 @@ fn yy_action_1189(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5214
 	{
@@ -57132,6 +58020,7 @@ fn yy_action_1190(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5217
 	{
@@ -57139,6 +58028,7 @@ fn yy_action_1191(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5218
 	{
@@ -57146,6 +58036,7 @@ fn yy_action_1192(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5219
 	{
@@ -57153,6 +58044,7 @@ fn yy_action_1193(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5222
 	{
@@ -57160,6 +58052,7 @@ fn yy_action_1194(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1195(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5225
 	{
@@ -57167,6 +58060,7 @@ fn yy_action_1195(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5228
 	{
@@ -57174,6 +58068,7 @@ fn yy_action_1196(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1197(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5233
 	{
@@ -57181,6 +58076,7 @@ fn yy_action_1197(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5236
 	{
@@ -57188,6 +58084,7 @@ fn yy_action_1198(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1199(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5239
 	{
@@ -57195,6 +58092,7 @@ fn yy_action_1199(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5247
 	{
@@ -57202,6 +58100,7 @@ fn yy_action_1200(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1201(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5252
 	{
@@ -57209,6 +58108,7 @@ fn yy_action_1201(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1202(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5255
 	{
@@ -57216,6 +58116,7 @@ fn yy_action_1202(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1203(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5258
 	{
@@ -57223,6 +58124,7 @@ fn yy_action_1203(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1204(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5261
 	{
@@ -57230,6 +58132,7 @@ fn yy_action_1204(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1205(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5264
 	{
@@ -57237,6 +58140,7 @@ fn yy_action_1205(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1206(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5267
 	{
@@ -57244,6 +58148,7 @@ fn yy_action_1206(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1207(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5270
 	{
@@ -57251,6 +58156,7 @@ fn yy_action_1207(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1208(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5273
 	{
@@ -57258,6 +58164,7 @@ fn yy_action_1208(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1209(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5276
 	{
@@ -57265,6 +58172,7 @@ fn yy_action_1209(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1210(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5279
 	{
@@ -57272,6 +58180,7 @@ fn yy_action_1210(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5293
 	{
@@ -57279,6 +58188,7 @@ fn yy_action_1211(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5296
 	{
@@ -57286,6 +58196,7 @@ fn yy_action_1212(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1213(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5301
 	{
@@ -57293,6 +58204,7 @@ fn yy_action_1213(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1214(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5302
 	{
@@ -57300,6 +58212,7 @@ fn yy_action_1214(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5305
 	{
@@ -57307,6 +58220,7 @@ fn yy_action_1215(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5313
 	{
@@ -57314,6 +58228,7 @@ fn yy_action_1216(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5319
 	{
@@ -57322,6 +58237,7 @@ fn yy_action_1217(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1218(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5327
 	{
@@ -57329,6 +58245,7 @@ fn yy_action_1218(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1219(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5328
 	{
@@ -57336,6 +58253,7 @@ fn yy_action_1219(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1220(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5331
 	{
@@ -57343,6 +58261,7 @@ fn yy_action_1220(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5347
 	{
@@ -57350,6 +58269,7 @@ fn yy_action_1221(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1222(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5350
 	{
@@ -57357,6 +58277,7 @@ fn yy_action_1222(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1223(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5353
 	{
@@ -57364,6 +58285,7 @@ fn yy_action_1223(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1224(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5356
 	{
@@ -57371,6 +58293,7 @@ fn yy_action_1224(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1225(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5359
 	{
@@ -57378,6 +58301,7 @@ fn yy_action_1225(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1226(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5364
 	{
@@ -57385,6 +58309,7 @@ fn yy_action_1226(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1227(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5367
 	{
@@ -57393,6 +58318,7 @@ fn yy_action_1227(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5371
 	{
@@ -57402,6 +58328,7 @@ fn yy_action_1228(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1229(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5378
 	{
@@ -57409,6 +58336,7 @@ fn yy_action_1229(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1230(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5379
 	{
@@ -57417,6 +58345,7 @@ fn yy_action_1230(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1231(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5385
 	{
@@ -57425,6 +58354,7 @@ fn yy_action_1231(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1232(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5389
 	{
@@ -57434,6 +58364,7 @@ fn yy_action_1232(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1233(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5396
 	{
@@ -57441,6 +58372,7 @@ fn yy_action_1233(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1234(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5397
 	{
@@ -57449,6 +58381,7 @@ fn yy_action_1234(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1235(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5415
 	{
@@ -57457,6 +58390,7 @@ fn yy_action_1235(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5427
 	{
@@ -57464,6 +58398,7 @@ fn yy_action_1236(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5428
 	{
@@ -57472,6 +58407,7 @@ fn yy_action_1237(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5434
 	{
@@ -57479,6 +58415,7 @@ fn yy_action_1238(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5435
 	{
@@ -57487,6 +58424,7 @@ fn yy_action_1239(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1240(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5441
 	{
@@ -57494,6 +58432,7 @@ fn yy_action_1240(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1241(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5442
 	{
@@ -57502,6 +58441,7 @@ fn yy_action_1241(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1242(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5453
 	{
@@ -57509,6 +58449,7 @@ fn yy_action_1242(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5454
 	{
@@ -57518,6 +58459,7 @@ fn yy_action_1243(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5459
 	{
@@ -57527,6 +58469,7 @@ fn yy_action_1244(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1245(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5464
 	{
@@ -57536,6 +58479,7 @@ fn yy_action_1245(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1246(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5469
 	{
@@ -57545,6 +58489,7 @@ fn yy_action_1246(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1247(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5474
 	{
@@ -57554,6 +58499,7 @@ fn yy_action_1247(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1248(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5479
 	{
@@ -57563,6 +58509,7 @@ fn yy_action_1248(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1249(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5486
 	{
@@ -57570,6 +58517,7 @@ fn yy_action_1249(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1250(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5487
 	{
@@ -57577,6 +58525,7 @@ fn yy_action_1250(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1251(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5490
 	{
@@ -57584,6 +58533,7 @@ fn yy_action_1251(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1252(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5493
 	{
@@ -57591,6 +58541,7 @@ fn yy_action_1252(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5498
 	{
@@ -57598,6 +58549,7 @@ fn yy_action_1253(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1254(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5503
 	{
@@ -57605,6 +58557,7 @@ fn yy_action_1254(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1255(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5504
 	{
@@ -57612,6 +58565,7 @@ fn yy_action_1255(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1256(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5509
 	{
@@ -57619,6 +58573,7 @@ fn yy_action_1256(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1257(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5510
 	{
@@ -57626,6 +58581,7 @@ fn yy_action_1257(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1258(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5515
 	{
@@ -57633,6 +58589,7 @@ fn yy_action_1258(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1259(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5518
 	{
@@ -57641,6 +58598,7 @@ fn yy_action_1259(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1260(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5522
 	{
@@ -57649,6 +58607,7 @@ fn yy_action_1260(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1261(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5531
 	{
@@ -57656,6 +58615,7 @@ fn yy_action_1261(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1262(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5536
 	{
@@ -57664,6 +58624,7 @@ fn yy_action_1262(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5544
 	{
@@ -57671,6 +58632,7 @@ fn yy_action_1263(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5547
 	{
@@ -57678,6 +58640,7 @@ fn yy_action_1264(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1265(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5552
 	{
@@ -57685,6 +58648,7 @@ fn yy_action_1265(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1266(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5555
 	{
@@ -57692,6 +58656,7 @@ fn yy_action_1266(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1267(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5558
 	{
@@ -57699,6 +58664,7 @@ fn yy_action_1267(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1268(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5563
 	{
@@ -57706,6 +58672,7 @@ fn yy_action_1268(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1269(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5564
 	{
@@ -57713,6 +58680,7 @@ fn yy_action_1269(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1270(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5571
 	{
@@ -57720,6 +58688,7 @@ fn yy_action_1270(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1271(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5580
 	{
@@ -57728,6 +58697,7 @@ fn yy_action_1271(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5592
 	{
@@ -57735,6 +58705,7 @@ fn yy_action_1272(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5603
 	{
@@ -57742,6 +58713,7 @@ fn yy_action_1273(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5604
 	{
@@ -57749,6 +58721,7 @@ fn yy_action_1274(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1275(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5605
 	{
@@ -57756,6 +58729,7 @@ fn yy_action_1275(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1276(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5612
 	{
@@ -57766,6 +58740,7 @@ fn yy_action_1276(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1277(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5618
 	{
@@ -57776,6 +58751,7 @@ fn yy_action_1277(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1278(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5630
 	{
@@ -57786,6 +58762,7 @@ fn yy_action_1278(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1279(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5636
 	{
@@ -57796,6 +58773,7 @@ fn yy_action_1279(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1280(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5644
 	{
@@ -57803,6 +58781,7 @@ fn yy_action_1280(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5645
 	{
@@ -57810,6 +58789,7 @@ fn yy_action_1281(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5650
 	{
@@ -57817,6 +58797,7 @@ fn yy_action_1282(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1283(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5651
 	{
@@ -57824,6 +58805,7 @@ fn yy_action_1283(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1284(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5654
 	{
@@ -57831,6 +58813,7 @@ fn yy_action_1284(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1285(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5657
 	{
@@ -57838,6 +58821,7 @@ fn yy_action_1285(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1286(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5660
 	{
@@ -57845,6 +58829,7 @@ fn yy_action_1286(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5663
 	{
@@ -57852,6 +58837,7 @@ fn yy_action_1287(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5664
 	{
@@ -57859,6 +58845,7 @@ fn yy_action_1288(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1289(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5665
 	{
@@ -57866,6 +58853,7 @@ fn yy_action_1289(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1290(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5668
 	{
@@ -57873,6 +58861,7 @@ fn yy_action_1290(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1291(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5669
 	{
@@ -57880,6 +58869,7 @@ fn yy_action_1291(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1292(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5670
 	{
@@ -57889,6 +58879,7 @@ fn yy_action_1292(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1293(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5684
 	{
@@ -57896,6 +58887,7 @@ fn yy_action_1293(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1294(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5697
 	{
@@ -57903,6 +58895,7 @@ fn yy_action_1294(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1295(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5700
 	{
@@ -57910,6 +58903,7 @@ fn yy_action_1295(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1296(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5701
 	{
@@ -57917,6 +58911,7 @@ fn yy_action_1296(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5706
 	{
@@ -57924,6 +58919,7 @@ fn yy_action_1297(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5709
 	{
@@ -57931,6 +58927,7 @@ fn yy_action_1298(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5712
 	{
@@ -57938,6 +58935,7 @@ fn yy_action_1299(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1300(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5722
 	{
@@ -57945,6 +58943,7 @@ fn yy_action_1300(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1301(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5731
 	{
@@ -57956,6 +58955,7 @@ fn yy_action_1301(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5738
 	{
@@ -57968,6 +58968,7 @@ fn yy_action_1302(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1303(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5748
 	{
@@ -57976,6 +58977,7 @@ fn yy_action_1303(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5752
 	{
@@ -57984,6 +58986,7 @@ fn yy_action_1304(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1305(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5762
 	{
@@ -57991,6 +58994,7 @@ fn yy_action_1305(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5763
 	{
@@ -57998,6 +59002,7 @@ fn yy_action_1306(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5766
 	{
@@ -58005,6 +59010,7 @@ fn yy_action_1307(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5767
 	{
@@ -58014,6 +59020,7 @@ fn yy_action_1308(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1309(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5774
 	{
@@ -58021,6 +59028,7 @@ fn yy_action_1309(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1310(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5775
 	{
@@ -58028,6 +59036,7 @@ fn yy_action_1310(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1311(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5779
 	{
@@ -58035,6 +59044,7 @@ fn yy_action_1311(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5787
 	{
@@ -58042,6 +59052,7 @@ fn yy_action_1312(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5790
 	{
@@ -58049,6 +59060,7 @@ fn yy_action_1313(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5793
 	{
@@ -58056,6 +59068,7 @@ fn yy_action_1314(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5798
 	{
@@ -58063,6 +59076,7 @@ fn yy_action_1315(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5799
 	{
@@ -58070,6 +59084,7 @@ fn yy_action_1316(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1317(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5814
 	{
@@ -58077,6 +59092,7 @@ fn yy_action_1317(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5815
 	{
@@ -58084,6 +59100,7 @@ fn yy_action_1318(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5818
 	{
@@ -58094,6 +59111,7 @@ fn yy_action_1319(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1320(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5828
 	{
@@ -58103,6 +59121,7 @@ fn yy_action_1320(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5833
 	{
@@ -58112,6 +59131,7 @@ fn yy_action_1321(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1322(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5838
 	{
@@ -58122,6 +59142,7 @@ fn yy_action_1322(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1323(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5844
 	{
@@ -58131,6 +59152,7 @@ fn yy_action_1323(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1324(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5849
 	{
@@ -58141,6 +59163,7 @@ fn yy_action_1324(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1325(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5855
 	{
@@ -58152,6 +59175,7 @@ fn yy_action_1325(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1326(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5862
 	{
@@ -58162,6 +59186,7 @@ fn yy_action_1326(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1327(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5868
 	{
@@ -58171,6 +59196,7 @@ fn yy_action_1327(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1328(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5873
 	{
@@ -58181,6 +59207,7 @@ fn yy_action_1328(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1329(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5879
 	{
@@ -58191,6 +59218,7 @@ fn yy_action_1329(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5885
 	{
@@ -58202,6 +59230,7 @@ fn yy_action_1330(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5892
 	{
@@ -58212,6 +59241,7 @@ fn yy_action_1331(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5898
 	{
@@ -58223,6 +59253,7 @@ fn yy_action_1332(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1333(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5905
 	{
@@ -58235,6 +59266,7 @@ fn yy_action_1333(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1334(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5913
 	{
@@ -58248,6 +59280,7 @@ fn yy_action_1334(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1335(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5922
 	{
@@ -58259,6 +59292,7 @@ fn yy_action_1335(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1336(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5929
 	{
@@ -58271,6 +59305,7 @@ fn yy_action_1336(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1337(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5937
 	{
@@ -58283,6 +59318,7 @@ fn yy_action_1337(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1338(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5945
 	{
@@ -58296,6 +59332,7 @@ fn yy_action_1338(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1339(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5954
 	{
@@ -58311,6 +59348,7 @@ fn yy_action_1339(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1340(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5965
 	{
@@ -58327,6 +59365,7 @@ fn yy_action_1340(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1341(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5981
 	{
@@ -58334,6 +59373,7 @@ fn yy_action_1341(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1342(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5982
 	{
@@ -58341,6 +59381,7 @@ fn yy_action_1342(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1343(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5983
 	{
@@ -58348,6 +59389,7 @@ fn yy_action_1343(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1344(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5984
 	{
@@ -58355,6 +59397,7 @@ fn yy_action_1344(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1345(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5987
 	{
@@ -58362,6 +59405,7 @@ fn yy_action_1345(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1346(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5988
 	{
@@ -58369,6 +59413,7 @@ fn yy_action_1346(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1347(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:5996
 	{
@@ -58378,6 +59423,7 @@ fn yy_action_1347(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1348(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6003
 	{
@@ -58385,6 +59431,7 @@ fn yy_action_1348(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1349(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6004
 	{
@@ -58393,6 +59440,7 @@ fn yy_action_1349(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1350(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6008
 	{
@@ -58400,6 +59448,7 @@ fn yy_action_1350(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1351(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6009
 	{
@@ -58408,6 +59457,7 @@ fn yy_action_1351(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1352(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6015
 	{
@@ -58415,6 +59465,7 @@ fn yy_action_1352(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1353(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6016
 	{
@@ -58422,6 +59473,7 @@ fn yy_action_1353(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1354(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6021
 	{
@@ -58431,6 +59483,7 @@ fn yy_action_1354(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1355(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6033
 	{
@@ -58439,6 +59492,7 @@ fn yy_action_1355(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1356(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6037
 	{
@@ -58449,6 +59503,7 @@ fn yy_action_1356(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1357(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6045
 	{
@@ -58456,6 +59511,7 @@ fn yy_action_1357(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1358(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6046
 	{
@@ -58464,6 +59520,7 @@ fn yy_action_1358(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1359(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6057
 	{
@@ -58471,6 +59528,7 @@ fn yy_action_1359(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1360(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6058
 	{
@@ -58481,6 +59539,7 @@ fn yy_action_1360(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1361(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6066
 	{
@@ -58488,6 +59547,7 @@ fn yy_action_1361(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1362(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6067
 	{
@@ -58497,6 +59557,7 @@ fn yy_action_1362(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1363(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6072
 	{
@@ -58506,6 +59567,7 @@ fn yy_action_1363(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1364(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6084
 	{
@@ -58519,6 +59581,7 @@ fn yy_action_1364(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1365(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6095
 	{
@@ -58526,6 +59589,7 @@ fn yy_action_1365(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1366(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6098
 	{
@@ -58534,6 +59598,7 @@ fn yy_action_1366(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1367(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6104
 	{
@@ -58544,6 +59609,7 @@ fn yy_action_1367(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1368(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6113
 	{
@@ -58554,6 +59620,7 @@ fn yy_action_1368(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1369(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6122
 	{
@@ -58561,6 +59628,7 @@ fn yy_action_1369(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1370(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6123
 	{
@@ -58569,6 +59637,7 @@ fn yy_action_1370(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1371(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6132
 	{
@@ -58580,6 +59649,7 @@ fn yy_action_1371(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1372(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6142
 	{
@@ -58587,6 +59657,7 @@ fn yy_action_1372(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1373(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6143
 	{
@@ -58596,6 +59667,7 @@ fn yy_action_1373(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1376(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6154
 	{
@@ -58606,6 +59678,7 @@ fn yy_action_1376(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1377(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6160
 	{
@@ -58613,6 +59686,7 @@ fn yy_action_1377(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1378(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6164
 	{
@@ -58624,6 +59698,7 @@ fn yy_action_1378(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1379(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6173
 	{
@@ -58631,6 +59706,7 @@ fn yy_action_1379(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1380(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6176
 	{
@@ -58638,6 +59714,7 @@ fn yy_action_1380(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1383(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6187
 	{
@@ -58645,6 +59722,7 @@ fn yy_action_1383(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1384(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6190
 	{
@@ -58652,6 +59730,7 @@ fn yy_action_1384(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1385(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6199
 	{
@@ -58663,6 +59742,7 @@ fn yy_action_1385(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1386(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6214
 	{
@@ -58670,6 +59750,7 @@ fn yy_action_1386(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1387(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6217
 	{
@@ -58677,6 +59758,7 @@ fn yy_action_1387(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1388(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6220
 	{
@@ -58684,6 +59766,7 @@ fn yy_action_1388(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1389(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6230
 	{
@@ -58692,6 +59775,7 @@ fn yy_action_1389(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1390(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6236
 	{
@@ -58701,6 +59785,7 @@ fn yy_action_1390(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1391(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6247
 	{
@@ -58710,6 +59795,7 @@ fn yy_action_1391(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1392(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6252
 	{
@@ -58724,6 +59810,7 @@ fn yy_action_1392(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1393(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6262
 	{
@@ -58732,6 +59819,7 @@ fn yy_action_1393(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1394(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6266
 	{
@@ -58739,6 +59827,7 @@ fn yy_action_1394(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1395(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6270
 	{
@@ -58747,6 +59836,7 @@ fn yy_action_1395(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1396(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6275
 	{
@@ -58756,6 +59846,7 @@ fn yy_action_1396(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1397(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6282
 	{
@@ -58763,6 +59854,7 @@ fn yy_action_1397(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1398(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6286
 	{
@@ -58771,6 +59863,7 @@ fn yy_action_1398(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1399(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6292
 	{
@@ -58778,6 +59871,7 @@ fn yy_action_1399(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1400(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6295
 	{
@@ -58785,6 +59879,7 @@ fn yy_action_1400(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1401(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6300
 	{
@@ -58792,6 +59887,7 @@ fn yy_action_1401(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1402(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6303
 	{
@@ -58801,6 +59897,7 @@ fn yy_action_1402(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1403(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6308
 	{
@@ -58811,6 +59908,7 @@ fn yy_action_1403(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1404(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6322
 	{
@@ -58818,6 +59916,7 @@ fn yy_action_1404(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1405(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6325
 	{
@@ -58825,6 +59924,7 @@ fn yy_action_1405(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1406(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6330
 	{
@@ -58832,6 +59932,7 @@ fn yy_action_1406(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1407(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6341
 	{
@@ -58841,6 +59942,7 @@ fn yy_action_1407(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1408(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6348
 	{
@@ -58848,6 +59950,7 @@ fn yy_action_1408(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1409(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6349
 	{
@@ -58856,6 +59959,7 @@ fn yy_action_1409(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1410(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6355
 	{
@@ -58863,6 +59967,7 @@ fn yy_action_1410(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1411(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6360
 	{
@@ -58870,6 +59975,7 @@ fn yy_action_1411(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1412(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6364
 	{
@@ -58880,6 +59986,7 @@ fn yy_action_1412(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1413(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6374
 	{
@@ -58887,6 +59994,7 @@ fn yy_action_1413(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1414(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6375
 	{
@@ -58898,6 +60006,7 @@ fn yy_action_1414(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1415(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6384
 	{
@@ -58905,6 +60014,7 @@ fn yy_action_1415(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1416(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6387
 	{
@@ -58912,6 +60022,7 @@ fn yy_action_1416(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1417(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6395
 	{
@@ -58919,6 +60030,7 @@ fn yy_action_1417(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1418(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6398
 	{
@@ -58926,6 +60038,7 @@ fn yy_action_1418(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1419(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6414
 	{
@@ -58933,6 +60046,7 @@ fn yy_action_1419(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1420(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6417
 	{
@@ -58940,6 +60054,7 @@ fn yy_action_1420(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1421(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6418
 	{
@@ -58948,6 +60063,7 @@ fn yy_action_1421(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1422(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6430
 	{
@@ -58955,6 +60071,7 @@ fn yy_action_1422(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1423(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6431
 	{
@@ -58962,6 +60079,7 @@ fn yy_action_1423(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1424(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6432
 	{
@@ -58969,6 +60087,7 @@ fn yy_action_1424(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1425(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6437
 	{
@@ -58976,6 +60095,7 @@ fn yy_action_1425(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1426(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6440
 	{
@@ -58983,6 +60103,7 @@ fn yy_action_1426(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1427(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6447
 	{
@@ -58991,6 +60112,7 @@ fn yy_action_1427(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1428(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6451
 	{
@@ -58999,6 +60121,7 @@ fn yy_action_1428(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1429(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6457
 	{
@@ -59006,6 +60129,7 @@ fn yy_action_1429(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1430(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6460
 	{
@@ -59015,6 +60139,7 @@ fn yy_action_1430(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1431(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6465
 	{
@@ -59025,6 +60150,7 @@ fn yy_action_1431(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1432(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6471
 	{
@@ -59034,6 +60160,7 @@ fn yy_action_1432(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1433(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6476
 	{
@@ -59044,6 +60171,7 @@ fn yy_action_1433(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1434(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6484
 	{
@@ -59053,6 +60181,7 @@ fn yy_action_1434(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1435(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6489
 	{
@@ -59062,6 +60191,7 @@ fn yy_action_1435(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1436(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6494
 	{
@@ -59072,6 +60202,7 @@ fn yy_action_1436(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1437(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6500
 	{
@@ -59082,6 +60213,7 @@ fn yy_action_1437(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1438(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6508
 	{
@@ -59092,6 +60224,7 @@ fn yy_action_1438(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1439(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6516
 	{
@@ -59101,6 +60234,7 @@ fn yy_action_1439(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1440(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6523
 	{
@@ -59108,6 +60242,7 @@ fn yy_action_1440(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1441(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6526
 	{
@@ -59115,6 +60250,7 @@ fn yy_action_1441(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1442(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6529
 	{
@@ -59122,6 +60258,7 @@ fn yy_action_1442(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1443(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6530
 	{
@@ -59129,6 +60266,7 @@ fn yy_action_1443(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1444(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6535
 	{
@@ -59136,6 +60274,7 @@ fn yy_action_1444(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1445(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6540
 	{
@@ -59144,6 +60283,7 @@ fn yy_action_1445(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1446(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6549
 	{
@@ -59152,6 +60292,7 @@ fn yy_action_1446(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1447(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6554
 	{
@@ -59161,6 +60302,7 @@ fn yy_action_1447(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1448(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6562
 	{
@@ -59168,6 +60310,7 @@ fn yy_action_1448(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1449(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6563
 	{
@@ -59175,6 +60318,7 @@ fn yy_action_1449(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1450(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6569
 	{
@@ -59186,6 +60330,7 @@ fn yy_action_1450(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1451(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6579
 	{
@@ -59193,6 +60338,7 @@ fn yy_action_1451(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1452(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6582
 	{
@@ -59200,6 +60346,7 @@ fn yy_action_1452(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1453(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6585
 	{
@@ -59207,6 +60354,7 @@ fn yy_action_1453(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1454(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6588
 	{
@@ -59214,6 +60362,7 @@ fn yy_action_1454(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1455(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6595
 	{
@@ -59224,6 +60373,7 @@ fn yy_action_1455(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1456(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6603
 	{
@@ -59233,6 +60383,7 @@ fn yy_action_1456(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1457(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6619
 	{
@@ -59245,6 +60396,7 @@ fn yy_action_1457(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1458(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6630
 	{
@@ -59252,6 +60404,7 @@ fn yy_action_1458(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1459(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6633
 	{
@@ -59259,6 +60412,7 @@ fn yy_action_1459(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1460(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6640
 	{
@@ -59266,6 +60420,7 @@ fn yy_action_1460(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1461(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6641
 	{
@@ -59273,6 +60428,7 @@ fn yy_action_1461(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1462(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6642
 	{
@@ -59280,6 +60436,7 @@ fn yy_action_1462(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1463(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6643
 	{
@@ -59287,6 +60444,7 @@ fn yy_action_1463(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1464(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6644
 	{
@@ -59294,6 +60452,7 @@ fn yy_action_1464(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1465(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6645
 	{
@@ -59301,6 +60460,7 @@ fn yy_action_1465(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1466(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6646
 	{
@@ -59308,6 +60468,7 @@ fn yy_action_1466(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1467(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6649
 	{
@@ -59315,6 +60476,7 @@ fn yy_action_1467(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1468(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6650
 	{
@@ -59322,6 +60484,7 @@ fn yy_action_1468(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1469(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6651
 	{
@@ -59329,6 +60492,7 @@ fn yy_action_1469(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1470(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6652
 	{
@@ -59336,6 +60500,7 @@ fn yy_action_1470(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1471(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6653
 	{
@@ -59343,6 +60508,7 @@ fn yy_action_1471(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1472(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6658
 	{
@@ -59350,6 +60516,7 @@ fn yy_action_1472(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1473(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6663
 	{
@@ -59358,6 +60525,7 @@ fn yy_action_1473(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1474(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6673
 	{
@@ -59365,6 +60533,7 @@ fn yy_action_1474(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1475(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6681
 	{
@@ -59372,6 +60541,7 @@ fn yy_action_1475(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1476(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6682
 	{
@@ -59379,6 +60549,7 @@ fn yy_action_1476(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1477(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6683
 	{
@@ -59386,6 +60557,7 @@ fn yy_action_1477(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1478(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6684
 	{
@@ -59393,6 +60565,7 @@ fn yy_action_1478(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1479(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6685
 	{
@@ -59400,6 +60573,7 @@ fn yy_action_1479(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1480(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6686
 	{
@@ -59407,6 +60581,7 @@ fn yy_action_1480(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1481(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6691
 	{
@@ -59421,6 +60596,7 @@ fn yy_action_1481(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1482(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6703
 	{
@@ -59433,6 +60609,7 @@ fn yy_action_1482(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1483(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6712
 	{
@@ -59445,6 +60622,7 @@ fn yy_action_1483(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1484(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6722
 	{
@@ -59452,6 +60630,7 @@ fn yy_action_1484(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1485(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6723
 	{
@@ -59459,6 +60638,7 @@ fn yy_action_1485(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1486(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6726
 	{
@@ -59468,6 +60648,7 @@ fn yy_action_1486(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1487(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6731
 	{
@@ -59476,6 +60657,7 @@ fn yy_action_1487(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1488(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6739
 	{
@@ -59487,6 +60669,7 @@ fn yy_action_1488(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1489(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6748
 	{
@@ -59494,6 +60677,7 @@ fn yy_action_1489(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1490(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6749
 	{
@@ -59505,6 +60689,7 @@ fn yy_action_1490(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1491(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6758
 	{
@@ -59514,6 +60699,7 @@ fn yy_action_1491(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1492(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6763
 	{
@@ -59526,6 +60712,7 @@ fn yy_action_1492(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1493(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6773
 	{
@@ -59533,6 +60720,7 @@ fn yy_action_1493(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1494(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6774
 	{
@@ -59541,6 +60729,7 @@ fn yy_action_1494(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1495(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6787
 	{
@@ -59548,6 +60737,7 @@ fn yy_action_1495(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1496(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6791
 	{
@@ -59557,6 +60747,7 @@ fn yy_action_1496(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1497(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6805
 	{
@@ -59566,6 +60757,7 @@ fn yy_action_1497(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1498(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6811
 	{
@@ -59575,6 +60767,7 @@ fn yy_action_1498(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1499(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6817
 	{
@@ -59586,6 +60779,7 @@ fn yy_action_1499(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1500(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6825
 	{
@@ -59597,6 +60791,7 @@ fn yy_action_1500(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1501(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6838
 	{
@@ -59604,6 +60799,7 @@ fn yy_action_1501(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1502(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6839
 	{
@@ -59612,6 +60808,7 @@ fn yy_action_1502(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1503(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6845
 	{
@@ -59619,6 +60816,7 @@ fn yy_action_1503(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1504(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6848
 	{
@@ -59626,6 +60824,7 @@ fn yy_action_1504(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1505(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6856
 	{
@@ -59635,6 +60834,7 @@ fn yy_action_1505(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1506(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6864
 	{
@@ -59642,6 +60842,7 @@ fn yy_action_1506(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1507(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6867
 	{
@@ -59649,6 +60850,7 @@ fn yy_action_1507(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1508(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6870
 	{
@@ -59656,6 +60858,7 @@ fn yy_action_1508(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1509(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6874
 	{
@@ -59663,6 +60866,7 @@ fn yy_action_1509(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1510(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6880
 	{
@@ -59670,6 +60874,7 @@ fn yy_action_1510(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1511(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6885
 	{
@@ -59677,6 +60882,7 @@ fn yy_action_1511(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1512(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6890
 	{
@@ -59684,6 +60890,7 @@ fn yy_action_1512(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1513(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6891
 	{
@@ -59691,6 +60898,7 @@ fn yy_action_1513(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1514(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6896
 	{
@@ -59702,6 +60910,7 @@ fn yy_action_1514(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1515(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6910
 	{
@@ -59713,6 +60922,7 @@ fn yy_action_1515(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1516(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6917
 	{
@@ -59724,6 +60934,7 @@ fn yy_action_1516(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1517(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6924
 	{
@@ -59735,6 +60946,7 @@ fn yy_action_1517(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1518(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6939
 	{
@@ -59747,6 +60959,7 @@ fn yy_action_1518(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1519(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6948
 	{
@@ -59761,6 +60974,7 @@ fn yy_action_1519(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1520(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6959
 	{
@@ -59775,6 +60989,7 @@ fn yy_action_1520(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1521(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6970
 	{
@@ -59791,6 +61006,7 @@ fn yy_action_1521(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1522(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6984
 	{
@@ -59798,6 +61014,7 @@ fn yy_action_1522(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1523(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6985
 	{
@@ -59805,6 +61022,7 @@ fn yy_action_1523(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1524(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6990
 	{
@@ -59814,6 +61032,7 @@ fn yy_action_1524(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1525(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:6995
 	{
@@ -59824,6 +61043,7 @@ fn yy_action_1525(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1526(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7003
 	{
@@ -59834,6 +61054,7 @@ fn yy_action_1526(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1527(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7009
 	{
@@ -59846,6 +61067,7 @@ fn yy_action_1527(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1528(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7022
 	{
@@ -59854,6 +61076,7 @@ fn yy_action_1528(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1529(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7026
 	{
@@ -59862,6 +61085,7 @@ fn yy_action_1529(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1530(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7030
 	{
@@ -59870,6 +61094,7 @@ fn yy_action_1530(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1531(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7034
 	{
@@ -59879,6 +61104,7 @@ fn yy_action_1531(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1532(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7039
 	{
@@ -59887,6 +61113,7 @@ fn yy_action_1532(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1533(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7043
 	{
@@ -59895,6 +61122,7 @@ fn yy_action_1533(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1534(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7047
 	{
@@ -59903,6 +61131,7 @@ fn yy_action_1534(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1535(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7051
 	{
@@ -59912,6 +61141,7 @@ fn yy_action_1535(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1536(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7058
 	{
@@ -59919,6 +61149,7 @@ fn yy_action_1536(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1537(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7059
 	{
@@ -59926,6 +61157,7 @@ fn yy_action_1537(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1538(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7064
 	{
@@ -59933,6 +61165,7 @@ fn yy_action_1538(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1539(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7065
 	{
@@ -59940,6 +61173,7 @@ fn yy_action_1539(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1540(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7068
 	{
@@ -59947,6 +61181,7 @@ fn yy_action_1540(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1541(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7071
 	{
@@ -59954,6 +61189,7 @@ fn yy_action_1541(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1542(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7072
 	{
@@ -59961,6 +61197,7 @@ fn yy_action_1542(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1543(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7075
 	{
@@ -59971,6 +61208,7 @@ fn yy_action_1543(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1544(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7083
 	{
@@ -59978,6 +61216,7 @@ fn yy_action_1544(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1545(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7084
 	{
@@ -59985,6 +61224,7 @@ fn yy_action_1545(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1546(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7089
 	{
@@ -59992,6 +61232,7 @@ fn yy_action_1546(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1547(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7090
 	{
@@ -59999,6 +61240,7 @@ fn yy_action_1547(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1548(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7091
 	{
@@ -60006,6 +61248,7 @@ fn yy_action_1548(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1549(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7094
 	{
@@ -60013,6 +61256,7 @@ fn yy_action_1549(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1550(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7097
 	{
@@ -60020,6 +61264,7 @@ fn yy_action_1550(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1551(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7098
 	{
@@ -60027,6 +61272,7 @@ fn yy_action_1551(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1552(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7103
 	{
@@ -60034,6 +61280,7 @@ fn yy_action_1552(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1553(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7104
 	{
@@ -60041,6 +61288,7 @@ fn yy_action_1553(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1554(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7105
 	{
@@ -60048,6 +61296,7 @@ fn yy_action_1554(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymT
 	}
 }
 
+@[manualfree]
 fn yy_action_1555(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:7106
 	{

@@ -92,9 +92,9 @@ fn run_direct(mut agent vsql.Agent, stmt string, autocommit bool) {
 	for warning in agent.warnings {
 		// 02000 (no data) is a completion condition, not a warning.
 		if vsql.sqlstate_from_int(warning.code()).starts_with('02') {
-			print_error('Notice', warning)
+			print_error('Notice', warning.ierror())
 		} else {
-			print_error('Warning', warning)
+			print_error('Warning', warning.ierror())
 		}
 	}
 
@@ -148,7 +148,9 @@ fn print_table(result vsql.Result) !int {
 	mut widths := []int{}
 	mut right_align := []bool{}
 	for column in result.columns {
-		header << column.name.sub_entity_name
+		// -autofree frees the loop's copy of column at the end of each iteration,
+		// so header needs its own copy of the name (vsql-only, no small repro yet).
+		header << column.name.sub_entity_name.clone()
 		widths << utf8_str_visible_length(column.name.sub_entity_name)
 		right_align << is_number(column.typ)
 	}

@@ -39,9 +39,19 @@ struct YYBox {
 }
 
 fn yy_box[T](v T) YYBox {
-	mut ptr := unsafe { &T(voidptr(malloc(int(sizeof(T))))) }
-	unsafe {
-		*ptr = v
+	// The memory is zeroed because -autofree frees the old value when v is
+	// assigned to it, and freeing a zeroed value does nothing.
+	mut ptr := unsafe { &T(voidptr(vcalloc(int(sizeof(T))))) }
+	$if autofree {
+		// The caller frees v (often a temporary), so the box needs its own
+		// copy (https://github.com/vlang/v/issues/32943).
+		unsafe {
+			*ptr = own_copy(&v)
+		}
+	} $else {
+		unsafe {
+			*ptr = v
+		}
 	}
 	return YYBox{typeof[T]().idx, voidptr(ptr)}
 }
@@ -49,11 +59,32 @@ fn yy_box[T](v T) YYBox {
 fn yy_unbox[T](sym YYSym) T {
 	if sym is YYBox {
 		if sym.typ == typeof[T]().idx {
+			$if autofree {
+				// -autofree frees what's returned, which would free the boxed
+				// value that the action can use again.
+				return own_copy(unsafe { &T(sym.ptr) })
+			}
 			return unsafe { *(&T(sym.ptr)) }
 		}
 	}
 
 	panic('expected ${T.name}')
+}
+
+// own_copy is a deep copy of *v for -autofree. A struct or sum type is copied
+// through an array, because only an array has a clone() for every type.
+@[manualfree]
+fn own_copy[T](v &T) T {
+	$if T is $array {
+		return v.clone()
+	} $else $if T is string {
+		return v.clone()
+	} $else $if T is $struct || T is $sumtype {
+		one := [*v]
+		copies := one.clone()
+		return copies[0]
+	}
+	return *v
 }
 
 // yy_stmt returns the statement that was parsed. It isn't generic so that the
@@ -92,6 +123,10 @@ mut:
 	at_end bool
 }
 
+// lex is @[manualfree] because the parser has copies of the value that lval
+// had (see YYParserImpl.parse), so -autofree mustn't free it when it's
+// replaced.
+@[manualfree]
 fn (mut l Lexer) lex(mut lval YYSymType) int {
 	if l.pos >= l.tokens.len {
 		l.at_end = true
@@ -133,7 +168,7 @@ fn (mut l Lexer) error(s string) IError {
 }
 
 fn cleanup_yacc_error(s string) string {
-	mut msg := s
+	mut msg := own_string(s)
 
 	msg = msg.replace('OPERATOR_ILIKE', 'ILIKE')
 	msg = msg.replace('OPERATOR_COMMA', '","')
@@ -187,7 +222,11 @@ mut:
 fn (t Token) sym() YYSymType {
 	return YYSymType{
 		v: match t.value {
-			IdentifierChain { YYSym(yy_box[IdentifierChain](t.value)) }
+			// The tokens own their values, which are freed with them, so the
+			// syntax tree has its own copy.
+			IdentifierChain {
+				YYSym(yy_box[IdentifierChain](IdentifierChain{t.value.identifier.clone()}))
+			}
 			Value { YYSym(yy_box[Value](t.value)) }
 			string { YYSym(t.value) }
 		}
@@ -534,7 +573,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		}
 	}
 
-	return tokens, features
+	// A clone is returned because -autofree also frees tokens when they're
+	// returned.
+	return tokens.clone(), features
 }
 
 // statement_runes is text.runes(), but an ASCII statement is copied straight
@@ -589,7 +630,7 @@ fn is_ilike_operator(tokens []Token, i int) bool {
 // Neither do the only non-reserved words that are before a name in the grammar,
 // so a column that's called one of those needs quotes to be the left of ILIKE.
 fn ends_value(token Token, reserved []string) bool {
-	name := yy_toknames[token.token - 57343]
+	name := own_elem(yy_toknames, token.token - 57343)
 	if name.starts_with('OPERATOR_') {
 		return name in ['OPERATOR_RIGHT_PAREN', 'OPERATOR_QUESTION_MARK']
 	}
@@ -606,7 +647,7 @@ fn ends_value(token Token, reserved []string) bool {
 // names and literals do, but only the reserved words that can be a character
 // string. A pattern of any other type is an error anyway.
 fn starts_value(token Token, reserved []string) bool {
-	name := yy_toknames[token.token - 57343]
+	name := own_elem(yy_toknames, token.token - 57343)
 	if name.starts_with('OPERATOR_') {
 		return name in ['OPERATOR_LEFT_PAREN', 'OPERATOR_QUESTION_MARK']
 	}
@@ -629,7 +670,7 @@ fn starts_value(token Token, reserved []string) bool {
 // is one that an expression can directly follow in the grammar, or a period for
 // "t.limit - 1".
 fn is_limit_clause(tokens []Token, i int) bool {
-	sym := tokens[i].value
+	sym := own_copy(&tokens[i].value)
 	if tokens[i].token != token_literal_identifier || sym !is IdentifierChain
 		|| (sym as IdentifierChain).identifier.to_upper() != 'LIMIT' || i + 1 >= tokens.len {
 		return false
@@ -874,7 +915,7 @@ fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
 		return sqlstate_42601('UESCAPE must be followed by a single character in quotes')
 	}
 
-	escape := cs[i + 1]
+	escape := own_elem(cs, i + 1)
 	if is_hexit(escape) || escape in [`+`, `'`, `"`] || is_white_space(escape) {
 		return sqlstate_42601("invalid Unicode escape character: '${escape}'")
 	}

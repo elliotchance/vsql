@@ -660,7 +660,7 @@ fn (mut y Vyacc) setup() ! {
 			y.fcode.write_string('\n\t}')
 			arms := y.fcode
 			y.fcode = y.factions
-			y.fcode.write_string('\n\nfn ${y.prefix}_action_${y.nprod}(mut ${y.prefix}lex YYLexer, mut ${y.prefix}rcvr YYParserImpl, ${y.prefix}_dollar []YYSymType, mut ${y.prefix}_val YYSymType) ! {')
+			y.fcode.write_string('\n\n@[manualfree]\nfn ${y.prefix}_action_${y.nprod}(mut ${y.prefix}lex YYLexer, mut ${y.prefix}rcvr YYParserImpl, ${y.prefix}_dollar []YYSymType, mut ${y.prefix}_val YYSymType) ! {')
 			y.cpyact(curprod, mem)!
 			y.fcode.write_string('\n}')
 			y.factions = y.fcode
@@ -3343,7 +3343,11 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	return ch, int($\$_tok2[ch-$\$_private])
 }
 
-@[direct_array_access]
+// The parser copies values between the lookahead, the stack and $\$_val, and
+// the copies share their memory, so -autofree must not free any of them (or
+// in the actions, which are also @[manualfree]). The values end up in the AST,
+// which is freed by its owner.
+@[direct_array_access; manualfree]
 fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	mut $\$n := 0
 	mut $\$_val := YYSymType{}

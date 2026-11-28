@@ -1,5 +1,9 @@
 module vsql
 
+// The conditions keep copies (see own_copy) of the names that they're given,
+// because they outlive them with -autofree
+// (https://github.com/vlang/v/issues/32943).
+
 // ISO/IEC 9075-2:2023, 24.1, SQLSTATE
 //
 // The SQL standard is pretty flexible on the individual codes, so I've copied
@@ -123,7 +127,7 @@ pub fn invalid_cursor(err IError) ?string {
 
 // Provides the human-readable message.
 fn (err SQLState) msg() string {
-	return err.msg
+	return own_string(err.msg)
 }
 
 // Is the integer representation of the SQLSTATE. Convert to a string with
@@ -146,7 +150,7 @@ fn sqlstate_01001(cursor_name string) IError {
 	return SQLState01001{
 		code:        sqlstate_to_int('01001')
 		msg:         'cursor operation conflict: ${cursor_name}'
-		cursor_name: cursor_name
+		cursor_name: own_copy(&cursor_name)
 	}
 }
 
@@ -221,7 +225,7 @@ fn sqlstate_24000(cursor_name string, msg string) IError {
 	return SQLState24000{
 		code:        sqlstate_to_int('24000')
 		msg:         'invalid cursor state: ${msg}'
-		cursor_name: cursor_name
+		cursor_name: own_copy(&cursor_name)
 	}
 }
 
@@ -264,7 +268,7 @@ fn sqlstate_22001(to Type) IError {
 	return SQLState22001{
 		code: sqlstate_to_int('22001')
 		msg:  'string data right truncation for ${to}'
-		to:   to
+		to:   own_copy(&to)
 	}
 }
 
@@ -589,8 +593,8 @@ fn sqlstate_23001(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23001{
 		code:       sqlstate_to_int('23001')
 		msg:        'restrict violation: ${msg}'
-		constraint: constraint
-		table:      table
+		constraint: own_copy(&constraint)
+		table:      own_copy(&table)
 	}
 }
 
@@ -621,8 +625,8 @@ fn sqlstate_23503(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23503{
 		code:       sqlstate_to_int('23503')
 		msg:        'violates foreign key constraint: ${msg}'
-		constraint: constraint
-		table:      table
+		constraint: own_copy(&constraint)
+		table:      own_copy(&table)
 	}
 }
 
@@ -637,8 +641,8 @@ fn sqlstate_23505(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23505{
 		code:       sqlstate_to_int('23505')
 		msg:        'violates unique constraint: ${msg}'
-		constraint: constraint
-		table:      table
+		constraint: own_copy(&constraint)
+		table:      own_copy(&table)
 	}
 }
 
@@ -653,8 +657,8 @@ fn sqlstate_23514(msg string, constraint Identifier, table Identifier) IError {
 	return SQLState23514{
 		code:       sqlstate_to_int('23514')
 		msg:        'violates check constraint: ${msg}'
-		constraint: constraint
-		table:      table
+		constraint: own_copy(&constraint)
+		table:      own_copy(&table)
 	}
 }
 
@@ -669,7 +673,7 @@ fn sqlstate_2bp01(object_name string) IError {
 	return SQLState2BP01{
 		code:        sqlstate_to_int('2BP01')
 		msg:         'dependent objects still exist on ${object_name}'
-		object_name: object_name
+		object_name: own_copy(&object_name)
 	}
 }
 
@@ -696,7 +700,7 @@ fn sqlstate_3d000(catalog_name string) IError {
 	return SQLState3D000{
 		code:         sqlstate_to_int('3D000')
 		msg:          'invalid catalog name: ${catalog_name}'
-		catalog_name: catalog_name
+		catalog_name: own_copy(&catalog_name)
 	}
 }
 
@@ -711,7 +715,7 @@ fn sqlstate_3f000(schema_name string) IError {
 	return SQLState3F000{
 		code:        sqlstate_to_int('3F000')
 		msg:         'invalid schema name: ${schema_name}'
-		schema_name: schema_name
+		schema_name: own_copy(&schema_name)
 	}
 }
 
@@ -753,7 +757,7 @@ fn sqlstate_42p03(cursor_name string) IError {
 	return SQLState42P03{
 		code:        sqlstate_to_int('42P03')
 		msg:         'duplicate cursor: ${cursor_name}'
-		cursor_name: cursor_name
+		cursor_name: own_copy(&cursor_name)
 	}
 }
 
@@ -768,7 +772,7 @@ fn sqlstate_42702(column_name string) IError {
 	return SQLState42702{
 		code:        sqlstate_to_int('42702')
 		msg:         'ambiguous column: ${column_name}'
-		column_name: column_name
+		column_name: own_copy(&column_name)
 	}
 }
 
@@ -787,7 +791,7 @@ fn sqlstate_42703(table Identifier, column_name string) IError {
 		code:        sqlstate_to_int('42703')
 		msg:         'no such column: ${column_name}'
 		table:       column_of(table, column_name)
-		column_name: column_name
+		column_name: own_copy(&column_name)
 	}
 }
 
@@ -805,18 +809,21 @@ fn sqlstate_42703_reference(name string, table Identifier, column_name string) I
 
 // column_of is the column of a table, for condition_table. The table is left
 // out if it's not a table in a schema (such as a derived table).
+//
+// The names are copies, since the condition outlives the table that the caller
+// has (https://github.com/vlang/v/issues/32453).
 fn column_of(table Identifier, column_name string) Identifier {
 	if table.schema_name == '' || table.custom_id != '' {
 		return Identifier{
-			sub_entity_name: column_name
+			sub_entity_name: own_string(column_name)
 		}
 	}
 
 	return Identifier{
-		catalog_name:    table.catalog_name
-		schema_name:     table.schema_name
-		entity_name:     table.entity_name
-		sub_entity_name: column_name
+		catalog_name:    own_string(table.catalog_name)
+		schema_name:     own_string(table.schema_name)
+		entity_name:     own_string(table.entity_name)
+		sub_entity_name: own_string(column_name)
 	}
 }
 
@@ -834,8 +841,8 @@ fn sqlstate_42704(entity_type string, entity_name string) IError {
 	return SQLState42704{
 		code:        sqlstate_to_int('42704')
 		msg:         'no such ${entity_type}: ${entity_name}'
-		entity_type: entity_type
-		entity_name: entity_name
+		entity_type: own_copy(&entity_type)
+		entity_name: own_copy(&entity_name)
 	}
 }
 
@@ -853,8 +860,8 @@ fn sqlstate_42710(entity_type string, entity_name string) IError {
 	return SQLState42710{
 		code:        sqlstate_to_int('42710')
 		msg:         'duplicate ${entity_type}: ${entity_name}'
-		entity_type: entity_type
-		entity_name: entity_name
+		entity_type: own_copy(&entity_type)
+		entity_name: own_copy(&entity_name)
 	}
 }
 
@@ -869,7 +876,7 @@ fn sqlstate_42803(column_name string) IError {
 	return SQLState42803{
 		code:        sqlstate_to_int('42803')
 		msg:         'column ${column_name} must be in the GROUP BY clause or used in an aggregate function'
-		column_name: column_name
+		column_name: own_copy(&column_name)
 	}
 }
 
@@ -884,8 +891,8 @@ fn sqlstate_42804(msg string, expected string, actual string) IError {
 	return SQLState42804{
 		code:     sqlstate_to_int('42804')
 		msg:      'data type mismatch ${msg}: expected ${expected} but got ${actual}'
-		expected: expected
-		actual:   actual
+		expected: own_copy(&expected)
+		actual:   own_copy(&actual)
 	}
 }
 
@@ -912,8 +919,8 @@ fn sqlstate_42846(from Type, to Type) IError {
 	return SQLState42846{
 		code: sqlstate_to_int('42846')
 		msg:  'cannot coerce ${from} to ${to}'
-		from: from
-		to:   to
+		from: own_copy(&from)
+		to:   own_copy(&to)
 	}
 }
 
@@ -929,7 +936,7 @@ fn sqlstate_428c9(column_name string) IError {
 	return SQLState428C9{
 		code:        sqlstate_to_int('428C9')
 		msg:         'cannot assign a value other than DEFAULT to column ${column_name}, which is GENERATED ALWAYS'
-		column_name: column_name
+		column_name: own_copy(&column_name)
 	}
 }
 
@@ -950,8 +957,8 @@ fn sqlstate_42p01(entity_type string, entity_name string) IError {
 	return SQLState42P01{
 		code:        sqlstate_to_int('42P01')
 		msg:         'no such ${entity_type}: ${entity_name}'
-		entity_type: entity_type
-		entity_name: entity_name
+		entity_type: own_copy(&entity_type)
+		entity_name: own_copy(&entity_name)
 	}
 }
 
@@ -982,7 +989,7 @@ fn sqlstate_42p06(schema_name string) IError {
 	return SQLState42P06{
 		code:        sqlstate_to_int('42P06')
 		msg:         'duplicate schema: ${schema_name}'
-		schema_name: schema_name
+		schema_name: own_copy(&schema_name)
 	}
 }
 
@@ -1003,8 +1010,8 @@ fn sqlstate_42p07(entity_type string, entity_name string) IError {
 	return SQLState42P07{
 		code:        sqlstate_to_int('42P07')
 		msg:         'duplicate ${entity_type}: ${entity_name}'
-		entity_type: entity_type
-		entity_name: entity_name
+		entity_type: own_copy(&entity_type)
+		entity_name: own_copy(&entity_name)
 	}
 }
 
@@ -1035,7 +1042,7 @@ fn sqlstate_42p10(column_name string) IError {
 	return SQLState42P10{
 		code:        sqlstate_to_int('42P10')
 		msg:         'column ${column_name} must be in the select list to be used in ORDER BY with SELECT DISTINCT'
-		column_name: column_name
+		column_name: own_copy(&column_name)
 	}
 }
 
@@ -1059,7 +1066,7 @@ struct SQLState42883 {
 fn sqlstate_42883(msg string) IError {
 	return SQLState42883{
 		code: sqlstate_to_int('42883')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1074,7 +1081,7 @@ fn sqlstate_42p02(parameter_name string) IError {
 	return SQLState42P02{
 		code:           sqlstate_to_int('42P02')
 		msg:            'parameter does not exist: ${parameter_name}'
-		parameter_name: parameter_name
+		parameter_name: own_copy(&parameter_name)
 	}
 }
 
@@ -1322,8 +1329,8 @@ fn sqlstate_40002(message string, constraint Identifier, table Identifier) IErro
 	return SQLState40002{
 		code:       sqlstate_to_int('40002')
 		msg:        'integrity constraint violation: ${message}'
-		constraint: constraint
-		table:      table
+		constraint: own_copy(&constraint)
+		table:      own_copy(&table)
 	}
 }
 
@@ -1350,7 +1357,7 @@ struct SQLState0A000 {
 fn sqlstate_0a000(msg string) IError {
 	return SQLState0A000{
 		code: sqlstate_to_int('0A000')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1377,7 +1384,7 @@ fn sqlstate_42p04(catalog_name string) IError {
 	return SQLState42P04{
 		code:         sqlstate_to_int('42P04')
 		msg:          'duplicate catalog: ${catalog_name}'
-		catalog_name: catalog_name
+		catalog_name: own_copy(&catalog_name)
 	}
 }
 
@@ -1389,7 +1396,7 @@ struct SQLState42602 {
 fn sqlstate_42602(msg string) IError {
 	return SQLState42602{
 		code: sqlstate_to_int('42602')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1402,7 +1409,7 @@ struct SQLState55P03 {
 fn sqlstate_55p03(msg string) IError {
 	return SQLState55P03{
 		code: sqlstate_to_int('55P03')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1414,7 +1421,7 @@ struct SQLState54000 {
 fn sqlstate_54000(msg string) IError {
 	return SQLState54000{
 		code: sqlstate_to_int('54000')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1438,7 +1445,7 @@ struct SQLState58030 {
 fn sqlstate_58030(msg string) IError {
 	return SQLState58030{
 		code: sqlstate_to_int('58030')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1461,7 +1468,7 @@ struct SQLStateXX000 {
 fn sqlstate_xx000(msg string) IError {
 	return SQLStateXX000{
 		code: sqlstate_to_int('XX000')
-		msg:  msg
+		msg:  own_copy(&msg)
 	}
 }
 
@@ -1473,6 +1480,575 @@ struct SQLStateXX001 {
 fn sqlstate_xx001(msg string) IError {
 	return SQLStateXX001{
 		code: sqlstate_to_int('XX001')
-		msg:  msg
+		msg:  own_copy(&msg)
+	}
+}
+
+// clone is a copy of the error that owns its own strings. -autofree needs it to
+// keep an error, such as a warning.
+fn (e SQLState) clone() SQLState {
+	return SQLState{
+		msg:  e.msg.clone()
+		code: e.code
+	}
+}
+
+fn (e SQLState01001) clone() SQLState01001 {
+	return SQLState01001{
+		SQLState:    e.SQLState.clone()
+		cursor_name: e.cursor_name.clone()
+	}
+}
+
+fn (e SQLState01003) clone() SQLState01003 {
+	return SQLState01003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState02000) clone() SQLState02000 {
+	return SQLState02000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState01004) clone() SQLState01004 {
+	return SQLState01004{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState21000) clone() SQLState21000 {
+	return SQLState21000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState24000) clone() SQLState24000 {
+	return SQLState24000{
+		SQLState:    e.SQLState.clone()
+		cursor_name: e.cursor_name.clone()
+	}
+}
+
+fn (e SQLState34000) clone() SQLState34000 {
+	return SQLState34000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22001) clone() SQLState22001 {
+	return SQLState22001{
+		SQLState: e.SQLState.clone()
+		to:       e.to
+	}
+}
+
+fn (e SQLState22003) clone() SQLState22003 {
+	return SQLState22003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22007) clone() SQLState22007 {
+	return SQLState22007{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22009) clone() SQLState22009 {
+	return SQLState22009{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2200B) clone() SQLState2200B {
+	return SQLState2200B{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2200C) clone() SQLState2200C {
+	return SQLState2200C{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2200H) clone() SQLState2200H {
+	return SQLState2200H{
+		SQLState:       e.SQLState.clone()
+		generator_name: e.generator_name.clone()
+	}
+}
+
+fn (e SQLState22011) clone() SQLState22011 {
+	return SQLState22011{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22012) clone() SQLState22012 {
+	return SQLState22012{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201E) clone() SQLState2201E {
+	return SQLState2201E{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201F) clone() SQLState2201F {
+	return SQLState2201F{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201G) clone() SQLState2201G {
+	return SQLState2201G{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22018) clone() SQLState22018 {
+	return SQLState22018{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22019) clone() SQLState22019 {
+	return SQLState22019{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201B) clone() SQLState2201B {
+	return SQLState2201B{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201W) clone() SQLState2201W {
+	return SQLState2201W{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2201X) clone() SQLState2201X {
+	return SQLState2201X{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22023) clone() SQLState22023 {
+	return SQLState22023{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22025) clone() SQLState22025 {
+	return SQLState22025{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22027) clone() SQLState22027 {
+	return SQLState22027{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState22029) clone() SQLState22029 {
+	return SQLState22029{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState23001) clone() SQLState23001 {
+	return SQLState23001{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23502) clone() SQLState23502 {
+	return SQLState23502{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23503) clone() SQLState23503 {
+	return SQLState23503{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23505) clone() SQLState23505 {
+	return SQLState23505{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState23514) clone() SQLState23514 {
+	return SQLState23514{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState2BP01) clone() SQLState2BP01 {
+	return SQLState2BP01{
+		SQLState:    e.SQLState.clone()
+		object_name: e.object_name.clone()
+	}
+}
+
+fn (e SQLState3B001) clone() SQLState3B001 {
+	return SQLState3B001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState3D000) clone() SQLState3D000 {
+	return SQLState3D000{
+		SQLState:     e.SQLState.clone()
+		catalog_name: e.catalog_name.clone()
+	}
+}
+
+fn (e SQLState3F000) clone() SQLState3F000 {
+	return SQLState3F000{
+		SQLState:    e.SQLState.clone()
+		schema_name: e.schema_name.clone()
+	}
+}
+
+fn (e SQLState42601) clone() SQLState42601 {
+	return SQLState42601{
+		SQLState: e.SQLState.clone()
+		table:    e.table.clone()
+	}
+}
+
+fn (e SQLState42P03) clone() SQLState42P03 {
+	return SQLState42P03{
+		SQLState:    e.SQLState.clone()
+		cursor_name: e.cursor_name.clone()
+	}
+}
+
+fn (e SQLState42702) clone() SQLState42702 {
+	return SQLState42702{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42703) clone() SQLState42703 {
+	return SQLState42703{
+		SQLState:    e.SQLState.clone()
+		table:       e.table.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42704) clone() SQLState42704 {
+	return SQLState42704{
+		SQLState:    e.SQLState.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42710) clone() SQLState42710 {
+	return SQLState42710{
+		SQLState:    e.SQLState.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42803) clone() SQLState42803 {
+	return SQLState42803{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42804) clone() SQLState42804 {
+	return SQLState42804{
+		SQLState: e.SQLState.clone()
+		expected: e.expected.clone()
+		actual:   e.actual.clone()
+	}
+}
+
+fn (e SQLState42830) clone() SQLState42830 {
+	return SQLState42830{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42846) clone() SQLState42846 {
+	return SQLState42846{
+		SQLState: e.SQLState.clone()
+		from:     e.from
+		to:       e.to
+	}
+}
+
+fn (e SQLState428C9) clone() SQLState428C9 {
+	return SQLState428C9{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42P01) clone() SQLState42P01 {
+	return SQLState42P01{
+		SQLState:    e.SQLState.clone()
+		table:       e.table.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42P06) clone() SQLState42P06 {
+	return SQLState42P06{
+		SQLState:    e.SQLState.clone()
+		schema_name: e.schema_name.clone()
+	}
+}
+
+fn (e SQLState42P07) clone() SQLState42P07 {
+	return SQLState42P07{
+		SQLState:    e.SQLState.clone()
+		table:       e.table.clone()
+		entity_type: e.entity_type.clone()
+		entity_name: e.entity_name.clone()
+	}
+}
+
+fn (e SQLState42P10) clone() SQLState42P10 {
+	return SQLState42P10{
+		SQLState:    e.SQLState.clone()
+		column_name: e.column_name.clone()
+	}
+}
+
+fn (e SQLState42723) clone() SQLState42723 {
+	return SQLState42723{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42883) clone() SQLState42883 {
+	return SQLState42883{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42P02) clone() SQLState42P02 {
+	return SQLState42P02{
+		SQLState:       e.SQLState.clone()
+		parameter_name: e.parameter_name.clone()
+	}
+}
+
+fn (e SQLState07006) clone() SQLState07006 {
+	return SQLState07006{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState08001) clone() SQLState08001 {
+	return SQLState08001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState08002) clone() SQLState08002 {
+	return SQLState08002{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState08003) clone() SQLState08003 {
+	return SQLState08003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2C000) clone() SQLState2C000 {
+	return SQLState2C000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState28000) clone() SQLState28000 {
+	return SQLState28000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState2E000) clone() SQLState2E000 {
+	return SQLState2E000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState01012) clone() SQLState01012 {
+	return SQLState01012{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState35000) clone() SQLState35000 {
+	return SQLState35000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25001) clone() SQLState25001 {
+	return SQLState25001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25002) clone() SQLState25002 {
+	return SQLState25002{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25003) clone() SQLState25003 {
+	return SQLState25003{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25004) clone() SQLState25004 {
+	return SQLState25004{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25005) clone() SQLState25005 {
+	return SQLState25005{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25006) clone() SQLState25006 {
+	return SQLState25006{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState25008) clone() SQLState25008 {
+	return SQLState25008{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState27000) clone() SQLState27000 {
+	return SQLState27000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState0B000) clone() SQLState0B000 {
+	return SQLState0B000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState40001) clone() SQLState40001 {
+	return SQLState40001{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState40002) clone() SQLState40002 {
+	return SQLState40002{
+		SQLState:   e.SQLState.clone()
+		constraint: e.constraint.clone()
+		table:      e.table.clone()
+	}
+}
+
+fn (e SQLState40V01) clone() SQLState40V01 {
+	return SQLState40V01{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState0A000) clone() SQLState0A000 {
+	return SQLState0A000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42501) clone() SQLState42501 {
+	return SQLState42501{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState42P04) clone() SQLState42P04 {
+	return SQLState42P04{
+		SQLState:     e.SQLState.clone()
+		catalog_name: e.catalog_name.clone()
+	}
+}
+
+fn (e SQLState42602) clone() SQLState42602 {
+	return SQLState42602{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState55P03) clone() SQLState55P03 {
+	return SQLState55P03{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState54000) clone() SQLState54000 {
+	return SQLState54000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState57014) clone() SQLState57014 {
+	return SQLState57014{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLState58030) clone() SQLState58030 {
+	return SQLState58030{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLStateXX000) clone() SQLStateXX000 {
+	return SQLStateXX000{
+		SQLState: e.SQLState.clone()
+	}
+}
+
+fn (e SQLStateXX001) clone() SQLStateXX001 {
+	return SQLStateXX001{
+		SQLState: e.SQLState.clone()
 	}
 }

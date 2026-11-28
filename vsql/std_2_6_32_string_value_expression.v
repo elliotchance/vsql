@@ -50,7 +50,7 @@ struct Concatenation {
 }
 
 fn new_concatenation(left CharacterValueExpression, right CharacterValueExpression) Concatenation {
-	return Concatenation{&left, &right}
+	return Concatenation{heap_copy(&left), heap_copy(&right)}
 }
 
 fn (e Concatenation) pstr(params map[string]Value) string {
@@ -153,12 +153,12 @@ fn limit_concatenation(s string, typ Type) !string {
 	// The number of characters can't be more than the number of bytes.
 	limit := character_limit(typ)
 	if s.len <= limit {
-		return s
+		return own_string(s)
 	}
 
 	runes := s.runes()
 	if runes.len <= limit {
-		return s
+		return own_string(s)
 	}
 
 	if !runes[limit..].all(is_truncating_whitespace(it)) {
@@ -175,15 +175,23 @@ fn limit_concatenation(s string, typ Type) !string {
 // ISO/IEC 9075-2:2023, 4.4.3.1, Operators that operate on binary strings and return binary strings
 // ISO/IEC 9075-2:2023, 6.32, <string value expression>, Conformance Rules, 2 and 3
 fn compile_binary_concatenation(mut c Compiler, compiled_left CompileResult, compiled_right CompileResult) !CompileResult {
+	// A pointer to a copy is captured instead of the value to work around
+	// https://github.com/vlang/v/issues/32934 (-autofree).
+	compiled_left_ref := &CompileResult{
+		...compiled_left
+	}
+	compiled_right_ref := &CompileResult{
+		...compiled_right
+	}
 	typ := binary_concatenation_type(compiled_left.typ, compiled_right.typ)!
 	if c.conn.flagging {
 		c.conn.flagged_features << if typ.typ == .is_blob { 'T048' } else { 'T021' }
 	}
 
 	return CompileResult{
-		run:          fn [compiled_left, compiled_right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
-			left := compiled_left.run(mut conn, data, params)!
-			right := compiled_right.run(mut conn, data, params)!
+		run:          fn [compiled_left_ref, compiled_right_ref, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			left := compiled_left_ref.run(mut conn, data, params)!
+			right := compiled_right_ref.run(mut conn, data, params)!
 
 			// ISO/IEC 9075-2:2023, 6.32, <string value expression>, General Rules, 3.a
 			if left.is_null || right.is_null {
@@ -245,7 +253,7 @@ fn binary_length(t Type) int {
 fn limit_binary_concatenation(s string, typ Type) !string {
 	limit := binary_length(typ)
 	if s.len <= limit {
-		return s
+		return own_string(s)
 	}
 
 	for i in limit .. s.len {

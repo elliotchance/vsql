@@ -183,6 +183,7 @@ endif
 
 snippets:
 	v -path '$(shell dirname `realpath $(V)`)/cmd/tools/vdoc|@vlib|@vmodules' run scripts/generate-v-client-library-docs.vsh > docs/v-client-library-docs.rst
+	v run scripts/generate-keywords-docs.vsh
 
 docs: snippets
 	mkdir -p docs/_static
